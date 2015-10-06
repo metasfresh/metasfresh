@@ -1,0 +1,83 @@
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>de.metas.adempiere.adempiere</groupId>
+	<artifactId>de.metas.adempiere.adempiere.client</artifactId>
+
+
+	<parent>
+		<groupId>de.metas</groupId>
+		<artifactId>de.metas.parent</artifactId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<dependencies>
+
+		<!-- Adempiere -->
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+	
+<!-- 
+not needed by us		
+		<dependency>
+			<groupId>org.adempiere.server</groupId>
+			<artifactId>glassfish-facet</artifactId>
+			<version>${project.version}</version>			
+			<scope>runtime</scope>
+		</dependency>		
+-->
+<!-- not needed
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
+			<version>${project.version}</version>			
+			<scope>runtime</scope>
+		</dependency>			
+-->	
+		<!-- 
+			Should be here, but introduce a cyclic dependency. Moved on assemblies 
+		<dependency>
+			<groupId>org.adempiere</groupId>
+			<artifactId>jasperreports-lib</artifactId>
+			<version>${adempiere.version}</version>			
+			<scope>runtime</scope>
+		</dependency>					
+		-->
+		
+		<!-- moved from adempiere-base -->
+		<dependency>
+			<groupId>com.miglayout</groupId>
+			<artifactId>miglayout</artifactId>
+			<version>3.7.1</version>
+		</dependency>
+		
+		<!-- moved from adempiere-base 
+		required by /adempiereTrunkMvcForms/client/src/org/compiere/apps/GroovyEditor.java
+		-->
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>1.5.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-engine</artifactId>
+			<version>1.5.1</version>
+		</dependency>
+	</dependencies>
+
+</project>

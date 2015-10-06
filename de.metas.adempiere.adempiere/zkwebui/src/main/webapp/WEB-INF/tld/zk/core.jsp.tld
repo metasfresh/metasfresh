@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+Purpose:
+	
+Description:
+	
+Histroy:
+	Tue Oct 20 16:47:28     2009, Created by tomyeh
+
+Copyright (C) 2009 Potix Corporation. All Rights Reserved.
+-->
+
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee web-jsptaglibrary_2_0.xsd"
+    version="2.0">
+
+	<tlib-version>1.1</tlib-version>
+	<jsp-version>2.0</jsp-version>
+	<short-name>core.jsp</short-name>
+	<uri>http://www.zkoss.org/tld/core.jsp</uri>
+	<description>
+	Methods for JSP pages
+	</description>
+
+	<function>
+		<name>outZkHtmlTags</name>
+		<function-class>org.zkoss.zk.fn.ZkFns</function-class>
+		<function-signature>
+	java.lang.String outZkHtmlTags(ServletContext,
+ 	HttpServletRequest, HttpServletResponse, String)
+		</function-signature>
+		<description>
+	Returns the desktop info to render a desktop.
+	It is required only if outPageAttrs might not be called
+		</description>
+	</function>
+
+	<function>
+		<name>outDeviceStyleSheets</name>
+		<function-class>org.zkoss.zk.fn.JspFns</function-class>
+		<function-signature>
+	java.lang.String outDeviceStyleSheets(ServletContext,
+ 	HttpServletRequest, HttpServletResponse, String)
+		</function-signature>
+		<description>
+	Returns HTML tags to include all style sheets used by the specified device.
+	Note: unlike outLangStyleSheets, it can be called without current execution.
+		</description>
+	</function>
+
+	<function>
+		<name>setCacheControl</name>
+		<function-class>org.zkoss.zk.fn.JspFns</function-class>
+		<function-signature>
+	void setCacheControl(HttpServletResponse, java.lang.String, int)
+		</function-signature>
+		<description>
+	Sets the Cache-Control and Expires headers for the current request.
+		</description>
+	</function>
+	<function>
+		<name>setCSSCacheControl</name>
+		<function-class>org.zkoss.zk.fn.JspFns</function-class>
+		<function-signature>
+	void setCSSCacheControl(HttpServletResponse)
+		</function-signature>
+		<description>
+	Sets the Cache-Control and Expires headers for the CSS file
+	from class Web resource for the current request.
+		</description>
+	</function>
+	<function>
+		<name>setCWRCacheControl</name>
+		<function-class>org.zkoss.zk.fn.JspFns</function-class>
+		<function-signature>
+	void setCWRCacheControl(HttpServletResponse)
+		</function-signature>
+		<description>
+	Sets the Cache-Control and Expires headers for
+	class Web resource for the current request.
+		</description>
+	</function>
+</taglib>

@@ -1,0 +1,157 @@
+package de.metas.printing.api.impl;
+
+/*
+ * #%L
+ * de.metas.printing.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.collections.SingletonIterator;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.api.PrintingQueueProcessingInfo;
+import de.metas.printing.model.I_C_Printing_Queue;
+
+/**
+ * Used for creating a print job for a single printing queue item.
+ * 
+ * @author ad
+ * 
+ */
+public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
+{
+	private final I_C_Printing_Queue item;
+	private final int adUserPrintJobId;
+	private final String trxName;
+
+	/**
+	 * Decides if marking the item as printed shall be persisted in database or just in memory
+	 */
+	private boolean persistPrintedFlag = true;
+
+	/**
+	 * When {@link #persistPrintedFlag} is set, indicates if current item is printed or not.
+	 */
+	private boolean temporaryPrinted = false;
+
+	private final List<Integer> AD_User_ToPrint_IDs;
+
+	public SingletonPrintingQueueSource(final I_C_Printing_Queue item,
+			final int adUserPrintJobId)
+	{
+		Check.assumeNotNull(item, "item not null");
+
+		this.item = item;
+		this.adUserPrintJobId = adUserPrintJobId;
+		this.trxName = InterfaceWrapperHelper.getTrxName(item);
+
+		if (item.isPrintoutForOtherUser())
+		{
+			final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
+			AD_User_ToPrint_IDs = ImmutableList.<Integer> copyOf(printingDAO.retrievePrintingQueueRecipientIDs(item));
+		}
+		else
+		{
+			AD_User_ToPrint_IDs = ImmutableList.<Integer> of(adUserPrintJobId);
+		}
+	}
+
+	@Override
+	public PrintingQueueProcessingInfo getProcessingInfo()
+	{
+		// If the item is for ourselves, then also our hostkey shall be added to the printing instructions. 
+		// Otherwise, the job might be printed by someone else who is logged in with our user-id (e.g SuperUser).
+		final boolean createWithSpecificHostKey = !item.isPrintoutForOtherUser();
+		return new PrintingQueueProcessingInfo(adUserPrintJobId, AD_User_ToPrint_IDs, createWithSpecificHostKey);
+	}
+
+	@Override
+	public Iterator<I_C_Printing_Queue> createItemsIterator()
+	{
+		return new SingletonIterator<I_C_Printing_Queue>(item);
+	}
+
+	@Override
+	public Iterator<I_C_Printing_Queue> createRelatedItemsIterator(final I_C_Printing_Queue item)
+	{
+		final List<I_C_Printing_Queue> list = Collections.emptyList();
+		return list.iterator();
+	}
+
+	/**
+	 * Specifies if marking the items as printed shall be persisted to database (usually) or just in memory for this run (temporary).
+	 * 
+	 * @param persistPrintedFlag true if item's printed status shall be persisted in database
+	 */
+	public void setPersistPrintedFlag(final boolean persistPrintedFlag)
+	{
+		this.persistPrintedFlag = persistPrintedFlag;
+	}
+
+	/**
+	 * 
+	 * @return true if item's printed status will be persisted in database
+	 */
+	public boolean isPersistPrintedFlag()
+	{
+		return this.persistPrintedFlag;
+	}
+
+	@Override
+	public String getTrxName()
+	{
+		return trxName;
+	}
+
+	@Override
+	public boolean isPrinted(I_C_Printing_Queue item)
+	{
+		if (persistPrintedFlag)
+		{
+			return super.isPrinted(item);
+		}
+		else
+		{
+			return temporaryPrinted;
+		}
+	}
+
+	@Override
+	public void markPrinted(I_C_Printing_Queue item)
+	{
+		if (persistPrintedFlag)
+		{
+			super.markPrinted(item);
+		}
+		else
+		{
+			temporaryPrinted = true;
+		}
+	}
+}

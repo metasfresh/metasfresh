@@ -1,0 +1,385 @@
+package de.metas.banking.payment.paymentallocation.model;
+
+/*
+ * #%L
+ * de.metas.banking.swingui
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import org.adempiere.util.lang.ObjectUtils;
+
+import de.metas.banking.payment.paymentallocation.service.IPaymentDocument;
+import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
+
+public final class PaymentRow extends AbstractAllocableDocRow implements IPaymentRow
+{
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
+
+	public static final IPaymentRow castOrNull(final IAllocableDocRow row)
+	{
+		return row instanceof IPaymentRow ? (IPaymentRow)row : null;
+	}
+
+	private final String docTypeName;
+	private final int C_Payment_ID;
+	private final String documentNo;
+	private final int C_BPartner_ID;
+	private final String BPartnerName;
+	private final Date paymentDate;
+	private final String currencyISOCode;
+	private final BigDecimal payAmt;
+	private final BigDecimal payAmtConv;
+	private final BigDecimal openAmtConv;
+	private final BigDecimal multiplierAP;
+	
+	//
+	private boolean selected = false;
+	private BigDecimal discountAmt = BigDecimal.ZERO;
+	private BigDecimal appliedAmt = BigDecimal.ZERO;
+	private boolean taboo = false;
+
+	private PaymentRow(final Builder builder)
+	{
+		super();
+		// FIXME: validate: not null, etc
+		docTypeName = builder.docTypeName;
+		C_Payment_ID = builder.C_Payment_ID;
+		documentNo = builder.documentNo;
+		C_BPartner_ID = builder.C_BPartner_ID;
+		BPartnerName = builder.BPartnerName;
+		paymentDate = builder.paymentDate;
+		currencyISOCode = builder.currencyISOCode;
+		//
+		// Amounts
+		multiplierAP = builder.multiplierAP;
+		payAmt = notNullOrZero(builder.payAmt);
+		payAmtConv = notNullOrZero(builder.payAmtConv);
+		openAmtConv = notNullOrZero(builder.openAmtConv);
+	}
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
+	}
+
+	@Override
+	public boolean isSelected()
+	{
+		return selected;
+	}
+
+	@Override
+	public void setSelected(final boolean selected)
+	{
+		this.selected = selected;
+	}
+
+	@Override
+	public String getDocTypeName()
+	{
+		return docTypeName;
+	}
+
+	@Override
+	public int getC_Payment_ID()
+	{
+		return C_Payment_ID;
+	}
+
+	@Override
+	public String getDocumentNo()
+	{
+		return documentNo;
+	}
+
+	@Override
+	public String getBPartnerName()
+	{
+		return BPartnerName;
+	}
+
+	@Override
+	public Date getDocumentDate()
+	{
+		return paymentDate;
+	}
+
+	@Override
+	public String getCurrencyISOCode()
+	{
+		return currencyISOCode;
+	}
+
+	@Override
+	public BigDecimal getPayAmt()
+	{
+		return payAmt;
+	}
+
+	@Override
+	public BigDecimal getPayAmtConv()
+	{
+		return payAmtConv;
+	}
+
+	@Override
+	public BigDecimal getAppliedAmt()
+	{
+		return appliedAmt;
+	}
+
+	@Override
+	public void setAppliedAmt(final BigDecimal appliedAmt)
+	{
+		this.appliedAmt = notNullOrZero(appliedAmt);
+	}
+
+	@Override
+	public void setAppliedAmtAndUpdate(PaymentAllocationContext context, BigDecimal appliedAmt)
+	{
+		setAppliedAmt(appliedAmt);
+		
+		// NOTE: no other field needs to be updated
+	}
+
+	@Override
+	public boolean isTaboo()
+	{
+		return taboo;
+	}
+
+	@Override
+	public void setTaboo(final boolean taboo)
+	{
+		this.taboo = taboo;
+	}
+
+	@Override
+	public int getC_BPartner_ID()
+	{
+		return C_BPartner_ID;
+	}
+
+	@Override
+	public BigDecimal getOpenAmtConv()
+	{
+		return openAmtConv;
+	}
+
+	@Override
+	public BigDecimal getMultiplierAP()
+	{
+		return multiplierAP;
+	}
+	
+	@Override
+	public final boolean isCreditMemo()
+	{
+		// a payment is never a credit memo
+		return false;
+	}
+	
+	@Override
+	public IPaymentDocument copyAsPaymentDocument()
+	{
+		final IPaymentRow paymentRow = this;
+		return PaymentDocument.builder()
+				.setC_BPartner_ID(paymentRow.getC_BPartner_ID())
+				.setReference(org.compiere.model.I_C_Payment.Table_Name, paymentRow.getC_Payment_ID())
+				.setOpenAmt(paymentRow.getOpenAmtConv_APAdjusted())
+				.setAmountToAllocate(paymentRow.getAppliedAmt_APAdjusted())
+				.build();
+
+	}
+
+	@Override
+	public BigDecimal getDiscountAmt()
+	{
+		return discountAmt;
+	}
+
+	@Override
+	public void setDiscountAmt(BigDecimal discountAmt)
+	{
+		this.discountAmt = notNullOrZero(discountAmt);;
+	}
+	
+	@Override
+	public void resetDiscountAmount()
+	{
+		setDiscountAmt(BigDecimal.ZERO);
+	}
+	
+	@Override
+	public void setDiscountManual(final PaymentAllocationContext context, BigDecimal discountAmt)
+	{
+		final BigDecimal openAmt = getOpenAmtConv();
+
+		// Discount amount shall not be bigger then open amount.
+		if (discountAmt.compareTo(openAmt) > 0)
+		{
+			discountAmt = openAmt;
+		}
+
+		//
+		// Set the discount amount
+		setDiscountAmt(discountAmt);
+		setTaboo(true); // don't affect this row on calculation from now on
+
+		//
+		// Re-calculate the AppliedAmt as "Open amount" minus "discount amount"
+		setAppliedAmt_As_OpenAmt_Minus_DiscountAmt();
+	}
+	
+	private final void setAppliedAmt_As_OpenAmt_Minus_DiscountAmt()
+	{
+		final BigDecimal openAmt = getOpenAmtConv();
+		final BigDecimal discount = getDiscountAmt();
+		final BigDecimal appliedAmt = openAmt.subtract(discount);
+		setAppliedAmt(appliedAmt);
+	}
+	
+	@Override
+	public void recalculateDiscountAmount(final PaymentAllocationContext context)
+	{
+		final boolean allowAutomaticCalculations = !isTaboo();
+		//
+		// Row allows automatic calculations:
+		// * set AppliedAmt=OpenAmt
+		// * reset DiscountAmt
+		if (allowAutomaticCalculations)
+		{
+			final BigDecimal openAmt = getOpenAmtConv();
+			setAppliedAmtAndUpdate(context, openAmt);
+		}
+		//
+		// Row does not allow automatic
+		// * set DiscountAmt to zero if discount amount is not allowed
+		// * set AppliedAmt = OpenAmt - sum of WriteOff amounts
+		else
+		{
+			if (!context.getAllowedWriteOffTypes().contains(InvoiceWriteOffAmountType.Discount))
+			{
+				setDiscountAmt(BigDecimal.ZERO);
+			}
+			
+			setAppliedAmt_As_OpenAmt_Minus_DiscountAmt();
+		}
+	}
+
+	public static final class Builder
+	{
+		private String docTypeName;
+		private int C_Payment_ID;
+		private String documentNo;
+		private int C_BPartner_ID;
+		private String BPartnerName;
+		private Date paymentDate;
+		private String currencyISOCode;
+		private BigDecimal payAmt;
+		private BigDecimal payAmtConv;
+		private BigDecimal openAmtConv;
+		private BigDecimal multiplierAP;
+
+		private Builder()
+		{
+			super();
+		}
+
+		public PaymentRow build()
+		{
+			return new PaymentRow(this);
+		}
+
+		public Builder setDocTypeName(final String docTypeName)
+		{
+			this.docTypeName = docTypeName;
+			return this;
+		}
+
+		public Builder setC_Payment_ID(final int C_Payment_ID)
+		{
+			this.C_Payment_ID = C_Payment_ID;
+			return this;
+		}
+
+		public Builder setDocumentNo(final String documentNo)
+		{
+			this.documentNo = documentNo;
+			return this;
+		}
+
+		public Builder setBPartnerName(final String bPartnerName)
+		{
+			BPartnerName = bPartnerName;
+			return this;
+		}
+
+		public Builder setPaymentDate(final Date paymentDate)
+		{
+			this.paymentDate = paymentDate;
+			return this;
+		}
+
+		public Builder setCurrencyISOCode(final String currencyISOCode)
+		{
+			this.currencyISOCode = currencyISOCode;
+			return this;
+		}
+
+		public Builder setPayAmt(final BigDecimal payAmt)
+		{
+			this.payAmt = payAmt;
+			return this;
+		}
+
+		public Builder setPayAmtConv(final BigDecimal payAmtConv)
+		{
+			this.payAmtConv = payAmtConv;
+			return this;
+		}
+
+		public Builder setC_BPartner_ID(final int C_BPartner_ID)
+		{
+			this.C_BPartner_ID = C_BPartner_ID;
+			return this;
+		}
+
+		public Builder setOpenAmtConv(final BigDecimal openAmtConv)
+		{
+			this.openAmtConv = openAmtConv;
+			return this;
+		}
+
+		public Builder setMultiplierAP(final BigDecimal multiplierAP)
+		{
+			this.multiplierAP = multiplierAP;
+			return this;
+		}
+
+	}
+}

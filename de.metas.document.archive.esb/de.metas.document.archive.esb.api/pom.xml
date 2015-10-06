@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	
+	<parent>
+		<artifactId>de.metas.document.archive.esb</artifactId>
+		<groupId>de.metas.document.archive.esb</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+	</parent>
+	
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>de.metas.document.archive.esb.api</artifactId>
+	
+	<packaging>jar</packaging>
+
+	<description>Document Archive Management :: Camel ESB module</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

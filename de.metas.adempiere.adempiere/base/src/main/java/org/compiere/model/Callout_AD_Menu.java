@@ -1,0 +1,105 @@
+package org.compiere.model;
+
+/*
+ * #%L
+ * ADempiere ERP - Base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.util.Properties;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+
+public class Callout_AD_Menu extends CalloutEngine
+{
+	public String onAD_Window_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	{
+		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
+		if (menu.getAD_Window_ID() <= 0)
+			return "";
+
+		I_AD_Window w = menu.getAD_Window();
+		menu.setName(w.getName());
+		menu.setDescription(w.getDescription());
+		if (!"D".equals(w.getEntityType()))
+			menu.setEntityType(w.getEntityType());
+		menu.setInternalName(w.getInternalName());
+		return "";
+	}
+
+	public String onAD_Process_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	{
+		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
+		if (menu.getAD_Process_ID() <= 0)
+			return "";
+
+		I_AD_Process p = menu.getAD_Process();
+		menu.setName(p.getName());
+		menu.setDescription(p.getDescription());
+		if (!"D".equals(p.getEntityType()))
+			menu.setEntityType(p.getEntityType());
+		menu.setInternalName(p.getValue());
+		return "";
+	}
+
+	public String onAD_Form_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	{
+		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
+		if (menu.getAD_Form_ID() <= 0)
+			return "";
+
+		I_AD_Form f = menu.getAD_Form();
+		menu.setName(f.getName());
+		menu.setDescription(f.getDescription());
+		if (!"D".equals(f.getEntityType()))
+			menu.setEntityType(f.getEntityType());
+		return "";
+	}
+
+	public String onAD_Task_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	{
+		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
+		if (menu.getAD_Task_ID() <= 0)
+			return "";
+
+		I_AD_Task t = menu.getAD_Task();
+		menu.setName(t.getName());
+		menu.setDescription(t.getDescription());
+		if (!"D".equals(t.getEntityType()))
+			menu.setEntityType(t.getEntityType());
+		return "";
+	}
+
+	public String onAD_Workflow_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	{
+		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
+		if (menu.getAD_Workflow_ID() <= 0)
+			return "";
+
+		I_AD_Workflow wf = menu.getAD_Workflow();
+		menu.setName(wf.getName());
+		menu.setDescription(wf.getDescription());
+		if (!"D".equals(wf.getEntityType()))
+			menu.setEntityType(wf.getEntityType());
+		menu.setInternalName(wf.getValue());
+		return "";
+	}
+
+}

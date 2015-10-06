@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSPY v2004 rel. 4 U (http://www.xmlspy.com) by Jorg Janke 
+	(ComPiere, Inc.) -->
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+	version="2.4">
+	<display-name>metas Fresh Root</display-name>
+	<context-param>
+		<param-name>ServerRoot</param-name>
+		<param-value>1</param-value>
+	</context-param>
+	<filter>
+		<display-name>Server Monitor Filter</display-name>
+		<filter-name>ServerMonitorFilter</filter-name>
+		<filter-class>org.adempiere.serverRoot.servlet.ServerMonitorFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>ServerMonitorFilter</filter-name>
+		<url-pattern>/serverMonitor/*</url-pattern>
+	</filter-mapping>
+	<servlet>
+		<description>Server Monitor</description>
+		<display-name>Server Monitor</display-name>
+		<servlet-name>ServerMonitor</servlet-name>
+		<servlet-class>org.adempiere.serverRoot.servlet.ServerMonitor</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ServerMonitor</servlet-name>
+		<url-pattern>/serverMonitor/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- Images servlet. Used to serve images right from our database. The main usage is to get the logo. -->
+	<servlet>
+		<description>Images servlet</description>
+		<display-name>Images servlet</display-name>
+		<servlet-name>Images</servlet-name>
+		<servlet-class>org.adempiere.serverRoot.servlet.ImagesServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Images</servlet-name>
+		<url-pattern>/images/*</url-pattern>
+	</servlet-mapping>
+
+
+	<session-config>
+		<session-timeout>15</session-timeout>
+	</session-config>
+	<mime-mapping>
+		<extension>jar</extension>
+		<mime-type>application/x-java-archive</mime-type>
+	</mime-mapping>
+	<mime-mapping>
+		<extension>jardiff</extension>
+		<mime-type>application/x-java-archive-diff</mime-type>
+	</mime-mapping>
+	<welcome-file-list>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+</web-app>

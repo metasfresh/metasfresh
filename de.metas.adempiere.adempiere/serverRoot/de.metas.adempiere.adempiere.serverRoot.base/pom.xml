@@ -1,0 +1,44 @@
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
+
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>de.metas.adempiere.adempiere</groupId>
+		<artifactId>de.metas.adempiere.adempiere.serverRoot</artifactId>
+		<version>1.0_IT-SNAPSHOT</version>
+	</parent>
+
+	<dependencies>
+
+		<!-- Adempiere -->
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- workaound, see  06687 Get rid of calls to non-API (107116288996) -->
+		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>animal-sniffer-annotations</artifactId>
+			<version>1.11</version>
+			<optional>true</optional>
+	      	<!-- if you are using badly written maven plugins then blame them and add
+      		<scope>provided</scope>
+      		-->
+		</dependency>
+
+	</dependencies>
+
+</project>

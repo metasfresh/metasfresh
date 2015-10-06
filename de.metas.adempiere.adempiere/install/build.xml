@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================= -->
+<!-- Adempiere Installer build file                 -->
+<!-- ============================================= -->
+<!-- $Header: /cvs/adempiere/install/build.xml,v 1.7 2006/07/24 08:20:55 comdivision Exp $-->
+
+<project name="install" default="installDistribution" basedir=".">
+
+  <!-- required as we want to run to run this file via maven-antrun-plugin
+  I don't understand (also didn't research yet), but thx to http://stackoverflow.com/questions/2022622/java-home-gets-mangled-by-maven 
+  -->
+  <property name="build.compiler" value="extJavac"/>
+	
+  <description>
+	This buildfile is used to create the Adempiere installer.
+  </description>
+
+  <!--<property environment="env"/>-->
+  <import file="../utils_dev/properties.xml"/>
+  <property name="adempiere.dir" value="../"/>
+  <property name="web.dir" value="../../adempiereWeb"/>
+  <property name="dbStartup.dir" value="../db/database/Startup"/>
+  <property name="lib.dir" value="../lib"/>
+  <property name="utils.dir" value="../utils"/>
+  <property name="launch.dir" value="../launch"/>
+  <property name="keystore.dir" value="../keystore"/>
+  <property name="data.dir" value="../data"/>
+  <property name="jboss.dir" value="../jboss"/>
+
+  <property name="src" value="src"/>
+  <property name="compile.dir" value="lib"/>
+
+  <property name="src.dir" value="${basedir}/Adempiere"/>
+  <property name="build.dir" value="${basedir}/build"/>
+
+  <!-- 
+  task 05047: set to ADEMPIERE_KEYSTORE_FULL_FILENAME to ${ADEMPIERE_KEYSTORE} if it hasn't yet been set, 
+  to remain compatible with the old version of adempiere/install
+  -->
+  <property name="ADEMPIERE_KEYSTORE_FULL_FILENAME" value="${ADEMPIERE_KEYSTORE}"/>
+	
+  <path id="project.class.path">
+	<pathelement path="${classpath}"/>
+	<pathelement path="${lib.dir}/CCTools.jar"/>
+	<pathelement path="${lib.dir}/Adempiere.jar"/>
+	<pathelement path="${lib.dir}/oracle.jar"/>
+	<pathelement path="${lib.dir}/postgresql.jar"/>
+	<pathelement path="../tools/lib/ant.jar"/>
+	<pathelement path="../tools/lib/ant-launcher.jar"/>
+  </path>
+
+  <patternset id="manifest.exclude">
+	<exclude name="META-INF/*.DSA"/>
+	<exclude name="META-INF/*.RSA"/>
+	<exclude name="META-INF/*.SF"/>
+	<exclude name="META-INF/MANIFEST.MF"/>
+	<exclude name="META-INF/INDEX.LIST"/>
+  </patternset>
+  <!-- ======================================================= -->
+  <!-- Init                                                    -->
+  <!-- ======================================================= -->
+  <target name="installInit" description="initialization target">
+	<echo message="=========== Build Install - ${env.ENCODING}"/>
+	<!-- create the time stamp -->
+	<tstamp/>
+	<mkdir dir="${build.dir}"/>
+	<mkdir dir="${compile.dir}"/>
+  </target>
+
+  <!-- ======================================================= -->
+  <!-- Compile & Jar                                           -->
+  <!-- ======================================================= -->
+  <target name="installCompile" depends="installInit">
+	<!-- compile the java code from ${src} into ${build.dir} -->
+	<javac target="1.6" srcdir="${src}" destdir="${compile.dir}" deprecation="on" debug="on" encoding="utf-8">
+	  <classpath refid="project.class.path"/>
+	</javac>
+	<!-- copy all image & sound files from src to the build directory -->
+	<copy todir="${compile.dir}">
+	  <fileset dir="${src}">
+		<include name="**/images/*"/>
+		<include name="**/*.gif"/>
+		<include name="**/*.jpg"/>
+		<include name="**/*.wav"/>
+		<include name="**/*.htm"/>
+		<include name="**/*.html"/>
+		<include name="**/*.properties"/>
+		<exclude name="**/package.html"/>
+	  </fileset>
+	</copy>
+	
+		<!-- put everything into the $CInstall.jar file -->
+	<jar
+	  jarfile="CInstall.jar"
+	  index="yes"
+	  duplicate="preserve">
+	  <fileset dir="${compile.dir}"/>
+	  <!-- Ant (with ftp) files -->
+	  <zipfileset src="../tools/lib/ant.jar" >
+		<patternset refid="manifest.exclude"/>
+	  </zipfileset>
+	  <zipfileset src="../tools/lib/ant-launcher.jar" >
+		<patternset refid="manifest.exclude"/>
+	  </zipfileset>
+	  <zipfileset src="../tools/lib/ant-commons-net.jar" >
+		<patternset refid="manifest.exclude"/>
+	  </zipfileset>
+	  <zipfileset src="../tools/lib/commons-net-1.4.0.jar" >
+		<patternset refid="manifest.exclude"/>
+	  </zipfileset>
+			
+	  <manifest>
+		<attribute name="Specification-Title" value="CInstall"/>
+		<attribute name="Specification-Version" value="${env.ADEMPIERE_VERSION}"/>
+		<attribute name="Specification-Vendor" value="Adempiere.org"/>
+		<attribute name="Implementation-Title" value="CInstall ${env.ADEMPIERE_VERSION}"/>
+		<attribute name="Implementation-Version" value="${env.ADEMPIERE_VERSION} ${DSTAMP}-${TSTAMP}"/>
+		<attribute name="Implementation-Vendor" value="${env.ADEMPIERE_VENDOR}"/>
+		<attribute name="Implementation-URL" value="http://www.adempiere.org"/>
+		<attribute name="Main-Class" value="org.compiere.install.Setup"/>
+		<attribute name="Class-Path" value="CTools.jar CClient.jar oracle.jar"/>
+		<attribute name="Permissions" value="all-permissions"/> <!-- this hopefully fixes task 05642 -->
+	  </manifest>
+	</jar>
+
+  </target>
+
+
+  <!-- ======================================================= -->
+  <!-- Update from Web Site + Clean .sh                        -->
+  <!-- ======================================================= -->
+  <target name="installUpdate" depends="installCompile"
+	description="Update install directory with copies of web site">
+
+	<fixcrlf srcdir="${src.dir}"
+		eol="lf" eof="remove"
+		includes="**/*.sh"/>
+	<fixcrlf srcdir="${utils.dir}"
+		eol="lf" eof="remove"
+		includes="**/*.sh"/>
+	<fixcrlf srcdir="${utils.dir}/unix"
+		eol="lf" eof="remove"
+		includes="*"/>
+	<fixcrlf srcdir="../sqlj/oracle"
+		eol="lf" eof="remove"
+		includes="*.sh"/>
+  </target>
+
+
+  <!-- ======================================================= -->
+  <!-- Create Distribution                                     -->
+  <!-- ======================================================= -->
+  <target name="installDistribution" depends="installUpdate">
+	<mkdir dir="${build.dir}"/>
+	<mkdir dir="${build.dir}/Adempiere"/>
+	<mkdir dir="${build.dir}/Adempiere/images"/>
+  	<mkdir dir="${build.dir}/Adempiere/packages"/>
+  	<mkdir dir="${build.dir}/Adempiere/zkpackages"/>
+  	
+	<!-- metas: tsa: commented out because we integrate libero MFG/HR as a regular maven project
+	<mkdir dir="${build.dir}/Adempiere/packages/liberoMFG"/>
+	<mkdir dir="${build.dir}/Adempiere/packages/liberoMFG/lib"/>
+  	<copy file="../packages/liberoMFG.jar" tofile="${build.dir}/Adempiere/packages/liberoMFG/lib/liberoMFG.jar"/>
+  	
+  	<mkdir dir="${build.dir}/Adempiere/packages/liberoHR"/>
+  	<mkdir dir="${build.dir}/Adempiere/packages/liberoHR/lib"/>
+  	<copy file="../packages/liberoHR.jar" tofile="${build.dir}/Adempiere/packages/liberoHR/lib/liberoHR.jar"/>
+	-->
+
+  	<copy file="../lib/CheckConflicts.sh" tofile="${build.dir}/Adempiere/lib/CheckConflicts.sh"/>
+
+	<!-- Base Directory			-->
+	<copy todir="${build.dir}/Adempiere">
+	  <fileset dir="${src.dir}"/>
+	</copy>
+	<copy todir="${build.dir}/Adempiere/images">
+	  <fileset dir="${src.dir}/images"/>
+	</copy>
+	<copy file="${utils.dir}/RUN_Adempiere.bat" todir="${build.dir}/Adempiere/"/>
+	<copy file="${utils.dir}/RUN_Adempiere.sh" todir="${build.dir}/Adempiere/"/>
+
+
+	<!-- Lib Directory			-->
+	<mkdir dir="${build.dir}/Adempiere/lib"/>
+	<copy file="${launch.dir}/Adempiere.ico" tofile="${build.dir}/Adempiere/lib/Adempiere.ico"/>
+	<!-- copy file="${launch.dir}/jlaunchs.ico" tofile="${build.dir}/Adempiere/lib/Adempieres.ico"/-->
+	<copy todir="${build.dir}/Adempiere/lib">
+	  <fileset dir="${lib.dir}">
+	  	<include name="**/*ar"/>
+	  	<include name="**/*xml"/>
+	  	<include name="**/*0"/>
+	  </fileset>
+	</copy>
+	<copy file="${launch.dir}/Release/Adempiere.exe" todir="${build.dir}/Adempiere/lib"/>
+	<copy file="CInstall.jar" todir="${build.dir}/Adempiere/lib"/>
+	<copy file="../sqlj/sqlj.jar" todir="${build.dir}/Adempiere/lib"/>
+	<!-- metas: tsa: Removed JasperReports dependency
+	<copy file="../JasperReports/CompiereJasperReqs.jar" todir="${build.dir}/Adempiere/lib"/>
+	-->
+	<concat destfile="${build.dir}/Adempiere/lib/index.html">AdempiereHome</concat>
+
+
+	<!-- Utils Directory		-->
+	<mkdir dir="${build.dir}/Adempiere/utils"/>
+	<copy todir="${build.dir}/Adempiere/utils">
+	  <fileset dir="${utils.dir}" excludes="**/pg/**,.project"/>
+	</copy>
+	<copy todir="${build.dir}/Adempiere/utils/oracle">
+	  <fileset dir="${dbStartup.dir}/oracle" includes="*.sql"/>
+	  <fileset dir="../sqlj/oracle/"/>
+	</copy>
+	<copy todir="${build.dir}/Adempiere/utils/postgresql">
+	  <fileset dir="${dbStartup.dir}/postgresql" includes="*.sql"/>
+	  <fileset dir="../sqlj/postgresql/"/>
+	</copy>
+	<copy todir="${build.dir}/Adempiere/utils/oracleXE">
+	  <fileset dir="${dbStartup.dir}/oracleXE" includes="*.sql"/>
+	</copy>
+
+
+	<!-- Data Directory			-->
+	<mkdir dir="${build.dir}/Adempiere/data"/>
+	<unjar src="${data.dir}/seed/Adempiere.jar" dest="${build.dir}/Adempiere/data"/>
+	<unjar src="${data.dir}/seed/Adempiere_pg.jar" dest="${build.dir}/Adempiere/data"/>
+	<mkdir dir="${build.dir}/Adempiere/data/import"/>
+	<copy todir="${build.dir}/Adempiere/data/import">
+	  <fileset dir="${data.dir}/import">
+	    <include name="**/Accounting*.*"/>
+	    <include name="Example*.csv"/>
+	  </fileset>
+	</copy> 
+    <copy todir="${build.dir}/Adempiere/data/">
+	  <fileset dir="${data.dir}/seed/">
+      	<include name="**/*.jar"/>
+      </fileset>
+	</copy>
+
+
+	<!-- JBoss Directory		-->
+	<mkdir dir="${build.dir}/Adempiere/jboss"/>
+	<mkdir dir="${build.dir}/Adempiere/jboss/bin"/>
+	<copy todir="${build.dir}/Adempiere/jboss/bin">
+	  <fileset dir="${jboss.dir}/bin" excludes="**/CVS/**"/>
+	</copy>
+	<mkdir dir="${build.dir}/Adempiere/jboss/lib"/>
+	<copy todir="${build.dir}/Adempiere/jboss/lib">
+	  <fileset dir="${jboss.dir}/lib" excludes="**/CVS/**"/>
+	</copy>
+	<mkdir dir="${build.dir}/Adempiere/jboss/server"/>
+	<copy todir="${build.dir}/Adempiere/jboss/server">
+	  <fileset dir="${jboss.dir}/server"
+		excludes="**/CVS/**"/>
+	</copy>
+  	
+  	<!-- GlassFish -->
+  	<mkdir dir="${build.dir}/Adempiere/glassfish"/>
+  	<copy todir="${build.dir}/Adempiere/glassfish">
+  		<fileset dir="../glassfishfacet/config"/>
+  	</copy>
+
+
+	<!-- Create Install ZIP		-->
+	<zip zipfile="${build.dir}/Adempiere_${env.ADEMPIERE_VERSION_FILE}.zip"
+	   basedir="${build.dir}"
+	   includes="Adempiere/**" />
+
+	<!-- Create Install TAR		-->
+  	<tar longfile="gnu" tarfile="${build.dir}/Adempiere_${env.ADEMPIERE_VERSION_FILE}.tar.gz"
+	   basedir="${build.dir}"
+  		includes="Adempiere/**"
+	  	compression="gzip" />
+
+
+	<!-- Create Checksums		-->
+	<checksum file="${build.dir}/Adempiere_${env.ADEMPIERE_VERSION_FILE}.tar.gz"/>
+	<concat destfile="${build.dir}/Adempiere_${env.ADEMPIERE_VERSION_FILE}.tar.gz.MD5" append="yes"> *Adempiere_${env.ADEMPIERE_VERSION_FILE}.tar.gz</concat>
+	<!-- Test with md5sum -c Adempiere_251.zip.MD5	-->
+	<checksum file="${build.dir}/Adempiere_${env.ADEMPIERE_VERSION_FILE}.zip"/>
+	<concat destfile="${build.dir}/Adempiere_${env.ADEMPIERE_VERSION_FILE}.zip.MD5" append="yes"> *Adempiere_${env.ADEMPIERE_VERSION_FILE}.zip</concat>
+
+  </target>
+
+
+  <target name="clean" description="deletes build">
+	<delete dir="${build.dir}"/>
+	<delete dir="${compile.dir}"/>
+  </target>
+
+</project>

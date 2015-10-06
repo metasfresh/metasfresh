@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_line" pageWidth="219" pageHeight="842" columnWidth="219" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="635ad6d5-497f-4e0c-9235-65c7ca8ef39e">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="4.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<import value="java.util.*"/>
+	<parameter name="m_product_id" class="java.math.BigDecimal"/>
+	<parameter name="ad_language" class="java.lang.String"/>
+	<parameter name="prod_descr" class="java.lang.String"/>
+	<parameter name="line_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[new BigDecimal(1)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="source" class="java.lang.String"/>
+	<parameter name="deliveryvia" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[" "]]></defaultValueExpression>
+	</parameter>
+	<parameter name="openamt" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[" "]]></defaultValueExpression>
+	</parameter>
+	<parameter name="poreference" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[" "]]></defaultValueExpression>
+	</parameter>
+	<parameter name="orderno" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[" "]]></defaultValueExpression>
+	</parameter>
+	<parameter name="inoutno" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[" "]]></defaultValueExpression>
+	</parameter>
+	<parameter name="prodno" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[" "]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ignoreSOTrxRule" class="java.lang.String">
+		<defaultValueExpression><![CDATA["N"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT *
+FROM (
+----------------------------------------------------------------------------------
+	--prod name
+	SELECT
+		CASE WHEN isdiverse = 'Y' THEN NULL ELSE name END AS text,
+		false as bold,
+		m_product_id as id,
+		'de_DE' as language,
+		'M_Product' AS Source,
+		100 as line
+	FROM 	m_product
+	WHERE	M_Product_ID = $P{m_product_id}
+UNION
+	SELECT	-- trl
+		CASE WHEN p.isdiverse = 'Y' THEN NULL ELSE ptrl.name END AS text,
+		false,
+		ptrl.m_product_id,
+		ptrl.ad_language,
+		'M_Product',
+		100
+	FROM	m_product_trl ptrl
+		JOIN m_product p ON ptrl.m_product_id = p.m_product_id
+	WHERE	ptrl.M_Product_ID = $P{m_product_id}
+----------------------------------------------------------------------------------
+UNION	-- prodno
+	SELECT
+		CASE WHEN p.isdiverse = 'Y'
+			THEN NULL
+			ELSE value
+		END AS text,
+		false,
+		p.m_product_id,
+		null,
+		'DEL',
+		200
+	FROM 	m_product p
+	WHERE	M_Product_ID = $P{m_product_id}
+----------------------------------------------------------------------------------
+UNION	-- upc
+	SELECT
+		upc,
+		false,
+ 		m_product_id,
+		null,
+		'M_Product',
+		300
+	FROM 	m_product
+	WHERE	M_Product_ID = $P{m_product_id}
+----------------------------------------------------------------------------------
+UNION	--Product description
+	SELECT
+		CASE WHEN $P{prod_descr} IS NOT NULL AND $P{prod_descr} <> ''
+			THEN $P{prod_descr}
+			ELSE description
+		END AS text,
+		false,
+		m_product_id,
+		'de_DE',
+		'M_Product',
+		400
+	FROM 	m_product
+	WHERE	M_Product_ID = $P{m_product_id}
+UNION
+	SELECT	--trl
+		CASE WHEN $P{prod_descr} IS NOT NULL AND $P{prod_descr} <> ''
+			THEN $P{prod_descr}
+			ELSE ptrl.description
+		END AS text,
+		false,
+		p.m_product_id,
+		ptrl.ad_language,
+		'M_Product',
+		400
+	FROM 	m_product_trl ptrl
+		JOIN m_product p ON ptrl.m_product_id = p.m_product_id
+	WHERE	p.M_Product_ID = $P{m_product_id}
+----------------------------------------------------------------------------------
+UNION	--Document Note
+	SELECT
+		documentnote,
+		false,
+		m_product_id,
+		'de_DE',
+		'M_Product',
+		500
+	FROM 	m_product
+	WHERE	M_Product_ID = $P{m_product_id}
+UNION
+	SELECT	--trl
+		ptrl.documentnote,
+		false,
+		ptrl.m_product_id,
+		ptrl.ad_language,
+		'M_Product',
+		500
+	FROM 	m_product_trl ptrl
+		JOIN m_product p ON ptrl.m_product_id = p.m_product_id
+	WHERE	ptrl.M_Product_ID = $P{m_product_id}
+----------------------------------------------------------------------------------
+--OrderLine
+----------------------------------------------------------------------------------
+UNION
+	SELECT
+		text,
+		bold,
+		id,
+		null,
+		'C_OrderLine',
+		600 + line
+	FROM (
+	
+		SELECT	ol.description as text,
+			ol.C_OrderLine_ID as id,
+			false as bold,
+			11 as line
+		FROM	C_OrderLine ol
+		
+	UNION
+	
+		SELECT	CASE WHEN o.issotrx = 'Y' OR $P{ignoreSOTrxRule} = 'Y'
+				THEN $P{prodno} || ' ' || p.value
+				ELSE $P{prodno} || ' ' || COALESCE(ppo.VendorProductNo,p.value)
+			END,
+			ol.C_Orderline_ID,
+			false,
+			15
+		FROM	C_OrderLine ol
+			JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
+			JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID
+			LEFT JOIN M_Product_PO ppo ON ol.M_Product_ID = ppo.M_Product_ID AND o.C_BPartner_ID = ppo.C_BPartner_ID
+		WHERE
+			ol.isComment = 'N'
+
+	UNION
+	
+		SELECT	CASE WHEN o.c_bpartner_location_id = ol.c_bpartner_location_id AND o.AD_User_ID = COALESCE(ol.AD_User_ID,o.AD_User_ID)
+				THEN null
+				ELSE COALESCE (ol.bpartneraddress, trim(
+					case when bp.name is null then '' else bp.name || ' - '	end ||
+					case when bp.name2 is null then '' else bp.name2 || ', ' end ||
+					case when ol_l.address1 is null then ''	else ol_l.address1 || ', ' end ||
+					case when ol_l.address2 is null then ''	else ol_l.address2 || ', ' end ||
+					case when ol_l.address3 is null then ''	else ol_l.address3 || ', ' end ||
+					case when ol_l.address4 is null then ''	else ol_l.address4 || ', ' end ||
+					case when ol_l.postal is null then '' else cou.countrycode||'-'||ol_l.postal end ||
+					case when ol_l.city is null then '' else ' ' || ol_l.city end))
+			END,
+			ol.C_OrderLine_ID,
+			true,
+			30
+		FROM	  C_OrderLine ol
+		LEFT JOIN C_Bpartner bp			ON ol.C_Bpartner_ID = bp.C_Bpartner_ID
+		LEFT JOIN c_bpartner_location ol_bpl 	ON ol.c_bpartner_location_id = ol_bpl.c_bpartner_location_id
+		LEFT JOIN C_Location ol_l		ON ol_bpl.C_Location_ID = ol_l.C_Location_ID
+		LEFT JOIN C_Country cou 		ON ol_l.C_Country_ID = cou.C_Country_ID
+		LEFT JOIN AD_User ol_us			ON ol.AD_User_ID = ol_us.AD_User_ID
+		JOIN 	  C_Order o 			ON ol.C_Order_ID = o.C_Order_ID
+		LEFT JOIN c_bpartner_location o_bpl	ON o.c_bpartner_location_id = o_bpl.c_bpartner_location_id
+		LEFT JOIN AD_User o_us			ON o.AD_User_ID = o_us.AD_User_ID
+		WHERE
+			ol.isComment = 'N'
+	) OrderLine
+	WHERE ($P{source}::text = 'OL'::text AND OrderLine.id = $P{line_id})
+		AND line NOT IN (30)
+
+----------------------------------------------------------------------------------
+--InOutLine
+----------------------------------------------------------------------------------
+UNION
+	SELECT
+		text,
+		bold,
+		id,
+		null,
+		'M_InOutLine',
+		600 + line
+	FROM (
+		SELECT	iol.description as text,
+			iol.M_InOutLine_ID as id,
+			false as bold,
+			10 as line
+		FROM	M_InOutline iol
+	UNION
+		SELECT	CASE WHEN io.issotrx = 'Y' OR $P{ignoreSOTrxRule} = 'Y'
+				THEN $P{prodno} || ' ' || p.value
+				ELSE $P{prodno} || ' ' || COALESCE(ppo.VendorProductNo,p.value)
+			END,
+			iol.M_InOutline_ID,
+			false,
+			15
+		FROM	M_InOutLine iol
+			JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
+			JOIN M_Product p ON iol.M_Product_ID = p.M_Product_ID
+			LEFT JOIN M_Product_PO ppo ON iol.M_Product_ID = ppo.M_Product_ID AND io.C_BPartner_ID = ppo.C_BPartner_ID
+	) InOutLine
+	WHERE ($P{source}::text = 'IOL'::text AND InOutLine.id = $P{line_id})
+
+----------------------------------------------------------------------------------
+--InvoiceLine
+----------------------------------------------------------------------------------
+UNION
+	SELECT
+		text,
+		bold,
+		id,
+		null,
+		'C_InvoiceLine',
+		600 + line
+	FROM (
+		SELECT	il.description as text,
+			il.C_InvoiceLine_ID as id,
+			false as bold,
+			10 as line
+		FROM	C_Invoiceline il
+	UNION
+		SELECT	CASE WHEN i.issotrx = 'Y' OR $P{ignoreSOTrxRule} = 'Y'
+				THEN $P{prodno} || ' ' || p.value
+				ELSE $P{prodno} || ' ' || COALESCE(ppo.VendorProductNo,p.value)
+			END,
+			il.C_Invoiceline_ID,
+			false,
+			15
+		FROM	C_InvoiceLine il
+			JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
+			JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID
+			LEFT JOIN M_Product_PO ppo ON il.M_Product_ID = ppo.M_Product_ID AND i.C_BPartner_ID = ppo.C_BPartner_ID
+	UNION
+		SELECT	$P{openamt} || (ol.qtyordered - ol.qtydelivered)::text,
+			il.C_Invoiceline_ID,
+			false,
+			30
+		FROM	C_Invoiceline il
+		JOIN	C_OrderLine ol ON il.C_OrderLine_ID = ol.C_OrderLine_ID
+		WHERE	(ol.qtyordered - ol.qtydelivered) > 0
+	UNION
+		SELECT	COALESCE ($P{poreference} || o.poreference || '    ', '') ||
+			COALESCE ($P{orderno} || o.documentno, ''),
+			il.C_Invoiceline_ID,
+			false,
+			40
+		FROM	C_Invoiceline il
+		JOIN	C_OrderLine ol ON il.C_OrderLine_ID = ol.C_OrderLine_ID
+		JOIN 	C_Order o ON ol.C_Order_ID = o.C_Order_ID
+	UNION
+		SELECT	$P{inoutno} || io.documentno,
+			il.C_InvoiceLine_ID,
+			false,
+			50
+		FROM	C_InvoiceLine il
+		JOIN 	M_InOutLine iol ON il.M_InOutLine_ID = iol.M_InOutLine_ID
+		JOIN	M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
+	UNION
+		SELECT	$P{deliveryvia} || s.name,
+			il.C_InvoiceLine_ID,
+			false,
+			60
+		FROM 	C_InvoiceLine il
+		JOIN	C_OrderLine ol ON il.C_OrderLine_ID = ol.C_OrderLine_ID
+		JOIN	C_Order o ON ol.C_Order_ID = o.C_Order_ID
+		JOIN	M_Shipper s ON o.M_Shipper_ID = s.M_Shipper_ID
+	UNION
+		SELECT
+			' -' || p.trackinginfo,
+			il.C_InvoiceLine_ID,
+			false,
+			70
+		FROM	C_InvoiceLine il
+		JOIN 	M_PackageLine pl ON il.M_InOutLine_ID = pl.M_InOutLine_ID
+		JOIN 	M_Package p ON p.M_Package_ID = pl.M_Package_ID
+	) InvoiceLine
+	WHERE
+		($P{source}::text = 'IL'::text AND InvoiceLine.id = $P{line_id})
+		AND invoiceline.line NOT IN (50,60,70)
+----------------------------------------------------------------------------------
+)line
+WHERE
+	((source = 'M_Product' AND line.id = $P{m_product_id})
+	OR source <> 'M_Product')
+	AND (line.language = $P{ad_language} OR line.language IS NULL)
+	AND line.text IS NOT NULL
+	AND line.text <> ''
+	AND line.source <> 'DEL'
+ORDER BY line.line
+;]]>
+	</queryString>
+	<field name="text" class="java.lang.String"/>
+	<field name="bold" class="java.lang.Boolean"/>
+	<field name="id" class="java.math.BigDecimal"/>
+	<field name="language" class="java.lang.String"/>
+	<field name="source" class="java.lang.String"/>
+	<field name="line" class="java.lang.Integer"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="11" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement uuid="17010142-5e9e-4e98-97c0-dd07436ae789" key="textField-1" x="0" y="0" width="219" height="11">
+					<printWhenExpression><![CDATA[$F{bold}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8" isBold="true" isStrikeThrough="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{text}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement uuid="7778f277-dc57-498b-8a20-6b5e764a6715" key="textField-1" x="0" y="0" width="219" height="11">
+					<printWhenExpression><![CDATA[new Boolean(!$F{bold}.booleanValue())]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{text}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="5" splitType="Stretch"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

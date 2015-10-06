@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/hubalance/report" uuid="76495d90-b1ae-4c08-8670-90019f94d24a">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.2100000000000009"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="ad_language" class="java.lang.String"/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
+	<parameter name="StartDate" class="java.util.Date"/>
+	<parameter name="EndDate" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[SELECT
+	bp.value, now()
+FROM
+	C_BPartner bp
+WHERE
+	C_BPartner_ID = $P{C_BPartner_ID}
+;]]>
+	</queryString>
+	<field name="value" class="java.lang.String"/>
+	<field name="now" class="java.sql.Timestamp"/>
+	<variable name="docno" class="java.lang.String">
+		<variableExpression><![CDATA[]]></variableExpression>
+		<initialValueExpression><![CDATA["Auftragsbestätigung"]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="175" splitType="Stretch">
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="169" y="127" width="134" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{value}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{StartDate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="9b901965-c28d-45e7-8b66-6e6bd0af0a9c" key="textField-11" x="37" y="127" width="133" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{value} != null)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{from}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="0f201510-1ea1-42d0-84cf-a0dca6088d79" key="textField-6" x="37" y="114" width="133" height="13" forecolor="#000000"/>
+				<textElement textAlignment="Left" markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{hubalance}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="423" y="152" width="91" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{now}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="bf9320f9-8439-4c69-97e4-d7dac64a08c0" key="textField-5" x="363" y="152" width="89" height="13"/>
+				<textElement textAlignment="Left" markup="none">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="eed9d8d3-7bb9-48ee-b07e-a5e0fa43ae97" key="textField-11" x="37" y="152" width="133" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{value} != null)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{bpartnerno}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="169" y="152" width="134" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{value}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="169" y="139" width="134" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{value}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{EndDate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="9cf34097-cc5e-430e-a886-8ef832dbb1f1" key="textField-11" x="37" y="139" width="133" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{value} != null)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{to}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

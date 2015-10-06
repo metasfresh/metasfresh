@@ -1,0 +1,178 @@
+/**
+ *
+ */
+package org.adempiere.pricing.spi;
+
+/*
+ * #%L
+ * ADempiere ERP - Base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+
+import org.adempiere.pricing.api.IPricingContext;
+import org.adempiere.pricing.api.IPricingResult;
+import org.compiere.model.I_M_DiscountSchemaLine;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.CLogger;
+
+import de.metas.adempiere.model.I_M_ProductPrice;
+
+/**
+ * Helper class which aggregates multiple {@link IPricingRule}s.
+ *
+ * @author tsa
+ *
+ */
+public final class AggregatedPricingRule implements IPricingRule
+{
+	private static final transient CLogger logger = CLogger.getCLogger(AggregatedPricingRule.class);
+
+	private final List<IPricingRule> rules = new ArrayList<IPricingRule>();
+
+	/**
+	 * Add a {@link IPricingRule} child.
+	 *
+	 * Please note that the <code>rule</code> won't be added if
+	 * <ul>
+	 * <li>rule was already added
+	 * <li>an instance of the same class as given rule was already added
+	 * </ul>
+	 *
+	 * @param rule
+	 */
+	public void addPricingRule(final IPricingRule rule)
+	{
+		if (rule == null)
+		{
+			return;
+		}
+		if (rules.contains(rule))
+		{
+			return;
+		}
+
+		for (final IPricingRule r : rules)
+		{
+			if (rule.equals(r))
+			{
+				logger.config("PricingRule already registered: " + rule + " [SKIP]");
+				return;
+			}
+			if (rule.getClass().equals(r.getClass()))
+			{
+				logger.config("PricingRule with same class already registered: " + rule + " (class=" + rule.getClass() + ") [SKIP]");
+				return;
+			}
+		}
+
+		logger.log(Level.CONFIG, "PricingRule registered: {0}", rule);
+		rules.add(rule);
+	}
+
+	/**
+	 * For optimization reasons, this method always returns true.
+	 *
+	 * In {@link #calculate(IPricingContext, IPricingResult)}, each child {@link IPricingRule} is evaluated and executed if applies.
+	 *
+	 * @return always returns true
+	 * @see org.adempiere.pricing.spi.IPricingRule#applies(org.adempiere.pricing.api.IPricingContext, org.adempiere.pricing.api.IPricingResult)
+	 */
+	@Override
+	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
+	{
+		return true;
+	}
+
+	/**
+	 * Executes all rules that can be applied.
+	 *
+	 * Please note that calculation won't stop after first rule that matched.
+	 */
+	@Override
+	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
+	{
+		if (logger.isLoggable(Level.FINE))
+		{
+			logger.fine("PricingContext: " + pricingCtx);
+		}
+
+		for (final IPricingRule rule : rules)
+		{
+			// NOTE: we are NOT checking if the pricing result was already calculated, on purpose, because:
+			// * we want to give flexiblity to pricing rules to override the pricing
+			// * we want to support the case of Discount rules which apply on already calculated pricing result
+
+			//
+			// Preliminary check if there is a chance this pricing rule to be applied
+			if (!rule.applies(pricingCtx, result))
+			{
+				if (logger.isLoggable(Level.FINE))
+				{
+					logger.fine("Skiped rule " + rule + ", result: " + result);
+				}
+				continue;
+			}
+
+			//
+			// Try applying it
+			rule.calculate(pricingCtx, result);
+
+			//
+			// Add it to applied pricing rules list
+			// FIXME: make sure the rule was really applied (i.e. calculated). Consider asking the calculate() to return a boolean if it really did some changes.
+			// At the moment, there is no way to figure out that a pricing rule which was preliminary considered as appliable
+			// was not actually applied because when "calculate()" method was invoked while retrieving data,
+			// it found out that it cannot be applied.
+			// As a side effect on some pricing results you will get a list of applied rules like: ProductScalePrice, PriceListVersionVB, PriceListVersion, Discount,
+			// which means that ProductScalePrice and PriceListVersionVB were not actually applied because they found out that while doing the "calculate()".
+			result.getRulesApplied().add(rule);
+			if (logger.isLoggable(Level.FINE))
+			{
+				logger.fine("Applied rule " + rule + ", result: " + result);
+			}
+		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return "AggregatedPricingRule[" + rules + "]";
+	}
+
+	@Override
+	public void updateFromDiscounLine(final I_M_PriceList_Version plv, final Iterator<I_M_ProductPrice> productPrices, final I_M_DiscountSchemaLine dsl)
+	{
+		if (logger.isLoggable(Level.FINE))
+		{
+			logger.fine("PriceListVersion: " + plv + " ; DiscountSchemaLine:" + dsl);
+		}
+
+		for (final IPricingRule rule : rules)
+		{
+			rule.updateFromDiscounLine(plv, productPrices, dsl);
+		}
+
+	}
+}

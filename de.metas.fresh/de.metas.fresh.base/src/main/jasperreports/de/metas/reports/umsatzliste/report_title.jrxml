@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_title" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="39e92b5e-fc7e-4200-84d5-4f7d227bd7cf">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.3579476910000046"/>
+	<property name="ireport.x" value="222"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal" isForPrompting="false"/>
+	<parameter name="StartDate" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="EndDate" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA["de_CH"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IsSOTrx" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+	COALESCE((
+		SELECT Value || ' ' || Name FROM C_BPartner WHERE $P{C_BPartner_ID} = C_BPartner_ID
+	), 'Alle') as BPartner
+;]]>
+	</queryString>
+	<field name="bpartner" class="java.lang.String"/>
+	<variable name="Headline" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Umsatzliste":
+$P{ad_language}.equals("fr_CH")?"Umsatzliste":
+$P{ad_language}.equals("it_CH")?"Umsatzliste":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Umsatzliste":
+$P{ad_language}.equals("fr_CH")?"Umsatzliste":
+$P{ad_language}.equals("it_CH")?"Umsatzliste":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="Timeframe" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Zeitraum":
+$P{ad_language}.equals("fr_CH")?"Zeitraum":
+$P{ad_language}.equals("it_CH")?"Zeitraum":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Zeitraum":
+$P{ad_language}.equals("fr_CH")?"Zeitraum":
+$P{ad_language}.equals("it_CH")?"Zeitraum":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="BPartner" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner":
+$P{ad_language}.equals("fr_CH")?"Geschäftspartner":
+$P{ad_language}.equals("it_CH")?"Geschäftspartner":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner":
+$P{ad_language}.equals("fr_CH")?"Geschäftspartner":
+$P{ad_language}.equals("it_CH")?"Geschäftspartner":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="IsSOTrx" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Transaktionen":
+$P{ad_language}.equals("fr_CH")?"Transaktionen":
+$P{ad_language}.equals("it_CH")?"Transaktionen":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Transaktionen":
+$P{ad_language}.equals("fr_CH")?"Transaktionen":
+$P{ad_language}.equals("it_CH")?"Transaktionen":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="SalesOnly" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"nur Verkauf":
+$P{ad_language}.equals("fr_CH")?"nur Verkauf":
+$P{ad_language}.equals("it_CH")?"nur Verkauf":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"nur Verkauf":
+$P{ad_language}.equals("fr_CH")?"nur Verkauf":
+$P{ad_language}.equals("it_CH")?"nur Verkauf":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="PurchaseOnly" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"nur Einkauf":
+$P{ad_language}.equals("fr_CH")?"nur Einkauf":
+$P{ad_language}.equals("it_CH")?"nur Einkauf":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"nur Einkauf":
+$P{ad_language}.equals("fr_CH")?"nur Einkauf":
+$P{ad_language}.equals("it_CH")?"nur Einkauf":
+""]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="72" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="7b4fea54-bf7e-4172-aa32-ef6c791f3ded" key="textField-1" x="200" y="4" width="194" height="19"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true" pdfFontName="Helvetica-Bold" />
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Headline}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="0b0321d5-002e-4666-8af9-ab827c840dec" key="textField-4" x="289" y="43" width="167" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bpartner}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="de0e7bd4-55d2-4aeb-84a5-1bd1cacffad9" key="textField-5" x="200" y="43" width="90" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{BPartner}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement uuid="0b0321d5-002e-4666-8af9-ab827c840dec" key="textField-4" x="309" y="31" width="50" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{StartDate}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="739e1610-e93f-426a-b55b-47fdc1bfc127" key="textField-5" x="289" y="31" width="21" height="12"/>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Von]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="914a1f36-afa9-4d75-82cd-e65f98b99879" key="textField-5" x="359" y="31" width="21" height="12"/>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Bis]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement uuid="0b0321d5-002e-4666-8af9-ab827c840dec" key="textField-4" x="380" y="31" width="50" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{EndDate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="dd5c33b7-be56-44e8-83d8-8493274d0eb9" key="textField-5" x="200" y="31" width="90" height="12"/>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Timeframe}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="de0e7bd4-55d2-4aeb-84a5-1bd1cacffad9" key="textField-5" x="200" y="56" width="90" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{IsSOTrx}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="0b0321d5-002e-4666-8af9-ab827c840dec" key="textField-4" x="289" y="56" width="167" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{IsSOTrx}.equals( "Y" )? $V{SalesOnly} : $V{PurchaseOnly}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

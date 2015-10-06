@@ -1,0 +1,282 @@
+package de.metas.handlingunits.allocation.impl;
+
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Locator;
+
+import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.IHUBuilder;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
+
+/**
+ * Loading Unit(LU) Loader.
+ *
+ * This class is reponsible for adding Transport Units (TUs) to a particular LU handling unit (which will be created in class constructor).
+ *
+ * @author tsa
+ *
+ */
+/* package */class LULoaderInstance
+{
+	//
+	// Services
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+	private final IHUContext huContext;
+	private final I_C_BPartner bpartner;
+	private final int bpartnerLocationId;
+	private final I_M_Locator locator;
+	private final String huStatus;
+
+	private final I_M_HU luHU;
+
+	/**
+	 * LU Item Instances.
+	 *
+	 * NOTE: we use {@link SortedSet} because we want items to be sorted by priority. For this we relly on {@link LULoaderItemInstance#compareTo(LULoaderItemInstance)}.
+	 */
+	private final SortedSet<LULoaderItemInstance> luItemInstances = new TreeSet<LULoaderItemInstance>();
+
+	public LULoaderInstance(final IHUContext huContext,
+			final I_C_BPartner bpartner,
+			final int bpartnerLocationId,
+			final I_M_Locator locator,
+			final String huStatus,
+			final I_M_HU_PI_Version tuPIVersion)
+	{
+		super();
+		this.huContext = huContext;
+		this.bpartner = bpartner;
+		this.bpartnerLocationId = bpartnerLocationId;
+		this.locator = locator;
+		this.huStatus = huStatus;
+
+		assertUnitTypeOrNull(tuPIVersion, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+
+		//
+		// Retrieve LU PI to be used
+		final I_M_HU_PI tuPI = tuPIVersion.getM_HU_PI();
+		final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartner);
+		if (luPIItem == null)
+		{
+			throw new AdempiereException("No LU found for TU: " + tuPI.getName());
+		}
+		final I_M_HU_PI_Version luPIVersion = luPIItem.getM_HU_PI_Version();
+
+		//
+		// Create LU
+		final IHUBuilder huBuilder = handlingUnitsDAO.createHUBuilder(huContext);
+		huBuilder.setC_BPartner(bpartner);
+		huBuilder.setC_BPartner_Location_ID(bpartnerLocationId);
+		huBuilder.setM_Locator(locator);
+		huBuilder.setHUStatus(huStatus);
+		huBuilder.setListener(new HUIteratorListenerAdapter()
+		{
+			@Override
+			public Result afterHUItem(final I_M_HU_Item luItem)
+			{
+				addLUItemIfPossible(luItem);
+				return Result.CONTINUE;
+			}
+		});
+
+		luHU = huBuilder.create(luPIVersion);
+
+	}
+
+	@Override
+	public String toString()
+	{
+		return "LULoaderInstance ["
+				+ "bpartner=" + bpartner
+				+ ", bpartnerLocationId=" + bpartnerLocationId
+				+ ", locator=" + locator
+				+ ", huStatus=" + huStatus
+				+ ", luItemInstances=" + luItemInstances
+				+ ", luHU=" + luHU
+				+ "]";
+	}
+
+	public I_M_HU getLU_HU()
+	{
+		return luHU;
+	}
+
+	private static final void assertUnitTypeOrNull(final I_M_HU_PI_Version piVersion, final String expectedUnitType)
+	{
+		final String unitType = piVersion.getHU_UnitType();
+		if (Check.isEmpty(unitType))
+		{
+			return;
+		}
+
+		if (!expectedUnitType.equals(unitType))
+		{
+			throw new AdempiereException("Invalid @HU_UnitType@. Expected=" + expectedUnitType + ", Actual=" + unitType);
+		}
+	}
+
+	/**
+	 * Add given Transport Unit (TU) to this LU
+	 *
+	 * @param tuHU Transport Unit HU
+	 * @return true if given TU was added; false if this LU does not support given TU or the LU is already full.
+	 */
+	public boolean addTU(final I_M_HU tuHU)
+	{
+		if (!acceptTU(tuHU))
+		{
+			return false;
+		}
+
+		for (final LULoaderItemInstance luItemInstance : luItemInstances)
+		{
+			if (luItemInstance.addTU(tuHU))
+			{
+				return true;
+			}
+		}
+
+		// TU was not added
+		return false;
+	}
+
+	/**
+	 * Adds given LU Item to our index.
+	 *
+	 * @param luItem
+	 */
+	private void addLUItemIfPossible(final I_M_HU_Item luItem)
+	{
+		//
+		// Check if it's a handling unit item
+		final String luPIItemType = handlingUnitsBL.getItemType(luItem);
+		if (!Check.equals(luPIItemType, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit))
+		{
+			return;
+		}
+
+		final LULoaderItemInstance luItemInstance = new LULoaderItemInstance(huContext, luItem);
+		if (!luItemInstances.add(luItemInstance))
+		{
+			throw new AdempiereException("InternalError: Item " + luItemInstance + " was not added to instances list");
+		}
+	}
+
+	/**
+	 * Checks if given TU is compatible with our LU (same BParter, BP Location etc).
+	 *
+	 * @param tuHU
+	 * @return true if it's compatible
+	 */
+	private boolean acceptTU(final I_M_HU tuHU)
+	{
+		//
+		// Check same BPartner
+		int bpartnerId = tuHU.getC_BPartner_ID();
+		if (bpartnerId <= 0)
+		{
+			bpartnerId = -1;
+		}
+		if (bpartnerId != getC_BPartner_ID())
+		{
+			return false;
+		}
+
+		//
+		// Check same BPartner Location
+		int bpartnerLocationId = tuHU.getC_BPartner_Location_ID();
+		if (bpartnerLocationId <= 0)
+		{
+			bpartnerLocationId = -1;
+		}
+		if (bpartnerLocationId != this.bpartnerLocationId)
+		{
+			return false;
+		}
+
+		//
+		// Check same Locator
+		int locatorId = tuHU.getM_Locator_ID();
+		if (locatorId <= 0)
+		{
+			locatorId = -1;
+		}
+		if (locatorId != getM_Locator_ID())
+		{
+			return false;
+		}
+
+		//
+		// Check same HUStatus
+		final String huStatus = tuHU.getHUStatus();
+		if (!Check.equals(huStatus, this.huStatus))
+		{
+			return false;
+		}
+
+		//
+		// Default: accept
+		return true;
+	}
+
+	private int getC_BPartner_ID()
+	{
+		if (bpartner == null)
+		{
+			return -1;
+		}
+
+		final int bpartnerId = bpartner.getC_BPartner_ID();
+		return bpartnerId <= 0 ? -1 : bpartnerId;
+	}
+
+	private int getM_Locator_ID()
+	{
+		if (locator == null)
+		{
+			return -1;
+		}
+
+		final int locatorId = locator.getM_Locator_ID();
+		return locatorId <= 0 ? -1 : locatorId;
+	}
+}

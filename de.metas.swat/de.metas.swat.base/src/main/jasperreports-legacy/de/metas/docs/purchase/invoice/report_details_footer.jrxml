@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="report_details_footer"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="521"
+		 pageHeight="842"
+		 columnWidth="521"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false"
+		 resourceBundle="de/metas/docs/purchase/invoice/report">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<style 
+		name="Test"
+		isDefault="true"
+		isStyledText="true"
+	/>
+
+	<parameter name="c_invoice_id" isForPrompting="true" class="java.lang.Integer">
+		<defaultValueExpression ><![CDATA[$P{c_invoice_id}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<queryString><![CDATA[SELECT 
+	* 
+FROM
+	(
+	--Docnote DE
+	SELECT  
+		dt.documentnote 	as text1,
+		'de_DE' 		as language,
+		i.c_invoice_id		as c_invoice_id,
+		'docnote' 		as tag,
+		3			as position
+	FROM 
+		c_invoice i
+		LEFT JOIN c_doctype dt 		ON i.c_doctype_id 	= dt.c_doctype_id
+
+	UNION
+---------------------------------------------------------------------------------------------
+	--Docnote TRL
+	SELECT  
+		dt_trl.documentnote 	as text1,
+		dt_trl.ad_language	as language,
+		i.c_invoice_id		as c_invoice_id,
+		'docnote' 		as tag,
+		3			as position
+	FROM 
+		c_invoice i
+		LEFT JOIN c_doctype_trl dt_trl 	ON i.c_doctype_id 	= dt_trl.c_doctype_id
+
+	UNION
+---------------------------------------------------------------------------------------------
+	--Descriptionbottom	
+	SELECT  
+		i.descriptionbottom 	as text1,
+		null			as language,
+		i.c_invoice_id		as c_invoice_id,
+		'descr' 		as tag,
+		2			as position
+	FROM 
+		c_invoice i
+
+	UNION
+---------------------------------------------------------------------------------------------
+	--Zahlungsbedingungen	
+	SELECT  
+		replace(replace(replace(p.name,'$datum_netto', to_char(i.dateinvoiced + p.netdays, 'DD.MM.YYYY')), '$datum_skonto_1', to_char(i.dateinvoiced::date + p.discountdays, 'DD.MM.YYYY')), '$datum_skonto_2', to_char(i.dateinvoiced::date + p.discountdays2, 'DD.MM.YYYY')) as text1,
+		null			as language,
+		i.c_invoice_id		as c_invoice_id,
+		'cond' 			as tag,
+		1			as position
+	FROM 
+		c_invoice i
+		join c_paymentterm p on i.c_paymentterm_id = p.c_paymentterm_id
+
+	UNION
+---------------------------------------------------------------------------------------------
+	--Zahlungsbedingungen	
+	SELECT  
+		replace(replace(replace(pt.name,'$datum_netto', to_char(i.dateinvoiced + p.netdays, 'DD.MM.YYYY')), '$datum_skonto_1', to_char(i.dateinvoiced::date + p.discountdays, 'DD.MM.YYYY')), '$datum_skonto_2', to_char(i.dateinvoiced::date + p.discountdays2, 'DD.MM.YYYY')) as text1,
+		pt.ad_language		as language,
+		i.c_invoice_id		as c_invoice_id,
+		'cond' 			as tag,
+		1			as position
+	FROM 
+		c_invoice i
+		join c_paymentterm p on i.c_paymentterm_id = p.c_paymentterm_id
+		join c_paymentterm_trl pt on i.c_paymentterm_id = pt.c_paymentterm_id
+	)footer
+WHERE 
+	footer.c_invoice_id = $P{c_invoice_id} 
+	AND (footer.language = $P{ad_language} OR footer.language IS NULL)
+	AND text1 <> ''
+ORDER BY
+	position
+;]]></queryString>
+
+	<field name="text1" class="java.lang.String"/>
+	<field name="language" class="java.lang.String"/>
+	<field name="c_invoice_id" class="java.math.BigDecimal"/>
+	<field name="tag" class="java.lang.String"/>
+	<field name="position" class="java.lang.Integer"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="11"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						style="Test"
+						x="0"
+						y="0"
+						width="521"
+						height="11"
+						key="textField-82"
+						isPrintWhenDetailOverflows="true"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{tag}.equals("descr")
+	? ($F{text1} + "\n\n\n")
+	: ($F{tag}.equals("cond")
+		? $R{paymentcond} + $F{text1}
+		: $F{text1}
+	)
+)]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

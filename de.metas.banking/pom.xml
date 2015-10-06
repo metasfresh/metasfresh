@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
+	
+	<groupId>de.metas.banking</groupId>
+	<artifactId>de.metas.banking</artifactId>
+	<packaging>pom</packaging>
+	
+	<modules>
+		<module>de.metas.banking.base</module>
+		<module>de.metas.banking.swingui</module>
+		<module>de.metas.banking.zkwebui</module>
+	</modules>
+
+</project>

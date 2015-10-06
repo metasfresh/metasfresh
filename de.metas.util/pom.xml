@@ -1,0 +1,95 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.util</groupId>
+	<artifactId>de.metas.util</artifactId>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>18.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		
+
+	<!-- the next 3 are for task http://dewiki908/mediawiki/index.php/06952_Async_Problems_%28109152162496%29 -->
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>0.9.10</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.javassist</groupId>
+					<artifactId>javassist</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- 3.10.0-GA is required by jboss-aop. 
+		As long as we also use jboss-aop, we can't freely choose our javassist version 
+		-->
+		<dependency>
+			<groupId>javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>3.10.0.GA</version>
+		</dependency>
+
+<!-- 	nice standardiced annotations, but requires java7	
+		<dependency>
+			<groupId>javax.interceptor</groupId>
+			<artifactId>javax.interceptor-api</artifactId>
+			<version>1.2</version>
+		</dependency>
+ -->
+
+		<!-- required for Util.encodeBase64() and Util.decodeBase64() -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3.2</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Create tests JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

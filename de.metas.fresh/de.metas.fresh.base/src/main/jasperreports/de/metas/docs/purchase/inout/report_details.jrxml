@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="c_order_id" class="java.lang.Integer"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+
+	Attributes,
+	Name, -- product
+	SUM( HUQty ) AS HUQty,
+	HUName,
+	SUM( MovementQty ) AS MovementQty,
+	UOMSymbol,
+	StdPrecision,
+	QualityDiscountPercent,
+	QualityNote,
+	isInDispute
+FROM
+	-- Sub select to get all in out lines we need. They are in a subselect so we can neatly group by the attributes
+	-- (Otherwise we'd have to copy the attributes-sub-select in the group by clause. Hint: That would suck)
+	(
+	SELECT
+		iol.M_InOutLine_ID,
+		Attributes,
+		COALESCE(pt.Name, p.name) AS Name,
+		iol.QtyEnteredTU AS HUQty,
+		CASE WHEN iol.QtyEnteredTU IS NULL THEN NULL ELSE pi.name END AS HUName,
+		iol.MovementQty AS MovementQty,
+		COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOMSymbol,
+		uom.StdPrecision,
+
+		CASE WHEN iol.isInDispute = 'N' THEN null ELSE
+			COALESCE ( ic.QualityDiscountPercent_Override, ic.QualityDiscountPercent )
+		END AS QualityDiscountPercent,
+		CASE WHEN iol.isInDispute = 'N' THEN null ELSE
+			(
+				SELECT rs.QualityNote FROM M_ReceiptSchedule rs
+				WHERE EXISTS ( SELECT 0 FROM M_ReceiptSchedule_Alloc rsa
+					WHERE rsa.m_receiptschedule_id=rs.m_receiptschedule_id AND rs.C_OrderLine_ID = ic.C_OrderLine_ID
+			)
+		) END AS QualityNote,
+		iol.isInDispute
+	FROM
+		-- All In Outs linked to the order (see where clause)
+		M_InOut io
+		--
+		/*
+		 * Now, join all in out lines of those in outs. Might be more than the in out lines selected in the previous
+		 * sub select because not all in out lines are linked to the order (e.g Packing material). 
+		 * NOTE: we assume that all lines of one inout belong to only one order
+		 */
+		INNER JOIN M_InOutLine iol 			ON io.M_InOut_ID = iol.M_InOut_ID
+		-- Product and its translation
+		LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID
+		LEFT OUTER JOIN M_Product_Trl pt 		ON iol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $P{ad_language}
+		LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID
+		-- Unit of measurement & its translation
+		LEFT OUTER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID
+		LEFT OUTER JOIN C_UOM_Trl uomt			ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $P{ad_language}
+		-- Packing Instruction
+		LEFT OUTER JOIN
+		(
+			SELECT 	String_Agg( DISTINCT pifb.name, E'\n' ORDER BY pifb.name ) AS name,
+				iol.M_InOutLine_ID
+			FROM	M_InOutLine iol
+				INNER JOIN M_HU_Assignment asgn ON asgn.AD_Table_ID = ((SELECT get_Table_ID( 'M_InOutLine' ) ))
+					AND asgn.Record_ID = iol.M_InOutLine_ID
+				INNER JOIN M_HU tu ON asgn.M_TU_HU_ID = tu.M_HU_ID
+				INNER JOIN M_HU_PI_Item_Product pifb ON tu.M_HU_PI_Item_Product_ID = pifb.M_HU_PI_Item_Product_ID
+			WHERE	pifb.name != 'VirtualPI'
+				AND iol.M_InOut_ID IN (
+					SELECT	iol.M_InOut_ID
+					FROM	M_InOutLine iol
+						INNER JOIN M_ReceiptSchedule_Alloc rsa ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
+						INNER JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
+							AND rs.AD_Table_ID = (SELECT Get_Table_ID('C_OrderLine'))
+						INNER JOIN C_OrderLine ol ON rs.Record_ID = ol.C_OrderLine_ID
+					WHERE	ol.C_Order_ID = $P{c_order_id}
+				)
+			GROUP BY M_InOutLine_ID
+		) pi ON iol.M_InOutLine_ID = pi.M_InOutLine_ID
+		-- Attributes
+		LEFT OUTER JOIN
+		(
+			SELECT	/** Jasper Servlet runs under linux, jasper client under windows (mostly). both have different fonts therefore, when
+				  * having more than 2 lines, the field is too short to display all lines in the windows font to avoid this I add an extra
+				  * line as soon as the attributes string has more than 15 characters (which is still very likely to fit in two lines)
+				  */
+				CASE WHEN Length(Attributes) > 15 THEN Attributes || E'\n' ELSE Attributes END AS Attributes, M_AttributeSetInstance_ID
+			FROM	(
+					SELECT 	String_agg ( ai_value, ', ' ORDER BY M_AttributeSetInstance_ID, length(ai_value), ai_value) AS Attributes,
+						M_AttributeSetInstance_ID
+					FROM 	Report.Fresh_Attributes att
+					WHERE 	-- Label, Herkunft, Aktionen, Marke (ADR), MHD, M_Material_Tracking_ID
+						att.at_Value IN ('1000002', '1000001', '1000030', '1000015', '1000021', 'M_Material_Tracking_ID')
+						/* currently those flags are set to be correct for purchase invoices. we need something
+						 * more flexible for all kinds of documents
+						 * att.at_IsAttrDocumentRelevant = 'Y' */
+					GROUP BY	M_AttributeSetInstance_ID
+				) x
+		) a ON iol.M_AttributeSetInstance_ID = a.M_AttributeSetInstance_ID
+
+		-- Quality (is taken from Invoice candidates because there the quality is already aggregated)
+		LEFT OUTER JOIN C_InvoiceCandidate_InOutLine iciol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID
+		LEFT OUTER JOIN C_Invoice_Candidate ic ON ic.C_Invoice_Candidate_ID = iciol.C_Invoice_Candidate_ID
+	WHERE
+		pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+		AND io.M_InOut_ID IN (
+			SELECT	iol.M_InOut_ID
+			FROM	M_InOutLine iol
+				INNER JOIN M_ReceiptSchedule_Alloc rsa ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
+				INNER JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
+					AND rs.AD_Table_ID = (SELECT Get_Table_ID('C_OrderLine'))
+				INNER JOIN C_OrderLine ol ON rs.Record_ID = ol.C_OrderLine_ID
+			WHERE	ol.C_Order_ID = $P{c_order_id}
+		)
+		AND io.DocStatus IN ('CO','CL')
+	) iol
+GROUP BY
+	Attributes,
+	Name, -- product
+	HUName,
+	UOMSymbol,
+	QualityDiscountPercent,
+	QualityNote,
+	isInDispute,
+	StdPrecision
+ORDER BY
+	Name, MIN(M_InOutLine_ID)
+;]]>
+	</queryString>
+	<field name="attributes" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="huqty" class="java.math.BigDecimal"/>
+	<field name="huname" class="java.lang.String"/>
+	<field name="movementqty" class="java.math.BigDecimal"/>
+	<field name="uomsymbol" class="java.lang.String"/>
+	<field name="stdprecision" class="java.math.BigDecimal"/>
+	<field name="qualitydiscountpercent" class="java.math.BigDecimal"/>
+	<field name="qualitynote" class="java.lang.String"/>
+	<field name="isindispute" class="java.lang.String"/>
+	<variable name="Article" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Artikel":
+$P{ad_language}.equals("fr_CH")?"Article":
+$P{ad_language}.equals("it_CH")?"Artikel":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Artikel":
+$P{ad_language}.equals("fr_CH")?"Article":
+$P{ad_language}.equals("it_CH")?"Artikel":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="Unit" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Einheit":
+$P{ad_language}.equals("fr_CH")?"Unité":
+$P{ad_language}.equals("it_CH")?"Einheit":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Einheit":
+$P{ad_language}.equals("fr_CH")?"Unité":
+$P{ad_language}.equals("it_CH")?"Einheit":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="Pack_Inst" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Packvorschrift":
+$P{ad_language}.equals("fr_CH")?"Conditionnement":
+$P{ad_language}.equals("it_CH")?"Packvorschrift":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Packvorschrift":
+$P{ad_language}.equals("fr_CH")?"Conditionnement":
+$P{ad_language}.equals("it_CH")?"Packvorschrift":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="Attributes" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Merkmale":
+$P{ad_language}.equals("fr_CH")?"Spécifications":
+$P{ad_language}.equals("it_CH")?"Merkmale":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Merkmale":
+$P{ad_language}.equals("fr_CH")?"Spécifications":
+$P{ad_language}.equals("it_CH")?"Merkmale":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="HUQuantity" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Anzahl":
+$P{ad_language}.equals("fr_CH")?"Nombre":
+$P{ad_language}.equals("it_CH")?"Anzahl":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Anzahl":
+$P{ad_language}.equals("fr_CH")?"Nombre":
+$P{ad_language}.equals("it_CH")?"Anzahl":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="Quantity" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Menge":
+$P{ad_language}.equals("fr_CH")?"Quantité":
+$P{ad_language}.equals("it_CH")?"Menge":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Menge":
+$P{ad_language}.equals("fr_CH")?"Quantité":
+$P{ad_language}.equals("it_CH")?"Menge":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="QualityPercent" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Qualität\n Abzug in %":
+$P{ad_language}.equals("fr_CH")?"Qualité déduction en %":
+$P{ad_language}.equals("it_CH")?"Qualität\n Abzug in %":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Qualität\n Abzug in %":
+$P{ad_language}.equals("fr_CH")?"Qualité déduction en %":
+$P{ad_language}.equals("it_CH")?"Qualität\n Abzug in %":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="QualityNote" class="java.lang.String">
+		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Notiz":
+$P{ad_language}.equals("fr_CH")?"Note":
+$P{ad_language}.equals("it_CH")?"Notiz":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Notiz":
+$P{ad_language}.equals("fr_CH")?"Note":
+$P{ad_language}.equals("it_CH")?"Notiz":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="qtyToInvoice" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="24" splitType="Stretch">
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="bacf16ca-eb03-4e70-83fc-7ead5b3d9fc6" key="textField-19" x="499" y="11" width="70" height="12" forecolor="#000000"/>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{QualityNote}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="bcf49517-5066-429e-a6dc-64c97a459ab0" key="textField-20" x="399" y="0" width="40" height="12" forecolor="#000000"/>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Unit}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="60b4107a-7639-4cdf-923a-7af7cc025cd5" key="textField-13" x="228" y="0" width="39" height="12" forecolor="#000000"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{HUQuantity}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="4a06f254-2d43-4b5a-8875-443684dfe832" key="textField-20" x="421" y="0" width="74" height="23" forecolor="#000000"/>
+				<textElement textAlignment="Right" markup="styled">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{QualityPercent}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="b040ea3d-0c64-4095-aa4b-a1769c19620e" key="textField-19" x="350" y="0" width="47" height="12" forecolor="#000000"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Quantity}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="cc66405f-c1b0-4307-ba43-7fc0b0b92d27" key="textField-17" x="269" y="0" width="80" height="12" forecolor="#000000"/>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Pack_Inst}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="50bc7226-6afd-4ce3-b115-2b74cdd846f9" key="textField-16" x="36" y="0" width="130" height="12" forecolor="#000000"/>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Article}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="7c66cab1-6ef2-4c56-a84b-1a0e01ccb82c" key="textField-13" x="165" y="0" width="65" height="12" forecolor="#000000"/>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Attributes}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="12" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01" key="textField-13" x="165" y="0" width="65" height="12" forecolor="#000000"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1" key="textField-31" mode="Transparent" x="269" y="0" width="80" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{huname}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="499" y="0" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{isindispute}.equals("Y")? $F{qualitynote} : $R{qtytoinvoice}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="399" y="0" width="34" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##" isBlankWhenNull="true">
+				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="447" y="0" width="48" height="12" forecolor="#000000">
+					<printWhenExpression><![CDATA[new Boolean( $F{isindispute}.equals( "Y" ) )]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qualitydiscountpercent}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="36" y="0" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="228" y="0" width="39" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{huqty}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
+				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="350" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF">
+					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() == 3 )]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="350" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF">
+					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() == 2 )]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="350" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF">
+					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() != 2 && $F{stdprecision}.intValue() != 3 )]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

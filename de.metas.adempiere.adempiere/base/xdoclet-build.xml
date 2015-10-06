@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="_generation_" name="XDoclet Generator">
+<path id="xdoclet.classpath"><pathelement location="C:/Adempiere/adempiere-all2/base/lib"/>
+<pathelement location="C:/Adempiere/adempiere-all2/jboss/client/jbossall-client.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/jboss/server/adempiere/lib/javax.servlet.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/jboss/lib/jboss-jmx.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/jboss/lib/jboss-system.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/dbPort/lib"/>
+<pathelement location="C:/Adempiere/adempiere-all2/looks/lib"/>
+<pathelement location="C:/Adempiere/adempiere-all2/tools/lib/local"/>
+<pathelement location="C:/Adempiere/adempiere-all2/tools/lib/jstl.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/tools/lib/log4j.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/tools/lib/Verisign.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/tools/lib/saxpath.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/tools/lib/bsh-core-1.2b3.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/tools/lib/xdoclet.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/tools/lib/mail.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/tools/lib/activation.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/tools/lib/standard.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/tools/lib/ocrs12.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/lib/oracle.jar"/>
+<pathelement location="C:/eclipse/plugins/org.junit_3.8.1/junit.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/interfaces/Interfaces.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/lib/postgresql.jar"/>
+<pathelement location="C:/Adempiere/adempiere-all2/print/lib"/>
+<pathelement location="C:/Adempiere/adempiere-all2/lib/jPDFPrinterDemo.jar"/>
+
+<fileset dir="C:/eclipse/plugins/org.jboss.ide.eclipse.xdoclet.core_1.2.130/">
+<include name="*.jar"/>
+</fileset>
+</path>
+<target name="_generation_" depends=""/>
+</project>

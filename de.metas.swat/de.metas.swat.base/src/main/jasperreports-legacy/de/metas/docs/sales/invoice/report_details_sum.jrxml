@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_sum" pageWidth="259" pageHeight="842" columnWidth="259" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="b62f017e-3912-43a3-99f6-cb0c797b3e75">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="3.1384283767210035"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<import value="java.util.*"/>
+	<parameter name="c_invoice_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[$P{c_invoice_id}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="kind" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select * from
+(
+SELECT
+	ot.c_invoice_id,
+	sum(round(ot.taxamt,2))AS linenetamt,
+	case when cur.cursymbol is null
+		then cur.iso_code
+		else cur.cursymbol
+		end as iso_code, o.istaxincluded,
+	'02_STX' as source,
+	null as tax,
+	null as eu
+
+FROM
+	c_invoicetax ot
+	JOIN c_tax t 		ON ot.c_tax_id = t.c_tax_id
+   left join c_invoice o 	on ot.c_invoice_id = o.c_invoice_id
+   left join c_currency cur 	on o.c_currency_id = cur.c_currency_id
+group by
+	ot.ad_client_id, 		ot.ad_org_id,
+	ot.isactive, 			ot.c_invoice_id,
+	ot.istaxincluded, 		cur.cursymbol,
+	cur.iso_code, 			o.c_currency_id,
+	o.istaxincluded
+
+union
+
+SELECT
+	ot.c_invoice_id,
+	(ot.taxamt)AS linenetamt,
+	case when cur.cursymbol is null
+		then cur.iso_code
+		else cur.cursymbol
+	end as iso_code,
+	o.istaxincluded,
+	'02_TX' as source,
+	CASE
+		WHEN round(t.Rate,0) = t.Rate THEN floor(t.rate)
+		WHEN round(t.Rate,1) = t.Rate THEN round(t.rate,1)
+		WHEN round(t.Rate,2) = t.Rate THEN round(t.rate,2)
+	END AS tax,
+
+	case when t.rate = '0' and t.istoeulocation = 'Y' then t.istoeulocation
+	when t.rate = '0' and t.istoeulocation = 'N' then t.istoeulocation
+	else null end as eu
+
+
+FROM
+	c_invoicetax ot
+	JOIN c_tax t 		ON ot.c_tax_id = t.c_tax_id
+   left join c_invoice o 	on ot.c_invoice_id = o.c_invoice_id
+   left join c_currency cur 	on o.c_currency_id = cur.c_currency_id
+
+union
+
+SELECT
+	o.c_invoice_id,
+	o.grandtotal AS linenetamt,
+	case when cur.cursymbol is null
+		then cur.iso_code
+		else cur.cursymbol
+	end as iso_code,
+	o.istaxincluded,
+	'03_GT' as source,
+	null as tax,null as eu
+
+FROM
+	c_invoice o
+   left join c_currency cur 	on o.c_currency_id = cur.c_currency_id
+
+union
+
+SELECT
+	ot.c_invoice_id,
+	case when o.istaxincluded='Y' then o.totallines-sum(round(ot.taxamt,2))
+	else o.totallines
+	end as linenetamt,
+	case when cur.cursymbol is null
+		then cur.iso_code
+		else cur.cursymbol
+		end as iso_code, o.istaxincluded,
+	'01_TL' as source,
+
+	null as tax,
+	null as eu
+
+FROM
+	c_invoicetax ot
+	JOIN c_tax t 		ON ot.c_tax_id = t.c_tax_id
+   left join c_invoice o 	on ot.c_invoice_id = o.c_invoice_id
+   left join c_currency cur 	on o.c_currency_id = cur.c_currency_id
+
+
+group by
+	ot.ad_client_id, 		ot.ad_org_id,
+	ot.isactive, 			ot.c_invoice_id,
+	ot.istaxincluded, 		cur.cursymbol,
+	cur.iso_code, 			o.c_currency_id,
+	o.istaxincluded,
+	o.totallines
+
+union
+
+SELECT
+	il.c_invoice_id,
+	sum(commissionpointssum) AS linenetamt,
+	null as iso_code,
+	null,
+	'04_PS' as source,
+	null as tax,
+	null as eu
+FROM
+	c_invoiceline il
+GROUP BY
+	il.c_invoice_id
+
+) as foo
+where
+	foo.c_invoice_id = $P{c_invoice_id}
+	and foo.source <> '04_PS' --zur Anzeige von Prov.-Punkten diese Zeile löschen.
+	and (
+		($P{kind} = 'TAX' AND foo.source IN ('02_TX'))
+		OR($P{kind} = 'SUM' AND foo.source IN ('01_TL','03_GT','02_STX','04_PS'))
+		OR $P{kind} IS NULL)
+order by
+	foo.source
+;]]>
+	</queryString>
+	<field name="c_invoice_id" class="java.math.BigDecimal"/>
+	<field name="linenetamt" class="java.math.BigDecimal"/>
+	<field name="iso_code" class="java.lang.String"/>
+	<field name="istaxincluded" class="java.lang.String"/>
+	<field name="source" class="java.lang.String"/>
+	<field name="tax" class="java.math.BigDecimal"/>
+	<field name="eu" class="java.lang.String"/>
+	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="currency" class="java.lang.String">
+		<variableExpression><![CDATA[$F{iso_code}]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{iso_code}]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="12" splitType="Stretch">
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="c4ce7979-d89c-406e-ba37-b7bc1f43499e" key="textField-1" x="139" y="-1" width="70" height="13"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{linenetamt}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="48a8ce19-5103-4e10-a13e-d67f6019db0f" key="textField-2" x="0" y="-1" width="139" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{source}.equals("01_TL")?
+    $R{netsum}:
+    ($F{source}.equals("04_PS")?
+        $R{compoints}:
+    	($F{source}.equals("02_STX")?
+            ($F{istaxincluded}.equals("Y")?
+                $R{VATincluded}:
+		$R{plus} + $R{VAT}
+            ):
+            ($F{source}.equals("02_TX")?
+                ($F{istaxincluded}.equals("Y")?
+                    $F{tax} + "% " + $R{VATincluded}:
+                    $R{plus} + $F{tax} + "% " + $R{VAT}
+                ):
+		$R{totalsum}
+            )
+	)
+     )]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="6f3a220d-985b-414c-a7cb-dc2e925ab38c" key="textField-3" x="208" y="-1" width="50" height="13"/>
+				<box leftPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="12" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="292ed949-83b6-4317-bf8f-70d58badab55" key="textField-4" x="0" y="-1" width="199" height="13">
+					<printWhenExpression><![CDATA[$F{eu}.equals("Y")?new Boolean(true):new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{euyes}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="56b1ac87-8b4b-4f67-be34-6a378049fda9" key="textField-5" x="0" y="-1" width="199" height="13">
+					<printWhenExpression><![CDATA[$F{eu}.equals("N")?new Boolean(true):new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{euno}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

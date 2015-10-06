@@ -1,0 +1,141 @@
+package de.metas.adempiere.form.terminal.event;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
+
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.util.Env;
+
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.form.terminal.IComponent;
+import de.metas.adempiere.form.terminal.ITerminalFactory;
+
+/**
+ * Wraps a {@link PropertyChangeListener} but catches the exceptions and show them to user.
+ *
+ * @author tsa
+ *
+ */
+public abstract class UIPropertyChangeListener implements PropertyChangeListener
+{
+	public static UIPropertyChangeListener wrap(final ITerminalFactory terminalFactory,
+			final IComponent parent,
+			final PropertyChangeListener listener)
+	{
+		Check.assumeNotNull(listener, "listener not null");
+		return new UIPropertyChangeListener(terminalFactory, parent)
+		{
+
+			@Override
+			protected void propertyChangeEx(final PropertyChangeEvent evt) throws Exception
+			{
+				listener.propertyChange(evt);
+			}
+		};
+	}
+
+	// NOTE: to prevent memory leaks we are storing terminalFactory and parent references as weak references
+	private final WeakReference<ITerminalFactory> terminalFactoryRef;
+	private final WeakReference<IComponent> parentRef;
+
+	public UIPropertyChangeListener(final ITerminalFactory terminalFactory, final IComponent parent)
+	{
+		super();
+
+		Check.assumeNotNull(terminalFactory, "terminalFactory not null");
+		terminalFactoryRef = new WeakReference<ITerminalFactory>(terminalFactory);
+
+		Check.assumeNotNull(parent, "parent not null");
+		parentRef = new WeakReference<IComponent>(parent);
+	}
+
+	public UIPropertyChangeListener(final IComponent parent)
+	{
+		this(parent.getTerminalContext().getTerminalFactory(), parent);
+	}
+
+	protected final IComponent getParent()
+	{
+		return parentRef.get();
+	}
+
+	@Override
+	public final void propertyChange(final PropertyChangeEvent evt)
+	{
+		//
+		// Display cursor "loading" (if possible)
+		final Object component = parentRef.get().getComponent();
+		if (component == null)
+		{
+			propertyChange0(evt);
+			return;
+		}
+		else
+		{
+			Services.get(IClientUI.class).executeLongOperation(component, new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					propertyChange0(evt);
+				}
+			});
+		}
+	}
+
+	/**
+	 * Display UI exception where necessary
+	 *
+	 * @param evt
+	 */
+	private final void propertyChange0(final PropertyChangeEvent evt)
+	{
+		try
+		{
+			propertyChangeEx(evt);
+		}
+		catch (final Exception e)
+		{
+			final ITerminalFactory terminalFactory = terminalFactoryRef.get();
+			final IComponent parent = parentRef.get();
+
+			// If terminalFactory reference expired, we fallback to IClientUI
+			if (terminalFactory == null)
+			{
+				final int windowNo = Env.WINDOW_MAIN;
+				Services.get(IClientUI.class).warn(windowNo, e);
+			}
+			else
+			{
+				terminalFactory.showWarning(parent, "Error", e);
+			}
+		}
+	}
+
+	protected abstract void propertyChangeEx(PropertyChangeEvent evt) throws Exception;
+}

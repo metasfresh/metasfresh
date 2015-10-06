@@ -1,0 +1,39 @@
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>de.metas.adempiere.adempiere</groupId>
+	<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
+	
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>de.metas</groupId>
+		<artifactId>de.metas.parent</artifactId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<dependencies>	
+		<!-- Adempiere -->
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.client</groupId>
+			<artifactId>jbossall-client</artifactId>
+			<version>4.2.3.GA</version>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<sourceDirectory>./src</sourceDirectory>
+	</build>
+	
+</project>

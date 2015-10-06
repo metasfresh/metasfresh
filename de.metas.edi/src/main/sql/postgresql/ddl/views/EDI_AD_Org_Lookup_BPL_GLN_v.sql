@@ -1,0 +1,14 @@
+﻿-- View: EDI_AD_Org_Lookup_BPL_GLN_v
+
+-- DROP VIEW IF EXISTS EDI_AD_Org_Lookup_BPL_GLN_v;
+
+CREATE OR REPLACE VIEW EDI_AD_Org_Lookup_BPL_GLN_v AS
+SELECT
+	AD_Org_ID,
+	GLN,
+	IsActive
+FROM C_BPartner_Location
+WHERE GLN IS NOT NULL AND GLN != '';
+
+ALTER TABLE EDI_AD_Org_Lookup_BPL_GLN_v
+  OWNER TO adempiere;

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================= -->
+<!-- Client                                        -->
+<!-- ============================================= -->
+<!-- $Header: /cvs/adempiere/client/build.xml,v 1.2 2006/06/10 21:57:27 jjanke Exp $ -->
+
+<project name="client" default="clientDistribute" basedir=".">
+
+  <!-- required as we want to run to run this file via maven-antrun-plugin
+  I don't understand (also didn't research yet), but thx to http://stackoverflow.com/questions/2022622/java-home-gets-mangled-by-maven 
+  -->
+  <property name="build.compiler" value="extJavac"/>
+	
+  <description>
+    This buildfile is used to build the client subproject within 
+    the Adempiere project.
+  </description>
+
+  <!-- set global properties for this build -->
+  <property name="src" value="src"/>
+  <property name="build.dir" value="build"/>
+  <property name="dist.dir" value="../lib"/>
+  <property name="jar.path" value="../lib"/>
+  <!--<property environment="env"/>-->
+  <import file="../utils_dev/properties.xml"/>
+
+  <!-- set path to include the necessary jar files for javac -->
+  <path id="project.class.path">
+    <pathelement path="${classpath}"/>
+    <pathelement path="${jar.path}/CCTools.jar"/>
+    <pathelement path="../base/Base.jar"/>
+    <pathelement path="../lib/customization.jar"/>
+    <pathelement path="../lib/patches.jar"/>
+    <pathelement path="../lib/jcommon-1.0.14.jar"/>
+    <pathelement path="../lib/jfreechart-1.0.11.jar"/>
+    <pathelement path="../extend/Extend.jar"/>
+    <pathelement path="../tools/lib/j2ee.jar"/>
+  	<pathelement path="../tools/lib/swinglabs-0.8.0.jar"/>  	
+  </path>
+
+
+  <target name="clientInit" description="initialization target">
+    <echo message="=========== Build Client"/>
+    <!-- create the time stamp -->
+    <tstamp/>
+    <!-- create the build directory structure used by compile -->
+    <mkdir dir="${build.dir}"/>
+    <!-- check for the distribution directory -->
+    <available file="${dist.dir}" type="dir" property="dist.dir.exists"/>
+
+    <uptodate property="jar.uptodate"
+		targetfile="${dist.dir}/${jar.name}.jar">
+      <srcfiles dir="${src}" includes="**/*.java"/>
+      <srcfiles dir="..\base" includes="Base.jar"/>
+      <srcfiles dir="..\extend" includes="Extend.jar"/>
+    </uptodate>
+  </target>
+
+  <target name="clientMakedir" depends="clientInit" unless="dist.dir.exists">
+    <!-- create the distribution directory if not available -->
+    <mkdir dir="${dist.dir}"/>
+  </target>
+  
+
+  <!-- =========================================== -->
+  <!-- Compile                                     -->
+  <!-- =========================================== -->
+  <target name="clientCompile" depends="clientMakedir">
+    <!-- compile the java code from ${src} into ${build.dir} -->
+    <javac target="1.6" srcdir="${src}" destdir="${build.dir}" deprecation="on" debug="on" encoding="utf-8">
+      <classpath refid="project.class.path"/>
+    </javac>
+    <!-- copy all image & sound files from src to the build directory -->
+    <copy todir="${build.dir}">
+      <fileset dir="${src}">
+        <include name="**/images/*"/>
+        <include name="**/*.gif"/>
+        <include name="**/*.jpg"/>
+        <include name="**/*.wav"/>
+        <include name="**/*.htm"/>
+        <include name="**/*.html"/>
+        <include name="**/*.properties"/>
+        <exclude name="**/package.html"/>
+      </fileset>
+    </copy>
+  </target>
+
+
+  <!-- =========================================== -->
+  <!-- Distribution                                -->
+  <!-- =========================================== -->
+  <target name="clientDistribute" depends="clientCompile" unless="jar.uptodate">
+	
+	<!-- Compile JasperReports classes because it is required when packaging client jar! -->
+	<!-- metas: tsa: Removed JasperReports dependency
+	<ant inheritall="false" antfile="../JasperReports/build.xml" dir="../JasperReports"/>
+	-->
+	
+    <!-- put everything from ${build.dir} into Adempiere.jar file -->
+    <jar
+	  jarfile="${dist.dir}/Adempiere.jar" 
+	  basedir="${build.dir}"
+	  duplicate="preserve"
+	  index="yes">
+	  <fileset dir="../base/build" />
+	  <fileset dir="../extend/build" />
+	  <!-- metas: tsa: Removed JasperReports dependency
+      <zipgroupfileset file="../JasperReports/CompiereJasper.jar"/>
+	  -->
+	  <manifest>
+        <attribute name="Specification-Title" value="Adempiere"/>
+        <attribute name="Specification-Version" value="${env.ADEMPIERE_VERSION}"/>
+        <attribute name="Specification-Vendor" value="ADempiere"/>
+        <attribute name="Implementation-Title" value="Adempiere ${env.ADEMPIERE_VERSION}"/>
+        <attribute name="Implementation-Version" value="${env.ADEMPIERE_VERSION} ${DSTAMP}-${TSTAMP}"/>
+        <attribute name="Implementation-Vendor" value="${env.ADEMPIERE_VENDOR}"/> 
+        <attribute name="Implementation-URL" value="http://www.adempiere.com"/>
+        <attribute name="Main-Class" value="org.compiere.Adempiere"/>
+	  	<attribute name="Permissions" value="all-permissions"/> <!-- this hopefully fixes task 05642 -->
+      </manifest> 
+    </jar>
+  	
+  	<!-- also create a source archive -->
+  	<jar
+	  jarfile="${dist.dir}/Adempiere-source.jar" 
+	  basedir="${src}"
+	  duplicate="preserve"
+	  index="yes">
+      <fileset dir="../base/src" />
+      <fileset dir="../extend/src" />
+	  <!-- metas: tsa: Removed JasperReports dependency
+      <fileset dir="../JasperReports/src" />
+	  -->
+  	</jar>
+  </target>
+
+
+  <target name="clean">
+    <!-- Delete the ${build.dir} directory trees -->
+    <delete dir="${build.dir}"/>
+    <delete file="${dist.dir}/Adempiere.jar" failonerror="false"/>
+  </target>
+
+</project>

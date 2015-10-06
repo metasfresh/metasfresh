@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="2.0">
+	<xsd:attribute name="AD_Client_Value" type="xsd:string">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="AD_Client_ValueAttr" />
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:attribute>
+	<xsd:attribute name="SequenceNo" type="xsd:integer">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="SequenceNoAttr" />
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:attribute>
+	<xsd:attribute name="TrxName" type="xsd:string">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="TrxNameAttr" />
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:attribute>
+	<xsd:attribute name="AD_Session_ID" type="xsd:integer">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="AD_Session_IDAttr" />
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:attribute>
+	<xsd:simpleType name="ReplicationEventEnum">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="3">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="BeforeDelete" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="5">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="AfterChange" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="9">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="BeforeDeleteReplication" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attribute name="ReplicationEvent" type="ReplicationEventEnum">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="ReplicationEventAttr" />
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:attribute>
+	<xsd:simpleType name="ReplicationModeEnum">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Document" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="0">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Table" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attribute name="ReplicationMode" type="ReplicationModeEnum">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="ReplicationModeAttr" />
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:attribute>
+	<xsd:simpleType name="ReplicationTypeEnum">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="L">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Local" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="M">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Merge" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="R">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Reference" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attribute name="ReplicationType" type="ReplicationTypeEnum">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="ReplicationTypeAttr" />
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:attribute>
+	<xsd:element name="PRT_AD_PrinterHW" type="PRT_AD_PrinterHWType" />
+	<xsd:element name="PRT_AD_PrinterHW_MediaTray" type="PRT_AD_PrinterHW_MediaTrayType" />
+	<xsd:element name="PRT_AD_PrinterHW_MediaSize" type="PRT_AD_PrinterHW_MediaSizeType" />
+	<xsd:element name="PRT_PrinterHW_Calibration" type="PRT_PrinterHW_CalibrationType" />
+	<xsd:element name="PRT_C_Print_PackageInfo" type="PRT_C_Print_PackageInfoType" />
+	<xsd:element name="PRT_C_Print_Package" type="PRT_C_Print_PackageType" />
+	<xsd:element name="PRT_C_PrintPackageData" type="PRT_C_PrintPackageDataType" />
+	<xsd:element name="PRT_C_Print_Package_Lookup_TransactionID" type="PRT_C_Print_Package_Lookup_TransactionIDType" />
+	<xsd:simpleType name="C_Print_Job_Instructions_StatusEnum">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="D">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Done" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="P">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Pending" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="E">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Error" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="S">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Send" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="PRT_C_Print_Job_Instructions_Confirm" type="PRT_C_Print_Job_Instructions_ConfirmType" />
+	<xsd:complexType name="PRT_AD_PrinterHW_MediaSizeType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="Name" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PRT_AD_PrinterHW_MediaTrayType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="0" name="Name" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="TrayNumber" type="xsd:integer" />
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PRT_AD_PrinterHWType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="Name" type="xsd:string" />
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="PRT_AD_PrinterHW_MediaSize" type="PRT_AD_PrinterHW_MediaSizeType" />
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="PRT_AD_PrinterHW_MediaTray" type="PRT_AD_PrinterHW_MediaTrayType" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="HostKey" type="xsd:string" />
+		</xsd:sequence>
+		<xsd:attribute ref="AD_Client_Value" />
+		<xsd:attribute ref="ReplicationEvent" />
+		<xsd:attribute ref="ReplicationMode" />
+		<xsd:attribute ref="ReplicationType" />
+		<xsd:attribute fixed="*" name="Version" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<jaxb:property name="VersionAttr" />
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="SequenceNo" />
+		<xsd:attribute ref="TrxName" />
+		<xsd:attribute ref="AD_Session_ID" />
+	</xsd:complexType>
+	<xsd:complexType name="PRT_PrinterHW_CalibrationType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="0" name="AD_PrinterHW_ID" type="PRT_AD_PrinterHWType" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="AD_PrinterHW_MediaSize_ID" type="PRT_AD_PrinterHW_MediaSizeType" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="AD_PrinterHW_MediaTray_ID" type="PRT_AD_PrinterHW_MediaTrayType" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="CalX" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="CalY" type="xsd:integer" />
+		</xsd:sequence>
+		<xsd:attribute ref="AD_Client_Value" />
+		<xsd:attribute ref="ReplicationEvent" />
+		<xsd:attribute ref="ReplicationMode" />
+		<xsd:attribute ref="ReplicationType" />
+		<xsd:attribute fixed="*" name="Version" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<jaxb:property name="VersionAttr" />
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="SequenceNo" />
+		<xsd:attribute ref="TrxName" />
+		<xsd:attribute ref="AD_Session_ID" />
+	</xsd:complexType>
+	<xsd:complexType name="PRT_C_Print_PackageInfoType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="0" name="Name" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="PageFrom" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="PageTo" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="PrintServiceName" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="TrayName" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="CalX" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="CalY" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="TrayNumber" type="xsd:integer" />
+		</xsd:sequence>
+		<xsd:attribute ref="AD_Client_Value" />
+		<xsd:attribute ref="ReplicationEvent" />
+		<xsd:attribute ref="ReplicationMode" />
+		<xsd:attribute ref="ReplicationType" />
+		<xsd:attribute fixed="*" name="Version" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<jaxb:property name="VersionAttr" />
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="SequenceNo" />
+		<xsd:attribute ref="TrxName" />
+		<xsd:attribute ref="AD_Session_ID" />
+	</xsd:complexType>
+	<xsd:complexType name="PRT_C_Print_PackageType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="BinaryFormat" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="C_Print_Package_ID" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="PageCount" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="TransactionID" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="PackageInfoCount" type="xsd:integer" />
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="PRT_C_Print_PackageInfo" type="PRT_C_Print_PackageInfoType" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="C_Print_Job_Instructions_ID" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="Copies" type="xsd:integer" />
+		</xsd:sequence>
+		<xsd:attribute ref="AD_Client_Value" />
+		<xsd:attribute ref="ReplicationEvent" />
+		<xsd:attribute ref="ReplicationMode" />
+		<xsd:attribute ref="ReplicationType" />
+		<xsd:attribute fixed="*" name="Version" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<jaxb:property name="VersionAttr" />
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="SequenceNo" />
+		<xsd:attribute ref="TrxName" />
+		<xsd:attribute ref="AD_Session_ID" />
+	</xsd:complexType>
+	<xsd:complexType name="PRT_C_Print_Package_Lookup_TransactionIDType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="TransactionID" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PRT_C_PrintPackageDataType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="0" name="C_Print_Package_ID" type="PRT_C_Print_Package_Lookup_TransactionIDType" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="PrintData" type="xsd:base64Binary" />
+		</xsd:sequence>
+		<xsd:attribute ref="AD_Client_Value" />
+		<xsd:attribute ref="ReplicationEvent" />
+		<xsd:attribute ref="ReplicationMode" />
+		<xsd:attribute ref="ReplicationType" />
+		<xsd:attribute fixed="*" name="Version" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<jaxb:property name="VersionAttr" />
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="SequenceNo" />
+		<xsd:attribute ref="TrxName" />
+		<xsd:attribute ref="AD_Session_ID" />
+	</xsd:complexType>
+	<xsd:complexType name="PRT_C_Print_Job_Instructions_ConfirmType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="C_Print_Job_Instructions_ID" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="ErrorMsg" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="Status" type="C_Print_Job_Instructions_StatusEnum" />
+		</xsd:sequence>
+		<xsd:attribute ref="AD_Client_Value" />
+		<xsd:attribute ref="ReplicationEvent" />
+		<xsd:attribute ref="ReplicationMode" />
+		<xsd:attribute ref="ReplicationType" />
+		<xsd:attribute fixed="*" name="Version" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<jaxb:property name="VersionAttr" />
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="SequenceNo" />
+		<xsd:attribute ref="TrxName" />
+		<xsd:attribute ref="AD_Session_ID" />
+	</xsd:complexType>
+	<xsd:complexType name="PRT_LoginRequestType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="0" name="AD_Session_ID" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="Password" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="UserName" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="HostKey" type="xsd:string" />
+		</xsd:sequence>
+		<xsd:attribute ref="AD_Client_Value" />
+		<xsd:attribute ref="ReplicationEvent" />
+		<xsd:attribute ref="ReplicationMode" />
+		<xsd:attribute ref="ReplicationType" />
+		<xsd:attribute fixed="*" name="Version" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<jaxb:property name="VersionAttr" />
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="SequenceNo" />
+		<xsd:attribute ref="TrxName" />
+		<xsd:attribute ref="AD_Session_ID" />
+	</xsd:complexType>
+	<xsd:element name="PRT_LoginRequest" type="PRT_LoginRequestType" />
+</xsd:schema>

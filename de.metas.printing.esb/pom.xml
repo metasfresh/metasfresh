@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.printing.esb</groupId>
+	<artifactId>de.metas.printing.esb</artifactId>
+	
+	<description>Request-Response Framework for Mass Printing</description>
+
+	<packaging>pom</packaging>
+	<modules>
+		<module>de.metas.printing.esb.api</module>
+		<module>de.metas.printing.esb.base</module>
+		<module>de.metas.printing.esb.camel</module>
+	</modules>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${servicemix.java.version}</source>
+					<target>${servicemix.java.version}</target>
+				</configuration>
+			</plugin>
+			
+			<!-- check our projects against the java1.6-API
+					 see http://mojo.codehaus.org/animal-sniffer-maven-plugin/index.html -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>animal-sniffer-maven-plugin</artifactId>
+				<version>1.11</version>
+				<executions>
+					<execution>
+						<id>check_against-java1.6-API</id>
+						<phase>test</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<signature>
+								<groupId>org.codehaus.mojo.signature</groupId>
+								<artifactId>java16</artifactId>
+								<version>1.1</version>
+							</signature>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		
+		
+	</build>
+	
+</project>

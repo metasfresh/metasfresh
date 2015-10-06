@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="report_details_sum"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="259"
+		 pageHeight="842"
+		 columnWidth="259"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false"
+		 resourceBundle="de/metas/docs/purchase/invoice/report">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="c_invoice_id" isForPrompting="true" class="java.lang.Integer">
+		<defaultValueExpression ><![CDATA[$P{c_invoice_id}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="kind" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select * from
+(
+SELECT 
+	ot.c_invoice_id, 
+	sum(round(ot.taxamt,2))AS linenetamt,
+	case when cur.cursymbol is null  
+		then cur.iso_code
+		else cur.cursymbol
+		end as iso_code, o.istaxincluded,
+	'02_STX' as source,
+	null as tax
+
+FROM  
+	c_invoicetax ot
+	JOIN c_tax t 		ON ot.c_tax_id = t.c_tax_id
+   left join c_invoice o 	on ot.c_invoice_id = o.c_invoice_id
+   left join c_currency cur 	on o.c_currency_id = cur.c_currency_id
+group by 
+	ot.ad_client_id, 		ot.ad_org_id, 
+	ot.isactive, 			ot.c_invoice_id, 
+	ot.istaxincluded, 		cur.cursymbol, 
+	cur.iso_code, 			o.c_currency_id, 
+	o.istaxincluded
+
+union 
+
+SELECT 
+	ot.c_invoice_id,
+	round(ot.taxamt,2)AS linenetamt,
+	case when cur.cursymbol is null  
+		then cur.iso_code
+		else cur.cursymbol
+	end as iso_code,
+	o.istaxincluded,
+	'02_TX' as source,
+	round(t.rate)
+
+FROM  
+	c_invoicetax ot
+	JOIN c_tax t 		ON ot.c_tax_id = t.c_tax_id
+   left join c_invoice o 	on ot.c_invoice_id = o.c_invoice_id
+   left join c_currency cur 	on o.c_currency_id = cur.c_currency_id
+
+union
+
+SELECT  
+	o.c_invoice_id,
+	o.grandtotal AS linenetamt,
+	case when cur.cursymbol is null  
+		then cur.iso_code
+		else cur.cursymbol
+	end as iso_code,  
+	o.istaxincluded,
+	'03_GT' as source,
+	null
+
+FROM  
+	c_invoice o
+   left join c_currency cur 	on o.c_currency_id = cur.c_currency_id
+
+union
+
+SELECT 
+	o.c_invoice_id,  
+	o.totallines AS linenetamt,
+	case when cur.cursymbol is null  
+		then cur.iso_code
+		else cur.cursymbol
+	end as iso_code,  
+	o.istaxincluded,
+	'01_TL' as source,
+	null
+FROM  
+	c_invoice o
+   left join c_currency cur 	on o.c_currency_id = cur.c_currency_id
+) as foo
+where 	
+	foo.c_invoice_id = $P{c_invoice_id} 
+	and (
+		($P{kind} = 'TX' AND foo.source NOT IN ('01_TL','03_GT','02_STX'))
+		OR($P{kind} = 'SUM' AND foo.source <> '02_TX')
+		OR $P{kind} IS NULL)
+order by 
+	foo.source
+;]]></queryString>
+
+	<field name="c_invoice_id" class="java.math.BigDecimal"/>
+	<field name="linenetamt" class="java.math.BigDecimal"/>
+	<field name="iso_code" class="java.lang.String"/>
+	<field name="istaxincluded" class="java.lang.String"/>
+	<field name="source" class="java.lang.String"/>
+	<field name="tax" class="java.math.BigDecimal"/>
+
+	<variable name="LINESUM_SUM" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="currency" class="java.lang.String" resetType="Report" calculation="Nothing">
+		<variableExpression><![CDATA[$F{iso_code}]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{iso_code}]]></initialValueExpression>
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="14"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="158"
+						y="1"
+						width="50"
+						height="13"
+						key="textField-1"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font  size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{linenetamt}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="59"
+						y="1"
+						width="100"
+						height="13"
+						key="textField-2"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font  size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{source}.equals("01_TL")?
+	$R{netsum}:
+	($F{source}.equals("02_STX")?
+		($F{istaxincluded}.equals("Y")?
+			$R{VATincluded}:
+			$R{plus} + $R{VAT}):
+		($F{source}.equals("02_TX")?
+			($F{istaxincluded}.equals("Y")?
+				$F{tax} + "% " + $R{VATincluded}:
+				$R{plus} + $F{tax} + "% " + $R{VAT}):
+			$R{totalsum}
+		)
+	)]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="208"
+						y="1"
+						width="50"
+						height="13"
+						key="textField-3"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" leftPadding="5" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font  size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{iso_code}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

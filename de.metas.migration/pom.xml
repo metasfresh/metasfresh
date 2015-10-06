@@ -1,0 +1,110 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<!-- TODO: for now this is the most suitable -->
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.migration</groupId>
+	<artifactId>de.metas.migration</artifactId>
+	<packaging>pom</packaging>
+
+	<properties>
+		<slf4j.version>1.7.6</slf4j.version>
+	</properties>
+
+	<modules>
+		<module>de.metas.migration.base</module>
+		<module>de.metas.migration.cli</module>
+		<module>de.metas.migration.maven-plugin</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+
+			<!-- check our projects against the java1.6-API see http://mojo.codehaus.org/animal-sniffer-maven-plugin/index.html -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>animal-sniffer-maven-plugin</artifactId>
+				<version>1.11</version>
+				<executions>
+					<execution>
+						<id>check_against-java1.6-API</id>
+						<phase>test</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<signature>
+								<groupId>org.codehaus.mojo.signature</groupId>
+								<artifactId>java16</artifactId>
+								<version>1.1</version>
+							</signature>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-plugin-plugin
+										</artifactId>
+										<versionRange>
+											[3.2,)
+										</versionRange>
+										<goals>
+											<goal>descriptor</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>

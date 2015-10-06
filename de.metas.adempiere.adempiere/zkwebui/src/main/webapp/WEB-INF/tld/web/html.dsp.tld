@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+Purpose:
+	Defines methods and actions for DSP
+Description:
+	
+Histroy:
+	Mon Jun 20 20:57:56     2005, Created by tomyeh
+
+Copyright (C) 2005 Potix Corporation. All Rights Reserved.
+-->
+
+<taglib>
+	<uri>http://www.zkoss.org/dsp/web/html</uri>
+	<description>
+	Used to develop ZK components for XUL/HTML.
+	</description>
+
+	<!--      -->
+	<!-- Tags -->
+	<!--      -->
+	<tag>
+		<description>
+	Display a box that has a caption and a border enclosing other tags.
+		</description>
+		<name>box</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.html.Box</tag-class>
+	</tag>
+	<tag>
+		<description>
+	Generates the HTML's img tag.
+		</description>
+		<name>img</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.html.Img</tag-class>
+	</tag>
+</taglib>

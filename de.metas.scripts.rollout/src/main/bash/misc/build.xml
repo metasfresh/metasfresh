@@ -1,0 +1,206 @@
+<project name="setup_metas" default="setup" basedir=".">
+
+	<description>
+		This build file modifies the build process as invoked by RUN_silentsetup.
+		Directions:
+			-Copy the original build.xml (the one in $ADEMPIERE_HOME) to build_orig.xml 
+			 Note: it will be imported by this build file.
+			-Copy this build.xml into $ADEMPIERE_HOME
+			-Invoke ant with "-Denv.ROLLOUT_DIR=your/rollout/dir"
+	
+		Assumptions about the ${env.ROLLOUT_DIR} directory
+		  ${env.ROLLOUT_DIR}
+	       |_ patches : contains patches.jar, customization.jar and/or plugins.jar
+	       |_ jnlp    : contains adempiere.jnlp and possible addidional jnlp files that are referenced by adempiere.jnlp
+	       |_ jars    : contains 3rd party libs to be included in the client
+	       	
+		What it does:
+	       	-Overwrite the setup target. 
+	       	 The new setup target 
+	       	 	-does some additional checks, 
+	       		-copies the jars in ${env.ROLLOUT_DIR}/patches to $ADEMPIERE_HOME/lib
+	       		-and calls the original setupDeploy as the old setup-target would have done
+	       	-Overwrite the createEAR target
+	       	 The new createEAR target does what the old one would have done,
+	       	 but additionally sneaks the new files into adempiereRoot.war, 
+        	 before it is included in the adempiere.ear file.
+	</description>
+
+	<property environment="env" />
+
+	<import file="build_orig.xml" />
+
+	<property name="patches" value="${env.ROLLOUT_DIR}/patches" />
+	<property name="patches.dest" value="lib" />
+
+	<property name="customization" value="${env.ROLLOUT_DIR}/customization" />
+	<property name="customization.dest" value="lib" />
+
+	<property name="jars" value="${env.ROLLOUT_DIR}/jars" />
+	<property name="jars.dontsign" value="${env.ROLLOUT_DIR}/jars_dontsign" />
+	<property name="jars.tmp" value="${env.ROLLOUT_DIR}/tmp" />
+
+	<property name="jnlp" value="${env.ROLLOUT_DIR}/jnlp" />
+	<property name="adempiere.jnlp" value="${jnlp}/adempiere.jnlp" />
+
+	<property name="zkwebui" value="${env.ROLLOUT_DIR}/zkwebui" />
+	<property name="zkwebui.dest" value="zkpackages/metas-zk/lib" />
+
+	<property name="jasper" value="${env.ROLLOUT_DIR}/jasper" />
+
+	<property name="adempiere" value="." />
+	<property name="adempiere.lib" value="${adempiere}/lib" />
+
+	<target name="checkProps">
+
+		<available file="${env.ROLLOUT_DIR}" type="dir" property="env.ROLLOUT_DIRDirExists" />
+		<fail unless="env.ROLLOUT_DIRDirExists" message="Property env.ROLLOUT_DIR must be the base dir of the env.ROLLOUT_DIRensions to be installed" />
+
+		<available file="${patches}" type="dir" property="patches.DirExists" />
+		<echo message="patches dir exists (anything but 'true' means no): ${patches.DirExists}" />
+
+		<available file="${customization}" type="dir" property="customization.DirExists" />
+		<echo message="customization dir exists (anything but 'true' means no): ${customization.DirExists}" />
+
+		<available file="${jars}" type="dir" property="jars.DirExists" />
+
+		<available file="${jnlp}" type="dir" property="jnlp.DirExists" />
+
+		<available file="${jasper}" type="dir" property="jasper.DirExists" />
+
+		<available file="${adempiere}" type="dir" property="adempiereDirExists" />
+		<fail unless="adempiereDirExists" message="Property adempiere='${adempiere}' must be the ADempiere home dir" />
+
+		<available file="${adempiere.lib}" type="dir" property="adempiereLibDirExists" />
+		<fail unless="adempiereLibDirExists" message="Directory adempiere.lib='${adempiere.lib}' must be available" />
+
+		<available file="${zkwebui}" type="dir" property="zkwebui.DirExists" />
+		<!-- <fail unless="zkwebui.DirExists" message="Property zkwebui must be an existing directory." /> -->
+
+	</target>
+
+	<target name="patchesAndCustomization">
+
+		<mkdir dir="${patches}" description="make sure the directory exists, even if empty" />
+		<copy todir="${patches.dest}" overwrite="true">
+			<fileset dir="${patches}" includes="*.jar" />
+		</copy>
+
+		<mkdir dir="${customization}" description="make sure the directory exists, even if empty" />
+		<copy todir="${customization.dest}" overwrite="true">
+			<fileset dir="${customization}" includes="*.jar" />
+		</copy>
+	</target>
+
+	<target name="prepareZkWebUI" if="zkwebui.DirExists">
+
+		<mkdir dir="${zkwebui.dest}" />
+
+		<copy todir="${zkwebui.dest}" overwrite="true">
+			<fileset dir="${zkwebui}" includes="*.jar" />
+		</copy>
+
+	</target>
+
+	<target name="jars" depends="prepareJars, dont-prepareJars" />
+
+	<target name="dont-prepareJars" depends="setupInit" unless="jars.DirExists">
+
+		<echo message="Only creating empty jars temp dir. Property jasper='${jars}' is not an existing directory." />
+		<!-- creating emtpy jars temp directory -->
+		<mkdir dir="${jars.tmp}" />
+	</target>
+
+	<target name="prepareJars" depends="setupInit" if="jars.DirExists">
+
+		<mkdir dir="${jars.tmp}" />
+		<copy todir="${jars.tmp}" overwrite="true">
+			<fileset dir="${jars}" />
+		</copy>
+
+		<!-- task 05047 -->
+		<echo message="KeyStore=${ADEMPIERE_KEYSTORE_FULL_FILENAME} - Alias=${ADEMPIERE_KEYSTORECODEALIAS}" />
+		<!-- 
+			Note the lazy="true": jnlp only accepts _one_ signature per jar.
+		 	That also means that 3rd party jars which already have been signed need to go into a jnlp file of their own.
+		 	See e.g. http://forums.sun.com/thread.jspa?threadID=5279710 for a discussion about this
+		 -->
+		<signjar lazy="true" alias="${ADEMPIERE_KEYSTORECODEALIAS}" storepass="${ADEMPIERE_KEYSTOREPASS}" keystore="${ADEMPIERE_KEYSTORE_FULL_FILENAME}" verbose="true" keypass="${ADEMPIERE_KEYPASS}">
+			<fileset dir="${jars.tmp}" includes="*.jar" />
+		</signjar>
+
+		<mkdir dir="${jars.dontsign}" description="making sure that the dir exists" />
+		<copy todir="${jars.tmp}" overwrite="true">
+			<fileset dir="${jars.dontsign}" />
+		</copy>
+
+	</target>
+
+	<target name="prepareJnlp" unless="jnlp.DirExists">
+
+		<mkdir dir="${jnlp}" description="Making sure the directory exists" />
+		<touch file="${adempiere.jnlp}" />
+
+	</target>
+
+	<target name="jasper" depends="copyJasper, dont-copyJasper" />
+
+	<target name="dont-copyJasper" description="" unless="jasper.DirExists">
+		<echo message="Not copying jasper files. Property jasper='${jasper}' is not an existing directory." />
+	</target>
+
+	<target name="copyJasper" description="" if="jasper.DirExists">
+
+		<available file="${jasper}" type="dir" property="jasperDirExists" />
+		<fail unless="jasperDirExists" message="${jasper} must be an existing dir" />
+
+		<property name="jasper.target" value="${basedir}/jboss/server/adempiere/deploy/reports.war" />
+		<mkdir dir="${jasper.target}" />
+
+		<copy todir="${jasper.target}" overwrite="true">
+			<fileset dir="${jasper}" />
+		</copy>
+
+	</target>
+
+	<target name="createEAR">
+
+		<!-- Create adempiereRoot war		-->
+		<zip destfile="${basedir}/lib/adempiereRoot.war">
+			<!-- copy Base	-->
+			<zipfileset src="${basedir}/lib/adempiereRootBase.war" />
+			<!-- copy to adempiereHome	-->
+			<zipfileset dir="${basedir}/lib" includes="AdempiereClient.zip,Adempiere.jar,AdempiereCLib.jar,*.jnlp,*.0,*.html,CompiereJasperReqs.jar,CompiereJasper.jar" prefix="adempiereHome" />
+		</zip>
+
+		<echo message="metas: insert additional jars into the war file" />
+		<available file="${jars.tmp}" type="dir" property="jarsTmpDirExists" />
+		<fail unless="jarsTmpDirExists" message="'${jars.tmp}' must be an existing dir. It should have been set by the 'jars' target." />
+
+		<zip destfile="${basedir}/lib/adempiereRoot.war" update="true">
+			<zipfileset dir="${jars.tmp}" includes="*.jar" prefix="adempiereHome" />
+
+			<zipfileset file="${adempiere.jnlp}" />
+			<zipfileset dir="${jnlp}" excludesfile="${adempiere.jnlp}" prefix="adempiereHome" />
+
+		</zip>
+		<!-- metas: end -->
+
+		<!-- Create adempiereWebCM war		-->
+		<!-- metas: ts removed webCM, it's not used and doesn't compile after task 10537
+		<zip destfile="${basedir}/lib/adempiereWebCM.war"> -->
+			<!-- copy Base	-->
+		<!--	<zipfileset src="${basedir}/lib/adempiereWebCMbase.war" />
+		</zip> -->
+
+		<!-- bundle everything in one ear file for simpler deployment -->
+		<ear destfile="${basedir}/lib/adempiere.ear" appxml="${basedir}/lib/adempiereAll.xml">
+			<fileset dir="${basedir}/lib" includes="Adempiere.jar,AdempiereSLib.jar,adempiereRoot.jar,adempiereApps.jar,adempiereApps.war,adempiereRoot.war,adempiereWebStore.war,adempiereWebCM.war,posterita.war,webui.war,mobile.war" />
+		</ear>
+
+	</target>
+
+	<target name="setup" depends="checkProps,prepareZkWebUI,patchesAndCustomization,jars,prepareJnlp,setupDeploy,jasper">
+	</target>
+
+</project>

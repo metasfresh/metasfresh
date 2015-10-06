@@ -1,0 +1,152 @@
+package de.metas.payment.sepa.api.impl;
+
+/*
+ * #%L
+ * de.metas.payment.sepa
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.util.Properties;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelection;
+
+import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.sepa.api.IPaymentBL;
+import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
+import de.metas.payment.sepa.model.I_SEPA_Export;
+import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+
+public class PaymentBL implements IPaymentBL
+{
+
+	@Override
+	public I_SEPA_Export createSEPAExport(final I_C_PaySelection source)
+	{
+		Check.assumeNotNull(source, "Source is not null");
+
+		final I_SEPA_Export header = createExportHeader(source);
+
+		for (final I_C_PaySelectionLine line : Services.get(IPaymentDAO.class).getProcessedLines(source))
+		{
+			if (line.getC_BP_BankAccount_ID() <= 0)
+			{
+				// No Bank account. Nothing to do.
+				continue;
+			}
+			final I_SEPA_Export_Line exportLine = createExportLine(line);
+			exportLine.setSEPA_Export(header);
+			InterfaceWrapperHelper.save(exportLine);
+		}
+
+		return header;
+	}
+
+	private I_SEPA_Export_Line createExportLine(final I_C_PaySelectionLine line)
+	{
+		Check.assumeNotNull(line, "Line not null");
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
+		final String trxName = InterfaceWrapperHelper.getTrxName(line);
+
+		final I_C_Invoice sourceInvoice = line.getC_Invoice();
+		Check.assumeNotNull(sourceInvoice, "Source invoice not null");
+
+		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.create(ctx, line.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class, trxName);
+
+		final I_SEPA_Export_Line exportLine = InterfaceWrapperHelper.newInstance(I_SEPA_Export_Line.class, line);
+
+		exportLine.setAD_Org_ID(line.getAD_Org_ID());
+		exportLine.setAD_Table_ID(I_C_PaySelectionLine.Table_ID);
+		exportLine.setRecord_ID(line.getC_PaySelectionLine_ID());
+		exportLine.setAmt(line.getPayAmt());
+		exportLine.setC_BP_BankAccount(bpBankAccount); // 07789: also setting the BP bank account so the following model validator(s) can more easily see evaluate what it is.
+		exportLine.setC_Currency(bpBankAccount.getC_Currency());
+		exportLine.setC_BPartner(sourceInvoice.getC_BPartner());
+		exportLine.setDescription(sourceInvoice.getDescription());
+
+		exportLine.setIBAN(toNullOrRemoveSpaces(bpBankAccount.getIBAN()));
+
+		// task 07789: note that for the CASE of ESR accounts, there is a model validator in de.metas.payment.esr which will
+		// set this field
+		// exportLine.setOtherAccountIdentification(OtherAccountIdentification);
+
+		if (bpBankAccount.getC_Bank_ID() > 0)
+		{
+			exportLine.setSwiftCode(toNullOrRemoveSpaces(bpBankAccount.getC_Bank().getSwiftCode()));
+		}
+		exportLine.setSEPA_MandateRefNo(sourceInvoice.getC_BPartner().getName());
+
+		exportLine.setStructuredRemittanceInfo(line.getReference()); // task 07789
+
+		return exportLine;
+	}
+
+	private I_SEPA_Export createExportHeader(final I_C_PaySelection source)
+	{
+		final I_SEPA_Export header = InterfaceWrapperHelper.newInstance(I_SEPA_Export.class, source);
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(source);
+		final String trxName = InterfaceWrapperHelper.getTrxName(source);
+
+		//
+		// We need the source org BP.
+		final I_AD_Org sourceOrg = InterfaceWrapperHelper.create(ctx, source.getAD_Org_ID(), I_AD_Org.class, trxName);
+		final I_C_BPartner orgBP = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(sourceOrg);
+
+		final org.compiere.model.I_C_BP_BankAccount bankAccountSource = source.getC_BP_BankAccount();
+		Check.assumeNotNull(bankAccountSource, "bankAccountSource not null");
+		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.create(bankAccountSource, I_C_BP_BankAccount.class);
+
+		// Set corresponding data
+		header.setAD_Org(sourceOrg);
+		final String iban = bpBankAccount.getIBAN();
+		if (!Check.isEmpty(iban, true))
+		{
+			header.setIBAN(iban.replaceAll(" ", ""));
+		}
+		header.setPaymentDate(source.getPayDate());
+		header.setProcessed(false);
+		header.setSEPA_CreditorIdentifier(orgBP.getName());
+		header.setSwiftCode(bpBankAccount.getC_Bank().getSwiftCode());
+		header.setAD_Table_ID(I_C_PaySelection.Table_ID);
+		header.setRecord_ID(source.getC_PaySelection_ID());
+		header.setDescription(source.getDescription());
+
+		InterfaceWrapperHelper.save(header);
+		return header;
+	}
+
+	private String toNullOrRemoveSpaces(final String from)
+	{
+		if (Check.isEmpty(from, true))
+		{
+			return null;
+		}
+		return from.replace(" ", "");
+	}
+}

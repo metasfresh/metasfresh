@@ -1,0 +1,1035 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software; you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program; if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
+package org.compiere.process;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.process.ISvrProcessPrecondition;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.ImmutableReference;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.MPInstance;
+import org.compiere.model.PO;
+import org.compiere.util.CLogger;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.reflections.ReflectionUtils;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
+/**
+ * Server Process base class.
+ * 
+ * Also see
+ * <ul>
+ * <li> {@link ISvrProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
+ * <li> {@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
+ * </ul>
+ * 
+ *
+ * @author Jorg Janke
+ * 
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL
+ *         <ul>
+ *         <li>FR [ 1646891 ] SvrProcess - post process support
+ *         <li>BF [ 1877935 ] SvrProcess.process should catch all throwables
+ *         <li>FR [ 1877937 ] SvrProcess: added commitEx method
+ *         <li>BF [ 1878743 ] SvrProcess.getAD_User_ID
+ *         <li>BF [ 1935093 ] SvrProcess.unlock() is setting invalid result
+ *         <li>FR [ 2788006 ] SvrProcess: change access to some methods https://sourceforge.net/tracker/?func=detail&aid=2788006&group_id=176962&atid=879335
+ *         </ul>
+ * 
+ */
+public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAware
+{
+	// services
+	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	/**
+	 * Server Process. Note that the class is initiated by startProcess.
+	 */
+	protected SvrProcess()
+	{
+		super();
+	}   // SvrProcess
+
+	private Properties m_ctx;
+	private ProcessInfo m_pi;
+
+	/** Logger */
+	protected final CLogger log = CLogger.getCLogger(getClass());
+	private static final transient CLogger s_log = CLogger.getCLogger(SvrProcess.class);
+
+	/** Is the Object locked */
+	private boolean m_locked = false;
+	/** Loacked Object */
+	private PO m_lockedObject = null;
+
+	//
+	// Transaction management
+	/** Process Main transaction */
+	private ITrx m_trx = ITrx.TRX_None;
+	private Boolean m_trxIsLocal;
+	private ImmutableReference<String> m_trxNameThreadInheritedBackup;
+	private boolean m_dbContraintsChanged = false;
+	/** Transaction name prefix (in case of local transaction) */
+	private static final String TRXNAME_Prefix = "SvrProcess";
+
+	// Common Return Messages
+	protected static String MSG_SaveErrorRowNotFound = "@SaveErrorRowNotFound@";
+	protected static String MSG_InvalidArguments = "@InvalidArguments@";
+	protected static String MSG_OK = "OK";
+	/**
+	 * Process failed error message. To be returned from {@link #doIt()}.
+	 * 
+	 * In case it's returned the process will be rolled back.
+	 */
+	protected static final String MSG_Error = "@Error@";
+
+	/**
+	 * Start the process.
+	 * 
+	 * It should only return false, if the function could not be performed as this causes the process to abort.
+	 *
+	 * @param ctx Context
+	 * @param pi Process Info
+	 * @param trx existing/inherited transaction if any
+	 * @return true if process was executed successfully
+	 * 
+	 * @see org.compiere.process.ProcessCall#startProcess(Properties, ProcessInfo, ITrx)
+	 */
+	@Override
+	public synchronized final boolean startProcess(final Properties ctx, final ProcessInfo pi, final ITrx trx)
+	{
+		Check.assumeNotNull(pi, "ProcessInfo not null");
+
+		// Preparation
+		m_ctx = Env.coalesce(ctx);
+		m_pi = pi;
+
+		// Trx: we are setting it to null to be consistent with running prepare() out-of-transaction
+		// Later we will set the actual transaction or we will start a local transaction.
+		m_trx = ITrx.TRX_None;
+
+		boolean success = false;
+		try
+		{
+			lock();
+
+			//
+			// Prepare out of transaction, if needed
+			final ProcessClassInfo processClassInfo = getProcessClassInfo();
+			boolean prepareExecuted = false;
+			if (processClassInfo.isRunPrepareOutOfTransaction())
+			{
+				assertOutOfTransaction(trx); // make sure we were asked to run out of transaction
+				prepareExecuted = true;
+				prepare();
+			}
+
+			//
+			// doIt out of transaction, if needed
+			String doItResult = null;
+			boolean doItExecuted = false;
+			if (processClassInfo.isRunDoItOutOfTransaction())
+			{
+				assertOutOfTransaction(trx); // make sure we were asked to run out of transaction
+				doItExecuted = true;
+				doItResult = doIt();
+			}
+
+
+			//
+			// Prepare and doIt in transaction, if not already executed
+			if (!prepareExecuted || !doItExecuted)
+			{
+				startTrx(trx);
+				
+				if (!prepareExecuted)
+				{
+					prepareExecuted = true;
+					prepare();
+				}
+				if(!doItExecuted)
+				{
+					doItExecuted = true;
+					doItResult = doIt();
+				}
+			}
+
+			// Legacy: transaction should rollback if there are error in process
+			if (MSG_Error.equals(doItResult))
+			{
+				throw new AdempiereException(doItResult);
+			}
+
+			setProcessResultOK(doItResult);
+			success = true;
+		}
+		catch (final Throwable e)
+		{
+			success = false;
+			setProcessResultError(e);
+		}
+		finally
+		{
+			endTrx(success);
+			unlock();
+		}
+
+		//
+		// outside transaction processing [ teo_sarca, 1646891 ]
+		postProcess(!m_pi.isError());
+
+		return !m_pi.isError();
+	}   // startProcess
+
+	/**
+	 * Asserts we are running out of transaction.
+	 * 
+	 * @param trx
+	 */
+	private final void assertOutOfTransaction(final ITrx trx)
+	{
+		// Make sure we are really running out-of-transaction
+		if (!trxManager.isNull(trx))
+		{
+			throw new IllegalStateException("Process wants to prepare out-of-transaction but we are already in transaction."
+					+ "\n Process: " + getClass()
+					+ "\n Trx: " + trx);
+		}
+		final String threadInheritedTrxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
+		if (!trxManager.isNull(threadInheritedTrxName))
+		{
+			throw new IllegalStateException("Process wants to prepare out-of-transaction but we are running in a thread inherited transaction."
+					+ "\n Process: " + getClass()
+					+ "\n Thread inherited transaction: " + threadInheritedTrxName);
+		}
+	}
+
+	/**
+	 * Starts transaction.
+	 * 
+	 * @param trxExisting existing transaction, if any
+	 */
+	private final void startTrx(final ITrx trxExisting)
+	{
+		// NOTE: in endTrx() method we shall do the reverse operations, BUT in reversed order than in startTrx().
+
+		//
+		// Start local transaction
+		{
+			final boolean isLocalTrx = trxManager.isNull(trxExisting);
+			if (isLocalTrx)
+			{
+				final String trxNameLocal = trxManager.createTrxName(TRXNAME_Prefix);
+				m_trx = trxManager.get(trxNameLocal, true);
+				Check.assumeNotNull(m_trx, "Local transaction shall be created for {0}", trxNameLocal); // shall not happen
+			}
+			else
+			{
+				m_trx = trxExisting;
+			}
+			this.m_trxIsLocal = isLocalTrx; // set it last, after we make sure everything is fine
+		}
+
+		//
+		// Making sure that the current thread doesn't do any weird stuff while processing (02355)
+		{
+			DB.saveConstraints();
+			DB.getConstraints().setActive(true)
+					.setOnlyAllowedTrxNamePrefixes(true)
+					.addAllowedTrxNamePrefix(m_trx.getTrxName())
+					.setMaxTrx(1)
+					.setMaxSavepoints(1)
+					.setAllowTrxAfterThreadEnd(false);
+			this.m_dbContraintsChanged = true;
+		}
+
+		//
+		// Make sure we have our transaction set on thread level
+		// It will be restored on endTrx();
+		{
+			final String threadInheritedTrxNameBkp = trxManager.getThreadInheritedTrxName();
+			trxManager.setThreadInheritedTrxName(m_trx.getTrxName());
+			this.m_trxNameThreadInheritedBackup = ImmutableReference.valueOf(threadInheritedTrxNameBkp);
+		}
+	}
+
+	/**
+	 * Ends current transaction, if a local transaction.
+	 * 
+	 * This method can be called as many times as possible and even if the transaction was not started before.
+	 * 
+	 * @param success
+	 */
+	private final void endTrx(final boolean success)
+	{
+		// NOTE: in endTrx() method we shall do the reverse operations, BUT in reversed order than in startTrx().
+
+		//
+		// Restore the thread inherited transaction name
+		if (m_trxNameThreadInheritedBackup != null)
+		{
+			trxManager.setThreadInheritedTrxName(m_trxNameThreadInheritedBackup.getValue());
+			m_trxNameThreadInheritedBackup = null;
+		}
+
+		//
+		// Changing the constraints back to their default (02355)
+		if (m_dbContraintsChanged)
+		{
+			DB.restoreConstraints();
+			m_dbContraintsChanged = false;
+		}
+
+		//
+		// Commit/Rollback local transaction
+		// NOTE: we do this only if we really handled the transaction before
+		final boolean wasTransactionHandled = m_trxIsLocal != null;
+		if (wasTransactionHandled)
+		{
+			final boolean localTrx = m_trxIsLocal;
+			if (localTrx)
+			{
+				if (success)
+				{
+					try
+					{
+						m_trx.commit(true);
+					}
+					catch (Exception e)
+					{
+						log.log(Level.SEVERE, "Commit failed.", e);
+						m_pi.addSummary("Commit Failed.");
+						m_pi.setError(true);
+						// Set the ProcessInfo throwable only it is not already set.
+						// Because if it's set, that's the main error and not this one.
+						if (m_pi.getThrowable() == null)
+						{
+							m_pi.setThrowable(e);
+						}
+					}
+				}
+				else
+				{
+					m_trx.rollback();
+				}
+				m_trx.close();
+				m_trx = null;
+				m_trxIsLocal = null;
+			}
+		}
+	}
+
+	private final void setProcessResultOK(final String msg)
+	{
+		final String msgTrl;
+		if (Check.isEmpty(msg, true))
+		{
+			msgTrl = msg;
+		}
+		else
+		{
+			msgTrl = msgBL.parseTranslation(getCtx(), msg);
+		}
+
+		final boolean error = false;
+		m_pi.setSummary(msgTrl, error);
+
+	}
+
+	private final void setProcessResultError(final Throwable e)
+	{
+		//
+		// Get error message
+		String msg = e.getLocalizedMessage();
+		if (Check.isEmpty(msg, true))
+		{
+			msg = e.toString();
+		}
+
+		//
+		// Check if it's really an error
+		final boolean error;
+		if (e instanceof ProcessCanceledException)
+		{
+			error = false;
+		}
+		else
+		{
+			error = true;
+		}
+
+		//
+		// Update ProcessInfo
+		final String msgTrl = msgBL.parseTranslation(getCtx(), msg);
+		m_pi.setSummary(msgTrl, error);
+		if (error)
+		{
+			if (e.getCause() != null)
+				log.log(Level.SEVERE, msg, e.getCause());
+			else
+				log.log(Level.SEVERE, msg, e);
+
+			m_pi.setThrowable(e); // only if it's really an error
+		}
+	}
+
+	/**
+	 * Prepare process run.
+	 * 
+	 * Here you would implement process preparation business logic (e.g. parameters retrieval).
+	 * 
+	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}. By default, this method is executed in transaction.
+	 * 
+	 * @throws ProcessCanceledException in case there is a cancel request on prepare
+	 * @throws RuntimeException in case of any failure
+	 */
+	abstract protected void prepare();
+
+	/**
+	 * Actual process business logic to be executed.
+	 * 
+	 * This method is called after {@link #prepare()}.
+	 * 
+	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}. By default, this method is executed in transaction.
+	 * 
+	 * @return Message (variables are parsed)
+	 * @throws ProcessCanceledException in case there is a cancel request on doIt
+	 * @throws Exception if not successful e.g. <code>throw new AdempiereException ("@MyExceptionADMessage@");</code>
+	 */
+	abstract protected String doIt() throws Exception;
+
+	/**
+	 * Post process actions (outside trx). Please note that at this point the transaction is committed so you can't rollback. This method is useful if you need to do some custom work when the process
+	 * complete the work (e.g. open some windows).
+	 * 
+	 * @param success true if the process was success
+	 * @since 3.1.4
+	 */
+	protected void postProcess(final boolean success)
+	{
+		// nothing at this level
+	}
+
+	/**
+	 * Commit
+	 * 
+	 * @deprecated suggested to use commitEx instead
+	 */
+	@Deprecated
+	protected final void commit()
+	{
+		if (m_trx != null)
+		{
+			trxManager.commit(m_trx.getTrxName());
+		}
+	}	// commit
+
+	/**
+	 * Commit and throw exception if error
+	 * 
+	 * @throws SQLException on commit error
+	 * @deprecated Please consider not managing the transaction and using other APIs.
+	 */
+	@Deprecated
+	protected final void commitEx() throws SQLException
+	{
+		if (m_trx != null)
+			m_trx.commit(true);
+	}
+
+	/**
+	 * Rollback.
+	 * 
+	 * @deprecated Please consider not managing the transaction, throwing an exception or using other APIs.
+	 */
+	@Deprecated
+	protected final void rollback()
+	{
+		if (m_trx != null)
+			m_trx.rollback();
+	}	// rollback
+
+	/**************************************************************************
+	 * Lock Object. Needs to be explicitly called. Unlock is automatic.
+	 *
+	 * @param po object
+	 * @return true if locked
+	 */
+	protected final boolean lockObject(PO po)
+	{
+		// Unlock existing
+		if (m_locked || m_lockedObject != null)
+			unlockObject();
+		// Nothing to lock
+		if (po == null)
+			return false;
+		m_lockedObject = po;
+		m_locked = m_lockedObject.lock();
+		return m_locked;
+	}	// lockObject
+
+	/**
+	 * Is an object Locked?
+	 *
+	 * @return true if object locked
+	 */
+	protected final boolean isLocked()
+	{
+		return m_locked;
+	}	// isLocked
+
+	/**
+	 * Unlock Object. Is automatically called at the end of process.
+	 *
+	 * @return true if unlocked or if there was nothing to unlock
+	 */
+	protected final boolean unlockObject()
+	{
+		boolean success = true;
+		if (m_locked || m_lockedObject != null)
+		{
+			success = m_lockedObject.unlock(null);
+		}
+		m_locked = false;
+		m_lockedObject = null;
+		return success;
+	}	// unlock
+
+	/**************************************************************************
+	 * Get Process Info
+	 * 
+	 * @return Process Info
+	 */
+	public final ProcessInfo getProcessInfo()
+	{
+		return m_pi;
+	}   // getProcessInfo
+
+	/**
+	 * Get Properties
+	 * 
+	 * @return context; never returns null
+	 */
+	// org.adempiere.model.IContextAware#getCtx()
+	@Override
+	public final Properties getCtx()
+	{
+		return m_ctx == null ? Env.getCtx() : m_ctx;
+	}   // getCtx
+
+	/**
+	 * Get Name/Title
+	 * 
+	 * @return Name
+	 */
+	protected final String getName()
+	{
+		return m_pi.getTitle();
+	}   // getName
+
+	/**
+	 * Get Process Instance
+	 * 
+	 * @return Process Instance
+	 */
+	protected final int getAD_PInstance_ID()
+	{
+		return m_pi.getAD_PInstance_ID();
+	}   // getAD_PInstance_ID
+
+	/**
+	 * Get Table_ID
+	 * 
+	 * @return AD_Table_ID
+	 */
+	protected final int getTable_ID()
+	{
+		return m_pi.getTable_ID();
+	}   // getRecord_ID
+
+	/**
+	 * Get Record_ID
+	 * 
+	 * @return Record_ID
+	 */
+	protected final int getRecord_ID()
+	{
+		return m_pi.getRecord_ID();
+	}   // getRecord_ID
+
+	/**
+	 * Retrieve underlying model for AD_Table_ID/Record_ID using current transaction (i.e. {@link #getTrxName()}).
+	 * 
+	 * @param modelClass
+	 * @return record; never returns null
+	 * @throws AdempiereException if no model found
+	 */
+	public final <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
+	{
+		return m_pi.getRecord(modelClass, getTrxName());
+	}
+
+	/**
+	 * Get AD_User_ID
+	 * 
+	 * @return AD_User_ID of Process owner or -1 if not found
+	 */
+	protected final int getAD_User_ID()
+	{
+		if (m_pi.getAD_User_ID() == null || m_pi.getAD_Client_ID() == null)
+		{
+			try
+			{
+				final I_AD_PInstance pinstance = retrievePInstance();
+				if (pinstance != null && pinstance.getAD_PInstance_ID() > 0)
+				{
+					m_pi.setAD_User_ID(pinstance.getAD_User_ID());
+					m_pi.setAD_Client_ID(pinstance.getAD_User_ID());
+				}
+			}
+			catch (Exception e)
+			{
+				// make sure this method never fails (to keep the legacy contract)
+				log.log(Level.SEVERE, "Failed loading AD_User_ID/AD_Client_ID from AD_PInstance. Ignored.", e);
+			}
+		}
+		if (m_pi.getAD_User_ID() == null)
+		{
+			return -1;
+		}
+		return m_pi.getAD_User_ID().intValue();
+	}   // getAD_User_ID
+
+	/**
+	 * Get AD_User_ID
+	 * 
+	 * @return AD_User_ID of Process owner
+	 */
+	protected final int getAD_Client_ID()
+	{
+		if (m_pi.getAD_Client_ID() == null)
+		{
+			getAD_User_ID();	// sets also Client
+			if (m_pi.getAD_Client_ID() == null)
+				return 0;
+		}
+		return m_pi.getAD_Client_ID().intValue();
+	}	// getAD_Client_ID
+
+	/**************************************************************************
+	 * Get Parameter
+	 *
+	 * @return parameter
+	 */
+	protected final ProcessInfoParameter[] getParameter()
+	{
+		return m_pi.getParameter();
+	}	// getParameter
+
+	/**
+	 * @return the process parameters as IParams instance
+	 */
+	protected final IRangeAwareParams getParameterAsIParams()
+	{
+		return m_pi.getParameterAsIParams();
+	}
+
+	/**************************************************************************
+	 * Add Log Entry
+	 * 
+	 * @param date date or null
+	 * @param id record id or 0
+	 * @param number number or null
+	 * @param msg message or null
+	 */
+	public final void addLog(int id, Timestamp date, BigDecimal number, String msg)
+	{
+		if (m_pi != null)
+			m_pi.addLog(id, date, number, msg);
+		log.info(id + " - " + date + " - " + number + " - " + msg);
+	}	// addLog
+
+	/**
+	 * Add Log
+	 *
+	 * @param msg message
+	 */
+	@Override
+	public final void addLog(final String msg)
+	{
+		if (msg != null)
+		{
+			addLog(0, null, null, msg);
+		}
+	}	// addLog
+
+	/**************************************************************************
+	 * Execute function
+	 * 
+	 * @param className class
+	 * @param methodName method
+	 * @param args arguments
+	 * @return result
+	 */
+	public final Object doIt(String className, String methodName, Object args[])
+	{
+		try
+		{
+			Class<?> clazz = Class.forName(className);
+			Object object = clazz.newInstance();
+			Method[] methods = clazz.getMethods();
+			for (int i = 0; i < methods.length; i++)
+			{
+				if (methods[i].getName().equals(methodName))
+					return methods[i].invoke(object, args);
+			}
+
+			return null;
+		}
+		catch (Exception ex)
+		{
+			log.log(Level.SEVERE, "doIt", ex);
+			throw new AdempiereException(ex);
+		}
+	}	// doIt
+
+	/**
+	 * Lock Process Instance
+	 */
+	private final void lock()
+	{
+		log.log(Level.FINE, "Locking AD_PInstance_ID={0}", m_pi.getAD_PInstance_ID());
+		try
+		{
+			Services.get(IQueryBL.class)
+					.createQueryBuilder(I_AD_PInstance.class)
+					.setContext(getCtx(), ITrx.TRXNAME_None) // outside trx
+					.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, m_pi.getAD_PInstance_ID())
+					.create()
+					.updateDirectly()
+					.addSetColumnValue(I_AD_PInstance.COLUMNNAME_IsProcessing, true)
+					.execute();
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, "Lock failed: " + e.getLocalizedMessage(), e);
+		}
+	}   // lock
+
+	/**
+	 * Unlock Process Instance. Update Process Instance DB and write option return message.
+	 */
+	private final void unlock()
+	{
+		try
+		{
+			final I_AD_PInstance mpi = retrievePInstance();
+			if (mpi == null || mpi.getAD_PInstance_ID() <= 0)
+			{
+				throw new AdempiereException("Did not find PInstance " + m_pi.getAD_PInstance_ID());
+			}
+			mpi.setWhereClause(m_pi.getWhereClause()); // make sure the WhereClause is set
+			mpi.setIsProcessing(false);
+			mpi.setResult(m_pi.isError() ? MPInstance.RESULT_ERROR : MPInstance.RESULT_OK);
+			mpi.setErrorMsg(m_pi.getSummary());
+			InterfaceWrapperHelper.save(mpi);
+
+			log.log(Level.FINE, "Unlocked: {0}", mpi);
+
+			ProcessInfoUtil.saveLogToDB(m_pi);
+		}
+		catch (Throwable e)
+		{
+			// NOTE: it's very important this method to never throw exception.
+
+			log.log(Level.SEVERE, "Unlock failed: " + e.getLocalizedMessage(), e);
+		}
+	}   // unlock
+
+	/**
+	 * @return {@link I_AD_PInstance} (out of transaction) or null if not found
+	 */
+	private final I_AD_PInstance retrievePInstance()
+	{
+		final int adPInstanceId = m_pi.getAD_PInstance_ID();
+		if (adPInstanceId <= 0)
+		{
+			return null;
+		}
+		return InterfaceWrapperHelper.create(getCtx(), adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
+	}
+
+	/**
+	 * Return the main transaction of the current process.
+	 * 
+	 * @return the transaction name
+	 */
+	public final String get_TrxName()
+	{
+		if (m_trx != null)
+			return m_trx.getTrxName();
+		return ITrx.TRXNAME_None;
+	}	// get_TrxName
+
+	// org.adempiere.model.IContextAware#getTrxName()
+	@Override
+	public final String getTrxName()
+	{
+		return get_TrxName();
+	}
+
+	// metas: begin
+	public final String getTableName()
+	{
+		return m_pi.getTableName();
+	}
+
+	protected final <T> IQueryBuilder<T> retrieveSelectedRecordsQueryBuilder(final Class<T> recordType)
+	{
+		return retrieveSelectedRecordsQueryBuilder(recordType, getTrxName());
+	}
+
+	protected final <T> IQueryBuilder<T> retrieveSelectedRecordsQueryBuilder(final Class<T> recordType, final String trxName)
+	{
+		final IQueryFilter<T> selectedRecordsQueryFilter = getProcessInfo().getQueryFilter();
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(recordType)
+				.setContext(getCtx(), trxName)
+				.filter(selectedRecordsQueryFilter)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient();
+	}
+
+	/**
+	 * @return process class info or {@link ProcessClassInfo#NULL} in case of failure
+	 */
+	private ProcessClassInfo getProcessClassInfo()
+	{
+		return ProcessClassInfo.of(getClass());
+	}
+
+	/**
+	 * Used to annotate that {@link SvrProcess#prepare()} or {@link SvrProcess#doIt()} shall be executed out of transaction.
+	 * 
+	 * If {@link SvrProcess#doIt()} is annotated then {@link SvrProcess#prepare()} will be executed out of transaction too.
+	 */
+	@Inherited
+	@Documented
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ ElementType.METHOD, ElementType.TYPE })
+	protected @interface RunOutOfTrx
+	{
+	}
+
+	/**
+	 * Contains informations about the process class.
+	 * 
+	 * This instance will be build by introspecting a particular process class and fetching it's annotations.
+	 * 
+	 * To create a new instance, call {@link #of(Class)} builder.
+	 * 
+	 * @author tsa
+	 */
+	private static final class ProcessClassInfo
+	{
+		/**
+		 * @return process class info or {@link #NULL} in case of failure
+		 */
+		public static final ProcessClassInfo of(final Class<?> processClass)
+		{
+			try
+			{
+				return processClassInfoCache.get(processClass);
+			}
+			catch (ExecutionException e)
+			{
+				// shall never happen
+				s_log.log(Level.SEVERE, "Failed fetching ProcessClassInfo from cache for " + processClass, e);
+			}
+			return ProcessClassInfo.NULL;
+		}
+		
+		/** "Process class" to {@link ProcessClassInfo} cache */
+		private static final LoadingCache<Class<?>, ProcessClassInfo> processClassInfoCache = CacheBuilder.newBuilder()
+				.weakKeys() // to prevent ClassLoader memory leaks nightmare
+				.build(new CacheLoader<Class<?>, ProcessClassInfo>()
+				{
+					@Override
+					public ProcessClassInfo load(final Class<?> processClass) throws Exception
+					{
+						return createProcessClassInfo(processClass);
+					}
+				});
+
+		/**
+		 * Introspect given process class and return info.
+		 * 
+		 * @param processClass
+		 * @return process class info or {@link #NULL} in case of failure.
+		 */
+		static final ProcessClassInfo createProcessClassInfo(final Class<?> processClass)
+		{
+			try
+			{
+				boolean runPrepareOutOfTransaction = isRunOutOfTrx(processClass, void.class, "prepare");
+				final boolean runDoItOutOfTransaction = isRunOutOfTrx(processClass, String.class, "doIt");
+				if(runDoItOutOfTransaction)
+				{
+					runPrepareOutOfTransaction = true;
+				}
+
+				return new ProcessClassInfo(runPrepareOutOfTransaction, runDoItOutOfTransaction);
+			}
+			catch (Throwable e)
+			{
+				s_log.log(Level.SEVERE, "Failed introspecting process class info: " + processClass + ". Fallback to defaults: " + NULL, e);
+				return NULL;
+			}
+		}
+		
+		private static final boolean isRunOutOfTrx(final Class<?> processClass, final Class<?> returnType, final String methodName)
+		{
+			// Get all methods with given format,
+			// from given processClass and it's super classes,
+			// ordered by methods of processClass first, methods from super classes after
+			@SuppressWarnings("unchecked")
+			final Set<Method> methods = ReflectionUtils.getAllMethods(processClass
+					, ReflectionUtils.withName(methodName)
+					, ReflectionUtils.withParameters()
+					, ReflectionUtils.withReturnType(returnType));
+			
+			// No methods of given format were found. This can be problematic because we assume given method is declared somewhere. 
+			if (methods.isEmpty())
+			{
+				throw new IllegalStateException("Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types");
+			}
+
+			// Iterate all methods and return on first RunOutOfTrx annotation found. 
+			for (final Method method : methods)
+			{
+				final RunOutOfTrx runOutOfTrxAnnotation = method.getAnnotation(RunOutOfTrx.class);
+				if(runOutOfTrxAnnotation != null)
+				{
+					return true;
+				}
+			}
+			
+			// Fallback: no RunOutOfTrx annotation found
+			return false;
+		}
+
+		public static final ProcessClassInfo NULL = new ProcessClassInfo();
+
+		private final boolean runPrepareOutOfTransaction;
+		private final boolean runDoItOutOfTransaction;
+		// NOTE: NEVER EVER store the process class as field because we want to have a weak reference to it to prevent ClassLoader memory leaks nightmare.
+		// Remember that we are caching this object.
+
+		/** null constructor */
+		ProcessClassInfo()
+		{
+			super();
+			runPrepareOutOfTransaction = false;
+			runDoItOutOfTransaction = false;
+		}
+
+		ProcessClassInfo(final boolean runPrepareOutOfTransaction, final boolean runDoItOutOfTransaction)
+		{
+			super();
+			this.runPrepareOutOfTransaction = runPrepareOutOfTransaction;
+			this.runDoItOutOfTransaction = runDoItOutOfTransaction;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return ObjectUtils.toString(this);
+		}
+
+		/** @return <code>true</code> if we shall run {@link SvrProcess#prepare()} method out of transaction */
+		public boolean isRunPrepareOutOfTransaction()
+		{
+			return runPrepareOutOfTransaction;
+		}
+		
+		/** @return <code>true</code> if we shall run {@link SvrProcess#doIt()} method out of transaction */
+		public boolean isRunDoItOutOfTransaction()
+		{
+			return runDoItOutOfTransaction;
+		}
+	}
+
+	/**
+	 * Exceptions to be thrown if we want to cancel the process run.
+	 * 
+	 * If this exception is thrown:
+	 * <ul>
+	 * <li>the process will be terminated right away
+	 * <li>transaction (if any) will be rolled back
+	 * <li>process summary message will be set from this exception message (i.e. {@link ProcessInfo#getSummary()})
+	 * <li>process will NOT be flagged as error (i.e. {@link ProcessInfo#isError()} will return <code>false</code>)
+	 * </ul>
+	 * 
+	 * @author tsa
+	 */
+	public static final class ProcessCanceledException extends AdempiereException
+	{
+		private static final long serialVersionUID = 1L;
+
+		@VisibleForTesting
+		public static final String MSG_Canceled = "Canceled";
+
+		public ProcessCanceledException()
+		{
+			super("@" + MSG_Canceled + "@");
+		}
+	}
+}   // SvrProcess

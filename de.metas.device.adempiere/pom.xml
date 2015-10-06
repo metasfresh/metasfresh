@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.device.adempiere</groupId>
+	<artifactId>de.metas.device.adempiere</artifactId>
+
+	<properties>
+		<migration-sql-basedir>41-de.metas.device</migration-sql-basedir>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>de.metas.device.api</groupId>
+			<artifactId>de.metas.device.api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+</project>

@@ -1,0 +1,81 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software; you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program; if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
+package org.compiere.process;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.logging.Level;
+
+import org.compiere.model.MTree;
+import org.compiere.model.MTree_Base;
+import org.compiere.model.MTree_Node;
+import org.compiere.model.MTree_NodeBP;
+import org.compiere.model.MTree_NodeMM;
+import org.compiere.model.MTree_NodePR;
+import org.compiere.model.PO;
+import org.compiere.util.DB;
+
+/**
+ *	Tree Maintenance	
+ *	
+ *  @author Jorg Janke
+ *  @version $Id: TreeMaintenance.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
+ */
+public class TreeMaintenance extends SvrProcess
+{
+	/**	Tree				*/
+	private int		m_AD_Tree_ID;
+	
+	/**
+	 *  Prepare - e.g., get Parameters.
+	 */
+	protected void prepare()
+	{
+		ProcessInfoParameter[] para = getParameter();
+		for (int i = 0; i < para.length; i++)
+		{
+			String name = para[i].getParameterName();
+			if (para[i].getParameter() == null)
+				;
+			else
+				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+		}
+		m_AD_Tree_ID = getRecord_ID();		//	from Window
+	}	//	prepare
+
+	/**
+	 *  Perform process.
+	 *  @return Message (clear text)
+	 *  @throws Exception if not successful
+	 */
+	protected String doIt() throws Exception
+	{
+		log.info("AD_Tree_ID=" + m_AD_Tree_ID);
+		if (m_AD_Tree_ID == 0)
+			throw new IllegalArgumentException("Tree_ID = 0");
+		MTree tree = new MTree (getCtx(), m_AD_Tree_ID, get_TrxName());	
+		if (tree == null || tree.getAD_Tree_ID() == 0)
+			throw new IllegalArgumentException("No Tree -" + tree);
+		//
+		if (MTree.TREETYPE_BoM.equals(tree.getTreeType()))
+			return "BOM Trees not implemented";
+		
+		tree.verifyTree();
+		return "Ok";
+	}	//	doIt
+}	//	TreeMaintenence

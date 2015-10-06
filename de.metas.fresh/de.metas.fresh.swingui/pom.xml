@@ -1,0 +1,35 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.metas.fresh</groupId>
+		<artifactId>de.metas.fresh</artifactId>
+		<version>1.0_IT-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>de.metas.fresh.swingui</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencies>
+
+		<!-- Required to connect to the jboss-ejb server (always needs to be in the client, not only from eclipse, but in this base module we leave it as "provided") -->
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+				
+		<!-- Problem: this ends up in customizations despite scope beeing "provided" 
+			  => crushes APO on server 
+			  => server won't start 
+			Current workaround in ant; 
+			TODO: consider replacing it with a not-all jboss-lib that just contains the 
+			stuff we need to start from eclipse -->
+		<dependency>
+			<groupId>org.jboss.client</groupId>
+			<artifactId>jbossall-client</artifactId>
+			<version>4.2.3.GA</version>
+		</dependency>
+	</dependencies>
+</project>

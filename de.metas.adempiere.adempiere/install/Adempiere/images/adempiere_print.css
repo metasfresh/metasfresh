@@ -1,0 +1,54 @@
+.noPrint { 
+display: none; 
+} 
+p { 
+font-family: Georgia, "Times New Roman", Times, serif; 
+font-size: 11px; 
+color: #000000; 
+background-color: #FFFFFF; 
+margin: 10px 0px 0px 20px;
+} 
+#pageName {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 14px;
+	color: #000000;
+	background-color: #FFFFFF;
+	margin: 25px 0px 0px 10px;
+}
+#pageNameimg {
+margin: 0px 0px 0px 10px;
+}
+#storyTitle1 {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 12px;
+	color: #000000;
+	background-color: #FFFFFF;
+	font-weight: bold;
+	margin: 15px 0px 0px 15px;
+}
+a{
+	color: #000000;
+	text-decoration: none;
+}
+a:link{
+	color: #000000;
+	text-decoration: underline;
+}
+a:visited{
+	color: #000000;
+	text-decoration: underline;
+}
+a:hover{
+	color: #000000;
+	text-decoration: underline;
+}
+h1, h2, h3, h4, h5, h6, h7 {
+	font-family: Arial,sans-serif;
+	margin: 0px;
+	padding: 0px;
+}
+label{
+ font-family: Arial,sans-serif;
+ font-size: 80%;
+ color: #OOOOOO;
+}

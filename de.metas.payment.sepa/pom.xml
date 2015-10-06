@@ -1,0 +1,115 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>de.metas.payment.sepa</groupId>
+	<artifactId>de.metas.payment.sepa</artifactId>
+	<packaging>jar</packaging>
+
+	<description>SEPA Payments</description>
+
+	<properties>
+		<migration-sql-basedir>70-de.metas.payment.sepa</migration-sql-basedir>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>de.metas.payment.esr</groupId>
+			<artifactId>de.metas.payment.esr</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.document</groupId>
+			<artifactId>de.metas.document.refid</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jaxb2-maven-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>generate-de.metas.payment.sepa.sdd.jaxb.v1</id>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
+						<configuration>
+							<schemaFiles>pain.008.001.02.xsd</schemaFiles>
+							<packageName>de.metas.payment.sepa.sdd.jaxb.v1</packageName>
+							<staleFile>${project.build.directory}/jaxb2/.xjcStaleFlag-de.metas.payment.sepa.sdd.jaxb.v1</staleFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>generate-de.metas.payment.sepa.sdd.jaxb.v3</id>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
+						<configuration>
+							<!-- NOTE: don't clear the directory because else we will lose previous 
+								generated files -->
+							<clearOutputDir>false</clearOutputDir>
+							<schemaFiles>pain.008.003.02.xsd</schemaFiles>
+							<packageName>de.metas.payment.sepa.sdd.jaxb.v3</packageName>
+							<staleFile>${project.build.directory}/jaxb2/.xjcStaleFlag-de.metas.payment.sepa.sdd.jaxb.v3</staleFile>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>generate-de.metas.payment.sepa.jaxb.sct.pain_001_003_03</id>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
+						<configuration>
+							<!-- NOTE: don't clear the directory because else we will lose previous 
+								generated files -->
+							<clearOutputDir>false</clearOutputDir>
+							<schemaFiles>pain.001.003.03.xsd</schemaFiles>
+							<packageName>de.metas.payment.sepa.jaxb.sct.pain_001_003_03</packageName>
+							<staleFile>${project.build.directory}/jaxb2/.xjcStaleFlag-de.metas.payment.sepa.jaxb.sct.pain_001_003_03</staleFile>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>generate-de.metas.payment.sepa.jaxb.sct.pain_001_01_03_ch_02</id>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
+						<configuration>
+							<clearOutputDir>false</clearOutputDir>
+							<schemaFiles>pain.001.001.03.ch.02.xsd</schemaFiles>
+							<packageName>de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02</packageName>
+							<staleFile>${project.build.directory}/jaxb2/.xjcStaleFlag-de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02</staleFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

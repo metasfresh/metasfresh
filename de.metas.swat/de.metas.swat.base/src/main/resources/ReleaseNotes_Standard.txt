@@ -1,0 +1,236 @@
+340.1.5.5
+---------
+-mo: Verbesserung bei Zoom-Across
+-ts: Fix bei Lieferlauf (funktionierte nicht bei zu vielen offenen Auftragspositionen und Geschäftspartnern)
+
+340.1.5.4
+---------
+Prozess für "Wiederkehrende Belege" der alle anstehenden Belege automatisch erstellt
+
+340.1.5.3
+---------
+Fixes am Lieferlauf (u.a. "[Ticket#2009061710000137] Fehler Rückstandsliste")
+
+340.1.5.2
+---------
+Fixes am Lieferlauf (u.a. "[Ticket#2009061710000137] Fehler Rückstandsliste")
+
+340.1.5.0
+---------
+-Auslieferplan und Lieferlauf Überarbeitet (bessere Performance)
+-Klasse "Html2StyledTextConverter" und lib "htmlparser.jar" entfernt (wird nicht mehr benutzt)
+ 
+340.1.4.0
+---------
+-Verbesserte Zoom-Funktion: Zoom jetzt auch von Aufträgen zu Lieferscheinen und 
+ Rechnugen mögllich
+-[Ticket#:2009040810000014] SQL-Queries "hängen": 
+ Datenbank speichert zusätzlich zum Stacktrace auch den Zeitpunkt einer Verbindung.
+ Neue Getter für die Verbindungs-Debug-Daten
+-Verbesserte Adress-Namensgebung bei Geschäftspartner.
+
+340.1.3.2
+---------
+Fixed a Bug in BPartnerPA that led to dangling transactions
+
+340.1.3.1
+---------
+-"[Ticket#2009051010000062] Fehler bei Artikeln": Eingaben von mehr als 500000 Zeichen werden abgelehnt
+
+340.1.3.0
+---------
+-Neue Möglichkeit, bei Auftragspositionen eine vom Produkt abweichende Produktbeschreibung anzugeben.
+ Siehe http://dewiki908/mediawiki/index.php/Produktbeschreibung_in_Auftragsposition_%282008_0030_AP47%29  
+
+
+340.1.2.33
+----------
+-Fixed "[Ticket#2009041410000021] Lieferlauf schlägt fehl, wenn mit Org * eingeloggt"
+-fix for part b) "[Ticket#2009052610000041]  EDI-Aufträge Fehler": 
+ making sure that a new shipment schedule has the same client and org as its order
+ 
+340.1.2.32
+----------
+-Fixes for VInOutGen 
+  -Fixed [Ticket#2009051410000073] Nicht generierbarer Lieferschein
+  -Fix: Table update didn't work after changes in the BPartner selection 
+
+340.1.2.31
+----------
+ts:
+-Improved the speed of Shipment-Creation when unconfirmed shipments need to be considered
+-Processes that create shipments and orders:
+ -Added options to forbid the consolidation of multiple orders to invoice and/or 
+  shipment on a per bPartner basis.
+ -If consolidation is disabled, the line numbers of the source document are used for the new shipment or invoice  
+-Added a GLN (global identification number) to bPartner location
+-Improved the speed of purchase schedule operations (when a document is completed)
+-Added a process to create a credit memo for an invoice (still alpha)
+-Added the new (not yet so) rich text editor (from mebedo)
+-Column visibility in table view is persisted on a per tab - per user basis
+
+kh:
+-improved multi language support for jasper documents
+-aligned purchase and sales documents
+
+340.1.2.30
+----------
+-Fixed [Ticket#2009040210000016] Pro Auftragsposition wird ein Lieferschein erstellt 
+-Jasper reports can be loaded from various sources including http servers.
+
+340.1.2.29
+----------
+Minor changes, allowing additional more PaymentRules
+
+340.1.2.28
+----------
+-Improvements in PurchaseSchedule (according to new concept)
+-Dropping the demand to deal with requisitions for now
+
+340.1.2.27
+----------
+-Including a new replenish type "ReplenishForFutureQty"
+-PurchaseSchedule now uses the vendor pricelist and outputs human readable 
+ error messages if no bpartner (vendor) is selected or if the selected vendor 
+ has no pl
+
+340.1.2.26
+----------
+Bugfix: 
+-Stored virtual column values weren't invalidated on order docStatus change (although the computed values would be different)
+-Shipment schedule entries were created before actual qty was reserved 
+
+340.1.2.25
+----------
+Bugfix: 
+-ShipmentSchedule entries weren't removed on OrderLine removal
+
+340.1.2.24
+----------
+Bugfix: 
+-ShipmentgeneratorService produced wrong QtyDeliverable values when invoked twice.
+-Made sure it is invoked only once
+
+340.1.2.23
+----------
+-Added trx support to the virtual column interfaces 
+-When clicking on the PrinterButoon in the Jasper report preview, 
+ a print dialog is displayed.
+-Bugfix for [Ticket#:2008121110000021] Standard Drucker wird nicht voreingestellt im ADempiere Logi[..] 
+-Prozess zum Rechnungdruck eingebaut
+
+340.1.2.22
+----------
+ShipmentGenerator: fixed wrong handling of multiple storages for one product
+
+340.1.2.21
+----------
+bugfix for [Ticket#: 2009030210000081 ] Rückstandsliste Fehler 
+
+340.1.2.20
+----------
+-Bugfix: Not all virtual columns were invalidated
+
+340.1.2.19
+----------
+-improved the speed of our own VInOutGenerate
+
+340.1.2.18
+----------
+-extended our own VInOutGenerate
+-extended virtual column stuff for multi value
+-ShipmentService now also returns the qtyDeliverable
+
+340.1.2.17
+----------
+-dropping the dependency to datev_exporter and virtual_column
+-this means adempiere_standard won't publish its onw patches.jar anymore 
+ (see project std_customer for that)
+ 
+340.1.2.15 and 340.1.2.16 
+----------
+-Kleinere Verbesserungen beim Fenster zur manuellen LS-Erstellung (Spaltenbreite)
+-minor improvements for ServiceRegistry and PO
+-bugfix for virtual columns
+-moved ServiceRegistry from org.compiere.util to org.adempiere.util
+
+340.1.2.14
+----------
+Adding purchase schedule: new feature to allow planning of purchase orders (e.g. how much, at which vendor) 
+
+340.1.2.13
+----------
+-Modifiziertes/Verbessertes Fenster zur manuellen LS-Erstellung
+-Bugfix zum Invalidieren gespeicherter Auslieferplan-Werte
+
+340.1.2.12
+----------
+Bugfix for [Ticket#2009021310000044] LS kann nicht generiert werden 
+
+340.1.2.10 and 340.1.2.11 
+-------------------------
+Bugfixes at OrderService and MOrderValidator
+
+340.1.2.9
+---------
+-Services are now put into a "ServiceRegistry" of their own.
+ That registry is not cleared at logout unlike Env.
+-Shipment-Creation: Introducing an Interface that allows us 
+ to customize shipment creation.
+
+340.1.2.8
+---------
+-extending IStorageService to allow a virtual column's default value (e.g. zero) 
+ to be stored only if there isn't already a valid value in its place.
+
+340.1.2.7
+---------
+-giving back to users the option to void documents
+-bugfixes regarding the rules for creation and deletion of shipment schedule entries.
+
+340.1.2.6
+---------
+-now publishing standard-classes-src for use by customer projects
+
+340.1.2.5
+---------
+-adding MInoutLineValidator to set M_ShipmentSchedule.Status column
+-minor fixes
+
+340.1.2.4
+---------
+-Adding trxName-Parameter to the IReportProcessor interface
+-Bugfixes in ShipmentSchedule and Testing parameters
+
+340.1.2.3
+---------
+-Adding a new Interface IReportPreprocessor. 
+ Implementors can be called from the report starter to do things 
+ such as making sure that all DB data is in order before the 
+ JasperPrint for a report is created. 
+-Adempiere now reads the file addons.properties at startup. 
+ It contains implementors of IAddon whose initAddon() method is invoked.
+
+340.1.2.2
+---------
+-Moved virtual column code to an addon-project of its own 
+(only leaving some interfaces back).
+-Added a *very* rudimentary mechanism to load addons at startup
+-Improved ivy.xml to make sure the right jars 
+ are pulled for projects depending on adempiere-standard
+
+340.1.2.1
+---------
+-adding support for the description_bottom column in order, inout and invoice.
+-moved support classes from "test" to "tool" to allow other projects to run 
+ adempiere tests (create test-db, use ADAssert and so on)
+
+340.1.2.0
+---------
+now using an improved build process
+
+340.1.1.17
+----------
+-new Helper Method in POHelper
+-Fixed SerialNo feature
+-Introduced new class SystemTime for the testing of time dependent code

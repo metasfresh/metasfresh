@@ -1,0 +1,67 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.metas.banking</groupId>
+		<artifactId>de.metas.banking</artifactId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+
+
+	<artifactId>de.metas.banking.base</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+		<migration-sql-basedir>50-sw01_banking</migration-sql-basedir>
+		<!-- migration-sql-basedir>50-de.metas.commission</migration-sql-basedir -->
+	</properties>
+
+	<dependencies>
+	
+		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jdtaus</groupId>
+			<artifactId>jdtaus</artifactId>
+			<version>20081202</version>
+			<type>pom</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.telecash</groupId>
+			<artifactId>ipgapiClient</artifactId>
+			<version>1966</version>
+		</dependency>
+
+		<!-- required by ipgapiClient -->
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+
+
+	</build>
+
+</project>

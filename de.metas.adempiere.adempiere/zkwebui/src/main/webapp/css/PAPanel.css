@@ -1,0 +1,48 @@
+.pa-header {
+	background-color: #B5C6C6;
+}
+.pa-content {
+	width: 90%;
+	margin: 20px;
+	background-color: #FFFFFF;
+}
+.pa-hrefNode {
+	color: #000000;
+	text-decoration: none;
+}
+.pa-dataGrid {
+	border-width: 1px;
+	border-color: #BBBBBB;
+	border-style: solid;
+	border-collapse: collapse;
+	width: 90%;
+	background-color: #EBF1EF;	
+}
+.pa-dataGrid th {
+	text-align:	center;
+	padding: 2px;
+	font-weight: normal;
+	font-size: 13px;
+	background-color: #C6D1CD;
+	border-width: 1px;
+	border-color: #BBBBBB;
+	border-style: solid;
+}
+.pa-dataGrid td {
+	border-width: 1px;
+	border-color: #BBBBBB;
+	border-style: solid;
+	padding: 3px;
+}
+.pa-label {
+	background-color: #C6D1CD;
+}
+.pa-tdlabel {
+	background-color: #D6E1DD;
+	padding: 3px;
+}
+.pa-tdvalue {
+	background-color: #EBF1EF;
+	text-align: right;
+	padding: 3px;
+}

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_orgblock" pageWidth="226" pageHeight="842" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="7a1b6560-d1ef-4d70-acd9-642f0804e306">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<import value="java.util.*"/>
+	<parameter name="org_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[new BigDecimal(1000001)]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+	CASE WHEN org_bp.taxid 		IS NULL THEN '' ELSE org_bp.taxid 		END AS org_taxid,
+	CASE WHEN org_bp.url 		IS NULL THEN '' ELSE org_bp.url 		END AS org_url,
+	CASE WHEN org_bpl.phone		IS NULL THEN '' ELSE org_bpl.phone		END AS org_phone,
+	CASE WHEN org_bpl.fax		IS NULL THEN '' ELSE org_bpl.fax		END AS org_fax,
+	CASE WHEN c_location.address1 	IS NULL THEN '' ELSE c_location.address1 	END AS org_address1,
+	CASE WHEN c_location.postal 	IS NULL THEN '' ELSE c_location.postal 		END AS org_postal,
+	CASE WHEN c_location.city 	IS NULL THEN '' ELSE c_location.city 		END AS org_city,
+	CASE WHEN ad_user.email		IS NULL THEN '' ELSE ad_user.email		END AS org_email,
+
+	trim(
+		case when org_bp.name is null 		then '' else org_bp.name     	 || ', ' end ||
+		case when c_location.address1 is null 	then '' else c_location.address1 || ', ' end ||
+		case when c_location.postal is null 	then '' else c_location.postal   || ', ' end ||
+		case when c_location.city is null 	then '' else c_location.city	 || ', ' end
+	)as org_addressline
+
+FROM
+	ad_org ad_org
+	JOIN c_bpartner org_bp			ON ad_org.ad_org_id		= org_bp.ad_orgbp_id
+	JOIN c_bpartner_location org_bpl 	ON org_bp.c_bpartner_id		= org_bpl.c_bpartner_id
+	JOIN c_location c_location 		ON org_bpl.c_location_id	= c_location.c_location_id
+   LEFT JOIN c_country c_country 		ON c_location.c_country_id	= c_country.c_country_id
+   LEFT JOIN ad_user ad_user			ON org_bp.c_bpartner_id		= ad_user.c_bpartner_id
+
+WHERE
+	ad_org.ad_org_id = $P{org_id}
+;]]>
+	</queryString>
+	<field name="org_taxid" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="org_url" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="org_phone" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="org_fax" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="org_address1" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="org_postal" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="org_city" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="org_email" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="org_addressline" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="114" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="4e782089-2191-4c5c-b960-0b2d7dd829d5" key="textField-13" x="76" y="56" width="130" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{org_url}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="2481bbea-38a8-4f49-8234-0d05b258ff99" key="textField-14" x="76" y="25" width="130" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Tel.: " + $F{org_phone}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="f4d27c18-843c-44a6-aa86-ba53e993ef52" key="textField-15" x="76" y="35" width="130" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Fax.: "+ $F{org_fax}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="1669177d-e13e-4474-9cda-ebd54d6fe9b8" key="textField-16" x="76" y="46" width="130" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{org_email}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

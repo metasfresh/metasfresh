@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="_generation_" name="Packaging Generator">
+<target name="_generation_" depends=""/>
+</project>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<stringAttribute key="bad_container_name" value="\de.metas.agg "/>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/de.metas.adempiere.adempiere.base/src/main/java/org/adempiere/util/GenerateModel.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.adempiere.util.GenerateModel"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="./src/main/java-gen/de/metas/dimension/model/&#13;&#10;de.metas.dimension.model&#13;&#10;'de.metas.dimension'"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="de.metas.dimension"/>
+<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${workspace_loc:de.metas.endcustomer.fresh}/Adempiere.properties_${env_var:USERNAME}"/>
+</launchConfiguration>

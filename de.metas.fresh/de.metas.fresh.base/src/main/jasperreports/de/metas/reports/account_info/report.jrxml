@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="Account_ID" class="java.math.BigDecimal"/>
+	<parameter name="StartDate" class="java.util.Date"/>
+	<parameter name="EndDate" class="java.util.Date"/>
+	<parameter name="C_Activity_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM report.Fresh_Account_Info_Report (
+	$P{Account_ID},
+	$P{StartDate},
+	$P{EndDate},
+	$P{C_Activity_ID}
+)]]>
+	</queryString>
+	<field name="dateacct" class="java.sql.Date"/>
+	<field name="fact_acct_id" class="java.math.BigDecimal"/>
+	<field name="bp_name" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="account2_id" class="java.lang.String"/>
+	<field name="a_value" class="java.lang.String"/>
+	<field name="amtacctdr" class="java.math.BigDecimal"/>
+	<field name="amtacctcr" class="java.math.BigDecimal"/>
+	<field name="saldo" class="java.math.BigDecimal"/>
+	<field name="param_acct_value" class="java.lang.String"/>
+	<field name="param_acct_name" class="java.lang.String"/>
+	<field name="param_end_date" class="java.lang.String"/>
+	<field name="param_start_date" class="java.lang.String"/>
+	<field name="param_activity_value" class="java.lang.String"/>
+	<field name="param_activity_name" class="java.lang.String"/>
+	<field name="overallcount" class="java.lang.Long"/>
+	<field name="unionorder" class="java.lang.Integer"/>
+	<group name="Count Group">
+		<groupExpression><![CDATA[""]]></groupExpression>
+		<groupHeader>
+			<band height="20">
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="22" y="8" width="555" height="12"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{overallcount} > 150000 ?
+    "Bitte grenzen Sie ihre Auswahl weiter ein so das max. 150.000 Datensätze ausgegeben werden. Aktuell wurden aktuelle "  +$F{overallcount} + " Datensätze selektiert." :
+    ""]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="All" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[""]]></groupExpression>
+		<groupHeader>
+			<band height="115">
+				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1 && $F{overallcount} < 150000)]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="32" y="106" width="65" height="9"/>
+					<box rightPadding="3"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Buchungsdatum"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="478" y="106" width="45" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Haben"]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy" isBlankWhenNull="true">
+					<reportElement uuid="563908a3-7488-4625-b0e5-d89de1d56c16" x="239" y="106" width="90" height="9"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Beschreibung"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39" x="524" y="30" width="30" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+" von"]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy" isBlankWhenNull="true">
+					<reportElement uuid="563908a3-7488-4625-b0e5-d89de1d56c16" x="144" y="106" width="95" height="9"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Geschäftspartner"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="432" y="106" width="45" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Soll"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="57" y="20" width="100" height="12"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Konten - Information"]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd.MM.yyyy HH:mm">
+					<reportElement uuid="82a28042-ab56-435b-9547-dfe5fc99f4cf" x="465" y="22" width="103" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="97" y="106" width="47" height="9"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Datensatz ID"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report">
+					<reportElement uuid="20fa10dc-ece0-4d33-bc24-b87118cf1609" x="553" y="30" width="15" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="523" y="106" width="45" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Saldo"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="57" y="49" width="70" height="9"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Konto-Nr."]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="57" y="60" width="70" height="9"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Konto"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="57" y="71" width="70" height="9"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Buchungsdatum"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="127" y="49" width="350" height="9"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_acct_value}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="127" y="71" width="350" height="9"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_start_date} + " - " + $F{param_end_date}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="127" y="60" width="350" height="9"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_acct_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39" x="500" y="30" width="25" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Seite"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="388" y="106" width="44" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Kostenstelle"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="57" y="82" width="70" height="9"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Kostenstelle"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="127" y="82" width="350" height="9"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{C_Activity_ID} != null ?
+    $F{param_activity_value} + " - " + $F{param_activity_name}:
+    "Alle"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="329" y="106" width="59" height="9"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Gegenkonto"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="73">
+				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1 && $F{overallcount} < 150000)]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="32" y="60" width="65" height="9"/>
+					<box rightPadding="3"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Buchungsdatum"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="478" y="60" width="45" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Haben"]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy" isBlankWhenNull="true">
+					<reportElement uuid="563908a3-7488-4625-b0e5-d89de1d56c16" x="239" y="60" width="90" height="9"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Beschreibung"]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy" isBlankWhenNull="true">
+					<reportElement uuid="563908a3-7488-4625-b0e5-d89de1d56c16" x="144" y="60" width="95" height="9"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Geschäftspartner"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="432" y="60" width="45" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Soll"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="97" y="60" width="47" height="9"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Datensatz ID"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="523" y="60" width="45" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Saldo"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39" x="524" y="50" width="30" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+" von"]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd.MM.yyyy HH:mm">
+					<reportElement uuid="82a28042-ab56-435b-9547-dfe5fc99f4cf" x="465" y="42" width="103" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39" x="500" y="50" width="25" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Seite"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report">
+					<reportElement uuid="20fa10dc-ece0-4d33-bc24-b87118cf1609" x="553" y="50" width="15" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="388" y="60" width="44" height="9"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Kostenstelle"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="7cf59c05-dd27-465d-8d5d-5025e6c71d18" x="329" y="60" width="59" height="9"/>
+					<textElement>
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Gegenkonto"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() != 3 && $F{overallcount} < 150000)]]></printWhenExpression>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="32" y="0" width="65" height="9"/>
+				<box rightPadding="3"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dateacct}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="478" y="0" width="45" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="563908a3-7488-4625-b0e5-d89de1d56c16" x="239" y="0" width="90" height="9"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="563908a3-7488-4625-b0e5-d89de1d56c16" x="144" y="0" width="95" height="9"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="432" y="0" width="45" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0" isBlankWhenNull="true">
+				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="97" y="0" width="47" height="9"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fact_acct_id}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="523" y="0" width="45" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{saldo}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="388" y="0" width="44" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{a_value}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="7cf59c05-dd27-465d-8d5d-5025e6c71d18" x="329" y="0" width="59" height="9"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{account2_id}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 3 && $F{overallcount} < 150000)]]></printWhenExpression>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="32" y="0" width="65" height="9"/>
+				<box rightPadding="3"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dateacct}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="478" y="0" width="45" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="563908a3-7488-4625-b0e5-d89de1d56c16" x="239" y="0" width="90" height="9"/>
+				<textElement>
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="563908a3-7488-4625-b0e5-d89de1d56c16" x="144" y="0" width="95" height="9"/>
+				<textElement>
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="432" y="0" width="45" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0" isBlankWhenNull="true">
+				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="97" y="0" width="47" height="9"/>
+				<textElement>
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fact_acct_id}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="388" y="0" width="44" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{a_value}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="34" splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="1"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

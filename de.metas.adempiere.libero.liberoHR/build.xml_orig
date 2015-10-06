@@ -1,0 +1,66 @@
+<project name="Libero" default="dist" basedir=".">
+    <description>
+        Building Libero liberoHR.jar
+        by
+        bcahya
+        http://sistematika.web.id
+    </description>
+  <!-- set global properties for this build -->
+  <property file="build.properties"/>
+  <import file="${adempiere.trunk}/utils_dev/properties.xml"/>
+  <property name="src" location="extension/eevolution/libero/src/main"/>
+  <property name="build" location="build"/>
+  <property name="dist"  location="dist"/>
+
+  <path id="lib.class.path">
+     <fileset dir="${env.ADEMPIERE_HOME}/lib">
+        <include name="*.jar"/>
+     </fileset>
+    <fileset dir="${adempiere.trunk}/packages">
+       <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="init" depends="clean">
+    <echo message="Trunk location: ${adempiere.trunk}"/>
+    <echo message="ADempiere home: ${env.ADEMPIERE_HOME}"/>
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init"
+        description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}">
+      <exclude name="**/org/eevolution/plugin/*.java"/>
+      <classpath refid="lib.class.path"/>
+    </javac>
+
+  </target>
+
+  <target name="dist" depends="compile"
+        description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/lib"/>
+
+    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    <jar jarfile="${dist}/lib/liberoHR.jar" basedir="${build}"/>
+
+    <!-- Create target Libero deployment -->
+    <mkdir dir="${env.ADEMPIERE_HOME}/packages/liberoHR/lib"/>
+
+    <!-- Transfer liberoHR.jar -->
+    <copy file="${dist}/lib/liberoHR.jar" todir="${env.ADEMPIERE_HOME}/packages/liberoHR/lib"/>
+    <copy file="${dist}/lib/liberoHR.jar" todir="${adempiere.trunk}/packages"/>
+
+  </target>
+
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+</project>

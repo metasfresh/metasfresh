@@ -1,0 +1,32 @@
+<?page title="Adempiere" contentType="text/html;charset=UTF-8"?>
+<zk>
+<zscript>
+<![CDATA[
+	import org.compiere.util.Msg;
+	import org.compiere.util.Env;
+	
+	var continueText = Msg.getMsg(Env.getCtx(),"continue");
+]]>
+</zscript>
+<window width="60%" mode="highlighted">
+<vbox style="padding: 5px">
+
+<div id="timeoutText"></div>
+<div style="margin-top: 10px">
+	<toolbarbutton href="/index.zul" label="${continueText}"/>
+</div>
+</vbox>
+<script defer="true">
+<![CDATA[
+	var callback = function(ok, val) {
+		if (ok && !!val)
+		{
+			$e("${timeoutText.uuid}").innerHTML = val;
+		}
+	};
+    
+    adempiere.store.get("zkTimeoutText", callback);
+]]>	
+</script>
+</window>
+</zk>

@@ -1,0 +1,1 @@
+UPDATE ad_orginfo SET ReportPrefix='file:////opt/metasfresh/jboss/server/adempiere/deploy/reports.war'

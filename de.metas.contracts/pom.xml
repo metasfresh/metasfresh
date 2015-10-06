@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>de.metas.contracts</groupId>
+	<artifactId>de.metas.contracts</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+		<migration-sql-basedir>50-de.metas.contracts</migration-sql-basedir>
+	</properties>
+
+	<dependencies>
+		
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.monitoring</groupId>
+			<artifactId>de.metas.monitoring</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+	</dependencies>
+
+</project>

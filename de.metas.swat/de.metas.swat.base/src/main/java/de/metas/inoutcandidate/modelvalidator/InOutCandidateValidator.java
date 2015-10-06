@@ -1,0 +1,289 @@
+package de.metas.inoutcandidate.modelvalidator;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.sql.Timestamp;
+import java.util.Collection;
+
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.product.service.IProductBL;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Storage;
+import org.compiere.model.MClient;
+import org.compiere.model.MInOut;
+import org.compiere.model.MOrder;
+import org.compiere.model.MProduct;
+import org.compiere.model.MStorage;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
+
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
+import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.spi.impl.DefaultCandidateProcessor;
+import de.metas.inoutcandidate.spi.impl.OnlyOneOpenInvoiceCandProcessor;
+import de.metas.inoutcandidate.spi.impl.OrderLineInOutCandHandler;
+import de.metas.storage.IStorageListeners;
+import de.metas.storage.IStorageSegment;
+import de.metas.storage.StorageListenerAdapter;
+import de.metas.tourplanning.model.I_M_DeliveryDay;
+import de.metas.tourplanning.model.X_M_DeliveryDay;
+
+/**
+ * Shipment Schedule / Receipt Schedule module activator
+ *
+ * NOTE: atm we have modelChange/docValidate interceptors here. Please don't add more like this but consider creating separate model interceptors.
+ *
+ * @author ts
+ *
+ */
+public final class InOutCandidateValidator implements ModelValidator
+{
+	private int ad_Client_ID = -1;
+
+	@Override
+	public int getAD_Client_ID()
+	{
+		return ad_Client_ID;
+	}
+
+	@Override
+	public final void initialize(final ModelValidationEngine engine, final MClient client)
+	{
+		if (client != null)
+		{
+			ad_Client_ID = client.getAD_Client_ID();
+		}
+
+		//
+		// fresh 07344: Register RS AggregationKey Dependencies
+		registerSSAggregationKeyDependencies();
+
+		engine.addModelValidator(new C_Order_ShipmentSchedule(), client);
+		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
+		engine.addModelValidator(new M_ShipmentSchedule(), client);
+		engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client);
+		engine.addModelValidator(new M_InOutLine_Shipment(), client);
+		engine.addModelValidator(new M_InOut_Shipment(), client);
+		engine.addModelValidator(new C_BPartner_ShipmentSchedule(), client);
+
+		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client); // task 08123
+
+		engine.addModelChange(org.compiere.model.I_C_Order.Table_Name, this);
+		engine.addModelChange(I_C_OrderLine.Table_Name, this);
+
+		engine.addModelChange(org.compiere.model.I_M_InOut.Table_Name, this);
+
+		engine.addModelChange(I_M_Storage.Table_Name, this);
+		engine.addModelChange(I_M_DeliveryDay.Table_Name, this);
+
+		engine.addModelChange(org.compiere.model.I_M_Product.Table_Name, this);
+
+		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
+
+		//
+		// 08255: M_ShipmentSchedule update qtys
+		programaticCalloutProvider.registerAnnotatedCallout(de.metas.inoutcandidate.callout.M_ShipmentSchedule.instance);
+
+		//
+		// SPI implementations. Note that we lean on Service autodetection
+		// This fix a problem where another module calls "Services.get(IShipmentScheduleBL.class)"
+		// and then this validator overwrites the already configured IShipmentScheduleBL with a new instance
+		Check.assume(Services.isAutodetectServices(), "Assuming that Services.isAutodetectServices() is true");
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+
+		shipmentScheduleBL.registerCandidateProcessor(new DefaultCandidateProcessor());
+		shipmentScheduleBL.registerCandidateProcessor(new OnlyOneOpenInvoiceCandProcessor());
+
+		Services.get(IInOutCandHandlerBL.class).registerHandler(Env.getCtx(), new OrderLineInOutCandHandler());
+
+		Services.get(IStorageListeners.class).addStorageListener(new StorageListenerAdapter()
+		{
+			@Override
+			public void onStorageSegmentChanged(Collection<IStorageSegment> storageSegments)
+			{
+				Services.get(IShipmentSchedulePA.class).invalidate(storageSegments);
+			}
+		});
+	}
+
+	/**
+	 * Public for testing purposes only!
+	 */
+	public static void registerSSAggregationKeyDependencies()
+	{
+		final IAggregationKeyRegistry keyRegistry = Services.get(IAggregationKeyRegistry.class);
+
+		final String registrationKey = ShipmentScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY;
+
+		//
+		// Register Handlers
+		keyRegistry.registerAggregationKeyValueHandler(registrationKey, new ShipmentScheduleKeyValueHandler());
+
+		//
+		// Register ShipmentScheduleHeaderAggregationKeyBuilder
+		keyRegistry.registerDependsOnColumnnames(registrationKey,
+				I_M_ShipmentSchedule.COLUMNNAME_C_DocType_ID,
+				I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID,
+				I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID,
+				I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID,
+				I_M_ShipmentSchedule.COLUMNNAME_C_BP_Location_Override_ID,
+				I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, // DateOrdered, POReference fields also depend on this
+				I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID,
+				I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID,
+				I_M_ShipmentSchedule.COLUMNNAME_AD_User_ID,
+				I_M_ShipmentSchedule.COLUMNNAME_AD_User_Override_ID,
+				I_M_ShipmentSchedule.COLUMNNAME_AD_Org_ID,
+				I_M_ShipmentSchedule.COLUMNNAME_DateOrdered);
+	}
+
+	@Override
+	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
+	{
+		return null;
+	}
+
+	@Override
+	public String modelChange(final PO po, final int type) throws Exception
+	{
+		if (po instanceof MStorage)
+		{
+			// NOTE: on  we use M_HU_Storage, so there is no point to trigger it on M_Storage change
+			// storageChange((MStorage)po, type, po.get_TrxName());
+		}
+		else if (po instanceof MProduct)
+		{
+			productChange((MProduct)po, type);
+		}
+		else if (po instanceof MInOut)
+		{
+			// NOTE: took it out because we don't need it on 
+			// inOutChange((MInOut)po, type);
+		}
+		else if (po instanceof MOrder)
+		{
+			// NOTE: took it out because we don't need it on 
+			// orderChanged((MOrder)po, type);
+		}
+		else if (po instanceof X_M_DeliveryDay)
+		{
+			// NOTE: took it out because we don't need it on 
+			// deliveryDayChange((X_M_DeliveryDay)po, type);
+		}
+		return null;
+	}
+
+// @formatter:off
+//	@SuppressWarnings("unused")
+//	private void orderChanged(final MOrder po, final int type)
+//	{
+//		// make sure we are dealing with shipments
+//		if (!po.isSOTrx())
+//		{
+//			return;
+//		}
+//
+//		if (type == ModelValidator.TYPE_BEFORE_CHANGE)
+//		{
+//			if (po.is_ValueChanged(org.compiere.model.I_C_Order.COLUMNNAME_DocStatus))
+//			{
+//				final boolean wasWaitingPayment = X_C_Order.DOCSTATUS_WaitingPayment.equals(po.get_ValueOld(org.compiere.model.I_C_Order.COLUMNNAME_DocStatus));
+//				final boolean isWaitingPayment = X_C_Order.DOCSTATUS_WaitingPayment.equals(po.getDocStatus());
+//				if (isWaitingPayment && !wasWaitingPayment)
+//				{
+//					final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+//					for (final MOrderLine olPO : po.getLines())
+//					{
+//						Services.get(IShipmentScheduleInvalidateBL.class).invalidateSegmentForOrderLine(olPO);
+//					}
+//				}
+//			}
+//		}
+//	}
+// @formatter:on
+
+
+// @formatter:off	
+//	/**
+//	 * That's right: we are not invalidating on storage-changes anymore.
+//	 * @param storage
+//	 * @param type
+//	 * @param trxName
+//	 */
+//	@SuppressWarnings("unused")
+//	private void storageChange(final I_M_Storage storage, final int type, final String trxName)
+//	{
+//		if (type == ModelValidator.TYPE_AFTER_NEW || type == ModelValidator.TYPE_AFTER_CHANGE)
+//		{
+//			final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+//			shipmentSchedulePA.invalidateForProduct(storage.getM_Product_ID(), trxName);
+//		}
+//	}
+// @formatter:on
+
+	private void productChange(final MProduct productPO, final int type)
+	{
+		if (type == ModelValidator.TYPE_AFTER_NEW || type == ModelValidator.TYPE_AFTER_CHANGE)
+		{
+			final boolean isDiversechanged = productPO.is_ValueChanged(I_M_Product.COLUMNNAME_IS_DIVERSE);
+			final boolean isProductTypeChanged = productPO.is_ValueChanged(org.compiere.model.I_M_Product.COLUMNNAME_ProductType);
+
+			if (isDiversechanged || isProductTypeChanged)
+			{
+				final boolean display = Services.get(IProductBL.class).isItem(productPO);
+
+				final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+				shipmentSchedulePA.invalidateForProduct(productPO.get_ID(), productPO.get_TrxName());
+				shipmentSchedulePA.setIsDiplayedForProduct(productPO.get_ID(), display, productPO.get_TrxName());
+			}
+		}
+	}
+
+	@Override
+	public String docValidate(final PO po, final int timing)
+	{
+		return null; // nothing to do
+	}
+
+	@SuppressWarnings("unused")
+	private void deliveryDayChange(final X_M_DeliveryDay dd, final int type)
+	{
+		if (type == ModelValidator.TYPE_AFTER_NEW || type == ModelValidator.TYPE_AFTER_CHANGE)
+		{
+			final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+
+			final Timestamp deliveryDate = dd.getDeliveryDate();
+			shipmentSchedulePA.invalidateForDeliveryDate(deliveryDate, dd.get_TrxName()); // invalidate all with delivery date bigger then this
+		}
+	}
+}

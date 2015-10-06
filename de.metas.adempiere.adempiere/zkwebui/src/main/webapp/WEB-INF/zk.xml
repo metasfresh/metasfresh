@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+	<!--
+		zk.xml Copyright (C) 2006 Potix Corporation. All Rights Reserved.
+	-->
+
+<zk>
+	<!-- Adempiere thread session context handler -->
+	<listener>
+		<description>ADempiere WebUI Context management</description>
+		<listener-class>org.adempiere.webui.session.SessionContextListener
+		</listener-class>
+	</listener>
+	
+	<log>
+		<description>[Optional] Monitor i3-log.conf and register a
+			handler for the specified log-base</description>
+		<log-base></log-base>
+	</log>
+
+	<!--  change to false to use compress js which is much smaller -->
+	<client-config>
+		<debug-js>false</debug-js>
+	</client-config>
+
+	<!--
+		<language-config> <addon-uri>/WEB-INF/lang-addon.xml</addon-uri>
+		</language-config>
+	-->
+
+	<session-config>
+		<device-type>ajax</device-type>
+		<automatic-timeout/> <!-- the same as <automatic-timeout>true</automatic-timeout> -->
+		<timeout-uri>/timeout.zul</timeout-uri>
+	</session-config>
+	
+	<!--
+		Turn on the following if used with WebLogic 9.1 <system-config>
+		<cache-provider-class>org.zkoss.zk.ui.sys.GlobalDesktopCacheProvider</cache-provider-class>
+		</system-config>
+	-->
+
+	<system-config>
+		<id-generator-class>org.adempiere.webui.AdempiereIdGenerator</id-generator-class>
+	</system-config>
+
+	<!--
+		polling - org.zkoss.zkex.ui.impl.PollingServerPush
+		comet - org.zkoss.zkmax.ui.comet.CometServerPush ( enterprise edition only )  
+	-->
+	<device-config>
+ 		<device-type>ajax</device-type>
+		<server-push-class>org.zkoss.zkmax.ui.comet.CometServerPush</server-push-class>
+	</device-config>
+
+	<library-property>
+		<name>org.zkoss.zul.theme.fontSizeM
+		</name>
+		<value>11px</value>
+	</library-property>
+	<library-property>
+		<name>org.zkoss.zul.theme.fontSizeS
+		</name>
+		<value>10px</value>
+	</library-property>
+	<library-property>
+		<name>org.zkoss.zul.theme.fontSizeXS
+		</name>
+		<value>9px</value>
+	</library-property>
+	<library-property>
+		<name>org.zkoss.zul.theme.fontSizeMS
+		</name>
+		<value>11px</value>
+	</library-property>
+</zk>

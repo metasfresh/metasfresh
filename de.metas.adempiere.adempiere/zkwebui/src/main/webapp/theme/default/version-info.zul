@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2009 Low Heng Sin
+Copyright (C) 2009 Idalica Corporation
+-->
+<zk>
+<zscript>
+	import org.compiere.Adempiere;
+	var mainVersion = Adempiere.MAIN_VERSION;
+	var dateVersion = Adempiere.DATE_VERSION;
+	var dbVersion = Adempiere.DB_VERSION;
+	var vendor = Adempiere.getImplementationVendor();
+	var vendorVersion = Adempiere.getImplementationVersion();
+	var jvm = Adempiere.getJavaInfo();
+	var os = Adempiere.getOSInfo();
+</zscript>
+<html>
+<![CDATA[
+<style>
+	.versionInfoBox {
+		background-color: #9CBDFF;
+		margin: 5px;
+		padding: 3px;
+		margin-top: 20px;
+		-moz-border-radius: 5px;
+		-webkit-border-radius: 5px;
+		font-size: 8pt;
+	}
+</style>
+<div class="versionInfoBox">
+	<table border="0">
+		<tr>
+			<td align="right">Main Version</td>
+			<td>:</td>
+			<td aligh="left">${mainVersion}</td>
+		</tr>
+		<tr>
+			<td align="right">Date Version</td>
+			<td>:</td>
+			<td aligh="left">${dateVersion}</td>
+		</tr>
+		<tr>
+			<td align="right">Database Version</td>
+			<td>:</td>
+			<td aligh="left">${dbVersion}</td>
+		</tr>
+		<tr>
+			<td align="right">Vendor</td>
+			<td>:</td>
+			<td aligh="left">${vendor}</td>
+		</tr>
+		<tr>
+			<td align="right">Vendor Version</td>
+			<td>:</td>
+			<td aligh="left">${vendorVersion}</td>
+		</tr>
+		<tr>
+			<td align="right">JVM</td>
+			<td>:</td>
+			<td aligh="left">${jvm}</td>
+		</tr>
+		<tr>
+			<td align="right">OS</td>
+			<td>:</td>
+			<td aligh="left">${os}</td>
+		</tr>
+		<tr>
+			<td align="right">Host</td>
+			<td>:</td>
+			<td aligh="left">${desktop.execution.localName}</td>
+		</tr>
+	</table>
+</div>
+]]>
+</html>
+</zk>

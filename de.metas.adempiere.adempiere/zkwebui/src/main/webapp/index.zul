@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2007 Ashley G Ramdass.
+-->
+<?page style="height:100%"?>
+<?init zscript="theme.zs" ?>
+<?meta http-equiv="X-UA-Compatible" content="IE=8" ?>
+<?link rel="icon" type="image/png" href="${browserIcon}"?>
+<?link rel="stylesheet" type="text/css" href="${themeStyleSheet}"?>
+<?link rel="stylesheet" type="text/css" href="${themeStyleSheetByBrowser}"?>
+<?link rel="stylesheet" type="text/css" href="css/PAPanel.css"?>
+<zk>
+	<script>
+		var zkTimeoutText = "The page or component you request is no longer available. This is normally caused by timeout or rebooting the server.";
+		adempiere.store.set("zkTimeoutText", zkTimeoutText);
+	</script>
+	<window use="org.adempiere.webui.AdempiereWebUI"/>
+</zk>

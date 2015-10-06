@@ -1,0 +1,373 @@
+/**
+ *
+ */
+package de.metas.handlingunits.receiptschedule.impl;
+
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.IContextAware;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.TrxRunnable;
+
+import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
+import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
+import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUTrxBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.IHUContextProcessor;
+import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
+import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
+import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.inoutcandidate.api.IInOutCandidateBL;
+import de.metas.inoutcandidate.api.IInOutProducer;
+import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
+
+/**
+ * @author cg
+ *
+ */
+public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
+{
+	private final IDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule> lutuConfigurationHandler = ReceiptScheduleDocumentLUTUConfigurationHandler.instance;
+	private final IDocumentLUTUConfigurationHandler<List<I_M_ReceiptSchedule>> lutuConfigurationListHandler = new CompositeDocumentLUTUConfigurationHandler<>(lutuConfigurationHandler);
+
+	@Override
+	public IInOutProducer createInOutProducerFromReceiptScheduleHU(final Properties ctx, 
+			final InOutGenerateResult resultInitial, 
+			final Set<Integer> selectedHUIds,
+			 final boolean createReceiptWithDatePromised)
+	{
+		final InOutProducerFromReceiptScheduleHU producer = new InOutProducerFromReceiptScheduleHU(ctx, resultInitial, selectedHUIds, createReceiptWithDatePromised);
+		return producer;
+	}
+
+	@Override
+	public void destroyHandlingUnits(final List<I_M_ReceiptSchedule_Alloc> allocs, final String trxName)
+	{
+		if (allocs.isEmpty())
+		{
+			// do nothing
+			return;
+		}
+
+		Services.get(ITrxManager.class).run(trxName, new TrxRunnable()
+		{
+			@Override
+			public void run(final String localTrxName) throws Exception
+			{
+				final IContextAware context = Services.get(ITrxManager.class).createThreadContextAware(allocs.get(0));
+				final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(context);
+
+				Services.get(IHUTrxBL.class)
+						.createHUContextProcessorExecutor(huContext)
+						.run(new IHUContextProcessor()
+						{
+							@Override
+							public IMutableAllocationResult process(final IHUContext huContext)
+							{
+								destroyHandlingUnits(huContext, allocs);
+								return NULL_RESULT;
+							}
+						});
+			}
+		});
+	}
+
+	@Override
+	public void destroyHandlingUnits(final IHUContext huContext, final List<I_M_ReceiptSchedule_Alloc> allocs)
+	{
+		// Services
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+
+		//
+		// Iterate all receipt schedule allocations and:
+		// * destroy LUs and TUs if those are still planning
+		// * unassign LUs and TUs
+		for (final I_M_ReceiptSchedule_Alloc rsa : allocs)
+		{
+			// Ignore inactive allocations
+			if (!rsa.isActive())
+			{
+				// we ignore the receipt schedule lines that are not active. those HUs are already delivered
+				//
+				continue;
+			}
+
+			// Ignore allocations which were already received
+			if (rsa.getM_InOutLine_ID() > 0)
+			{
+				continue;
+			}
+
+			final List<I_M_HU> husToUnassign = new ArrayList<I_M_HU>(2);
+
+			final I_M_HU tuHU = rsa.getM_TU_HU();
+			if (tuHU != null && tuHU.isActive()
+					// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
+					&& X_M_HU.HUSTATUS_Planning.equals(tuHU.getHUStatus()))
+			{
+				handlingUnitsBL.markDestroyed(huContext, tuHU);
+				husToUnassign.add(tuHU);
+			}
+
+			final I_M_HU luHU = rsa.getM_LU_HU();
+			if (luHU != null && luHU.isActive()
+					// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
+					&& X_M_HU.HUSTATUS_Planning.equals(luHU.getHUStatus()))
+			{
+				handlingUnitsBL.markDestroyed(huContext, luHU);
+				husToUnassign.add(luHU);
+			}
+
+			//
+			// Inactivate allocation
+			rsa.setIsActive(false);
+
+			//
+			// Save allocation
+			InterfaceWrapperHelper.save(rsa);
+
+			//
+			// Make sure HUs are unassigned
+			final String trxName = InterfaceWrapperHelper.getTrxName(rsa);
+			final de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule = rsa.getM_ReceiptSchedule();
+			huAssignmentBL.unassignHUs(receiptSchedule, husToUnassign, trxName);
+		}
+	}
+
+	@Override
+	public IProductStorage createProductStorage(final de.metas.inoutcandidate.model.I_M_ReceiptSchedule rs)
+	{
+		final boolean enforceCapacity = true;
+		return new ReceiptScheduleProductStorage(rs, enforceCapacity);
+	}
+
+	@Override
+	public IAllocationSource createAllocationSource(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final IProductStorage productStorage = createProductStorage(receiptSchedule);
+		final IAllocationSource allocationSource = new GenericAllocationSourceDestination(productStorage, receiptSchedule);
+		return allocationSource;
+	}
+
+	@Override
+	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		return new DocumentLUTUConfigurationManager<>(receiptSchedule, lutuConfigurationHandler);
+	}
+
+	@Override
+	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(final List<I_M_ReceiptSchedule> receiptSchedules)
+	{
+		Check.assumeNotEmpty(receiptSchedules, "receiptSchedules not empty");
+		if (receiptSchedules.size() == 1)
+		{
+			final I_M_ReceiptSchedule receiptSchedule = receiptSchedules.get(0);
+			return createLUTUConfigurationManager(receiptSchedule);
+		}
+		else
+		{
+			return new DocumentLUTUConfigurationManager<>(receiptSchedules, lutuConfigurationListHandler);
+		}
+	}
+
+	@Override
+	public InOutGenerateResult processReceiptSchedules(final Properties ctx, final List<I_M_ReceiptSchedule> receiptSchedules, final Set<I_M_HU> selectedHUs, final boolean storeReceipts)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
+		final IMutable<InOutGenerateResult> retValue = new Mutable<>();
+		trxManager.run(trxName, new TrxRunnable()
+		{
+			@Override
+			public void run(final String localTrxName) throws Exception
+			{
+				final InOutGenerateResult inoutGenerateResult = processReceiptSchedules0(ctx, receiptSchedules, selectedHUs, storeReceipts);
+				retValue.setValue(inoutGenerateResult);
+			}
+		});
+
+		return retValue.getValue();
+	}
+
+	/**
+	 * Actually process receipt schedules.
+	 *
+	 * At this point we assume that we have a thread inherited transaction.
+	 *
+	 * @param ctx
+	 * @param receiptSchedules
+	 * @param selectedHUs
+	 * @param storeReceipts
+	 * @return inout generate result
+	 */
+	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx, final List<I_M_ReceiptSchedule> receiptSchedules, final Set<I_M_HU> selectedHUs, final boolean storeReceipts)
+	{
+		// TODO: make sure receipt schedules and selected HUs have TrxNone or InheritedTrx
+		// assertNoTrxOrIneheritedtrx(receiptSchedules);
+		// assertNoTrxOrIneheritedtrx(selectedHUs);
+
+		//
+		// Get M_HU_IDs from selectedHUs
+		final Set<Integer> selectedHUIds = new HashSet<Integer>(selectedHUs.size());
+		for (final I_M_HU hu : selectedHUs)
+		{
+			final int huId = hu.getM_HU_ID();
+			selectedHUIds.add(huId);
+		}
+
+		//
+		// Get the transaction to be used
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.Fail);
+
+		//
+		// Iterate all selected receipt schedules, get assigned HUs and adjust their Product Storage Qty to WeightNet
+		final HUReceiptScheduleWeightNetAdjuster huWeightNetAdjuster = new HUReceiptScheduleWeightNetAdjuster(ctx, threadTrx.getTrxName());
+		huWeightNetAdjuster.setInScopeHU_IDs(selectedHUIds);
+		for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
+		{
+			// Adjust HU's product storages to their Weight Net Attribute
+			huWeightNetAdjuster.addReceiptSchedule(receiptSchedule);
+		}
+
+		//
+		// Generate receipt from selected receipt schedules and return the result
+		final InOutGenerateResult result;
+		{
+			// Create result collector
+			result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(storeReceipts); // referenceReceipts
+
+			// Create Receipt producer
+			final boolean createReceiptWithDatePromised = false; // create the InOuts with MovementDate = the current login date
+			final IInOutProducer producer = createInOutProducerFromReceiptScheduleHU(ctx, result, selectedHUIds, createReceiptWithDatePromised);
+
+			// Create executor and generate receipts with it
+			final ITrxItemProcessorExecutorService executorService = Services.get(ITrxItemProcessorExecutorService.class);
+			final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(ctx, threadTrx);
+			executorService.createExecutor(processorCtx, producer)
+					//
+					// Configure executor to fail on first error
+					// NOTE: we expect max. 1 receipt, so it's fine to fail anyways
+					.setExceptionHandler(FailTrxItemExceptionHandler.instance)
+					// Process schedules => receipt(s) will be generated
+					.execute(receiptSchedules.iterator());
+		}
+		return result;
+	}
+
+	@Override
+	public IAllocationRequest setInitialAttributeValueDefaults(final IAllocationRequest request,
+			final Collection<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules)
+	{
+		Check.assumeNotNull(request, "request not null");
+		Check.assumeNotEmpty(receiptSchedules, "receiptSchedule not empty");
+
+		//
+		// Iterate all receipt schedules and get the PriceActual.
+		// Make sure it's unique for all receipt schedule lines.
+		BigDecimal priceActual = null;
+		for (final de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
+		{
+			Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
+			final I_C_OrderLine orderLine = receiptSchedule.getC_OrderLine();
+			Check.assumeNotNull(orderLine, "orderLine not null");
+
+			final BigDecimal receiptSchedule_priceActual = orderLine.getPriceActual();
+
+			if (priceActual == null)
+			{
+				priceActual = receiptSchedule_priceActual;
+			}
+			else if (priceActual.compareTo(receiptSchedule_priceActual) != 0)
+			{
+				throw new HUException("Got different PriceActual."
+						+ "\n @PriceActual@: " + priceActual + ", " + receiptSchedule_priceActual
+						+ "\n @M_ReceiptSchedule_ID@: " + receiptSchedules);
+			}
+		}
+
+		//
+		// Set PriceActual in HUContext
+		Check.assumeNotNull(priceActual, "priceActual not null");
+		final IHUContext huContext = request.getHUContext();
+		Map<I_M_Attribute, Object> initialAttributeValueDefaults = huContext.getProperty(Constants.CTXATTR_DefaultAttributesValue);
+		if (initialAttributeValueDefaults == null)
+		{
+			initialAttributeValueDefaults = new HashMap<>();
+			huContext.setProperty(Constants.CTXATTR_DefaultAttributesValue, initialAttributeValueDefaults);
+		}
+		final I_M_Attribute attr_CostPrice = Services.get(IAttributeDAO.class).retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_CostPrice, I_M_Attribute.class);
+		initialAttributeValueDefaults.put(attr_CostPrice, priceActual);
+		return request;
+	}
+
+	@Override
+	public IAllocationRequest setInitialAttributeValueDefaults(final IAllocationRequest request, final de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule)
+	{
+		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
+		final Set<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules = Collections.singleton(receiptSchedule);
+		return setInitialAttributeValueDefaults(request, receiptSchedules);
+	}
+}

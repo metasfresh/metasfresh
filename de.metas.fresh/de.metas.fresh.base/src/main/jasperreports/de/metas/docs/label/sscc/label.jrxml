@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="M_HU_ID" class="java.math.BigDecimal"/>
+	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["http://mf15adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="REPORT_SQL_QUERY" class="java.lang.String">
+		<parameterDescription><![CDATA[Optional SQL query to be used instead of default SQL query.
+See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_SQL_QUERY_EFFECTIVE" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Effective SQL query to be used to fetch data for this report.]]></parameterDescription>
+		<defaultValueExpression><![CDATA[($P{REPORT_SQL_QUERY} != null && !$P{REPORT_SQL_QUERY}.isEmpty())
+? $P{REPORT_SQL_QUERY}
+: "select * from report.fresh_HU_SSCC_Label_Report where M_HU_ID="+$P{M_HU_ID}]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[$P!{REPORT_SQL_QUERY_EFFECTIVE}]]>
+	</queryString>
+	<field name="sscc" class="java.lang.String"/>
+	<field name="p_customervalue" class="java.lang.String"/>
+	<field name="priceactual" class="java.math.BigDecimal"/>
+	<field name="p_name" class="java.lang.String"/>
+	<field name="cu_per_tu" class="java.math.BigDecimal"/>
+	<field name="tu_per_lu" class="java.lang.Long"/>
+	<field name="net_weight" class="java.math.BigDecimal"/>
+	<field name="gross_weight" class="java.math.BigDecimal"/>
+	<field name="order_docno" class="java.lang.String"/>
+	<field name="p_value" class="java.lang.String"/>
+	<field name="lotcode" class="java.lang.String"/>
+	<field name="paletno" class="java.lang.String"/>
+	<field name="customer" class="java.lang.String"/>
+	<field name="m_hu_id" class="java.math.BigDecimal"/>
+	<field name="ad_language" class="java.lang.String"/>
+	<field name="org_address" class="java.lang.String"/>
+	<variable name="sscc" class="java.lang.String">
+		<variableExpression><![CDATA[($F{ad_language}.equals("de_CH")?"SSCC":
+$F{ad_language}.equals("fr_CH")?"SSCC":
+$F{ad_language}.equals("it_CH")?"SSCC":
+"") + ":"]]></variableExpression>
+		<initialValueExpression><![CDATA[($F{ad_language}.equals("de_CH")?"SSCC":
+$F{ad_language}.equals("fr_CH")?"SSCC":
+$F{ad_language}.equals("it_CH")?"SSCC":
+"") + ":"]]></initialValueExpression>
+	</variable>
+	<variable name="costomerno" class="java.lang.String">
+		<variableExpression><![CDATA[$F{ad_language}.equals("de_CH")?"Kunden-Artikel-Nr.":
+$F{ad_language}.equals("fr_CH")?"Kunden-Artikel-Nr.":
+$F{ad_language}.equals("it_CH")?"Kunden-Artikel-Nr.":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{ad_language}.equals("de_CH")?"Kunden-Artikel-Nr.":
+$F{ad_language}.equals("fr_CH")?"Kunden-Artikel-Nr.":
+$F{ad_language}.equals("it_CH")?"Kunden-Artikel-Nr.":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="p_name" class="java.lang.String">
+		<variableExpression><![CDATA[$F{ad_language}.equals("de_CH")?"Artikelbezeichnung":
+$F{ad_language}.equals("fr_CH")?"Artikelbezeichnung":
+$F{ad_language}.equals("it_CH")?"Artikelbezeichnung":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{ad_language}.equals("de_CH")?"Artikelbezeichnung":
+$F{ad_language}.equals("fr_CH")?"Artikelbezeichnung":
+$F{ad_language}.equals("it_CH")?"Artikelbezeichnung":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="priceactual" class="java.lang.String">
+		<variableExpression><![CDATA[$F{ad_language}.equals("de_CH")?"VP CHF":
+$F{ad_language}.equals("fr_CH")?"VP CHF":
+$F{ad_language}.equals("it_CH")?"VP CHF":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{ad_language}.equals("de_CH")?"VP CHF":
+$F{ad_language}.equals("fr_CH")?"(fr) VP CHF":
+$F{ad_language}.equals("it_CH")?"(it) VP CHF":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="cu_per_tu" class="java.lang.String">
+		<variableExpression><![CDATA[$F{ad_language}.equals("de_CH")?"CU/TU":
+$F{ad_language}.equals("fr_CH")?"CU/TU":
+$F{ad_language}.equals("it_CH")?"CU/TU":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{ad_language}.equals("de_CH")?"CU/TU":
+$F{ad_language}.equals("fr_CH")?"CU/TU":
+$F{ad_language}.equals("it_CH")?"CU/TU":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="tu_per_lu" class="java.lang.String">
+		<variableExpression><![CDATA[$F{ad_language}.equals("de_CH")?"TU/LU":
+$F{ad_language}.equals("fr_CH")?"TU/LU":
+$F{ad_language}.equals("it_CH")?"TU/LU":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{ad_language}.equals("de_CH")?"TU/LU":
+$F{ad_language}.equals("fr_CH")?"TU/LU":
+$F{ad_language}.equals("it_CH")?"TU/LU":
+""]]></initialValueExpression>
+	</variable>
+	<variable name="net_weight" class="java.lang.String">
+		<variableExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Nettogewicht":
+$F{ad_language}.equals("fr_CH")?"Nettogewicht":
+$F{ad_language}.equals("it_CH")?"Nettogewicht":
+"") + ":"]]></variableExpression>
+		<initialValueExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Nettogewicht":
+$F{ad_language}.equals("fr_CH")?"Nettogewicht":
+$F{ad_language}.equals("it_CH")?"Nettogewicht":
+"") + ":"]]></initialValueExpression>
+	</variable>
+	<variable name="gross_weight" class="java.lang.String">
+		<variableExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Bruttogewicht":
+$F{ad_language}.equals("fr_CH")?"Bruttogewicht":
+$F{ad_language}.equals("it_CH")?"Bruttogewicht":
+"") + ":"]]></variableExpression>
+		<initialValueExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Bruttogewicht":
+$F{ad_language}.equals("fr_CH")?"Bruttogewicht":
+$F{ad_language}.equals("it_CH")?"Bruttogewicht":
+"") + ":"]]></initialValueExpression>
+	</variable>
+	<variable name="order_docno" class="java.lang.String">
+		<variableExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Interne Auftragsnummer":
+$F{ad_language}.equals("fr_CH")?"Interne Auftragsnummer":
+$F{ad_language}.equals("it_CH")?"Interne Auftragsnummer":
+"") + ":"]]></variableExpression>
+		<initialValueExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Interne Auftragsnummer":
+$F{ad_language}.equals("fr_CH")?"Interne Auftragsnummer":
+$F{ad_language}.equals("it_CH")?"Interne Auftragsnummer":
+"") + ":"]]></initialValueExpression>
+	</variable>
+	<variable name="p_value" class="java.lang.String">
+		<variableExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Interne Artikelnummer":
+$F{ad_language}.equals("fr_CH")?"Interne Artikelnummer":
+$F{ad_language}.equals("it_CH")?"Interne Artikelnummer":
+"") + ":"]]></variableExpression>
+		<initialValueExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Interne Artikelnummer":
+$F{ad_language}.equals("fr_CH")?"Interne Artikelnummer":
+$F{ad_language}.equals("it_CH")?"Interne Artikelnummer":
+"") + ":"]]></initialValueExpression>
+	</variable>
+	<variable name="lotcode" class="java.lang.String">
+		<variableExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Interner Lotcode":
+$F{ad_language}.equals("fr_CH")?"Interner Lotcode":
+$F{ad_language}.equals("it_CH")?"Interner Lotcode":
+"") + ":"]]></variableExpression>
+		<initialValueExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Interner Lotcode":
+$F{ad_language}.equals("fr_CH")?"Interner Lotcode":
+$F{ad_language}.equals("it_CH")?"Interner Lotcode":
+"") + ":"]]></initialValueExpression>
+	</variable>
+	<variable name="paletno" class="java.lang.String">
+		<variableExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Palettennummer":
+$F{ad_language}.equals("fr_CH")?"Palettennummer":
+$F{ad_language}.equals("it_CH")?"Palettennummer":
+"") + ":"]]></variableExpression>
+		<initialValueExpression><![CDATA[($F{ad_language}.equals("de_CH")?"Palettennummer":
+$F{ad_language}.equals("fr_CH")?"Palettennummer":
+$F{ad_language}.equals("it_CH")?"Palettennummer":
+"") + ":"]]></initialValueExpression>
+	</variable>
+	<variable name="customer" class="java.lang.String">
+		<variableExpression><![CDATA[$F{ad_language}.equals("de_CH")?"Empfänger/Kunde":
+$F{ad_language}.equals("fr_CH")?"Empfänger/Kunde":
+$F{ad_language}.equals("it_CH")?"Empfänger/Kunde":
+""]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{ad_language}.equals("de_CH")?"Empfänger/Kunde":
+$F{ad_language}.equals("fr_CH")?"Empfänger/Kunde":
+$F{ad_language}.equals("it_CH")?"Empfänger/Kunde":
+""]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch">
+			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch">
+			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="842" splitType="Stretch">
+			<textField>
+				<reportElement uuid="0ec3f744-7821-4d60-b2c4-9b7f5f312c8e" x="149" y="206" width="297" height="19"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{org_address}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="1f4c5efc-131f-40d2-84f1-062801e33a4a" x="149" y="225" width="297" height="1"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="95d6fd65-bcad-47ef-8cf6-6e4ac1feb886" x="149" y="228" width="297" height="19"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sscc}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="0501ec21-a240-4be3-a6f3-a3d52576fc96" x="149" y="203" width="297" height="1"/>
+				<graphicElement>
+					<pen lineStyle="Dashed"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement uuid="8695bcca-d854-49ef-ba26-dbf35284a13b" x="153" y="230" width="52" height="17"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sscc}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="d840f122-aefd-41b7-a8b7-e5f7ecc5b9a5" x="149" y="247" width="297" height="1"/>
+			</line>
+			<textField>
+				<reportElement uuid="5458817e-b006-4c10-8c77-676d8b621970" x="153" y="248" width="140" height="16"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{costomerno}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="a63fe2b6-8827-4291-91f9-23ee090433ed" x="334" y="248" width="98" height="16"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{priceactual}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="3a09859e-1889-4b7c-8b1c-d4bfe8f14db9" x="154" y="263" width="139" height="20"/>
+				<textElement>
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_customervalue}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00" isBlankWhenNull="true">
+				<reportElement uuid="22bc55ed-2a59-4833-aec1-3c9fcc6ed17a" x="334" y="263" width="98" height="20"/>
+				<textElement>
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{priceactual}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="c757fa61-8034-4042-bf8c-05d3a0e7edd5" x="154" y="282" width="140" height="16"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{p_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08" x="154" y="297" width="278" height="20"/>
+				<textElement>
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="8cdc16eb-5f29-4253-ba95-2737af872264" x="150" y="316" width="47" height="16"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{cu_per_tu}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##" isBlankWhenNull="true">
+				<reportElement uuid="45d77dd8-1af1-4268-b530-08564b45f2c9" x="150" y="331" width="47" height="20">
+					<printWhenExpression><![CDATA[new Boolean( $F{cu_per_tu}.floatValue() != 0 )]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cu_per_tu}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##" isBlankWhenNull="true">
+				<reportElement uuid="687083e1-f6a3-4c6f-b984-e2729c107a63" x="207" y="330" width="45" height="20">
+					<printWhenExpression><![CDATA[new Boolean( $F{tu_per_lu}.floatValue() != 0 )]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tu_per_lu}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="58f4060d-1975-4901-9be9-66323de2ea20" x="207" y="316" width="45" height="16"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{tu_per_lu}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00 kg" isBlankWhenNull="true">
+				<reportElement uuid="e641f243-6ae4-43b5-9270-d9a1d97139c1" x="265" y="330" width="84" height="20"/>
+				<textElement>
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{net_weight}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="6e3c99d2-d0ec-43c5-84a5-37bbf9043099" x="265" y="315" width="84" height="16"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{net_weight}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="614044f5-8e6e-40c5-b00d-c996d532ba1f" x="355" y="315" width="87" height="16"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{gross_weight}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00 kg" isBlankWhenNull="true">
+				<reportElement uuid="8e393b6f-73fe-443e-b896-04a4e21df0bb" x="355" y="330" width="87" height="20"/>
+				<textElement>
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{gross_weight}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0" x="149" y="349" width="297" height="1"/>
+			</line>
+			<textField>
+				<reportElement uuid="71ec0b75-0427-409b-ac1a-a109fcbaa92b" x="154" y="352" width="167" height="16"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{order_docno}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="0fc2ac41-653c-4285-a9b1-5126fc06b37a" x="154" y="370" width="167" height="16"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{p_value}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="fbcc24ee-39b6-4040-8016-50253e513e5d" x="154" y="389" width="140" height="16"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{lotcode}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="6ae440d2-25ef-4ac9-a54e-8ae527265672" x="154" y="408" width="140" height="16"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{paletno}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0" x="149" y="424" width="297" height="1"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08" x="311" y="349" width="130" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{order_docno}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08" x="311" y="367" width="130" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08" x="293" y="386" width="148" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lotcode}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08" x="293" y="405" width="148" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{paletno}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="bb5a160b-f650-4430-ac6e-5292b9280f42" x="154" y="424" width="140" height="16"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{customer}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08" x="154" y="439" width="291" height="42"/>
+				<textElement>
+					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{customer}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0" x="149" y="480" width="297" height="1"/>
+			</line>
+			<image>
+				<reportElement uuid="d04727b7-1619-46f2-8623-f9f5d1c8ac73" x="162" y="493" width="270" height="90"/>
+				<imageExpression><![CDATA[new java.net.URL( $P{barcodeURL} + "?Content=" +
+$F{sscc} +
+"&Format=CODE_128&Width=280&Height=90" )]]></imageExpression>
+			</image>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="95d6fd65-bcad-47ef-8cf6-6e4ac1feb886" x="162" y="580" width="271" height="14"/>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sscc}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

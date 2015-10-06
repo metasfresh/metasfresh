@@ -1,0 +1,6 @@
+org.compiere
+org.compiere.impexp
+org.compiere.model
+org.compiere.report.core
+org.compiere.server
+org.compiere.util

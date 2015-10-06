@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_sum" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/dunning/report" uuid="d94ecfcb-c255-4111-8642-5cd76e75639e">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.3310000000000013"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+	SUM(doc.GrandTotal) AS grandtotal,
+	SUM(doc.PaidAmt) AS paidamt,
+	SUM(doc.GrandTotal - doc.PaidAmt) AS openamt,
+	SUM(dl.amt) AS feeamt,
+	SUM(invoiceopen(dc.Record_ID, 0::numeric) + dl.amt) AS totalamt,
+	c.ISO_Code
+FROM
+	C_DunningDoc dd
+	JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_Line_ID
+	LEFT JOIN C_DunningDoc_Line_Source dls ON dl.C_DunningDoc_Line_ID = dls.C_DunningDoc_Line_ID
+	LEFT JOIN C_Dunning_Candidate dc ON dls.C_Dunning_Candidate_ID = dc.C_Dunning_Candidate_ID
+	LEFT JOIN C_Currency c ON dc.C_Currency_ID = c.C_Currency_ID
+	LEFT JOIN	(
+		SELECT 	sub_dc.C_Dunning_Candidate_ID,
+			Documentpaid(sub_dc.Record_ID, sub_dc.AD_Table_ID, sub_dc.C_Currency_ID, i.MultiplierAP) AS PaidAmt,
+			COALESCE(i.DocumentNo, o.DocumentNo) AS DocumentNo,
+			COALESCE(i.DateInvoiced, o.DateOrdered) AS DocumentDate,
+			COALESCE(i.C_Doctype_ID, o.C_Doctype_ID) AS C_Doctype_ID,
+			COALESCE(i.C_PaymentTerm_ID, o.C_PaymentTerm_ID) AS C_PaymentTerm_ID,
+			COALESCE(i.GrandTotal, o.GrandTotal) AS GrandTotal
+		FROM	C_Dunning_Candidate sub_dc
+			LEFT JOIN C_Invoice_v i ON sub_dc.Record_ID = i.C_Invoice_ID AND sub_dc.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice')
+			LEFT JOIN C_Order o ON sub_dc.Record_ID = o.C_Order_ID AND sub_dc.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Order')
+	) doc ON dc.C_Dunning_Candidate_ID = doc.C_Dunning_Candidate_ID
+WHERE
+	dd.C_DunningDoc_ID = $P{RECORD_ID}
+GROUP BY
+	dd.C_DunningDoc_ID,
+	c.ISO_Code
+;]]>
+	</queryString>
+	<field name="grandtotal" class="java.math.BigDecimal"/>
+	<field name="paidamt" class="java.math.BigDecimal"/>
+	<field name="openamt" class="java.math.BigDecimal"/>
+	<field name="feeamt" class="java.math.BigDecimal"/>
+	<field name="totalamt" class="java.math.BigDecimal"/>
+	<field name="iso_code" class="java.lang.String"/>
+	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="currency" class="java.lang.String">
+		<variableExpression><![CDATA[$F{iso_code}]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{iso_code}]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="9" splitType="Stretch">
+			<line>
+				<reportElement uuid="86e172bf-f86a-4b86-b605-e75e84a3ce47" key="line-1" mode="Opaque" x="57" y="5" width="488" height="1" forecolor="#000000"/>
+			</line>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="11">
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="784a73d7-4763-414d-9e65-40c278d63247" key="textField-2" mode="Transparent" x="59" y="0" width="183" height="11"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{totalsum}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="87f02c05-d602-42de-b08b-d1df5e033b5a" key="textField-3" mode="Transparent" x="281" y="0" width="35" height="11"/>
+				<box leftPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="eb02e48c-0dee-488c-bbe1-74aece72b309" key="textField-1" mode="Transparent" x="500" y="0" width="45" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="eb02e48c-0dee-488c-bbe1-74aece72b309" key="textField-1" mode="Transparent" x="451" y="0" width="50" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{feeamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="eb02e48c-0dee-488c-bbe1-74aece72b309" key="textField-1" mode="Transparent" x="412" y="0" width="39" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{openamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="371" y="0" width="41" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{paidamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="322" y="0" width="48" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="3">
+			<line>
+				<reportElement uuid="cc10db8e-d8be-42ad-b952-f54ca98e3963" mode="Opaque" x="57" y="0" width="488" height="1"/>
+				<graphicElement>
+					<pen lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement uuid="60ae7bef-9bdf-4074-b1ca-a50fccf7e5b7" mode="Opaque" x="57" y="2" width="488" height="1"/>
+				<graphicElement>
+					<pen lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,23 @@
+<!-- ============================================= -->
+<!-- ADempiere migration tool.                     -->
+<!--                                               -->
+<!-- ============================================= -->
+
+<project name="migration" default="zip" basedir=".">
+
+  <description>
+    ADempiere migration tool.
+  </description>
+
+  <!-- Set global properties for this build -->
+  <property environment="env"/>
+  <property file="build.properties"/>
+  <property name="version" value="0.5"/>
+	
+  <target name="zip">
+  	<zip destfile="dist/${ant.project.name}-${version}.zip" >
+  	  <fileset dir="." includes="**/*" excludes="dist/${ant.project.name}-${version}.zip, build.bat, build.sh, build.properties, logs/*.log" />
+  	</zip>
+  </target>
+	
+</project>

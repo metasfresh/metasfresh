@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="782" pageHeight="842" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[new BigDecimal(1)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="nur_mit_bestand" class="java.lang.String"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal" isForPrompting="false">
+		<defaultValueExpression><![CDATA[new BigDecimal(1)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Kundenliste" class="java.lang.String">
+		<defaultValueExpression><![CDATA["N"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Liefermenge" class="java.lang.String">
+		<defaultValueExpression><![CDATA["N"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select 
+	*, (SELECT name FROM ad_org WHERE ad_org_id = $P{AD_Org_ID})AS org_name from
+(
+select *,
+case
+  when foo.lieferbareMenge > 0 then 'Y'
+  else 'N'
+end as lieferbar,
+case 
+  when foo.lieferbareMenge >= 0 then round((foo.lieferbareMenge) * foo.priceactual, 2)
+  else round(0 * foo.priceactual, 2)
+end as LieferbareSumme,
+round(coalesce(foo.val_number,0) * foo.priceactual, 2) as LieferbareSummePlan
+from
+(
+select *,
+case
+  when bar.qtytodeliver <= bar.qtyonhand then bar.qtytodeliver
+  else bar.qtyonhand
+end as lieferbareMenge
+from 
+(
+SELECT 	o.c_order_id, 
+	o.documentno,
+	o.c_doctype_id, 
+	o.isapproved, 	 
+	l.c_bpartner_id, 
+	b.name as Kunde,
+	l.c_bpartner_location_id, 
+	o.ad_user_id,
+	o.poreference, 
+	o.c_currency_id,
+        coalesce(c.cursymbol, c.iso_code) as currency, 
+	o.issotrx, 	
+	l.c_orderline_id, 
+	l.dateordered, 
+	l.datepromised, 
+	p.name as Produktname,
+        p.value as ProduktNr,
+	l.m_warehouse_id, 
+	l.c_uom_id,  
+	l.qtydelivered, 
+	l.qtyinvoiced, 
+	round(l.priceactual, 2) as priceactual, 
+	round(l.priceentered, 2) as priceentered,
+        l.pricelimit,
+	l.qtyordered - l.qtydelivered AS qtytodeliver,
+	l.qtyentered,
+	mc.qtydeliverable as val_number,
+	
+        ms.qtyonhand,
+        ms.qtyreserved,
+        ms.qtyonhand - ms.qtyreserved as qtyavailable,
+        ms.qtyordered,
+        CASE
+            WHEN l.pricelist = 0::numeric THEN 0::numeric
+            ELSE round((l.pricelist - l.priceactual) / l.pricelist * 100::numeric, 2)
+        END AS discount, 
+        CASE
+            WHEN l.pricelimit = 0::numeric THEN 0::numeric
+            ELSE round((l.priceactual - l.pricelimit) / l.pricelimit * 100::numeric, 2)
+        END AS margin, 
+        CASE
+            WHEN l.pricelimit = 0::numeric THEN 0::numeric
+            ELSE round((l.priceactual - l.pricelimit) * (l.qtyordered - l.qtydelivered), 2)
+        END AS marginamt,
+	u.phone, u.fax, b.value, p.datepublication as erschienen
+   FROM 
+	c_order o
+   	JOIN c_orderline l 		ON o.c_order_id = l.c_order_id
+	left JOIN m_shipmentschedule mc ON l.c_orderline_id = mc.c_orderline_id
+   	join c_bpartner b 		on o.c_bpartner_id = b.c_bpartner_id 
+   	join m_product p 		on l.m_product_id = p.m_product_id
+   	join c_currency c 		on o.c_currency_id = c.c_currency_id
+   	join (	SELECT  m_product_id, 
+		 sum(qtyonhand)   as qtyonhand, 
+		 sum(qtyreserved) as qtyreserved, 
+		 sum(qtyordered)  as qtyordered
+		FROM 	 m_storage
+		GROUP BY m_product_id 
+	     )ms 			ON l.m_product_id = ms.m_product_id
+   left join ad_user u 			on u.ad_user_id = (select min(ad_user_id) from ad_user temp where o.c_bpartner_id = temp.c_bpartner_id) 
+   where ((l.qtyordered - l.qtydelivered )<>0 ) 
+AND DocStatus NOT IN ('VO','CL') 
+and l.ad_client_id = 1000000 
+and o.c_doctype_id <> 0 
+and o.issotrx = 'Y'
+and o.ad_org_id::text like '%'||$P{AD_Org_ID}||'%'
+) as bar
+) as foo
+) as world
+where world.c_bpartner_id::text like '%' || $P{C_BPartner_ID} || '%'
+and world.lieferbar in ('Y', $P{nur_mit_bestand})
+order by world.value, world.ProduktNr, world.lieferbar desc
+;]]>
+	</queryString>
+	<field name="c_order_id" class="java.math.BigDecimal"/>
+	<field name="documentno" class="java.lang.String"/>
+	<field name="c_doctype_id" class="java.math.BigDecimal"/>
+	<field name="isapproved" class="java.lang.String"/>
+	<field name="c_bpartner_id" class="java.math.BigDecimal"/>
+	<field name="kunde" class="java.lang.String"/>
+	<field name="c_bpartner_location_id" class="java.math.BigDecimal"/>
+	<field name="ad_user_id" class="java.math.BigDecimal"/>
+	<field name="poreference" class="java.lang.String"/>
+	<field name="c_currency_id" class="java.math.BigDecimal"/>
+	<field name="currency" class="java.lang.String"/>
+	<field name="issotrx" class="java.lang.String"/>
+	<field name="c_orderline_id" class="java.math.BigDecimal"/>
+	<field name="dateordered" class="java.sql.Timestamp"/>
+	<field name="datepromised" class="java.sql.Timestamp"/>
+	<field name="produktname" class="java.lang.String"/>
+	<field name="produktnr" class="java.lang.String"/>
+	<field name="m_warehouse_id" class="java.math.BigDecimal"/>
+	<field name="c_uom_id" class="java.math.BigDecimal"/>
+	<field name="qtydelivered" class="java.math.BigDecimal"/>
+	<field name="qtyinvoiced" class="java.math.BigDecimal"/>
+	<field name="priceactual" class="java.math.BigDecimal"/>
+	<field name="priceentered" class="java.math.BigDecimal"/>
+	<field name="pricelimit" class="java.math.BigDecimal"/>
+	<field name="qtytodeliver" class="java.math.BigDecimal"/>
+	<field name="qtyentered" class="java.math.BigDecimal"/>
+	<field name="val_number" class="java.math.BigDecimal"/>
+	<field name="qtyonhand" class="java.math.BigDecimal"/>
+	<field name="qtyreserved" class="java.math.BigDecimal"/>
+	<field name="qtyavailable" class="java.math.BigDecimal"/>
+	<field name="qtyordered" class="java.math.BigDecimal"/>
+	<field name="discount" class="java.math.BigDecimal"/>
+	<field name="margin" class="java.math.BigDecimal"/>
+	<field name="marginamt" class="java.math.BigDecimal"/>
+	<field name="phone" class="java.lang.String"/>
+	<field name="fax" class="java.lang.String"/>
+	<field name="value" class="java.lang.String"/>
+	<field name="erschienen" class="java.lang.String"/>
+	<field name="lieferbaremenge" class="java.math.BigDecimal"/>
+	<field name="lieferbar" class="java.lang.String"/>
+	<field name="lieferbaresumme" class="java.math.BigDecimal"/>
+	<field name="lieferbaresummeplan" class="java.math.BigDecimal"/>
+	<field name="org_name" class="java.lang.String"/>
+	<variable name="total_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="Kundenauftraege" calculation="Sum">
+		<variableExpression><![CDATA[$F{lieferbaresumme}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="total_sum_plan" class="java.math.BigDecimal" resetType="Group" resetGroup="Kundenauftraege" calculation="Sum">
+		<variableExpression><![CDATA[$F{lieferbaresummeplan}]]></variableExpression>
+	</variable>
+	<group name="Kundenauftraege" isStartNewColumn="true">
+		<groupExpression><![CDATA[$F{kunde}]]></groupExpression>
+		<groupHeader>
+			<band splitType="Stretch"/>
+		</groupHeader>
+		<groupFooter>
+			<band height="12" splitType="Stretch">
+				<textField pattern="##0.00" isBlankWhenNull="false">
+					<reportElement key="textField-4" x="667" y="1" width="31" height="11">
+						<printWhenExpression><![CDATA[$P{Kundenliste}.equals("Y")||$P{Liefermenge}.equals("Y")? new Boolean(false): new Boolean(true)]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_sum}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-5" x="698" y="1" width="7" height="11">
+						<printWhenExpression><![CDATA[$P{Kundenliste}.equals("Y")||$P{Liefermenge}.equals("Y")? new Boolean(false): new Boolean(true)]]></printWhenExpression>
+					</reportElement>
+					<box leftPadding="3">
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{currency}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText-19" x="622" y="1" width="34" height="11"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Summe:]]></text>
+				</staticText>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-21" x="754" y="1" width="7" height="11"/>
+					<box leftPadding="3">
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{currency}]]></textFieldExpression>
+				</textField>
+				<textField pattern="##0.00" isBlankWhenNull="false">
+					<reportElement key="textField-22" x="716" y="1" width="38" height="11"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$P{Kundenliste}.equals("N")&&$P{Liefermenge}.equals("Y")? 
+$V{total_sum}: $V{total_sum_plan}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="622" y="1" width="139" height="1"/>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Zeile">
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="16" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="0" width="783" height="16" backcolor="#808080"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-11" x="55" y="0" width="131" height="15" forecolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Produkt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-12" x="324" y="1" width="40" height="15" forecolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Auftrag]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-13" x="375" y="1" width="44" height="15" forecolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Datum]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-14" x="430" y="1" width="28" height="15" forecolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[offen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-15" x="622" y="0" width="34" height="16" forecolor="#FFFFFF">
+					<printWhenExpression><![CDATA[$P{Kundenliste}.equals("Y")||$P{Liefermenge}.equals("Y")? new Boolean(false): new Boolean(true)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Preis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-17" x="469" y="0" width="61" height="15" forecolor="#FFFFFF">
+					<printWhenExpression><![CDATA[$P{Kundenliste}.equals("Y")? new Boolean(false): new Boolean(true)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[auf Lager]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-18" x="1" y="0" width="53" height="15" forecolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Produkt-Nr.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-20" x="259" y="1" width="52" height="15" forecolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[erschienen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-21" x="543" y="0" width="68" height="16" forecolor="#FFFFFF">
+					<printWhenExpression><![CDATA[$P{Liefermenge}.equals("N")? new Boolean(true): new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Liefermenge]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-23" x="667" y="0" width="38" height="15" forecolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{Kundenliste}.equals("Y")||$P{Liefermenge}.equals("Y")? "Preis": "Summe"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-24" x="716" y="0" width="45" height="15" forecolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{Kundenliste}.equals("N")&&$P{Liefermenge}.equals("Y")? "Summe": "Summe\nPlan"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="11" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-2" x="0" y="0" width="780" height="11" backcolor="#FFFFCC">
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile_COUNT}.intValue()%2)==0)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-15" x="1" y="0" width="54" height="11"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{produktnr}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-6" x="55" y="0" width="131" height="11"/>
+				<box leftPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Times-Roman" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{produktname}]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-19" x="716" y="0" width="38" height="11"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$P{Kundenliste}.equals("N")&&$P{Liefermenge}.equals("Y")? $F{lieferbaresumme}: $F{lieferbaresummeplan}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-20" x="754" y="0" width="7" height="11"/>
+				<box leftPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{currency}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-17" x="259" y="0" width="52" height="11" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{erschienen}]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0" isBlankWhenNull="false">
+				<reportElement key="textField-14" x="469" y="0" width="61" height="11">
+					<printWhenExpression><![CDATA[$P{Kundenliste}.equals("Y")? new Boolean(false): new Boolean(true)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{lieferbaremenge}]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-7" x="622" y="0" width="24" height="11">
+					<printWhenExpression><![CDATA[$P{Kundenliste}.equals("Y")||$P{Liefermenge}.equals("Y")? new Boolean(false): new Boolean(true)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{priceactual}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-13" x="698" y="0" width="7" height="11"/>
+				<box leftPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{currency}]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-11" x="667" y="0" width="31" height="11"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$P{Kundenliste}.equals("Y")||$P{Liefermenge}.equals("Y")? $F{priceactual}: $F{lieferbaresumme}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-16" x="646" y="0" width="10" height="11">
+					<printWhenExpression><![CDATA[$P{Kundenliste}.equals("Y")||$P{Liefermenge}.equals("Y")? new Boolean(false): new Boolean(true)]]></printWhenExpression>
+				</reportElement>
+				<box leftPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{currency}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-8" x="324" y="0" width="40" height="11"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{documentno}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-9" x="375" y="0" width="44" height="11"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{dateordered}]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0" isBlankWhenNull="false">
+				<reportElement key="textField-10" x="430" y="0" width="28" height="11"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{qtytodeliver}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0" isBlankWhenNull="true">
+				<reportElement key="textField-12" x="543" y="0" width="68" height="11">
+					<printWhenExpression><![CDATA[$P{Liefermenge}.equals("N")? new Boolean(true): new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<box leftPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{val_number}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0" isBlankWhenNull="true">
+				<reportElement key="textField-25" mode="Transparent" x="543" y="0" width="68" height="11" backcolor="#FFFFFF">
+					<printWhenExpression><![CDATA[$F{val_number} == null && $P{Liefermenge}.equals("N") ? new Boolean(true): new Boolean(false)]]></printWhenExpression>
+				</reportElement>
+				<box leftPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{val_number}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="13" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-3" x="0" y="0" width="782" height="13" backcolor="#808080"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="9"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

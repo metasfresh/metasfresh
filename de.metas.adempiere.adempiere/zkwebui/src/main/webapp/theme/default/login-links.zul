@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2009 Low Heng Sin
+Copyright (C) 2009 Idalica Corporation
+-->
+<zk>
+
+<style>
+	.loginLinksBox {
+		padding: 0;
+		margin: 0;
+		padding-left: 3px;
+		font-size: 8pt;
+		background-color: transparent;
+	}
+</style>
+
+<div class="loginLinksBox" if="${desktop.execution.localName == &quot;ip-10-8-0-1.ec2.internal&quot; or desktop.execution.serverName == &quot;127.0.0.1&quot;}"
+	style="position: absolute; bottom: 5px;">
+
+	<toolbarbutton href="http://www.zkoss.org" image="http://www.zkoss.org/img/zkpowered_s.png"
+		tooltiptext="Powered by Zk" target="_blank"
+		/>
+	<button href="http://www.mozilla.com/firefox" id="getFirefox"
+		image="http://sfx-images.mozilla.org/affiliates/Buttons/firefox3/110x32_get_ffx.png"
+		target="_blank"
+		/>
+	<button href="http://www.adempiere.org" image="images/AD32.png"
+		tooltiptext="ADempiere Community" style="height:32px; width:32px" target="_blank"/>
+</div>
+
+<zscript if="${desktop.execution.localName == &quot;ip-10-8-0-1.ec2.internal&quot; or desktop.execution.serverName == &quot;127.0.0.1&quot;}">
+<![CDATA[
+	getFirefox.setHref("http://www.mozilla.com/?from=sfx&uid=0&t=306");
+]]>
+</zscript>
+
+</zk>

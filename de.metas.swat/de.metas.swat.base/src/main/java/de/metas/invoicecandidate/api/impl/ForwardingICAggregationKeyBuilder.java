@@ -1,0 +1,124 @@
+package de.metas.invoicecandidate.api.impl;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+
+import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
+import de.metas.aggregation.api.IAggregationFactory;
+import de.metas.aggregation.api.IAggregationKey;
+import de.metas.aggregation.api.IAggregationKeyBuilder;
+import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
+import de.metas.invoicecandidate.model.I_C_BPartner;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+
+/**
+ * Aggregation Key Builder for {@link I_C_Invoice_Candidate}s.
+ *
+ * This implementation gets the actual {@link IAggregationKeyBuilder} from {@link IAggregationFactory} using the settings from {@link I_C_Invoice_Candidate}, and delegates all the work to it.
+ */
+public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBuilder<I_C_Invoice_Candidate>
+{
+	// services
+	protected final transient IInvoiceAggregationFactory invoiceAggregationFactory = Services.get(IInvoiceAggregationFactory.class);
+
+	private final String aggregationUsageLevel;
+
+	public ForwardingICAggregationKeyBuilder(final String aggregationUsageLevel)
+	{
+		super();
+
+		Check.assumeNotEmpty(aggregationUsageLevel, "aggregationUsageLevel not empty");
+		this.aggregationUsageLevel = aggregationUsageLevel;
+	}
+
+	@Override
+	public final String getTableName()
+	{
+		return I_C_Invoice_Candidate.Table_Name;
+	}
+
+	@Override
+	public final List<String> getDependsOnColumnNames()
+	{
+		// NOTE: we cannot know which are the column names until we load the actual aggregation key builder
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public final IAggregationKey buildAggregationKey(final I_C_Invoice_Candidate ic)
+	{
+		final IAggregationKeyBuilder<I_C_Invoice_Candidate> icAggregationKeyBuilder = getDelegate(ic);
+		if (icAggregationKeyBuilder == null)
+		{
+			return AggregationKey.NULL;
+		}
+
+		return icAggregationKeyBuilder.buildAggregationKey(ic);
+	}
+
+	/**
+	 * Finds the actual {@link IAggregationKeyBuilder} to be used, based on invoice candidate's settings.
+	 *
+	 * @param ic
+	 * @return actual {@link IAggregationKeyBuilder} to be used
+	 */
+	protected IAggregationKeyBuilder<I_C_Invoice_Candidate> getDelegate(final I_C_Invoice_Candidate ic)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(ic.getBill_BPartner(), I_C_BPartner.class);
+		if (bpartner == null)
+		{
+			return null;
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+		final boolean isSOTrx = ic.isSOTrx();
+		return invoiceAggregationFactory.getAggregationKeyBuilder(ctx, bpartner, isSOTrx, aggregationUsageLevel);
+	}
+
+	@Override
+	public final boolean isSame(final I_C_Invoice_Candidate ic1, final I_C_Invoice_Candidate ic2)
+	{
+		final IAggregationKey aggregationKey1 = buildAggregationKey(ic1);
+		if (aggregationKey1 == null)
+		{
+			return false;
+		}
+
+		final IAggregationKey aggregationKey2 = buildAggregationKey(ic2);
+		if (aggregationKey2 == null)
+		{
+			return false;
+		}
+
+		final boolean same = Check.equals(aggregationKey1, aggregationKey2);
+		return same;
+	}
+}

@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<!-- ============================================= -->
+<!-- Adempiere Server Root                          -->
+<!-- ============================================= -->
+<!-- $Header: /cvs/adempiere/serverRoot/build.xml,v 1.4 2006/06/10 21:58:02 jjanke Exp $-->
+
+<project name="adempiereRoot" default="main" basedir=".">
+
+  <!-- required as we want to run to run this file via maven-antrun-plugin
+  I don't understand (also didn't research yet), but thx to http://stackoverflow.com/questions/2022622/java-home-gets-mangled-by-maven 
+  -->
+  <property name="build.compiler" value="extJavac"/>
+	
+  <!--<property environment="env"/>-->
+  <import file="../utils_dev/properties.xml"/>
+
+  <property name="src.dir" value="${basedir}/src"/>
+  <property name="src.main.dir" value="${src.dir}/main"/>
+  <property name="src.ear.dir" value="${src.dir}/ear"/>
+  <property name="src.ejb.dir" value="${src.main.dir}/ejb"/>
+  <property name="src.servlet.dir" value="${src.main.dir}/servlet"/>
+  <property name="src.server.dir" value="${src.main.dir}/server"/>
+  <property name="src.resources.dir" value="${src.dir}/resources"/>
+  <property name="src.web.dir" value="${src.dir}/web"/>
+
+  <property name="build.dir" value="${basedir}/build"/>
+  <property name="build.tmp.dir" value="${build.dir}/tmp"/>
+  <property name="build.deploy.dir" value="${build.dir}/deploy"/>
+  <property name="build.classes.dir" value="${build.dir}/classes"/>
+  <property name="build.war.dir" value="${build.dir}/war"/>
+
+  <target name="adempiereRootInit">
+    <echo message="=========== Build Server Root"/>
+  </target>
+
+
+  <path id="base.path">
+    <pathelement location="../lib/Adempiere.jar" />
+    <pathelement location="../lib/CSTools.jar" />
+    <pathelement location="../tools/lib/j2ee.jar" />
+	<pathelement location="../tools/lib/jnlp.jar" />
+	<pathelement location="../tools/lib/servlet-api.jar" />
+	<pathelement location="../tools/lib/mail.jar" />
+	<pathelement location="../tools/lib/bsh-1.3.0.jar" />
+	<pathelement location="../tools/lib/junit.jar" />
+  	<pathelement location="../tools/lib/cron4j-2.2.1.jar" />
+	<pathelement location="../lib/oracle.jar" />
+	<pathelement location="../lib/jboss.jar" />
+	<pathelement location="../lib/postgresql.jar" />
+    <pathelement location="${build.classes.dir}" />
+  </path>
+
+
+  <!-- =================================================================== -->
+  <!-- Copy JBoss specific deployment descriptor     					   -->
+  <!-- =================================================================== -->
+  <target name="adempiereRootXml" depends="adempiereRootInit">
+  	<copyfile dest="${build.dir}/META-INF/jboss.xml" src="${src.ejb.dir}/jboss.xml"/>
+  	<copyfile dest="${build.dir}/META-INF/sun-ejb-jar.xml" src="${src.ejb.dir}/sun-ejb-jar.xml"/>
+  </target>
+
+
+  <!-- =========================================== -->
+  <!-- Compiles the source code                    -->
+  <!-- =========================================== -->
+  <target name="adempiereRootCompile" depends="adempiereRootXml">
+    <mkdir dir="${build.classes.dir}"/>
+
+    <!--	Compile all -->
+    <javac
+      target="1.5" 
+	  destdir="${build.classes.dir}"
+	  debug="on"
+	  deprecation="off"
+	  optimize="on"
+      classpathref="base.path"
+	  encoding="utf-8">
+      <src path="${src.ejb.dir}"/>
+      <src path="${src.servlet.dir}"/>
+      <src path="${src.server.dir}"/>
+    </javac>
+
+  </target>
+
+
+  <!-- =========================================== -->
+  <!-- Creates the jar archives                    -->
+  <!-- =========================================== -->
+  <target name="adempiereRootJar" depends="adempiereRootCompile">
+    <mkdir dir="${build.deploy.dir}"/>
+
+    <!--	Jar -->
+    <jar
+	  jarfile="${build.deploy.dir}/adempiereRoot.jar">
+      <fileset
+	    dir="${build.classes.dir}">
+      </fileset>
+      <fileset
+	    dir="${build.dir}"
+	    includes="META-INF/**">
+      </fileset>
+      <manifest>
+		<attribute name="Specification-Title" value="AdempiereRoot"/>
+		<attribute name="Specification-Version" value="${env.ADEMPIERE_VERSION}"/>
+		<attribute name="Specification-Vendor" value="Adempiere"/>
+		<attribute name="Implementation-Title" value="AdempiereRoot ${env.ADEMPIERE_VERSION}"/>
+		<attribute name="Implementation-Version" value="${env.ADEMPIERE_VERSION} ${DSTAMP}-${TSTAMP}"/>
+		<attribute name="Implementation-Vendor" value="${env.ADEMPIERE_VENDOR}"/>
+		<attribute name="Implementation-URL" value="http://www.adempiere.com"/>
+		<attribute name="Class-Path" value="Adempiere.jar AdempiereSLib.jar"/>
+		<attribute name="Permissions" value="all-permissions"/> <!-- this hopefully fixes task 05642 -->
+      </manifest>
+    </jar>
+
+  </target>
+
+  <!-- =========================================== -->
+  <!-- Creates the war archives                    -->
+  <!-- =========================================== -->
+  <target name="adempiereRootWar" depends="adempiereRootJar">
+    <war
+	  warfile="${build.deploy.dir}/adempiereRootBase.war"
+	  webxml="${src.web.dir}/WEB-INF/web.xml">
+	  <!-- copy from web		-->
+      <fileset dir="${src.web.dir}" excludes="**/web.xml,**/lib/**,**/classes/**"/>
+      <!-- WEB-INF/lib			-->
+      <lib dir="${src.web.dir}/WEB-INF/lib"/>
+      <manifest>
+		<attribute name="Specification-Title" value="AdempiereRootWar"/>
+		<attribute name="Specification-Version" value="${env.ADEMPIERE_VERSION}"/>
+		<attribute name="Specification-Vendor" value="Adempiere"/>
+		<attribute name="Implementation-Title" value="AdempiereRootWar ${env.ADEMPIERE_VERSION}"/>
+		<attribute name="Implementation-Version" value="${env.ADEMPIERE_VERSION} ${DSTAMP}-${TSTAMP}"/>
+		<attribute name="Implementation-Vendor" value="${env.ADEMPIERE_VENDOR}"/>
+		<attribute name="Implementation-URL" value="http://www.adempiere.com"/>
+		<attribute name="Class-Path" value="Adempiere.jar AdempiereSLib.jar"/>
+		<attribute name="Permissions" value="all-permissions"/> <!-- this hopefully fixes task 05642 -->
+      </manifest>
+    </war>
+  </target>
+
+
+  <!-- =========================================== -->
+  <!-- Deploy Server Files		                   -->
+  <!-- =========================================== -->
+  <target name="adempiereRootDeployServer" depends="adempiereRootJar,adempiereRootWar,adempiereRootCompile">
+	<copy todir="../lib">
+		<fileset dir="${build.deploy.dir}"/>
+	</copy>
+	<copy file="${src.ear.dir}/application.xml" 
+		tofile="../lib/adempiereRoot.xml"/>
+  </target>
+
+
+  <!-- =========================================== -->
+  <!-- Creates the binary structure                -->
+  <!-- =========================================== -->
+  <target name="main" depends="adempiereRootDeployServer">
+  </target>
+
+
+  <!-- =========================================== -->
+  <!-- Cleans up the current build                 -->
+  <!-- =========================================== -->
+  <target name="clean">
+    <delete dir="${build.dir}" failonerror="false"/>
+    <delete file="../lib/adempiereRootBase.war"/>
+    <delete file="../lib/adempiereRoot.jar"/>
+    <delete file="../lib/adempiereRoot.xml"/>
+  </target>
+
+</project>

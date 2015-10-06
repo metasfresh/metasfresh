@@ -1,0 +1,1013 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.reactor</artifactId>
+		<groupId>de.metas.reactor</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.reactor/pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas</groupId>
+	<artifactId>de.metas.parent</artifactId>
+	<packaging>pom</packaging>
+
+	<description>Default parent pom with common settings (e.g. java file encoding) to be used by all maven projects</description>
+	
+	<url>http://www.metas-fresh.com/</url>
+
+	<organization>
+		<name>metas GmbH</name>
+		<url>http://www.metas-fresh.com/</url>
+	</organization>
+
+	<inceptionYear>2015</inceptionYear>
+
+	<developers>
+		<developer>
+			<name>metas developer</name>
+			<organizationUrl>>http://www.metas-fresh.com/</organizationUrl>
+			<email>info@metas.de</email>
+		</developer>
+	</developers>
+
+	<!-- TODO: consider removing jasperreports.version and dependencyManagement 
+		from this pom. It will instead be handled by adempiereJasper-parent -->
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<adempiere.java.version>1.7</adempiere.java.version>
+		<servicemix.java.version>1.6</servicemix.java.version>
+
+		<jasperreports.version>4.6.0</jasperreports.version>
+				
+		<!-- Tells SonarQube to run the unit tests -->
+		<sonar.dynamicAnalysis>true</sonar.dynamicAnalysis>
+    	<!-- Tells SonarQube to use JaCoCo (formerly EclEmma) as our unit test coverage tool -->
+		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+
+		<license.name>gpl_v2</license.name>
+
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+
+			<dependency>
+				<groupId>net.sf.jasperreports</groupId>
+				<artifactId>jasperreports</artifactId>
+				<version>${jasperreports.version}</version>
+			</dependency>
+
+			<!-- IMPORTANT: when using these dependencies, declared jmockit and hamcrest before junit !-->
+			<!--  Use 1.9 (not 1.10) to avoid the following error when running jmokit with EclEmma:
+				java.lang.LinkageError: loader (instance of  sun/misc/Launcher$AppClassLoader): attempted  duplicate class definition for name: "...Test$1"
+			 -->
+			<dependency>
+				<groupId>org.jmockit</groupId>
+				<artifactId>jmockit</artifactId>
+				<version>1.9</version>
+			</dependency>
+
+			<dependency>
+				<!-- Make sure this dependency comes BEFORE junit. See: http://stackoverflow.com/questions/7869711/getting-nosuchmethoderror-org-hamcrest-matcher-describemismatch-when-running -->
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest-all</artifactId>
+				<version>1.3</version>
+			</dependency>
+
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.11</version>
+			</dependency>
+
+			<dependency>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+				<version>1.1.1</version>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- IMPORTANT: hamcrest and jmockit need to be before junit -->
+		<dependency>
+			<!-- Make sure this dependency comes BEFORE junit. See: http://stackoverflow.com/questions/7869711/getting-nosuchmethoderror-org-hamcrest-matcher-describemismatch-when-running -->
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jmockit</groupId>
+			<artifactId>jmockit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+			<exclusions>
+			<!-- excluding it to avoid duplicate classes (because we already have hamcrest-all) -->
+				<exclusion>
+					<artifactId>hamcrest-core</artifactId>
+					<groupId>org.hamcrest</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.3.2</version>
+					<configuration>
+						<encoding>${project.build.sourceEncoding}</encoding>
+						<!-- using the adempiere default here, because we have way more adempiere projects than servicemix projects -->
+						<source>${adempiere.java.version}</source>
+						<target>${adempiere.java.version}</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.5</version>
+					<configuration>
+						<encoding>UTF-8</encoding>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.1.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.3.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>3.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>2.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.3</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>1.8</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>jaxb2-maven-plugin</artifactId>
+					<version>1.6</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>2.4.1</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.7</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>2.3.1</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-reactor-plugin</artifactId>
+					<version>1.1</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>maven-bundle-plugin</artifactId>
+					<version>2.5.4</version>
+				</plugin>
+
+				<plugin>
+					<!-- we need a version that supports encrypted passwords in the settings.xml -->
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jarsigner-plugin</artifactId>
+					<version>1.3.2</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>jasperreports-maven-plugin</artifactId>
+					<version>1.0-beta-2</version>
+					<dependencies>
+
+						<dependency>
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>jasperreports-maven-plugin</artifactId>
+							<version>1.0-beta-2</version>
+							<exclusions>
+								<exclusion>
+									<groupId>jasperreports</groupId>
+									<artifactId>jasperreports</artifactId>
+								</exclusion>
+							</exclusions>
+						</dependency>
+						<dependency>
+							<groupId>net.sf.jasperreports</groupId>
+							<artifactId>jasperreports</artifactId>
+							<version>${jasperreports.version}</version>
+						</dependency>
+
+						<!-- required to support groovy expressions in jrxml files -->
+						<dependency>
+							<groupId>org.codehaus.groovy</groupId>
+							<artifactId>groovy-all</artifactId>
+							<version>1.6.5</version>
+						</dependency>
+
+						<!-- required to compile reports with barcodes -->
+						<dependency>
+							<groupId>net.sf.barcode4j</groupId>
+							<artifactId>barcode4j-fop-ext-complete</artifactId>
+							<version>2.0</version>
+							<type>jar</type>
+							<scope>compile</scope>
+						</dependency>
+
+						<!-- Should fix this error: Execution default of goal org.codehaus.mojo:jasperreports-maven-plugin:1.0-beta-2:compile-reports 
+							failed: A required class was missing while executing org.codehaus.mojo:jasperreports-maven-plugin:1.0-beta-2:compile-reports: 
+							org/apache/log4j/Layout -->
+						<dependency>
+							<groupId>log4j</groupId>
+							<artifactId>log4j</artifactId>
+							<version>1.2.14</version>
+						</dependency>
+
+					</dependencies>
+
+					<executions>
+						<execution>
+							<goals>
+								<goal>compile-reports</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+				<!-- use jacoco (formerly EclEmma) to measure unit test coverage -->
+				<!-- currently not used (sonarCube uses jacoco, but doesn't need this info)
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>0.7.0.201403182114</version> 
+				</plugin>
+				-->			
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											jasperreports-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.0-beta-2,)
+										</versionRange>
+										<goals>
+											<goal>compile-reports</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-dependency-plugin
+										</artifactId>
+										<versionRange>
+											[2.4,)
+										</versionRange>
+										<goals>
+											<goal>
+												unpack-dependencies
+											</goal>
+											<goal>unpack</goal>
+											<goal>
+												copy-dependencies
+											</goal>
+											<goal>copy</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-antrun-plugin</artifactId>
+										<versionRange>[1.7,)</versionRange>
+										<goals>
+											<goal>run</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>license-maven-plugin</artifactId>
+										<versionRange>[1.8,)</versionRange>
+										<goals>
+											<goal>update-file-header</goal>
+											<goal>update-project-license</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<extensions>
+			<extension>
+				<!-- Enabling the use of external ssh commands to deliver artifacts to 
+					our repo. We are using putty, which means that authentification is done by 
+					pageant :-) -->
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh-external</artifactId>
+				<version>1.0-beta-6</version>
+			</extension>
+		</extensions>
+
+		<plugins>
+			<!-- add the gpl-2 license header to our source files.
+			Note that the source files in java-legacy were not (entirely) created/edited by us and already have their own license header with which we don't want to tamper.
+			-->
+			<plugin>
+
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<id>update-file-header</id>
+						<goals>
+							<goal>update-file-header</goal>
+						</goals>
+						<phase>process-sources</phase>
+						<configuration>
+							<licenseName>${license.name}</licenseName>
+							<roots>
+								<root>src/main/java</root>
+								<root>src/test</root>
+							</roots>
+							<excludes>
+								<!-- the license header might be placed right into the preexisting package info javadoc and introdcue a compiler syntax error -->
+								<exclude>**/package-info.java</exclude>
+								<!-- our only json files are test samples; we don't need to license them, but the license header would cause trouble reading/parsing the json files. that's why we exclude them -->
+								<exclude>**/*.json</exclude>
+								<!-- with xml it's similar as it is with json -->
+								<exclude>**/*.xml</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>update-project-license</id>
+						<goals>
+							<goal>update-project-license</goal>
+						</goals>
+						<phase>process-sources</phase>
+						<configuration>
+							<licenseName>${license.name}</licenseName>
+							<outputDirectory>${project.build.directory}</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<!-- We always want to attach the sources -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Add the generic info plus ci build info to the manifests of all jars 
+				that we create -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+						</manifest>
+						<manifestEntries>
+							<ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
+							<ciBuildTag>${BUILD_TAG}</ciBuildTag>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			
+			<!-- Don't archive a web project's files (i.e. put the classes into WEB-INF/classes), because we want skinny war to include theirs own classes in that folder (and their WEB-INF/lib to be empty) -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archiveClasses>false</archiveClasses>
+					<attachClasses>true</attachClasses>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.18.1</version>
+				<configuration>
+					<includes>
+						<!-- default inclusions, see http://maven.apache.org/surefire/maven-surefire-plugin/examples/inclusion-exclusion.html -->
+						<include>**/Test*.java</include>
+						<include>**/*Test.java</include>
+						<include>**/*TestCase.java</include>
+						
+						<!-- additional include, because we often use that pattern -->
+						<include>**/*Tests.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+
+			<!-- task 08834: We shall not leave the decision about plugin-versions to maven.
+				Rationale: we had the case that a build stopped working at a *very* critical moment, 
+				because maven picked a more recent version of the jaxb plugin. 
+				That version didn't support the way, we configured it and failed with an error message.
+				This shall not happen again.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<id>enforce-plugin-versions</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requirePluginVersions>
+									<message>!! We need to have the plugin version under control to avoid build failures due to maven releasing a new plugin version !!</message>
+									<banLatest>true</banLatest>
+									<banRelease>true</banRelease>
+									<banSnapshots>true</banSnapshots>
+									<phases>clean,deploy,site</phases>
+									<additionalPlugins>
+										<additionalPlugin>org.apache.maven.plugins:maven-reactor-plugin</additionalPlugin>
+									</additionalPlugins>
+									<unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin</unCheckedPluginList>
+								</requirePluginVersions>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<!-- The repositories that we relate on are defined in this parent POM, 
+			because whether an artifact is found should not depend on a specific user's 
+			settings.xml -->
+		<repository>
+			<id>metas-mvn-repo</id>
+			<name>Maven metas Repository</name>
+			<url>http://dedep901:8081/nexus/content/groups/public/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+
+	</repositories>
+
+	<pluginRepositories>
+		<!-- We define our repos also as plugin repos, because at least the maven-assembly-plugin 
+			depends on our shared assembly descriptors, which are not in http://repository.apache.org -->
+		<pluginRepository>
+			<id>metas-mvn-repo</id>
+			<name>Maven metas Repository</name>
+			<url>http://dedep901:8081/nexus/content/groups/public/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+
+	</pluginRepositories>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.7</version>
+				<configuration>
+					<!-- defining our nexus as sole remote repo, to omit mvn site plugin trying a lot of invalid repo URLs -->
+					<remoteRepositories>
+						<remoteRepository>http://dedep901:8081/nexus/content/groups/public/</remoteRepository>
+					</remoteRepositories>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<!-- generate changelog -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changelog-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<dateFormat>EEE MMM dd hh:mm:ss yyyy Z</dateFormat>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<!-- generate a pmd report -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.0.1</version>
+				<configuration>
+					<linkXref>true</linkXref>
+					<targetJdk>1.6</targetJdk>
+					<aggregate>true</aggregate>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<version>2.3</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9</version>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<profiles>
+		<profile>
+			<!-- If there is sql directory, this profile will activate and zip up 
+				the migration SQL files in that directory. Note the property "migration-sql-basedir" 
+				needs to be defined in that case -->
+			<id>postgres</id>
+			<activation>
+				<file>
+					<exists>src/main/sql/postgresql/system</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>de.metas.assemblies</groupId>
+								<artifactId>de.metas.assemblies</artifactId>
+								<version>${project.version}</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>make-postgresql-assembly</id> <!-- this is used for inheritance merges -->
+								<phase>package</phase> <!-- bind to the packaging phase -->
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<descriptorRefs>
+										<descriptorRef>migration_postgresql_system</descriptorRef>
+									</descriptorRefs>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<!-- If there is a jasper soruces directory, this profile will activate 
+				 It will compile those jrxml files and then assemble the jasper files into a jar.
+				 It willAdds src/main/jasperreports as additional source folder
+			-->
+			<id>jasper</id>
+
+			<activation>
+				<file>
+					<exists>src/main/jasperreports</exists>
+				</file>
+			</activation>
+
+			<build>
+				<plugins>
+
+					<plugin>
+				<!-- Adds src/main/jasperreports as additional source folder (if the directory is present) -->
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>add-resource</id>
+								<phase>generate-resources</phase>
+								<goals>
+									<goal>add-resource</goal>
+								</goals>
+								<configuration>
+									<resources>
+										<resource>
+											<directory>src/main/jasperreports</directory>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<version>2.6</version>
+						<executions>
+							<execution>
+								<id>copy-resources</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+						            <!-- same as jasperreports-maven-plugin's outputDirectory -->
+									<outputDirectory>${project.build.directory}/jasper</outputDirectory>
+									<resources>
+										<resource>
+											<directory>src/main/jasperreports</directory>
+											<excludes>
+												<exclude>**/*.jrxml</exclude> <!-- jrxmls are compiled into jasper files, they don't need to be copied -->
+											</excludes>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>jasperreports-maven-plugin</artifactId>
+						<configuration>
+							<outputDirectory>${project.build.directory}/jasper</outputDirectory>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>compile-reports</goal>
+								</goals>
+							</execution>
+						</executions>
+						<dependencies>
+            				<!--note this dependency must be repeated here to pick up correct xml validation -->
+							<dependency>
+								<groupId>net.sf.jasperreports</groupId>
+								<artifactId>jasperreports</artifactId>
+								<version>${jasperreports.version}</version>
+							</dependency>
+							
+							<!-- 
+							Adding spring-core and spring-beans to fix "java.lang.NoClassDefFoundError: org/springframework/core/io/Resource"
+							when running the jrc
+							-->
+							<dependency>
+								<groupId>org.springframework</groupId>
+								<artifactId>spring-core</artifactId>
+								<version>3.0.6.RELEASE</version>
+							</dependency>
+							<dependency>
+								<groupId>org.springframework</groupId>
+								<artifactId>spring-beans</artifactId>
+								<version>3.0.6.RELEASE</version>
+							</dependency>
+						</dependencies>
+					</plugin>
+
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>de.metas.assemblies</groupId>
+								<artifactId>de.metas.assemblies</artifactId>
+								<version>${project.version}</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>make-jasper-assembly</id> <!-- this is used for inheritance merges -->
+								<phase>package</phase> <!-- bind to the packaging phase -->
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<descriptorRefs>
+										<descriptorRef>jasper</descriptorRef>
+									</descriptorRefs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>make-jasper-sources-assembly</id> <!-- this is used for inheritance merges -->
+								<phase>package</phase> <!-- bind to the packaging phase -->
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<descriptorRefs>
+										<descriptorRef>jasper_sources</descriptorRef>
+									</descriptorRefs>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+<!-- 
+	If there is a "webapp" directory, this profile will activate 
+	and put the content into a zip file 
+-->
+		<profile>
+			<id>webapp-dir</id>
+			<activation>
+				<file>
+					<exists>src/main/webapp</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>de.metas.assemblies</groupId>
+								<artifactId>de.metas.assemblies</artifactId>
+								<version>${project.version}</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>make-webapp-dir-assembly</id> <!-- this is used for inheritance merges -->
+								<phase>package</phase> <!-- bind to the packaging phase -->
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<descriptorRefs>
+										<descriptorRef>webapp_dir</descriptorRef>
+									</descriptorRefs>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+		<!-- If there is a maven java-gen sources directory, this profile will activate 
+			and add the directory as another sources directory -->
+			<id>add-source-java-gen</id>
+			<activation>
+				<file>
+					<exists>src/main/java-gen</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+				<!-- Adds src/main/java-gen as additional source folder (if the directory 
+					is present) -->
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>add-source-java-gen</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>add-source</goal>
+								</goals>
+								<configuration>
+									<sources>
+										<source>src/main/java-gen</source>
+									</sources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+		<!-- If there is a maven java-legacy sources directory, this profile will activate 
+			and add the directory as another sources directory -->
+			<id>add-source-java-legacy</id>
+			<activation>
+				<file>
+					<exists>src/main/java-legacy</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+				<!-- Adds src/main/java-gen as additional source folder (if the directory 
+					is present) -->
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>add-source-java-legacy</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>add-source</goal>
+								</goals>
+								<configuration>
+									<sources>
+										<source>src/main/java-legacy</source>
+									</sources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+		<!-- 
+			If the file KEYSTORE_REQUIRED.txt is present in a child project, then we assume that some code needs to be signed.
+			Therefore, the parent-pom profile with id "prepare-code-signing" activates to download our keystores, 
+			unpack them into the "${project.build.directory}/keystore" folder
+			and set properties so that e.g. the printing client applet can be singned with our "developement" signature.
+			Note that:
+				*these default properties can be overridden from outside.
+				*our "development" signature is not verified by a CA and is therefore not meant to be rolled out at the customer.
+				*the actual signing does not take place in this profile, because different projects will sign different files 
+				 (and might even use the keystore with different plugins).
+		  -->
+			<id>prepare-code-signing</id>
+			<activation>
+				<file>
+					<exists>KEYSTORE_REQUIRED.txt</exists>
+				</file>
+			</activation>
+			<properties>
+				<!-- This is the developement keystore and its passwords. 
+				They are supposed to make sure that a build on a local dev workstatation won't fail.
+				To sign a "real" build for production, they need to be overwritten from outside (=>handled by jenkins and/or the RM).
+				-->
+				<keystore.version>1.0.1</keystore.version>
+				<keystore.alias>metas_dev</keystore.alias>
+				<keystore.store.password>metas_dev</keystore.store.password>
+				<keystore.key.password>metas_dev</keystore.key.password>
+
+				<keystore.file>metas_development_keystore</keystore.file>
+				<keystore.path>${project.build.directory}/keystore/${keystore.file}</keystore.path>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<!-- get our keystores and unpack them to the target folder -->
+						<!-- thx to http://maksim.sorokin.dk/it/2010/08/19/signing-jars-on-a-build-server/ -->
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>unpack</id>
+								<!-- choosing an early phase to make sure the keystore files are there on prepare-package -->
+								<phase>initialize</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>de.metas.keystore</groupId>
+											<artifactId>de.metas.keystore</artifactId>
+											<version>${keystore.version}</version>
+											<type>zip</type>
+											<outputDirectory>${project.build.directory}/keystore</outputDirectory>
+											<includes>*</includes>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<!-- 
+			If the environment variable BUILD_NUMBER is not set, it means that we are not building on jenkins, so we substitute the value "LOCAL-BUILD" instead.
+			And we set BUILD_NUMBER_NUMERIC to 0, because some parts of the build (=>launch4j) requiere the build number to allways be a number.
+			-->
+			<id>build-number-env-missing</id>
+			<activation>
+				<property>
+					<name>!env.BUILD_NUMBER</name>
+				</property>
+			</activation>
+			<properties>
+				<BUILD_NUMBER_NUMERIC>0</BUILD_NUMBER_NUMERIC>
+				<env.BUILD_NUMBER>LOCAL-BUILD</env.BUILD_NUMBER>
+			</properties>
+		</profile>
+		<profile>
+			<!-- 
+			If the environment variable BUILD_NUMBER is set, we assume that it is numeric, and we set BUILD_NUMBER_NUMERIC to that value
+			-->
+			<id>build-number-env-provided</id>
+			<activation>
+				<property>
+					<name>env.BUILD_NUMBER</name>
+				</property>
+			</activation>
+			<properties>
+				<BUILD_NUMBER_NUMERIC>${env.BUILD_NUMBER}</BUILD_NUMBER_NUMERIC>
+			</properties>
+		</profile>
+
+	</profiles>
+</project>

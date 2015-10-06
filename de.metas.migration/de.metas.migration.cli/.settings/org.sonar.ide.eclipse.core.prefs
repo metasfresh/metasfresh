@@ -1,0 +1,5 @@
+eclipse.preferences.version=1
+extraProperties=sonar.dynamicAnalysis\=true\r\nsonar.java.coveragePlugin\=jacoco
+projectKey=de.metas.migration\:de.metas.migration.cli
+serverUrl=http\://localhost\:9000
+version=2

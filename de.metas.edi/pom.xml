@@ -1,0 +1,55 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.edi</groupId>
+	<artifactId>de.metas.edi</artifactId>
+
+	<packaging>jar</packaging>
+
+	<properties>
+		<migration-sql-basedir>80-de.metas.edi</migration-sql-basedir>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.handlingunits</groupId>
+			<artifactId>de.metas.handlingunits.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.document.archive</groupId>
+			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.handlingunits</groupId>
+			<artifactId>de.metas.handlingunits.base</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+	</dependencies>
+
+</project>

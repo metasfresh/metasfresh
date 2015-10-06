@@ -1,0 +1,137 @@
+/**
+ * 
+ */
+package de.metas.payment.api;
+
+/*
+ * #%L
+ * ADempiere ERP - Base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+
+/**
+ * @author cg
+ * 
+ */
+public interface IPaymentBL extends ISingletonService
+{
+	/**
+	 * 
+	 * @param payment
+	 * @param colName source column name
+	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
+	 */
+	public void updateAmounts(final I_C_Payment payment, final String colName, boolean creditMemoAdjusted);
+
+	/**
+	 * updates amount when flag IsOverUnderPayment change
+	 * 
+	 * @param payment
+	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
+	 */
+	public void onIsOverUnderPaymentChange(final I_C_Payment payment, boolean creditMemoAdjusted);
+
+	/**
+	 * updates amounts when currency change
+	 * 
+	 * @param payment
+	 */
+	public void onCurrencyChange(final I_C_Payment payment);
+
+	/**
+	 * updates amounts when PayAmt change
+	 * 
+	 * @param payment
+	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
+	 */
+	public void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted);
+
+	/**
+	 * Creates a new payment builder.
+	 * 
+	 * @param ctxProvider
+	 *            an object that the {@link InterfaceWrapperHelper} can use to get the <code>ctx</code>and
+	 *            <code>trxName</code>.
+	 * @param implClazz
+	 *            the allocation builder implementation to use. Other modules can bring their own implementations. The
+	 *            implementing class needs to have a constructor with one <code>Object</code> where the given
+	 *            <code>ctxProvider</code> will be passed.
+	 *            <p>
+	 *            <b>IMPORTANT: when using an class that is included in another class, then this included class needs to
+	 *            be <code>static</code></b>
+	 * @return
+	 */
+	<T extends DefaultPaymentBuilder> T newBuilder(Object ctxProvider, Class<T> implClazz);
+
+	/**
+	 * Convenience method that calls {@link #newBuilder(Object, Class)} with the {@link DefaultAllocationBuilder} class.
+	 * 
+	 * @param ctxProvider
+	 * @return
+	 */
+	DefaultPaymentBuilder newBuilder(Object ctxProvider);
+	
+	/**
+	 * Gets the payment rule for the BP. If none is set, gets the one of the BP group.
+	 * 
+	 * @param bPartner
+	 * @return
+	 */
+	 String getPaymentRuleForBPartner(I_C_BPartner bPartner);
+	 
+	/**
+	 * check if the invoice is allocated with the specified payment
+	 * 
+	 * @param payment
+	 * @param invoice
+	 * @return
+	 */
+	boolean isMatchInvoice(I_C_Payment payment, I_C_Invoice invoice);
+
+	/**
+	 * Test Allocation (and set allocated flag)
+	 *
+	 * @return true if updated
+	 */
+	boolean testAllocation(I_C_Payment payment);
+	
+	boolean isCashTrx(final I_C_Payment payment);
+	/**
+	 * WriteOff given payment.
+	 * 
+	 * NOTE: transaction is automatically handled (thread inherited transaction will be used or a new one will be created). 
+	 * 
+	 * @param payment
+	 * @param writeOffAmt amount to write-off
+	 * @param date allocation date
+	 * @return generated and completed allocation
+	 */
+	I_C_AllocationHdr paymentWriteOff(final I_C_Payment payment, final BigDecimal writeOffAmt, final Date date);
+}

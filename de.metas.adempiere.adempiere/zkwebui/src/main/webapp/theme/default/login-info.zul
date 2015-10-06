@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2009 Low Heng Sin
+Copyright (C) 2009 Idalica Corporation
+-->
+<html>
+<![CDATA[
+<style>
+	.section-head {
+		margin-top: 20px;
+		font-size: 9pt;
+	}
+
+	.loginInfoBox {
+		background-color: #9CBDFF;
+		margin: 5px;
+		padding: 3px;
+		margin-top: 20px;
+		-moz-border-radius: 5px;
+		-webkit-border-radius: 5px;
+	}
+</style>
+<div class="loginInfoBox">
+<span class="section-head">Initially you can log into the system with the following users:
+</span>
+
+<table border="thin" cellpadding="5" cellspacing="0" style="margin-top: 10px; font-size: 8pt; background-color: transparent; border: 1px solid lightgray; border-collapse: collapse;">
+
+<tbody><tr valign="top">
+<th ><i><b>Usage</b></i>
+</th><th><i><b>User</b></i>
+</th><th><i><b>Password</b></i>
+</th></tr>
+
+
+
+<tr valign="top">
+<td>System Management
+</td><td>System
+</td><td>System
+</td></tr>
+
+
+
+<tr valign="top">
+<td>System Management or any role/company
+</td><td>SuperUser
+</td><td>System
+</td></tr>
+
+
+
+<tr valign="top">
+
+<td>Sample Client Administration
+</td><td>GardenAdmin
+</td><td>GardenAdmin
+</td></tr>
+
+
+
+<tr valign="top">
+<td>Sample Client User
+</td><td>GardenUser
+</td><td>GardenUser
+</td></tr>
+</tbody>
+</table>
+</div>
+]]>
+</html>

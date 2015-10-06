@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">
+	<CstmrCdtTrfInitn>
+		<GrpHdr>
+			<MsgId>ABC/090928/CCT001</MsgId>
+			<CreDtTm>2009-09-28T14:07:00</CreDtTm>
+			<NbOfTxs>3</NbOfTxs>
+			<CtrlSum>11500000</CtrlSum>
+			<InitgPty>
+				<Nm>ABC Corporation</Nm>
+				<PstlAdr>
+					<StrtNm>Times Square</StrtNm>
+					<BldgNb>7</BldgNb>
+					<PstCd>NY 10036</PstCd>
+					<TwnNm>New York</TwnNm>
+					<Ctry>US</Ctry>
+				</PstlAdr>
+			</InitgPty>
+		</GrpHdr>
+		<PmtInf>
+			<PmtInfId>ABC/086</PmtInfId>
+			<PmtMtd>TRF</PmtMtd>
+			<BtchBookg>false</BtchBookg>
+			<ReqdExctnDt>2009-09-29</ReqdExctnDt>
+			<Dbtr>
+				<Nm>ABC Corporation</Nm>
+				<PstlAdr>
+					<StrtNm>Times Square</StrtNm>
+					<BldgNb>7</BldgNb>
+					<PstCd>NY 10036</PstCd>
+					<TwnNm>New York</TwnNm>
+					<Ctry>US</Ctry>
+				</PstlAdr>
+			</Dbtr>
+			<DbtrAcct>
+				<Id>
+					<Othr>
+						<Id>00125574999</Id>
+					</Othr>
+				</Id>
+			</DbtrAcct>
+			<DbtrAgt>
+				<FinInstnId>
+					<BIC>BBBBUS33</BIC>
+				</FinInstnId>
+			</DbtrAgt>
+			<CdtTrfTxInf>
+				<PmtId>
+					<InstrId>ABC/090928/CCT001/01</InstrId>
+					<EndToEndId>ABC/4562/2009-09-08</EndToEndId>
+				</PmtId>
+				<Amt>
+					<InstdAmt Ccy="JPY">10000000</InstdAmt>
+				</Amt>
+				<ChrgBr>SHAR</ChrgBr>
+				<CdtrAgt>
+					<FinInstnId>
+						<BIC>AAAAGB2L</BIC>
+					</FinInstnId>
+				</CdtrAgt>
+				<Cdtr>
+					<Nm>DEF Electronics</Nm>
+					<PstlAdr>
+						<AdrLine>Corn Exchange 5th Floor</AdrLine>
+						<AdrLine>Mark Lane 55</AdrLine>
+						<AdrLine>EC3R7NE London</AdrLine>
+						<AdrLine>GB</AdrLine>
+					</PstlAdr>
+				</Cdtr>
+				<CdtrAcct>
+					<Id>
+						<Othr>
+							<Id>23683707994125</Id>
+						</Othr>
+					</Id>
+				</CdtrAcct>
+				<Purp>
+					<Cd>CINV</Cd>
+				</Purp>
+				<RmtInf>
+					<Strd>
+						<RfrdDocInf>
+							<Nb>4562</Nb>
+							<RltdDt>2009-09-08</RltdDt>
+						</RfrdDocInf>
+					</Strd>
+				</RmtInf>
+			</CdtTrfTxInf>
+			<CdtTrfTxInf>
+				<PmtId>
+					<InstrId>ABC/090628/CCT001/2</InstrId>
+					<EndToEndId>ABC/ABC-13679/2009-09-15</EndToEndId>
+				</PmtId>
+				<Amt>
+					<InstdAmt Ccy="EUR">500000</InstdAmt>
+				</Amt>
+				<ChrgBr>CRED</ChrgBr>
+				<CdtrAgt>
+					<FinInstnId>
+						<BIC>DDDDBEBB</BIC>
+					</FinInstnId>
+				</CdtrAgt>
+				<Cdtr>
+					<Nm>GHI Semiconductors</Nm>
+					<PstlAdr>
+						<StrtNm>Avenue Brugmann</StrtNm>
+						<BldgNb>415</BldgNb>
+						<PstCd>1180</PstCd>
+						<TwnNm>Brussels</TwnNm>
+					</PstlAdr>
+				</Cdtr>
+				<CdtrAcct>
+					<Id>
+						<IBAN>BE30001216371411</IBAN>
+					</Id>
+				</CdtrAcct>
+				<InstrForCdtrAgt>
+					<Cd>PHOB</Cd>
+					<InstrInf>+32/2/2222222</InstrInf>
+				</InstrForCdtrAgt>
+				<Purp>
+					<Cd>GDDS</Cd>
+				</Purp>
+				<RmtInf>
+					<Strd>
+						<RfrdDocInf>
+							<Tp>
+								<CdOrPrtry>
+									<Cd>CINV</Cd>
+								</CdOrPrtry>
+							</Tp>
+							<Nb>ABC-13679</Nb>
+							<RltdDt>2009-09-15</RltdDt>
+						</RfrdDocInf>
+					</Strd>
+				</RmtInf>
+			</CdtTrfTxInf>
+			<CdtTrfTxInf>
+				<PmtId>
+					<InstrId>ABC/090928/CCT001/3</InstrId>
+					<EndToEndId>ABC/987-AC/2009-09-27</EndToEndId>
+				</PmtId>
+				<Amt>
+					<InstdAmt Ccy="USD">1000000</InstdAmt>
+				</Amt>
+				<ChrgBr>SHAR</ChrgBr>
+				<CdtrAgt>
+					<FinInstnId>
+						<BIC>BBBBUS66</BIC>
+					</FinInstnId>
+				</CdtrAgt>
+				<Cdtr>
+					<Nm>ABC Corporation</Nm>
+					<PstlAdr>
+						<Dept>Treasury department</Dept>
+						<StrtNm>Bush Street</StrtNm>
+						<BldgNb>13</BldgNb>
+						<PstCd>CA 94108</PstCd>
+						<TwnNm>San Francisco</TwnNm>
+						<Ctry>US</Ctry>
+					</PstlAdr>
+				</Cdtr>
+				<CdtrAcct>
+					<Id>
+						<Othr>
+							<Id>4895623</Id>
+						</Othr>
+					</Id>
+				</CdtrAcct>
+				<Purp>
+					<Cd>INTC</Cd>
+				</Purp>
+				<RmtInf>
+					<Strd>
+						<RfrdDocInf>
+							<Tp>
+								<CdOrPrtry>
+									<Cd>CINV</Cd>
+								</CdOrPrtry>
+							</Tp>
+							<Nb>987-AC</Nb>
+							<RltdDt>2009-09-27</RltdDt>
+						</RfrdDocInf>
+					</Strd>
+				</RmtInf>
+			</CdtTrfTxInf>
+		</PmtInf>
+	</CstmrCdtTrfInitn>
+</Document>

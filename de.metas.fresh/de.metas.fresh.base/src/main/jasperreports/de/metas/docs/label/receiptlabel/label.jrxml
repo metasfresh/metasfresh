@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.3310000000000064"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="301"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="M_HU_ID" class="java.math.BigDecimal"/>
+	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["http://mf15adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+	(
+		SELECT DISTINCT Regexp_Replace(o.BPartnerAddress, E'\n', ', ', 'g')
+		FROM	M_HU_Trx_Line hutl
+			INNER JOIN M_ReceiptSchedule rs ON hutl.Record_ID = rs.M_ReceiptSchedule_ID
+			INNER JOIN C_OrderLine ol ON rs.Record_ID = ol.C_OrderLine_ID
+			INNER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
+		WHERE	hutl.M_HU_ID = lu.M_HU_ID
+			AND hutl.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'M_ReceiptSchedule')
+			AND rs.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_OrderLine')
+		LIMIT 1
+	)  AS vendoraddress,
+	bp.naics AS vendorgap,
+	(
+		SELECT	COALESCE(bp.name||', ', '') || Regexp_Replace(address, E'\n', ', ', 'g')
+		FROM	C_BPartner bp
+			INNER JOIN C_BPartner_Location bpl ON bp.C_BPartner_ID = bpl.C_BPartner_ID
+		WHERE	bpl.C_BPartner_ID = lua_pra.valuenumber
+	) AS produceraddress,
+	lua_pra.naics AS producergap,
+	lua_her.name AS Herkunft,
+	lua_cha.value AS Charge,
+	lua_lab.name AS Label,
+	lua_anb.name AS Anbau,
+	(
+		SELECT DISTINCT o.documentno
+		FROM	M_HU_Trx_Line hutl
+			INNER JOIN M_ReceiptSchedule rs ON hutl.Record_ID = rs.M_ReceiptSchedule_ID
+			INNER JOIN C_OrderLine ol ON rs.Record_ID = ol.C_OrderLine_ID
+			INNER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
+		WHERE	hutl.M_HU_ID = lu.M_HU_ID
+			AND hutl.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'M_ReceiptSchedule')
+			AND rs.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_OrderLine')
+		LIMIT 1
+	) AS orderdocNo,
+	p.name AS p_name,
+	lua_adr.name AS adr,
+	lu.created AS receiptdate,
+	lua_beu.valuenumber AS Beurteilung,
+	lua_not.name AS notiz,
+	lua_add.name AS zusatz,
+	lua_idn.lot AS tracking,
+	lua_mhd.value AS mhd,
+	lu.value AS receiptdocno,
+	piip.name AS PackingInstruction
+FROM
+	M_HU lu
+	INNER JOIN M_HU_Storage lus ON lu.M_HU_ID = lus.M_HU_ID
+	INNER JOIN M_Product p ON lus.M_product_ID = p.M_Product_ID
+	LEFT OUTER JOIN C_BPartner bp ON lu.C_BPartner_ID = bp.C_BPartner_ID
+	LEFT OUTER JOIN "de.metas.handlingunits".M_ToplevelHU_HU_PI_Item_Product piip ON lu.M_HU_ID = piip.M_HU_ID AND piip.M_Product_ID = p.M_Product_ID
+	LEFT OUTER JOIN (
+		SELECT 	sub_lua.M_HU_ID, sub_lua.valuenumber, sub_bp.naics
+		FROM 	M_HU_Attribute sub_lua
+			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
+			INNER JOIN C_BPartner sub_bp ON sub_lua.ValueNumber = sub_bp.C_BPartner_ID
+		WHERE 	sub_a.value = 'SubProducerBPartner'
+	) lua_pra ON lu.M_HU_ID = lua_pra.M_HU_ID
+	LEFT JOIN (
+		SELECT 	sub_lua.M_HU_ID, sub_av.name
+		FROM 	M_HU_Attribute sub_lua
+			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
+			INNER JOIN M_AttributeValue sub_av ON sub_lua.value = sub_av.value AND sub_a.M_Attribute_ID = sub_av.M_Attribute_ID
+		WHERE 	sub_a.value = '1000001' --Herkunft
+	) lua_her ON lu.M_HU_ID = lua_her.M_HU_ID
+	LEFT JOIN (
+		SELECT 	sub_lua.M_HU_ID, sub_lua.value
+		FROM 	M_HU_Attribute sub_lua
+			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
+		WHERE 	sub_a.value = 'Lot-Nummer'
+	) lua_cha ON lu.M_HU_ID = lua_cha.M_HU_ID
+	LEFT JOIN (
+		SELECT 	sub_lua.M_HU_ID, sub_av.name
+		FROM 	M_HU_Attribute sub_lua
+			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
+			INNER JOIN M_AttributeValue sub_av ON sub_lua.value = sub_av.value AND sub_a.M_Attribute_ID = sub_av.M_Attribute_ID
+		WHERE 	sub_a.value = '1000002' -- Label
+	) lua_lab ON lu.M_HU_ID = lua_lab.M_HU_ID
+	LEFT JOIN (
+		SELECT 	sub_lua.M_HU_ID, sub_av.name
+		FROM 	M_HU_Attribute sub_lua
+			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
+			INNER JOIN M_AttributeValue sub_av ON sub_lua.value = sub_av.value AND sub_a.M_Attribute_ID = sub_av.M_Attribute_ID
+		WHERE 	sub_a.value = '1000004' -- Produktionsart
+	) lua_anb ON lu.M_HU_ID = lua_anb.M_HU_ID
+	LEFT JOIN (
+		SELECT 	sub_lua.M_HU_ID, sub_av.name
+		FROM 	M_HU_Attribute sub_lua
+			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
+			INNER JOIN M_AttributeValue sub_av ON sub_lua.value = sub_av.value AND sub_a.M_Attribute_ID = sub_av.M_Attribute_ID
+		WHERE 	sub_a.value = '1000015' -- AdR
+			AND sub_av.value != '01' -- don't display 'Keine / Leer'
+	) lua_adr ON lu.M_HU_ID = lua_adr.M_HU_ID
+	LEFT JOIN (
+		SELECT 	sub_lua.M_HU_ID, sub_lua.valuenumber
+		FROM 	M_HU_Attribute sub_lua
+			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
+		WHERE 	sub_a.value = 'QualityDiscountPercent'
+	) lua_beu ON lu.M_HU_ID = lua_beu.M_HU_ID
+	LEFT JOIN (
+		SELECT 	sub_lua.M_HU_ID, sub_av.name
+		FROM 	M_HU_Attribute sub_lua
+			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
+			INNER JOIN M_AttributeValue sub_av ON sub_lua.value = sub_av.value AND sub_a.M_Attribute_ID = sub_av.M_Attribute_ID
+		WHERE 	sub_a.value = 'QualityNotice'
+	) lua_not ON lu.M_HU_ID = lua_not.M_HU_ID
+	LEFT JOIN (
+		SELECT 	sub_lua.M_HU_ID, sub_av.name
+		FROM 	M_HU_Attribute sub_lua
+			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
+			INNER JOIN M_AttributeValue sub_av ON sub_lua.value = sub_av.value AND sub_a.M_Attribute_ID = sub_av.M_Attribute_ID
+		WHERE 	sub_a.value = '1000020' -- Zitrusfrüchte
+	) lua_add ON lu.M_HU_ID = lua_add.M_HU_ID
+	LEFT JOIN (
+		SELECT 	sub_lua.M_HU_ID, sub_mt.lot
+		FROM 	M_HU_Attribute sub_lua
+			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
+			INNER JOIN M_Material_Tracking sub_mt ON sub_lua.value = sub_mt.M_Material_Tracking_ID::character varying
+		WHERE 	sub_a.value = 'M_Material_Tracking_ID'
+	) lua_idn ON lu.M_HU_ID = lua_idn.M_HU_ID
+	LEFT JOIN (
+		SELECT 	sub_lua.M_HU_ID, sub_lua.value
+		FROM 	M_HU_Attribute sub_lua
+			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
+		WHERE 	sub_a.value = '1000021' --MHD
+	) lua_mhd ON lu.M_HU_ID = lua_mhd.M_HU_ID
+WHERE
+	lu.M_HU_ID = $P{M_HU_ID}
+;]]>
+	</queryString>
+	<field name="vendoraddress" class="java.lang.String"/>
+	<field name="vendorgap" class="java.lang.String"/>
+	<field name="produceraddress" class="java.lang.String"/>
+	<field name="producergap" class="java.lang.String"/>
+	<field name="herkunft" class="java.lang.String"/>
+	<field name="charge" class="java.lang.String"/>
+	<field name="label" class="java.lang.String"/>
+	<field name="anbau" class="java.lang.String"/>
+	<field name="orderdocno" class="java.lang.String"/>
+	<field name="p_name" class="java.lang.String"/>
+	<field name="adr" class="java.lang.String"/>
+	<field name="receiptdate" class="java.sql.Timestamp"/>
+	<field name="beurteilung" class="java.math.BigDecimal"/>
+	<field name="notiz" class="java.lang.String"/>
+	<field name="zusatz" class="java.lang.String"/>
+	<field name="tracking" class="java.lang.String"/>
+	<field name="mhd" class="java.lang.String"/>
+	<field name="receiptdocno" class="java.lang.String"/>
+	<field name="packinginstruction" class="java.lang.String"/>
+	<detail>
+		<band height="842" splitType="Stretch">
+			<image>
+				<reportElement uuid="c14f0b46-8276-4112-96b1-7bc016671b27" x="122" y="618" width="354" height="85"/>
+				<imageExpression><![CDATA[new java.net.URL($P{barcodeURL} + "?Content=" + $F{receiptdocno} +
+    "&Format=CODE_128&Width=500&Height=120")]]></imageExpression>
+			</image>
+			<line>
+				<reportElement uuid="d2933a55-af07-4878-876e-0bc499117739" x="87" y="185" width="421" height="1"/>
+				<graphicElement>
+					<pen lineWidth="2.0" lineStyle="Dashed"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement uuid="7e2a5697-04f7-4bc8-b836-46f7fec2687a" x="97" y="189" width="133" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Lieferantenadresse]]></text>
+			</staticText>
+			<line>
+				<reportElement uuid="4e29aff1-1655-4ef8-8e5e-9a2dad5033f5" x="87" y="251" width="421" height="1"/>
+				<graphicElement>
+					<pen lineWidth="2.0" lineStyle="Dashed"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement uuid="66b3c065-ef24-49bb-8062-b6c571bebb8f" x="97" y="233" width="133" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[GAP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="3342f389-489e-4967-b6dc-2cd5bcbef2cd" x="97" y="254" width="133" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Produzentenadresse]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="c520fd6f-07ff-4332-a32b-5504b1c41cdb" x="97" y="332" width="194" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Lieferanten Chargen-Nr.]]></text>
+			</staticText>
+			<line>
+				<reportElement uuid="d0556007-2b56-45d1-965b-16611ae1573c" x="87" y="313" width="421" height="1"/>
+				<graphicElement>
+					<pen lineWidth="2.0" lineStyle="Dashed"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement uuid="40076cc0-be41-484f-9a44-508f5573b9a6" x="97" y="297" width="133" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[GAP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="f7ad30a5-6af9-45f4-a2fe-5017b9499d89" x="97" y="360" width="194" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Produktionsart]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="47c61b39-76c7-4909-b8b6-952cc617b387" x="97" y="346" width="194" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Label]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="74e23366-f443-4863-9f53-9c4dff637998" x="97" y="318" width="194" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Herkunft]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="f5c70bdb-04e9-4153-8b36-011b766981d3" x="97" y="388" width="194" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Karotten-ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="80f93f93-93c5-4d00-99a6-5376c6f65028" x="97" y="430" width="194" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Artikelbezeichnung]]></text>
+			</staticText>
+			<textField>
+				<reportElement uuid="0b495f32-ff01-43c8-9278-a7f7ff3c1a3a" x="97" y="442" width="400" height="58"/>
+				<textElement markup="none">
+					<font size="22" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="f957b524-4bc5-452f-a442-e38d46db48f8" x="291" y="360" width="166" height="16"/>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{anbau}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="409e7eb9-f006-4462-9d03-18d8b17c5251" x="291" y="388" width="166" height="16"/>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tracking}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="8c0454a9-ff68-4fee-aa4f-9d4bf9b12cbb" x="291" y="332" width="166" height="16"/>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{charge}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="bcaa12fe-c71a-46c7-a6f1-66a846453d59" x="291" y="346" width="166" height="16"/>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{label}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="b42f95a3-26c9-4306-a999-daaacad1c79a" x="291" y="318" width="166" height="16"/>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{herkunft}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="d513ceb5-5834-45cf-86e8-abfc320b40c5" x="229" y="297" width="279" height="16"/>
+				<textElement markup="none">
+					<font size="11" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{producergap}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="3838508c-2b02-4f75-b9ad-90b13991ad44" x="97" y="501" width="67" height="17"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Marke:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f" x="129" y="500" width="368" height="23"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{adr}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="88a78ede-d115-4b51-b5fc-fb028ba4d1a2" x="229" y="254" width="279" height="52">
+					<printWhenExpression><![CDATA[new Boolean($F{produceraddress}!=null)]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{produceraddress} + "\n"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="dbafd1f4-9e15-4f7f-9f27-c49f58c424bd" x="229" y="233" width="279" height="16"/>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{vendorgap}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="ae3863e5-0b37-4ea0-bf42-4ecdfadfb9b0" x="97" y="546" width="131" height="17"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Eingangsdatum: ]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yy" isBlankWhenNull="true">
+				<reportElement uuid="0e3c222c-2aa1-42b7-9329-591c4561a831" x="228" y="544" width="269" height="27"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="20" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de" x="148" y="570" width="349" height="23"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{beurteilung}.floatValue() <= 5 ? "Lieferung in Ordnung" :
+$F{beurteilung}.floatValue() <= 10 ? "Vorbehalt klein" :
+$F{beurteilung}.floatValue() <= 15 ? "Vorbehalt mittel" :
+$F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
+"Ware Gesperrt"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="1e2c2df3-fd68-48b8-8c08-933650ce905d" x="97" y="572" width="95" height="17"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Beurteilung: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="d554f16d-d5de-480d-9097-b8dd7ad08701" x="229" y="189" width="279" height="52">
+					<printWhenExpression><![CDATA[new Boolean($F{vendoraddress}!=null)]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{vendoraddress} + "\n"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="c42e5a0a-24e1-4445-87b0-19296bcd8107" x="87" y="617" width="421" height="1"/>
+				<graphicElement>
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement uuid="f308e4fd-b63e-4042-bb31-ea87b83d2407" x="243" y="702" width="106" height="14"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{receiptdocno}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="1e2c2df3-fd68-48b8-8c08-933650ce905d" x="97" y="595" width="179" height="17"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Qualitätsnotiz:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de" x="97" y="592" width="400" height="23"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{notiz}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="3838508c-2b02-4f75-b9ad-90b13991ad44" x="97" y="523" width="102" height="17"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Packvorschrift:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f" x="129" y="522" width="368" height="23"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{packinginstruction}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="f957b524-4bc5-452f-a442-e38d46db48f8" x="291" y="374" width="166" height="16"/>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{zusatz}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="f7ad30a5-6af9-45f4-a2fe-5017b9499d89" x="97" y="374" width="194" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Zusatzstoffe für Zitrusfrüchte]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="409e7eb9-f006-4462-9d03-18d8b17c5251" x="291" y="402" width="166" height="16"/>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{orderdocno}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="f5c70bdb-04e9-4153-8b36-011b766981d3" x="97" y="402" width="194" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Produktanlieferung Beleg-Nr.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="f5c70bdb-04e9-4153-8b36-011b766981d3" x="97" y="416" width="194" height="16"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<text><![CDATA[Mindesthaltbarkeitsdatum]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="409e7eb9-f006-4462-9d03-18d8b17c5251" x="291" y="416" width="166" height="16"/>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{mhd}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

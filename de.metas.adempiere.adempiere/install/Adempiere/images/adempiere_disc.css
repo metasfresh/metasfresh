@@ -1,0 +1,325 @@
+/***********************************************/
+/* HTML tag styles                             */
+/***********************************************/ 
+
+body{
+	font-family: Arial, sans-serif;
+	color: #000000;
+	line-height: normal;
+	margin: 0px;
+	padding: 0px;
+	background-image: url(page_bkgd3.jpg);
+	background-color: #FFFFFF;
+	background-repeat: repeat-x;
+}
+a{
+	color: #006699;
+	text-decoration: none;
+}
+a:link{
+	color: #006699;
+	text-decoration: none;
+	font-weight: normal;
+}
+a:visited{
+	color: #006699;
+	font-weight: normal;
+	text-decoration: none;
+}
+a:hover{
+	color: #006699;
+	text-decoration: underline;
+}
+h1, h2, h3, h4, h5, h6, h7 {
+	font-family: Arial,sans-serif;
+	margin: 0px;
+	padding: 0px;
+}
+h1{
+}
+h2{
+}
+h3{
+}
+h4{
+}
+h5{
+}
+ul{
+	list-style-type: square;
+	list-style-position: inside;
+	margin-right: 10px;
+}
+ul ul{
+ list-style-type: disc;
+}
+ul ul ul{
+ list-style-type: none;
+}
+label{
+ font-family: Arial,sans-serif;
+ font-size: 80%;
+ color: #333333;
+}
+ol{
+	list-style-position: inside;
+	margin-right: 10px;
+}
+img{
+text-decoration: none;
+}
+/***********************************************/
+/* Layout Divs                                 */
+/***********************************************/
+
+/************** #topNav styles **************/
+#topNav{
+	position: relative;
+	top: 4px;
+	height: 22px;
+	padding: 0px;
+	margin: -95px 0px 0px 400px;
+	left: 5px;
+	width: 350px;
+	text-align: right;
+	font-size: 60%;
+	vertical-align: middle;
+}
+#topLink{
+	position: relative;
+	top: 4px;
+	height: 22px;
+	padding: 0px;
+	margin: 0px;
+	left: 190px;
+	width: 500px;
+}
+a.toplink, a.toplink:visited{
+	color: #003366;
+	font-weight: bold;
+	margin: 0px;
+	padding: 2px 5px 4px 5px;
+	text-decoration: none;	
+	border-right-width: 1px;
+	border-right-style: solid;
+	border-right-color: #999999;
+}
+a.toplink:hover{
+	color: #003366;
+	font-weight: bold;
+	text-decoration: underline;	
+}
+a.alttoplink, a.alttoplink:visited{
+  	color: #003366;
+	font-weight: bold;
+	margin: 0px;
+	padding: 2px 5px 4px 5px;
+	text-decoration: none;
+}
+a.alttoplink:hover{
+	color: #003366;
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+/************** Header styles **************/
+#masthead{
+	width: 100%;
+	border-bottom: 1px solid #cccccc;
+}
+#header{
+	font-family: Arial, Helvetica, sans-serif;
+	height: 94px;
+	width: 100%;
+	margin: 0;
+	background-color: #0099CC;
+	background-repeat: no-repeat;
+
+	font-weight: bolder;
+	}
+#logoHeader{
+	font-family: Arial, Helvetica, sans-serif;
+	height: 94px;
+	width: 100%;
+	z-index: 10;
+}
+#navBar{
+	padding: 0px;
+	background-color: #FFFFFF;
+	width: 160px;
+	float: left;
+}
+#content{
+	width: 419px;
+	margin: 0px 0px 0px 0px;
+	color:#333333;
+	padding: 0px 0px 0px 0px;
+	background-color: #FFFFFF;
+	float: left;
+}
+#fullcontent{
+	width: 760px;
+	margin: 0px 0px 0px 0px;
+	color:#333333;
+	padding: 0px 0px 0px 0px;
+}
+#fullheightcontainer{
+	margin-left:auto;
+	margin-right:auto;
+	position:inherit;
+	width:760px;
+	height:100%;
+	background-color: #FFFFFF;
+}
+#wrapper{
+  min-height:100%;
+  height:100%;
+  background:#FFFFFF;
+}
+#wrapp\65	r{ 
+  height:auto;
+}
+* html #wrapper{
+	height:100%;
+	width: 760px;
+	background-color: #FFFFFF;
+}
+#outer{
+  z-index:1;
+  position:relative;
+  margin-left:160px;
+  width:440px;
+  background:#FFFFFF;
+  height:100%;
+}
+/***********************************************/
+/* Components                                  */
+/***********************************************/
+
+/*************** title styles **************/
+#siteName{
+	margin: 0;
+	width: 760px;
+	height: 94px;
+}
+#headerTitle{
+	font-size: 120%;
+	color: #FFFFFF;
+	margin: 0px;
+	padding: 0px;
+	text-align: center;
+	visibility: hidden;
+}
+#pageName{
+	margin: 25px 0px 0px 5px;
+	padding: 0px 0px 0px 20px;
+	color: #003366;
+	font-size: 150%;
+}
+#pageNameimg{
+	margin: 5px 0px 20px 25px;
+	padding: 0px 0px 0px0px;
+}
+#sectionTitle{
+	font-weight: bold;
+	color: #003366;
+	margin: 0px 0px 0px 0px;
+	padding: 10px 0px 10px 10px;
+}
+#sectionTitle2{
+	font-size: 90%;
+	font-weight: bold;
+	color: #003366;
+	margin: 0px 0px 0px 0px;
+	padding: 5px 0px 10px 0px;
+}
+#storyTitle1{
+ font-size: 115%;
+ font-weight: bold;
+ color: #003366;
+ margin: 20px 15px 10px 25px;
+ padding: 0px;
+}
+#storyTitle2{
+ font-size: 105%;
+ font-weight: bold;
+ color: #333333;
+ margin: 0px 0px 10px 30px;
+ padding: 0px;
+}
+#storyTabletitle1{
+ font-size: 105%;
+ font-weight: bold;
+ color: #333333;
+ margin: 0px 0px 5px 15px;
+ padding: 0px;
+}
+#storyTabletitle2{
+ font-size: 115%;
+ font-weight: bold;
+ color: #003366;
+ margin: 0px 0px 10px 0px;
+ padding: 0px;
+}
+
+/************** .story styles *****************/
+
+.story{
+	font-size: 80%;
+	width: 100%;
+}
+.story p{
+	padding: 0px 0px 10px 0px;
+	margin: 0px 20px 0px 35px;
+}
+#storyImg{
+	margin: 10px 10px 10px 30px;
+	text-align: center;
+}
+.story a{
+	text-decoration:underline
+}
+.story a:visited{
+	text-decoration:underline
+}
+.story a:hover{
+	text-decoration: underline;
+}
+
+/************* #siteInfo styles ***************/
+
+#siteInfo{
+	clear: both;
+	font-size: 75%;
+	color: #999999;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+	border-top: 1px solid #cccccc;
+}
+#siteInfosolutions{
+	width: 40%;
+	text-align: left;
+}
+#siteInfoimg{
+	vertical-align: middle;
+	width: 40%;
+	text-align: right;
+	margin: -100px 0px 0px 0px;
+}
+
+/*********** #navBar link styles ***********/
+
+#navBar ul a:link, #navBar ul a:visited{
+display: block;
+}
+#navBar ul {
+list-style: none; margin: 0; padding: 0;
+}
+#navBar li {border-bottom: 1px solid #EEE;}
+html>body #navBar li {border-bottom: none;}
+
+/************** #table styles **************/
+#tableText{
+	color: #333333;
+	font-size: 0.7em;
+}

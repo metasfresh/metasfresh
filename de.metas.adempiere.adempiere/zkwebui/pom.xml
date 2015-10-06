@@ -1,0 +1,170 @@
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.adempiere.adempiere</groupId>
+	<artifactId>de.metas.adempiere.adempiere.zkwebui</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+		<zkoss.version>3.6.3</zkoss.version>
+	</properties>
+
+	<dependencies>
+			<!-- Adempiere -->
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.client</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- dependency>
+			<groupId>org.adempiere.jasper</groupId>
+			<artifactId>jasperreports-lib</artifactId>
+			<version>${adempiere.version}</version>
+			<scope>provided</scope>
+		</dependency -->
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- J2EE -->
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.3</version>
+			<!-- scope>provided</scope> required for de.metas.endcustomer.*.aopc-->
+		</dependency>
+
+		<!-- ZKOSS -->
+
+		<!-- tasks 01207 and 06930: adding a patched zk.jar -->
+		<dependency>
+			<groupId>org.zkoss.zk</groupId>
+			<artifactId>zk</artifactId>
+			<version>${zkoss.version}-metas-patched</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.zkoss.zk</groupId>
+			<artifactId>zul</artifactId>
+			<version>${zkoss.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.zkoss.zk</groupId>
+			<artifactId>zkex</artifactId>
+			<version>${zkoss.version}</version>
+		</dependency>
+
+		<!-- task 08398: add patched zkmax.jar -->
+		<dependency>
+			<groupId>org.zkoss.zk</groupId>
+			<artifactId>zkmax</artifactId>
+			<version>${zkoss.version}-metas-patched</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.zkoss.zk</groupId>
+			<artifactId>zhtml</artifactId>
+			<version>${zkoss.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.zkoss.zk</groupId>
+			<artifactId>zml</artifactId>
+			<version>${zkoss.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.zkoss.zk</groupId>
+			<artifactId>zkplus</artifactId>
+			<version>${zkoss.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.zkoss.zkforge</groupId>
+			<artifactId>timelinez</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<!--
+			<version>3.7.3</version>
+			-->
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.zkoss.zkforge</groupId>
+			<artifactId>keylistener</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.zkoss.zkforge</groupId>
+			<artifactId>fckez</artifactId>
+			<version>2.6.1_2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.zkoss.zkforge</groupId>
+			<artifactId>gmasz</artifactId>
+			<version>2.0_12</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.zkoss.calendar</groupId>
+			<artifactId>calendar</artifactId>
+			<version>1.0.0-RC</version>
+		</dependency>
+
+		<!--  Support libraries -->
+
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+			<version>2.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>animal-sniffer-annotations</artifactId>
+			<version>1.11</version>
+			<optional>true</optional>
+      <!-- if you are using badly written maven plugins then blame them and add
+      <scope>provided</scope>
+      -->
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<finalName>webui</finalName>
+	</build>
+
+</project>

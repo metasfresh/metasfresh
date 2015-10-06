@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="de.metas.adempiere.adempiere.serverRoot.ejb">
+        <wb-resource deploy-path="/" source-path="/src/main/resources" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/" source-path="/src/main/java-legacy"/>
+        <property name="java-output-path" value="/de.metas.adempiere.adempiere.serverRoot.ejb/target/classes"/>
+    </wb-module>
+</project-modules>

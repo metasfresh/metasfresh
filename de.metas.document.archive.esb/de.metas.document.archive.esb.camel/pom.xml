@@ -1,0 +1,151 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<parent>
+		<artifactId>de.metas.document.archive.esb</artifactId>
+		<groupId>de.metas.document.archive.esb</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>de.metas.document.archive.esb.camel</artifactId>
+	<packaging>bundle</packaging>
+
+	<description>Document Archive Management :: Camel ESB module</description>
+
+	<properties>
+		<de.metas.document.archive.esb.base.version>${project.version}</de.metas.document.archive.esb.base.version>
+
+		<!-- versions taken from http://servicemix.apache.org/downloads/servicemix-4.5.2 -->
+		<camel.version>2.10.6</camel.version>
+		<cxf.version>2.6.8</cxf.version>
+		<activeMQ.version>5.7.0</activeMQ.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>de.metas.document.archive.esb</groupId>
+			<artifactId>de.metas.document.archive.esb.base</artifactId>
+			<version>${de.metas.document.archive.esb.base.version}</version>
+		</dependency>
+		
+		<!-- dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+		</dependency -->
+
+		<!-- Required for our base64 encoding; to install this dependency in fuse-esb/servicemix, 
+			open the console and enter osgi:install mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-codec/1.2_5 -->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.2</version>
+		</dependency>
+
+		<!-- Apache CAMEL dependencies -->
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core</artifactId>
+			<version>${camel.version}</version>
+			<!--  scope>provided</scope -->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-spring</artifactId>
+			<version>${camel.version}</version>
+			<!-- scope>provided</scope -->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-jms</artifactId>
+			<version>${camel.version}</version>
+			<!-- scope>provided</scope -->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-camel</artifactId>
+			<version>${activeMQ.version}</version>
+			<!-- scope>provided</scope -->
+		</dependency>
+
+		<!-- dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-script</artifactId>
+			<version>${camel.version}</version>
+			<scope>provided</scope>
+		</dependency -->
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-jaxb</artifactId>
+			<version>${camel.version}</version>
+			<!-- scope>provided</scope -->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-cxf</artifactId>
+			<version>${camel.version}</version>
+			<!-- scope>provided</scope -->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-jackson</artifactId>
+			<version>${camel.version}</version>
+			<!-- scope>provided</scope -->
+		</dependency>
+
+		<!-- To install this dependency in servicemix/fuse-esb, open the console and enter 
+			osgi:install mvn:org.codehaus.jackson/jackson-jaxrs/1.9.10 -->
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-jaxrs</artifactId>
+			<version>1.9.10</version>
+		</dependency>
+
+		<!-- To install this dependency in servicemix/fuse-esb, open the console and enter 
+			osgi:install mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-io/1.4_3 -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>1.4</version>
+			<!--  scope>provided</scope -->
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<version>1.6.1</version>
+			<!--  scope>provided</scope -->
+		</dependency>
+	</dependencies>
+
+	<build>
+		<!-- not using {group-id + artifact-id} because the artifactId's prefix already contains the complete groupId -->
+		<finalName>${project.artifactId}</finalName>
+
+		<defaultGoal>install</defaultGoal>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<version>2.3.6</version>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+					
+						<Bundle-Version>${project.version}-${env.BUILD_NUMBER}</Bundle-Version>
+
+						<!-- Include dependent artifacts in our bundle. Don't make it an extra 
+							bundle, unless there is *another* OSGI-bundle that also needs those dependencies -->
+						<Private-Package>
+							de.metas.document.archive.esb.api.*,
+							de.metas.document.archive.esb.base.*,
+							org.adempiere.util.*,
+							{local-packages}
+						</Private-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

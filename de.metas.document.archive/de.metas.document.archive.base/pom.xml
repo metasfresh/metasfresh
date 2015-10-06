@@ -1,0 +1,88 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<parent>
+		<artifactId>de.metas.document.archive</artifactId>
+		<groupId>de.metas.document.archive</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>de.metas.document.archive.base</artifactId>
+
+	<packaging>jar</packaging>
+
+	<description>Document Archive Management :: Base</description>
+
+	<developers>
+
+	</developers>
+
+	<properties>
+		<migration-sql-basedir>50-de.metas.document.document-archive</migration-sql-basedir>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.async</groupId>
+			<artifactId>de.metas.async</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		 <dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.document.archive.esb</groupId>
+			<artifactId>de.metas.document.archive.esb.api</artifactId>
+			<version>${de.metas.document.archive.esb.api.version}</version>
+		</dependency>
+
+		<dependency>
+			<!-- temporary added for RestHttpArchiveStorage -->
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+		</dependency>
+
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Create tests JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

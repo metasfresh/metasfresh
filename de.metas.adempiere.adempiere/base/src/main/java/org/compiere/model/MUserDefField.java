@@ -1,0 +1,83 @@
+package org.compiere.model;
+
+/*
+ * #%L
+ * ADempiere ERP - Base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.sql.ResultSet;
+import java.util.Properties;
+
+import org.adempiere.util.Check;
+
+/**
+ * Window Tab Field Customization
+ * @author Teo Sarca, teo.sarca@gmail.com
+ * 			<li>BF [ 2726889 ] Finish User Window (AD_UserDef*) functionality
+ */
+public class MUserDefField extends X_AD_UserDef_Field
+{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5464451156146805763L;
+
+	public MUserDefField(Properties ctx, int AD_UserDef_Field_ID, String trxName)
+	{
+		super(ctx, AD_UserDef_Field_ID, trxName);
+	}
+
+	public MUserDefField(Properties ctx, ResultSet rs, String trxName)
+	{
+		super(ctx, rs, trxName);
+	}
+
+	public void apply(GridFieldVO vo)
+	{
+		final String name = getName();
+		if (!Check.isEmpty(name) && name.length() > 1)
+			vo.Header = name;
+		if (!Check.isEmpty(getDescription()))
+			vo.Description = getDescription();
+		if (!Check.isEmpty(getHelp()))
+			vo.Help = getHelp();
+		//
+		vo.setIsDisplayed(this.isDisplayed());
+		if (this.getIsReadOnly() != null)
+			vo.IsReadOnly = "Y".equals(this.getIsReadOnly());
+		if (this.getIsSameLine() != null)
+			vo.IsSameLine = "Y".equals(this.getIsSameLine());
+		if (this.getIsUpdateable() != null)
+			vo.IsUpdateable = "Y".equals(this.getIsUpdateable());
+		if (this.getIsMandatory() != null)
+			vo.IsMandatory = "Y".equals(this.getIsMandatory());
+		if (this.getDisplayLength() > 0)
+			vo.DisplayLength = this.getDisplayLength();
+		if (!Check.isEmpty(this.getDisplayLogic(), true))
+		{
+			vo.setDisplayLogic(this.getDisplayLogic());
+		}
+		if (!Check.isEmpty(this.getDefaultValue(), true))
+			vo.DefaultValue = this.getDefaultValue();
+		if (this.getSortNo() > 0)
+			vo.SortNo = this.getSortNo();
+	}
+}

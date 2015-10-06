@@ -1,0 +1,29 @@
+Date: 2004-05-05 21:59
+Sender: kkalice
+
+Here is a startup sript we made for the adempiere server
+(running on Fedora Core 1).
+It assumes there is a user "adempiere" with a home directory
+"/opt/adempiere" who has all the necessary environment
+settings in "/opt/adempiere/.bash_profile".
+The script will have to be adjusted to your own environment
+by setting the appropriate variables.
+
+One advantage of this script is that it really waits until
+the server declares it is started up or shut down before
+echoing "[OK]" to the screen.
+
+A major disadvantage is that it runs the server as root,
+which is necessary to log the output to the
+/var/log/adempiere.log.
+
+------
+
+Date: 2006-12-17 13:10
+Sender: Carlos Ruiz - globalqss
+
+Modified the startup script:
+- now it makes su to adempiere user
+- create the log based on date/time
+- timeout added
+- tested with Fedora Core 4

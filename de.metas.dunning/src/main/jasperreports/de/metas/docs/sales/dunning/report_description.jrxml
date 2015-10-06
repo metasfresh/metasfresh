@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/dunning/report" uuid="aae3cda5-2e7a-4834-8355-ed9690a329a3">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.2100000000000009"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<parameter name="ad_language" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+	COALESCE(dlt.PrintName, dl.PrintName) AS DocType,
+	dd.documentno as docno,
+	dl.note,
+	dd.dunningdate,
+	bp.value as bp_value,
+	o.value as org_value,
+	inf.taxid,
+	replace(
+		replace(
+			replace(
+				COALESCE(pt.name_invoice, pt.name),
+				'$datum_netto',
+				to_char(dd.dunningdate + p.netdays, 'DD.MM.YYYY')
+			),
+			'$datum_skonto_1',
+			to_char(dd.dunningdate::date + p.discountdays, 'DD.MM.YYYY')
+		),
+		'$datum_skonto_2',
+		to_char(dd.dunningdate::date + p.discountdays2, 'DD.MM.YYYY')
+	) as condition
+
+FROM
+	C_DunningDoc dd
+	JOIN C_DunningLevel dl		ON dd.C_Dunninglevel_ID = dl.C_DunningLevel_ID
+	LEFT JOIN C_DunningLevel_Trl dlt 	ON dd.C_Dunninglevel_ID = dlt.C_DunningLevel_ID AND dlt.ad_Language = $P{ad_language}
+	LEFT JOIN C_BPartner bp 		ON dd.C_BPartner_ID = bp.C_BPartner_ID
+	LEFT JOIN AD_Org o 			ON dd.AD_Org_ID = o.AD_Org_ID
+	LEFT JOIN AD_OrgInfo inf		ON o.AD_Org_ID = inf.AD_Org_ID
+	LEFT JOIN C_PaymentTerm p 		ON dl.C_PaymentTerm_ID = p.C_PaymentTerm_ID
+	LEFT JOIN C_PaymentTerm_Trl pt		ON dl.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.ad_Language = $P{ad_language}
+WHERE
+	dd.C_DunningDoc_ID = $P{RECORD_ID}
+;]]>
+	</queryString>
+	<field name="doctype" class="java.lang.String"/>
+	<field name="docno" class="java.lang.String"/>
+	<field name="note" class="java.lang.String"/>
+	<field name="dunningdate" class="java.sql.Timestamp"/>
+	<field name="bp_value" class="java.lang.String"/>
+	<field name="org_value" class="java.lang.String"/>
+	<field name="taxid" class="java.lang.String"/>
+	<field name="condition" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="71" splitType="Stretch">
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement uuid="123ec5b2-87bc-41af-a1b9-9bd1ef154dde" key="textField-3" mode="Transparent" x="128" y="34" width="58" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dunningdate}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="a728c348-0f82-459b-9dd5-44e0e37dddef" key="textField-5" mode="Transparent" x="59" y="34" width="93" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="2d570d71-12b0-4e27-a08b-29d8c4d7fc1e" key="textField-9" mode="Transparent" x="59" y="58" width="486" height="13" isRemoveLineWhenBlank="true"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" markup="html">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{note}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="fc57ee94-80b8-41c9-96a2-e8666ee47e4d" key="textField-5" mode="Transparent" x="59" y="0" width="265" height="18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{doctype} + " " + $R{number} + " " + $F{docno}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement uuid="b466abe4-d837-4f67-9e03-b8ac2f6c335d" key="textField-3" mode="Transparent" x="272" y="34" width="68" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bp_value} + " / " + $F{org_value}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="08442526-03d3-4df3-96a7-6bb85e41e6df" key="textField-5" mode="Transparent" x="198" y="34" width="96" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{memberno}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="91207ca9-5de3-47f0-a200-85dd8de2365b" key="textField-5" mode="Transparent" x="361" y="34" width="78" height="13">
+					<printWhenExpression><![CDATA[new Boolean ($F{condition} != null && !$F{condition}.equals( "" ))]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paymentcond}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement uuid="d8ee7ac6-326e-403e-96c3-8d64bf2ffb03" key="textField-3" mode="Transparent" x="419" y="34" width="103" height="13">
+					<printWhenExpression><![CDATA[new Boolean ($F{condition} != null && !$F{condition}.equals( "" ))]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{condition}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

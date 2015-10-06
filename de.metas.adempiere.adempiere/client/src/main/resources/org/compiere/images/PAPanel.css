@@ -1,0 +1,53 @@
+<style><!--
+body {
+	margin-top: 0px;
+	margin-left: 0px;
+	margin-width: 0px;
+	margin-height: 0px;
+	padding: 0px;
+	background-color: #FFFFFF;
+}
+.header {
+	background-color: #B5C6C6;
+}
+.content {
+	width: 90%;
+	margin: 20px;
+	background-color: #FFFFFF;
+}
+.hrefNode {
+	color: #000000;
+	background-color: #EBF1EF;
+	text-align: right;
+	text-decoration: none;
+}
+.dataGrid {
+	border-width: 1px;
+	border-color: #BBBBBB;
+	border-style: solid;
+	border-collapse: collapse;
+	width: 60%;
+	background-color: #EBF1EF;
+}
+.dataGrid th {
+	text-align:	center;
+	padding: 2px;
+	font-weight: normal;
+	font-size: 13px;
+	background-color: #C6D1CD;
+	border-width: 1px;
+	border-color: #BBBBBB;
+	border-style: solid;
+}
+.dataGrid td {
+	border-width: 1px;
+	border-color: #BBBBBB;
+	border-style: solid;
+}
+.label {
+	background-color: #C6D1CD;
+}
+.tdcontent {
+	background-color: #D6E1DD;
+}
+--></style>

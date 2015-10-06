@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout/report" uuid="1a23dc24-c216-40e0-891b-a3648835dca6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<import value="java.util.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<parameter name="ad_language" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+	io.description 	as description,
+	io.documentno 	as documentno,
+	io.movementdate as dateinvoiced,
+	io.poreference	as reference,
+	bp.value	as bp_value,
+	Coalesce(cogr.name, '')||
+	Coalesce(' ' || cont.title, '') ||
+	Coalesce(' ' || cont.firstName, '') ||
+	Coalesce(' ' || cont.lastName, '') as cont_name,
+	cont.phone	as cont_phone,
+	cont.fax	as cont_fax,
+	cont.email	as cont_email,
+	Coalesce(srgr.name, '')||
+	Coalesce(' ' || srep.title, '') ||
+	Coalesce(' ' || srep.firstName, '') ||
+	Coalesce(' ' || srep.lastName, '') as sr_name,
+	srep.phone	as sr_phone,
+	srep.fax	as sr_fax,
+	srep.email	as sr_email
+FROM
+	m_inout io
+	JOIN c_bpartner bp 		ON io.c_bpartner_id	= bp.c_bpartner_id
+	LEFT JOIN AD_User srep		ON io.SalesRep_ID	= srep.AD_User_ID AND srep.AD_User_ID<>100
+	LEFT JOIN AD_User cont		ON io.AD_User_ID 	= cont.AD_User_ID
+	LEFT JOIN C_Greeting cogr	ON cont.C_Greeting_ID 	= cogr.C_Greeting_ID
+	LEFT JOIN C_Greeting srgr	ON srep.C_Greeting_ID 	= srgr.C_Greeting_ID
+WHERE
+	io.m_inout_id = $P{RECORD_ID}]]>
+	</queryString>
+	<field name="description" class="java.lang.String"/>
+	<field name="documentno" class="java.lang.String"/>
+	<field name="dateinvoiced" class="java.sql.Timestamp"/>
+	<field name="reference" class="java.lang.String"/>
+	<field name="bp_value" class="java.lang.String"/>
+	<field name="cont_name" class="java.lang.String"/>
+	<field name="cont_phone" class="java.lang.String"/>
+	<field name="cont_fax" class="java.lang.String"/>
+	<field name="cont_email" class="java.lang.String"/>
+	<field name="sr_name" class="java.lang.String"/>
+	<field name="sr_phone" class="java.lang.String"/>
+	<field name="sr_fax" class="java.lang.String"/>
+	<field name="sr_email" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="200" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement uuid="c2b11e6d-149e-46ab-be76-3324056f6f20" key="textField-3" x="458" y="12" width="91" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{reference}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="71ceb37d-e4f9-45ae-b33f-abd49ecfe58c" key="textField-10" x="458" y="98" width="91" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{cont_fax}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cont_fax}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="6b535e5a-cf26-4213-aba0-aa76c5ec9643" x="266" y="62" width="283" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cont_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="e260f17a-ebb4-4aa0-bd6f-336041e9d7e8" key="textField-11" x="370" y="86" width="89" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{cont_phone}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{phone}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="eaae12e1-5956-47d5-ae44-cf12f1c2e5bb" key="textField-11" x="370" y="98" width="89" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{cont_fax}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{fax}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="bd8d0d2f-e980-4019-8bb3-a68b291eba16" key="textField-5" x="370" y="12" width="89" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{reference}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{reference}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="1095e001-1ee7-4a81-a531-79193564eb31" key="textField-10" x="390" y="166" width="159" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{sr_email}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sr_email}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="9591c039-d1f8-4197-a56a-1a4c9f7cd99a" key="textField-1" x="458" y="0" width="91" height="13" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="67687e40-855a-4076-8f96-e95ef6c23fba" key="textField-5" x="370" y="24" width="89" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="e4623cb4-a64c-48d7-ab05-b7a34e2dda36" x="371" y="130" width="178" height="1">
+					<printWhenExpression><![CDATA[new Boolean(!$F{sr_name}.equals("") || $F{sr_phone}!=null || $F{sr_fax}!=null || $F{sr_email}!=null)]]></printWhenExpression>
+				</reportElement>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="23185e18-33b6-4b20-a1d5-d02842fd4ff4" key="textField-10" x="458" y="74" width="91" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="33b28b7d-aec9-4cde-af41-3354c238872b" key="textField-11" x="370" y="154" width="89" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{sr_fax}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{fax}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="41cc16d4-c3a0-482c-b1f9-bb92a852c948" key="textField-10" x="458" y="154" width="91" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{sr_fax}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sr_fax}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="3e26148b-ef34-4587-9ad0-9f408d3a639e" key="textField-6" x="370" y="0" width="89" height="13" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{docno}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="b9939e78-0acf-483c-a52c-3a28e6f0f915" key="textField-11" x="370" y="142" width="89" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{sr_phone}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{phone}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="10c5f34a-9192-45df-9c29-349594bb574c" x="370" y="49" width="100" height="14">
+					<printWhenExpression><![CDATA[new Boolean($F{cont_name}!=null || $F{bp_value}!=null ||
+$F{cont_phone}!=null || $F{cont_fax}!=null || $F{cont_email}!=null)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{yourdata}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="72f0af3b-46cd-4738-8441-d2c1a9ce0320" x="371" y="62" width="178" height="1">
+					<printWhenExpression><![CDATA[new Boolean($F{cont_name}!=null || $F{bp_value}!=null ||
+$F{cont_phone}!=null || $F{cont_fax}!=null || $F{cont_email}!=null)]]></printWhenExpression>
+				</reportElement>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="2c34e88e-f87f-4a13-b901-8f7036146496" x="266" y="130" width="283" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{sr_name} != null)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sr_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="20732698-aa42-4f4a-8cfc-38333aa6a58d" key="textField-11" x="370" y="74" width="89" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{customerno}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement uuid="435cd093-61a5-4c78-888c-b241cf7fc3ef" key="textField-3" x="458" y="24" width="91" height="13"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dateinvoiced}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="d4de1c2c-389e-4689-829f-9527e399361e" x="370" y="117" width="100" height="14">
+					<printWhenExpression><![CDATA[new Boolean(!$F{sr_name}.equals("") || $F{sr_phone}!=null || $F{sr_fax}!=null || $F{sr_email}!=null)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ourdata}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="cd3b1f8d-67be-4da8-96eb-61a1c8ae5174" key="textField-10" x="458" y="142" width="91" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{sr_phone}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sr_phone}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="9014ef5c-b760-4457-bbd0-6fee361d3d8e" key="textField-11" x="370" y="166" width="54" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{sr_email}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{email}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="8ca16148-3cba-448c-868f-903d69ee16ff" key="textField-9" x="34" y="187" width="516" height="13" isRemoveLineWhenBlank="true"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" markup="html">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="338fe931-b86c-45eb-82fb-b7621d9ba365" key="textField-10" x="458" y="86" width="91" height="13">
+					<printWhenExpression><![CDATA[new Boolean($F{cont_phone}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cont_phone}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

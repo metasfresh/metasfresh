@@ -1,0 +1,176 @@
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.metas.swat</groupId>
+		<artifactId>de.metas.swat</artifactId>
+		<version>1.0_IT-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>de.metas.swat.base</artifactId>
+	<packaging>jar</packaging>
+
+	<description>Swat base project</description>
+
+	<properties>
+		<!-- empty property because the sql migration dir already contains a list of base directories -->
+		<migration-sql-basedir></migration-sql-basedir>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.storage</groupId>
+			<artifactId>de.metas.storage</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- 07058: Libero (Distribution Network) dependency will be used for warehouse association between OrderLine and ReceiptSchedule warehouses -->
+		<dependency>
+			<groupId>de.metas.adempiere.libero</groupId>
+			<artifactId>de.metas.adempiere.libero.libero</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+<!-- 
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.serverRoot</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+ -->
+ 
+		<!-- jasper -->
+		<dependency>
+			<groupId>de.metas.report.jasper.client</groupId>
+			<artifactId>de.metas.report.jasper.client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.async</groupId>
+			<artifactId>de.metas.async</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.aggregation</groupId>
+			<artifactId>de.metas.aggregation</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+		</dependency>
+
+		<!-- other 3rd party libs -->
+		<dependency>
+			<groupId>ftp4che</groupId>
+			<artifactId>ftp4che</artifactId>
+			<version>0.7.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jdic</groupId>
+			<artifactId>jdic-all</artifactId>
+			<version>0.2.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jdic</groupId>
+			<artifactId>jdic-native-win</artifactId>
+			<version>0.2.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-vfs2</artifactId>
+			<version>2.0</version>
+		</dependency>
+
+		<!-- Required by class de.metas.rpl.spi.impl.TopicRplExportProcessor -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-pool</artifactId>
+			<version>5.5.1</version>
+			<exclusions>
+				<!-- we have our own version (1.7.2 currently) -->
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- unit testing dependencies -->
+
+
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>test</artifactId>
+			<version>5.10</version>
+			<classifier>jdk15</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>2.5</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymockclassextension</artifactId>
+			<version>2.4</version>
+			<scope>test</scope>
+		</dependency>
+
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Create tests JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

@@ -1,0 +1,151 @@
+package de.schaeffer.compiere.tools;
+
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.io.File;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.util.logging.Level;
+
+import javax.swing.TransferHandler;
+
+import org.compiere.apps.ADialog;
+import org.compiere.apps.APanel;
+import org.compiere.model.DataStatusEvent;
+import org.compiere.model.GridTab;
+import org.compiere.model.MAttachment;
+import org.compiere.util.CLogger;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+
+public class AttachmentDnDTransferHandler extends TransferHandler
+{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4482233564492129396L;
+
+	/** Logger */
+	private final CLogger log = CLogger.getCLogger(getClass());
+
+	// private final GridTab gridTab;
+	private final APanel panel;
+
+	public AttachmentDnDTransferHandler(APanel panel)
+	{
+		this.panel = panel;
+	}
+
+	public GridTab getGridTab()
+	{
+		return panel.getCurrentTab();
+	}
+
+	public int getTableId()
+	{
+		GridTab gridTab = getGridTab();
+		return gridTab == null ? -1 : gridTab.getAD_Table_ID();
+	}
+
+	public int getRecordId()
+	{
+		GridTab gridTab = getGridTab();
+		return gridTab == null ? -1 : gridTab.getRecord_ID();
+	}
+
+	@Override
+	public boolean canImport(TransferHandler.TransferSupport support)
+	{
+		final GridTab gridTab = getGridTab();
+		if (gridTab == null)
+			return false;
+
+		// if (!support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
+		// && !support.isDataFlavorSupported(DataFlavor.getTextPlainUnicodeFlavor())) {
+		// return false;
+		// }
+		return true;
+	}
+
+	@Override
+	public boolean importData(TransferHandler.TransferSupport support)
+	{
+		final GridTab gridTab = getGridTab();
+		if (gridTab == null)
+		{
+			return false;
+		}
+		if (!canImport(support))
+		{
+			return false;
+		}
+
+		Transferable t = support.getTransferable();
+
+		DataFlavor[] flavors = t.getTransferDataFlavors();
+		for (int i = 0; i < flavors.length; i++)
+		{
+			DataFlavor flavor = flavors[i];
+			try
+			{
+				if (flavor.equals(DataFlavor.javaFileListFlavor))
+				{
+					@SuppressWarnings("unchecked")
+					java.util.List<File> l = (java.util.List<File>)t.getTransferData(DataFlavor.javaFileListFlavor);
+
+					final MAttachment att = getAttachment();
+					for (File f : l)
+					{
+						att.addEntry(f);
+						log.fine("file added: " + f.getAbsolutePath());
+					}
+					att.setTitle(att.getTitle() + " "); // otherwise it is not saved (nothing changed message..)
+					if (!att.save())
+					{
+						log.severe("Can't save attachment");
+					}
+				}
+				else if (flavor.getMimeType().startsWith("text"))
+				{
+					Object data = t.getTransferData(DataFlavor.stringFlavor);
+					if (data == null)
+						continue;
+					final String text = data.toString();
+					final DateFormat df = DisplayType.getDateFormat(DisplayType.DateTime);
+					final String name = "Text " + df.format(new Timestamp(System.currentTimeMillis()));
+					final MAttachment att = getAttachment();
+					att.addEntry(name, text.getBytes());
+					att.saveEx();
+				}
+			}
+			catch (Exception ex)
+			{
+				log.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+				ADialog.error(gridTab.getWindowNo(), null, "Error", ex.getLocalizedMessage());
+				return false;
+			}
+		}
+		// inform APanel/.. -> dataStatus with row updated
+		gridTab.loadAttachments();
+
+		DataStatusEvent m_DataStatusEvent = new DataStatusEvent(gridTab, gridTab.getRowCount(), false, true, false);
+		m_DataStatusEvent.setCurrentRow(gridTab.getCurrentRow());
+		String status = m_DataStatusEvent.getAD_Message();
+		if (status == null || status.length() == 0)
+			m_DataStatusEvent.setInfo("NavigateOrUpdate", null, false, false);
+		gridTab.fireDataStatusChanged(m_DataStatusEvent);
+		return true;
+	}
+
+	private MAttachment getAttachment()
+	{
+		MAttachment att = MAttachment.get(Env.getCtx(), getTableId(), getRecordId());
+		if (att == null)
+		{
+			log.fine("new attachment created");
+			att = new MAttachment(Env.getCtx(), getTableId(), getRecordId(), null);
+		}
+		return att;
+	}
+}

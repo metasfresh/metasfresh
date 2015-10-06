@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout/report" uuid="ec3faad0-0045-4c5b-8fdb-e7ca318251a7">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<import value="java.util.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<parameter name="doctype" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["io"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT *
+FROM
+	(
+------------------------------------------------------------------------------------------
+	SELECT
+		m_inout.ad_user_id 		as inout_user_id,
+		m_inout.ad_org_id 		as inout_org_id,
+		m_inout.m_inout_id 		as inout_id,
+		m_inout.docstatus 		as inout_docstatus,
+		m_inout.c_bpartner_id 		as inout_bpartner_id,
+		m_inout.c_bpartner_location_id 	as inout_bpartner_location_id,
+		dt.printname,
+		case when (bp.ad_language is null or bp.ad_language = '')
+			then (SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y')
+			else bp.ad_language
+		end as bp_language,
+		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y') as ad_language,
+		'/report_details.jasper' 	as path,
+		10 as source
+
+	FROM
+		m_inout m_inout
+		JOIN c_doctype dt		ON m_inout.c_doctype_id		= dt.c_doctype_id
+		JOIN c_bpartner bp 		ON m_inout.c_bpartner_id 	= bp.c_bpartner_id
+	UNION
+------------------------------------------------------------------------------------------
+	SELECT
+		m_inout.ad_user_id 		as inout_user_id,
+		m_inout.ad_org_id 		as inout_org_id,
+		m_inout.m_inout_id 		as inout_id,
+		m_inout.docstatus 		as inout_docstatus,
+		m_inout.c_bpartner_id 		as inout_bpartner_id,
+		m_inout.c_bpartner_location_id 	as inout_bpartner_location_id,
+		dt.printname,
+		case when (bp.ad_language is null or bp.ad_language = '')
+			then (SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y')
+			else bp.ad_language
+		end as bp_language,
+		dt.ad_language,
+		'/report_details.jasper' 	as path,
+		10 as source
+
+	FROM
+		m_inout m_inout
+		JOIN c_doctype_trl dt		ON m_inout.c_doctype_id		= dt.c_doctype_id
+		JOIN c_bpartner bp 		ON m_inout.c_bpartner_id 	= bp.c_bpartner_id
+	UNION
+------------------------------------------------------------------------------------------
+	SELECT
+		m_inout.ad_user_id,
+		m_inout.ad_org_id,
+		m_inout.m_inout_id,
+		m_inout.docstatus,
+		m_inout.c_bpartner_id,
+		m_inout.c_bpartner_location_id,
+		dt.printname,
+		case when (bp.ad_language is null or bp.ad_language = '')
+			then (SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y')
+			else bp.ad_language
+		end as bp_language,
+		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y'),
+		'/report_details_footer.jasper',
+		20
+
+	FROM
+		m_inout m_inout
+		JOIN c_doctype dt		ON m_inout.c_doctype_id		= dt.c_doctype_id
+		JOIN c_bpartner bp 		ON m_inout.c_bpartner_id = bp.c_bpartner_id
+	UNION
+------------------------------------------------------------------------------------------
+	SELECT
+		m_inout.ad_user_id,
+		m_inout.ad_org_id,
+		m_inout.m_inout_id,
+		m_inout.docstatus,
+		m_inout.c_bpartner_id,
+		m_inout.c_bpartner_location_id,
+		dt.printname,
+		case when (bp.ad_language is null or bp.ad_language = '')
+			then (SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y')
+			else bp.ad_language
+		end as bp_language,
+		dt.ad_language,
+		'/report_details_footer.jasper',
+		20
+
+	FROM
+		m_inout m_inout
+		JOIN c_doctype_trl dt		ON m_inout.c_doctype_id		= dt.c_doctype_id
+		JOIN c_bpartner bp 		ON m_inout.c_bpartner_id = bp.c_bpartner_id
+
+	) as m_inout
+WHERE
+	m_inout.inout_id = $P{RECORD_ID}
+	AND (m_inout.ad_language = m_inout.bp_language OR m_inout.ad_language IS NULL)
+ORDER BY source
+;]]>
+	</queryString>
+	<field name="inout_user_id" class="java.math.BigDecimal"/>
+	<field name="inout_org_id" class="java.math.BigDecimal"/>
+	<field name="inout_id" class="java.math.BigDecimal"/>
+	<field name="inout_docstatus" class="java.lang.String"/>
+	<field name="inout_bpartner_id" class="java.math.BigDecimal"/>
+	<field name="inout_bpartner_location_id" class="java.math.BigDecimal"/>
+	<field name="printname" class="java.lang.String"/>
+	<field name="bp_language" class="java.lang.String"/>
+	<field name="ad_language" class="java.lang.String"/>
+	<field name="path" class="java.lang.String"/>
+	<field name="source" class="java.lang.Integer"/>
+	<background>
+		<band height="842" splitType="Stretch">
+			<textField evaluationTime="Auto" isBlankWhenNull="true">
+				<reportElement uuid="898d3e7f-d520-434c-a54b-8c4906fc1817" key="textField-61" x="34" y="209" width="518" height="63" forecolor="#CCCCCC"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="48" isBold="true" isItalic="true" pdfFontName="Helvetica" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(($F{inout_docstatus}.equals("DR")) ? $R{invoice.watermark.drafted} :
+(($F{inout_docstatus}.equals("IN")) ? $R{report.watermark.invalid} : null))]]></textFieldExpression>
+			</textField>
+		</band>
+	</background>
+	<title>
+		<band height="269" splitType="Stretch">
+			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
+			<subreport isUsingCache="true">
+				<reportElement uuid="bf2fe593-7473-486c-b48f-63d419100511" key="subreport-8" x="0" y="116" width="595" height="153"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$F{bp_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/inout/report_description.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement uuid="f0dba1f8-f917-47ea-9696-72b5c74d1757" key="subreport-4" x="0" y="31" width="595" height="85"/>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{inout_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="printname">
+					<subreportParameterExpression><![CDATA[$F{printname}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement uuid="a2587194-6faf-4a16-9753-2a9f77935d45" key="subreport-5" x="54" y="142" width="309" height="114"/>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{inout_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="doctype">
+					<subreportParameterExpression><![CDATA[new String("io")]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="179" splitType="Stretch">
+			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+			<subreport isUsingCache="true">
+				<reportElement uuid="33aa081f-33c9-46b8-83ec-1eb82afda15f" key="subreport-7" x="0" y="31" width="595" height="123"/>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{inout_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="printname">
+					<subreportParameterExpression><![CDATA[$F{printname}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement uuid="7e20c567-f3e9-4f06-b9a2-9fa027670478" key="subreport-10" x="21" y="153" width="534" height="26"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$F{bp_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/inout/report_page_header.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="70" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement uuid="8ec4ce73-64c9-452c-9abf-13e5efedb735" key="subreport-3" x="0" y="2" width="595" height="67"/>
+				<subreportParameter name="REPORT_RESOURCE_BUNDLE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_PARAMETERS_MAP">
+					<subreportParameterExpression><![CDATA[new HashMap($P{REPORT_PARAMETERS_MAP})]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_CONNECTION">
+					<subreportParameterExpression><![CDATA[$P{REPORT_CONNECTION}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$F{bp_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="m_inout_id">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/inout"+$F{path}]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="93" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement uuid="b1b5fa55-8100-4bd5-b481-47817d96a503" key="subreport-9" x="0" y="0" width="595" height="93"/>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{inout_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
+			</subreport>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement uuid="85172f8d-b93e-4eda-9c02-1a7cddd32913" key="textField-62" x="529" y="21" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement uuid="2b34c661-46f4-425a-8790-fe45f9153ba1" key="textField-63" x="508" y="21" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + "/ "]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement uuid="1cbbc772-fe39-4446-ab08-64d5f3e855c3" key="textField-64" x="445" y="21" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,199 @@
+package org.adempiere.ad.dao.impl;
+
+/*
+ * #%L
+ * ADempiere ERP - Base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+
+import org.adempiere.exceptions.DBException;
+import org.adempiere.util.Check;
+import org.compiere.model.POInfo;
+import org.compiere.model.Query;
+import org.compiere.util.CLogger;
+import org.compiere.util.DB;
+
+/**
+ * Buffered {@link Iterator} over a {@link TypedSqlQuery} result.
+ * 
+ * @author tsa
+ * 
+ * @param <ET> model interface
+ */
+/* package */final class POBufferedIterator<T, ET extends T> implements Iterator<ET>
+{
+	private static final transient CLogger logger = CLogger.getCLogger(POBufferedIterator.class);
+
+	private final TypedSqlQuery<T> query;
+	private final Class<ET> clazz;
+
+	private int bufferSize = 50;
+	private int offset = 0;
+	// private List<ET> buffer;
+	private Iterator<ET> bufferIterator;
+
+	/**
+	 * Buffer was fully loaded? True when buffer contains as much data as it was required. If this flag is false then it's a good indicator that we are on last page.
+	 * 
+	 */
+	private boolean bufferFullyLoaded = false;
+
+	/* package */POBufferedIterator(final TypedSqlQuery<T> query, final Class<ET> clazz)
+	{
+		super();
+
+		// Make sure database paging is supported
+		if (!DB.getDatabase().isPagingSupported())
+		{
+			throw new DBException("Database paging support is required in order to have " + POBufferedIterator.class + " working");
+		}
+
+		Check.assume(query != null, "query != null");
+		this.query = query.copy();
+		if (Check.isEmpty(this.query.getOrderBy(), true))
+		{
+			final String orderBy = buildOrderBy(this.query.getTableName());
+			if (Check.isEmpty(orderBy))
+			{
+				throw new DBException("Query does not have ORDER BY and we could not build one for given table because there are no key columns: " + query);
+			}
+
+			if (logger.isLoggable(Level.FINEST))
+			{
+				logger.info("Using default build-in ORDER BY: " + orderBy);
+			}
+			this.query.setOrderBy(orderBy);
+		}
+
+		// Check.assume(clazz != null, "clazz != null"); // class can be null
+		this.clazz = clazz;
+	}
+
+	/**
+	 * Build standard ORDER BY clause (by Key Columns).
+	 * 
+	 * @param tableName
+	 * @return ORDER BY clause or ""
+	 */
+	private String buildOrderBy(final String tableName)
+	{
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+
+		final StringBuilder orderBy = new StringBuilder();
+		for (String keyColumnName : poInfo.getKeyColumnNames())
+		{
+			if (orderBy.length() > 0)
+			{
+				orderBy.append(", ");
+			}
+			orderBy.append(keyColumnName);
+		}
+
+		return orderBy.toString();
+	}
+
+	@Override
+	public boolean hasNext()
+	{
+		final Iterator<ET> it = getBufferIterator();
+		return it.hasNext();
+	}
+
+	@Override
+	public ET next()
+	{
+		final Iterator<ET> it = getBufferIterator();
+		final ET value = it.next();
+		return value;
+	}
+
+	@Override
+	public void remove()
+	{
+		throw new UnsupportedOperationException("Remove operation not supported.");
+	}
+
+	private Iterator<ET> getBufferIterator()
+	{
+		// Buffer iterator was not initialized yet, loading first page
+		if (bufferIterator == null)
+		{
+			loadNextPage();
+			return bufferIterator;
+		}
+
+		// Buffer iterator has reached the end. We load the next page only if current page was fully load.
+		// Else, makes no sense to load next page because last page was a short one so we are sure that there are no more pages
+		if (!bufferIterator.hasNext() && bufferFullyLoaded)
+		{
+			loadNextPage();
+		}
+
+		return bufferIterator;
+	}
+
+	private void loadNextPage()
+	{
+		query.setLimit(bufferSize, offset);
+		final List<ET> buffer = query.list(clazz);
+		bufferIterator = buffer.iterator();
+		
+		final int bufferSizeActual = buffer.size();
+		bufferFullyLoaded = bufferSizeActual >= bufferSize;
+
+		if (logger.isLoggable(Level.INFO))
+		{
+			logger.info("Loaded next page: bufferSize=" + bufferSize + ", offset=" + offset + " => " + bufferSizeActual + " records (fullyLoaded=" + bufferFullyLoaded + ")");
+		}
+
+		offset += bufferSizeActual;
+	}
+
+	/**
+	 * Sets buffer/page size, i.e. the number of rows to be loaded by this iterator at a time.
+	 * 
+	 * @param bufferSize
+	 * @see Query#OPTION_IteratorBufferSize
+	 */
+	public void setBufferSize(int bufferSize)
+	{
+		Check.assume(bufferSize > 0, "bufferSize > 0");
+		this.bufferSize = bufferSize;
+	}
+
+	public int getBufferSize()
+	{
+		return bufferSize;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "POBufferedIterator [clazz=" + clazz
+				+ ", bufferSize=" + bufferSize
+				+ ", offset=" + offset
+				+ ", query=" + query
+				+ "]";
+	}
+}

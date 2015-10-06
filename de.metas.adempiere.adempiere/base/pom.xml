@@ -1,0 +1,342 @@
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.adempiere.adempiere</groupId>
+	<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencies>
+	
+		<!-- unused according to maven dependency:analyze -->
+		<!-- tsa: we need it if we start some standalone applications (e.g. IMP_Processors_StandaloneLauncher) which are requiring activemq -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<version>1.7.2</version>
+<!-- <version>1.5.11</version>  -->
+		</dependency>
+
+		<dependency>
+			<groupId>xml-apis</groupId>
+			<artifactId>xml-apis</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+
+		<!-- Adempiere -->
+
+		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.monitoring</groupId>
+			<artifactId>de.metas.monitoring</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<!-- NOTE: we need this for MG to be able to track dependencies -->
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- J2EE -->
+		<!-- Working on "java.lang.IncompatibleClassChangeError: Class org.jnp.server.NamingServer 
+			does not implement the requested interface org.jnp.interfaces.Naming" <dependency> 
+			<groupId>org.jboss.client</groupId> <artifactId>jbossall-client</artifactId> 
+			<version>4.2.3.GA</version> </dependency> -->
+
+		<!-- We don't use javaee-api, because it contains a version of javax.mail 
+			that is different from 1.4.3 which is used by the code. Instead we declare 
+			the API libs that we really need. <dependency> <groupId>javaee</groupId> 
+			<artifactId>javaee-api</artifactId> <version>5</version> <scope>provided</scope> 
+			</dependency> -->
+
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.3</version>
+			<!-- scope>provided</scope> required also at runtime, for de.metas.endcustomer.*.aopc-->
+		</dependency>
+
+		<dependency>
+			<groupId>javax.ejb</groupId>
+			<artifactId>ejb-api</artifactId>
+			<version>3.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.jnlp</groupId>
+			<artifactId>jnlp</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.jms</groupId>
+			<artifactId>jms</artifactId>
+			<version>1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-core</artifactId>
+			<version>5.5.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>activeio-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- NOTE we specified above that we are using another version -->
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<!-- unused according to maven dependency:analyze, but currently used in 
+			sw01_swat_it by class de.metas.rpl.spi.impl.TopicRplExportProcessor <dependency> 
+			<groupId>org.apache.activemq</groupId> <artifactId>activemq-pool</artifactId> 
+			<version>5.5.1</version> </dependency> -->
+
+		<!-- Persistence -->
+		<!-- task 08353: using latest version so that we can display the trxName in the DBMS server status -->
+		<dependency>
+			<groupId>com.mchange</groupId>
+			<artifactId>c3p0</artifactId>
+			<version>0.9.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.2-1003-jdbc4</version> <!-- 04750 the old version was buggy -->
+		</dependency>
+		
+
+		<!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/dbPort/JdbcTest.java -->
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>11.2.0.1.0</version>
+		</dependency>
+		<!-- unused according to maven dependency:analyze <dependency> <groupId>mysql</groupId> 
+			<artifactId>mysql-connector-java</artifactId> <version>5.1.17</version> </dependency> 
+			<dependency> <groupId>c3p0</groupId> <artifactId>c3p0-oracle-thin-extras</artifactId> 
+			<version>0.9.0.2</version> </dependency> -->
+		<!-- Scripting support -->
+
+		<!-- unused according to maven dependency:analyze moved to adempiere-client 
+			<dependency> <groupId>org.codehaus.groovy</groupId> <artifactId>groovy-all</artifactId> 
+			<version>1.5.1</version> </dependency> <dependency> <groupId>org.codehaus.groovy</groupId> 
+			<artifactId>groovy-engine</artifactId> <version>1.5.1</version> </dependency> -->
+		<!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/model/Scriptlet.java -->
+		<dependency>
+			<groupId>org.beanshell</groupId>
+			<artifactId>bsh</artifactId>
+			<version>2.0b5</version>
+		</dependency>
+
+		<!-- unused according to maven dependency:analyze <dependency> <groupId>org.beanshell</groupId> 
+			<artifactId>bsh-engine</artifactId> <version>2.0b5</version> <type>jar</type> 
+			</dependency> <dependency> <groupId>org.python</groupId> <artifactId>jython</artifactId> 
+			<version>2.2.1</version> </dependency> <dependency> <groupId>org.python</groupId> 
+			<artifactId>jython-engine</artifactId> <version>2.2.1</version> </dependency> -->
+		<!-- Swing -->
+
+				<!-- unused according to maven dependency:analyze movbed to adempiere-client 
+			<dependency> <groupId>com.miglayout</groupId> <artifactId>miglayout</artifactId> 
+			<version>3.7.1</version> </dependency> -->
+		<dependency>
+			<groupId>com.jgoodies</groupId>
+			<artifactId>looks</artifactId>
+			<version>2.0.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.swinglabs</groupId>
+			<artifactId>swingx</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+
+		<!-- Support libraries -->
+
+		<!-- unused according to maven dependency:analyze <dependency> <groupId>commons-logging</groupId> 
+			<artifactId>commons-logging-api</artifactId> <version>1.1</version> </dependency> 
+			<dependency> <groupId>commons-logging</groupId> <artifactId>commons-logging-adapters</artifactId> 
+			<version>1.1</version> </dependency> -->
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.14</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-net</groupId>
+			<artifactId>commons-net</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>it.sauronsoftware.cron4j</groupId>
+			<artifactId>cron4j</artifactId>
+			<version>2.2.5</version>
+		</dependency>
+
+		<!-- Payment -->
+		<!-- unused according to maven dependency:analyze <dependency> <groupId>com.paypal</groupId> 
+			<artifactId>payflow</artifactId> <version>1.0</version> </dependency> -->
+
+		<dependency>
+			<groupId>com.verisign</groupId>
+			<artifactId>payment</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<!-- required by /adempiereTrunkMvcForms/base/src/org/adempiere/pipo/CreateZipFile.java -->
+		<dependency>
+			<groupId>org.apache.ant</groupId>
+			<artifactId>ant</artifactId>
+			<version>1.7.0</version>
+		</dependency>
+
+		<!-- Reporting -->
+
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.7</version>
+
+			<exclusions>
+				<!-- working on ..root-webapp-3.7.0-FR3403603-SNAPSHOT-exp.war\WEB-INF\lib\servlet-api-2.3.jar) 
+					- jar not loaded. See Servlet Spec 2.3, section 9.7.2. Offending class: javax/servlet/Servlet.class -->
+				<exclusion>
+					<groupId>javax.servlet</groupId>
+					<artifactId>servlet-api</artifactId>
+				</exclusion>
+			</exclusions>
+
+		</dependency>
+
+		<!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/print/layout/BarcodeElement.java -->
+		<dependency>
+			<groupId>net.sourceforge.barbecue</groupId>
+			<artifactId>barbecue</artifactId>
+			<version>1.5-beta1</version>
+		</dependency>
+		<!-- itext is required by org.adempiere.pdf.Document.java-->
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+			<version>2.1.7</version>
+			<exclusions>
+				<exclusion>
+					<groupId>bouncycastle</groupId>
+					<artifactId>bcmail-jdk14</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>bouncycastle</groupId>
+					<artifactId>bcprov-jdk14</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>bouncycastle</groupId>
+					<artifactId>bctsp-jdk14</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jpedal</groupId>
+			<artifactId>jpedal</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>1.0.12</version>
+		</dependency>
+
+		<!-- workaound, see  06687 Get rid of calls to non-API (107116288996) -->
+		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>animal-sniffer-annotations</artifactId>
+			<version>1.11</version>
+			<optional>true</optional>
+      <!-- if you are using badly written maven plugins then blame them and add
+      <scope>provided</scope>
+      -->
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.0</version>
+		</dependency>
+
+		<dependency>
+			<!-- Initially was needed for org.adempiere.plaf.UIDefaultsSerializer but in future we would use it for many other things -->
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Create tests JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+Purpose:
+	Defines methods and actions for DSP
+Description:
+	
+Histroy:
+	Mon Jun 20 20:57:56     2005, Created by tomyeh
+
+Copyright (C) 2005 Potix Corporation. All Rights Reserved.
+-->
+
+<taglib>
+	<uri>http://www.zkoss.org/dsp/web/core</uri>
+	<description>
+	Core methods and tags for zweb in DSP
+	</description>
+
+	<!--      -->
+	<!-- Tags -->
+	<!--      -->
+	<tag>
+		<description>
+	Provides the context for mutually exclusive conditional execution.
+		</description>
+		<name>choose</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.Choose</tag-class>
+	</tag>
+	<tag>
+		<description>
+	Iterators thru a collection/array of items.
+		</description>
+		<name>forEach</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.ForEach</tag-class>
+	</tag>
+	<tag>
+		<description>
+	Tests whether an condition is true and render the child only
+	if the condition is true.
+		</description>
+		<name>if</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.If</tag-class>
+	</tag>
+	<tag>
+		<description>
+	Includes the specified page.
+		</description>
+		<name>include</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.Include</tag-class>
+	</tag>
+	<tag>
+		<description>
+	Represents the last alternative within a choose action.
+		</description>
+		<name>otherwise</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.Otherwise</tag-class>
+	</tag>
+	<tag>
+		<description>
+	Generates the specified value into a string.
+		</description>
+		<name>out</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.Out</tag-class>
+	</tag>
+	<tag>
+		<description>
+	Sets the page info, such as the content type.
+		</description>
+		<name>page</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.Page</tag-class>
+	</tag>
+	<tag>
+		<description>
+	Remove an attribute.
+		</description>
+		<name>remove</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.Remove</tag-class>
+	</tag>
+	<tag>
+		<description>
+	Sets an attribute.
+		</description>
+		<name>set</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.Set</tag-class>
+	</tag>
+	<tag>
+		<description>
+	Represents an alternative within a {@link Choose} action.
+		</description>
+		<name>when</name>
+		<tag-class>org.zkoss.web.servlet.dsp.action.When</tag-class>
+	</tag>
+
+	<!--         -->
+	<!-- Imports -->
+	<!--         -->
+	<import>
+		<import-name>ServletFns</import-name>
+		<import-class>org.zkoss.web.fn.ServletFns</import-class>
+	</import>
+	<import>
+		<import-name>Labels</import-name>
+		<import-class>org.zkoss.util.resource.Labels</import-class>
+	</import>
+
+	<!--                 -->
+	<!-- Class Utilities -->
+	<!--                 -->
+	<function>
+		<name>boolean</name>
+		<function-class>org.zkoss.xel.fn.CommonFns</function-class>
+		<function-signature>boolean toBoolean(java.lang.Object)</function-signature>
+		<description>
+		Converts the specified object to a boolean.
+		</description>
+	</function>
+	<function>
+		<name>number</name>
+		<function-class>org.zkoss.xel.fn.CommonFns</function-class>
+		<function-signature>java.lang.Number toNumber(java.lang.Object)</function-signature>
+		<description>
+		Converts the specified object to a number.
+		</description>
+	</function>
+	<function>
+		<name>int</name>
+		<function-class>org.zkoss.xel.fn.CommonFns</function-class>
+		<function-signature>int toInt(java.lang.Object)</function-signature>
+		<description>
+		Converts the specified object to an integer.
+		</description>
+	</function>
+	<function>
+		<name>decimal</name>
+		<function-class>org.zkoss.xel.fn.CommonFns</function-class>
+		<function-signature>java.math.BigDecimal toDecimal(java.lang.Object)</function-signature>
+		<description>
+		Converts the specified object to a (big) decimal.
+		</description>
+	</function>
+	<function>
+		<name>string</name>
+		<function-class>org.zkoss.xel.fn.CommonFns</function-class>
+		<function-signature>java.lang.String toString(java.lang.Object)</function-signature>
+		<description>
+		Converts the specified object to a string.
+		</description>
+	</function>
+	<function>
+		<name>char</name>
+		<function-class>org.zkoss.xel.fn.CommonFns</function-class>
+		<function-signature>char toChar(java.lang.Object)</function-signature>
+		<description>
+	Converts the specified object to a character.
+		</description>
+	</function>
+	<function>
+		<name>class</name>
+		<function-class>org.zkoss.lang.Classes</function-class>
+		<function-signature>java.lang.Class forNameByThread(java.lang.String)</function-signature>
+		<description>
+	Returns the class of the specified class name.
+		</description>
+	</function>
+	<function>
+		<name>isInstance</name>
+		<function-class>org.zkoss.xel.fn.CommonFns</function-class>
+		<function-signature>boolean isInstance(java.lang.Object, java.lang.Object)</function-signature>
+		<description>
+	Tests whether an object (the second argument) is an instance of a class (the first argument).
+	You could specify a class or the class name as the first argument.
+		</description>
+	</function>
+	<function>
+		<name>length</name>
+		<function-class>org.zkoss.xel.fn.CommonFns</function-class>
+		<function-signature>int length(java.lang.Object)</function-signature>
+		<description>
+	Returns the length of a string, array, collection or map.
+		</description>
+	</function>
+	<function>
+		<name>new</name>
+		<function-class>org.zkoss.xel.fn.CommonFns</function-class>
+		<function-signature>java.lang.Object new_(java.lang.Object)</function-signature>
+		<description>
+	Instantiates the specified class.
+	The argument could be either a string (class name) or a Class instance.
+		</description>
+	</function>
+
+	<function>
+		<name>property</name><!-- since 3.5.1 -->
+		<function-class>org.zkoss.lang.Library</function-class>
+		<function-signature>java.lang.String getProperty(java.lang.String)</function-signature>
+		<description>
+	Returns the library property.
+		</description>
+	</function>
+	<function><!-- backward compatible -->
+		<name>getProperty</name>
+		<function-class>org.zkoss.lang.Library</function-class>
+		<function-signature>java.lang.String getProperty(java.lang.String)</function-signature>
+		<description>
+	Returns the library property.
+		</description>
+	</function>
+
+	<!--                  -->
+	<!-- String Utilities -->
+	<!--                  -->
+	<function>
+		<name>eatQuot</name>
+		<function-class>org.zkoss.xel.fn.StringFns</function-class>
+		<function-signature>
+	java.lang.String eatQuot(java.lang.String)
+		</function-signature>
+		<description>
+	Eliminates single and double quotations to avoid JavaScript injection.
+		</description>
+	</function>
+	<function>
+		<name>cat</name>
+		<function-class>org.zkoss.xel.fn.StringFns</function-class>
+		<function-signature>
+	java.lang.String cat(java.lang.String, java.lang.String)
+		</function-signature>
+		<description>
+	Catenates two strings. Note: null is considered as empty.
+		</description>
+	</function>
+	<function>
+		<name>cat3</name>
+		<function-class>org.zkoss.xel.fn.StringFns</function-class>
+		<function-signature>
+	java.lang.String cat3(java.lang.String, java.lang.String, java.lang.String)
+		</function-signature>
+		<description>
+	Catenates three strings. Note: null is considered as empty.
+		</description>
+	</function>
+	<function>
+		<name>cat4</name>
+		<function-class>org.zkoss.xel.fn.StringFns</function-class>
+		<function-signature>
+	java.lang.String cat4(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+		</function-signature>
+		<description>
+	Catenates four strings. Note: null is considered as empty.
+		</description>
+	</function>
+	<function>
+		<name>cat5</name>
+		<function-class>org.zkoss.xel.fn.StringFns</function-class>
+		<function-signature>
+	java.lang.String cat5(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+		</function-signature>
+		<description>
+	Catenates five strings. Note: null is considered as empty.
+		</description>
+	</function>
+	<function>
+		<name>replace</name>
+		<function-class>org.zkoss.xel.fn.StringFns</function-class>
+		<function-signature>
+	java.lang.String replace(java.lang.String, java.lang.String, java.lang.String)
+		</function-signature>
+		<description>
+	Replaces all occurenances of the second argument with the third argument.
+		</description>
+	</function>
+
+	<function>
+		<name>l</name>
+		<function-class>org.zkoss.xel.fn.CommonFns</function-class>
+		<function-signature>java.lang.String getLabel(java.lang.String)</function-signature>
+		<description>
+		Returns the label of the specified key.
+		</description>
+	</function>
+	<function>
+		<name>l2</name>
+		<function-class>org.zkoss.xel.fn.CommonFns</function-class>
+		<function-signature>java.lang.String getLabel(java.lang.String, java.lang.Object[])</function-signature>
+		<description>
+		Returns the label of the specified key, and formats with the specified
+		argument.
+		</description>
+	</function>
+
+	<!--                    -->
+	<!-- XML/HTML Utilities -->
+	<!--                    -->
+	<function>
+		<name>attr</name>
+		<function-class>org.zkoss.xel.fn.XmlFns</function-class>
+		<function-signature>
+	java.lang.String attr(java.lang.String, java.lang.Object)
+		</function-signature>
+		<description>
+	Generates an attribute for HTML/XML, name="value".
+	If value is null or empty (if String), "" is generated.
+		</description>
+	</function>
+
+	<!--                -->
+	<!-- HTTP Utilities -->
+	<!--                -->
+	<function>
+		<name>encodeURL</name>
+		<function-class>org.zkoss.web.fn.ServletFns</function-class>
+		<function-signature>
+	java.lang.String encodeURL(java.lang.String)
+		</function-signature>
+		<description>
+	Encoding URL to prefix the context path and to provide session info,
+	if necessary
+	If URI contains "*", it is resolved to the current Locale and
+	the browser code.
+		</description>
+	</function>
+	<function>
+		<name>encodeURIComponent</name>
+		<function-class>org.zkoss.web.servlet.http.Encodes</function-class>
+		<function-signature>
+	java.lang.String encodeURIComponent(java.lang.String)
+		</function-signature>
+		<description>
+	Encoding a string to be used as a query name or value.
+		</description>
+	</function>
+
+	<function>
+		<name>escapeXML</name>
+		<function-class>org.zkoss.xml.XMLs</function-class>
+		<function-signature>
+	java.lang.String escapeXML(java.lang.String)
+		</function-signature>
+		<description>
+	Encodes a string that special characters are quoted to be compatible
+	with HTML/XML.
+		</description>
+	</function>
+
+	<function>
+		<name>browser</name>
+		<function-class>org.zkoss.web.fn.ServletFns</function-class>
+		<function-signature>
+	boolean isBrowser(java.lang.String)
+		</function-signature>
+		<description>
+	Whether the current request is coming from the browser of the specified
+	type.
+	@param type the type of the browser.
+		Allowed values include "robot", "ie", "ie6", "ie6-", "ie7", "ie8",
+		"ie7-", "gecko", "gecko2", "gecko3", "gecko2-",
+		"opara", "safari",
+		"mil", "hil", "mil-".<br/>
+		Note: "ie6-" means Internet Explorer 6 only; not Internet Explorer 7
+		or other.
+		</description>
+	</function>
+	<function>
+		<name>isExplorer</name>
+		<function-class>org.zkoss.web.fn.ServletFns</function-class>
+		<function-signature>
+	boolean isExplorer()
+		</function-signature>
+		<description>
+	Whether the current request is coming from Internet Explorer.
+		</description>
+	</function>
+	<function>
+		<name>isExplorer7</name>
+		<function-class>org.zkoss.web.fn.ServletFns</function-class>
+		<function-signature>
+	boolean isExplorer7()
+		</function-signature>
+		<description>
+	Whether the current request is coming from Internet Explorer 7 or later.
+		</description>
+	</function>
+	<function>
+		<name>isGecko</name>
+		<function-class>org.zkoss.web.fn.ServletFns</function-class>
+		<function-signature>
+	boolean isGecko()
+		</function-signature>
+		<description>
+	Whether the current request is coming from a Gecko-based browser,
+	such as Mozilla, Firefox and Camino.
+		</description>
+	</function>
+	<function>
+		<name>isGecko3</name>
+		<function-class>org.zkoss.web.fn.ServletFns</function-class>
+		<function-signature>
+	boolean isGecko3()
+		</function-signature>
+		<description>
+	Whether the current request is coming from a Gecko 3-based browser,
+	such as Firefox 3.
+		</description>
+	</function>
+	<function>
+		<name>isSafari</name>
+		<function-class>org.zkoss.web.fn.ServletFns</function-class>
+		<function-signature>
+	boolean isSafari()
+		</function-signature>
+		<description>
+	Whether the current request is coming from Safari.
+		</description>
+	</function>
+	<function>
+		<name>isOpera</name>
+		<function-class>org.zkoss.web.fn.ServletFns</function-class>
+		<function-signature>
+	boolean isOpera()
+		</function-signature>
+		<description>
+	Whether the current request is coming from Opera.
+		</description>
+	</function>
+
+	<function>
+		<name>render</name>
+		<function-class>org.zkoss.web.fn.ServletFns</function-class>
+		<function-signature>
+	void render(org.zkoss.web.servlet.dsp.action.ActionContext)
+		</function-signature>
+		<description>
+	Renders a DSP fragment.
+		</description>
+	</function>
+
+	<function>
+		<name>getCurrentLocale</name>
+		<function-class>org.zkoss.util.Locales</function-class>
+		<function-signature>
+	java.util.Locale getCurrent()
+		</function-signature>
+		<description>
+	Returns the locale for the current request.
+		</description>
+	</function>
+	<function>
+		<name>testCurrentLocale</name>
+		<function-class>org.zkoss.util.Locales</function-class>
+		<function-signature>
+	boolean testCurrent(java.lang.String, java.lang.String)
+		</function-signature>
+		<description>
+	Returns whether the current locale belongs to the specified
+	language and/or country.
+
+	@param lang the language code, e.g., en and zh. Ignored if null.
+	@param country the country code, e.g., US. Ignored if null.
+		If empty, it means no country code at all.
+		</description>
+	</function>
+</taglib>

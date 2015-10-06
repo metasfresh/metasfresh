@@ -1,0 +1,91 @@
+package de.metas.payment.sepa.model.validator;
+
+/*
+ * #%L
+ * de.metas.payment.sepa
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.ModelValidator;
+
+import de.metas.payment.esr.api.IBPBankAccountBL;
+import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+
+@Validator(I_SEPA_Export_Line.class)
+public class SEPA_Export_Line
+{
+	/**
+	 * If the given line's account is an ESR account, then this method sets the line's <code>OtherAccountIdentification</code> value to the ESR-account's retrieveESRAccountNo.
+	 * 
+	 * @param esrImport
+	 * @task 07789
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void updateOtherAccountIdentification(I_SEPA_Export_Line esrImport)
+	{
+		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.create(esrImport.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
+		if (!bpBankAccount.isEsrAccount())
+		{
+			return; // nothing to do
+		}
+
+		final IBPBankAccountBL bpBankAccountBL = Services.get(IBPBankAccountBL.class);
+		final IESRImportBL esrBL = Services.get(IESRImportBL.class);
+
+		final String otherAccountIdentification;
+
+		final String esrAccountNo = bpBankAccountBL.retrieveESRAccountNo(bpBankAccount);
+		if (esrAccountNo.length() == 9)
+		{
+			// task 08341: the account should already contain a check digit, but we verify that it is actually the correct check digit.
+			final int checkDigit = esrBL.calculateESRCheckDigit(esrAccountNo.substring(0, 8));
+
+			final String checkDigitStr = Integer.toString(checkDigit);
+			final String lastcharStr = esrAccountNo.substring(8);
+
+			Check.errorUnless(checkDigitStr.equals(lastcharStr), "EsrAccountNo {0} has 9 digits and should end with {1}, but ends with {2}; C_BP_BankAccount={3}",
+					esrAccountNo, checkDigitStr, lastcharStr, bpBankAccount);
+
+			otherAccountIdentification = esrAccountNo;
+		}
+		else if (esrAccountNo.length() == 5)
+		{
+			// task 08341: idk that to do with a 5-digit  ESR-Teilnehmernummer, so i just let it be.
+			// i just read about it in http://www.six-interbank-clearing.com/dam/downloads/de/standardization/iso/swiss-recommendations/implementation-guidelines-ct/standardization_isopayments_iso_20022_ch_implementation_guidelines_ct.pdf
+			// but donT know anything else about it.
+			otherAccountIdentification = esrAccountNo;
+		}
+		else
+		{
+			// default: we prepend a check digit
+			final int checkDigit = esrBL.calculateESRCheckDigit(esrAccountNo);
+			otherAccountIdentification = esrAccountNo + checkDigit;
+		}
+
+		esrImport.setOtherAccountIdentification(otherAccountIdentification);
+	}
+}

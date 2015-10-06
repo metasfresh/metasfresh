@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+  jDTAUS Banking RI CurrencyDirectory
+  Copyright (c) 2005 Christian Schulte <cs@schulte.it>
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+  Document   : currencies-1.1.xml
+  Author     : Christian Schulte <cs@jdtaus.org>
+  Version    : $Id: currencies-1.1.xml 5539 2008-10-28 23:40:53Z schulte2005 $
+  Description: ZKA currencies.
+
+-->
+<banking:currencyList xmlns:banking="http://jdtaus.org/banking/model"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xsi:schemaLocation="http://jdtaus.org/banking/model http://sites.jdtaus.org/jdtaus-banking/1.0.x/jdtaus-banking-schemas/jdtaus-banking-1.0.xsd"
+                      banking:modelVersion="1.0">
+
+  <banking:currency banking:isoCode="EUR" banking:dtausCode="1"
+                    banking:startDate="2002-01-01"/>
+
+  <banking:currency banking:isoCode="DEM" banking:dtausCode=" "
+                    banking:startDate="1948-06-21" banking:endDate="2001-12-31"/>
+
+</banking:currencyList>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+<wb-module deploy-name="Adempiere_stable">
+<wb-resource deploy-path="/WEB-INF/classes" source-path="/base/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/client/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/sqlj/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/looks/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/install/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/extend/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/serverRoot/src/main/ejb"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/serverRoot/src/main/server"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/serverRoot/src/main/servlet"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/interfaces/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/serverApps/src/main/servlet"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/posterita/src/main"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/tools/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/migration/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/JasperReports/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/JasperReportsWebApp/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/webCM/src/main/servlet"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/jbossfacet/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/glassfishfacet/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/resources"/>
+<property name="context-root" value="webui"/>
+<property name="java-output-path" value="build/classes"/>
+</wb-module>
+</project-modules>

@@ -1,0 +1,11 @@
+org.compiere.acct
+org.compiere.apps
+org.compiere.apps.form
+org.compiere.apps.search
+org.compiere.grid 
+org.compiere.grid.ed
+org.compiere.grid.tree
+org.compiere.images 
+org.compiere.install
+org.compiere.minigrid
+org.compiere.print

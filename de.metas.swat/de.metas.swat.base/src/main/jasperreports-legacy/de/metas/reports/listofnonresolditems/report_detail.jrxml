@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<queryString>
+		<![CDATA[SELECT
+
+		pc.name as kategorie,
+
+                p.value,
+
+                p.name,
+		
+		t.movementqty - sum(tr.movementqty) as Reststueckzahl,
+
+		priceactual, 
+
+		discount,
+
+		case when c_currency_id = '102' then '€'
+		else '$' end 
+
+		, max(t.created)
+
+FROM
+
+                m_product p
+
+                JOIN (
+
+                               SELECT  max(created) as created, m_product_id
+
+                               FROM   m_transaction
+
+                               where movementtype = 'V+' 
+
+                               GROUP BY m_product_id
+
+                ) prod_trans ON p.m_product_id = prod_trans.m_product_id
+
+                JOIN m_transaction t ON p.m_product_id = t.m_product_id AND prod_trans.created = t.created
+
+		JOIN m_transaction tr ON p.m_product_id = tr.m_product_id and tr.created > t.created 
+		
+		and tr.movementtype = 'C-' 
+
+		JOIN m_inoutline i on t.m_inoutline_id = i.m_inoutline_id 
+
+		JOIN c_orderline o on i.c_orderline_id = o.c_orderline_id 
+
+		JOIN m_product_category pc on p.m_product_category_id = pc.m_product_category_id
+
+		group by pc.name,p.value, p.name, t.movementqty, priceactual, discount,c_currency_id
+	
+                order by 
+
+		pc.name]]>
+	</queryString>
+	<field name="kategorie" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="value" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="reststueckzahl" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="priceactual" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="discount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="case" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="max" class="java.sql.Timestamp">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="qtytobook_sum" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[]]></variableExpression>
+	</variable>
+	<group name="Zeile">
+		<groupExpression><![CDATA[]]></groupExpression>
+		<groupHeader>
+			<band splitType="Stretch"/>
+		</groupHeader>
+		<groupFooter>
+			<band height="28" splitType="Stretch">
+				<rectangle>
+					<reportElement key="rectangle-3" x="0" y="14" width="782" height="14" backcolor="#808080"/>
+					<graphicElement>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</graphicElement>
+				</rectangle>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="PK">
+		<groupExpression><![CDATA[$F{kategorie}]]></groupExpression>
+	</group>
+	<group name="Produktkategorie">
+		<groupExpression><![CDATA[$F{kategorie}]]></groupExpression>
+		<groupHeader>
+			<band height="25"/>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="16" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="0" width="782" height="14" backcolor="#808080"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="2" y="1" width="103" height="13" forecolor="#FFFFFF"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Produktnummer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="108" y="1" width="136" height="13" forecolor="#FFFFFF"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Produktname]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="696" y="1" width="67" height="13" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Reststueckzahl]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="629" y="1" width="67" height="13" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Preis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="552" y="1" width="67" height="13" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Rabatt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="422" y="1" width="123" height="13" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Datum letzter Transaktion]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="250" y="1" width="118" height="13" forecolor="#FFFFFF"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Produktkategorie]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="11" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-2" x="2" y="0" width="780" height="11" backcolor="#FFFFCC">
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile_COUNT}.intValue()%2)==0)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField>
+				<reportElement mode="Transparent" x="2" y="0" width="103" height="11" backcolor="#FFFFE1"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{value}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="108" y="0" width="136" height="11"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0">
+				<reportElement x="696" y="0" width="67" height="11"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{reststueckzahl}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00">
+				<reportElement x="624" y="0" width="67" height="11"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{priceactual}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="691" y="0" width="5" height="11"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{case}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="612" y="0" width="12" height="11"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="###0.##" isBlankWhenNull="false">
+				<reportElement x="545" y="0" width="67" height="11"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{discount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="495" y="0" width="50" height="11"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{max}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="250" y="0" width="118" height="11"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{kategorie}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="13" splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="9" splitType="Stretch"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

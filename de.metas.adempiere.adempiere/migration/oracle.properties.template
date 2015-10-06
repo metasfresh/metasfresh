@@ -1,0 +1,9 @@
+#ORACLE_HOME
+#Example Value: 
+# Windows - oracle.home=C:/oracle/xe/app/oracle/product/10.2.0/server
+# Linux   - oracle.home=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server/
+oracle.home=
+
+#sqlplus connection string
+oracle.connect.param=adempiere/adempiere
+

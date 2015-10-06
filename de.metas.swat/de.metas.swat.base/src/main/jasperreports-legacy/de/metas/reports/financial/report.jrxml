@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="report"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="842"
+		 pageHeight="595"
+		 columnWidth="782"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="34"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false"
+		 resourceBundle="de/metas/reports/financial/report">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="SUBREPORT_DIR" isForPrompting="false" class="java.lang.String">
+		<defaultValueExpression ><![CDATA[".\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="adempiere_reportline" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["adempiere_reportline.jasper"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_client_id" isForPrompting="false" class="java.math.BigDecimal">
+		<defaultValueExpression ><![CDATA[new BigDecimal (1000000)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_org_id" isForPrompting="true" class="java.math.BigDecimal">
+		<defaultValueExpression ><![CDATA[new BigDecimal(1000000)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="T_Report_AD_PInstance_ID" isForPrompting="true" class="java.lang.Integer">
+		<defaultValueExpression ><![CDATA[new Integer(0)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="adempiere_report_header" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Org_ID" isForPrompting="true" class="java.math.BigDecimal">
+		<defaultValueExpression ><![CDATA[new BigDecimal(0)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="C_Period_ID" isForPrompting="true" class="java.math.BigDecimal">
+		<defaultValueExpression ><![CDATA[new BigDecimal(0)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="C_BPartner_ID" isForPrompting="true" class="java.math.BigDecimal">
+		<defaultValueExpression ><![CDATA[new BigDecimal(0)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="M_Product_ID" isForPrompting="true" class="java.math.BigDecimal">
+		<defaultValueExpression ><![CDATA[new BigDecimal(0)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PA_Hierarchy_ID" isForPrompting="true" class="java.math.BigDecimal">
+		<defaultValueExpression ><![CDATA[new BigDecimal(0)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="UpdateBalances" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select
+ad_org.name as org_name, 
+ad_org.description as org_description, ad_orginfo.taxid as org_taxid, ad_orginfo.duns as org_duns,
+c_location.address1 as org_address1, c_location.address2 as org_address2, c_location.address3 as org_address3, 
+c_location.address4 as org_address4, c_location.postal as org_postal,
+c_location.postal_add as org_postal_add, c_location.city as org_city, c_country.name as org_country_name,
+
+-- metas: adressaufbereitung organisation
+trim(case when c_location.address1 is null then ''
+	else c_location.address1
+end || ' ' ||
+case when c_location.address2 is null then ''
+	else c_location.address2
+end || ' ' ||
+case when c_location.address3 is null then ''
+	else c_location.address3
+end || ' ' ||
+case when c_location.address4 is null then ''
+	else c_location.address4
+end) as org_address_row,
+trim (case when c_location.postal_add is null then ''
+	else c_location.postal_add
+end || ' ' ||
+case when c_location.city is null then ''
+	else c_location.city
+end) as org_postal_row,
+(select ad_org_parm.name from ad_org ad_org_parm where ad_org_parm.ad_org_id in (null, $P{Org_ID})) as parm_org_name,
+(select pr.name from pa_report pr where pi.record_id = pr.pa_report_id) as report_name,
+(select per.name from c_period per where per.c_period_id in (null, $P{C_Period_ID}) limit 1) as parm_period_name,
+(select bp.name from c_bpartner bp where bp.c_bpartner_id in (null, $P{C_BPartner_ID}) limit 1)as parm_bpartner_name,
+(select pro.name from m_product pro where pro.m_product_id in(null, $P{M_Product_ID}) limit 1) as parm_product_name,
+(select hier.name from pa_hierarchy hier where hier.pa_hierarchy_id in (null,$P{PA_Hierarchy_ID}) limit 1) as parm_hierarchy_name
+from ad_org ad_org
+LEFT JOIN ad_orginfo ad_orginfo ON ad_org.ad_org_id = ad_orginfo.ad_org_id
+LEFT JOIN c_location c_location ON ad_orginfo.c_location_id = c_location.c_location_id
+LEFT JOIN c_country c_country ON c_location.c_country_id = c_country.c_country_id
+left join ad_pinstance pi on pi.ad_pinstance_id = $P{T_Report_AD_PInstance_ID}
+left join pa_report pr on pi.record_id = pr.pa_report_id
+where ad_org.ad_org_id = $P{ad_org_id}
+;]]></queryString>
+
+	<field name="org_name" class="java.lang.String"/>
+	<field name="org_description" class="java.lang.String"/>
+	<field name="org_taxid" class="java.lang.String"/>
+	<field name="org_duns" class="java.lang.String"/>
+	<field name="org_address1" class="java.lang.String"/>
+	<field name="org_address2" class="java.lang.String"/>
+	<field name="org_address3" class="java.lang.String"/>
+	<field name="org_address4" class="java.lang.String"/>
+	<field name="org_postal" class="java.lang.String"/>
+	<field name="org_postal_add" class="java.lang.String"/>
+	<field name="org_city" class="java.lang.String"/>
+	<field name="org_country_name" class="java.lang.String"/>
+	<field name="org_address_row" class="java.lang.String"/>
+	<field name="org_postal_row" class="java.lang.String"/>
+	<field name="parm_org_name" class="java.lang.String"/>
+	<field name="report_name" class="java.lang.String"/>
+	<field name="parm_period_name" class="java.lang.String"/>
+	<field name="parm_bpartner_name" class="java.lang.String"/>
+	<field name="parm_product_name" class="java.lang.String"/>
+	<field name="parm_hierarchy_name" class="java.lang.String"/>
+
+		<background>
+			<band height="58"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="76"
+						y="5"
+						width="622"
+						height="46"
+						forecolor="#E3E3E3"
+						key="textField-29"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Center">
+						<font fontName="SansSerif" pdfFontName="Helvetica-BoldOblique" size="36" isBold="true" isItalic="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$R{report.financial.watermark}]]></textFieldExpression>
+				</textField>
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="65"  isSplitAllowed="true" >
+				<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
+				<image  scaleImage="RetainShape" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="1"
+						width="49"
+						height="39"
+						key="image-1"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<graphicElement stretchType="NoStretch"/>
+					<imageExpression class="java.lang.String"><![CDATA["de/metas/generics/logo.png"]]></imageExpression>
+				</image>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="63"
+						width="780"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="69"
+						y="22"
+						width="80"
+						height="13"
+						key="textField-44"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$R{report.org} + ":"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="154"
+						y="22"
+						width="189"
+						height="13"
+						key="textField-45"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[( $P{Org_ID}.equals("") ? "" : $F{parm_org_name} )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="262"
+						y="1"
+						width="245"
+						height="18"
+						key="textField-46"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Center">
+						<font size="14"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{report_name}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="69"
+						y="34"
+						width="80"
+						height="13"
+						key="textField-47"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$R{report.period} + ":"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="154"
+						y="34"
+						width="189"
+						height="13"
+						key="textField-48"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[( $P{C_Period_ID}.equals("") ? "" : $F{parm_period_name} )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="69"
+						y="46"
+						width="80"
+						height="13"
+						key="textField-49"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$R{report.businesspartner} + ":"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="154"
+						y="46"
+						width="189"
+						height="13"
+						key="textField-50"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[( $P{C_BPartner_ID}.equals("") ? "" : $F{parm_bpartner_name} )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="422"
+						y="22"
+						width="80"
+						height="13"
+						key="textField-51"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$R{report.product} + ":"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="507"
+						y="22"
+						width="189"
+						height="13"
+						key="textField-52"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[( $P{M_Product_ID}.equals("") ? "" : $F{parm_product_name} )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="422"
+						y="34"
+						width="80"
+						height="13"
+						key="textField-53"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$R{report.hierarchy} + ":"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="507"
+						y="34"
+						width="189"
+						height="13"
+						key="textField-54"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[( $P{PA_Hierarchy_ID}.equals("") ? "" : $F{parm_hierarchy_name} )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="422"
+						y="46"
+						width="80"
+						height="13"
+						key="textField-55"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$R{report.updatebalances} + ":"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="507"
+						y="46"
+						width="189"
+						height="13"
+						key="textField-56"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[( $P{UpdateBalances}.equals("") ? "" : $P{UpdateBalances} )]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="88"  isSplitAllowed="true" >
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="0"
+						y="1"
+						width="781"
+						height="85"
+						key="subreport-1"/>
+					<subreportParameter  name="REPORT_PARAMETERS_MAP">
+						<subreportParameterExpression><![CDATA[new HashMap($P{REPORT_PARAMETERS_MAP})]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="REPORT_CONNECTION">
+						<subreportParameterExpression><![CDATA[$P{REPORT_CONNECTION}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="REPORT_RESOURCE_BUNDLE">
+						<subreportParameterExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="REPORT_LOCALE">
+						<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="REPORT_DATA_SOURCE">
+						<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="ad_client_id">
+						<subreportParameterExpression><![CDATA[$P{ad_client_id}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="ad_org_id">
+						<subreportParameterExpression><![CDATA[$P{ad_org_id}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="T_Report_AD_PInstance_ID">
+						<subreportParameterExpression><![CDATA[$P{T_Report_AD_PInstance_ID}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="adempiere_report_header">
+						<subreportParameterExpression><![CDATA[$P{adempiere_report_header}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA["de/metas/reports/financial/report_details.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="28"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="1"
+						y="3"
+						width="780"
+						height="0"
+						key="line"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="4"
+						width="99"
+						height="12"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="598"
+						y="4"
+						width="170"
+						height="12"
+						forecolor="#000000"
+						key="textField-30"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Transparent"
+						x="767"
+						y="4"
+						width="14"
+						height="12"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField-31"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="189"
+						y="3"
+						width="373"
+						height="18"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[( $P{ad_org_id}.equals("") ? "" : $F{org_name} + " " + $F{org_postal_row} + " " + $F{org_country_name})]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

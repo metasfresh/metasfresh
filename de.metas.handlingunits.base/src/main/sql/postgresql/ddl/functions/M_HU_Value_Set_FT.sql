@@ -1,0 +1,21 @@
+CREATE OR REPLACE FUNCTION M_HU_Value_Set_FT()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+	if (NEW.Value is null)
+	then
+		NEW.Value := NEW.M_HU_ID;
+	end if;
+	return NEW;
+END; $BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION M_HU_Value_Set_FT() OWNER TO adempiere;
+COMMENT ON FUNCTION M_HU_Value_Set_FT() IS 'Sets M_HU.Value=M_HU_ID';
+
+
+CREATE TRIGGER M_HU_Value_Set_FT
+  BEFORE INSERT
+  ON M_HU
+  FOR EACH ROW
+  EXECUTE PROCEDURE M_HU_Value_Set_FT();

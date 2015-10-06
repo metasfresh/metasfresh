@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/dunning/report" uuid="a1fcf6a3-db4f-439e-bfc4-ef89d9533f31">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="0.8467108950806659"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="96"/>
+	<property name="net.sf.jasperreports.governor.max.pages.enabled" value="true"/>
+	<property name="net.sf.jasperreports.governor.max.pages" value="2"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<parameter name="doctype" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["i"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+	dd.processed,
+	dd.AD_Org_ID
+FROM
+	C_DunningDoc dd
+WHERE
+	dd.C_DunningDoc_ID = $P{RECORD_ID}
+;]]>
+	</queryString>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="processed" class="java.lang.String"/>
+	<background>
+		<band height="842" splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="295" splitType="Stretch">
+			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
+			<subreport isUsingCache="true">
+				<reportElement uuid="3779eea3-77cc-4294-93da-2a9ea38437b2" key="subreport-7" mode="Transparent" x="295" y="113" width="300" height="150"/>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="doctype">
+					<subreportParameterExpression><![CDATA[new String("d")]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="printmembershipinfos">
+					<subreportParameterExpression><![CDATA[new Boolean(false)]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement uuid="97ec00bb-e49d-47a5-ab42-eb561d796bf1" key="subreport-8" mode="Transparent" x="-1" y="284" width="595" height="11"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_description.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement uuid="3b0e2770-a120-46bb-8203-ed37a3bb6d8d" key="subreport-8" mode="Transparent" x="0" y="0" width="595" height="76"/>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="14" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement uuid="9bf203c7-2bc8-4fa7-8df8-83a3b4ac2e8f" key="subreport-3" mode="Transparent" x="0" y="2" width="595" height="12"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_details.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="12">
+			<subreport isUsingCache="true">
+				<reportElement uuid="314ae68f-641f-4932-bf62-37acb4f401d7" key="subreport-1" mode="Transparent" x="0" y="0" width="595" height="12"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_details_sum.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

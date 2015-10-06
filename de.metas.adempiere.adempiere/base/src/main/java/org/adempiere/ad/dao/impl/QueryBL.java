@@ -1,0 +1,118 @@
+package org.adempiere.ad.dao.impl;
+
+/*
+ * #%L
+ * ADempiere ERP - Base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryOrderByBuilder;
+
+public class QueryBL implements IQueryBL
+{
+	@Override
+	public <T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass)
+	{
+		return new QueryBuilder<T>(modelClass);
+	}
+
+	@Deprecated
+	@Override
+	public <T> IQueryOrderByBuilder<T> createQueryOrderByBuilder()
+	{
+		return new QueryOrderByBuilder<T>();
+	}
+
+	@Override
+	public <T> IQueryOrderByBuilder<T> createQueryOrderByBuilder(final Class<T> modelClass)
+	{
+		return new QueryOrderByBuilder<T>();
+	}
+
+	@Override
+	public IQueryOrderBy createSqlQueryOrderBy(final String orderBy)
+	{
+		return new SqlQueryOrderBy(orderBy);
+	}
+
+	@Override
+	public <T> ICompositeQueryFilter<T> createCompositeQueryFilter(final Class<T> modelClass)
+	{
+		return new CompositeQueryFilter<T>(modelClass);
+	}
+
+	@Override
+	public <T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(Class<T> modelClass)
+	{
+		return new CompositeQueryUpdater<T>(modelClass);
+	}
+
+	@Override
+	public <T> String debugAccept(final IQueryFilter<T> filter, final T model)
+	{
+		final StringBuilder sb = new StringBuilder();
+		sb.append("\n-------------------------------------------------------------------------------");
+		sb.append("\nModel: " + model);
+		final List<IQueryFilter<T>> filters = extractAllFilters(filter);
+		for (final IQueryFilter<T> f : filters)
+		{
+			final boolean accept = f.accept(model);
+			sb.append("\nFilter(accept=" + accept + "): " + f.toString());
+		}
+		sb.append("\n-------------------------------------------------------------------------------");
+
+		return sb.toString();
+	}
+
+	private <T> List<IQueryFilter<T>> extractAllFilters(final IQueryFilter<T> filter)
+	{
+		if (filter == null)
+		{
+			return Collections.emptyList();
+		}
+
+		final List<IQueryFilter<T>> result = new ArrayList<IQueryFilter<T>>();
+
+		result.add(filter);
+
+		if (filter instanceof ICompositeQueryFilter)
+		{
+			final ICompositeQueryFilter<T> compositeFilter = (ICompositeQueryFilter<T>)filter;
+			for (final IQueryFilter<T> f : compositeFilter.getFilters())
+			{
+				final List<IQueryFilter<T>> resultLocal = extractAllFilters(f);
+				result.addAll(resultLocal);
+			}
+		}
+
+		return result;
+	}
+
+}

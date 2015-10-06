@@ -1,0 +1,232 @@
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.metas.fresh</groupId>
+		<artifactId>de.metas.fresh</artifactId>
+		<version>1.0_IT-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>de.metas.fresh.base</artifactId>
+	<packaging>jar</packaging>
+
+
+	<properties>
+		<!-- empty property because the sql migration dir already contains a list 
+			of base directories -->
+		<migration-sql-basedir></migration-sql-basedir>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>de.metas.async</groupId>
+			<artifactId>de.metas.async</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<!--
+			TODO: consider including only de.metas.banking.base here and include de.metas.banking.swingui on de.metas.endcustomer.*.swingui.
+			NOTE: i've postponed this task because i don't want to affect the "allInOne" archive and the RUN_Adempiere launchers.
+			-->
+			<groupId>de.metas.banking</groupId>
+			<artifactId>de.metas.banking.swingui</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.dimension</groupId>
+			<artifactId>de.metas.dimension</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.document.archive</groupId>
+			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.document</groupId>
+			<artifactId>de.metas.document.refid</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- 04966 adding the code to access scales hardware -->
+		<dependency>
+			<groupId>de.metas.device.scales</groupId>
+			<artifactId>de.metas.device.scales</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.edi</groupId>
+			<artifactId>de.metas.edi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>de.metas.contracts</groupId>
+			<artifactId>de.metas.contracts</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.embedded-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>de.metas.dunning</groupId>
+			<artifactId>de.metas.dunning</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.monitoring</groupId>
+			<artifactId>de.metas.monitoring</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.payment.esr</groupId>
+			<artifactId>de.metas.payment.esr</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.payment.sepa</groupId>
+			<artifactId>de.metas.payment.sepa</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.handlingunits</groupId>
+			<artifactId>de.metas.handlingunits.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.handlingunits</groupId>
+			<artifactId>de.metas.handlingunits.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		
+		<!-- Required by de.metas.handlingunits.base-tests -->
+		<dependency>
+			<groupId>de.metas.adempiere.libero</groupId>
+			<artifactId>de.metas.adempiere.libero.libero</artifactId>
+			<version>${project.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.handlingunits</groupId>
+			<artifactId>de.metas.handlingunits.client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.materialtracking</groupId>
+			<artifactId>de.metas.materialtracking</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- The following dependencies are required to run the swing client from within eclipse -->
+
+		<!-- Required to connect to the jboss-ejb server (always needs to be in the client, not only from eclipse, but in this base module we leave it as "provided") -->
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+				
+		<!-- Problem: this ends up in customizations despite scope beeing "provided" 
+			  => crushes APO on server 
+			  => server won't start 
+			Current workaround in ant; 
+			TODO: consider replacing it with a not-all jboss-lib that just contains the 
+			stuff we need to start from eclipse -->
+		<dependency>
+			<groupId>org.jboss.client</groupId>
+			<artifactId>jbossall-client</artifactId>
+			<version>4.2.3.GA</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- those two are required when we run with -Dorg.adempiere.server.embedded=true -->
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.serverRoot.ejb</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!--
+		Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer.
+		i.e. a developer wants to use embedded jasper server while working/debugging in eclipse.
+		scope=provided so it's ONLY considered on the local dev station
+		 -->
+		<dependency>
+			<groupId>de.metas.report.jasper.server</groupId>
+			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+	</build>
+</project>

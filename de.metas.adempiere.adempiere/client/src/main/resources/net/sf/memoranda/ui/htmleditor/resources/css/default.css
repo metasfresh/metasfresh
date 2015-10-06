@@ -1,0 +1,245 @@
+/*
+ * Copyright 2002 Sun Microsystems, Inc. All rights reserved.
+ * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ */
+
+/*
+ * @(#)default.css	1.46 02/06/11
+ */
+
+body  {
+	   font-size:16;		   	
+       font-family: serif;
+       font-weight: normal;
+       margin-left: 0;
+       margin-right: 0;
+       color: black}
+
+p   {margin-bottom: 10}
+
+h1  {font-size: xx-large;
+    /* font-weight: bold;*/
+	 font-family: sans-serif;
+     margin-top: 10;	 
+     margin-bottom: 5}
+
+h2 {font-size: x-large;
+    /*font-weight: bold;*/
+	font-family: sans-serif;
+    margin-top: 8;
+    margin-bottom: 4}
+
+h3 {font-size: large;
+    /*font-weight: bold;*/
+	font-family: sans-serif;
+    margin-top: 6;	
+    margin-bottom: 3}
+
+h4 {font-size: medium;
+    font-weight: bold;
+	font-family: sans-serif;
+    margin-top: 4;
+    margin-bottom: 3}
+
+h5 {font-size: small;
+    font-weight: bold;
+	font-family: sans-serif;
+    margin-top: 3;
+    margin-bottom: 3}
+
+h6 {font-size: x-small;
+    font-weight: bold;
+	font-family: sans-serif;
+    margin-top: 2;
+    margin-bottom: 1}
+
+li p {margin-top: 0;
+    margin-bottom: 0}
+
+menu li p {margin-top: 0;
+    margin-bottom: 0}
+
+menu li {margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0}
+
+menu {margin-left: 40;
+    margin-top: 10;
+    margin-bottom: 10}
+
+dir li p {margin-top: 0;
+    margin-bottom: 0}
+
+dir li {margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0}
+
+dir {margin-left: 40;
+    margin-top: 10;
+    margin-bottom: 10}
+
+dd {margin-left: 40;
+    margin-top: 0;
+    margin-bottom: 0}
+
+dd p {margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0}
+
+dt {margin-top: 0;
+    margin-bottom: 0}
+
+dl {margin-left: 0;
+    margin-top: 10;
+    margin-bottom: 10}
+
+ol li {margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0}
+
+ol {
+    margin-top: 10;
+    margin-bottom: 10;
+    margin-left: 30;
+    list-style-type: decimal
+}
+
+ol li p {margin-top: 0;
+    margin-bottom:0}
+
+ul li {margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0}
+
+ul {margin-top: 10;
+    margin-bottom: 10;
+    margin-left:30;
+    list-style-type: disc;  }
+
+ul li ul li {margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0}
+
+ul li ul {list-style-type: circle;
+    margin-left: 25}
+
+ul li ul li ul li {margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0}
+
+ul li ul li ul {list-style-type: square;
+    margin-left: 25}
+
+ul li menu {list-style-type: circle;
+    margin-left: 25}
+
+ul li p {margin-top: 0;
+    margin-bottom:0}
+
+a {color: blue;
+   text-decoration: underline}
+
+big {font-size: x-large}
+
+small {font-size: x-small}
+
+samp {
+      font-family: Monospaced}
+
+cite {font-style: italic}
+
+code {
+      font-family: Monospaced}
+
+dfn {font-style: italic}
+
+em {font-style: italic}
+
+i  {font-style: italic}
+
+b  {font-weight: bold}
+
+kbd {font-size: small;
+     font-family: Monospaced}
+
+s {text-decoration: line-through}
+
+strike {text-decoration: line-through}
+
+strong {font-weight: bold}
+
+sub {vertical-align: sub; font-size:small}
+
+sup {vertical-align: sup; font-size:small}
+
+tt {font-family: Monospaced}
+
+u {text-decoration: underline}
+
+var {font-weight: bold;
+     font-style: italic}
+
+table {
+	border-color: Gray;
+	border-style: solid;
+	border-width: 1;
+	margin-bottom:10;
+}
+
+tr {
+	text-align: left
+}
+
+td {
+	border-color: Gray;
+	border-style:solid;
+	border-width: 1;
+	
+}
+
+th {
+	text-align: center;
+	font-weight: bold;
+	border-color: Gray;
+	border-style: inset;
+	padding-left: 3;
+	padding-right: 3;
+	padding-top: 3;
+	padding-bottom: 3
+}
+
+address {
+	font-style: italic
+}
+
+blockquote {
+	margin-top: 5;
+	margin-bottom: 5;
+	margin-left: 35;
+	margin-right: 35
+}
+
+center {text-align: center}
+
+pre {margin-top: 10;
+     margin-bottom: 0;
+	 font-size:14pt;
+	 margin-left:35;
+     font-family: "Courier New", Monospaced}
+
+pre p {margin-top: 0}
+
+caption {
+    caption-side: top;
+    text-align: center
+}
+
+nobr { white-space: nowrap }
+

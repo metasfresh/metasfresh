@@ -1,0 +1,23 @@
+#PostgreSQL home folder
+#Example Value: 
+# Windows - postgresql.home=C:/pgsql/8.2.13-1
+# Linux   - postgresql.home=/usr/lib/postgresql/8.3 
+postgresql.home=
+
+#PostgreSQL pgdata folder
+#Example Value:
+# Windows - postgresql.pgdata=C:/pgsql/8.2.13-1/data
+# Linux   - postgresql.pgdata=/var/lib/postgresql/8.3/main
+postgresql.pgdata=
+
+#adempiere database name
+postgresql.database=adempiere
+
+#adempiere database login
+postgresql.user=adempiere
+
+#adempiere database password
+postgresql.password=adempiere
+
+postgresql.host=localhost
+postgresql.port=5432

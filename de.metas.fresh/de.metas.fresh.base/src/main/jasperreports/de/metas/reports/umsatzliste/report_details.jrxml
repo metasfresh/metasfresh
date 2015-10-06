@@ -1,0 +1,685 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" orientation="Landscape" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
+	<parameter name="StartDate" class="java.util.Date"/>
+	<parameter name="EndDate" class="java.util.Date"/>
+	<parameter name="showdetails" class="java.lang.String"/>
+	<parameter name="IsSOTrx" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+	bp.Value AS BP_Value,
+	bp.Name AS BP_Name,
+	p.value AS P_Value,
+	p.Name AS P_Name,
+	SUM( ic.QtyInvoiced * ic.PriceActual ) AS TotalInvoiced,
+	SUM( ic.QtyInvoicable * ic.PriceActual ) AS TotalShipped,
+	SUM( CASE WHEN s_Ordered != Sign( ic.QtyOpen ) THEN 0 ELSE ic.QtyOpen END * ic.PriceActual ) AS TotalOrdered,
+	p.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID') AS IsPackingMaterial,
+	date_trunc( 'month', ic.Date ) AS Month,
+	c.ISO_Code
+FROM
+	(
+		SELECT
+			ic.Bill_BPartner_ID, ic.M_Product_ID,
+			-- Quantities
+			icq.QtyInvoiced,
+			icq.QtyInvoicable,
+			icq.QtyOrdered - icq.QtyInvoicable - icq.QtyInvoiced AS QtyOpen,
+			sign( icq.QtyOrdered ) AS s_Ordered,
+			-- PriceActual_Net converted to base Currency
+			CurrencyBase( ic.PriceActual_Net_Effective, ic.C_Currency_ID, now(), ic.AD_Client_ID, ic.AD_Org_ID ) AS PriceActual,
+			ac.C_Currency_ID AS Base_Currency_ID,
+
+			-- Date for filtering
+			COALESCE ( i.DateAcct, ic.DeliveryDate, icq.DatePromised ) AS Date
+		FROM
+			C_Invoice_Candidate ic
+			INNER JOIN (
+				SELECT
+					C_Invoice_Candidate_ID,
+					-- Invoiced or flatrate invoiced
+					ic.QtyInvoiced,
+					-- Shipped, not invoiced. If, due to subtration, the sign of the number changed, it is considered 0
+					CASE WHEN s_Delivered != Sign( ic.QtyInvoicable ) THEN 0 ELSE ic.QtyInvoicable END AS QtyInvoicable,
+					-- Ordered, Calculation must be done later. If the datePromised hasn't passed, QtyOrdered is considered 0
+					ic.QtyOrdered * CASE WHEN ol.DatePromised <= Now() THEN 1 ELSE 0 END AS QtyOrdered,
+					ol.DatePromised
+				FROM
+					(
+						SELECT 	ic.C_Invoice_Candidate_ID, Record_ID, AD_Table_ID,
+							COALESCE( CASE WHEN isToClear = 'N'
+									THEN QtyInvoicedInPriceUOM
+									ELSE 0
+								END, 0) AS QtyInvoiced,
+							COALESCE( QtyOrdered , 0) AS QtyOrdered,
+							sign( QtyDelivered ) AS s_Delivered,
+							COALESCE( QtyDelivered - QtyInvoiced, 0) AS QtyInvoicable
+						FROM 	C_Invoice_Candidate ic
+							LEFT OUTER JOIN (
+								SELECT	ila.C_Invoice_Candidate_ID, SUM(QtyInvoicedInPriceUOM) as QtyInvoicedInPriceUOM
+								FROM	C_Invoice_Line_Alloc ila
+									LEFT OUTER JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID
+								GROUP BY	ila.C_Invoice_Candidate_ID
+							) il ON ic.C_Invoice_Candidate_ID = il.C_Invoice_Candidate_ID
+						WHERE 	IsSOTrx = $P{IsSOTrx}
+							AND ( CASE WHEN $P{C_BPartner_ID} IS NULL THEN TRUE ELSE $P{C_BPartner_ID} = Bill_BPartner_ID END )
+							AND PriceActual_Net_Effective != 0
+					) ic
+					LEFT OUTER JOIN C_Orderline ol ON ic.Record_ID = ol.C_OrderLine_ID
+						AND ic.AD_Table_ID = ((SELECT Get_Table_ID('C_OrderLine')))
+			) icq ON ic.C_Invoice_Candidate_ID = icq.C_Invoice_Candidate_ID
+			INNER JOIN AD_ClientInfo ci ON ic.AD_Client_ID = ci.AD_Client_ID
+			INNER JOIN C_AcctSchema ac ON ci.C_AcctSchema1_ID = ac.C_AcctSchema_ID
+			LEFT OUTER JOIN
+			(
+				SELECT 	ila.C_Invoice_Candidate_ID,
+					First_agg( i.DateAcct::text ORDER BY i.DateAcct)::Date AS DateAcct
+				FROM 	C_Invoice_Line_Alloc ila
+					LEFT OUTER JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID
+					LEFT OUTER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
+				GROUP BY	ila.C_Invoice_Candidate_ID
+			) i ON ic.C_Invoice_Candidate_ID = i.C_Invoice_Candidate_ID
+	) ic
+	INNER JOIN C_BPartner bp ON ic.Bill_BPartner_ID = bp.C_BPartner_ID
+	INNER JOIN M_Product p ON ic.M_Product_ID = p.M_Product_ID
+	INNER JOIN C_Currency c ON ic.Base_Currency_ID = c.C_Currency_ID
+WHERE
+	Date >= $P{StartDate} AND Date <= $P{EndDate}
+	AND COALESCE( ic.PriceActual, 0 ) != 0
+	AND ( ic.QtyInvoiced != 0 OR ic.QtyInvoicable != 0
+	OR (CASE WHEN s_Ordered != Sign( ic.QtyOpen ) THEN 0 ELSE ic.QtyOpen END) != 0 )
+GROUP BY
+	bp.Value,
+	bp.Name,
+	p.value,
+	p.Name,
+	p.M_Product_Category_ID,
+	date_trunc( 'month', ic.Date ),
+	c.ISO_Code
+ORDER BY
+	date_trunc( 'month', ic.Date ),
+	bp.Value,
+	p.M_Product_Category_ID =
+		(SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+;]]>
+	</queryString>
+	<field name="bp_value" class="java.lang.String"/>
+	<field name="bp_name" class="java.lang.String"/>
+	<field name="p_value" class="java.lang.String"/>
+	<field name="p_name" class="java.lang.String"/>
+	<field name="totalinvoiced" class="java.math.BigDecimal"/>
+	<field name="totalshipped" class="java.math.BigDecimal"/>
+	<field name="totalordered" class="java.math.BigDecimal"/>
+	<field name="ispackingmaterial" class="java.lang.Boolean"/>
+	<field name="month" class="java.sql.Timestamp"/>
+	<field name="iso_code" class="java.lang.String"/>
+	<variable name="IsPMinvoiced" class="java.math.BigDecimal" resetType="Group" resetGroup="ProductOrHU" calculation="Sum">
+		<variableExpression><![CDATA[$F{totalinvoiced}]]></variableExpression>
+	</variable>
+	<variable name="IsPMshipped" class="java.math.BigDecimal" resetType="Group" resetGroup="ProductOrHU" calculation="Sum">
+		<variableExpression><![CDATA[$F{totalshipped}]]></variableExpression>
+	</variable>
+	<variable name="IsPMordered" class="java.math.BigDecimal" resetType="Group" resetGroup="ProductOrHU" calculation="Sum">
+		<variableExpression><![CDATA[$F{totalordered}]]></variableExpression>
+	</variable>
+	<variable name="BPinvoiced" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
+		<variableExpression><![CDATA[$F{totalinvoiced}]]></variableExpression>
+	</variable>
+	<variable name="BPshipped" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
+		<variableExpression><![CDATA[$F{totalshipped}]]></variableExpression>
+	</variable>
+	<variable name="BPordered" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
+		<variableExpression><![CDATA[$F{totalordered}]]></variableExpression>
+	</variable>
+	<variable name="MonthInvoiced" class="java.math.BigDecimal" resetType="Group" resetGroup="Month" calculation="Sum">
+		<variableExpression><![CDATA[$F{totalinvoiced}]]></variableExpression>
+	</variable>
+	<variable name="MonthShipped" class="java.math.BigDecimal" resetType="Group" resetGroup="Month" calculation="Sum">
+		<variableExpression><![CDATA[$F{totalshipped}]]></variableExpression>
+	</variable>
+	<variable name="MonthOrdered" class="java.math.BigDecimal" resetType="Group" resetGroup="Month" calculation="Sum">
+		<variableExpression><![CDATA[$F{totalordered}]]></variableExpression>
+	</variable>
+	<group name="Month">
+		<groupExpression><![CDATA[$F{month}]]></groupExpression>
+		<groupHeader>
+			<band height="14">
+				<textField pattern="MMMMM" isBlankWhenNull="true">
+					<reportElement uuid="c15719e2-b986-4199-b6f7-4118679e7c17" key="textField-103" x="37" y="0" width="129" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{month}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Month" pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c" key="textField-107" x="267" y="0" width="70" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{MonthInvoiced}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Month" pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c" key="textField-107" x="342" y="0" width="70" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{MonthShipped}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Month" pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c" key="textField-107" x="417" y="0" width="70" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{MonthOrdered}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Month" pattern="" isBlankWhenNull="false">
+					<reportElement uuid="6a024cf8-c679-4673-89aa-f0d1c55ece36" key="textField-109" x="498" y="0" width="47" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="10" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="BPartner">
+		<groupExpression><![CDATA[$F{bp_value}]]></groupExpression>
+		<groupHeader>
+			<band height="12">
+				<textField isBlankWhenNull="false">
+					<reportElement uuid="dcb44f86-c136-4486-a3e9-99c25410903b" key="textField-105" x="49" y="0" width="45" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement uuid="a17367ea-7130-4aae-b426-84b30efab270" key="textField-106" x="96" y="0" width="139" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="BPartner" pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c" key="textField-107" x="267" y="0" width="70" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{BPinvoiced}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="BPartner" pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c" key="textField-107" x="342" y="0" width="70" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{BPshipped}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="BPartner" pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c" key="textField-107" x="417" y="0" width="70" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{BPordered}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="BPartner" pattern="" isBlankWhenNull="false">
+					<reportElement uuid="6a024cf8-c679-4673-89aa-f0d1c55ece36" key="textField-109" x="498" y="0" width="47" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="ProductOrHU">
+		<groupExpression><![CDATA[$F{ispackingmaterial}]]></groupExpression>
+		<groupHeader>
+			<band height="12">
+				<textField isBlankWhenNull="false">
+					<reportElement uuid="a17367ea-7130-4aae-b426-84b30efab270" key="textField-106" x="62" y="0" width="165" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{ispackingmaterial} ? "Gebinde" : "Produkte"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="ProductOrHU" pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c" key="textField-107" x="267" y="0" width="70" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{IsPMinvoiced}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="ProductOrHU" pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c" key="textField-107" x="342" y="0" width="70" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{IsPMshipped}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="ProductOrHU" pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c" key="textField-107" x="417" y="0" width="70" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{IsPMordered}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="ProductOrHU" pattern="" isBlankWhenNull="false">
+					<reportElement uuid="6a024cf8-c679-4673-89aa-f0d1c55ece36" key="textField-109" x="498" y="0" width="47" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="25" splitType="Stretch">
+			<rectangle>
+				<reportElement uuid="078ce6a7-6df0-4eb0-9cb4-a21b2054e6df" key="rectangle-1" x="0" y="0" width="595" height="13" backcolor="#808080"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="9fe86762-e9e4-4e74-acc6-282224c7279c" key="textField-68" x="49" y="0" width="45" height="12" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<text><![CDATA[Kundennr.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="72dc2162-d088-406c-881d-c495aafdb9c3" key="textField-69" x="96" y="0" width="139" height="12" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<text><![CDATA[Kundenname]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="90f301bf-b84a-4eb4-a7ba-296ba2d55a11" key="textField-70" x="267" y="0" width="70" height="12" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<text><![CDATA[Berechnet]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="ad4f80d4-84bf-4d95-91a5-508acf6a1c98" key="textField-71" x="342" y="0" width="70" height="12" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<text><![CDATA[Geliefert]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="d4995998-095a-4b8f-ae4c-98cbfbf41c7a" key="textField-72" x="417" y="0" width="70" height="12" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<text><![CDATA[Beauftragt]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="24072eb3-203d-4dd6-9074-d9f5a673b69d" key="textField-79" x="417" y="13" width="70" height="12">
+					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{MonthOrdered}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="5ea41551-234c-4939-a084-d393b79bd202" key="textField-81" x="342" y="13" width="70" height="12">
+					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{MonthShipped}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="7eed2e99-cba1-4b29-a3de-30043ed25f6f" key="textField-83" x="267" y="13" width="70" height="12">
+					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{MonthInvoiced}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00" isBlankWhenNull="false">
+				<reportElement uuid="ab3ca240-f266-41bb-81e6-426a51426e67" key="textField-118" x="165" y="13" width="101" height="12">
+					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{carry}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="24e2f765-435a-40d8-96f0-917ab8bd9fc0" key="textField-72" x="498" y="0" width="47" height="12" forecolor="#FFFFFF"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<text><![CDATA[Währung]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement uuid="6a024cf8-c679-4673-89aa-f0d1c55ece36" key="textField-109" x="498" y="13" width="47" height="12">
+					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="12" splitType="Stretch">
+			<printWhenExpression><![CDATA[new Boolean($P{showdetails}.equals( "Y" ))]]></printWhenExpression>
+			<rectangle>
+				<reportElement uuid="5ad7fde6-8544-43fd-80f2-0d0dbba8345c" key="rectangle-4" x="0" y="0" width="595" height="12" backcolor="#FFFFCC">
+					<printWhenExpression><![CDATA[new Boolean( ($V{ProductOrHU_COUNT}.intValue()%2)==1 )]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="dcb44f86-c136-4486-a3e9-99c25410903b" key="textField-105" x="80" y="0" width="45" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="a17367ea-7130-4aae-b426-84b30efab270" key="textField-106" x="127" y="0" width="139" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c" key="textField-107" x="267" y="0" width="70" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalinvoiced}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="6a024cf8-c679-4673-89aa-f0d1c55ece36" key="textField-109" x="417" y="0" width="70" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalordered}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="60ac9d4d-0abd-45a2-9182-adef037d1212" key="textField-111" x="342" y="0" width="70" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalshipped}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00" isBlankWhenNull="false">
+				<reportElement uuid="6a024cf8-c679-4673-89aa-f0d1c55ece36" key="textField-109" x="498" y="0" width="47" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="14" splitType="Stretch">
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="71626fb3-c72d-4b24-b3fc-b6ac346ae1da" key="textField-91" x="417" y="0" width="70" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{MonthOrdered}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="37900e40-ac1f-4274-9dd5-3d156efb8af5" key="textField-93" x="342" y="0" width="70" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{MonthShipped}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement uuid="4c678c3f-be05-4254-a977-2afd3e4ed3d9" key="textField-95" x="267" y="0" width="70" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{MonthInvoiced}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00" isBlankWhenNull="false">
+				<reportElement uuid="dcb0f44c-dfdd-466e-ad15-b6a771774fcd" key="textField-120" x="165" y="0" width="101" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{subtotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement uuid="6a024cf8-c679-4673-89aa-f0d1c55ece36" key="textField-109" x="498" y="0" width="47" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band splitType="Stretch"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

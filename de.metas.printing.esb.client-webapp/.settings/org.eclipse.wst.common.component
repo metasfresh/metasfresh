@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="de.metas.printing.esb.client-webapp">
+        <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
+        <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <dependent-module archiveName="de.metas.printing.esb.client-1.0_IT-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/de.metas.printing.esb.client/de.metas.printing.esb.client">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="de.metas.printing.esb.api-1.0_IT-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/de.metas.printing.esb.api/de.metas.printing.esb.api">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="java-output-path" value="/de.metas.printing.esb.client-webapp/target/classes"/>
+        <property name="context-root" value="de.metas.printing.esb.client-webapp"/>
+    </wb-module>
+</project-modules>

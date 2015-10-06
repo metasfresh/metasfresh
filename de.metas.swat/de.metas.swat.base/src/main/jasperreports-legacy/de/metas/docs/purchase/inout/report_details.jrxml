@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.2100000000000009"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="m_inout_id" class="java.lang.Integer"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select * from
+(
+SELECT
+	uom.ad_language			AS ad_language,
+	iol.m_inout_id			AS m_inout_id,
+	iol.M_InOutLine_ID		AS M_InOutLine_ID,
+	iol.line			AS line,
+	iol.m_product_id		AS m_product_id,
+	CASE WHEN ol.isindividualdescription = 'Y'
+		THEN iol.productdescription
+		ELSE NULL
+	END AS Prod_descr,
+	iol.movementqty			AS movementqty,
+	iol.qtyentered			AS qtyentered,
+	uom.uomsymbol			AS uomsymbol,
+	ol.qtyordered			AS qtyordered,
+	ol.qtydelivered			AS qtydelivered,
+	ol.qtyordered - ol.qtydelivered	AS qtybackordered,
+	iol.description			AS description,
+	ol.c_order_id			AS c_order_id,
+	o.documentno 			AS order_docno,
+	o.dateordered 			AS order_date,
+	o.poreference 			AS order_poreference,
+	case when iol.m_product_id IS NULL
+		then 'DEL'
+		else
+		case when iol.qtyentered = 0
+			then 'NOAMT'
+			else 'IOL'
+		end
+	end as source
+
+FROM
+	m_inoutline iol
+	JOIN m_inout io			ON iol.m_inout_id = io.m_inout_id
+	JOIN c_uom_trl uom 		ON iol.c_uom_id = uom.c_uom_id
+   LEFT JOIN m_product p 		ON iol.m_product_id = p.m_product_id
+   LEFT JOIN c_uom puom 		ON p.c_uom_id = puom.c_uom_id
+   LEFT JOIN m_locator l 		ON iol.m_locator_id = l.m_locator_id
+   LEFT JOIN c_orderline ol 		ON iol.c_orderline_id = ol.c_orderline_id
+   LEFT JOIN c_order o			ON ol.c_order_id = o.c_order_id
+   LEFT JOIN c_charge c 		ON iol.c_charge_id = c.c_charge_id
+
+----------------------------------------------------------------------------
+UNION
+----------------------------------------------------------------------------
+
+SELECT
+	uom.ad_language			AS ad_language,
+	iol.m_inout_id			AS m_inout_id,
+	iol.M_InOutLine_ID		AS M_InOutLine_ID,
+	iol.line+ b.line / 100::numeric AS line,
+	p.m_product_id			AS m_product_id,
+	null				AS Prod_descr,
+	iol.movementqty * b.bomqty 	AS movementqty,
+	iol.qtyentered * b.bomqty 	AS qtyentered,
+	uom.uomsymbol			AS uomsymbol,
+	NULL::"unknown" 		AS qtyordered,
+	NULL::"unknown" 		AS qtydelivered,
+	NULL::"unknown" 		AS qtybackordered,
+	b.description			AS description,
+	null				AS c_order_id,
+	null				AS order_docno,
+	null				AS order_date,
+	null				AS order_poreference,
+	'BO' as source
+FROM
+	m_product_bom b
+	JOIN m_inoutline iol 		ON b.m_product_id = iol.m_product_id
+	JOIN m_inout io			ON iol.m_inout_id = io.m_inout_id
+	JOIN m_product bp 		ON bp.m_product_id = iol.m_product_id AND bp.isbom = 'Y'::bpchar AND bp.isverified = 'Y'::bpchar AND bp.ispicklistprintdetails = 'Y'::bpchar
+	JOIN m_product p 		ON b.m_productbom_id = p.m_product_id
+	JOIN c_uom_trl uom 		ON p.c_uom_id = uom.c_uom_id
+	JOIN m_product_trl pt 		ON iol.m_product_id = pt.m_product_id AND uom.ad_language::text = pt.ad_language::text
+   LEFT JOIN m_attributesetinstance asi ON iol.m_attributesetinstance_id = asi.m_attributesetinstance_id
+   LEFT JOIN m_locator l 		ON iol.m_locator_id = l.m_locator_id
+
+----------------------------------------------------------------------------
+UNION
+----------------------------------------------------------------------------
+
+SELECT
+	'de_DE' 			AS ad_language,
+	iol.m_inout_id			AS m_inout_id,
+	iol.M_InOutLine_ID		AS M_InOutLine_ID,
+	iol.line			AS line,
+	p.m_product_id			AS m_product_id,
+	CASE WHEN ol.isindividualdescription = 'Y'
+		THEN iol.productdescription
+		ELSE NULL
+	END AS Prod_descr,
+	iol.movementqty			AS movementqty,
+	iol.qtyentered			AS qtyentered,
+	uom.uomsymbol			AS uomsymbol,
+	ol.qtyordered			AS qtyordered,
+	ol.qtydelivered			AS qtydelivered,
+	ol.qtyordered - ol.qtydelivered	AS qtybackordered,
+	iol.description			AS description,
+	ol.c_order_id			AS c_order_id,
+	o.documentno 			AS order_docno,
+	o.dateordered 			AS order_date,
+	o.poreference 			AS order_poreference,
+	case when iol.m_product_id IS NULL
+		then 'DEL'
+		else
+		case when iol.qtyentered = 0
+			then 'NOAMT'
+			else 'IOL'
+		end
+	end as source
+FROM
+	m_inoutline iol
+	JOIN m_inout io 		ON iol.m_inout_id = io.m_inout_id
+   	JOIN c_uom uom			ON iol.c_uom_id = uom.c_uom_id
+   LEFT JOIN m_product p 		ON iol.m_product_id = p.m_product_id
+   LEFT JOIN c_uom puom 		ON p.c_uom_id = puom.c_uom_id
+   LEFT JOIN c_orderline ol 		ON iol.c_orderline_id = ol.c_orderline_id
+   LEFT JOIN c_order o			ON ol.c_order_id = o.c_order_id
+   LEFT JOIN c_charge c 		ON iol.c_charge_id = c.c_charge_id
+
+----------------------------------------------------------------------------
+UNION
+----------------------------------------------------------------------------
+
+SELECT
+	'de_DE'				AS ad_language,
+	iol.m_inout_id			AS m_inout_id,
+	iol.M_InOutLine_ID		AS M_InOutLine_ID,
+	iol.line+ b.line / 100::numeric AS line,
+	p.m_product_id			AS m_product_id,
+	CASE WHEN ol.isindividualdescription = 'Y'
+		THEN iol.productdescription
+		ELSE NULL
+	END AS Prod_descr,
+	iol.movementqty * b.bomqty 	AS movementqty,
+	iol.qtyentered * b.bomqty 	AS qtyentered,
+	uom.uomsymbol			AS uomsymbol,
+	NULL::"unknown" 		AS qtyordered,
+	NULL::"unknown" 		AS qtydelivered,
+	NULL::"unknown" 		AS qtybackordered,
+	b.description			AS description,
+	ol.c_order_id			AS c_order_id,
+	null				AS order_docno,
+	null				AS order_date,
+	null				AS order_poreference,
+	'BO' as source
+FROM
+	m_product_bom b
+	JOIN m_inoutline iol 		ON b.m_product_id = iol.m_product_id
+	JOIN c_orderline ol		ON iol.c_orderline_id = ol.c_orderline_id
+	JOIN m_inout io 		ON iol.m_inout_id = io.m_inout_id
+	JOIN m_product p 		ON b.m_productbom_id = p.m_product_id
+	JOIN c_uom uom 			ON p.c_uom_id = uom.c_uom_id
+
+----------------------------------------------------------------------------
+UNION
+----------------------------------------------------------------------------
+
+SELECT
+	'de_DE'				AS ad_language,
+	iol.m_inout_id			AS m_inout_id,
+	iol.M_InOutLine_ID		AS M_InOutLine_ID,
+	iol.line			AS line,
+	iol.m_product_id		AS m_product_id,
+	null				AS Prod_descr,
+	null				AS movementqty,
+	null				AS qtyentered,
+	null				AS uomsymbol,
+	NULL::"unknown" 		AS qtyordered,
+	NULL::"unknown" 		AS qtydelivered,
+	NULL::"unknown" 		AS qtybackordered,
+	iol.description			AS description,
+	null				AS c_order_id,
+	null				AS order_docno,
+	null				AS order_date,
+	null				AS order_poreference,
+	CASE WHEN m_product_id IS NOT NULL --zeilen mit produkt sind keine Kommentarzeilen und werden gelöscht
+		THEN 'DEL'
+		ELSE 'CMT'
+	end as source
+FROM
+	m_inoutline iol
+) as inoutline
+where
+	inoutline.m_inout_id = $P{m_inout_id}
+	and inoutline.ad_language = $P{ad_language}
+	and inoutline.source <>'DEL'
+order by
+	inoutline.c_order_id, inoutline.line
+;]]>
+	</queryString>
+	<field name="ad_language" class="java.lang.String"/>
+	<field name="m_inout_id" class="java.math.BigDecimal"/>
+	<field name="m_inoutline_id" class="java.math.BigDecimal"/>
+	<field name="line" class="java.math.BigDecimal"/>
+	<field name="m_product_id" class="java.math.BigDecimal"/>
+	<field name="prod_descr" class="java.lang.String"/>
+	<field name="movementqty" class="java.math.BigDecimal"/>
+	<field name="qtyentered" class="java.math.BigDecimal"/>
+	<field name="uomsymbol" class="java.lang.String"/>
+	<field name="qtyordered" class="java.math.BigDecimal"/>
+	<field name="qtydelivered" class="java.math.BigDecimal"/>
+	<field name="qtybackordered" class="java.math.BigDecimal"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="c_order_id" class="java.math.BigDecimal"/>
+	<field name="order_docno" class="java.lang.String"/>
+	<field name="order_date" class="java.sql.Timestamp"/>
+	<field name="order_poreference" class="java.lang.String"/>
+	<field name="source" class="java.lang.String"/>
+	<group name="c_order">
+		<groupExpression><![CDATA[]]></groupExpression>
+		<groupHeader>
+			<band height="30" splitType="Stretch">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField-34" mode="Transparent" x="21" y="7" width="527" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$R{orderno} + " " + $F{order_docno} + " " + $R{ofdate} + " " + java.text.DateFormat.getDateInstance().format($F{order_date}) +
+"\n" + $R{reforderno} + ($F{order_poreference} == null ? "" : $F{order_poreference})]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band splitType="Stretch"/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="20" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-1" mode="Opaque" x="0" y="0" width="595" height="18" forecolor="#666666" backcolor="#666666"/>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-13" x="90" y="0" width="34" height="12" forecolor="#FFFFFF"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{amt}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-14" x="125" y="0" width="19" height="12" forecolor="#FFFFFF"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{uom}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-16" x="145" y="0" width="187" height="12" forecolor="#FFFFFF"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{product}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-31" x="30" y="0" width="28" height="12" forecolor="#FFFFFF"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{pos}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-36" x="491" y="1" width="57" height="11" forecolor="#FFFFFF"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{openamt}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="11" splitType="Stretch">
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="90" y="0" width="34" height="11" forecolor="#000000"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{qtyentered}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-25" x="125" y="0" width="19" height="11"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{uomsymbol}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+				<reportElement key="textField-32" mode="Opaque" x="30" y="0" width="34" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[( $F{m_product_id}.intValue() > 0  ? $F{line} : null )]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-1" x="75" y="0" width="16" height="11"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Statischer Text]]></text>
+			</staticText>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-2" x="145" y="0" width="219" height="11"/>
+				<subreportParameter name="prod_descr">
+					<subreportParameterExpression><![CDATA[$F{prod_descr}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="line_id">
+					<subreportParameterExpression><![CDATA[$F{m_inoutline_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="m_product_id">
+					<subreportParameterExpression><![CDATA[$F{m_product_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="source">
+					<subreportParameterExpression><![CDATA["IOL"]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA["de/metas/docs/generics/report_details_line.jasper"]]></subreportExpression>
+			</subreport>
+			<textField isStretchWithOverflow="true" pattern="###0.##" isBlankWhenNull="true">
+				<reportElement key="textField-35" mode="Opaque" x="491" y="0" width="57" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{qtybackordered}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

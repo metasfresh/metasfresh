@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="report"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="842"
+		 pageHeight="595"
+		 columnWidth="782"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false"
+		 resourceBundle="de/metas/reports/lagerwertliste/report">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="nur_mit_Bestand" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="M_PriceList_Version_ID" isForPrompting="true" class="java.math.BigDecimal">
+		<defaultValueExpression ><![CDATA[new BigDecimal(1000007)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="M_Product_Category_ID" isForPrompting="true" class="java.math.BigDecimal">
+		<defaultValueExpression ><![CDATA[new BigDecimal(1)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="AD_Org_ID" isForPrompting="false" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[Select '';]]></queryString>
+
+	<field name="?column?" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="68"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="60"
+						width="782"
+						height="1"
+						forecolor="#000000"
+						key="line-3"
+						positionType="FixRelativeToBottom"/>
+					<graphicElement stretchType="NoStretch" pen="1Point"/>
+				</line>
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="0"
+						y="0"
+						width="321"
+						height="60"
+						key="subreport-1"/>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA["de/metas/generics/report_logo.jasper"]]></subreportExpression>
+				</subreport>
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="321"
+						y="0"
+						width="461"
+						height="60"
+						key="subreport-2"/>
+					<subreportParameter  name="nur_mit_Bestand">
+						<subreportParameterExpression><![CDATA[$P{nur_mit_Bestand}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="M_PriceList_Version_ID">
+						<subreportParameterExpression><![CDATA[$P{M_PriceList_Version_ID}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="M_Product_Category_ID">
+						<subreportParameterExpression><![CDATA[$P{M_Product_Category_ID}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="AD_Org_ID">
+						<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA["de/metas/reports/lagerwertliste/report_title.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="36"  isSplitAllowed="true" >
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="0"
+						y="0"
+						width="782"
+						height="36"
+						key="subreport-3"/>
+					<subreportParameter  name="nur_mit_Bestand">
+						<subreportParameterExpression><![CDATA[$P{nur_mit_Bestand}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="M_PriceList_Version_ID">
+						<subreportParameterExpression><![CDATA[$P{M_PriceList_Version_ID}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="M_Product_Category_ID">
+						<subreportParameterExpression><![CDATA[$P{M_Product_Category_ID}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="AD_Org_ID">
+						<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA["de/metas/reports/lagerwertliste/report_details.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="28"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="573"
+						y="3"
+						width="170"
+						height="12"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font fontName="Helvetica" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="746"
+						y="3"
+						width="36"
+						height="12"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="Helvetica" pdfFontName="Helvetica" size="8" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="1"
+						y="2"
+						width="782"
+						height="0"
+						forecolor="#000000"
+						key="line"/>
+					<graphicElement stretchType="NoStretch" pen="Thin"/>
+				</line>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="3"
+						width="209"
+						height="12"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font fontName="Times-Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

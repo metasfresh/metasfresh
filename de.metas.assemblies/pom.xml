@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.reactor</artifactId>
+		<groupId>de.metas.reactor</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.reactor/pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.assemblies</groupId>
+	<artifactId>de.metas.assemblies</artifactId>
+
+	<description>Shared assembly descriptors for metas projects</description>
+
+	<distributionManagement>
+
+		<site>
+			<id>metas-mvn-site</id>
+			<url>scpexe://denas901:/var/www/localhost/htdocs/project-sites/${project.groupId}.${project.artifactId}</url>
+		</site>
+
+		<repository>
+			<id>metas-nexus-repo</id>
+			<name>Maven metas Repository</name>
+			<url>http://dedep901:8081/nexus/content/repositories/releases/</url>
+		</repository>
+
+		<!-- Publish the versioned releases here -->
+		<snapshotRepository>
+			<id>metas-nexus-repo</id>
+			<name>Maven metas Repository</name>
+			<url>http://dedep901:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+
+	</distributionManagement>
+
+	<build>
+		<extensions>
+			<extension>
+				<!-- 
+					Enabling the use of external ssh commands to deliver artifacts to 
+					our repo. We are using putty, which means that authentification is done by 
+					pageant :-) 
+				-->
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh-external</artifactId>
+				<version>1.0-beta-6</version>
+			</extension>
+		</extensions>
+	</build>
+
+</project>

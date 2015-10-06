@@ -1,0 +1,78 @@
+package org.adempiere.service.impl;
+
+/*
+ * #%L
+ * ADempiere ERP - Base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.Check;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.MSysConfig;
+import org.compiere.model.Query;
+import org.compiere.util.Env;
+
+public class SysConfigDAO extends AbstractSysConfigDAO
+{
+	@Override
+	public I_AD_SysConfig retrieveSysConfig(final Properties ctx, final String name, final int AD_Client_ID, final int AD_Org_ID, final String trxName)
+	{
+		final String whereClause = I_AD_SysConfig.COLUMNNAME_Name + "=?"
+				+ " AND " + I_AD_SysConfig.COLUMNNAME_AD_Client_ID + "=?"
+				+ " AND " + I_AD_SysConfig.COLUMNNAME_AD_Org_ID + "=?";
+
+		final I_AD_SysConfig sysConfig = new Query(ctx, I_AD_SysConfig.Table_Name, whereClause, trxName)
+				.setParameters(name, AD_Client_ID, AD_Org_ID)
+				.firstOnly(I_AD_SysConfig.class);
+		
+		return sysConfig;
+	}
+	
+	@Override
+	public String retrieveSysConfigValue(String Name, String defaultValue, int AD_Client_ID, int AD_Org_ID)
+	{
+		return MSysConfig.getValue(Name, defaultValue, AD_Client_ID, AD_Org_ID);
+	}
+	
+	@Override
+	@Cached(cacheName = I_AD_SysConfig.Table_Name + "#NamesForPrefix", expireMinutes = Cached.EXPIREMINUTES_Never)
+	public List<String> retrieveNamesForPrefix(String prefix, int adClientId, int adOrgId)
+	{
+		Check.assume(!Check.isEmpty(prefix, true), "prefix is empty");
+
+		final String whereClause = I_AD_SysConfig.COLUMNNAME_Name + " LIKE ?"
+				+ " AND " + I_AD_SysConfig.COLUMNNAME_AD_Client_ID + " IN (0,?)"
+				+ " AND " + I_AD_SysConfig.COLUMNNAME_AD_Org_ID + " IN (0,?)"
+				+ " AND " + I_AD_SysConfig.COLUMNNAME_IsActive + "=?";
+
+		final String sqlPrefix = prefix + "%";
+
+		return new Query(Env.getCtx(), I_AD_SysConfig.Table_Name, whereClause, ITrx.TRXNAME_None)
+				.setParameters(sqlPrefix, adClientId, adOrgId, true)
+				.setOrderBy(I_AD_SysConfig.COLUMNNAME_Name)
+				.aggregateList(I_AD_SysConfig.COLUMNNAME_Name, Query.AGGREGATE_DISTINCT, String.class);
+	}
+
+}

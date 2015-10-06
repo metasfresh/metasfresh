@@ -1,0 +1,1417 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software; you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program; if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
+package org.compiere.util;
+
+import java.awt.Color;
+import java.awt.font.TextAttribute;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.mail.internet.MimeUtility;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
+import org.adempiere.util.StringUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+/**
+ * General Utilities
+ * 
+ * @author Jorg Janke
+ * @version $Id: Util.java,v 1.3 2006/07/30 00:52:23 jjanke Exp $
+ * 
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL - BF [ 1748346 ]
+ */
+public class Util
+{
+	/** Logger */
+	private static Logger log = Logger.getLogger(Util.class.getName());
+
+	/**
+	 * Replace String values.
+	 * 
+	 * @param value string to be processed
+	 * @param oldPart old part
+	 * @param newPart replacement - can be null or ""
+	 * @return String with replaced values
+	 */
+	public static String replace(String value, String oldPart, String newPart)
+	{
+		if (value == null || value.length() == 0
+				|| oldPart == null || oldPart.length() == 0)
+			return value;
+		//
+		int oldPartLength = oldPart.length();
+		String oldValue = value;
+		StringBuffer retValue = new StringBuffer();
+		int pos = oldValue.indexOf(oldPart);
+		while (pos != -1)
+		{
+			retValue.append(oldValue.substring(0, pos));
+			if (newPart != null && newPart.length() > 0)
+				retValue.append(newPart);
+			oldValue = oldValue.substring(pos + oldPartLength);
+			pos = oldValue.indexOf(oldPart);
+		}
+		retValue.append(oldValue);
+		// log.fine( "Env.replace - " + value + " - Old=" + oldPart + ", New=" + newPart + ", Result=" + retValue.toString());
+		return retValue.toString();
+	}	// replace
+
+	/**
+	 * Remove CR / LF from String
+	 * 
+	 * @param in input
+	 * @return cleaned string
+	 */
+	public static String removeCRLF(String in)
+	{
+		char[] inArray = in.toCharArray();
+		StringBuffer out = new StringBuffer(inArray.length);
+		for (int i = 0; i < inArray.length; i++)
+		{
+			char c = inArray[i];
+			if (c == '\n' || c == '\r')
+				;
+			else
+				out.append(c);
+		}
+		return out.toString();
+	}	// removeCRLF
+
+	/**
+	 * Fetch the numbers from a string
+	 * 
+	 * @param text
+	 * @return string which contains all digits, or null if text is null
+	 */
+	public static String getDigits(final String text)
+	{
+		if (text == null)
+		{
+			return null;
+		}
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < text.length(); i++)
+		{
+			if (Character.isDigit(text.charAt(i)))
+				sb.append(text.charAt(i));
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Fetch only the text from a given string <br>
+	 * E.g. text= '9000 St. Gallen'<br>
+	 * This method will return test St. Gallen
+	 * 
+	 * @param text
+	 * @return string which contains all letters not digits, or null if text is null
+	 */
+	public static String stripDigits(final String text)
+	{
+		if (text == null)
+		{
+			return null;
+		}
+		char[] inArray = text.toCharArray();
+		StringBuilder out = new StringBuilder(inArray.length);
+		for (int i = 0; i < inArray.length; i++)
+		{
+			char c = inArray[i];
+			if (Character.isLetter(c) || !Character.isDigit(c))
+				out.append(c);
+		}
+		return out.toString();
+	}
+
+	/**
+	 * Clean - Remove all white spaces
+	 * 
+	 * @param in in
+	 * @return cleaned string
+	 */
+	public static String cleanWhitespace(String in)
+	{
+		char[] inArray = in.toCharArray();
+		StringBuffer out = new StringBuffer(inArray.length);
+		boolean lastWasSpace = false;
+		for (int i = 0; i < inArray.length; i++)
+		{
+			char c = inArray[i];
+			if (Character.isWhitespace(c))
+			{
+				if (!lastWasSpace)
+					out.append(' ');
+				lastWasSpace = true;
+			}
+			else
+			{
+				out.append(c);
+				lastWasSpace = false;
+			}
+		}
+		return out.toString();
+	}	// cleanWhitespace
+
+	/**
+	 * remove white space from the begin
+	 * 
+	 * @param in
+	 * @return
+	 */
+	public static String cleanBeginWhitespace(String in)
+	{
+		int len = in.length();
+		int st = 0;
+		int off = 0;
+		char[] val = in.toCharArray();
+
+		while ((st < len) && (val[off + st] <= ' '))
+		{
+			st++;
+		}
+		return ((st > 0) || (len < in.length())) ? in.substring(st, len) : in;
+	}
+
+	/**
+	 * 
+	 * @param value note: <code>null</code> is threaded like ""
+	 * @param size
+	 * @param description
+	 * @return
+	 */
+	public static String lpadZero(final String value, final int size, final String description)
+	{
+		final String valueFixed;
+		if (value == null)
+		{
+			valueFixed = "";
+		}
+		else
+		{
+			valueFixed = value.trim();
+		}
+		if (valueFixed.length() > size)
+		{
+			throw new AdempiereException("value='" + valueFixed + "' of '" + description + "' is bigger than " + size + " characters");
+		}
+		final String s = "0000000000000000000" + valueFixed;
+		return s.substring(s.length() - size);
+	}
+
+	/**
+	 * Mask HTML content. i.e. replace characters with &values; CR is not masked
+	 * 
+	 * @param content content
+	 * @return masked content
+	 * @see #maskHTML(String, boolean)
+	 */
+	public static String maskHTML(String content)
+	{
+		return maskHTML(content, false);
+	}	// maskHTML
+
+	/**
+	 * Mask HTML content. i.e. replace characters with &values;
+	 * 
+	 * @param content content
+	 * @param maskCR convert CR into <br>
+	 * @return masked content or null if the <code>content</code> is null
+	 */
+	public static String maskHTML(String content, boolean maskCR)
+	{
+		// If the content is null, then return null - teo_sarca [ 1748346 ]
+		if (content == null)
+			return content;
+		//
+		StringBuffer out = new StringBuffer();
+		char[] chars = content.toCharArray();
+		for (int i = 0; i < chars.length; i++)
+		{
+			char c = chars[i];
+			switch (c)
+			{
+				case '<':
+					out.append("&lt;");
+					break;
+				case '>':
+					out.append("&gt;");
+					break;
+				case '&':
+					out.append("&amp;");
+					break;
+				case '"':
+					out.append("&quot;");
+					break;
+				case '\'':
+					out.append("&#039;");
+					break;
+				case '\n':
+					if (maskCR)
+						out.append("<br>");
+					//
+				default:
+					int ii = c;
+					if (ii > 255)		// Write Unicode
+						out.append("&#").append(ii).append(";");
+					else
+						out.append(c);
+					break;
+			}
+		}
+		return out.toString();
+	}	// maskHTML
+
+	/**
+	 * Get the number of occurances of countChar in string.
+	 * 
+	 * @param string String to be searched
+	 * @param countChar to be counted character
+	 * @return number of occurances
+	 */
+	public static int getCount(String string, char countChar)
+	{
+		if (string == null || string.length() == 0)
+			return 0;
+		int counter = 0;
+		char[] array = string.toCharArray();
+		for (int i = 0; i < array.length; i++)
+		{
+			if (array[i] == countChar)
+				counter++;
+		}
+		return counter;
+	}	// getCount
+
+	/**
+	 * Is String Empty
+	 * 
+	 * @param str string
+	 * @return true if >= 1 char
+	 * 
+	 * @deprecated Please use {@link Check#isEmpty(String)}
+	 */
+	@Deprecated
+	public static boolean isEmpty(String str)
+	{
+		return Check.isEmpty(str);
+	}	// isEmpty
+
+	/**
+	 * Is String Empty
+	 * 
+	 * @param str string
+	 * @param trimWhitespaces trim whitespaces
+	 * @return true if >= 1 char
+	 * 
+	 * @deprecated Please use {@link Check#isEmpty(String, boolean)}
+	 */
+	@Deprecated
+	public static boolean isEmpty(String str, boolean trimWhitespaces)
+	{
+		return Check.isEmpty(str, trimWhitespaces);
+	}	// isEmpty
+
+	/**
+	 * 
+	 * @param bd
+	 * @return true if bd is null or bd.signum() is zero
+	 */
+	@Deprecated
+	public static boolean isEmpty(BigDecimal bd)
+	{
+		return Check.isEmpty(bd);
+	}
+
+	@Deprecated
+	public static <T> boolean isEmpty(T[] arr)
+	{
+		return Check.isEmpty(arr);
+	}
+
+	/**************************************************************************
+	 * Find index of search character in str. This ignores content in () and 'texts'
+	 * 
+	 * @param str string
+	 * @param search search character
+	 * @return index or -1 if not found
+	 */
+	public static int findIndexOf(String str, char search)
+	{
+		return findIndexOf(str, search, search);
+	}   // findIndexOf
+
+	/**
+	 * Find index of search characters in str. This ignores content in () and 'texts'
+	 * 
+	 * @param str string
+	 * @param search1 first search character
+	 * @param search2 second search character (or)
+	 * @return index or -1 if not found
+	 */
+	public static int findIndexOf(String str, char search1, char search2)
+	{
+		if (str == null)
+			return -1;
+		//
+		int endIndex = -1;
+		int parCount = 0;
+		boolean ignoringText = false;
+		int size = str.length();
+		while (++endIndex < size)
+		{
+			char c = str.charAt(endIndex);
+			if (c == '\'')
+				ignoringText = !ignoringText;
+			else if (!ignoringText)
+			{
+				if (parCount == 0 && (c == search1 || c == search2))
+					return endIndex;
+				else if (c == ')')
+					parCount--;
+				else if (c == '(')
+					parCount++;
+			}
+		}
+		return -1;
+	}   // findIndexOf
+
+	/**
+	 * Find index of search character in str. This ignores content in () and 'texts'
+	 * 
+	 * @param str string
+	 * @param search search character
+	 * @return index or -1 if not found
+	 */
+	public static int findIndexOf(String str, String search)
+	{
+		if (str == null || search == null || search.length() == 0)
+			return -1;
+		//
+		int endIndex = -1;
+		int parCount = 0;
+		boolean ignoringText = false;
+		int size = str.length();
+		while (++endIndex < size)
+		{
+			char c = str.charAt(endIndex);
+			if (c == '\'')
+				ignoringText = !ignoringText;
+			else if (!ignoringText)
+			{
+				if (parCount == 0 && c == search.charAt(0))
+				{
+					if (str.substring(endIndex).startsWith(search))
+						return endIndex;
+				}
+				else if (c == ')')
+					parCount--;
+				else if (c == '(')
+					parCount++;
+			}
+		}
+		return -1;
+	}   // findIndexOf
+
+	/**************************************************************************
+	 * Return Hex String representation of byte b
+	 * 
+	 * @param b byte
+	 * @return Hex
+	 */
+	static public String toHex(byte b)
+	{
+		char hexDigit[] = {
+				'0', '1', '2', '3', '4', '5', '6', '7',
+				'8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+		};
+		char[] array = { hexDigit[(b >> 4) & 0x0f], hexDigit[b & 0x0f] };
+		return new String(array);
+	}
+
+	/**
+	 * Return Hex String representation of char c
+	 * 
+	 * @param c character
+	 * @return Hex
+	 */
+	static public String toHex(char c)
+	{
+		byte hi = (byte)(c >>> 8);
+		byte lo = (byte)(c & 0xff);
+		return toHex(hi) + toHex(lo);
+	}   // toHex
+
+	/**************************************************************************
+	 * Init Cap Words With Spaces
+	 * 
+	 * @param in string
+	 * @return init cap
+	 */
+	public static String initCap(String in)
+	{
+		if (in == null || in.length() == 0)
+			return in;
+		//
+		boolean capitalize = true;
+		char[] data = in.toCharArray();
+		for (int i = 0; i < data.length; i++)
+		{
+			if (data[i] == ' ' || Character.isWhitespace(data[i]))
+				capitalize = true;
+			else if (capitalize)
+			{
+				data[i] = Character.toUpperCase(data[i]);
+				capitalize = false;
+			}
+			else
+				data[i] = Character.toLowerCase(data[i]);
+		}
+		return new String(data);
+	}	// initCap
+
+	/**************************************************************************
+	 * Return a Iterator with only the relevant attributes. Fixes implementation in AttributedString, which returns everything
+	 * 
+	 * @param aString attributed string
+	 * @param relevantAttributes relevant attributes
+	 * @return iterator
+	 */
+	static public AttributedCharacterIterator getIterator(AttributedString aString,
+			AttributedCharacterIterator.Attribute[] relevantAttributes)
+	{
+		AttributedCharacterIterator iter = aString.getIterator();
+		Set set = iter.getAllAttributeKeys();
+		// System.out.println("AllAttributeKeys=" + set);
+		if (set.size() == 0)
+			return iter;
+		// Check, if there are unwanted attributes
+		Set<AttributedCharacterIterator.Attribute> unwanted = new HashSet<AttributedCharacterIterator.Attribute>(iter.getAllAttributeKeys());
+		for (int i = 0; i < relevantAttributes.length; i++)
+			unwanted.remove(relevantAttributes[i]);
+		if (unwanted.size() == 0)
+			return iter;
+
+		// Create new String
+		StringBuffer sb = new StringBuffer();
+		for (char c = iter.first(); c != AttributedCharacterIterator.DONE; c = iter.next())
+			sb.append(c);
+		aString = new AttributedString(sb.toString());
+
+		// copy relevant attributes
+		Iterator it = iter.getAllAttributeKeys().iterator();
+		while (it.hasNext())
+		{
+			AttributedCharacterIterator.Attribute att = (AttributedCharacterIterator.Attribute)it.next();
+			if (!unwanted.contains(att))
+			{
+				for (char c = iter.first(); c != AttributedCharacterIterator.DONE; c = iter.next())
+				{
+					Object value = iter.getAttribute(att);
+					if (value != null)
+					{
+						int start = iter.getRunStart(att);
+						int limit = iter.getRunLimit(att);
+						// System.out.println("Attribute=" + att + " Value=" + value + " Start=" + start + " Limit=" + limit);
+						aString.addAttribute(att, value, start, limit);
+						iter.setIndex(limit);
+					}
+				}
+			}
+			// else
+			// System.out.println("Unwanted: " + att);
+		}
+		return aString.getIterator();
+	}	// getIterator
+
+	/**
+	 * Dump a Map (key=value) to out
+	 * 
+	 * @param map Map
+	 */
+	static public void dump(Map map)
+	{
+		System.out.println("Dump Map - size=" + map.size());
+		Iterator it = map.keySet().iterator();
+		while (it.hasNext())
+		{
+			Object key = it.next();
+			Object value = map.get(key);
+			System.out.println(key + "=" + value);
+		}
+	}	// dump (Map)
+
+	/**
+	 * Print Action and Input Map for component
+	 * 
+	 * @param comp Component with ActionMap
+	 */
+	public static void printActionInputMap(JComponent comp)
+	{
+		// Action Map
+		ActionMap am = comp.getActionMap();
+		Object[] amKeys = am.allKeys(); // including Parents
+		if (amKeys != null)
+		{
+			System.out.println("-------------------------");
+			System.out.println("ActionMap for Component " + comp.toString());
+			for (int i = 0; i < amKeys.length; i++)
+			{
+				Action a = am.get(amKeys[i]);
+
+				StringBuffer sb = new StringBuffer("- ");
+				sb.append(a.getValue(Action.NAME));
+				if (a.getValue(Action.ACTION_COMMAND_KEY) != null)
+					sb.append(", Cmd=").append(a.getValue(Action.ACTION_COMMAND_KEY));
+				if (a.getValue(Action.SHORT_DESCRIPTION) != null)
+					sb.append(" - ").append(a.getValue(Action.SHORT_DESCRIPTION));
+				System.out.println(sb.toString() + " - " + a);
+			}
+		}
+		/**
+		 * Same as below KeyStroke[] kStrokes = comp.getRegisteredKeyStrokes(); if (kStrokes != null) { System.out.println("-------------------------"); System.out.println("Registered Key Strokes - "
+		 * + comp.toString()); for (int i = 0; i < kStrokes.length; i++) { System.out.println("- " + kStrokes[i].toString()); } } /** Focused
+		 */
+		InputMap im = comp.getInputMap(JComponent.WHEN_FOCUSED);
+		KeyStroke[] kStrokes = im.allKeys();
+		if (kStrokes != null)
+		{
+			System.out.println("-------------------------");
+			System.out.println("InputMap for Component When Focused - " + comp.toString());
+			for (int i = 0; i < kStrokes.length; i++)
+			{
+				System.out.println("- " + kStrokes[i].toString() + " - "
+						+ im.get(kStrokes[i]).toString());
+			}
+		}
+		/** Focused in Window */
+		im = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+		kStrokes = im.allKeys();
+		if (kStrokes != null)
+		{
+			System.out.println("-------------------------");
+			System.out.println("InputMap for Component When Focused in Window - " + comp.toString());
+			for (int i = 0; i < kStrokes.length; i++)
+			{
+				System.out.println("- " + kStrokes[i].toString() + " - "
+						+ im.get(kStrokes[i]).toString());
+			}
+		}
+		/** Focused when Ancester */
+		im = comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		kStrokes = im.allKeys();
+		if (kStrokes != null)
+		{
+			System.out.println("-------------------------");
+			System.out.println("InputMap for Component When Ancestor - " + comp.toString());
+			for (int i = 0; i < kStrokes.length; i++)
+			{
+				System.out.println("- " + kStrokes[i].toString() + " - "
+						+ im.get(kStrokes[i]).toString());
+			}
+		}
+		System.out.println("-------------------------");
+	}   // printActionInputMap
+
+	/**
+	 * Is 8 Bit
+	 * 
+	 * @param str string
+	 * @return true if string contains chars > 255
+	 */
+	public static boolean is8Bit(String str)
+	{
+		if (str == null || str.length() == 0)
+			return true;
+		char[] cc = str.toCharArray();
+		for (int i = 0; i < cc.length; i++)
+		{
+			if (cc[i] > 255)
+			{
+				// System.out.println("Not 8 Bit - " + str);
+				return false;
+			}
+		}
+		return true;
+	}	// is8Bit
+
+	/**
+	 * Clean Ampersand (used to indicate shortcut)
+	 * 
+	 * @param in input
+	 * @return cleaned string
+	 */
+	public static String cleanAmp(String in)
+	{
+		if (in == null || in.length() == 0)
+			return in;
+		int pos = in.indexOf('&');
+		if (pos == -1)
+			return in;
+		//
+		if (pos + 1 < in.length() && in.charAt(pos + 1) != ' ')
+			in = in.substring(0, pos) + in.substring(pos + 1);
+		return in;
+	}	// cleanAmp
+
+	/**
+	 * Trim to max character length
+	 * 
+	 * @param str string
+	 * @param length max (incl) character length
+	 * @return string
+	 */
+	public static String trimLength(String str, int length)
+	{
+		if (str == null)
+			return str;
+		if (length <= 0)
+			throw new IllegalArgumentException("Trim length invalid: " + length);
+		if (str.length() > length)
+			return str.substring(0, length);
+		return str;
+	}	// trimLength
+
+	/**
+	 * Size of String in bytes
+	 * 
+	 * @param str string
+	 * @return size in bytes
+	 */
+	public static int size(String str)
+	{
+		if (str == null)
+			return 0;
+		int length = str.length();
+		int size = length;
+		try
+		{
+			size = str.getBytes("UTF-8").length;
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			log.log(Level.SEVERE, str, e);
+		}
+		return size;
+	}	// size
+
+	/**
+	 * Trim to max byte size
+	 * 
+	 * @param str string
+	 * @param size max size in bytes
+	 * @return string
+	 */
+	public static String trimSize(String str, int size)
+	{
+		if (str == null)
+			return str;
+		if (size <= 0)
+			throw new IllegalArgumentException("Trim size invalid: " + size);
+		// Assume two byte code
+		int length = str.length();
+		if (length < size / 2)
+			return str;
+		try
+		{
+			byte[] bytes = str.getBytes("UTF-8");
+			if (bytes.length <= size)
+				return str;
+			// create new - may cut last character in half
+			byte[] result = new byte[size];
+			System.arraycopy(bytes, 0, result, 0, size);
+			return new String(result, "UTF-8");
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			log.log(Level.SEVERE, str, e);
+		}
+		return str;
+	}	// trimSize
+
+	/**************************************************************************
+	 * Test
+	 * 
+	 * @param args args
+	 */
+	public static void main(String[] args)
+	{
+		String str = "a�b�c?d?e?f?g?";
+		System.out.println(str + " = " + str.length() + " - " + size(str));
+		String str1 = trimLength(str, 10);
+		System.out.println(str1 + " = " + str1.length() + " - " + size(str1));
+		String str2 = trimSize(str, 10);
+		System.out.println(str2 + " = " + str2.length() + " - " + size(str2));
+		//
+		AttributedString aString = new AttributedString("test test");
+		aString.addAttribute(TextAttribute.FOREGROUND, Color.blue);
+		aString.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, 2, 4);
+		getIterator(aString, new AttributedCharacterIterator.Attribute[] { TextAttribute.UNDERLINE });
+	}	// main
+
+	/**
+	 * Create an instance of given className.
+	 * 
+	 * This method works exactly like {@link #getInstanceOrNull(Class, String)} but it also throws and {@link AdempiereException} if class was not found.
+	 * 
+	 * @param interfaceClazz interface class or super class that needs to be implemented by class. May be <code>NULL</code>. If set, then the method will check if the given class name extends this
+	 *            param value.
+	 * @param className class name
+	 * @return instance
+	 * @throws AdempiereException if class does not implement given interface or if there is an error on instantiation or if class was not found
+	 */
+	public static <T> T getInstance(final Class<T> interfaceClazz, final String className)
+	{
+		Check.assumeNotNull(className, "className is not null");
+
+		try
+		{
+			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+			if (classLoader == null)
+			{
+				classLoader = Util.class.getClassLoader();
+			}
+			final Class<?> clazz = classLoader.loadClass(className);
+
+			if (interfaceClazz != null)
+			{
+				if (!interfaceClazz.isAssignableFrom(clazz))
+				{
+					throw new AdempiereException("Class " + interfaceClazz + " is not assignable from " + className);
+				}
+				return clazz.asSubclass(interfaceClazz).newInstance();
+			}
+			else
+			{
+				final Object instanceObj = clazz.newInstance();
+				@SuppressWarnings("unchecked")
+				final T instance = (T)instanceObj;
+				return instance;
+			}
+		}
+		catch (ClassNotFoundException e)
+		{
+			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
+		}
+		catch (InstantiationException e)
+		{
+			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
+		}
+		catch (IllegalAccessException e)
+		{
+			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
+		}
+	}
+
+	/**
+	 * Create an instance of given className
+	 * 
+	 * @param interfaceClazz interface class that needs to be implemented by class
+	 * @param className class name
+	 * @return instance or null if class was not found
+	 * @throws AdempiereException if class does not implement given interface or if there is an error on instantiation
+	 */
+	public static <T> T getInstanceOrNull(final Class<T> interfaceClazz, final String className)
+	{
+		Check.assumeNotNull(className, "className may not be null");
+		Check.assumeNotNull(interfaceClazz, "interfaceClazz may not be null");
+		try
+		{
+			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+			if (classLoader == null)
+			{
+				classLoader = Util.class.getClassLoader();
+			}
+			final Class<?> clazz = classLoader.loadClass(className);
+
+			if (!interfaceClazz.isAssignableFrom(clazz))
+			{
+				throw new AdempiereException("Class " + className + " doesn't implement " + interfaceClazz);
+			}
+			return clazz.asSubclass(interfaceClazz).newInstance();
+
+		}
+		catch (ClassNotFoundException e)
+		{
+			return null;
+		}
+		catch (InstantiationException e)
+		{
+			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
+		}
+		catch (IllegalAccessException e)
+		{
+			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
+		}
+	}
+
+	/**
+	 * Little method that throws an {@link AdempiereException} if the given boolean condition is false. It might be a good idea to use "assume" instead of the assert keyword, because <li>assert is
+	 * globally switched on and off and you never know what else libs are using assert</li> <li>there are critical assumptions that should always be validated. Not only during development time or when
+	 * someone minds to use the -ea cmdline parameter</li>
+	 * 
+	 * @param cond
+	 * @param errMsg the error message to pass to the assertion error, if the condition is <code>false</code>
+	 * @param params message parameters (@see {@link MessageFormat})
+	 */
+	@Deprecated
+	public static void assume(final boolean cond, final String errMsg, Object... params)
+	{
+		Check.assume(cond, errMsg, params);
+	}
+
+	/**
+	 * Assumes that given <code>object</code> is not null
+	 * 
+	 * @param object
+	 * @param assumptionMessage message
+	 * @param params message parameters (@see {@link MessageFormat})
+	 * @see #assume(boolean, String, Object...)
+	 */
+	@Deprecated
+	public static void assumeNotNull(Object object, final String assumptionMessage, Object... params)
+	{
+		Check.assumeNotNull(object, assumptionMessage, params);
+	}
+
+	/**
+	 * This method similar to {@link #assume(boolean, String, Object...)}, but the message should be formulated in terms of an error message instead of an assumption.
+	 * <p>
+	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
+	 * 
+	 * @param cond
+	 * @param errMsg
+	 * @param params
+	 */
+	@Deprecated
+	public static void errorUnless(final boolean cond, final String errMsg, Object... params)
+	{
+		Check.errorUnless(cond, errMsg, params);
+	}
+
+	/**
+	 * This method similar to {@link #assume(boolean, String, Object...)}, the error is throw <b>if the condition is true</b> and the message should be formulated in terms of an error message instead
+	 * of an assumption.
+	 * <p>
+	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
+	 * 
+	 * @param cond
+	 * @param errMsg
+	 * @param params
+	 */
+	@Deprecated
+	public static void errorIf(final boolean cond, final String errMsg, Object... params)
+	{
+		Check.errorIf(cond, errMsg, params);
+	}
+
+	/**
+	 * 
+	 * @param message
+	 * @param params
+	 * @return
+	 * @deprecated use {@link StringUtils#formatMessage(String, Object...)} instead
+	 */
+	@Deprecated
+	public static String formatMessage(final String message, Object... params)
+	{
+		return StringUtils.formatMessage(message, params);
+	}
+
+	/**
+	 * Returns an instance of {@link ArrayKey} that can be used as a key in HashSets and HashMaps.
+	 * 
+	 * @param input
+	 * @return
+	 */
+	public static ArrayKey mkKey(final Object... input)
+	{
+		return new ArrayKey(input);
+	}
+
+	/**
+	 * @return {@link ArrayKey} builder
+	 */
+	public static ArrayKeyBuilder mkKey()
+	{
+		return new ArrayKeyBuilder();
+	}
+
+	/**
+	 * Immutable wrapper for arrays that uses {@link Arrays#hashCode(Object[]))} and {@link Arrays#equals(Object)}. Instances of this class are obtained by {@link Util#mkKey(Object...)} and can be
+	 * used as keys in hashmaps and hash sets.
+	 * 
+	 * Thanks to http://stackoverflow.com/questions/1595588/java-how-to-be-sure-to-store-unique-arrays-based-on -its-values-on-a-list
+	 * 
+	 * @author ts
+	 * 
+	 */
+	public static class ArrayKey implements Comparable<ArrayKey>
+	{
+		private final Object[] array;
+		private String _stringBuilt = null;
+
+		public ArrayKey(final Object... input)
+		{
+			this.array = input;
+		}
+
+		public Object[] getArray()
+		{
+			Object[] newArray = new Object[array.length];
+			System.arraycopy(array, 0, newArray, 0, array.length);
+			return newArray;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Arrays.hashCode(array);
+		}
+
+		@Override
+		public boolean equals(final Object other)
+		{
+			if (this == other)
+			{
+				return true;
+			}
+			if (other instanceof ArrayKey)
+			{
+				return Arrays.equals(this.array, ((ArrayKey)other).getArray());
+			}
+			return false;
+		}
+
+		@Override
+		public String toString()
+		{
+			if (_stringBuilt != null)
+			{
+				return _stringBuilt;
+			}
+
+			final StringBuilder sb = new StringBuilder();
+			for (Object k : array)
+			{
+				if (sb.length() > 0)
+				{
+					sb.append("#");
+				}
+				if (k == null)
+				{
+					sb.append("NULL");
+				}
+				else
+				{
+					sb.append(k.toString());
+				}
+			}
+
+			_stringBuilt = sb.toString();
+			return _stringBuilt;
+		}
+
+		@Override
+		public int compareTo(final ArrayKey other)
+		{
+			if (this == other)
+			{
+				return 0;
+			}
+
+			if (other == null)
+			{
+				return -1; // NULLs last
+			}
+
+			// NOTE: ideally we would compare each array element, using natural order,
+			// but for now, comparing the strings is sufficient
+			return toString().compareTo(other.toString());
+		}
+
+		public static int compare(final ArrayKey key1, final ArrayKey key2)
+		{
+			if (key1 == key2)
+			{
+				return 0;
+			}
+			if (key1 == null)
+			{
+				return +1; // NULLs last
+			}
+			if (key2 == null)
+			{
+				return -1; // NULLs last
+			}
+			return key1.compareTo(key2);
+		}
+	}
+
+	/**
+	 * Tests whether two objects are equals.
+	 * 
+	 * @deprecated please use {@link Check#equals(Object, Object)}
+	 */
+	@Deprecated
+	public static final boolean equals(Object a, Object b)
+	{
+		return Check.equals(a, b);
+	}
+
+	/**
+	 * Tests whether two objects refer to the same object.
+	 * 
+	 * It's advisable to use this method instead of directly comparing those 2 objects by o1 == o2, because in this way you are telling to static analyzer tool that comparing by reference was your
+	 * intention.
+	 * 
+	 * @param o1
+	 * @param o2
+	 * @return true if objects are the same (i.e. o1 == o2)
+	 */
+	public static final boolean same(Object o1, Object o2)
+	{
+		return o1 == o2;
+	}
+
+	/**
+	 * Read given file and returns it as byte array
+	 * 
+	 * @param file
+	 * @return file contents as byte array
+	 * @throws AdempiereException on any {@link IOException}
+	 */
+	public static byte[] readBytes(File file)
+	{
+		FileInputStream in = null;
+		try
+		{
+			in = new FileInputStream(file);
+			byte[] data = readBytes(in);
+			in = null; // stream was closed by readBytes(InputStream)
+
+			return data;
+		}
+		catch (Exception e)
+		{
+			throw new AdempiereException("Error reading file: " + file, e);
+		}
+		finally
+		{
+			if (in != null)
+			{
+				try
+				{
+					in.close();
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				in = null;
+			}
+		}
+	}
+
+	/**
+	 * Read bytes from given InputStream. This method closes the stream.
+	 * 
+	 * @param in
+	 * @return stream contents as byte array
+	 * @throws AdempiereException on error
+	 */
+	public static byte[] readBytes(final InputStream in)
+	{
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		final byte[] buf = new byte[4096];
+
+		try
+		{
+			int len = -1;
+			while ((len = in.read(buf)) > 0)
+			{
+				out.write(buf, 0, len);
+			}
+		}
+		catch (IOException e)
+		{
+			throw new AdempiereException("Error reading stream", e);
+		}
+		finally
+		{
+			try
+			{
+				in.close();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+
+		return out.toByteArray();
+	}
+
+	/***
+	 * insert selection into DB
+	 * 
+	 * @deprecated Please use {@link DB#createT_Selection(int, java.util.Collection, String)}.
+	 */
+	@Deprecated
+	static public void insertSelection(final int[] selection, final int AD_PInstance_ID, final String trxName)
+	{
+		final ArrayList<Integer> results = new ArrayList<Integer>(selection.length);
+
+		for (int i = 0; i < selection.length; i++)
+		{
+			results.add(selection[i]);
+		}
+
+		if (results.size() == 0)
+			return;
+		log.config("Selected #" + results.size());
+
+		// insert selection
+		// use the same pinstance id as the process
+		DB.createT_Selection(AD_PInstance_ID, results, trxName);
+	}
+
+	/***
+	 * encode base64
+	 * 
+	 * @param b
+	 * @return
+	 * @throws Exception
+	 */
+	// metas: 03749
+	public static byte[] encodeBase64(final byte[] b)
+	{
+		try
+		{
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			final OutputStream b64os = MimeUtility.encode(baos, "base64");
+			b64os.write(b);
+			b64os.close();
+			return baos.toByteArray();
+		}
+		catch (Exception e)
+		{
+			throw new AdempiereException(e);
+		}
+	}
+
+	/***
+	 * decode base64
+	 * 
+	 * @param b
+	 * @return
+	 * @throws Exception
+	 */
+	// metas: 03749
+	public static byte[] decodeBase64(byte[] b)
+	{
+		try
+		{
+			ByteArrayInputStream bais = new ByteArrayInputStream(b);
+			InputStream b64is = MimeUtility.decode(bais, "base64");
+			byte[] tmp = new byte[b.length];
+			int n = b64is.read(tmp);
+			byte[] res = new byte[n];
+			System.arraycopy(tmp, 0, res, 0, n);
+			return res;
+		}
+		catch (Exception e)
+		{
+			throw new AdempiereException(e);
+		}
+	}
+
+	// 03743
+	public static void writeBytes(final File file, final byte[] data)
+	{
+		FileOutputStream out = null;
+		try
+		{
+			out = new FileOutputStream(file, false);
+			out.write(data);
+		}
+		catch (IOException e)
+		{
+			throw new AdempiereException("Cannot write file " + file + "."
+					+ "\n " + e.getLocalizedMessage() // also append the original error message because it could be helpful for user.
+			, e);
+		}
+		finally
+		{
+			if (out != null)
+			{
+				close(out);
+				out = null;
+			}
+		}
+	}
+
+	public static final void close(Closeable c)
+	{
+		try
+		{
+			c.close();
+		}
+		catch (IOException e)
+		{
+			// e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Writes the given {@link Throwable}s stack trace into a string.
+	 * 
+	 * @param e
+	 * @return
+	 */
+	public static String dumpStackTraceToString(Throwable e)
+	{
+		final StringWriter sw = new StringWriter();
+		final PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		return sw.toString();
+	}
+
+	/**
+	 * Smart converting given exception to string
+	 * 
+	 * @param e
+	 * @return
+	 */
+	public static String getErrorMsg(Throwable e)
+	{
+		// save the exception for displaying to user
+		String msg = e.getLocalizedMessage();
+		if (Util.isEmpty(msg, true))
+		{
+			msg = e.getMessage();
+		}
+		if (Util.isEmpty(msg, true))
+		{
+			// note that e.g. a NullPointerException doesn't have a nice message
+			msg = dumpStackTraceToString(e);
+		}
+
+		return msg;
+	}
+
+	/**
+	 * @return first not null value from list
+	 * @see #coalesce(Object...)
+	 */
+	// NOTE: this method is optimized for common usage
+	public static final <T> T coalesce(final T value1, final T value2)
+	{
+		return value1 == null ? value2 : value1;
+	}
+
+	/**
+	 * 
+	 * @param values
+	 * @return first not null value from list
+	 */
+	public static final <T> T coalesce(T... values)
+	{
+		if (values == null || values.length == 0)
+		{
+			return null;
+		}
+		for (T value : values)
+		{
+			if (value != null)
+			{
+				return value;
+			}
+		}
+		return null;
+	}
+
+	public static String replaceNonDigitCharsWithZero(String stringToModify)
+	{
+		final int size = stringToModify.length();
+
+		StringBuilder stringWithZeros = new StringBuilder();
+
+		for (int i = 0; i < size; i++)
+		{
+			final char currentChar = stringToModify.charAt(i);
+
+			if (!Character.isDigit(currentChar))
+			{
+				stringWithZeros.append('0');
+			}
+			else
+			{
+				stringWithZeros.append(currentChar);
+			}
+		}
+
+		return stringWithZeros.toString();
+	}
+
+	// thx to http://www.java2s.com/Code/Java/XML/DOMUtilgetElementText.htm
+	public static String getElementText(Node element)
+	{
+		StringBuffer buf = new StringBuffer();
+		NodeList list = element.getChildNodes();
+		boolean found = false;
+		for (int i = 0; i < list.getLength(); i++)
+		{
+			Node node = list.item(i);
+			if (node.getNodeType() == Node.TEXT_NODE)
+			{
+				buf.append(node.getNodeValue());
+				found = true;
+			}
+		}
+		return found ? buf.toString() : null;
+	}
+}   // Util

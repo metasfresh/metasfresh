@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<psf version="2.0">
+<provider id="org.tigris.subversion.subclipse.core.svnnature">
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/base,base"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/client,client"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/data,data"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/db,db"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/doc,doc"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/extend,extend"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/glassfishfacet,glassfishfacet"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/install,install"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/interfaces,interfaces"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/JasperReports,JasperReports"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/JasperReportsTools,JasperReportsTools"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/JasperReportsWebApp,JasperReportsWebApp"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/jboss,jboss"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/jbossfacet,jbossfacet"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/launch,launch"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/lib,lib"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/migration,migration"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/serverApps,serverApps"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/serverRoot,serverRoot"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/sqlj,sqlj"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/tools,tools"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/utils,utils"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/utils_dev,utils_dev"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/webCM,webCM"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/webStore,webStore"/>
+<project reference="0.9.3,https://adempiere.svn.sourceforge.net/svnroot/adempiere/trunk/zkwebui,zkwebui"/>
+</provider>
+</psf>

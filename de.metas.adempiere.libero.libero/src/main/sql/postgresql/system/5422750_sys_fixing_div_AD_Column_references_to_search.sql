@@ -1,0 +1,60 @@
+-- 21.07.2015 17:42
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-07-21 17:42:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=545718
+;
+
+-- 21.07.2015 17:42
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-07-21 17:42:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=546057
+;
+
+-- 21.07.2015 17:43
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-07-21 17:43:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=545705
+;
+
+-- 21.07.2015 17:43
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-07-21 17:43:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=546220
+;
+
+-- 21.07.2015 17:44
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30, IsUpdateable='N',Updated=TO_TIMESTAMP('2015-07-21 17:44:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551193
+;
+
+-- 21.07.2015 17:45
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-07-21 17:45:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552589
+;
+
+-- 21.07.2015 17:46
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-07-21 17:46:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552592
+;
+
+-- 21.07.2015 17:46
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-07-21 17:46:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552594
+;
+
+-- 21.07.2015 17:46
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-07-21 17:46:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552593
+;
+
+-- 21.07.2015 17:46
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-07-21 17:46:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552595
+;
+
+-- 21.07.2015 17:46
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Produkt-Attribut',Updated=TO_TIMESTAMP('2015-07-21 17:46:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540699
+;
+
+-- 21.07.2015 17:46
+-- URL zum Konzept
+UPDATE AD_Tab_Trl SET IsTranslated='N' WHERE AD_Tab_ID=540699
+;
+

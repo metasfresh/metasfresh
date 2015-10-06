@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2009 Low Heng Sin
+Copyright (C) 2009 Idalica Corporation
+-->
+<?component name="vendorLogo" inline="true" macroURI="vendor-logo.zul"?>
+<?component name="loginInfo" macroURI="login-info.zul"?>
+<?component name="versionInfo" inline="true" macroURI="version-info.zul"?>
+<?component name="loginLinks" inline="true" macroURI="login-links.zul"?>
+<div>
+	<vendorLogo/>
+	<loginInfo if="${desktop.execution.localName == &quot;ip-10-8-0-1.ec2.internal&quot; or desktop.execution.serverName == &quot;127.0.0.1&quot;}"/>
+	<versionInfo/>
+	<loginLinks/>
+</div>

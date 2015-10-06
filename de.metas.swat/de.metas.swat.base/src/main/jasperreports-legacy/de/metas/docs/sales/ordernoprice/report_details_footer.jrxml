@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Test" isDefault="true" markup="styled"/>
+	<parameter name="c_order_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[$P{c_order_id}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+	*
+FROM
+	(
+	--Docnote DE
+	SELECT
+		null		 	as textleft,
+		CASE WHEN o.descriptionbottom IS NOT NULL
+			THEN '<br><br><br>'
+			ELSE ''
+		END || dt.documentnote	as textcenter,
+		'de_DE' 		as language,
+		o.c_order_id		as c_order_id,
+		'docnote' 		as tag,
+		4			as position
+	FROM
+		c_order o
+		LEFT JOIN c_doctype dt 		ON o.c_doctypeTarget_id 	= dt.c_doctype_id
+
+	UNION
+---------------------------------------------------------------------------------------------
+	--Docnote TRL
+	SELECT
+		null		 	as textleft,
+		CASE WHEN o.descriptionbottom IS NOT NULL
+			THEN '<br><br><br>'
+			ELSE ''
+		END || dt.documentnote	as textcenter,
+		dt.ad_language		as language,
+		o.c_order_id		as c_order_id,
+		'docnote' 		as tag,
+		4			as position
+	FROM
+		c_order o
+		LEFT JOIN c_doctype_trl dt 	ON o.c_doctypetarget_id 	= dt.c_doctype_id
+
+	UNION
+---------------------------------------------------------------------------------------------
+	--Descriptionbottom
+	SELECT
+		o.descriptionbottom  	as textleft,
+		null			as textcenter,
+		null			as language,
+		o.c_order_id		as c_order_id,
+		'descr' 		as tag,
+		3			as position
+	FROM
+		c_order o
+		LEFT JOIN c_doctype dt 		ON o.c_doctypeTarget_id 	= dt.c_doctype_id
+
+	UNION
+---------------------------------------------------------------------------------------------
+	--Zahlungsbedingungen
+	SELECT
+		replace(replace(replace(p.name,'$datum_netto', to_char(o.dateordered + p.netdays, 'DD.MM.YYYY')), '$datum_skonto_1', to_char(o.dateordered::date + p.discountdays, 'DD.MM.YYYY')), '$datum_skonto_2', to_char(o.dateordered::date + p.discountdays2, 'DD.MM.YYYY')) as textleft,
+		null			as textcenter,
+		'de_DE'			as language,
+		o.c_order_id		as c_order_id,
+		'cond' 			as tag,
+		2			as position
+	FROM
+		c_order o
+		join c_paymentterm p on o.c_paymentterm_id = p.c_paymentterm_id
+
+	UNION
+---------------------------------------------------------------------------------------------
+	--Zahlungsbedingungen
+	SELECT
+		replace(replace(replace(pt.name,'$datum_netto', to_char(o.dateordered + p.netdays, 'DD.MM.YYYY')), '$datum_skonto_1', to_char(o.dateordered::date + p.discountdays, 'DD.MM.YYYY')), '$datum_skonto_2', to_char(o.dateordered::date + p.discountdays2, 'DD.MM.YYYY')) as textleft,
+		null			as textcenter,
+		pt.ad_language		as language,
+		o.c_order_id		as c_order_id,
+		'cond' 			as tag,
+		2			as position
+	FROM
+		c_order o
+		join c_paymentterm p on o.c_paymentterm_id = p.c_paymentterm_id
+		join c_paymentterm_trl pt on o.c_paymentterm_id = pt.c_paymentterm_id
+)footer
+WHERE
+	footer.c_order_id = $P{c_order_id}
+	AND (footer.language = $P{ad_language} OR footer.language IS NULL)
+	AND (textleft <> '' OR textcenter <> '')
+	AND (textleft IS NULL OR textcenter IS NULL) -- es dürfen niemals beide Felder gleichzeitig gefüllt sein.
+ORDER BY
+	position
+;]]>
+	</queryString>
+	<field name="textleft" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="textcenter" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="language" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="c_order_id" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="tag" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="position" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="12" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="34" y="0" width="485" height="12" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($F{textcenter} != null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" markup="html">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{tag}.equals("cond") ? $R{paymentcond}: "") +
+($F{tag}.equals("prule") ? $R{paymentrule}: "") +
+$F{textcenter}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="34" y="0" width="485" height="12" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Boolean($F{textleft} != null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="html">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{tag}.equals("cond") ? $R{paymentcond}: "") +
+($F{tag}.equals("prule") ? $R{paymentrule}: "") +
+$F{textleft}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

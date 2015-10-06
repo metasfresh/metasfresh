@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="report_header"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="802"
+		 pageHeight="535"
+		 columnWidth="802"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="AllSectionsNoDetail"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pa_reportcolumnset_id" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select * from (
+select
+p.pa_reportcolumnset_id,
+p.name,
+p.description,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 10) as col_0,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 20) as col_1,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 30) as col_2,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 40) as col_3,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 50) as col_4,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 60) as col_5,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 70) as col_6,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 80) as col_7,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 90) as col_8,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 100) as col_9,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 110) as col_10,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 120) as col_11,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 130) as col_12,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 140) as col_13,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 150) as col_14,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 160) as col_15,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 170) as col_16,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 180) as col_17,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 190) as col_18,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 200) as col_19,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 210) as col_20
+from pa_reportcolumn p
+left join pa_reportcolumn p0 on p.pa_reportcolumnset_id = p0.pa_reportcolumnset_id and p.seqno = 10
+--left join pa_reportcolumn p1 on p.pa_reportcolumnset_id = p1.pa_reportcolumnset_id and p.seqno = 20
+) as foo
+where foo.pa_reportcolumnset_id = $P{pa_reportcolumnset_id}
+limit 1
+;]]></queryString>
+
+	<field name="pa_reportcolumnset_id" class="java.math.BigDecimal"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="col_0" class="java.lang.String"/>
+	<field name="col_1" class="java.lang.String"/>
+	<field name="col_2" class="java.lang.String"/>
+	<field name="col_3" class="java.lang.String"/>
+	<field name="col_4" class="java.lang.String"/>
+	<field name="col_5" class="java.lang.String"/>
+	<field name="col_6" class="java.lang.String"/>
+	<field name="col_7" class="java.lang.String"/>
+	<field name="col_8" class="java.lang.String"/>
+	<field name="col_9" class="java.lang.String"/>
+	<field name="col_10" class="java.lang.String"/>
+	<field name="col_11" class="java.lang.String"/>
+	<field name="col_12" class="java.lang.String"/>
+	<field name="col_13" class="java.lang.String"/>
+	<field name="col_14" class="java.lang.String"/>
+	<field name="col_15" class="java.lang.String"/>
+	<field name="col_16" class="java.lang.String"/>
+	<field name="col_17" class="java.lang.String"/>
+	<field name="col_18" class="java.lang.String"/>
+	<field name="col_19" class="java.lang.String"/>
+	<field name="col_20" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="14"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						mode="Opaque"
+						x="0"
+						y="2"
+						width="782"
+						height="11"
+						forecolor="#000000"
+						backcolor="#808080"
+						key="rectangle-1"/>
+					<graphicElement stretchType="NoStretch" pen="None"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="1"
+						y="1"
+						width="40"
+						height="11"
+						forecolor="#FFFFFF"
+						key="staticText-1"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="41"
+						y="1"
+						width="220"
+						height="11"
+						forecolor="#FFFFFF"
+						key="staticText-2"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Description]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="260"
+						y="1"
+						width="65"
+						height="11"
+						forecolor="#FFFFFF"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{col_0}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="325"
+						y="1"
+						width="65"
+						height="11"
+						forecolor="#FFFFFF"
+						key="textField-1"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{col_1}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="390"
+						y="1"
+						width="65"
+						height="11"
+						forecolor="#FFFFFF"
+						key="textField-2"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{col_2}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="455"
+						y="1"
+						width="65"
+						height="11"
+						forecolor="#FFFFFF"
+						key="textField-3"
+						isPrintWhenDetailOverflows="true"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{col_3}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="585"
+						y="1"
+						width="65"
+						height="11"
+						forecolor="#FFFFFF"
+						key="textField-5"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{col_5}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="520"
+						y="1"
+						width="65"
+						height="11"
+						forecolor="#FFFFFF"
+						key="textField-6"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{col_4}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="650"
+						y="1"
+						width="65"
+						height="11"
+						forecolor="#FFFFFF"
+						key="textField-7"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{col_6}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="715"
+						y="1"
+						width="65"
+						height="11"
+						forecolor="#FFFFFF"
+						key="textField-8"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{col_7}]]></textFieldExpression>
+				</textField>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

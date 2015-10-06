@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="9d2216a0-68d9-4115-b42d-38ba41c84107">
+	<property name="ireport.zoom" value="11.918176537727328"/>
+	<property name="ireport.x" value="5112"/>
+	<property name="ireport.y" value="5196"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT
+	pr.name AS PrinterName,
+	mt.TrayNumber,
+	ms.name AS MediaSizeName
+FROM
+	AD_PrinterHW_Calibration ca
+	JOIN AD_PrinterHW pr		ON ca.AD_PrinterHW_ID = pr.AD_PrinterHW_ID
+	JOIN AD_PrinterHW_MediaTray mt ON ca.AD_PrinterHW_MediaTray_ID = mt.AD_PrinterHW_MediaTray_ID
+	JOIN AD_PrinterHW_MediaSize ms ON ca.AD_PrinterHW_MediaSize_ID = ms.AD_PrinterHW_MediaSize_ID
+WHERE
+	ca.AD_PrinterHW_Calibration_ID = $P{RECORD_ID}
+;]]>
+	</queryString>
+	<field name="printername" class="java.lang.String"/>
+	<field name="traynumber" class="java.lang.String"/>
+	<field name="mediasizename" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="500" splitType="Stretch">
+			<line>
+				<reportElement uuid="deda8f74-7254-407c-960d-634f34c2df31" x="0" y="430" width="478" height="1"/>
+			</line>
+			<line>
+				<reportElement uuid="895857c3-b8b8-40b6-afe9-d5ef7c77a0f4" x="421" y="0" width="1" height="482"/>
+			</line>
+			<textField>
+				<reportElement uuid="42cd6f06-f544-4797-9bef-95e92e1380aa" x="73" y="78" width="343" height="203"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Kalibrierungsausdruck für Ducker " + $F{printername} + " " +
+"und Schacht " + $F{traynumber} + " " +
+"mit Papierformat " + $F{mediasizename} + ". \n\n" +
+"Messen Sie mit einem Lineal möglichst genau die Länge " +
+"der Linien (ausgehend vom Rand der Seite). Tragen Sie " +
+"die Ergebnisse in die Felder Kalibierung-X und " +
+"Kalibierung-Y ein. \n\n" +
+"Bitte beachten Sie weiterhin, dass der Ausdruck " +
+"nicht skaliert werden darf. Achten Sie dazu im " +
+"Druckdialog auf Optionen wie z.B. 'Auf Seite anpassen' " +
+"oder 'Tatsächliche Größe'."]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="8206e8c1-6d53-4955-8144-3a70e0449827" x="190" y="404" width="128" height="24"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<text><![CDATA[x = ______ mm]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="71b1ed1c-6464-40d1-a99f-5f5aeb91d82b" x="281" y="301" width="134" height="24"/>
+				<textElement textAlignment="Right">
+					<font size="14"/>
+				</textElement>
+				<text><![CDATA[y = ______ mm]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

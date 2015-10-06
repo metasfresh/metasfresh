@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="adempiere-serverRoot">
+        <wb-resource deploy-path="/" source-path="/src/main/server"/>
+        <wb-resource deploy-path="/" source-path="/src/main/servlet"/>
+        <wb-resource deploy-path="/" source-path="/src/main/ejb"/>
+    </wb-module>
+</project-modules>

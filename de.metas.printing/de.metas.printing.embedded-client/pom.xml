@@ -1,0 +1,71 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.printing</artifactId>
+		<groupId>de.metas.printing</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>de.metas.printing.embedded-client</artifactId>
+	<packaging>jar</packaging>
+
+	<description>Embeds the printing client into a running adempiere instance</description>
+
+	<dependencies>
+		<!-- Printing -->
+		<dependency>
+			<groupId>de.metas.printing.esb</groupId>
+			<artifactId>de.metas.printing.esb.client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- if we add printing dep, then we introduce dep cycles
+		<dependency>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		-->
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<!-- NOTE: this one is needed for de.metas.printing.client.endpoint.LoopbackPrintConnectionEndpoint -->
+			<groupId>de.metas.printing.esb</groupId>
+			<artifactId>de.metas.printing.esb.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Create tests JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>

@@ -1,0 +1,165 @@
+/* ADempiere HTML UI (c) Jorg Janke */
+/* $Id: standard.css,v 1.1 2009/04/15 11:26:44 vinhpt Exp $ */
+
+a {
+	color: #2F4A10;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+body {
+	margin-top:0px;
+	margin-right:0px;
+	margin-left:0px;
+	margin-bottom:0px;
+	padding-top: 0px;
+	padding-right: 0px;
+	padding-left: 0px;
+	padding-bottom: 0px;
+	font-family: Arial, verdana;
+	font-size:	8pt;
+	font-weight: normal;
+	COLOR: #000000;
+	background-color : white;
+;
+}
+
+h1 {
+	color: #2F4A10;
+	font-size: 14px !important;
+	margin-bottom: 10px;
+	margin-top: 0;
+}
+
+h2 {
+	color: #2F4A10;
+	font-size: 14px;
+	font-style: italic;
+	font-weight: bold;
+}
+
+h3 {
+	color: #2F4A10;
+	font-size: 14px;
+	font-style: normal;
+	font-weight: bold;
+}
+
+h4 {
+	color: #2F4A10;
+	font-size: 14px;
+	font-style: italic;
+}
+
+h5 {
+	color: #2F4A10;
+	font-size: 14px;
+	font-weight: normal;
+}
+
+h6 {
+	font-size: 12px;
+	font-weight: bold;
+}
+
+hr {
+	color: #2F4A10;
+	padding-bottom: 0;
+	padding-top: 0;
+}
+
+
+th	{
+	font-size: 10px;
+	font-weight: bold;
+	color: black;
+	border: 0px;
+}
+
+td	{
+	font-size: 10px;
+	color: black;
+	border: 0px;
+}
+
+p {
+	text-align:justify;
+	padding-left: 20px;
+}
+
+.menuDetail {
+	color: #660099;
+	font-family: Arial,Helvetica,sans-serif;
+	font-size: 12px;
+	padding-bottom: 0;
+	padding-left: 20px;
+	padding-top: 0;
+	text-decoration: none;
+}
+
+.menuDetail:hover{
+	background-color: #99FFFF;
+	color: #660099;
+	font-size: 12px;
+	padding-bottom: 0;
+	padding-left: 20px;
+	padding-top: 0;
+	text-decoration: none;
+}
+
+.menuMain{
+	color: #000066;
+	font-size: 14px;
+	text-align: left;
+	text-decoration: none;
+}
+
+.menuMain:hover{
+	background-color: #99FFFF;
+	color: #000066;
+	font-size: 14px;
+	text-align: left;
+	text-decoration: none;
+}
+
+.menuSub{
+	color: #000066;
+	font-size: 12px;
+	padding-left: 10px;
+	text-align: left;
+	text-decoration: none;
+}
+
+.menuSub:hover{
+	background-color: #99FFFF;
+	color: #000066;
+	font-size: 12px;
+	padding-left: 10px;
+	text-align: left;
+	text-decoration: none;
+}
+
+#menuDetail{
+	color: #660099;
+	display: block;
+	font-size: 12px;
+	margin-bottom: 1px;
+	margin-top: 1px;
+	padding-right: 20px;
+	text-align: right;
+	text-decoration: none;
+}
+
+#menuMain{
+	border-top: groove;
+	color: #000066;
+	display: block;
+	font-size: 14px;
+	margin-bottom: 1px;
+	margin-top: 5px;
+	text-align: left;
+	text-decoration: none;
+}

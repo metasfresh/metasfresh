@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_bpblock" pageWidth="350" pageHeight="842" columnWidth="350" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="6cc02216-72bb-41b0-ae21-d670206ee05e">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<import value="java.util.*"/>
+	<parameter name="doctype" class="java.lang.String">
+		<defaultValueExpression><![CDATA[new String()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="org_id" class="java.math.BigDecimal" isForPrompting="false">
+		<defaultValueExpression><![CDATA[new BigDecimal(1)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="RECORD_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new Integer(1)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="bp_loc_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[new BigDecimal(1)]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+	(
+		SELECT
+			trim(
+				COALESCE ( org_bp.name || ', ', '' ) ||
+				COALESCE ( loc.address1 || ', ', '' ) ||
+				COALESCE ( loc.postal || ' ', '' ) ||
+				COALESCE ( loc.city, '' )
+			)as org_addressline
+		FROM
+			c_bpartner org_bp
+			JOIN c_bpartner_location org_bpl 	ON org_bp.c_bpartner_id		= org_bpl.c_bpartner_id
+			JOIN c_location loc	 		ON org_bpl.c_location_id	= loc.c_location_id
+		WHERE
+			org_bp.ad_orgbp_id = $P{org_id}
+			and org_bpl.isbillto = 'Y'
+		LIMIT 1
+	)as org_addressline,
+
+	CASE
+		WHEN $P{doctype} = 'o' THEN o.BillToAddress
+		WHEN $P{doctype} = 'o_delivery' THEN o.DeliveryToAddress
+		WHEN $P{doctype} = 'io' THEN io.BPartnerAddress
+		WHEN $P{doctype} = 'i' THEN i.BPartnerAddress
+		WHEN $P{doctype} = 'l' THEN tl.BPartnerAddress
+		WHEN $P{bp_loc_id} IS NOT NULL THEN
+			trim(
+				COALESCE ( bpg.greeting || '\n', '' ) ||
+				COALESCE ( bp.name || '\n', '' ) ||
+				COALESCE ( bp.name2 || '\n', '' ) ||
+				COALESCE ( l.address1 || '\n', '' ) ||
+				COALESCE ( l.address2 || '\n', '' ) ||
+				COALESCE ( l.address3 || '\n', '' ) ||
+				COALESCE ( l.address4 || '\n', '' ) || '\n' ||
+				replace(replace(replace(displaysequence,'@C@', Coalesce(l.city,'')),'@P@', Coalesce(l.postal,'')),'@R@', Coalesce(r.name,'')) || '\n' ||
+				COALESCE ( lcou.name, '' )
+			)
+		ELSE 'Incompatible Parameter!'
+	END AS addressblock
+FROM
+	(SELECT '') x
+	LEFT JOIN c_bpartner_location bpl 	ON bpl.c_bpartner_location_id = $P{bp_loc_id}
+	LEFT JOIN c_bpartner bp			ON bp.c_bpartner_id = bpl.c_bpartner_id
+	LEFT JOIN c_greeting bpg 		ON bp.c_greeting_id = bpg.c_greeting_id
+	LEFT JOIN c_location l 			ON bpl.c_location_id = l.c_location_id
+	LEFT JOIN c_country lcou 		ON l.c_country_id = lcou.c_country_id
+	LEFT JOIN c_region r			ON l.c_region_id = r.c_region_id
+
+	LEFT JOIN c_order o 			ON o.c_order_id = $P{RECORD_ID}
+	LEFT JOIN m_inout io 			ON io.m_inout_id = $P{RECORD_ID}
+	LEFT JOIN c_invoice i 			ON i.c_invoice_id = $P{RECORD_ID}
+	LEFT JOIN T_Letter_Spool tl		ON tl.AD_Pinstance_ID = $P{RECORD_ID}
+;]]>
+	</queryString>
+	<field name="org_addressline" class="java.lang.String"/>
+	<field name="addressblock" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="135" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="cef180da-2916-4ab6-9d6a-354a41b2bfbc" key="textField-10" x="0" y="17" width="326" height="11"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="7" isUnderline="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{org_addressline}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="6622332f-b31d-40fc-add3-777b8f875905" x="0" y="28" width="254" height="79"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{addressblock}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

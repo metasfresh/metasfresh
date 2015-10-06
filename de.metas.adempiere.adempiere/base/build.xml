@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================= -->
+<!-- Base                                          -->
+<!-- ============================================= -->
+<!-- $Header: /cvs/adempiere/base/build.xml,v 1.1 2006/04/21 17:41:36 jjanke Exp $ -->
+
+<project name="base" default="dist" basedir=".">
+
+	<!-- required as we want to run to run this file via maven-antrun-plugin
+	I don't understand (also didn't research yet), but thx to http://stackoverflow.com/questions/2022622/java-home-gets-mangled-by-maven 
+	-->
+	<property name="build.compiler" value="extJavac" />
+
+	<description>
+    This buildfile is used to build the base subproject within 
+    the Adempiere project.
+  </description>
+
+	<!-- set global properties for this build -->
+	<property name="src" value="src" />
+	<property name="looksSrc" value="../looks/src" />
+	<property name="build.dir" value="build" />
+	<property name="dist.dir" value="." />
+	<property name="jar.path" value="../lib" />
+	<property name="jar.name" value="Base" />
+
+	<!-- set path to include the necessary jar files for javac -->
+	<path id="project.class.path">
+		<pathelement path="${classpath}" />
+		<pathelement path="${jar.path}/CCTools.jar" />
+		<pathelement path="${jar.path}/oracle.jar" />
+		<pathelement path="${jar.path}/postgresql.jar" />
+		<pathelement path="${jar.path}/jboss.jar" />
+		<pathelement path="${jar.path}/glassfish.jar" />
+		<pathelement path="../tools/lib/junit.jar" />
+		<pathelement path="../tools/lib/j2ee.jar" />
+		<pathelement path="../tools/lib/jnlp.jar" />
+		<pathelement path="../tools/lib/servlet-api.jar" />
+		<pathelement path="../tools/lib/cron4j-2.2.1.jar" />
+	</path>
+
+
+	<target name="init" description="initialization target">
+		<echo message="=========== Build Base" />
+		<!-- create the time stamp -->
+		<tstamp />
+		<!-- create the build directory structure used by compile -->
+		<mkdir dir="${build.dir}" />
+		<!-- check for the distribution directory -->
+		<available file="${dist.dir}" type="dir" property="dist.dir.exists" />
+	</target>
+
+	<target name="makedir" depends="init" unless="dist.dir.exists">
+		<!-- create the distribution directory if not available -->
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+
+	<target name="compile" depends="makedir">
+		<!-- compile the java code from ${src} into ${build.dir} -->
+		<mkdir dir="${looksSrc}" description="making sure that the looks src dir exists" />
+		<javac target="1.6" fork="true" destdir="${build.dir}" deprecation="on" debug="on" memoryinitialsize="512m" memorymaximumsize="512m" encoding="utf-8">
+			<src path="${src}-gen" />
+			<src path="${src}" />
+			<src path="${looksSrc}" />
+			<src path="../glassfishfacet/src" />
+			<src path="../jbossfacet/src" />
+			<classpath refid="project.class.path" />
+		</javac>
+		<!-- copy all image & sound files from src to the build directory -->
+		<copy todir="${build.dir}">
+			<fileset dir="${src}">
+				<include name="**/images/*" />
+				<include name="**/*.gif" />
+				<include name="**/*.jpg" />
+				<include name="**/*.png" />
+				<include name="**/*.wav" />
+				<include name="**/*.htm" />
+				<include name="**/*.html" />
+				<include name="**/*.properties" />
+				<exclude name="**/package.html" />
+			</fileset>
+		</copy>
+		<!-- copy all image & sound files from looksSrc to the build directory -->
+		<copy todir="${build.dir}">
+			<fileset dir="${looksSrc}">
+				<include name="**/images/*" />
+				<include name="**/*.gif" />
+				<include name="**/*.jpg" />
+				<include name="**/*.png" />
+				<include name="**/*.wav" />
+				<include name="**/*.htm" />
+				<include name="**/*.html" />
+				<include name="**/*.properties" />
+				<exclude name="**/package.html" />
+			</fileset>
+		</copy>
+
+		<!-- copy login.conf -->
+		<copy todir="${build.dir}">
+			<fileset dir="../glassfishfacet/src">
+				<include name="**/glassfish/login.conf" />
+			</fileset>
+		</copy>
+	</target>
+
+
+	<!-- =========================================== -->
+	<!-- Distribution                                -->
+	<!-- =========================================== -->
+	<target name="dist" depends="compile">
+		<!-- put everything from ${build.dir} into the ${jar.name}.jar file -->
+		<jar jarfile="${dist.dir}/${jar.name}.jar" basedir="${build.dir}" />
+	</target>
+
+	<path id="class.path.test">
+		<pathelement path="${build.dir}" />
+		<pathelement path="${classpath}" />
+		<pathelement path="${jar.path}/CCTools.jar" />
+		<pathelement path="../base/build" />
+		<pathelement path="../tools/lib/junit.jar" />
+		<pathelement path="../adempiere/Adempiere/lib/Adempiere.jar" />
+		<pathelement path="../adempiere/Adempiere/lib/jboss.jar" />
+		<pathelement path="../adempiere/Adempiere/lib/oracle.jar" />
+		<pathelement path="../adempiere/Adempiere/lib/postgresql.jar" />
+		<pathelement path="./base.jar" />
+	</path>
+
+	<target name="GenerateModel" depends="dist">
+		<java fork="true" classname="org.compiere.util.GenerateModel">
+			<classpath refid="class.path.test" />
+			<arg value="/work2/adempiere/base/src/org/compiere/model/" />
+			<arg value="org.compiere.model" />
+			<arg value="'D'" />
+			<arg value="'AD_Package_Exp_Detail'" />
+		</java>
+	</target>
+
+
+
+	<target name="clean">
+		<!-- Delete the ${build.dir} directory trees -->
+		<delete dir="${build.dir}" />
+		<delete file="${dist.dir}/${jar.name}.jar" failonerror="false" />
+	</target>
+
+</project>

@@ -1,0 +1,1157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="nullwerte" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new Integer (0)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="produktkategorie" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="product_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[-- Berechnung LUH und DLD 
+select g.*
+from
+(
+
+select f.*, 
+
+case when f.dlb > 0 then round(f.absatz/f.dlb,2) else 0 end as luh,
+
+case when f.absatz > 0  then round(360 * f.dlb / f.absatz,2) else 0 end as dld 
+
+
+
+ 
+
+from 
+
+(
+
+select e.m_product_id, e.value, e.name, e.m_product_category_id, e.cat_name ,  case when e.qtyonhand is null then 0 else round(e.qtyonhand) end as qtyonhand,  sum(e.absatz) as absatz,
+
+sum(e.meb0) as meb0, sum(e.meb1) as meb1, sum(e.meb2) as meb2, sum(e.meb3) as meb3, sum(e.meb4) as meb4, sum(e.meb5) as meb5, sum(e.meb6) as meb6, sum(e.meb7) as meb7, sum(e.meb8) as meb8, sum(e.meb9) as meb9, sum(e.meb10) as meb10, sum(e.meb11) as meb11
+
+, round((sum(e.meb0)+sum(e.meb1)+sum(e.meb2)+sum(e.meb3)+sum(e.meb4)+sum(e.meb5)+sum(e.meb6)+sum(e.meb7)+sum(e.meb8)+sum(e.meb9)+sum(e.meb10)+sum(e.meb11))/12,2) as dlb 
+--/*
+, 
+sum(e.a0)*-1 as a0,
+sum(e.a1)*-1 as a1,
+sum(e.a2)*-1 as a2,
+sum(e.a3)*-1 as a3,
+sum(e.a4)*-1 as a4,
+sum(e.a5)*-1 as a5,
+sum(e.a6)*-1 as a6,
+sum(e.a7)*-1 as a7,
+sum(e.a8)*-1 as a8,
+sum(e.a9)*-1 as a9,
+sum(e.a10)*-1 as a10,
+sum(e.a11)*-1 as a11
+--*/
+
+from
+
+(
+
+--Summierung der MEB und Ausgabe in eine Zeile 
+
+select 
+
+d.m_product_id, d.value, d.name, d.m_product_category_id, d.cat_name , d.qtyonhand, sum (d.absatz)*-1 as absatz,
+
+case when (date_trunc ('month',now()::date) + interval '1 month' - interval '1 day') = d.monat then sum(d.endbestand) else 0 end as meb0,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '1 month') = d.monat then sum(d.endbestand) else 0 end as meb1,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '2 month') = d.monat then sum(d.endbestand) else 0 end as meb2,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '3 month') = d.monat then sum(d.endbestand) else 0 end as meb3,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '4 month') = d.monat then sum(d.endbestand) else 0 end as meb4,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '5 month') = d.monat then sum(d.endbestand) else 0 end as meb5,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '6 month') = d.monat then sum(d.endbestand) else 0 end as meb6,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '7 month') = d.monat then sum(d.endbestand) else 0 end as meb7,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '8 month') = d.monat then sum(d.endbestand) else 0 end as meb8,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '9 month') = d.monat then sum(d.endbestand) else 0 end as meb9,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '10 month') = d.monat then sum(d.endbestand) else 0 end as meb10,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '11 month') = d.monat then sum(d.endbestand) else 0 end as meb11,
+
+-- MEA
+--/*
+case when (date_trunc ('month',now()::date) + interval '1 month' - interval '1 day') = d.monat then sum(d.absatz) else 0 end as a0,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '1 month') = d.monat then sum(d.absatz) else 0 end as a1,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '2 month') = d.monat then sum(d.absatz) else 0 end as a2,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '3 month') = d.monat then sum(d.absatz) else 0 end as a3,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '4 month') = d.monat then sum(d.absatz) else 0 end as a4,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '5 month') = d.monat then sum(d.absatz) else 0 end as a5,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '6 month') = d.monat then sum(d.absatz) else 0 end as a6,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '7 month') = d.monat then sum(d.absatz) else 0 end as a7,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '8 month') = d.monat then sum(d.absatz) else 0 end as a8,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '9 month') = d.monat then sum(d.absatz) else 0 end as a9,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '10 month') = d.monat then sum(d.absatz) else 0 end as a10,
+
+case when ((date_trunc ('month',now()::date) + interval '1 month' - interval '1 day' ) - interval '11 month') = d.monat then sum(d.absatz) else 0 end as a11
+--*/
+from 
+
+(
+
+select 
+
+c.m_product_id, c.value, c.name, c.m_product_category_id, c.cat_name , sum(c.movementqty) as movementqty, c.qtyonhand, sum(c.absatz) as absatz,  c.monat, c.endbestand
+
+from 
+
+(
+-- Sortieren von Werten zum letzten Tag eines jeden Monats
+select 
+
+b.m_product_id, b.value, b.name, b.m_product_category_id, b.cat_name as cat_name, sum(b.sum_movementqty) as movementqty, b.movementdate, b.qtyonhand, sum(b.absatz) as absatz,  
+
+(date_trunc ('month', b.movementdate) + interval '1 month' - interval '1 day')::date as monat, 
+
+ 
+
+(select sum(m_transaction.movementqty) from m_transaction where m_transaction.m_product_id = b.m_product_id
+
+  and m_transaction.movementdate <= (date_trunc('month', b.movementdate) + interval '1 month' - interval '1 day')::date
+
+  group by m_transaction.m_product_id 
+
+) as endbestand
+
+from
+
+(
+-- Addition vom Anfangsbestand und vom Absatz
+select 
+
+a.*, sum(s.qtyonhand) as qtyonhand, case when a.movementtype = 'C-' then a.sum_movementqty else 0 end as absatz 
+
+from (
+-- Anzeige von Basisdaten ,_product_id, value, name, cat_name
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name as cat_name, sum(t.movementqty) as sum_movementqty, t.movementtype, t.movementdate 
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+-- Union um zu überprüfen, ob MEB Werte wirklich 0 => Wareneingang minus Warenausgang gleich 0 
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date)
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+--Union um zu prüfen, wenn keine Transaktion, dann Wert vom vorherigen Monat nehmen
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date) - interval '1 month'
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date) - interval '2 month'
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date) - interval '3 month'
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date) - interval '4 month'
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date) - interval '5 month'
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date) - interval '6 month'
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date) - interval '7 month'
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date) - interval '8 month'
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date) - interval '9 month'
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date) - interval '10 month'
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+
+union
+
+select
+
+p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name, 0, 'Z', date_trunc ('month',now()::date) - interval '11 month'
+
+from m_product p 
+
+left join m_product_category pc on p.m_product_category_id = pc.m_product_category_id 
+
+left join m_transaction t on p.m_product_id = t.m_product_id 
+
+group by t.movementdate, p.m_product_id, p.value, p.name, p.m_product_category_id, pc.name,t.movementtype 
+
+) as a
+
+left join m_storage s on a.m_product_id = s.m_product_id 
+
+group by a.movementdate, a.m_product_id, a.value, a.name, a.m_product_category_id, a.cat_name, a.movementtype, a.sum_movementqty 
+
+) as b
+
+group by b.m_product_id, b.movementdate, b.value, b.name, b.m_product_category_id, b.cat_name, b.qtyonhand
+
+) as c 
+
+group by c.m_product_id, c.value, c.name, c.m_product_category_id, c.cat_name , c.qtyonhand, c.monat, c.endbestand
+
+) as d
+
+group by d.m_product_id, d.value, d.name, d.m_product_category_id, d.cat_name, d.qtyonhand, d.monat
+
+) as e
+
+group by e.m_product_id, e.value, e.name, e.m_product_category_id, e.cat_name, e.qtyonhand
+
+) as f
+
+) as g
+where 
+
+g.dld  > $P{nullwerte} and  m_product_category_id = $P{produktkategorie} and m_product_id >= $P{product_id}]]>
+	</queryString>
+	<field name="m_product_id" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="value" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="m_product_category_id" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cat_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="qtyonhand" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="absatz" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb0" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb1" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb2" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb3" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb4" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb5" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb6" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb7" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb8" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb9" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb10" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="meb11" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="dlb" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a0" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a1" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a2" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a3" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a4" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a5" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a6" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a7" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a8" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a9" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a10" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="a11" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="luh" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="dld" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="qtytobook_sum" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[]]></variableExpression>
+	</variable>
+	<filterExpression><![CDATA[new Boolean(true)]]></filterExpression>
+	<group name="Zeile">
+		<groupExpression><![CDATA[]]></groupExpression>
+		<groupHeader>
+			<band splitType="Stretch"/>
+		</groupHeader>
+		<groupFooter>
+			<band height="28" splitType="Stretch">
+				<rectangle>
+					<reportElement key="rectangle-3" x="0" y="14" width="782" height="14" backcolor="#808080"/>
+					<graphicElement>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</graphicElement>
+				</rectangle>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="PK">
+		<groupExpression><![CDATA[]]></groupExpression>
+	</group>
+	<group name="m_product_id">
+		<groupExpression><![CDATA[$F{m_product_id}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="31" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="0" width="782" height="31" backcolor="#808080"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="0" width="94" height="14" forecolor="#FFFFFF"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Art-Nr.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="14" width="94" height="14" forecolor="#FFFFFF"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Art-Name.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="94" y="0" width="74" height="28" forecolor="#FFFFFF"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Produktkategorie]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="168" y="0" width="18" height="28" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[AB]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="190" y="0" width="30" height="28" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Absatz]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="225" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B0]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="245" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B1]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="265" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B2]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="285" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B3]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="305" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B4]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="324" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B5]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="344" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B6]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="364" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B7]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="384" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B8]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="404" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B9]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="424" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B10]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="444" y="0" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[B11]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="674" y="0" width="25" height="28" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Ø LB]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="699" y="0" width="25" height="28" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[LUH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="724" y="0" width="35" height="28" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Ø LD]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="225" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A0]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="245" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A1]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="265" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A2]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="285" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A3]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="305" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A4]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="324" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A5]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="344" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A6]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="364" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A7]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="384" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A8]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="404" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A9]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="424" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A10]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="444" y="14" width="20" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[A11]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="464" y="0" width="210" height="28" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Grafik - Bestand / Absatz]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="75" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-2" mode="Opaque" x="0" y="0" width="782" height="75" backcolor="#FFFFCC">
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile_COUNT}.intValue()%2)==0)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<lineChart>
+				<chart isShowLegend="false">
+					<reportElement mode="Transparent" x="464" y="0" width="210" height="75" isPrintWhenDetailOverflows="true" forecolor="#000000"/>
+					<chartTitle color="#FFFFFF">
+						<font size="5"/>
+					</chartTitle>
+					<chartSubtitle color="#FFFFFF">
+						<font size="5"/>
+					</chartSubtitle>
+					<chartLegend textColor="#FFFFFF" backgroundColor="#000000" position="Bottom">
+						<font size="5"/>
+					</chartLegend>
+				</chart>
+				<categoryDataset>
+					<dataset resetType="Group" resetGroup="m_product_id" incrementType="Group" incrementGroup="m_product_id"/>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B0"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb0}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B1"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb1}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B2"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb2}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B3"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb3}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B4"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb4}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B5"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb5}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B6"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb6}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B7"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb7}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B8"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb8}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B9"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb9}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B10"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb10}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{name}]]></seriesExpression>
+						<categoryExpression><![CDATA["B11"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{meb11}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B0"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a0}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B1"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a1}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B2"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a2}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B3"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a3}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B4"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a4}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B5"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a5}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B6"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a6}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B7"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a7}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B8"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a8}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B9"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a9}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B10"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a10}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA[$F{value}]]></seriesExpression>
+						<categoryExpression><![CDATA["B11"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{a11}]]></valueExpression>
+					</categorySeries>
+				</categoryDataset>
+				<linePlot isShowLines="true" isShowShapes="false">
+					<plot/>
+					<categoryAxisFormat>
+						<axisFormat>
+							<labelFont>
+								<font size="5"/>
+							</labelFont>
+							<tickLabelFont>
+								<font size="5"/>
+							</tickLabelFont>
+						</axisFormat>
+					</categoryAxisFormat>
+					<valueAxisFormat>
+						<axisFormat>
+							<labelFont>
+								<font size="5"/>
+							</labelFont>
+							<tickLabelFont>
+								<font size="5"/>
+							</tickLabelFont>
+						</axisFormat>
+					</valueAxisFormat>
+				</linePlot>
+			</lineChart>
+			<textField>
+				<reportElement x="0" y="0" width="94" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{value}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="12" width="94" height="30"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="94" y="0" width="74" height="62"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{cat_name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="168" y="0" width="18" height="62"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{qtyonhand}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="190" y="31" width="30" height="31"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{absatz}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="224" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb0}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="244" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb1}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="264" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb2}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="284" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb3}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="304" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb4}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="324" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb5}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="344" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb6}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="364" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb7}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="384" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb8}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="404" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb9}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="424" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb10}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="444" y="0" width="20" height="31" forecolor="#FF0000"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{meb11}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="244" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a1}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="264" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a2}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="284" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a3}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="304" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a4}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="324" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a5}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="344" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a6}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="364" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a7}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="384" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a8}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="404" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a9}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="424" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a10}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="444" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a11}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="225" y="31" width="20" height="31" forecolor="#0000FF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{a0}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="674" y="0" width="25" height="75"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{dlb}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##" isBlankWhenNull="true">
+				<reportElement x="699" y="0" width="25" height="75"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{luh}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.##">
+				<reportElement x="724" y="0" width="35" height="75"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{dld}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="13" splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="4" splitType="Stretch"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
