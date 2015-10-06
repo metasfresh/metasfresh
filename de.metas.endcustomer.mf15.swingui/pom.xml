@@ -1,0 +1,290 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.metas.endcustomer.mf15</groupId>
+		<artifactId>de.metas.endcustomer.mf15</artifactId>
+		<version>1.0_IT-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+		<dist.dir>target/swingui</dist.dir>
+	</properties>
+
+	<dependencies>
+
+		<!-- Required to connect to the jboss-ejb server (always needs to be in the client, not only from eclipse, but in the de.metas.endcustomer.mf15.base module we leave it as "provided") -->
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+<!-- 
+	JASPER FONTS
+	Our swing client is currently an uber-jar, and by copying this stuff into it, we run into trouble as described here: 
+	http://community.jaspersoft.com/questions/542314/problem-fonts-input-stream-not-found-netsfjasperreportsfontsfontsxml
+	==> That is why we don't just add these dependencies to adempiereJasper.commons
+-->
+		<!-- 06489 Label is not printed when completing Kommissionierung -->
+		<!-- we exclude these fonts for now because at least for the ocr-B font we are not allowed to share it.
+			 Possible solution: http://ansuz.sooke.bc.ca/page/fonts#ocrb
+		<dependency>
+			<groupId>de.metas.adempiere.adempiereJasper</groupId>
+			<artifactId>adempiereJasper-fonts</artifactId>
+			<version>1.0</version>
+		</dependency>
+		-->
+		<!-- 07585 ESR an Debitoren (109078863663) -->
+		<!-- 03301: Mitgliedsrechnung (Jasper) (2012091810000098) -->
+		<!-- 03718 ESR-Schein auf Rechnung fertigstellen (2012121810000028) -->
+		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
+		<dependency>
+			<groupId>jp.osdn.ocra</groupId>
+			<artifactId>jp.osdn.ocra</artifactId>
+			<version>0.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jp.osdn.ocrb</groupId>
+			<artifactId>jp.osdn.ocrb</artifactId>
+			<version>0.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.endcustomer.mf15</groupId>
+			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.fresh</groupId>
+			<artifactId>de.metas.fresh.swingui</artifactId>
+			<version>${project.version}</version>
+		</dependency>	
+				
+		<!-- Problem: this ends up in customizations despite scope beeing "provided" 
+			  => crushes APO on server 
+			  => server won't start 
+			Current workaround in ant; 
+			TODO: consider replacing it with a not-all jboss-lib that just contains the 
+			stuff we need to start from eclipse -->
+		<dependency>
+			<groupId>org.jboss.client</groupId>
+			<artifactId>jbossall-client</artifactId>
+			<version>4.2.3.GA</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-allInOne-lib</id>
+						<phase>prepare-package</phase>
+
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<stripVersion>true</stripVersion>
+							<outputDirectory>${dist.dir}/Adempiere/lib</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+							<excludeTransitive>true</excludeTransitive> <!-- just the dependencies we explicitly declared above -->
+							<includeScope>runtime</includeScope>  <!--  Include only runtime scope (i.e. exclude test scope). See http://stackoverflow.com/questions/13727165/is-there-a-way-to-divide-artifacts-between-test-and-compile-using-the-maven-depe -->
+							<!-- see the comment near the dependency declaration for these artifacts -->
+							<includeArtifactIds>
+								jp.osdn.ocra, jp.osdn.ocrb
+							</includeArtifactIds>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.4.1</version>
+
+				<executions>
+					<execution>
+						<id>shade-all</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<!-- >outputDirectory>${dist.dir}/Adempiere/lib/</outputDirectory -->
+
+							<artifactSet>
+								<excludes>
+									<!-- see the comment near the dependency declaration for these artifacts -->
+									<exclude>jp.osdn.ocra:jp.osdn.ocra</exclude>
+									<exclude>jp.osdn.ocrb:jp.osdn.ocrb</exclude>
+								</excludes>
+							</artifactSet>
+
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<!-- copy our start scripts into the into place -->
+						<id>copy-resources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${dist.dir}/Adempiere</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-allInOne-jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${dist.dir}/Adempiere/lib</outputDirectory>
+							<stripVersion>true</stripVersion>
+							<resources>
+								<resource>
+									<directory>target/</directory>
+									<includes>
+										<include>de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+<!--
+			<plugin>
+				<groupId>com.akathist.maven.plugins.launch4j</groupId>
+				<artifactId>launch4j-maven-plugin</artifactId>
+				<version>1.7.7</version>
+				<executions>
+					<execution>
+						<id>l4j-clui</id>
+						<phase>package</phase>
+						<goals>
+							<goal>launch4j</goal>
+						</goals>
+						<configuration>
+							<headerType>gui</headerType>
+							<outfile>target/metas-fresh.exe</outfile>
+							<jar>target/de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar</jar>
+							<errTitle>metas Fresh</errTitle>
+							<icon>src/main/launch4j/metas_fresh_32.ico</icon>
+							<classPath>
+								<mainClass>org.compiere.Adempiere</mainClass>
+								<addDependencies>true</addDependencies>
+								<preCp>anything</preCp>
+							</classPath>
+							<jre>
+								<minVersion>1.7.0</minVersion>
+								<path>jre</path>
+								<opts>
+									<opt>-Xms32m</opt>
+									<opt>-Xmx1024m</opt>
+									<opt>-XX:MaxPermSize=256m</opt>
+									<opt>-XX:+HeapDumpOnOutOfMemoryError</opt>
+									xml-comment: java.util.Arrays.useLegacyMergeSort: related to task "07072 Comparison method violates its general contract (100965620270)"
+									<opt>-Djava.util.Arrays.useLegacyMergeSort=true</opt>
+									<opt>-Dorg.adempiere.client.lang="Deutsch (Schweiz)"</opt>
+									xml-comment: always create a log file because there is no other way to check the console when running gui/javaw
+									<opt>-DTraceFile=true</opt>
+								</opts>
+							</jre>
+							<versionInfo>
+								<fileVersion>15.0.0.${BUILD_NUMBER_NUMERIC}</fileVersion>
+								<txtFileVersion>15.0.0.${BUILD_NUMBER_NUMERIC}</txtFileVersion>
+								<fileDescription>metas Fresh ERP client</fileDescription>
+								<copyright>${project.organization.name}</copyright>
+								<productVersion>15.0.0.${BUILD_NUMBER_NUMERIC}</productVersion>
+								<txtProductVersion>15.0.0.${BUILD_NUMBER_NUMERIC}</txtProductVersion>
+								<productName>metas fresh ERP</productName>
+								<internalName>metas-fresh</internalName>
+								<originalFilename>metas-fresh.exe</originalFilename>
+							</versionInfo>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-exe</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attach-artifact</goal>
+						</goals>
+						<configuration>
+							<artifacts>
+								<artifact>
+									<file>target/metas-fresh.exe</file>
+									<type>exe</type>
+									<classifier>client</classifier>
+								</artifact>
+							</artifacts>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+-->
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/client.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>

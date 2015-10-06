@@ -1,0 +1,537 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.metas.endcustomer.mf15</groupId>
+		<artifactId>de.metas.endcustomer.mf15</artifactId>
+		<version>1.0_IT-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>de.metas.endcustomer.mf15.dist</artifactId>
+	<packaging>pom</packaging>
+
+	<properties>
+		<!-- 
+			Strip the version to make sure that the file names are the same of the target server, even if we roll out another version (e.g. IT vs UAT).
+			This is important because 
+				  1. we rely on old files to be overwritten by new files
+				  2. shell scripts are using certain jars in their class-paths
+		-->
+		<de.metas.endcustomer.stripVersion>true</de.metas.endcustomer.stripVersion>
+	</properties>
+
+	<description></description>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>de.metas.endcustomer.mf15</groupId>
+			<artifactId>de.metas.endcustomer.mf15.ear</artifactId>
+			<version>${project.version}</version>
+			<type>ear</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.scripts.rollout</groupId>
+			<artifactId>de.metas.scripts.rollout</artifactId>
+			<version>${project.version}</version>
+			<type>tar.gz</type>
+			<classifier>dist</classifier>
+		</dependency>
+
+		<!-- we will roll this out to ${ADEMPIERE_HOME}/lib -->
+		<dependency>
+			<groupId>de.metas.endcustomer.mf15</groupId>
+			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>allInOne</classifier>
+			<type>jar</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.endcustomer.mf15</groupId>
+			<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+			<classifier>client</classifier>
+			<version>${project.version}</version>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.printing.esb</groupId>
+			<artifactId>de.metas.printing.esb.client-webapp</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+		</dependency>
+
+<!-- 
+SQL and jasper dependencies
+ -->
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.aggregation</groupId>
+			<artifactId>de.metas.aggregation</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.report.jasper.server</groupId>
+			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.async</groupId>
+			<artifactId>de.metas.async</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.libero</groupId>
+			<artifactId>de.metas.adempiere.libero.libero</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.banking</groupId>
+			<artifactId>de.metas.banking.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.contracts</groupId>
+			<artifactId>de.metas.contracts</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.device.adempiere</groupId>
+			<artifactId>de.metas.device.adempiere</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+
+		<dependency>
+			<groupId>de.metas.dimension</groupId>
+			<artifactId>de.metas.dimension</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.document.archive</groupId>
+			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.document</groupId>
+			<artifactId>de.metas.document.refid</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.dunning</groupId>
+			<artifactId>de.metas.dunning</artifactId>
+			<version>${project.version}</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.dunning</groupId>
+			<artifactId>de.metas.dunning</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.edi</groupId>
+			<artifactId>de.metas.edi</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.fresh</groupId>
+			<artifactId>de.metas.fresh.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.fresh</groupId>
+			<artifactId>de.metas.fresh.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.endcustomer.mf15</groupId>
+			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.endcustomer.mf15</groupId>
+			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.handlingunits</groupId>
+			<artifactId>de.metas.handlingunits.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.materialtracking</groupId>
+			<artifactId>de.metas.materialtracking</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.payment.esr</groupId>
+			<artifactId>de.metas.payment.esr</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.payment.sepa</groupId>
+			<artifactId>de.metas.payment.sepa</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<artifactId>de.metas.printing.base</artifactId>
+			<groupId>de.metas.printing</groupId>
+			<version>${project.version}</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<artifactId>de.metas.printing.base</artifactId>
+			<groupId>de.metas.printing</groupId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+<!-- 
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.5</version>
+				<executions>
+					<execution>
+						<id>auto-clean</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+						<configuration>
+							<excludeDefaultDirectories>true</excludeDefaultDirectories>
+							<filesets>
+								<fileset>
+									<directory>${project.build.directory}/dist/deploy/reports.war</directory>
+								</fileset>
+							</filesets>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+	 -->
+			<plugin>
+				<!-- 
+					First we explicitly extract everything that is *not* the jasper files from 
+						de.metas.fresh.base or
+						de.metas.endcustomer.mf15.base.
+					Among these files, we don't expect any name collisions.
+				-->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack-jasper-general</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<type>jar</type>
+							<excludeArtifactIds>de.metas.fresh.base, de.metas.endcustomer.mf15.base</excludeArtifactIds>
+							<classifier>jasper</classifier>
+							<excludeTransitive>true</excludeTransitive>
+							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+							<outputDirectory>${project.build.directory}/dist/deploy/reports.war</outputDirectory>
+						</configuration>
+					</execution>
+					<!-- 
+						Then we extract the first the fresh and finally the endcustomer specific jasper files, and we want them to overwrite the generic files if they have the same name.
+					-->
+					<execution>
+						<id>unpack-jasper-fresh</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy/reports.war</outputDirectory>
+							<artifactItems>
+								<artifactItem>
+									<groupId>de.metas.fresh</groupId>
+									<artifactId>de.metas.fresh.base</artifactId>
+									<version>${project.version}</version>
+									<classifier>jasper</classifier>
+								</artifactItem>
+							</artifactItems>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-jasper-endcustomer</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy/reports.war</outputDirectory>
+							<artifactItems>
+								<artifactItem>
+									<groupId>de.metas.endcustomer.mf15</groupId>
+									<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+									<version>${project.version}</version>
+									<classifier>jasper</classifier>
+								</artifactItem>
+							</artifactItems>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>copy-adempiere-binaries</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy/binaries.war</outputDirectory>
+							<stripVersion>true</stripVersion>
+							<overWrite>true</overWrite>
+							<artifactItems>
+								<artifactItem>
+									<groupId>de.metas.endcustomer.mf15</groupId>
+									<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+									<classifier>client</classifier>
+									<version>${project.version}</version>
+									<type>zip</type>
+									<destFileName>metas-fresh-client.zip</destFileName>
+								</artifactItem>
+								<!-- currently the exe client doesn't work well
+								<artifactItem>
+									<groupId>de.metas.endcustomer.mf15</groupId>
+									<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+									<classifier>client</classifier>
+									<version>${project.version}</version>
+									<type>exe</type>
+									<destFileName>metas-fresh-client.exe</destFileName>
+								</artifactItem>
+								-->
+								<artifactItem>
+									<groupId>de.metas.printing.esb</groupId>
+									<artifactId>de.metas.printing.esb.camel</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.metas.printing.esb</groupId>
+									<artifactId>de.metas.printing.esb.client</artifactId>
+									<version>${project.version}</version>
+									<classifier>jar-with-dependencies</classifier>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.metas.edi.esb</groupId>
+									<artifactId>de.metas.edi.esb.camel</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.metas.document.archive.esb</groupId>
+									<artifactId>de.metas.document.archive.esb.camel</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>unpack-sql</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<type>zip</type>
+							<classifier>migration-postgres-sql</classifier>
+							<excludeTransitive>true</excludeTransitive>
+							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+							<outputDirectory>${project.build.directory}/dist/sql</outputDirectory>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>unpack-rollout-scripts</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<type>zip</type>
+							<includeArtifactIds>de.metas.scripts.rollout</includeArtifactIds>
+							<excludeTransitive>true</excludeTransitive>
+							<!-- we assume that the rollout scripts were assembled with outputDirectory=install, 
+								so the scripts shall end up in dist/install -->
+							<outputDirectory>${project.build.directory}/dist</outputDirectory>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>copy-main-deployable</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<excludeTransitive>true</excludeTransitive>
+							<includeArtifactIds>de.metas.endcustomer.mf15.ear</includeArtifactIds>
+							<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
+							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
+						</configuration>
+					</execution>
+
+					<!-- these are not sharing adempiere-classes and therefore can be deployed 
+						individually for a greater flexibility -->
+					<execution>
+						<id>copy-additional-deployables</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<excludeTransitive>true</excludeTransitive>
+							<includeArtifactIds>
+								de.metas.printing.esb.client-webapp
+							</includeArtifactIds>
+							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
+							<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-adempiere-client-lib</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>de.metas.endcustomer.mf15</groupId>
+									<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+									<version>${project.version}</version>
+									<classifier>allInOne</classifier>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>${project.build.directory}/dist/adempiere_lib</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>write-dependency-tree</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>tree</goal>
+						</goals>
+						<configuration>
+							<outputType>text</outputType>
+							<outputFile>${project.build.directory}/dist/doc/project_dependency_tree.txt</outputFile>
+						</configuration>
+					</execution>
+
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/dist.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
