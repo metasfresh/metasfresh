@@ -157,6 +157,13 @@ class ComboBoxAutoCompletion extends PlainDocument
 		});
 		editorKeyListener = new KeyAdapter()
 		{
+			/** Resets the flags related to what key a user pressed */
+			private void resetFlags()
+			{
+				hitBackspace = false;
+				hitBackspaceOnSelection = false;
+			}
+			
 			@Override
 			public void keyPressed(final KeyEvent e)
 			{
@@ -179,8 +186,8 @@ class ComboBoxAutoCompletion extends PlainDocument
 				{
 					return;
 				}
-				hitBackspace = false;
-				hitBackspaceOnSelection = false;
+
+				resetFlags();
 				switch (e.getKeyCode())
 				{
 				// determine if the pressed key is backspace (needed by the remove method)
@@ -194,6 +201,13 @@ class ComboBoxAutoCompletion extends PlainDocument
 						UIManager.getLookAndFeel().provideErrorFeedback(comboBox);
 						break;
 				}
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e)
+			{
+				// Make sure we reset the flags after user is releasing the key
+				resetFlags();
 			}
 		};
 		// Highlight whole text when gaining focus
@@ -277,7 +291,6 @@ class ComboBoxAutoCompletion extends PlainDocument
 	@Override
 	public void insertString(int offs, final String str, final AttributeSet a) throws BadLocationException
 	{
-
 		if (selecting)
 		{
 			return;

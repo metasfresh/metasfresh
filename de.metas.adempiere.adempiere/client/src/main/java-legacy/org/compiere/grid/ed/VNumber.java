@@ -23,7 +23,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -44,16 +43,15 @@ import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
 import javax.swing.text.Document;
 
-import org.adempiere.images.Images;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
+import org.adempiere.plaf.VEditorUI;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.NullCopyPasteSupportEditor;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
-import org.compiere.swing.CButton;
-import org.compiere.swing.CComboBox;
 import org.compiere.swing.CTextField;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
@@ -111,24 +109,23 @@ public final class VNumber extends JComponent
 		m_columnName = columnName;
 		m_title = title;
 		setDisplayType(displayType);
+		
 		//
 		LookAndFeel.installBorder(this, "TextField.border");
 		this.setLayout(new BorderLayout());
 
-		//	***	Text	***
+		//
+		// Text
+		VEditorUtils.setupInnerTextComponentUI(m_text);
 		m_text.setName(columnName);
-		m_text.setBorder(null);
 		m_text.setHorizontalAlignment(JTextField.TRAILING);
 		m_text.addKeyListener(this);
 		m_text.addFocusListener(this);
-
-		//	Background
-		setMandatory(mandatory);
 		this.add(m_text, BorderLayout.CENTER);
-		
-		// cg: task: 06110 : start
+		// 
 		// Swing will search for other places and other components to consume the KeyEvent 
 		// So the event is not getting where it should, so we're forcing it
+		// Task: 06110
 		m_text.addActionListener(new ActionListener()
 		{
 			
@@ -138,25 +135,28 @@ public final class VNumber extends JComponent
 				commitEdit(true);
 			}
 		});
-		// cg: task: 06110 : end
 
-		//	***	Button	***
+		//
+		// Button
 		{
-			m_button.setIcon(Images.getImageIcon2("Calculator10"));
-			m_button.setMargin(new Insets(0, 0, 0, 0));
-			m_button.setFocusable(false);
+			m_button = VEditorUtils.createActionButton("Calculator", m_text);
 			m_button.addActionListener(this);
 			VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
 		}
 
+		//
 		//  Size
-		setColumns(SIZE, 0);	
+		setColumns(SIZE, 0);
+		
+		//
 		//	ReadWrite
+		setMandatory(mandatory);
 		if (isReadOnly || !isUpdateable)
 			setReadWrite(false);
 		else
 			setReadWrite(true);
 
+		//
 		// Create and bind the context menu
 		new EditorContextPopupMenu(this);
 	} // VNumber
@@ -181,10 +181,10 @@ public final class VNumber extends JComponent
 		m_text.setDocument(doc);
 	}	//	getDocument
 
-	private String			m_columnName;
-	protected int			m_displayType;	//  Currency / UoM via Context
+	private final String m_columnName;
+	protected int m_displayType;	//  Currency / UoM via Context
 	private DecimalFormat	m_format;
-	private String			m_title;
+	private final String m_title;
 	// metas: volatile to make sure the state is propagated between GUI threads
 	private volatile boolean m_setting;
 	private String			m_oldText;
@@ -198,11 +198,11 @@ public final class VNumber extends JComponent
 	/**  The Field                  */
 	private CTextField		m_text = new CTextField(SIZE);	//	Standard
 	/** The Button                  */
-	private CButton		    m_button = new CButton();
+	private VEditorActionButton m_button = null;
 
 	private GridField          m_mField = null;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VNumber.class);
+	private static final CLogger log = CLogger.getCLogger(VNumber.class);
 
 	/**
 	 * Select all the number text.
@@ -217,32 +217,32 @@ public final class VNumber extends JComponent
 	 *	@param columns columns
 	 *  @param height 0 to use default
 	 */
-	public void setColumns (int columns, int height)
+	public void setColumns (final int columns, final int height)
 	{
 		m_text.setPreferredSize(null);
 		m_text.setMinimumSize(null);
 		m_text.setColumns(columns);
 		if (height > 0)
 		{
-			Dimension size = m_text.getPreferredSize();
-			if (height > size.height)			//	default 16
-				size.height = height;
-			if (CComboBox.FIELD_HIGHT-4 > size.height)
-				size.height = VLookup.FIELD_HIGHT-4;
-			m_text.setPreferredSize(size);
-			m_text.setMinimumSize(size);
+			Dimension preferredSize = m_text.getPreferredSize();
+			Dimension minimumSize = m_text.getMinimumSize();
+			m_text.setPreferredSize(new Dimension(preferredSize.width, height));
+			m_text.setMinimumSize(new Dimension(minimumSize.width, height));
 		}
 		else
 		{
+			final int editorHeight = VEditorUI.getVEditorHeight();
 			final String prototypeText = Strings.repeat("0", SIZE);
 			final CTextField prototypeTextField = new CTextField(prototypeText);
-			m_text.setPreferredSize(prototypeTextField.getPreferredSize());
-			m_text.setMinimumSize(prototypeTextField.getMinimumSize());
+			m_text.setPreferredSize(new Dimension(prototypeTextField.getPreferredSize().width, editorHeight));
+			m_text.setMinimumSize(new Dimension(prototypeTextField.getMinimumSize().width, editorHeight));
 		}
+
+		//
+		// Set editor's size based on text component size
 		this.setPreferredSize(m_text.getPreferredSize());		//	causes r/o to be the same length
 		this.setMinimumSize(m_text.getMinimumSize());
-		final int h = m_text.getPreferredSize().height;
-		m_button.setPreferredSize(new Dimension(h, h));
+		this.setMaximumSize(new Dimension(Integer.MAX_VALUE, m_text.getPreferredSize().height)); // don't allow the component to grow horizontally
 	}	//	setColumns
 	
 	/**
@@ -308,11 +308,9 @@ public final class VNumber extends JComponent
 	{
 		if (m_text.isReadWrite() != value)
 			m_text.setReadWrite(value);
-		if (m_button.isReadWrite() != value)
-			m_button.setReadWrite(value);
-		//	Don't show button if not ReadWrite
-		if (m_button.isVisible() != value)
-			m_button.setVisible(value);
+		
+		m_button.setReadWrite(value);
+		
 		setFocusable(value == true);
 	}	//	setReadWrite
 
@@ -574,15 +572,10 @@ public final class VNumber extends JComponent
 	{
 		if (e.getSource() == m_button)
 		{
-			m_button.setEnabled(false);
-			try
+			try(final IAutoCloseable buttonDisabled = m_button.temporaryDisable())
 			{
 				String str = startCalculator(this, m_text.getText(), m_format, m_displayType, m_title);
 				m_text.setText(str);
-			}
-			finally
-			{
-				m_button.setEnabled(true);
 			}
 			//
 			try

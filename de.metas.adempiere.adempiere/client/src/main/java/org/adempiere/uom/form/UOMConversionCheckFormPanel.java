@@ -95,7 +95,7 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 
 	private final void initUI(final int windowNo, final FormFrame frame)
 	{
-		final VPanel mainPanel = new VPanel("", windowNo);
+		final VPanel mainPanel = VPanel.newCustomFormPanel("", windowNo);
 		fieldProduct = mainPanel.newFormField()
 				.setColumnName("M_Product_ID")
 				.setHeader(msgBL.translate(getCtx(), "M_Product_ID"))

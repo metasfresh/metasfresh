@@ -219,7 +219,7 @@ public class PaymentAllocationForm
 		final BorderLayout mainLayout = new BorderLayout();
 		mainPanel.setLayout(mainLayout);
 
-		final VPanel parameterPanel = new VPanel("Parameter Panel", getWindowNo());
+		final VPanel parameterPanel = VPanel.newCustomFormPanel("Parameter Panel", getWindowNo());
 		mainPanel.add(parameterPanel, BorderLayout.NORTH);
 
 		final JSplitPane infoPanel = new JSplitPane();
@@ -376,6 +376,7 @@ public class PaymentAllocationForm
 		// infoBottomPanel
 		final BorderLayout infoBottomLayout = new BorderLayout();
 		infoBottomPanel.setLayout(infoBottomLayout);
+
 		final CPanel invoicePanel = new CPanel();
 		infoBottomPanel.add(invoicePanel, BorderLayout.CENTER);
 		infoBottomPanel.add(allocationPanel, BorderLayout.SOUTH);
@@ -414,7 +415,7 @@ public class PaymentAllocationForm
 
 		//
 		// controlPanel
-		final VPanel controlPanel = new VPanel("Control Panel");
+		final VPanel controlPanel = VPanel.newCustomFormPanel("Control Panel", Env.WINDOW_None);
 		controlPanel.setBorder(null);
 		controlPanel.putClientProperty(Options.NO_CONTENT_BORDER_KEY, Boolean.TRUE);
 		infoTopPanel.add(controlPanel, BorderLayout.SOUTH);

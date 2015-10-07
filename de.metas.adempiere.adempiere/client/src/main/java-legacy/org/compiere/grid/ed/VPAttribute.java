@@ -18,8 +18,6 @@ package org.compiere.grid.ed;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -45,6 +43,7 @@ import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -52,7 +51,6 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
 import org.compiere.model.MPAttributeLookup;
 import org.compiere.model.MProduct;
-import org.compiere.swing.CButton;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -114,43 +112,36 @@ public class VPAttribute extends JComponent
 		super();
 		super.setName("M_AttributeSetInstance_ID");
 		m_GridTab = gridTab; // added for processCallout
-
 		final Properties ctx = Env.getCtx();
-
 		final int tabNo = (gridTab == null ? Env.TAB_None : gridTab.getTabNo());
-		
 		attributeContext = VPAttributeWindowContext.of(ctx, WindowNo, tabNo);
-
 		m_mPAttribute = lookup;
+
+		//
 		LookAndFeel.installBorder(this, "TextField.border");
 		this.setLayout(new BorderLayout());
-		//  Size
-		this.setPreferredSize(m_text.getPreferredSize());
-		int height = m_text.getPreferredSize().height;
-
-		//	***	Text	***
+		
+		//
+		// Text
+		VEditorUtils.setupInnerTextComponentUI(m_text);
 		m_text.setEditable(false);
 		m_text.setFocusable(false);
-		m_text.setBorder(null);
 		m_text.setHorizontalAlignment(JTextField.LEADING);
-		//	Background
-		setMandatory(mandatory);
 		this.add(m_text, BorderLayout.CENTER);
 
-		//	***	Button	***
-		m_button.setIcon(Images.getImageIcon2("PAttribute10"));
-		m_button.setMargin(new Insets(0, 0, 0, 0));
-		m_button.setPreferredSize(new Dimension(height, height));
+		//
+		// Button
+		m_button = VEditorUtils.createActionButton("PAttribute", m_text);
 		m_button.addActionListener(this);
-		
-		// metas: set focusable to false
-		// Reason: in grid mode if button is focusable it is causing focus issues and it will trigger javax.swing.JTable.CellEditorRemover.propertyChange(PropertyChangeEvent) 
-		m_button.setFocusable(false);
 		VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
 
-		//	Prefereed Size
-		this.setPreferredSize(this.getPreferredSize());		//	causes r/o to be the same length
+		//
+		//  Size
+		VEditorUtils.setupVEditorDimensionFromInnerTextDimension(this, m_text);
+
+		//
 		//	ReadWrite
+		setMandatory(mandatory);
 		if (isReadOnly || !isUpdateable)
 			setReadWrite(false);
 		else
@@ -204,7 +195,7 @@ public class VPAttribute extends JComponent
 	/** The Text Field          */
 	private JTextField			m_text = new JTextField (VLookup.DISPLAY_LENGTH);
 	/** The Button              */
-	private CButton				m_button = new CButton();
+	private VEditorActionButton m_button = null;
 
 	private boolean				m_readWrite;
 	private boolean				m_mandatory;
@@ -245,8 +236,7 @@ public class VPAttribute extends JComponent
 	@Override
 	public void setMandatory (boolean mandatory)
 	{
-		m_mandatory = mandatory;
-		m_button.setMandatory(mandatory);
+		this.m_mandatory = mandatory;
 		setBackground (false);
 	}	//	setMandatory
 
@@ -262,12 +252,12 @@ public class VPAttribute extends JComponent
 
 	/**
 	 * 	Set ReadWrite
-	 * 	@param rw read rwite
+	 * 	@param rw read write
 	 */
 	@Override
 	public void setReadWrite (boolean rw)
 	{
-		m_readWrite = rw;
+		this.m_readWrite = rw;
 		m_button.setReadWrite(rw);
 		setBackground (false);
 	}	//	setReadWrite
@@ -426,17 +416,9 @@ public class VPAttribute extends JComponent
 		{
 			return;
 		}
-		
-		m_button.setEnabled(false);
-		
-		try
+		try(final IAutoCloseable buttonDisabled = m_button.temporaryDisable())
 		{
 			actionButton0();
-		}
-		finally
-		{
-			m_button.setEnabled(true);
-			requestFocus();
 		}
 	}
 	

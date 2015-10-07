@@ -18,8 +18,6 @@ package org.compiere.grid.ed;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -40,7 +38,6 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.MLocation;
 import org.compiere.model.MLocationLookup;
-import org.compiere.swing.CButton;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -68,10 +65,11 @@ public class VLocation extends JComponent
 	 * 	@param isUpdateable updateable
 	 * 	@param mLocation location model
 	 */
-	public VLocation(String columnName, boolean mandatory, boolean isReadOnly, boolean isUpdateable,
-		MLocationLookup mLocation)
+	public VLocation(String columnName, boolean mandatory, boolean isReadOnly, boolean isUpdateable, MLocationLookup mLocation)
 	{
-		this(null, columnName, mandatory, isReadOnly, isUpdateable, mLocation);
+		this(
+				(GridTab)null
+				, columnName, mandatory, isReadOnly, isUpdateable, mLocation);
 	}
 	
 	/**
@@ -84,8 +82,7 @@ public class VLocation extends JComponent
 	 * 	@param isUpdateable updateable
 	 * 	@param mLocation location model
 	 */
-	public VLocation(GridTab gridTab, String columnName, boolean mandatory, boolean isReadOnly, boolean isUpdateable,
-		MLocationLookup mLocation)
+	public VLocation(GridTab gridTab, String columnName, boolean mandatory, boolean isReadOnly, boolean isUpdateable, MLocationLookup mLocation)
 	{
 		super();
 		super.setName(columnName);
@@ -95,24 +92,25 @@ public class VLocation extends JComponent
 		//
 		LookAndFeel.installBorder(this, "TextField.border");
 		this.setLayout(new BorderLayout());
-		//  Size
-		this.setPreferredSize(m_text.getPreferredSize());		//	causes r/o to be the same length
-		int height = m_text.getPreferredSize().height;
 
-		//  Button
-		m_button.setIcon(Images.getImageIcon2("Location10"));
-		m_button.setMargin(new Insets(0,0,0,0));
-		m_button.setPreferredSize(new Dimension(height, height));
-		m_button.addActionListener(this);
-		VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
-		//	***	Button & Text	***
-		m_text.setBorder(null);
+		//
+		// Text
+		VEditorUtils.setupInnerTextComponentUI(m_text);
 		m_text.setEditable(false);
 		m_text.setFocusable(false);
-		m_text.setFont(AdempierePLAF.getFont_Field());
-		m_text.setForeground(AdempierePLAF.getTextColor_Normal());
 		this.add(m_text, BorderLayout.CENTER);
 
+		//
+		// Button
+		m_button = VEditorUtils.createActionButton("Location", m_text);
+		m_button.addActionListener(this);
+		VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
+
+		//
+		// Size
+		VEditorUtils.setupVEditorDimensionFromInnerTextDimension(this, m_text);
+
+		//
 		//	Editable
 		if (isReadOnly || !isUpdateable)
 			setReadWrite (false);
@@ -144,14 +142,16 @@ public class VLocation extends JComponent
 	/** The Text Field                  */
 	private JTextField			m_text = new JTextField(VLookup.DISPLAY_LENGTH);
 	/** The Button                      */
-	private CButton				m_button = new CButton();
+	private VEditorActionButton m_button = null;
 
 	private MLocationLookup		m_mLocation;
 	private MLocation			m_value;
 
-	private String				m_columnName;
+	private final String m_columnName;
+	private boolean mandatory = false;
+	private boolean readWrite = true;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VLocation.class);
+	private static final CLogger log = CLogger.getCLogger(VLocation.class);
 
 	//	Popup
 	private CMenuItem 			mDelete;
@@ -168,9 +168,10 @@ public class VLocation extends JComponent
 	@Override
 	public void setReadWrite (boolean value)
 	{
+		this.readWrite = value;
+		
 		m_button.setReadWrite (value);
-		if (m_button.isVisible() != value)
-			m_button.setVisible (value);
+		
 		setBackground(false);
 	}	//	setReadWrite
 
@@ -181,7 +182,7 @@ public class VLocation extends JComponent
 	@Override
 	public boolean isReadWrite()
 	{
-		return m_button.isReadWrite();
+		return readWrite;
 	}	//	isReadWrite
 
 	/**
@@ -191,7 +192,7 @@ public class VLocation extends JComponent
 	@Override
 	public void setMandatory (boolean mandatory)
 	{
-		m_button.setMandatory(mandatory);
+		this.mandatory = mandatory;
 		setBackground(false);
 	}	//	setMandatory
 
@@ -202,7 +203,7 @@ public class VLocation extends JComponent
 	@Override
 	public boolean isMandatory()
 	{
-		return m_button.isMandatory();
+		return mandatory;
 	}	//	isMandatory
 
 	/**

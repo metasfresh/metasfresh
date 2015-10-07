@@ -19,9 +19,7 @@ package org.compiere.grid.ed;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -41,17 +39,16 @@ import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
 import javax.swing.text.Document;
 
-import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.NullCopyPasteSupportEditor;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
-import org.compiere.swing.CButton;
 import org.compiere.swing.CTextField;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
@@ -101,38 +98,34 @@ public class VDate extends JComponent
 	 * @param displayType display type
 	 * @param title title
 	 */
-	public VDate(String columnName, boolean mandatory, boolean isReadOnly, boolean isUpdateable,
-			int displayType, String title)
+	public VDate(String columnName, boolean mandatory, boolean isReadOnly, boolean isUpdateable, int displayType, String title)
 	{
 		super();
 		super.setName(columnName);
 		m_columnName = columnName;
+		m_displayType = DisplayType.isDate(displayType) ? displayType : DisplayType.Date;
 		m_title = title;
+		
 		//
 		LookAndFeel.installBorder(this, "TextField.border");
 		this.setLayout(new BorderLayout());
 		this.setFocusable(false);
-		// Size
-		this.setPreferredSize(m_text.getPreferredSize());
-		int height = m_text.getPreferredSize().height;
-		setMinimumSize(new Dimension(30, height));
 
-		// *** Text ***
-		m_text.setBorder(null);
+		//
+		// Text
+		VEditorUtils.setupInnerTextComponentUI(m_text);
 		m_text.setHorizontalAlignment(JTextField.TRAILING);
-
 		m_text.addFocusListener(this);
 		m_text.addKeyListener(this);
 		m_text.setCaret(new VOvrCaret());
-
 		if (m_displayType == DisplayType.DateTime)
 		{
 			m_text.setColumns(20);
 		}
-
-		// cg: task: 06110 : start
+		//
 		// Swing will search for other places and other components to consume the KeyEvent
 		// So the event is not getting where it should, so we're forcing it
+		// Task 06110
 		m_text.addActionListener(new ActionListener()
 		{
 			@Override
@@ -141,29 +134,24 @@ public class VDate extends JComponent
 				commitEdit();
 			}
 		});
-		// cg: task: 06110 : end
-
-		// Background
-		setMandatory(mandatory);
+		//
 		this.add(m_text, BorderLayout.CENTER);
-
-		m_displayType = displayType;		// default = Date
 		setFormat();
 
-		// *** Button ***
+		//
+		// Button
 		{
-			m_button.setIcon(Images.getImageIcon2("Calendar10"));
-			m_button.setMargin(new Insets(0, 0, 0, 0));
-			m_button.setPreferredSize(new Dimension(height, height));
+			m_button = VEditorUtils.createActionButton("Calendar", m_text);
 			m_button.addActionListener(this);
-			m_button.setFocusable(false);
 			VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
 		}
-
-		// Preferred Size
-		this.setPreferredSize(this.getPreferredSize());		// causes r/o to be the same length
+		
+		//
+		// Size
+		VEditorUtils.setupVEditorDimensionFromInnerTextDimension(this, m_text);
 
 		// ReadWrite
+		setMandatory(mandatory);
 		if (isReadOnly || !isUpdateable)
 			setReadWrite(false);
 		else
@@ -194,8 +182,8 @@ public class VDate extends JComponent
 		m_text.setDocument(doc);
 	}	// getDocument
 
-	private String m_columnName;
-	protected int m_displayType = DisplayType.Date;
+	private final String m_columnName;
+	private final int m_displayType;
 	private String m_title;
 	/**
 	 * This member is true while the method {@link #commitEdit()} is executed.
@@ -212,7 +200,7 @@ public class VDate extends JComponent
 	/** The Text Field */
 	private CTextField m_text = new CTextField(12);
 	/** The Button */
-	private CButton m_button = new CButton();
+	private VEditorActionButton m_button = null;
 
 	private GridField m_mField = null;
 	/** Logger */
@@ -233,10 +221,7 @@ public class VDate extends JComponent
 		m_text.setReadWrite(value);		// sets Background
 
 		// Don't show button if not ReadWrite
-		if (m_button.isVisible() != value)
-			m_button.setVisible(value);
-		if (m_button.isEnabled() != value)
-			m_button.setEnabled(value);
+		m_button.setReadWrite(value);
 	}	// setReadWrite
 
 	/**
@@ -469,8 +454,7 @@ public class VDate extends JComponent
 	{
 		if (e.getSource() == m_button)
 		{
-			m_button.setEnabled(false);
-			try
+			try(final IAutoCloseable buttonDisabled = m_button.temporaryDisable())
 			{
 				final Timestamp ts_old = getTimeStamp(m_oldText);
 				setValue(startCalendar(this, getTimestamp(), m_format, m_displayType, m_title));
@@ -483,7 +467,6 @@ public class VDate extends JComponent
 			}
 			finally
 			{
-				m_button.setEnabled(true);
 				m_text.requestFocus();
 			}
 		}
@@ -675,10 +658,9 @@ public class VDate extends JComponent
 	public void setEnabled(boolean enabled)
 	{
 		super.setEnabled(enabled);
+		
 		m_text.setEnabled(enabled);
-		m_button.setEnabled(enabled);
-		if (enabled)
-			m_button.setReadWrite(m_readWrite);
+		m_button.setReadWrite(enabled && m_readWrite);
 	}	// setEnabled
 
 	/**************************************************************************

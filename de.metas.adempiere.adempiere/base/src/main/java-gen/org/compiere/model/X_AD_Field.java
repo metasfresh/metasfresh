@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -32,7 +16,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1559529441L;
+	private static final long serialVersionUID = 599136979L;
 
     /** Standard Constructor */
     public X_AD_Field (Properties ctx, int AD_Field_ID, String trxName)
@@ -57,6 +41,10 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 			setIsReadOnly (false);
 			setIsSameLine (false);
 			setName (null);
+			setSpanX (0);
+// 1
+			setSpanY (0);
+// 1
         } */
     }
 
@@ -66,29 +54,13 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 4 - System 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Field[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -338,6 +310,25 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 		return ii.intValue();
 	}
 
+	/** Set Color Logic.
+		@param ColorLogic 
+		Color used for background
+	  */
+	@Override
+	public void setColorLogic (java.lang.String ColorLogic)
+	{
+		set_Value (COLUMNNAME_ColorLogic, ColorLogic);
+	}
+
+	/** Get Color Logic.
+		@return Color used for background
+	  */
+	@Override
+	public java.lang.String getColorLogic () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ColorLogic);
+	}
+
 	/** Set Column Display Length.
 		@param ColumnDisplayLength 
 		Column display length for grid mode
@@ -512,6 +503,25 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public int getIncluded_Tab_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Included_Tab_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Included Tab Height.
+		@param IncludedTabHeight Included Tab Height	  */
+	@Override
+	public void setIncludedTabHeight (int IncludedTabHeight)
+	{
+		set_Value (COLUMNNAME_IncludedTabHeight, Integer.valueOf(IncludedTabHeight));
+	}
+
+	/** Get Included Tab Height.
+		@return Included Tab Height	  */
+	@Override
+	public int getIncludedTabHeight () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_IncludedTabHeight);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -792,14 +802,6 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), getName());
-    }
-
 	/** 
 	 * ObscureType AD_Reference_ID=291
 	 * Reference name: AD_Field ObscureType
@@ -897,5 +899,49 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set Column span.
+		@param SpanX 
+		Number of columns spanned
+	  */
+	@Override
+	public void setSpanX (int SpanX)
+	{
+		set_Value (COLUMNNAME_SpanX, Integer.valueOf(SpanX));
+	}
+
+	/** Get Column span.
+		@return Number of columns spanned
+	  */
+	@Override
+	public int getSpanX () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SpanX);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Row Span.
+		@param SpanY 
+		Number of rows spanned
+	  */
+	@Override
+	public void setSpanY (int SpanY)
+	{
+		set_Value (COLUMNNAME_SpanY, Integer.valueOf(SpanY));
+	}
+
+	/** Get Row Span.
+		@return Number of rows spanned
+	  */
+	@Override
+	public int getSpanY () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SpanY);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }

@@ -54,7 +54,10 @@ import org.adempiere.webui.util.GridTabDataBinder;
 import org.adempiere.webui.window.FDialog;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.DataStatusListener;
+import org.compiere.model.FieldGroupVO;
+import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.model.GridField;
+import org.compiere.model.GridFieldLayoutConstraints;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTabMaxRows;
 import org.compiere.model.GridTable;
@@ -62,7 +65,6 @@ import org.compiere.model.GridWindow;
 import org.compiere.model.MLookup;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
-import org.compiere.model.X_AD_FieldGroup;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -255,7 +257,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
     /**
      * Create UI components if not already created
      */
-    public void createUI()
+    @Override
+	public void createUI()
     {
     	if (uiCreated) return;
 
@@ -287,7 +290,9 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
         String currentFieldGroup = null;
         for (int i = 0; i < fields.length; i++)
         {
-            GridField field = fields[i];
+            final GridField field = fields[i];
+        	final GridFieldLayoutConstraints layoutConstraints = field.getLayoutConstraints();
+
             if (field.isDisplayed())
             {
             	//included tab
@@ -342,12 +347,13 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
             	}
 
             	//normal field
-            	String fieldGroup = field.getFieldGroup();
-            	if (fieldGroup != null && fieldGroup.trim().length() > 0)
+            	final FieldGroupVO fieldGroup = field.getFieldGroup();
+            	String fieldGroupName = fieldGroup.getFieldGroupName();
+            	if (fieldGroupName != null && fieldGroupName.trim().length() > 0)
             	{
-            		if (!fieldGroup.equals(currentFieldGroup))
+            		if (!fieldGroupName.equals(currentFieldGroup))
             		{
-            			currentFieldGroup = fieldGroup;
+            			currentFieldGroup = fieldGroupName;
             			if (row.getChildren().size() == 2)
             			{
             				row.appendChild(createSpacer());
@@ -366,7 +372,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
             			}
 
             			List<org.zkoss.zul.Row> headerRows = new ArrayList<org.zkoss.zul.Row>();
-            			fieldGroupHeaders.put(fieldGroup, headerRows);
+            			fieldGroupHeaders.put(fieldGroupName, headerRows);
 
             			row.setSpans("5");
             			row.appendChild(new Separator());
@@ -374,13 +380,13 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
             			headerRows.add(row);
 
         				rowList = new ArrayList<org.zkoss.zul.Row>();
-        				fieldGroupContents.put(fieldGroup, rowList);
+        				fieldGroupContents.put(fieldGroupName, rowList);
 
-            			if (X_AD_FieldGroup.FIELDGROUPTYPE_Label.equals(field.getFieldGroupType()))
+            			if (fieldGroup.getFieldGroupType() == FieldGroupType.Label)
             			{
             				row = new Row();
                 			row.setSpans("4");
-            				Label groupLabel = new Label(fieldGroup);
+            				Label groupLabel = new Label(fieldGroupName);
             				row.appendChild(groupLabel);
             				row.appendChild(createSpacer());
             				rows.appendChild(row);
@@ -397,8 +403,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
             			}
             			else
             			{
-            				row = new Group(fieldGroup);
-            				if (X_AD_FieldGroup.FIELDGROUPTYPE_Tab.equals(field.getFieldGroupType()) || field.getIsCollapsedByDefault())
+            				row = new Group(fieldGroupName);
+            				if (fieldGroup.getFieldGroupType() == FieldGroupType.Tab || fieldGroup.isCollapsedByDefault())
             				{
             					((Group)row).setOpen(false);
             				}
@@ -411,7 +417,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
             		}
             	}
 
-                if (!field.isSameLine() || field.isLongField())
+                if (!layoutConstraints.isSameLine() || layoutConstraints.isLongField())
                 {
                 	//next line
                 	if(row.getChildren().size() > 0)
@@ -464,7 +470,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
 	                    row.appendChild(div);
                     }
                     row.appendChild(editor.getComponent());
-                    if (field.isLongField()) {
+                    if (layoutConstraints.isLongField()) {
                     	row.setSpans("1,3,1");
                     	row.appendChild(createSpacer());
                     	rows.appendChild(row);
@@ -551,7 +557,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
 	 * Validate display properties of fields of current row
 	 * @param col
 	 */
-    public void dynamicDisplay (int col)
+    @Override
+	public void dynamicDisplay (int col)
     {
         if (!gridTab.isOpen())
         {
@@ -661,7 +668,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
     /**
      * @return String
      */
-    public ILogicExpression getDisplayLogic()
+    @Override
+	public ILogicExpression getDisplayLogic()
     {
         return gridTab.getDisplayLogic();
     }
@@ -669,7 +677,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
     /**
      * @return String
      */
-    public String getTitle()
+    @Override
+	public String getTitle()
     {
         return gridTab.getName();
     } // getTitle
@@ -677,7 +686,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
     /**
      * @param variableName
      */
-    public String get_ValueAsString(String variableName)
+    @Override
+	public String get_ValueAsString(String variableName)
     {
         return Env.getContext(Env.getCtx(), windowNo, variableName);
     } // get_ValueAsString
@@ -685,7 +695,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
     /**
      * @return The tab level of this Tabpanel
      */
-    public int getTabLevel()
+    @Override
+	public int getTabLevel()
     {
         return gridTab.getTabLevel();
     }
@@ -694,7 +705,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
      * Is panel need refresh
      * @return boolean
      */
-    public boolean isCurrent()
+    @Override
+	public boolean isCurrent()
     {
         return gridTab != null ? gridTab.isCurrent() : false;
     }
@@ -711,7 +723,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
     /**
      * Retrieve from db
      */
-    public void query()
+    @Override
+	public void query()
     {
     	boolean open = gridTab.isOpen();
         gridTab.query(false);
@@ -748,7 +761,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
     /**
      * Refresh current row
      */
-    public void refresh()
+    @Override
+	public void refresh()
     {
         gridTab.dataRefresh();
     }
@@ -757,7 +771,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
      * Activate/deactivate panel
      * @param activate
      */
-    public void activate(boolean activate)
+    @Override
+	public void activate(boolean activate)
     {
     	active = activate;
         if (listPanel.isVisible()) {
@@ -819,7 +834,8 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
      * @param event
      * @see EventListener#onEvent(Event)
      */
-    public void onEvent(Event event)
+    @Override
+	public void onEvent(Event event)
     {
     	if (event.getTarget() == listPanel.getListbox())
     	{
@@ -865,6 +881,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
      * @param e
      * @see DataStatusListener#dataStatusChanged(DataStatusEvent)
      */
+	@Override
 	public void dataStatusChanged(DataStatusEvent e)
     {
     	//ignore background event
@@ -1031,6 +1048,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
 	/**
 	 * Toggle between form and grid view
 	 */
+	@Override
 	public void switchRowPresentation() {
 		if (formComponent.isVisible()) {
 			formComponent.setVisible(false);
@@ -1064,6 +1082,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
 			searchEditor = editor;
 		}
 
+		@Override
 		public void onEvent(Event event) throws Exception {
 			if (Events.ON_CLICK.equals(event.getName())) {
 				searchEditor.actionZoom();
@@ -1170,6 +1189,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
 	/**
 	 * @see IADTabpanel#onEnterKey()
 	 */
+	@Override
 	public boolean onEnterKey() {
 		if (listPanel.isVisible()) {
 			return listPanel.onEnterKey();
@@ -1181,6 +1201,7 @@ DataStatusListener, IADTabpanel, VetoableChangeListener
 	 * @param e
 	 * @see VetoableChangeListener#vetoableChange(PropertyChangeEvent)
 	 */
+	@Override
 	public void vetoableChange(PropertyChangeEvent e)
 			throws PropertyVetoException {
 		//  Save Confirmation dialog    MTable-RowSave

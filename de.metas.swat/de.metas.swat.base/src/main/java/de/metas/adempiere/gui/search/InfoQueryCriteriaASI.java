@@ -23,12 +23,15 @@ package de.metas.adempiere.gui.search;
  */
 
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
 import javax.swing.JFrame;
 
+import org.adempiere.images.Images;
+import org.adempiere.plaf.VEditorUI;
 import org.adempiere.util.Check;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.search.IInfoQueryCriteria;
@@ -61,8 +64,14 @@ public class InfoQueryCriteriaASI implements IInfoQueryCriteria
 	
 	private void initUI()
 	{
-		m_Button = ConfirmPanel.createPAttributeButton(true);
+		m_Button = new CButton(Images.getImageIcon2(ConfirmPanel.A_PATTRIBUTE + "16"));
+		m_Button.setFocusable(false);
 		m_Button.setEnabled(true);
+		
+		final int height = VEditorUI.getVEditorHeight();
+		m_Button.setPreferredSize(new Dimension(height, height));
+		m_Button.setMaximumSize(new Dimension(height, height));
+		
 		m_Button.addActionListener(new ActionListener()
 		{
 			@Override

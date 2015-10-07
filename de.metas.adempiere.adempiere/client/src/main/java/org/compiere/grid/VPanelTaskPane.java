@@ -12,10 +12,12 @@ import org.jdesktop.swingx.JXTaskPane;
 /**
  * A collapsible panel used to group the fields in a {@link VPanel}.
  * 
+ * This is just a swing component without any logic.
+ * 
  * @author tsa
  *
  */
-class VPanelTaskPane extends JXTaskPane implements IUISubClassIDAware
+final class VPanelTaskPane extends JXTaskPane implements IUISubClassIDAware
 {
 	private static final long serialVersionUID = 1054350358867570709L;
 

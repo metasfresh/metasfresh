@@ -714,7 +714,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
      *  Add Selection Column to first Tab
      *  @param mField field
     **/
-    public void addSelectionColumn(GridField mField)
+    public void addSelectionColumn(final GridField mField)
     {
         log.config(mField.getHeader());
         

@@ -18,7 +18,6 @@ package org.compiere.grid.ed;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -532,7 +531,7 @@ public final class VAccountDialog extends CDialog
 	{
 		log.fine("Field=" + field);
 		final JLabel label = editorFactory.getLabel(field);
-		label.setLabelFor((Component)editor);
+		label.setLabelFor(editorFactory.getEditorComponent(editor));
 		editor.setReadWrite(true);
 		editor.setMandatory(mandatory);
 		// MField => VEditor
@@ -559,7 +558,7 @@ public final class VAccountDialog extends CDialog
 		m_gbc.insets = m_fieldInsets;
 		m_gbc.fill = GridBagConstraints.HORIZONTAL;
 		m_gbc.weightx = 1;
-		parameterPanel.add((Component)editor, m_gbc);
+		parameterPanel.add(editorFactory.getEditorComponent(editor), m_gbc);
 		//
 		m_newRow = !m_newRow;
 	}	// addLine

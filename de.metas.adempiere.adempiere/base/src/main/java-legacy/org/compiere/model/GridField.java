@@ -139,9 +139,6 @@ public class GridField
 	/** New Row / inserting */
 	private boolean m_inserting = false;
 
-	/** Max Display Length = 60 */
-	public static final int MAXDISPLAY_LENGTH = 60;
-
 	/** The current value */
 	private Object m_value = null;
 	/** The old to force Property Change */
@@ -1074,6 +1071,11 @@ public class GridField
 	{
 		return m_vo.getAD_Column_ID();
 	}
+	
+	public GridFieldLayoutConstraints getLayoutConstraints()
+	{
+		return m_vo.getLayoutConstraints();
+	}
 
 	/**
 	 * Get Display Length
@@ -1082,17 +1084,7 @@ public class GridField
 	 */
 	public int getDisplayLength()
 	{
-		return m_vo.DisplayLength;
-	}
-
-	/**
-	 * Is SameLine
-	 * 
-	 * @return trie if same line
-	 */
-	public boolean isSameLine()
-	{
-		return m_vo.IsSameLine;
+		return getLayoutConstraints().getDisplayLength();
 	}
 
 	/**
@@ -1312,25 +1304,11 @@ public class GridField
 	{
 		return m_vo.ValueMax;
 	}
-
-	/**
-	 * Get Field Group
-	 * 
-	 * @return field group
-	 */
-	public String getFieldGroup()
+	
+	/** @return field group definition */
+	public FieldGroupVO getFieldGroup()
 	{
-		return m_vo.FieldGroup;
-	}
-
-	/**
-	 * Get Field Group Type
-	 * 
-	 * @return field group type
-	 */
-	public String getFieldGroupType()
-	{
-		return m_vo.FieldGroupType;
+		return m_vo.getFieldGroup();
 	}
 
 	/**
@@ -1439,22 +1417,6 @@ public class GridField
 	{
 		return m_vo;
 	}
-
-	/**
-	 * Is this a long (string/text) field (over 60/2=30 characters)
-	 * 
-	 * @return true if long field
-	 */
-	public boolean isLongField()
-	{
-		// if (m_vo.displayType == DisplayType.String
-		// || m_vo.displayType == DisplayType.Text
-		// || m_vo.displayType == DisplayType.Memo
-		// || m_vo.displayType == DisplayType.TextLong
-		// || m_vo.displayType == DisplayType.Image)
-		return (m_vo.DisplayLength >= MAXDISPLAY_LENGTH / 2);
-		// return false;
-	}   // isLongField
 
 	/**
 	 * Set Value to null.
@@ -1620,7 +1582,7 @@ public class GridField
 	 */
 	public void setDisplayLength(int length)
 	{
-		m_vo.DisplayLength = length;
+		getLayoutConstraints().setDisplayLength(length);
 	}   // setDisplayLength
 
 	/**
@@ -1881,26 +1843,6 @@ public class GridField
 	}
 
 	/**
-	 * Set the default state of collapse field group type
-	 * 
-	 * @param flag
-	 */
-	public void setIsCollapsedByDefault(boolean flag)
-	{
-		m_vo.IsCollapsedByDefault = flag;
-	}
-
-	/**
-	 * Get the default state of collapse field group type
-	 * 
-	 * @param collapseDefaultState
-	 */
-	public boolean getIsCollapsedByDefault()
-	{
-		return m_vo.IsCollapsedByDefault;
-	}
-
-	/**
 	 * Returns a list containing all existing entries of this field with the actual AD_Org_ID and AD_Client_ID.
 	 * 
 	 * @return List of existing entries for this field
@@ -2113,17 +2055,12 @@ public class GridField
 		return parentGridTab.isProcessedOrNotActive(ctx);
 	}
 
-	// metas-2009_0021_AP1_CR051: begin
+	/**
+	 * @task metas-2009_0021_AP1_CR051
+	 */
 	public int getIncludedTabHeight()
 	{
 		return m_vo.IncludedTabHeight;
-	}
-
-	// metas-2009_0021_AP1_CR051: end
-
-	public int getColumnDisplayLength()
-	{
-		return m_vo.getColumnDisplayLength();
 	}
 
 	/**

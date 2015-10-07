@@ -46,11 +46,9 @@ import org.adempiere.ui.IContextMenuActionContext;
 import org.adempiere.ui.IContextMenuProvider;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.CLogger;
-import org.compiere.util.Env;
 
 /**
  * {@link VEditor}'s context menu
@@ -220,7 +218,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 		}
 
 		final ImageIcon icon = Check.isEmpty(action.getIcon(), true) ? null : Images.getImageIcon2(action.getIcon());
-		final String label = Check.isEmpty(action.getTitle(), true) ? null : Services.get(IMsgBL.class).translate(Env.getCtx(), action.getTitle());
+		final String label = action.getTitle();
 
 		//
 		// Simple Menu Item

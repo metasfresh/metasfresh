@@ -18,8 +18,6 @@ package org.compiere.grid.ed;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -32,7 +30,6 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.LookAndFeel;
 
-import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
@@ -42,7 +39,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
-import org.compiere.swing.CButton;
 import org.compiere.swing.CTextField;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
@@ -72,52 +68,57 @@ public class VFile extends JComponent
 	 * @param mandatory mandatory
 	 * @param isReadOnly read only
 	 * @param isUpdateable updateable
-	 * @param files Files only if false Directory only
+	 * @param allowFilesOnly <ul>
+	 *            <li>if true, files only will be allowed
+	 *            <li>if false, directory only will be allowed
+	 *            </ul>
 	 */
 	public VFile(final String columnName, final boolean mandatory,
-			final boolean isReadOnly, final boolean isUpdateable, final int fieldLength, final boolean files)
+			final boolean isReadOnly, final boolean isUpdateable, final int fieldLength, final boolean allowFilesOnly)
 	{
 		super();
 		super.setName(columnName);
 		m_columnName = columnName;
 		m_fieldLength = fieldLength;
-		if (files)
-		{
-			m_selectionMode = JFileChooser.FILES_ONLY;
-		}
-		final String col = columnName.toLowerCase();
-		if (col.indexOf("open") != -1 || col.indexOf("load") != -1)
+		m_selectionMode = allowFilesOnly ? JFileChooser.FILES_ONLY : JFileChooser.DIRECTORIES_ONLY;
+		
+		final String columnNameLC = columnName.toLowerCase();
+		if (columnNameLC.indexOf("open") != -1 || columnNameLC.indexOf("load") != -1)
 		{
 			m_dialogType = JFileChooser.OPEN_DIALOG;
 		}
-		else if (col.indexOf("save") != -1)
+		else if (columnNameLC.indexOf("save") != -1)
 		{
 			m_dialogType = JFileChooser.SAVE_DIALOG;
 		}
+		else
+		{
+			m_dialogType = JFileChooser.CUSTOM_DIALOG;
+		}
+		
 		//
 		LookAndFeel.installBorder(this, "TextField.border");
 		setLayout(new BorderLayout());
-		// Size
-		setPreferredSize(m_text.getPreferredSize());		// causes r/o to be the same length
-		final int height = m_text.getPreferredSize().height;
 
+		//
 		// Button
 		{
-			m_button.setIcon(Images.getImageIcon2("Open16"));
-			m_button.setMargin(new Insets(0, 0, 0, 0));
-			m_button.setPreferredSize(new Dimension(height, height));
+			m_button = VEditorUtils.createActionButton("Open", m_text);
 			m_button.addActionListener(this);
 			VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
 		}
 		
-		// *** Button & Text ***
-		m_text.setBorder(null);
+		//
+		// Text
+		VEditorUtils.setupInnerTextComponentUI(m_text);
 		m_text.setEditable(true);
 		m_text.setFocusable(true);
-		m_text.setFont(AdempierePLAF.getFont_Field());
-		m_text.setForeground(AdempierePLAF.getTextColor_Normal());
 		m_text.addKeyListener(this);
 		this.add(m_text, BorderLayout.CENTER);
+
+		//
+		// Size
+		VEditorUtils.setupVEditorDimensionFromInnerTextDimension(this, m_text);
 
 		// Editable
 		if (isReadOnly || !isUpdateable)
@@ -148,7 +149,7 @@ public class VFile extends JComponent
 	/** The Text Field */
 	private CTextField m_text = new CTextField(VLookup.DISPLAY_LENGTH);
 	/** The Button */
-	private CButton m_button = new CButton();
+	private VEditorActionButton m_button = null;
 	/** Column Name */
 	private final String m_columnName;
 	private String m_oldText;
@@ -158,11 +159,13 @@ public class VFile extends JComponent
 	/** Setting new value */
 	private volatile boolean m_setting = false;
 	/** Selection Mode */
-	private int m_selectionMode = JFileChooser.DIRECTORIES_ONLY;
+	private final int m_selectionMode;
 	/** Save/Open */
-	private int m_dialogType = JFileChooser.CUSTOM_DIALOG;
+	private final int m_dialogType;
+	private boolean mandatory = false;
+	private boolean readWrite = true;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(VFile.class);
+	private static final CLogger log = CLogger.getCLogger(VFile.class);
 
 	/**
 	 * Enable/disable
@@ -172,12 +175,11 @@ public class VFile extends JComponent
 	@Override
 	public void setReadWrite(final boolean value)
 	{
-		m_button.setReadWrite(value);
-		if (m_button.isVisible() != value)
-		{
-			m_button.setVisible(value);
-		}
+		this.readWrite = value;
+		
 		m_text.setReadWrite(value);
+		m_button.setReadWrite(value);
+		
 		setBackground(false);
 	}	// setReadWrite
 
@@ -189,7 +191,7 @@ public class VFile extends JComponent
 	@Override
 	public boolean isReadWrite()
 	{
-		return m_button.isReadWrite();
+		return readWrite;
 	}	// isReadWrite
 
 	/**
@@ -200,7 +202,7 @@ public class VFile extends JComponent
 	@Override
 	public void setMandatory(final boolean mandatory)
 	{
-		m_button.setMandatory(mandatory);
+		this.mandatory = mandatory;
 		setBackground(false);
 	}	// setMandatory
 
@@ -212,7 +214,7 @@ public class VFile extends JComponent
 	@Override
 	public boolean isMandatory()
 	{
-		return m_button.isMandatory();
+		return mandatory;
 	}	// isMandatory
 
 	/**

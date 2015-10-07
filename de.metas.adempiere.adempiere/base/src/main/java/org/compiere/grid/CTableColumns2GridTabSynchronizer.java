@@ -112,7 +112,7 @@ public class CTableColumns2GridTabSynchronizer
 			}
 
 			final GridFieldVO gridFieldVO = gridField.getVO();
-			final int width = gridFieldVO.getColumnDisplayLength();
+			final int width = gridFieldVO.getLayoutConstraints().getColumnDisplayLength();
 			if (width <= 0)
 			{
 				return -1;
@@ -284,7 +284,7 @@ public class CTableColumns2GridTabSynchronizer
 
 		if (visible)
 		{
-			gridFieldVO.setColumnDisplayLength(column.getWidth());
+			gridFieldVO.getLayoutConstraints().setColumnDisplayLength(column.getWidth());
 		}
 	}
 
@@ -321,7 +321,7 @@ public class CTableColumns2GridTabSynchronizer
 		//
 		// Load TableColumn properties from GridField
 		final GridFieldVO gridFieldVO = gridField.getVO();
-		final int width = gridFieldVO.getColumnDisplayLength();
+		final int width = gridFieldVO.getLayoutConstraints().getColumnDisplayLength();
 		if (width > 0)
 		{
 			tableColumn.setPreferredWidth(width);

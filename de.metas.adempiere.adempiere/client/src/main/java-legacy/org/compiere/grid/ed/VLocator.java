@@ -19,8 +19,6 @@ package org.compiere.grid.ed;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -35,7 +33,6 @@ import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.IRefreshableEditor;
@@ -51,7 +48,6 @@ import org.compiere.model.MLocatorLookup;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.MWarehouse;
-import org.compiere.swing.CButton;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -99,29 +95,26 @@ public class VLocator extends JComponent
 		//
 		LookAndFeel.installBorder(this, "TextField.border");
 		this.setLayout(new BorderLayout());
-		//  Size
-		this.setPreferredSize(m_text.getPreferredSize());		//	causes r/o to be the same length
-		int height = m_text.getPreferredSize().height;
 
-		//	***	Button & Text	***
-		m_text.setBorder(null);
+		//
+		// Text
+		VEditorUtils.setupInnerTextComponentUI(m_text);
 		m_text.setEditable(true);
 		m_text.setFocusable(true);
-		m_text.setFont(AdempierePLAF.getFont_Field());
-		m_text.setForeground(AdempierePLAF.getTextColor_Normal());
 		m_text.addActionListener(this);
 		this.add(m_text, BorderLayout.CENTER);
 
+		//
+		// Button
 		{
-			m_button.setIcon(Images.getImageIcon2("Locator10"));
-			m_button.setMargin(new Insets(0, 0, 0, 0));
-			m_button.setPreferredSize(new Dimension(height, height));
+			m_button = VEditorUtils.createActionButton("Locator", m_text);
 			m_button.addActionListener(this);
 			VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
 		}
-
-		//	Prefereed Size
-		this.setPreferredSize(this.getPreferredSize());		//	causes r/o to be the same length
+		
+		//
+		// Size
+		VEditorUtils.setupVEditorDimensionFromInnerTextDimension(this, m_text);
 
 		//	ReadWrite
 		if (isReadOnly || !isUpdateable)
@@ -150,14 +143,16 @@ public class VLocator extends JComponent
 	}   //  dispose
 
 	private JTextField			m_text = new JTextField (VLookup.DISPLAY_LENGTH);
-	private CButton				m_button = new CButton();
+	private VEditorActionButton m_button = null;
 	private MLocatorLookup		m_mLocator;
 	private Object				m_value;
 	//
-	private String				m_columnName;
-	private int					m_WindowNo;
+	private final String m_columnName;
+	private int m_WindowNo;
+	private boolean mandatory = false;
+	private boolean readWrite = true;
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VLocator.class);
+	private static final CLogger log = CLogger.getCLogger(VLocator.class);
 	private GridField m_mField;
 
 	/**
@@ -167,9 +162,8 @@ public class VLocator extends JComponent
 	@Override
 	public void setReadWrite (boolean value)
 	{
+		this.readWrite = value;
 		m_button.setReadWrite(value);
-		if (m_button.isVisible() != value)
-			m_button.setVisible(value);
 		setBackground(false);
 	}	//	setReadWrite
 
@@ -180,7 +174,7 @@ public class VLocator extends JComponent
 	@Override
 	public boolean isReadWrite()
 	{
-		return m_button.isReadWrite();
+		return readWrite;
 	}	//	isReadWrite
 
 	/**
@@ -190,7 +184,7 @@ public class VLocator extends JComponent
 	@Override
 	public void setMandatory (boolean mandatory)
 	{
-		m_button.setMandatory(mandatory);
+		this.mandatory = mandatory;
 		setBackground(false);
 	}	//	setMandatory
 
@@ -201,7 +195,7 @@ public class VLocator extends JComponent
 	@Override
 	public boolean isMandatory()
 	{
-		return m_button.isMandatory();
+		return mandatory;
 	}	//	isMandatory
 
 	/**

@@ -108,10 +108,11 @@ public final class VEditorFactory
 				|| displayType == DisplayType.PrinterName
 				|| tableEditor && (displayType == DisplayType.Text || displayType == DisplayType.TextLong))
 		{
+			final int textFieldColumns = mField.getDisplayLength();
 			if (mField.isEncryptedField())
 			{
 				final VPassword vs = new VPassword(columnName, mandatory, readOnly, updateable,
-						mField.getDisplayLength(), mField.getFieldLength(), mField.getVFormat());
+						textFieldColumns, mField.getFieldLength(), mField.getVFormat());
 				vs.setName(columnName);
 				vs.setField(mField);
 				editor = vs;
@@ -119,7 +120,7 @@ public final class VEditorFactory
 			else
 			{
 				final VString vs = new VString(columnName, mandatory, readOnly, updateable,
-						mField.getDisplayLength(), mField.getFieldLength(),
+						textFieldColumns, mField.getFieldLength(),
 						mField.getVFormat(), mField.getObscureType());
 				vs.setName(columnName);
 				vs.setField(mField);
@@ -133,8 +134,8 @@ public final class VEditorFactory
 		// URL
 		else if (displayType == DisplayType.URL)
 		{
-			final VURL vs = new VURL(columnName, mandatory, readOnly, updateable,
-					mField.getDisplayLength(), mField.getFieldLength());
+			final int textFieldColumns = mField.getDisplayLength();
+			final VURL vs = new VURL(columnName, mandatory, readOnly, updateable, textFieldColumns, mField.getFieldLength());
 			vs.setName(columnName);
 			vs.setField(mField);
 			editor = vs;
@@ -167,8 +168,7 @@ public final class VEditorFactory
 		// Number
 		else if (DisplayType.isNumeric(displayType))
 		{
-			final VNumber vn = new VNumber(columnName, mandatory, readOnly, updateable,
-					displayType, mField.getHeader());
+			final VNumber vn = new VNumber(columnName, mandatory, readOnly, updateable, displayType, mField.getHeader());
 			vn.setRange(mField.getValueMin(), mField.getValueMax());
 			vn.setName(columnName);
 			vn.setField(mField);
@@ -178,8 +178,7 @@ public final class VEditorFactory
 		// YesNo
 		else if (displayType == DisplayType.YesNo)
 		{
-			final VCheckBox vc = new VCheckBox(columnName, mandatory, readOnly, updateable,
-					mField.getHeader(), mField.getDescription(), tableEditor);
+			final VCheckBox vc = new VCheckBox(columnName, mandatory, readOnly, updateable, mField.getHeader(), mField.getDescription(), tableEditor);
 			vc.setName(columnName);
 			vc.setField(mField);
 			editor = vc;
@@ -188,8 +187,8 @@ public final class VEditorFactory
 		// Text (single row)
 		else if (displayType == DisplayType.Text)
 		{
-			final VText vt = new VText(columnName, mandatory, readOnly, updateable,
-					mField.getDisplayLength(), mField.getFieldLength());
+			final int textFieldColumns = mField.getDisplayLength();
+			final VText vt = new VText(columnName, mandatory, readOnly, updateable, textFieldColumns, mField.getFieldLength());
 			vt.setName(columnName);
 			vt.setField(mField);
 			editor = vt;
@@ -198,7 +197,8 @@ public final class VEditorFactory
 		// Memo (single row)
 		else if (displayType == DisplayType.Memo)
 		{
-			final VMemo vt = new VMemo(columnName, mandatory, readOnly, updateable, mField.getDisplayLength(), mField.getFieldLength());
+			final int textFieldColumns = mField.getDisplayLength();
+			final VMemo vt = new VMemo(columnName, mandatory, readOnly, updateable, textFieldColumns, mField.getFieldLength());
 			vt.setName(columnName);
 			vt.setField(mField);
 			editor = vt;
@@ -302,8 +302,8 @@ public final class VEditorFactory
 		// Long Text (CLob)
 		else if (displayType == DisplayType.TextLong)
 		{
-			final VTextLong vt = new VTextLong(columnName, mandatory, readOnly, updateable,
-					mField.getDisplayLength(), mField.getFieldLength());
+			final int textFieldColumns = mField.getDisplayLength();
+			final VTextLong vt = new VTextLong(columnName, mandatory, readOnly, updateable, textFieldColumns, mField.getFieldLength());
 			vt.setName(columnName);
 			vt.setField(mField);
 			editor = vt;

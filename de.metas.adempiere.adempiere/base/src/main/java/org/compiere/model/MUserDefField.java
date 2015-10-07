@@ -50,8 +50,10 @@ public class MUserDefField extends X_AD_UserDef_Field
 		super(ctx, rs, trxName);
 	}
 
-	public void apply(GridFieldVO vo)
+	public void apply(final GridFieldVO vo)
 	{
+		final GridFieldLayoutConstraints layoutConstraints = vo.getLayoutConstraints();
+		
 		final String name = getName();
 		if (!Check.isEmpty(name) && name.length() > 1)
 			vo.Header = name;
@@ -64,13 +66,17 @@ public class MUserDefField extends X_AD_UserDef_Field
 		if (this.getIsReadOnly() != null)
 			vo.IsReadOnly = "Y".equals(this.getIsReadOnly());
 		if (this.getIsSameLine() != null)
-			vo.IsSameLine = "Y".equals(this.getIsSameLine());
+		{
+			layoutConstraints.setSameLine("Y".equals(this.getIsSameLine()));
+		}
 		if (this.getIsUpdateable() != null)
 			vo.IsUpdateable = "Y".equals(this.getIsUpdateable());
 		if (this.getIsMandatory() != null)
 			vo.IsMandatory = "Y".equals(this.getIsMandatory());
 		if (this.getDisplayLength() > 0)
-			vo.DisplayLength = this.getDisplayLength();
+		{
+			layoutConstraints.setDisplayLength(this.getDisplayLength());
+		}
 		if (!Check.isEmpty(this.getDisplayLogic(), true))
 		{
 			vo.setDisplayLogic(this.getDisplayLogic());

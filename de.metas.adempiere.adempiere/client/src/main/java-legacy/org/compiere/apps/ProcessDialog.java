@@ -31,7 +31,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -358,9 +357,10 @@ public class ProcessDialog extends CFrame
 		parametersContainer.removeAll();
 		if (parameterPanel.hasFields())
 		{
-			final JSeparator separator = new JSeparator();
-			parametersContainer.add(separator, BorderLayout.NORTH);
-			parametersContainer.add(new JScrollPane(parameterPanel), BorderLayout.CENTER);
+			final JScrollPane parametersPanelScroll = new JScrollPane(parameterPanel);
+			parametersPanelScroll.setBorder(BorderFactory.createEmptyBorder());
+			
+			parametersContainer.add(parametersPanelScroll, BorderLayout.CENTER);
 		}
 
 		//

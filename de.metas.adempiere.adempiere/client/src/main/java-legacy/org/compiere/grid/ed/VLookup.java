@@ -22,7 +22,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -51,14 +50,12 @@ import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.images.Images;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.IRefreshableEditor;
 import org.adempiere.util.Check;
@@ -73,7 +70,6 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.Lookup;
-import org.compiere.model.MColor;
 import org.compiere.model.MColumn;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLookup;
@@ -82,8 +78,8 @@ import org.compiere.model.MLookupInfo;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProductPrice;
 import org.compiere.model.MQuery;
-import org.compiere.swing.CButton;
 import org.compiere.swing.CTextField;
+import org.compiere.swing.PopupMenuListenerAdapter;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -237,30 +233,23 @@ public class VLookup extends JComponent
 //		m_lookup = lookup;
 //		if (m_lookup != null)
 //			m_lookup.setMandatory(isMandatory());
+		
 		//
 		setLayout(new BorderLayout());
-
-		//	***	Text & Button	***
+		
+		//
+		// Text field
+		VEditorUtils.setupInnerTextComponentUI(m_text);
 		m_text.setName(columnName);
 		m_text.addActionListener(this);
 		m_text.addFocusListener(this);
-		//  Button
-		m_button.addActionListener(this);
-		m_button.setFocusable(false);   //  don't focus when tabbing
-		m_button.setMargin(new Insets(0, 0, 0, 0));
-		if (columnName.equals("C_BPartner_ID"))
-		{
-			m_button.setIcon(Images.getImageIcon2("BPartner10"));
-		}
-		else if (columnName.equals("M_Product_ID"))
-		{
-			m_button.setIcon(Images.getImageIcon2("Product10"));
-		}
-		else
-		{
-			m_button.setIcon(Images.getImageIcon2("PickOpen10"));
-		}
 		
+		//
+		//  Button
+		m_button = VEditorUtils.createActionButton(getActionButtonIconName(), m_text);
+		m_button.addActionListener(this);
+
+		//
 		// Lookup config & load
 		setLookup(lookup);
 //		if (isComboBox())
@@ -272,7 +261,8 @@ public class VLookup extends JComponent
 //			m_comboModelProxy.setDelegate(m_lookup);
 //		}
 
-		//	*** VComboBox	***
+		//
+		// Combobox
 		if (isComboBox())	//	No Search
 		{
 			m_combo.setName(columnName);
@@ -281,29 +271,26 @@ public class VLookup extends JComponent
 //			m_combo.getEditor().getEditorComponent().addMouseListener(mouseAdapter);	                        //	popup
 			//	FocusListener to refresh selection before opening
 			m_combo.addFocusListener(this);
-			m_combo.getEditor().getEditorComponent().addFocusListener(this);
-			
-			m_combo.addPopupMenuListener(new PopupMenuListener()
+			m_combo.getEditor().getEditorComponent().addFocusListener(this);			
+			m_combo.addPopupMenuListener(new PopupMenuListenerAdapter()
 			{
 				@Override
 				public void popupMenuWillBecomeVisible(PopupMenuEvent e)
 				{
 					refreshLookupIfNeeded();
 				}
-				
-				@Override
-				public void popupMenuWillBecomeInvisible(PopupMenuEvent e)
-				{
-				}
-				
-				@Override
-				public void popupMenuCanceled(PopupMenuEvent e)
-				{
-				}
 			});
 		}
 
+		//
+		// Size
+		VEditorUtils.setupVEditorDimensionFromInnerTextDimension(this, m_text);
+		final Dimension size = m_text.getPreferredSize();
+		m_combo.setPreferredSize(new Dimension(size));
+
 		setUI (true);
+
+		
 		//	ReadWrite	-	decides what components to show
 		if (isReadOnly || !isUpdateable)
 		{
@@ -318,6 +305,24 @@ public class VLookup extends JComponent
 		// Create and bind the context menu
 		new EditorContextPopupMenu(this);
 	}	//	VLookup
+	
+	private final String getActionButtonIconName()
+	{
+		final String actionButtonIconName;
+		if ("C_BPartner_ID".equals(m_columnName))
+		{
+			actionButtonIconName = "BPartner";
+		}
+		else if ("M_Product_ID".equals(m_columnName))
+		{
+			actionButtonIconName = "Product";
+		}
+		else
+		{
+			actionButtonIconName = "PickOpen";
+		}
+		return actionButtonIconName;
+	}
 	
 	private void setLookup(final Lookup lookup)
 	{
@@ -364,7 +369,7 @@ public class VLookup extends JComponent
 //		m_combo.getEditor().getEditorComponent().removeMouseListener(mouseAdapter);
 		m_combo.removeFocusListener(this);
 		m_combo.removeActionListener(this);
-		m_combo.setModel(new DefaultComboBoxModel());    //  remove reference
+		m_combo.setModel(new DefaultComboBoxModel<>());    //  remove reference
 		m_comboModelProxy.setDelegate(null);
 	//	m_combo.removeAllItems();
 		m_combo = null;
@@ -372,14 +377,12 @@ public class VLookup extends JComponent
 	}   //  dispose
 
 	/** Display Length for Lookups (15)         */
-	public final static int     DISPLAY_LENGTH = 15;
-	/** Field Height 				 */
-	public static int     		FIELD_HIGHT = 0;
+	public final static int DISPLAY_LENGTH = 15;
 
 	/** Search: The Editable Text Field         */
 	private CTextField 			m_text = new CTextField (DISPLAY_LENGTH);
 	/** Search: The Button to open Editor   */
-	private CButton				m_button = new CButton();
+	private VEditorActionButton m_button = null;
 	private final MutableComboBoxModelProxy m_comboModelProxy = new MutableComboBoxModelProxy();
 	/** The Combo Box if not a Search Lookup    */
 	private VComboBox			m_combo = new VComboBox(m_comboModelProxy);
@@ -406,24 +409,12 @@ public class VLookup extends JComponent
 	private static CLogger log = CLogger.getCLogger(VLookup.class);
 
 	/**
-	 *  Set Content and Size of Components
-	 *  @param initial if true, size and margins will be set
+	 * Set Content and Size of Components
+	 * 
+	 * @param initial true if this is the initial call (on component construction)
 	 */
-	private void setUI (boolean initial)
+	private void setUI (final boolean initial)
 	{
-		if (initial)
-		{
-			Dimension size = m_text.getPreferredSize();
-			setPreferredSize(new Dimension(size));  //	causes r/o to be the same length
-			m_combo.setPreferredSize(new Dimension(size));
-			setMinimumSize(new Dimension (30, size.height));
-			FIELD_HIGHT = size.height;
-			//
-			m_text.setBorder(null);
-			Dimension bSize = new Dimension(size.height, size.height);
-			m_button.setPreferredSize (bSize);
-		}
-
 		//	What to show
 		this.remove(m_combo);
 		this.remove(m_button);
@@ -439,7 +430,7 @@ public class VLookup extends JComponent
 		}
 		else if (isComboBox())	    //	show combo if not Search
 		{
-			this.setBorder(null);
+			this.setBorder(null); // no border, because we are showing the combobox, which already has a border
 			this.add(m_combo, BorderLayout.CENTER);
 			m_comboActive = true;
 		}
@@ -572,14 +563,23 @@ public class VLookup extends JComponent
 		if (m_combo.isReadWrite() != value)
 		{
 			m_combo.setReadWrite(rw);
-			setUI (false);
-			if (value && m_comboActive) {
+			setUI(false);
+			if (value && m_comboActive)
+			{
 				m_settingValue = true;		//	disable actions
-				refresh();
-				m_settingValue = false;
+				try
+				{
+					refresh();
+				}
+				finally
+				{
+					m_settingValue = false;
+				}
 			}
 			if (m_comboActive)
+			{
 				setValue (m_value);
+			}
 		}
 		// If the field is readonly the BPartner new option should be hidden - teo_sarca [ 1721710 ]
 //		if (mBPartnerNew != null)
@@ -627,15 +627,6 @@ public class VLookup extends JComponent
 		m_text.setBackground(color);
 		m_combo.setBackground(color);
 	}	//	setBackground
-
-	// metas
-	public void setBackground(int AD_Color_ID) {
-		MColor color = new MColor(Env.getCtx(), AD_Color_ID, null);
-		Color bg = color.getAdempiereColor().getFlatColor();
-		if (AD_Color_ID < 0)
-			return;
-		setBackground(bg);
-	}
 
 	/**
 	 *	Set Background

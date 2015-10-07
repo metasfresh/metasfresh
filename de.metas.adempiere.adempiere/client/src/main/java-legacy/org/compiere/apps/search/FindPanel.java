@@ -263,8 +263,8 @@ public final class FindPanel extends CPanel implements ActionListener,
 
 	/** For Grid Controller */
 	public static final int TABNO = 99;
-	/** Length of Fields on first tab */
-	public static final int FIELDLENGTH = 20;
+	/** Maximum allowed number of columns for a text field component displayed in simple search tab */
+	private static final int MAX_TEXT_FIELD_COLUMNS = 20;
 	/** Reference ID for Yes/No */
 	public static final int AD_REFERENCE_ID_YESNO = 319;
 
@@ -432,20 +432,20 @@ public final class FindPanel extends CPanel implements ActionListener,
 		searchLabel.setText(msgBL.translate(Env.getCtx(), "search"));
 		// metas end
 		// valueField.setText("%");
-		valueField.setColumns(FIELDLENGTH);
+		valueField.setColumns(MAX_TEXT_FIELD_COLUMNS);
 		// nameField.setText("%");
-		nameField.setColumns(FIELDLENGTH);
+		nameField.setColumns(MAX_TEXT_FIELD_COLUMNS);
 		// descriptionField.setText("%");
-		descriptionField.setColumns(FIELDLENGTH);
+		descriptionField.setColumns(MAX_TEXT_FIELD_COLUMNS);
 		// metas
 		// sucheField.setText("");
-		searchField.setColumns(FIELDLENGTH);
+		searchField.setColumns(MAX_TEXT_FIELD_COLUMNS);
 		// metas end
 		scontentPanel.setToolTipText(msgBL.getMsg(Env.getCtx(), "FindTip"));
 		docNoLabel.setLabelFor(docNoField);
 		docNoLabel.setText(msgBL.translate(Env.getCtx(), "DocumentNo"));
 		// docNoField.setText("%");
-		docNoField.setColumns(FIELDLENGTH);
+		docNoField.setColumns(MAX_TEXT_FIELD_COLUMNS);
 		advancedScrollPane.setPreferredSize(new Dimension(450, 150));
 		southPanel.add(statusBar, BorderLayout.SOUTH);
 		panel.add(southPanel, BorderLayout.SOUTH);
@@ -618,20 +618,23 @@ public final class FindPanel extends CPanel implements ActionListener,
 	 * @param mField
 	 *            field
 	 */
-	private void addSelectionColumn(GridField mField)
+	private void addSelectionColumn(final GridField mField)
 	{
 		log.config(mField.getHeader());
-		int displayLength = mField.getDisplayLength();
-		if (displayLength > FIELDLENGTH)
-			mField.setDisplayLength(FIELDLENGTH);
+		
+		//
+		// Enforce maximum text field columns
+		int textFieldColumnsOrig = mField.getDisplayLength();
+		if (textFieldColumnsOrig > MAX_TEXT_FIELD_COLUMNS)
+			mField.setDisplayLength(MAX_TEXT_FIELD_COLUMNS);
 		else
-			displayLength = 0;
+			textFieldColumnsOrig = 0;
 
 		// Editor
 		VEditor editor = null;
 		if (mField.isLookup())
 		{
-			VLookup vl = new VLookup(mField.getColumnName(), false, false, true, mField.getLookup());
+			final VLookup vl = new VLookup(mField.getColumnName(), false, false, true, mField.getLookup());
 			// setting mField to avoid NPE
 			vl.setField(mField);
 
@@ -650,17 +653,14 @@ public final class FindPanel extends CPanel implements ActionListener,
 			((CTextField)editor).addActionListener(this);
 		}
 		CLabel label = swingEditorFactory.getLabel(mField);
+		
 		//
-		if (displayLength > 0) // set it back
-			mField.setDisplayLength(displayLength);
+		// Restore original text field columns
+		if (textFieldColumnsOrig > 0)
+			mField.setDisplayLength(textFieldColumnsOrig);
+		
 		//
-		/*
-		 * m_sLine++; if (label != null) // may be null for Y/N scontentPanel.add(label, new GridBagConstraints(1,
-		 * m_sLine, 1, 1, 0.0, 0.0 ,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(7, 5, 5, 5), 0,
-		 * 0)); scontentPanel.add((Component)editor, new GridBagConstraints(2, m_sLine, 1, 1, 0.0, 0.0
-		 * ,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 5), 0, 0));
-		 */
-		addSimpleSearchField(label, (Component)editor);
+		addSimpleSearchField(label, swingEditorFactory.getEditorComponent(editor));
 		m_sEditors.add(editor);
 	} // addSelectionColumn
 

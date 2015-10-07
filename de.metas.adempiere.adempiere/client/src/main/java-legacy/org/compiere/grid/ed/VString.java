@@ -32,6 +32,7 @@ import javax.swing.event.CaretListener;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
+import org.compiere.model.GridFieldLayoutConstraints;
 import org.compiere.model.Obscure;
 import org.compiere.swing.CTextField;
 import org.compiere.util.CLogger;
@@ -55,7 +56,7 @@ public final class VString extends CTextField
 	private static final long serialVersionUID = 8487860095322876086L;
 	
 	/** Max Display Length - 60 */
-	public static final int MAXDISPLAY_LENGTH = org.compiere.model.GridField.MAXDISPLAY_LENGTH;
+	public static final int MAXDISPLAY_LENGTH = GridFieldLayoutConstraints.MAXDISPLAY_LENGTH;
 
 	/**
 	 *	IDE Bean Constructor for 30 character updateable field
@@ -82,10 +83,13 @@ public final class VString extends CTextField
 		super(displayLength>MAXDISPLAY_LENGTH ? MAXDISPLAY_LENGTH : displayLength);
 		super.setName(columnName);
 		m_columnName = columnName;
+		m_fieldLength = fieldLength;
+		
+		//
+		// Value format
 		if (VFormat == null)
 			VFormat = "";
 		m_VFormat = VFormat;
-		m_fieldLength = fieldLength;
 		if (m_VFormat.length() > 0 || m_fieldLength > 0)
 		{
 			setDocument(new MDocString(m_VFormat, m_fieldLength, this));
@@ -95,7 +99,6 @@ public final class VString extends CTextField
 			setCaret(new VOvrCaret());
 		}
 		//
-		setMandatory(mandatory);
 		if (ObscureType != null && ObscureType.length() > 0)
 		{
 			m_obscure = new Obscure ("", ObscureType);
@@ -103,18 +106,28 @@ public final class VString extends CTextField
 			m_obscureFont = new Font("SansSerif", Font.ITALIC, m_stdFont.getSize());
 			addFocusListener(this);
 		}
+		
+		//
+		// Size
+		VEditorUtils.setupVEditorDimension(this);
+		
+		//
+		// Default foreground
+		setForeground(AdempierePLAF.getTextColor_Normal());
 
-		//	Editable
+		//
+		// Mandatory and ReadWrite
+		// (updates background too)
+		setMandatory(mandatory);
 		if (isReadOnly || !isUpdateable)
-		{
-			setEditable(false);
-			setBackground(AdempierePLAF.getFieldBackground_Inactive());
-		}
+			setReadWrite(false);
+		else
+			setReadWrite(true);
 
+		//
+		// Listeners
 		this.addKeyListener(this);
 		this.addActionListener(this);
-		setForeground(AdempierePLAF.getTextColor_Normal());
-		setBackground(AdempierePLAF.getFieldBackground_Normal());
 		
 		// Create and bind the context menu
 		new EditorContextPopupMenu(this);

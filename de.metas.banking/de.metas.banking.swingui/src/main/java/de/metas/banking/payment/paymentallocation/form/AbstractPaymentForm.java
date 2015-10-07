@@ -23,8 +23,6 @@ package de.metas.banking.payment.paymentallocation.form;
  */
 
 
-import java.awt.BorderLayout;
-import java.awt.Container;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;

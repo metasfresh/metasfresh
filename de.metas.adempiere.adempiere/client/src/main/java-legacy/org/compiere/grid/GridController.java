@@ -502,7 +502,7 @@ public final class GridController extends CPanel
 		//
 		// Single row layout
 		{
-			vPanel = new VPanel(mTab.getName(), m_WindowNo);
+			vPanel = VPanel.newStandardWindowPanel(mTab.getName(), m_WindowNo);
 			setupVPanel(); // make sure VPanel is loaded before we are adding it to parent component.
 			cardPanel.add(vPanel, CARDNAME_SingleRowView);
 		}
@@ -703,7 +703,7 @@ public final class GridController extends CPanel
 				//  VEditor => this - New Editor value to be updated here (MTable)
 				vEditor.addVetoableChangeListener(this);
 				//  Add to VPanel
-				vPanel.addField(vEditor, mField);
+				vPanel.addField(vEditor);
 				//  APanel Listen to buttons
 				if (mField.getDisplayType() == DisplayType.Button)
 				{
@@ -712,17 +712,6 @@ public final class GridController extends CPanel
 				}
 			}
 		}   //  for all fields
-		// vPanel.addFieldBuffered(null, null); // flush the last one through
-
-		//	No Included Grid Controller
-		/*
-		srPane.setResizeWeight(1);	//	top part gets all
-		srPane.setDividerSize (0);
-		srPane.setDividerLocation (9999);
-		*/
-		//  Use SR to size MR
-		
-		//mrPane.setPreferredSize(vPanel.getPreferredSize()); // FIXME: DEBUGGING
 	}
 	
 	private void initTree() //metas
@@ -873,14 +862,7 @@ public final class GridController extends CPanel
 						tc.setCellEditor (ce);
 						//
 						tc.setHeaderValue (mField.getHeader ());
-						tc.setPreferredWidth (Math.max (mField.getDisplayLength (), 30));
-						// NOTE: commented out because it will be loaded in CTable
-//						if (mField.getColumnDisplayLength() > 0)
-//						{
-//							tc.setMaxWidth(mField.getColumnDisplayLength());
-//							tc.setMinWidth(mField.getColumnDisplayLength());
-//							tc.setPreferredWidth(mField.getColumnDisplayLength());
-//						}
+						// NOTE: the Min/Max/Preferred Width is updated in CTable
 						tc.setHeaderRenderer (new VHeaderRenderer (mField.getDisplayType ()));
 
 						//  Enable Button actions in grid

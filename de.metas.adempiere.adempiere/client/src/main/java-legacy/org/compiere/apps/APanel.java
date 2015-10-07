@@ -179,7 +179,8 @@ public class APanel extends CPanel
 	private static final long serialVersionUID = 6066778919781303581L;
 
 	/**
-	 * Constructs a new instance.
+	 * Included tab constructor.
+	 * 
 	 * Need to call initPanel for dynamic initialization
 	 */
 	//FR [ 1757088 ]
@@ -188,6 +189,8 @@ public class APanel extends CPanel
 		super();
 		isNested = true;
 		m_ctx = Env.getCtx();
+		m_window = null; // no window
+		
 		try
 		{
 			m_curGC = gc;
@@ -200,6 +203,7 @@ public class APanel extends CPanel
 			m_curWinTab = tabPane;
 			m_curWindowNo = windowNo;
 			isTabIncluded = true; // metas-2009_0021_AP1_CR056
+			
 			jbInit();
 			initSwitchLineAction();
 		}
@@ -241,7 +245,7 @@ public class APanel extends CPanel
 	
 	/** true if this component will be embedded in some tabs (i.e. included tabs) */
 	private final boolean isNested;
-	private AWindow m_window;
+	private final AWindow m_window;
 	private boolean isCancel = false; //Goodwill
 
 	/**
@@ -1373,7 +1377,7 @@ public class APanel extends CPanel
 		if (m_curTab != null && m_curTab.isQueryActive())
 			dbInfo = "[ " + dbInfo + " ]";
 		statusBar.setStatusDB(dbInfo, e);
-		if (!isNested)
+		if (!isNested && m_window != null)
 			m_window.setTitle(getTitle());
 
 		//	Set Message / Info
@@ -2390,7 +2394,7 @@ public class APanel extends CPanel
 		}
 		if (manualCmd) {
 			m_curGC.dynamicDisplay(0);
-			if (!isNested)
+			if (!isNested && m_window != null)
 				m_window.setTitle(getTitle());
 		}
 		
@@ -3307,18 +3311,13 @@ public class APanel extends CPanel
 		getActionMap().put(aSwitchLinesUpAction.getName(), aSwitchLinesUpAction);
 	}
 	
-	public boolean isNested()
-	{
-		return isNested;
-	}
-
 // metas: begin
 	public static final String CMD_Ignore = "Ignore"; // metas  02029
 	
 	private boolean isSearchActive = true; // metas-2009_0021_AP1_CR057
 	private boolean isTabIncluded = false; // metas-2009_0021_AP1_CR056
 	private AppsAction aCopyDetails; // metas
-	final HashMap<Integer, Integer> includedTabHeightMap = new HashMap<Integer, Integer>(); // metas-2009_0021_AP1_CR051
+	private final Map<Integer, Integer> includedTabHeightMap = new HashMap<Integer, Integer>(); // metas-2009_0021_AP1_CR051
 	
 	public GridWorkbench getGridWorkbench()
 	{

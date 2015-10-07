@@ -270,8 +270,7 @@ public class GridPanel extends Borderlayout implements EventListener
 				column.setSortAscending(new SortComparator(i, true, Env.getLanguage(Env.getCtx())));
 				column.setSortDescending(new SortComparator(i, false, Env.getLanguage(Env.getCtx())));
 				column.setLabel(gridField[i].getHeader());
-				int l = DisplayType.isNumeric(gridField[i].getDisplayType())
-					? 120 : gridField[i].getDisplayLength() * 9;
+				int l = DisplayType.isNumeric(gridField[i].getDisplayType()) ? 120 : gridField[i].getDisplayLength() * 9;
 				if (gridField[i].getHeader().length() * 9 > l)
 					l = gridField[i].getHeader().length() * 9;
 				if (l > MAX_COLUMN_WIDTH)
@@ -346,6 +345,7 @@ public class GridPanel extends Borderlayout implements EventListener
 			renderer.stopEditing(true);
 	}
 
+	@Override
 	public void onEvent(Event event) throws Exception
 	{
 		if (event == null)

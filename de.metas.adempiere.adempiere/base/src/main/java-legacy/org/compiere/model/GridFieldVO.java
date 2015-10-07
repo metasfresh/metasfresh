@@ -29,6 +29,7 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.Services;
+import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -80,8 +81,7 @@ public class GridFieldVO implements Serializable
 	public static GridFieldVO create (Properties ctx, int WindowNo, int TabNo, 
 		int AD_Window_ID, int AD_Tab_ID, boolean readOnly, ResultSet rs)
 	{
-		GridFieldVO vo = new GridFieldVO (ctx, WindowNo, TabNo, 
-			AD_Window_ID, AD_Tab_ID, readOnly);
+		final GridFieldVO vo = new GridFieldVO (ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, readOnly);
 		String columnName = "ColumnName";
 		//int AD_Field_ID = 0;
 		try
@@ -91,6 +91,12 @@ public class GridFieldVO implements Serializable
 				return null;
 
 			CLogger.get().fine(vo.ColumnName);
+			
+			String fieldGroupName = null;
+			FieldGroupType fieldGroupType = null;
+			boolean fieldGroupCollapsedByDefault = false;
+			
+			final GridFieldLayoutConstraints.Builder layoutConstraints = GridFieldLayoutConstraints.builder();
 
 			ResultSetMetaData rsmd = rs.getMetaData();
 			for (int i = 1; i <= rsmd.getColumnCount(); i++)
@@ -114,18 +120,33 @@ public class GridFieldVO implements Serializable
 					}
 				}
 				// metas: end
-				else if (columnName.equalsIgnoreCase("DisplayLength"))
-					vo.DisplayLength = rs.getInt (i);
-				// metas: begin
-				else if (columnName.equalsIgnoreCase("ColumnDisplayLength"))
-					vo.ColumnDisplayLength = rs.getInt(i);
+				//
+				// Layout constraints
+				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_DisplayLength))
+				{
+					layoutConstraints.setDisplayLength(rs.getInt(i));
+				}
+				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_ColumnDisplayLength))
+				{
+					layoutConstraints.setColumnDisplayLength(rs.getInt(i));
+				}
+				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_IsSameLine))
+				{
+					layoutConstraints.setSameLine(DisplayType.toBoolean(rs.getString(i)));
+				}
+				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_SpanX))
+				{
+					layoutConstraints.setSpanX(rs.getInt(i));
+				}
+				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_SpanY))
+				{
+					layoutConstraints.setSpanY(rs.getInt(i));
+				}
+				//
 				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_SeqNo))
 					vo.setSeqNo(rs.getInt(i));
 				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_SeqNoGrid))
 					vo.setSeqNoGrid(rs.getInt(i));
-				// metas: end
-				else if (columnName.equalsIgnoreCase("IsSameLine"))
-					vo.IsSameLine = "Y".equals(rs.getString (i));
 				else if (columnName.equalsIgnoreCase("IsDisplayed"))
 					vo.IsDisplayed = "Y".equals(rs.getString (i));
 				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_IsDisplayedGrid))
@@ -166,10 +187,14 @@ public class GridFieldVO implements Serializable
 					vo.ValueMin = rs.getString (i);
 				else if (columnName.equalsIgnoreCase("ValueMax"))
 					vo.ValueMax = rs.getString (i);
+				//
 				else if (columnName.equalsIgnoreCase("FieldGroup"))
-					vo.FieldGroup = rs.getString (i);
+					fieldGroupName = rs.getString (i);
 				else if (columnName.equalsIgnoreCase("FieldGroupType"))
-					vo.FieldGroupType = rs.getString (i);
+					fieldGroupType = FieldGroupType.forCodeOrDefault(rs.getString(i), FieldGroupType.Label);
+				else if (columnName.equalsIgnoreCase("IsCollapsedByDefault"))
+					fieldGroupCollapsedByDefault = "Y".equals(rs.getString(i));
+				//
 				else if (columnName.equalsIgnoreCase("IsKey"))
 					vo.IsKey = "Y".equals(rs.getString (i));
 				else if (columnName.equalsIgnoreCase("IsParent"))
@@ -205,9 +230,6 @@ public class GridFieldVO implements Serializable
 				//Feature Request FR [ 1757088 ]
 				else if (columnName.equalsIgnoreCase("Included_Tab_ID"))
 					vo.Included_Tab_ID = rs.getInt(i);
-				// Collapse Default State
-				else if (columnName.equalsIgnoreCase("IsCollapsedByDefault"))
-					vo.IsCollapsedByDefault = "Y".equals(rs.getString(i));
 				//Info Factory class
 				else if (columnName.equalsIgnoreCase("InfoFactoryClass"))
 					vo.InfoFactoryClass  = rs.getString(i);
@@ -223,6 +245,10 @@ public class GridFieldVO implements Serializable
 					vo.IsCalculated = "Y".equals(rs.getString (i));
 				// metas: end: us215
 			}
+			
+			//
+			vo.fieldGroup = FieldGroupVO.build(fieldGroupName, fieldGroupType, fieldGroupCollapsedByDefault);
+			vo.layoutConstraints = layoutConstraints.build();
 			if (vo.Header == null)
 				vo.Header = vo.ColumnName;
 			//AD_Field_ID  = rs.getInt("AD_Field_ID");
@@ -288,7 +314,9 @@ public class GridFieldVO implements Serializable
 			vo.displayType = rs.getInt("AD_Reference_ID");
 			vo.IsMandatory = rs.getString("IsMandatory").equals("Y");
 			vo.FieldLength = rs.getInt("FieldLength");
-			vo.DisplayLength = vo.FieldLength;
+			vo.layoutConstraints = GridFieldLayoutConstraints.builder()
+					.setDisplayLength(vo.FieldLength)
+					.build();
 			vo.DefaultValue = rs.getString("DefaultValue");
 			vo.DefaultValue2 = rs.getString("DefaultValue2");
 			vo.VFormat = rs.getString("VFormat");
@@ -321,7 +349,7 @@ public class GridFieldVO implements Serializable
 	 *  @param voF field value object
 	 *  @return to MFieldVO
 	 */
-	public static GridFieldVO createParameter (GridFieldVO voF)
+	public static GridFieldVO createParameter (final GridFieldVO voF)
 	{
 		final GridFieldVO voT = voF.clone(voF.ctx, voF.WindowNo, voF.TabNo, voF.AD_Window_ID, voF.AD_Tab_ID, voF.tabReadOnly);
 		voT.isProcess = true;
@@ -341,8 +369,7 @@ public class GridFieldVO implements Serializable
 		voT.displayType = voF.displayType;
 		voT.IsMandatory = voF.IsMandatory;
 		voT.FieldLength = voF.FieldLength;
-		voT.DisplayLength = voF.FieldLength;
-		voT.ColumnDisplayLength = voF.ColumnDisplayLength; // metas
+		voT.layoutConstraints = voF.layoutConstraints.copy();
 		voT.DefaultValue = voF.DefaultValue2;
 		voT.VFormat = voF.VFormat;
 		voT.ValueMin = voF.ValueMin;
@@ -458,12 +485,13 @@ public class GridFieldVO implements Serializable
 	public int          AD_Column_ID = 0;
 	/** Field ID */
 	public int AD_Field_ID = 0; // metas
-	/**	Display Length	*/
-	public int          DisplayLength = 0;
-	/** Column Display Length */
-	private int ColumnDisplayLength = 0; // metas
-	/**	Same Line		*/
-	public boolean      IsSameLine = false;
+	private GridFieldLayoutConstraints layoutConstraints = GridFieldLayoutConstraints.builder().build();
+//	/**	Display Length	*/
+//	public int          DisplayLength = 0;
+//	/** Column Display Length */
+//	private int ColumnDisplayLength = 0; // metas
+//	/**	Same Line		*/
+//	public boolean      IsSameLine = false;
 	private int			seqNo = 0;
 	private int			seqNoGrid = 0;
 	/**	Displayed		*/
@@ -507,9 +535,7 @@ public class GridFieldVO implements Serializable
 	/**	Max. Value		*/
 	public String       ValueMax = "";
 	/**	Field Group		*/
-	public String       FieldGroup = "";
-	/**	Field Group	Type	*/
-	public String       FieldGroupType = "";
+	private FieldGroupVO fieldGroup = FieldGroupVO.NULL;
 	/**	PK				*/
 	public boolean      IsKey = false;
 	/**	FK				*/
@@ -551,8 +577,6 @@ public class GridFieldVO implements Serializable
 	//*  Feature Request FR [ 1757088 ]
 	public int          Included_Tab_ID = 0;
 
-	/** Collapse By Default * */
-	public boolean IsCollapsedByDefault = false;
 	/**  Autocompletion for textfields - Feature Request FR [ 1757088 ] */
 	private boolean autocomplete = false;
 
@@ -589,10 +613,6 @@ public class GridFieldVO implements Serializable
 		// metas-2009_0021_AP1_CR045: end
 		if (DefaultValue == null)
 			DefaultValue = "";
-		if (FieldGroup == null)
-			FieldGroup = "";
-		if (FieldGroupType == null)
-			FieldGroupType = "";
 		if (Description == null)
 			Description = "";
 		if (Help == null)
@@ -685,9 +705,7 @@ public class GridFieldVO implements Serializable
 		clone.AD_Field_ID = AD_Field_ID; // metas
 		clone.AD_Table_ID = AD_Table_ID;
 		clone.AD_Column_ID = AD_Column_ID;
-		clone.DisplayLength = DisplayLength;
-		clone.ColumnDisplayLength = ColumnDisplayLength; // metas
-		clone.IsSameLine = IsSameLine;
+		clone.layoutConstraints = layoutConstraints.copy();
 		clone.IsDisplayed = IsDisplayed;
 		clone.isDisplayedGrid = isDisplayedGrid;
 		clone.DisplayLogic = DisplayLogic;
@@ -710,8 +728,7 @@ public class GridFieldVO implements Serializable
 		clone.VFormat = VFormat;
 		clone.ValueMin = ValueMin;
 		clone.ValueMax = ValueMax;
-		clone.FieldGroup = FieldGroup;
-		clone.FieldGroupType = FieldGroupType;
+		clone.fieldGroup = fieldGroup;
 		clone.IsKey = IsKey;
 		clone.IsParent = IsParent;
 //		clone.Callout = Callout;
@@ -931,15 +948,10 @@ public class GridFieldVO implements Serializable
 	{
 		this.isDisplayedGrid = isDisplayedGrid;
 	}
-
-	public int getColumnDisplayLength()
-	{
-		return this.ColumnDisplayLength;
-	}
 	
-	public void setColumnDisplayLength(final int columnDisplayLength)
+	public GridFieldLayoutConstraints getLayoutConstraints()
 	{
-		this.ColumnDisplayLength = columnDisplayLength;
+		return layoutConstraints;
 	}
 
 	public int getAD_Field_ID()
@@ -955,5 +967,10 @@ public class GridFieldVO implements Serializable
 	public boolean isCalculated()
 	{
 		return IsCalculated;
+	}
+	
+	public FieldGroupVO getFieldGroup()
+	{
+		return fieldGroup;
 	}
 }   //  MFieldVO

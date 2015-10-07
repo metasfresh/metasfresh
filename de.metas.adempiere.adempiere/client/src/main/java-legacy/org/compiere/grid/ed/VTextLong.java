@@ -16,7 +16,6 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -57,13 +56,12 @@ public class VTextLong extends CTextPane
 	 *  @param displayLength display length
 	 *  @param fieldLength field length
 	 */
-	public VTextLong (String columnName, boolean mandatory, boolean isReadOnly, boolean isUpdateable,
-		int displayLength, int fieldLength)
+	public VTextLong (String columnName, boolean mandatory, boolean isReadOnly, boolean isUpdateable, int displayLength, int fieldLength)
 	{
 		super ("text");
 		super.setName(columnName);
 		LookAndFeel.installBorder(this, "TextField.border");
-		setPreferredSize(new Dimension (500,80));
+		//setPreferredSize(new Dimension (500,80)); // metas-tsa: NEVER set the preferred size, but let the layout do that
 
 		//  Create Editor
 		setForeground(AdempierePLAF.getTextColor_Normal());

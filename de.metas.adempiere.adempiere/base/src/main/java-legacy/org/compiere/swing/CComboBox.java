@@ -29,6 +29,7 @@ import javax.swing.plaf.ComboBoxUI;
 
 import org.adempiere.plaf.AdempiereComboBoxUI;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.plaf.VEditorUI;
 import org.adempiere.util.Check;
 import org.compiere.util.NamePair;
 import org.compiere.util.Trace;
@@ -138,16 +139,19 @@ public class CComboBox<E> extends JComboBox<E>
 		init();
 	}   //  CComboBox
 	
-	/** Field Height 				 */
-	public static int     		FIELD_HIGHT = 0;
-
+	@Override
+	public void updateUI()
+	{
+		super.updateUI();
+		VEditorUI.installMinMaxSizes(this);
+	}
+	
 	/**
-	 *  Common Init
+	 *  Common initialization
 	 */
 	private void init()
 	{
-		FIELD_HIGHT = getPreferredSize().height;
-	}   //  init
+	}
 
 	/** Mandatory (default false)   */
 	private boolean m_mandatory = false;

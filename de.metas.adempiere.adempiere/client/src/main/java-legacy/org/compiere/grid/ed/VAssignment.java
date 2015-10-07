@@ -18,8 +18,6 @@ package org.compiere.grid.ed;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -39,11 +37,11 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.apps.search.InfoSchedule;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.MResourceAssignment;
-import org.compiere.swing.CButton;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
@@ -85,32 +83,31 @@ public class VAssignment extends JComponent
 	{
 		super();
 	//	super.setName(columnName);
+		
 		LookAndFeel.installBorder(this, "TextField.border");
 		this.setLayout(new BorderLayout());
-		//  Size
-		this.setPreferredSize(m_text.getPreferredSize());
-		int height = m_text.getPreferredSize().height;
-
-		//	***	Text	***
+		
+		//
+		// Text
+		VEditorUtils.setupInnerTextComponentUI(m_text);
 		m_text.setEditable(false);
 		m_text.setFocusable(false);
-		m_text.setBorder(null);
 		m_text.setHorizontalAlignment(JTextField.LEADING);
-		//	Background
-		setMandatory(mandatory);
 		this.add(m_text, BorderLayout.CENTER);
 
-		//	***	Button	***
-		m_button.setIcon(Images.getImageIcon2("Assignment10"));
-		m_button.setMargin(new Insets(0, 0, 0, 0));
-		m_button.setPreferredSize(new Dimension(height, height));
+		//
+		// Button
+		m_button = VEditorUtils.createActionButton("Assignment", m_text);
 		m_button.addActionListener(this);
-		m_button.setFocusable(true);
 		VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
 
-		//	Prefereed Size
-		this.setPreferredSize(this.getPreferredSize());		//	causes r/o to be the same length
+		//
+		// Size
+		VEditorUtils.setupVEditorDimensionFromInnerTextDimension(this, m_text);
+
+		//
 		//	ReadWrite
+		setMandatory(mandatory);
 		if (isReadOnly || !isUpdateable)
 			setReadWrite(false);
 		else
@@ -132,7 +129,7 @@ public class VAssignment extends JComponent
 	/** The Text Field          */
 	private JTextField			m_text = new JTextField (VLookup.DISPLAY_LENGTH);
 	/** The Button              */
-	private CButton				m_button = new CButton();
+	private VEditorActionButton m_button = null;
 
 	private CMenuItem 			menuEditor;
 
@@ -173,7 +170,6 @@ public class VAssignment extends JComponent
 	public void setMandatory (boolean mandatory)
 	{
 		m_mandatory = mandatory;
-		m_button.setMandatory(mandatory);
 		setBackground (false);
 	}	//	setMandatory
 
@@ -364,8 +360,7 @@ public class VAssignment extends JComponent
 	{
 		if (!m_button.isEnabled())
 			return;
-		m_button.setEnabled(false);
-		try
+		try(final IAutoCloseable buttonDisabled = m_button.temporaryDisable())
 		{
 			Integer oldValue = (Integer)getValue();
 			int S_ResourceAssignment_ID = oldValue == null ? 0 : oldValue.intValue();
@@ -398,10 +393,7 @@ public class VAssignment extends JComponent
 				}
 			}
 		}
-		finally
-		{
-			m_button.setEnabled(true);
-		}
+		
 		requestFocus();
 	}	//	actionPerformed
 

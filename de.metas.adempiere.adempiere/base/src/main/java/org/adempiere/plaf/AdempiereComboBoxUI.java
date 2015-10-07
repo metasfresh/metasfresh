@@ -37,10 +37,12 @@ package org.adempiere.plaf;
 
 import java.awt.event.MouseListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
@@ -69,16 +71,33 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 	{
 		return new AdempiereComboBoxUI();
 	}
+	
+	public static Object[] getUIDefaults()
+	{
+		return new Object[] {
+				//
+				// Combobox's "arrow down" button size to be same size as the VEditor's action button.
+				// NOTE: no, it's not a mistake that we set "ScrollBar.width", see com.jgoodies.looks.plastic.PlasticComboBoxUI.getEditableButtonWidth().
+				// On the other hand, we are not using the original ScrollBar UI anymore, so it's safe to play with this one.
+				"ScrollBar.width", AdempierePLAF.createActiveValueProxy(VEditorUI.KEY_VEditor_Height, VEditorUI.DEFAULT_VEditor_Height)
+				
+				//
+				// The combobox shall look similar with any other VEditor (have no borders, the arrow button shall look like the action button of an VEditor) 
+				, "ComboBox.editorBorder", BorderFactory.createEmptyBorder()
+				, "ComboBox.arrowButtonBorder", BorderFactory.createEmptyBorder()
+				, "ComboBox.border", AdempierePLAF.createActiveValueProxy("TextField.border", BorderFactory.createEmptyBorder())
+		};
+	}
 
 	@Override
 	public void installUI(final JComponent c)
 	{
 		final MouseListener[] mouseListeners = c.getMouseListeners();
-		
+
 		super.installUI(c);
-		// c.setOpaque(false);
-		
-		
+		c.setBorder(UIManager.getBorder("ComboBox.border"));
+
+		//
 		// Bug in Metal: arrowButton gets Mouse Events, so add the JComboBox MouseListeners to the arrowButton
 		for (final MouseListener ml : mouseListeners)
 		{
@@ -95,9 +114,9 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 	@Override
 	protected JButton createArrowButton()
 	{
-		final JButton button = super.createArrowButton();
-		return button;
-	}   // createArrowButton
+		 final JButton button = super.createArrowButton();
+		 return button;
+	}
 
 	public JButton getArrowButton()
 	{
@@ -136,15 +155,15 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 			super(combo);
 		}
 
-		@Override 
-		protected int getPopupHeightForRowCount(final int maxRowCount) 
-		{ 
+		@Override
+		protected int getPopupHeightForRowCount(final int maxRowCount)
+		{
 			// ensure the combo box sized for the amount of data to be displayed
 			final int itemCount = comboBox.getItemCount();
 			int rows = itemCount < maxRowCount ? itemCount : maxRowCount;
 			if (rows <= 0)
 				rows = 1;
-			
+
 			return super.getPopupHeightForRowCount(1) * rows;
 		}
 	}

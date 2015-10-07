@@ -19,19 +19,21 @@ package org.compiere.db;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
 
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.plaf.VEditorUI;
 import org.compiere.swing.CEditor;
 import org.compiere.util.DB;
 
@@ -58,22 +60,41 @@ public class CConnectionEditor extends JComponent
 		super();
 		setName("ConnectionEditor");
 		CConnectionEditor_MouseListener ml = new CConnectionEditor_MouseListener();
-		//  Layout
+		
+		final int height = VEditorUI.getVEditorHeight();
+		
+		//
+		//  Text
 		m_text.setEditable(false);
-		m_text.setBorder(null);
+		m_text.setBorder(BorderFactory.createEmptyBorder());
+		m_text.setMinimumSize(new Dimension(30, height));
+		m_text.setMinimumSize(new Dimension(Integer.MAX_VALUE, height));
 		m_text.addMouseListener(ml);
+		
+		//
+		// Server icon
 		m_server.setIcon(new ImageIcon(getClass().getResource("Server16.gif")));
 		m_server.setFocusable(false);
-		m_server.setBorder(null);
+		m_server.setBorder(BorderFactory.createEmptyBorder());
 		m_server.setOpaque(true);
+		m_server.setPreferredSize(new Dimension(height, height));
 		m_server.addMouseListener(ml);
+		
+		//
+		// Database icon
 		m_db.setIcon(new ImageIcon(getClass().getResource("Database16.gif")));
 		m_db.setFocusable(false);
-		m_db.setBorder(null);
+		m_db.setBorder(BorderFactory.createEmptyBorder());
 		m_db.setOpaque(true);
+		m_db.setPreferredSize(new Dimension(height, height));
 		m_db.addMouseListener(ml);
-		LookAndFeel.installBorder(this, "TextField.border");
+		
 		//
+		// This component
+		LookAndFeel.installBorder(this, "TextField.border");
+		
+		//
+		// Layout
 		setLayout(new BorderLayout(0,0));
 		add(m_server, BorderLayout.WEST);
 		add(m_text, BorderLayout.CENTER);
@@ -83,7 +104,7 @@ public class CConnectionEditor extends JComponent
 	/** Text Element        */
 	private JTextField  m_text = new JTextField(10);
 	/** DB Button Element   */
-	private JLabel      m_db = new JLabel ();
+	private JLabel      m_db = new JLabel();
 	/** Host Button Element */
 	private JLabel      m_server = new JLabel();
 	/** The Value           */
@@ -268,53 +289,44 @@ public class CConnectionEditor extends JComponent
         }
 	}   //  fireActionPerformed
 
-	
-	/**************************************************************************
-	 *  Test Method
-	 *  @param args
-	 */
-	public static void main(String[] args)
-	{
-	//	System.out.println("CConnectionEditor");
-		JFrame frame = new JFrame("CConnectionEditor");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getRootPane().getContentPane().add(new CConnectionEditor());
-		AdempierePLAF.showCenterScreen(frame);
-	}   //  main
-
-
 	/**
 	 *  MouseListener
 	 */
-	public class CConnectionEditor_MouseListener extends MouseAdapter
+	private class CConnectionEditor_MouseListener extends MouseAdapter
 	{
 		/**
 		 *  Mouse Clicked - Open Dialog
 		 *  @param e
 		 */
 		@Override
-		public void mouseClicked(MouseEvent e)
+		public void mouseClicked(final MouseEvent e)
 		{
 			if (!isEnabled() || !m_rw || m_active)
 				return;
 			m_active = true;
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			//
-			CConnectionDialog cd = new CConnectionDialog(m_value);
-			setValue(cd.getConnection());
-			if (!cd.isCancel())
-				fireActionPerformed();
-			else {
-				DB.closeTarget();
-				DB.setDBTarget(m_value);
+			try
+			{
+				final CConnectionDialog cd = new CConnectionDialog(m_value);
+				setValue(cd.getConnection());
+				if (!cd.isCancel())
+				{
+					fireActionPerformed();
+				}
+				else
+				{
+					DB.closeTarget();
+					DB.setDBTarget(m_value);
+				}
 			}
-			
-			//
-			setCursor(Cursor.getDefaultCursor());
-			m_active = false;
+			finally
+			{
+				setCursor(Cursor.getDefaultCursor());
+				m_active = false;
+			}
 		}   //  mouseClicked
 
-		private boolean     m_active = false;
+		private boolean m_active = false;
 	}   //  CConnectionExitor_MouseListener
 
 }   //  CConnectionEditor

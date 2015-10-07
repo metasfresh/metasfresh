@@ -62,7 +62,7 @@ public class VComboBox extends CComboBox
 	}	//	VComboBox
 
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VComboBox.class);
+	private static final CLogger log = CLogger.getCLogger(VComboBox.class);
 	
 	/**
 	 *  Common Setup

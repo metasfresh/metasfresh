@@ -20,7 +20,6 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -47,6 +46,7 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.StatusBar;
@@ -254,7 +254,7 @@ public class Editor extends CDialog
 		else
 		{
 			statusBar.setStatusLine(size + " > " + m_maxSize, true);
-			Toolkit.getDefaultToolkit().beep();
+			ADialog.beep();
 		}
 	}	//	updateStatusBar
 	

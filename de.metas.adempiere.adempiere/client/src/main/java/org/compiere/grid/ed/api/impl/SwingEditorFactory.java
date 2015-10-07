@@ -75,12 +75,29 @@ public final class SwingEditorFactory implements ISwingEditorFactory
 	}
 
 	@Override
+	public final JComponent getEditorComponent(final VEditor editor)
+	{
+		if (editor == null)
+		{
+			return null;
+		}
+		else if (editor instanceof JComponent)
+		{
+			return (JComponent)editor;
+		}
+		else
+		{
+			throw new AdempiereException("Cannot extract the swing component of " + editor + " (" + editor.getClass() + ")");
+		}
+	}
+
+	@Override
 	public final CLabel getLabel(final GridField mField)
 	{
 		final CLabel label = VEditorFactory.getLabel(mField);
 		return label;
 	}
-
+	
 	@Override
 	public final void bindFieldAndLabel(final JPanel panel, final JComponent field, final JLabel label, final String columnName)
 	{

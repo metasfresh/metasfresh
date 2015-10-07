@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import org.adempiere.util.Services;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.IStatusBar;
 import org.compiere.apps.form.FormFrame;
@@ -43,6 +44,7 @@ import org.compiere.apps.form.VGenPanel;
 import org.compiere.grid.ed.VCheckBox;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.VLookup;
+import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.Lookup;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
@@ -56,6 +58,8 @@ public class VInvoiceGenerateForm
 		extends InvoiceGenerate
 		implements FormPanel
 {
+	// services
+	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
 	
 	private VGenPanel panel;
 
@@ -179,7 +183,7 @@ public class VInvoiceGenerateForm
 	{
 		if (editor == null)
 			return;
-		Component editorComp = (Component)editor;
+		Component editorComp = swingEditorFactory.getEditorComponent(editor);
 		CLabel label = new CLabel();
 		label.setLabelFor(editorComp);
 		label.setText(Msg.translate(Env.getCtx(), editor.getName()));

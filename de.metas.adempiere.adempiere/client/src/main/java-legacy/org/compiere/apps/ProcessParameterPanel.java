@@ -342,7 +342,7 @@ public class ProcessParameterPanel extends CPanel
 
 	private Component getComponent(final VEditor editor)
 	{
-		return (Component)editor;
+		return swingEditorFactory.getEditorComponent(editor);
 	}
 
 	private VEditor getEditor(final GridField gridField)

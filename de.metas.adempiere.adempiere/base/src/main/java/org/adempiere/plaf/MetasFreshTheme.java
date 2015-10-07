@@ -164,13 +164,13 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 					MetasFreshScrollBarUI.KEY_Thumb_Color, COLOR_LightGray
 			});
 		}
+		// Combobox
+		table.putDefaults(AdempiereComboBoxUI.getUIDefaults());
 
 		//
 		// VPanel (i.e. standard window, single row layout)
 		{
-			table.putDefaults(new Object[] {
-					"VPanel.IncludedTab.Height", 150
-			});
+			table.putDefaults(VPanelUI.getUIDefaults());
 		}
 		//
 		// VPanel - Field group task pane (i.e. that collapsible panel which groups the fields of a given field group)
@@ -219,20 +219,7 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 
 		//
 		// VEditors
-		table.putDefaults(new Object[] {
-				//
-				// Editor button align (i.e. that small button of an editor field which is opening the Info Window)
-				VEditorDialogButtonAlign.DEFAULT_EditorUI, VEditorDialogButtonAlign.Right
-				// , VEditorDialogButtonAlign.createUIKey("VNumber"), VEditorDialogButtonAlign.Hide
-				// , VEditorDialogButtonAlign.createUIKey("VDate"), VEditorDialogButtonAlign.Hide
-				// , VEditorDialogButtonAlign.createUIKey("VURL"), VEditorDialogButtonAlign.Right // i.e. the online button
-
-				//
-				// VButton editor
-				, "VButton.Action.textColor", getBlack()
-				, "VButton.Posted.textColor", new ColorUIResource(Color.MAGENTA)
-
-		});
+		table.putDefaults(VEditorUI.getUIDefaults());
 
 		//
 		// Swing Event Notifier

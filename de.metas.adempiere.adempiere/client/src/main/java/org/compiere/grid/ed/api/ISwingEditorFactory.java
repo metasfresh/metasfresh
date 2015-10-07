@@ -68,6 +68,14 @@ public interface ISwingEditorFactory extends ISingletonService
 	VEditor getEditor(GridTab mTab, GridField mField, boolean tableEditor);
 
 	/**
+	 * Gets the swing component of given editor.
+	 * 
+	 * @param editor
+	 * @return swing component of given editor or null if the editor was null
+	 */
+	JComponent getEditorComponent(VEditor editor);
+
+	/**
 	 * Create Label for MField. (null for YesNo/Button) The Name is set to the column name for dynamic display management
 	 *
 	 * @param mField MField

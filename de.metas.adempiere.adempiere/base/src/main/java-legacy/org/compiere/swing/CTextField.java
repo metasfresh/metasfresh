@@ -24,6 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.text.Document;
 
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.plaf.VEditorUI;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.JTextComponentCopyPasteSupportEditor;
@@ -136,6 +137,14 @@ public class CTextField extends JTextField
 		// Copy/Paste support
 		this.copyPasteSupport = JTextComponentCopyPasteSupportEditor.ofComponent(this);
 	}   //  init
+	
+	@Override
+	public void updateUI()
+	{
+		super.updateUI();
+		
+		VEditorUI.installMinMaxSizes(this);
+	}
 
 	/*************************************************************************/
 

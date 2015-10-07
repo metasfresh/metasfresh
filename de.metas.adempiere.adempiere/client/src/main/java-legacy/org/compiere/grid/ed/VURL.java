@@ -18,8 +18,6 @@ package org.compiere.grid.ed;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -33,7 +31,6 @@ import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
 
-import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
@@ -43,9 +40,7 @@ import org.adempiere.util.Check;
 import org.compiere.apps.ADialog;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
-import org.compiere.swing.CButton;
 import org.compiere.swing.CTextField;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 /**
@@ -87,54 +82,49 @@ public class VURL extends JComponent
 		m_columnName = columnName;
 		m_fieldLength = fieldLength;
 		m_mandatory = mandatory;
-		LookAndFeel.installBorder(this, "TextField.border");
-		this.setLayout(new BorderLayout());
-		//  Size
-		this.setPreferredSize(m_text.getPreferredSize());
-		int height = m_text.getPreferredSize().height;
 
-		//	***	Text	***
+		//
+		LookAndFeel.installBorder(this, "TextField.border");
+		setForeground(AdempierePLAF.getTextColor_Normal());
+		setBackground(AdempierePLAF.getFieldBackground_Normal());
+		this.setLayout(new BorderLayout());
+		
+		//
+		// Text
 		m_text = new CTextField(displayLength>VString.MAXDISPLAY_LENGTH ? VString.MAXDISPLAY_LENGTH : displayLength);
+		VEditorUtils.setupInnerTextComponentUI(m_text);
 		m_text.setEditable(isReadOnly);
 		m_text.setFocusable(true);
-		m_text.setBorder(null);
 		m_text.setHorizontalAlignment(JTextField.LEADING);
-
-		//	Background
-		setMandatory(mandatory);
+		m_text.addKeyListener(this);
+		m_text.addActionListener(this);
 		this.add(m_text, BorderLayout.CENTER);
 
-		//	***	Button	***
+		//
+		// Button
 		{
-			m_button.setIcon(Images.getImageIcon2("Online10"));	// should be 10
-			m_button.setMargin(new Insets(0, 0, 0, 0));
-			m_button.setPreferredSize(new Dimension(height, height));
+			m_button = VEditorUtils.createActionButton("Online", m_text);
 			m_button.addActionListener(this);
-			m_button.setFocusable(false);
 			VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
 		}
 
-		//	Preferred Size
-		this.setPreferredSize(this.getPreferredSize());		//	causes r/o to be the same length
+		//
+		//  Size
+		VEditorUtils.setupVEditorDimensionFromInnerTextDimension(this, m_text);
+
+		//
 		//	ReadWrite
+		setMandatory(mandatory);
 		if (isReadOnly || !isUpdateable)
 			setReadWrite(false);
 		else
 			setReadWrite(true);
 
-		m_text.addKeyListener(this);
-		m_text.addActionListener(this);
-		
-		setForeground(AdempierePLAF.getTextColor_Normal());
-		setBackground(AdempierePLAF.getFieldBackground_Normal());
-		
 		//
 		// Create and bind the context menu
 		new EditorContextPopupMenu(this);
 	}	//	VURL
 
-	/**	Logger	*/
-	private static CLogger log = CLogger.getCLogger (VURL.class);
 	/** Column Name				*/
 	private String				m_columnName;
 	/** The Text				*/
@@ -142,7 +132,7 @@ public class VURL extends JComponent
 	private boolean				m_readWrite;
 	private boolean				m_mandatory;
 	/** The Button              */
-	private CButton				m_button = new CButton();
+	private VEditorActionButton m_button = null;
 	/** Grid Field				*/
 	private GridField      		m_mField = null;
 
@@ -198,8 +188,15 @@ public class VURL extends JComponent
 	{
 		m_readWrite = rw;
 		m_text.setReadWrite(rw);
+		m_button.setReadWrite(rw && isValidURL());
 		setBackground (false);
 	}	//	setReadWrite
+	
+	/** Validate and update the status on text changed */
+	private final void validateOnTextChanged()
+	{
+		m_button.setReadWrite(isReadWrite() && isValidURL());
+	}
 
 	/**
 	 * 	Is Read Write
@@ -255,14 +252,15 @@ public class VURL extends JComponent
 	@Override
 	public void setValue(Object value)
 	{
-	//	log.config( "VString.setValue", value);
 		if (value == null)
 			m_oldText = "";
 		else
 			m_oldText = value.toString();
+		
 		//	only set when not updated here
 		if (m_setting)
 			return;
+		
 		setText (m_oldText);
 		m_initialText = m_oldText;
 		//	If R/O left justify 
@@ -316,11 +314,12 @@ public class VURL extends JComponent
 	@Override
 	public void keyReleased(KeyEvent e)
 	{
-		log.finest("Key=" + e.getKeyCode() + " - " + e.getKeyChar()
-			+ " -> " + getText());
 		//  ESC
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+		{
 			setText(m_initialText);
+		}
+		
 		m_setting = true;
 		try
 		{
@@ -328,11 +327,16 @@ public class VURL extends JComponent
 			if (clear.length() > m_fieldLength)
 				clear = clear.substring(0, m_fieldLength);
 			fireVetoableChange (m_columnName, m_oldText, clear);
+			
+			validateOnTextChanged();
 		}
 		catch (PropertyVetoException pve)	
 		{
 		}
-		m_setting = false;
+		finally
+		{
+			m_setting = false;
+		}
 	}	//	keyReleased
 
 	/**
@@ -386,6 +390,24 @@ public class VURL extends JComponent
 	}	//	actionPerformed
 
 	/**
+	 * Preliminary check if this current URL is valid.
+	 * 
+	 * NOTE: This method is used to check if we shall enable the "browse/action button", so for performance purposes we are not actually validate if the URL is really valid.
+	 * 
+	 * @return true if value
+	 */
+	private final boolean isValidURL()
+	{
+		final String urlString = m_text.getText();
+		if (Check.isEmpty(urlString, true))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * 	Action button pressed - show URL
 	 */
 	private void action_button()
@@ -433,6 +455,7 @@ public class VURL extends JComponent
 	public void setText (String text)
 	{
 		m_text.setText (text);
+		validateOnTextChanged();
 	}	//	setText
 
 	

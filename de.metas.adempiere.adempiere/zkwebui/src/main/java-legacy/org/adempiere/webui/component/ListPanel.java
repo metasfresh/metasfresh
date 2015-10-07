@@ -264,8 +264,7 @@ public class ListPanel extends Borderlayout implements EventListener
 				ListHeader colHeader = new ListHeader();
 				colHeader.setSort("auto");
 				colHeader.setLabel(gridField[i].getHeader());
-				int l = DisplayType.isNumeric(gridField[i].getDisplayType()) 
-					? 100 : gridField[i].getDisplayLength() * 9;
+				int l = DisplayType.isNumeric(gridField[i].getDisplayType()) ? 100 : gridField[i].getDisplayLength() * 9;
 				if (gridField[i].getHeader().length() * 9 > l)
 					l = gridField[i].getHeader().length() * 9;
 				if (l > MAX_COLUMN_WIDTH) 
@@ -332,6 +331,7 @@ public class ListPanel extends Borderlayout implements EventListener
 			renderer.stopEditing(false);
 	}
 
+	@Override
 	public void onEvent(Event event) throws Exception
 	{		
 		if (event == null)

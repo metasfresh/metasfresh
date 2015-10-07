@@ -154,7 +154,7 @@ public class AWindowSaveStateModel
 
 		adField.setIsDisplayedGrid(gridFieldVO.isDisplayedGrid());
 		adField.setSeqNoGrid(gridFieldVO.getSeqNoGrid());
-		adField.setColumnDisplayLength(gridFieldVO.getColumnDisplayLength());
+		adField.setColumnDisplayLength(gridFieldVO.getLayoutConstraints().getColumnDisplayLength());
 		InterfaceWrapperHelper.save(adField);
 	}
 

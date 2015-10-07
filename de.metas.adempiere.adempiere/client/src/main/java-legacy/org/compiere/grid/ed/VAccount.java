@@ -19,8 +19,6 @@ package org.compiere.grid.ed;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -36,14 +34,12 @@ import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.compiere.apps.APanel;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.MAccountLookup;
-import org.compiere.swing.CButton;
 import org.compiere.swing.CTextField;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
@@ -83,27 +79,27 @@ public final class VAccount extends JComponent
 		m_columnName = columnName;
 		m_mAccount = mAccount;
 		m_title = title;
+		
 		//
 		LookAndFeel.installBorder(this, "TextField.border");
 		this.setLayout(new BorderLayout());
-		// Size
-		this.setPreferredSize(m_text.getPreferredSize());		// causes r/o to be the same length
-		int height = m_text.getPreferredSize().height;
-
-		// *** Button & Text ***
-		m_text.setBorder(null);
+		
+		//
+		// Text
+		VEditorUtils.setupInnerTextComponentUI(m_text);
 		m_text.addActionListener(this);
 		m_text.addFocusListener(this);
-		m_text.setFont(AdempierePLAF.getFont_Field());
-		m_text.setForeground(AdempierePLAF.getTextColor_Normal());
 		this.add(m_text, BorderLayout.CENTER);
 
-		m_button.setIcon(Images.getImageIcon2("Account10"));
-		m_button.setMargin(new Insets(0, 0, 0, 0));
-		m_button.setPreferredSize(new Dimension(height, height));
+		//
+		// Button
+		m_button = VEditorUtils.createActionButton("Account", m_text);
 		m_button.addActionListener(this);
-		m_button.setFocusable(false);
 		VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
+
+		//
+		// Size
+		VEditorUtils.setupVEditorDimensionFromInnerTextDimension(this, m_text);
 
 		// Editable
 		if (isReadOnly || !isUpdateable)
@@ -128,13 +124,15 @@ public final class VAccount extends JComponent
 	}   // dispose
 
 	private CTextField m_text = new CTextField(VLookup.DISPLAY_LENGTH);
-	private CButton m_button = new CButton();
+	private VEditorActionButton m_button = null;
 	private MAccountLookup m_mAccount;
 	private Object m_value;
-	private String m_title;
+	private final String m_title;
 	private int m_WindowNo;
+	private boolean mandatory = false;
+	private boolean readWrite = true;
 
-	private String m_columnName;
+	private final String m_columnName;
 	/** Logger */
 	private static CLogger log = CLogger.getCLogger(VAccount.class);
 
@@ -146,10 +144,11 @@ public final class VAccount extends JComponent
 	@Override
 	public void setReadWrite(boolean value)
 	{
-		m_button.setReadWrite(value);
+		this.readWrite = value;
+		
 		m_text.setReadWrite(value);
-		if (m_button.isVisible() != value)
-			m_button.setVisible(value);
+		m_button.setReadWrite(value);
+		
 		setBackground(false);
 	}	// setReadWrite
 
@@ -161,7 +160,7 @@ public final class VAccount extends JComponent
 	@Override
 	public boolean isReadWrite()
 	{
-		return m_button.isReadWrite();
+		return readWrite;
 	}	// isReadWrite
 
 	/**
@@ -170,9 +169,9 @@ public final class VAccount extends JComponent
 	 * @param mandatory
 	 */
 	@Override
-	public void setMandatory(boolean mandatory)
+	public void setMandatory(final boolean mandatory)
 	{
-		m_button.setMandatory(mandatory);
+		this.mandatory = mandatory;
 		setBackground(false);
 	}	// setMandatory
 
@@ -184,8 +183,8 @@ public final class VAccount extends JComponent
 	@Override
 	public boolean isMandatory()
 	{
-		return m_button.isMandatory();
-	}	// isMandatory
+		return mandatory;
+	}
 
 	/**
 	 * Set Background

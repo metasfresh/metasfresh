@@ -220,7 +220,7 @@ final class ReadPaymentForm
 		final BorderLayout mainLayout = new BorderLayout();
 		mainPanel.setLayout(mainLayout);
 
-		final VPanel parameterPanel = new VPanel("Parameter Panel", getWindowNo());
+		final VPanel parameterPanel = VPanel.newCustomFormPanel("Parameter Panel", getWindowNo());
 		mainPanel.add(parameterPanel, BorderLayout.NORTH);
 
 		final CPanel invoiceCandidatePanel = new CPanel();

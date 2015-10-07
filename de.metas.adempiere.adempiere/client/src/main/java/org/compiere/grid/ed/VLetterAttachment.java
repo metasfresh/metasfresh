@@ -27,6 +27,7 @@ package org.compiere.grid.ed;
 
 
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,8 +50,7 @@ import org.compiere.util.Util;
  */
 public class VLetterAttachment extends CPanel {
 	private final Dialog parentDialog;
-	private VTextLong fPreview = new VTextLong("Preview", false, true, false,
-			60, 60);
+	private VTextLong fPreview = new VTextLong("Preview", false, true, false, 60, 60);
 	private CButton bEdit = new CButton();
 	private CButton bCancel = new CButton();
 
@@ -91,6 +91,7 @@ public class VLetterAttachment extends CPanel {
 
 	private void init() {
 		fPreview.setText("");
+		fPreview.setPreferredSize(new Dimension (500,80)); // else the component will be displayed too small if empty (when using FlowLayout) 
 		bEdit.setIcon(Images.getImageIcon2("Open16"));
 		bEdit.setText("");
 		bEdit.addActionListener(editAction);
