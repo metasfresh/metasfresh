@@ -118,6 +118,8 @@ public class InfoAsset extends Info
 	 */
 	private void statInit()
 	{
+		final int p_WindowNo = getWindowNo();
+		
 		labelValue.setText(Msg.getMsg(Env.getCtx(), "Value"));
 		fieldValue.setBackground(AdempierePLAF.getInfoBackground());
 		fieldValue.addActionListener(this);
@@ -180,6 +182,7 @@ public class InfoAsset extends Info
 	 *  Includes first AND
 	 *  @return WHERE clause
 	 */
+	@Override
 	protected String getSQLWhere()
 	{
 		StringBuffer sql = new StringBuffer();
@@ -211,6 +214,7 @@ public class InfoAsset extends Info
 	 *  @param forCount for counting records
 	 * @throws SQLException
 	 */
+	@Override
 	protected void setParameters(PreparedStatement pstmt, boolean forCount) throws SQLException
 	{
 		int index = 1;
@@ -238,6 +242,7 @@ public class InfoAsset extends Info
 	 *  Save Selection Details
 	 *  Get Location/Partner Info
 	 */
+	@Override
 	public void saveSelectionDetail()
 	{
 		int row = p_table.getSelectedRow();
@@ -246,7 +251,7 @@ public class InfoAsset extends Info
 
 		//  publish for Callout to read
 		Integer ID = getSelectedRowKey();
-		Env.setContext(Env.getCtx(), p_WindowNo, Env.TAB_INFO, "A_Asset_ID", ID == null ? "0" : ID.toString());
+		Env.setContext(Env.getCtx(), getWindowNo(), Env.TAB_INFO, "A_Asset_ID", ID == null ? "0" : ID.toString());
 	}   //  saveSelectionDetail
 
 
@@ -255,6 +260,7 @@ public class InfoAsset extends Info
 	/**
 	 *	Show History
 	 */
+	@Override
 	protected void showHistory()
 	{
 		log.info( "InfoAsset.showHistory");
@@ -264,6 +270,7 @@ public class InfoAsset extends Info
 	 *	Has History
 	 *  @return true
 	 */
+	@Override
 	protected boolean hasHistory()
 	{
 		return false;
@@ -272,6 +279,7 @@ public class InfoAsset extends Info
 	/**
 	 *	Zoom
 	 */
+	@Override
 	protected void zoom()
 	{
 		log.info( "InfoAsset.zoom");
@@ -289,6 +297,7 @@ public class InfoAsset extends Info
 	 *	Has Zoom
 	 *  @return true
 	 */
+	@Override
 	protected boolean hasZoom()
 	{
 		return true;
@@ -297,6 +306,7 @@ public class InfoAsset extends Info
 	/**
 	 *	Customize
 	 */
+	@Override
 	protected void customize()
 	{
 		log.info( "InfoAsset.customize");
@@ -306,6 +316,7 @@ public class InfoAsset extends Info
 	 *	Has Customize
 	 *  @return false
 	 */
+	@Override
 	protected boolean hasCustomize()
 	{
 		return false;	//	for now

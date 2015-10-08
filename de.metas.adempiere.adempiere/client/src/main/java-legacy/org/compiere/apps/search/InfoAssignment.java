@@ -103,6 +103,8 @@ public class InfoAssignment extends Info
 	 */
 	private boolean initLookups()
 	{
+		final int p_WindowNo = getWindowNo();
+		
 		try
 		{
 			int AD_Column_ID = 6851;	//	S_Resource.S_ResourceType_ID

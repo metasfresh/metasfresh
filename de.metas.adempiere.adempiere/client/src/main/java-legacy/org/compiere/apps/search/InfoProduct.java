@@ -719,20 +719,19 @@ public final class InfoProduct extends Info implements ActionListener,
 	 */
 	private int findPLV(int M_PriceList_ID)
 	{
+		final int p_WindowNo = getWindowNo();
+		
 		Timestamp priceDate = null;
 		// Sales Order Date
-		String dateStr = Env
-				.getContext(Env.getCtx(), p_WindowNo, "DateOrdered");
+		String dateStr = Env.getContext(Env.getCtx(), p_WindowNo, "DateOrdered");
 		if (dateStr != null && dateStr.length() > 0)
-			priceDate = Env.getContextAsDate(Env.getCtx(), p_WindowNo,
-					"DateOrdered");
+			priceDate = Env.getContextAsDate(Env.getCtx(), p_WindowNo, "DateOrdered");
 		else
 		// Invoice Date
 		{
 			dateStr = Env.getContext(Env.getCtx(), p_WindowNo, "DateInvoiced");
 			if (dateStr != null && dateStr.length() > 0)
-				priceDate = Env.getContextAsDate(Env.getCtx(), p_WindowNo,
-						"DateInvoiced");
+				priceDate = Env.getContextAsDate(Env.getCtx(), p_WindowNo, "DateInvoiced");
 		}
 		// Today
 		if (priceDate == null)
@@ -1135,6 +1134,7 @@ public final class InfoProduct extends Info implements ActionListener,
 	protected void saveSelectionDetail()
 	{
 		// publish for Callout to read
+		final int p_WindowNo = getWindowNo();
 		Integer ID = getSelectedRowKey();
 		Env.setContext(Env.getCtx(), p_WindowNo, Env.TAB_INFO, "M_Product_ID",
 				ID == null ? "0" : ID.toString());
@@ -1176,7 +1176,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		{
 			ArrayList<Info_Column> list = new ArrayList<Info_Column>();
 			list.add(new Info_Column(" ", "p.M_Product_ID", IDColumn.class,
-					!p_multiSelection));
+					!isMultiSelection()));
 			list.add(new Info_Column(Msg
 					.translate(Env.getCtx(), "Discontinued").substring(0, 1),
 					"p.Discontinued", Boolean.class));

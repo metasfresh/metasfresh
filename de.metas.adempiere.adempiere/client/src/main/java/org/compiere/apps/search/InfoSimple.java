@@ -152,6 +152,7 @@ public class InfoSimple extends Info
 			{
 				return null;
 			}
+			final int p_WindowNo = getWindowNo();
 			final String windowStr = p_WindowNo + "|";
 			final String keyStr = (String)key;
 
@@ -178,6 +179,7 @@ public class InfoSimple extends Info
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
+			final int p_WindowNo = getWindowNo();
 			return Env.getContext(this, p_WindowNo, variableName);
 		}
 	};
@@ -281,6 +283,7 @@ public class InfoSimple extends Info
 	 * @param frame
 	 * @param modal note: reflection code relies on this parameter to be a <b>B</b>oolean, not a primitive boolean
 	 */
+	// NOTE: keep this constructor public because it's accessed by reflection
 	public InfoSimple(final Frame frame, final Boolean modal)
 	{
 		super(frame, modal);
@@ -718,6 +721,8 @@ public class InfoSimple extends Info
 		{
 			whereClause.append(" ( ").append(where).append(" ) ");
 		}
+		
+		final int p_WindowNo = getWindowNo();
 		return Env.parseContext(ctx, p_WindowNo, whereClause.toString(), false);
 	}
 
@@ -908,6 +913,7 @@ public class InfoSimple extends Info
 		{
 			return;
 		}
+		final String p_tableName = getTableName();
 		final MQuery query = new MQuery(p_tableName);
 		query.addRestriction(p_tableName + "_ID", MQuery.EQUAL, ID);
 		query.setRecordCount(1);
@@ -930,6 +936,7 @@ public class InfoSimple extends Info
 		//
 		int C_BPartner_ID = 0;
 		int M_Product_ID = 0;
+		final String p_tableName = getTableName();
 		if (I_M_Product.Table_Name.equals(p_tableName))
 		{
 			M_Product_ID = ID;

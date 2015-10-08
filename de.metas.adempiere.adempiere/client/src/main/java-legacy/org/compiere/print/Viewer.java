@@ -75,12 +75,12 @@ import org.compiere.apps.EMailDialog;
 import org.compiere.apps.StatusBar;
 import org.compiere.apps.WindowMenu;
 import org.compiere.apps.search.Find;
+import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.MQuery;
 import org.compiere.model.MUser;
-import org.compiere.print.layout.Page;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CFrame;
@@ -154,7 +154,7 @@ public class Viewer extends CFrame
 	}	//	Viewer
 
 	/** Window No					*/
-	private int                 m_WindowNo;
+	private final int m_WindowNo;
 	/**	Print Context				*/
 	private Properties			m_ctx;
 	/** Page No						*/
@@ -461,54 +461,14 @@ public class Viewer extends CFrame
 		AEnv.addMenuItem("Exit", null, KeyStroke.getKeyStroke(KeyEvent.VK_X, Event.SHIFT_MASK+Event.ALT_MASK), mFile, this);
 
 		//      View
-		JMenu mView = AEnv.getMenu("View");
+		final JMenu mView = AEnv.getMenu("View");
 		menuBar.add(mView);
-
-		if (Env.getUserRolePermissions().isAllow_Info_Product())
-		{
-			AEnv.addMenuItem("InfoProduct", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK), mView, this);			
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_BPartner())
-		{
-			AEnv.addMenuItem("InfoBPartner", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK+Event.CTRL_MASK), mView, this);
-		}
-		if (Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_ShowAcct) && Env.getUserRolePermissions().isAllow_Info_Account())
-		{
-			AEnv.addMenuItem("InfoAccount", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK+Event.CTRL_MASK), mView, this);
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Schedule())
-		{
-			AEnv.addMenuItem("InfoSchedule", null, null, mView, this);			
-		}
-		mView.addSeparator();
-		if (Env.getUserRolePermissions().isAllow_Info_Order())
-		{
-			AEnv.addMenuItem("InfoOrder", "Info", null, mView, this);	
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Invoice())
-		{
-			AEnv.addMenuItem("InfoInvoice", "Info", null, mView, this);			
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_InOut())
-		{
-			AEnv.addMenuItem("InfoInOut", "Info", null, mView, this);	
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Payment())
-		{
-			AEnv.addMenuItem("InfoPayment", "Info", null, mView, this);	
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_CashJournal())
-		{
-			AEnv.addMenuItem("InfoCashLine", "Info", null, mView, this);	
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Resource())
-		{
-			AEnv.addMenuItem("InfoAssignment", "Info", null, mView, this);	
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Asset())
-		{
-			AEnv.addMenuItem("InfoAsset", "Info", null, mView, this);	
-		}
+		InfoWindowMenuBuilder.newBuilder()
+				.setCtx(m_ctx)
+				.setParentWindowNo(m_WindowNo)
+				.setMenu(mView)
+				.build();
+		
 		//		Go
 		JMenu mGo = AEnv.getMenu("Go");
 		menuBar.add(mGo);

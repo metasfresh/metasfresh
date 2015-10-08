@@ -560,7 +560,7 @@ public class CWindowToolbar extends FToolbar implements EventListener
 		{
 			if (keyEvent.getKeyCode() == VK_X)
 			{
-				if (windowNo > 0)
+				if (Env.isRegularWindowNo(windowNo))
 				{
 					prevKeyEventTime = System.currentTimeMillis();
 		        	prevKeyEvent = keyEvent;

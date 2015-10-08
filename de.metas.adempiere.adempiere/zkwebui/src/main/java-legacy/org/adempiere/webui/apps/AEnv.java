@@ -646,7 +646,8 @@ public final class AEnv
 	public static String getWindowHeader(Properties ctx, int WindowNo)
 	{
 		StringBuffer sb = new StringBuffer();
-		if (WindowNo > 0){
+		if (Env.isRegularWindowNo(WindowNo))
+		{
 			sb.append(Env.getContext(ctx, WindowNo, "WindowName", false)).append("  ");
 			final String documentNo = Env.getContext(ctx, WindowNo, "DocumentNo", false);
 			final String value = Env.getContext(ctx, WindowNo, "Value", false);

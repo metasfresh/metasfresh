@@ -120,7 +120,7 @@ public class SQLValidationRule implements IValidationRule
 		// there is no context in report viewer windows
 		final int windowNo = evalCtx.getWindowNo();
 		if (Ini.isClient() == false ||
-				(windowNo >= 0
+				(Env.isRegularOrMainWindowNo(windowNo)
 				&& Env.getWindow(windowNo) != null // metas-ts: in some integration tests, there might be no window at all
 				&& !Env.getWindow(windowNo).getClass().getName().equals("org.compiere.print.Viewer")))
 		{

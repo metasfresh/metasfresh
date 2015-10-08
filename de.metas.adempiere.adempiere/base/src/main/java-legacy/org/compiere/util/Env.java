@@ -1486,7 +1486,7 @@ public final class Env
 	public static String getHeader(final Properties ctx, final int WindowNo)
 	{
 		StringBuilder sb = new StringBuilder();
-		if (WindowNo > 0)
+		if (isRegularWindowNo(WindowNo))
 		{
 			sb.append(getContext(ctx, WindowNo, CTXNAME_WindowName, false)).append("  ");
 			final String documentNo = getContext(ctx, WindowNo, "DocumentNo", false);
@@ -1808,11 +1808,26 @@ public final class Env
 	 * 
 	 * @param WindowNo window
 	 */
-	private static void removeWindow(int WindowNo)
+	private static void removeWindow(final int WindowNo)
 	{
 		if (WindowNo >= 0 && WindowNo < s_windows.size())
 			s_windows.set(WindowNo, null);
 	}	// removeWindow
+
+	/** @return true if given windowNo is a valid windowNo and is for a regular window (not the main window) */
+	public static final boolean isRegularWindowNo(final int windowNo)
+	{
+		return windowNo > 0
+				&& windowNo != WINDOW_None
+				&& windowNo != WINDOW_MAIN;
+	}
+	
+	/** @return true if given windowNo is a valid windowNo and is for a regular window or for main window */
+	public static final boolean isRegularOrMainWindowNo(final int windowNo)
+	{
+		return windowNo == WINDOW_MAIN
+				|| isRegularWindowNo(windowNo);
+	}
 
 	/**
 	 * Clean up context for Window (i.e. delete it)

@@ -30,7 +30,6 @@ import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.search.history.IInvoiceHistoryTabHandler;
-import org.compiere.apps.search.history.impl.DefaultInvoiceHistoryTabHandler;
 import org.compiere.apps.search.history.impl.InvoiceHistory;
 import org.compiere.apps.search.history.impl.InvoiceHistoryContext;
 import org.compiere.grid.ed.VCheckBox;
@@ -316,6 +315,7 @@ public class InfoBPartner extends Info
 	 * 
 	 * @return WHERE clause
 	 */
+	@Override
 	protected String getSQLWhere()
 	{
 		ArrayList<String> list = new ArrayList<String>();
@@ -441,6 +441,7 @@ public class InfoBPartner extends Info
 	 *            for counting records
 	 * @throws SQLException
 	 */
+	@Override
 	protected void setParameters(PreparedStatement pstmt, boolean forCount) throws SQLException
 	{
 		int index = 1;
@@ -552,6 +553,7 @@ public class InfoBPartner extends Info
 	/**
 	 * Save Selection Details Get Location/Partner Info
 	 */
+	@Override
 	public void saveSelectionDetail()
 	{
 		int row = p_table.getSelectedRow();
@@ -574,6 +576,7 @@ public class InfoBPartner extends Info
 				C_BPartner_Location_ID = ((KeyNamePair)data).getKey();
 		}
 		// publish for Callout to read
+		final int p_WindowNo = getWindowNo();
 		Integer ID = getSelectedRowKey();
 		Env.setContext(Env.getCtx(), p_WindowNo, Env.TAB_INFO, "C_BPartner_ID", ID == null ? "0" : ID.toString());
 		Env.setContext(Env.getCtx(), p_WindowNo, Env.TAB_INFO, "AD_User_ID", String.valueOf(AD_User_ID));
@@ -583,6 +586,7 @@ public class InfoBPartner extends Info
 	/**************************************************************************
 	 * Show History
 	 */
+	@Override
 	protected void showHistory()
 	{
 		log.info("");
@@ -626,6 +630,7 @@ public class InfoBPartner extends Info
 	 * 
 	 * @return true
 	 */
+	@Override
 	protected boolean hasHistory()
 	{
 		return true;
@@ -634,6 +639,7 @@ public class InfoBPartner extends Info
 	/**
 	 * Zoom
 	 */
+	@Override
 	protected void zoom()
 	{
 		log.info("InfoBPartner.zoom");
@@ -654,6 +660,7 @@ public class InfoBPartner extends Info
 	 * 
 	 * @return true
 	 */
+	@Override
 	protected boolean hasZoom()
 	{
 		return true;
@@ -662,6 +669,7 @@ public class InfoBPartner extends Info
 	/**
 	 * Customize
 	 */
+	@Override
 	protected void customize()
 	{
 		log.info("InfoBPartner.customize");
@@ -672,6 +680,7 @@ public class InfoBPartner extends Info
 	 * 
 	 * @return false
 	 */
+	@Override
 	protected boolean hasCustomize()
 	{
 		return false; // for now

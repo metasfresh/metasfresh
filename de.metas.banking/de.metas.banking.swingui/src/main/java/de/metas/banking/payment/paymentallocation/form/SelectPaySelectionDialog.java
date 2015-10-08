@@ -31,9 +31,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -59,6 +57,7 @@ import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.search.Info;
+import org.compiere.apps.search.InfoBuilder;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_PaySelection;
@@ -118,7 +117,9 @@ final class SelectPaySelectionDialog
 
 	private final JButton createNewPaySelection = new JButton();
 
-	private final ConfirmPanel confirmPanel = new ConfirmPanel(true); // withCancelButton
+	private final ConfirmPanel confirmPanel = ConfirmPanel.builder()
+			.withCancelButton(true)
+			.build();
 
 	@SuppressWarnings("unused")
 	private final I_C_BPartner partner;
@@ -344,22 +345,12 @@ final class SelectPaySelectionDialog
 	 */
 	private final int manuallySearchBPBankAccountId()
 	{
-		final boolean modal = true;
-		final int infoWindowNo = Env.createWindowNo(getContentPane());
-		final boolean multipleSelection = false;
-		final String whereClause = I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID + "=" + currencyId;
-		final String value = "";
-		final Map<String, Object> attributes = Collections.emptyMap();
-		final Info ip = Info.create((Frame)getOwner(),
-				modal,
-				infoWindowNo,
-				org.compiere.model.I_C_BP_BankAccount.Table_Name,
-				org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID,
-				value,
-				multipleSelection,
-				whereClause,
-				attributes);
-		AEnv.showCenterScreen(ip.getWindow());
+		final Info ip = InfoBuilder.newBuilder()
+				.setParentFrame((Frame)getOwner())
+				.setModal(true)
+				.setTableName(I_C_BP_BankAccount.Table_Name)
+				.setWhereClause(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID + "=" + currencyId)
+				.buildAndShow();
 
 		final boolean cancelled = ip.isCancelled();
 		if (cancelled)

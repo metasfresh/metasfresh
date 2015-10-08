@@ -141,6 +141,7 @@ public final class InfoProduct extends InfoSimple implements ActionListener
 			{
 				return;
 			}
+			final int p_WindowNo = getWindowNo();
 			final int bpartnerId = Env.getContextAsInt(Env.getCtx(), p_WindowNo, "C_BPartner_ID");
 			final String productName = getProductName();
 			final String title = productName;
@@ -217,6 +218,7 @@ public final class InfoProduct extends InfoSimple implements ActionListener
 
 		Timestamp priceDate = null;
 		// Sales Order Date
+		final int p_WindowNo = getWindowNo();
 		String dateStr = Env.getContext(ctx, p_WindowNo, "DateOrdered");
 		if (dateStr != null && dateStr.length() > 0)
 		{
@@ -285,6 +287,7 @@ public final class InfoProduct extends InfoSimple implements ActionListener
 	private int findWarehouse()
 	{
 		final Properties ctx = getCtx();
+		final int p_WindowNo = getWindowNo();
 
 		int M_Warehouse_ID = Env.getContextAsInt(ctx, "M_Warehouse_ID");
 		if (M_Warehouse_ID <= 0)

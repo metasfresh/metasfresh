@@ -25,7 +25,6 @@ package de.metas.relation.grid;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -50,13 +49,15 @@ public class VRelationTarget implements IViewRelationTarget
 
 	private GridTab gridTab;
 
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
+			.withCancelButton(true)
+			.build();
 
 	private final int windowNo;
 
 	public VRelationTarget(final int windowNo, final ModelRelationTarget model)
 	{
-		if (windowNo >= 0)
+		if (Env.isRegularOrMainWindowNo(windowNo))
 		{
 			dialog = new CDialog(Env.getWindow(windowNo), true);
 		}
@@ -106,7 +107,6 @@ public class VRelationTarget implements IViewRelationTarget
 			final int height)
 	{
 		final GridController gc = new GridController();
-
 		gc.initGrid(tab, true, windowNo, null, null);
 		// gc.addPropertyChangeListener(propertyChangeListener);
 		// gc.addDataStatusListener(mkDataStatusListener());
@@ -145,33 +145,13 @@ public class VRelationTarget implements IViewRelationTarget
 	@Override
 	public void addOKButtonListener(final ActionListener l)
 	{
-		confirmPanel.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				if (e.getActionCommand().equals(ConfirmPanel.A_OK))
-				{
-					l.actionPerformed(e);
-				}
-			};
-		});
+		confirmPanel.getOKButton().addActionListener(l);
 	}
 
 	@Override
 	public void addCancelButtonListener(final ActionListener l)
 	{
-		confirmPanel.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
-				{
-					l.actionPerformed(e);
-				}
-			};
-		});
+		confirmPanel.getCancelButton().addActionListener(l);
 	}
 
 	@Override

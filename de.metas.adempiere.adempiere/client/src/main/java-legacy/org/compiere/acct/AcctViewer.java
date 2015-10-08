@@ -55,6 +55,7 @@ import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.PrintScreenPainter;
 import org.compiere.apps.search.Info;
+import org.compiere.apps.search.InfoBuilder;
 import org.compiere.grid.ed.VDate;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_ElementValue;
@@ -1072,7 +1073,14 @@ public class AcctViewer extends CFrame
 		}
 		
 		final String tableName = MQuery.getZoomTableName(lookupColumn);
-		Info info = Info.create(this, true, m_data.getWindowNo(), tableName, lookupColumn, "", false, whereClause);
+		Info info = InfoBuilder.newBuilder()
+				.setParentFrame(this)
+				.setWindowNo(m_data.getWindowNo())
+				.setModal(true)
+				.setTableName(tableName)
+				.setKeyColumn(lookupColumn)
+				.setWhereClause(whereClause)
+				.build();
 		if (!info.loadedOK())
 		{
 			info.dispose();

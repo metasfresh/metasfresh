@@ -145,6 +145,8 @@ public class InfoOrder extends Info
 	 */
 	private void statInit() throws Exception
 	{
+		final int p_WindowNo = getWindowNo();
+		
 		lDocumentNo.setLabelFor(fDocumentNo);
 		fDocumentNo.setBackground(AdempierePLAF.getInfoBackground());
 		fDocumentNo.addActionListener(this);
@@ -212,6 +214,7 @@ public class InfoOrder extends Info
 	private boolean initInfo ()
 	{
 		//  Set Defaults
+		final int p_WindowNo = getWindowNo();
 		String bp = Env.getContext(Env.getCtx(), p_WindowNo, "C_BPartner_ID");
 		if (bp != null && bp.length() != 0)
 			fBPartner_ID.setValue(new Integer(bp));
@@ -235,6 +238,7 @@ public class InfoOrder extends Info
 	 *  Includes first AND
 	 *  @return sql
 	 */
+	@Override
 	protected String getSQLWhere()
 	{
 		StringBuffer sql = new StringBuffer();
@@ -250,8 +254,8 @@ public class InfoOrder extends Info
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
-			Timestamp from = (Timestamp)fDateFrom.getValue();
-			Timestamp to = (Timestamp)fDateTo.getValue();
+			Timestamp from = fDateFrom.getValue();
+			Timestamp to = fDateTo.getValue();
 			if (from == null && to != null)
 				sql.append(" AND TRUNC(o.DateOrdered) <= ?");
 			else if (from != null && to == null)
@@ -284,6 +288,7 @@ public class InfoOrder extends Info
 	 *  @param forCount for counting records
 	 *  @throws SQLException
 	 */
+	@Override
 	protected void setParameters(PreparedStatement pstmt, boolean forCount) throws SQLException
 	{
 		int index = 1;
@@ -303,8 +308,8 @@ public class InfoOrder extends Info
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
-			Timestamp from = (Timestamp)fDateFrom.getValue();
-			Timestamp to = (Timestamp)fDateTo.getValue();
+			Timestamp from = fDateFrom.getValue();
+			Timestamp to = fDateTo.getValue();
 			log.fine("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
@@ -353,6 +358,7 @@ public class InfoOrder extends Info
 	/**
 	 *	Zoom
 	 */
+	@Override
 	protected void zoom()
 	{
 		log.info("");
@@ -370,6 +376,7 @@ public class InfoOrder extends Info
 	 *	Has Zoom
 	 *  @return true
 	 */
+	@Override
 	protected boolean hasZoom()
 	{
 		return true;

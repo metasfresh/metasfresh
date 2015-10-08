@@ -58,7 +58,6 @@ import java.util.logging.Level;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -77,6 +76,7 @@ import org.compiere.apps.StatusBar;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.apps.search.Info;
+import org.compiere.apps.search.InfoBuilder;
 import org.compiere.grid.VPanel;
 import org.compiere.grid.ed.VButton;
 import org.compiere.model.GridField;
@@ -772,12 +772,16 @@ public class PaymentAllocationForm
 		}
 	}
 
-	private void addForeignDocumentIds(final AllocableDocType docType, final Info info)
+	private void addForeignDocumentIds(final AllocableDocType docType, final InfoBuilder infoBuilder)
 	{
 		//
-		// Show the Info window
-		final JFrame frame = Env.getFrame(m_frame);
-		AEnv.showCenterWindow(frame, info.getWindow());
+		// Create and show the Info window
+		final Info info = infoBuilder
+				.setParentFrame(Env.getFrame(m_frame))
+				.setWindowNo(getWindowNo())
+				.setModal(true)
+				.setMultiSelection(true)
+				.buildAndShow();
 		if (!info.isOkPressed())
 		{
 			return;
@@ -796,18 +800,9 @@ public class PaymentAllocationForm
 	{
 		// Create the Info window
 		final String whereClause = "IsPaid='N' AND C_BPartner_ID <> " + getC_BPartner_ID();
-		final Info info = Info.create(
-				Env.getFrame(m_frame) // frame
-				, true // modal
-				, getWindowNo() // WindowNo
-				, I_C_Invoice.Table_Name // tableName
-				, I_C_Invoice.COLUMNNAME_C_Invoice_ID // keyColum
-				, "" // value
-				, true // multiSelection
-				, whereClause // whereClause
-				);
-
-		addForeignDocumentIds(AllocableDocType.Invoice, info);
+		addForeignDocumentIds(AllocableDocType.Invoice, InfoBuilder.newBuilder()
+				.setTableName(I_C_Invoice.Table_Name)
+				.setWhereClause(whereClause));
 
 	}
 
@@ -815,36 +810,18 @@ public class PaymentAllocationForm
 	{
 		// Create the Info window
 		final String whereClause = "IsAllocated='N' AND PayAmt <> 0";
-		final Info info = Info.create(
-				Env.getFrame(m_frame) // frame
-				, true // modal
-				, getWindowNo() // WindowNo
-				, I_C_Payment.Table_Name // tableName
-				, I_C_Payment.COLUMNNAME_C_Payment_ID // keyColum
-				, "" // value
-				, true // multiSelection
-				, whereClause // whereClause
-				);
-
-		addForeignDocumentIds(AllocableDocType.Payment, info);
+		addForeignDocumentIds(AllocableDocType.Payment, InfoBuilder.newBuilder()
+				.setTableName(I_C_Payment.Table_Name)
+				.setWhereClause(whereClause));
 	}
 
 	private void addForeignPrePayOrder()
 	{
 		// Create the Info window
 		final String whereClause = "DocStatus = 'WP'";
-		final Info info = Info.create(
-				Env.getFrame(m_frame) // frame
-				, true // modal
-				, getWindowNo() // WindowNo
-				, I_C_Order.Table_Name // tableName
-				, I_C_Order.COLUMNNAME_C_Payment_ID // keyColum
-				, "" // value
-				, true // multiSelection
-				, whereClause // whereClause
-				);
-
-		addForeignDocumentIds(AllocableDocType.PrepayOrder, info);
+		addForeignDocumentIds(AllocableDocType.PrepayOrder, InfoBuilder.newBuilder()
+				.setTableName(I_C_Order.Table_Name)
+				.setWhereClause(whereClause));
 
 	}
 

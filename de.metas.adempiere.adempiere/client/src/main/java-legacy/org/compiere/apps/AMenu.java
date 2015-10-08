@@ -47,7 +47,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.apps.graph.PAPanel;
 import org.adempiere.images.Images;
@@ -59,15 +58,13 @@ import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.NullRunnable;
 import org.compiere.Adempiere;
 import org.compiere.apps.form.FormFrame;
-import org.compiere.apps.search.Info;
+import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.apps.wf.WFPanel;
 import org.compiere.grid.tree.VTreePanel;
-import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.MSession;
 import org.compiere.model.MTreeNode;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
-import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.util.CLogger;
@@ -481,62 +478,12 @@ public final class AMenu extends CFrame
 		// View
 		JMenu mView = AEnv.getMenu("View");
 		menuBar.add(mView);
-
-		if (Env.getUserRolePermissions().isAllow_Info_Product())
-		{
-			AEnv.addMenuItem("InfoProduct", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK), mView, this);
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_BPartner())
-		{
-			AEnv.addMenuItem("InfoBPartner", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK + Event.CTRL_MASK), mView, this);
-		}
-		if (Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_ShowAcct)
-				&& Env.getUserRolePermissions().isAllow_Info_Account())
-		{
-			AEnv.addMenuItem("InfoAccount", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK + Event.CTRL_MASK), mView, this);
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Schedule())
-		{
-			AEnv.addMenuItem("InfoSchedule", null, null, mView, this);
-		}
-		// FR [ 1966328 ]
-		if (Env.getUserRolePermissions().isAllow_Info_MRP())
-		{
-			AEnv.addMenuItem("InfoMRP", "Info", null, mView, this);
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_CRP())
-		{
-			AEnv.addMenuItem("InfoCRP", "Info", null, mView, this);
-		}
-		mView.addSeparator();
-		if (Env.getUserRolePermissions().isAllow_Info_Order())
-		{
-			AEnv.addMenuItem("InfoOrder", "Info", null, mView, this);
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Invoice())
-		{
-			AEnv.addMenuItem("InfoInvoice", "Info", null, mView, this);
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_InOut())
-		{
-			AEnv.addMenuItem("InfoInOut", "Info", null, mView, this);
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Payment())
-		{
-			AEnv.addMenuItem("InfoPayment", "Info", null, mView, this);
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_CashJournal())
-		{
-			AEnv.addMenuItem("InfoCashLine", "Info", null, mView, this);
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Resource())
-		{
-			AEnv.addMenuItem("InfoAssignment", "Info", null, mView, this);
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Asset())
-		{
-			AEnv.addMenuItem("InfoAsset", "Info", null, mView, this);
-		}
+		
+		InfoWindowMenuBuilder.newBuilder()
+				.setCtx(m_ctx)
+				.setParentWindowNo(m_WindowNo)
+				.setMenu(mView)
+				.build();
 
 		// Tools
 		JMenu mTools = AEnv.getMenu("Tools");
@@ -579,28 +526,7 @@ public final class AMenu extends CFrame
 		AEnv.addMenuItem("Online", null, null, mHelp, this);
 		AEnv.addMenuItem("EMailSupport", null, null, mHelp, this);
 		AEnv.addMenuItem("About", null, null, mHelp, this);
-
-		//
-		// Add all custom windows to menu
-		//
-		for (final I_AD_InfoWindow infoWindow : Services.get(IADInfoWindowDAO.class).retrieveInfoWindowsInMenu(m_ctx))
-		{
-			final CMenuItem mi = new CMenuItem(infoWindow.getName(), Images.getImageIcon2("Info16"));
-
-			mi.setToolTipText(infoWindow.getDescription());
-			mView.add(mi);
-			mi.addActionListener(new ActionListener()
-			{
-				@Override
-				public void actionPerformed(ActionEvent e)
-				{
-					final Info info = Info.create(m_WindowNo, infoWindow);
-					info.showWindow();
-				}
-			});
-		}
-
-	}// createMenu
+	} // createMenu
 
 	/**
 	 * Dispose - end system

@@ -63,7 +63,6 @@ import org.compiere.grid.ed.Calculator;
 import org.compiere.interfaces.Server;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_AD_Form;
-import org.compiere.model.MMenu;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
@@ -498,7 +497,6 @@ public final class AEnv
 	 */
 	public static boolean actionPerformed(final String actionCommand, final int WindowNo, final Container c)
 	{
-		final IUserRolePermissions role = Env.getUserRolePermissions();
 		// File Menu ------------------------
 		if (actionCommand.equals("PrintScreen"))
 		{
@@ -524,69 +522,6 @@ public final class AEnv
 		{
 			final AMenu aMenu = (AMenu)Env.getWindow(Env.WINDOW_MAIN);
 			aMenu.logout();
-		}
-
-		// View Menu ------------------------
-		else if (actionCommand.equals("InfoProduct") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Product))
-		{
-			org.compiere.apps.search.Info.showProduct(Env.getFrame(c), Env.WINDOW_MAIN);
-		}
-		else if (actionCommand.equals("InfoBPartner") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_BPartner))
-		{
-			org.compiere.apps.search.Info.showBPartner(Env.getFrame(c), Env.WINDOW_MAIN);
-		}
-		else if (actionCommand.equals("InfoAsset") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Asset))
-		{
-			org.compiere.apps.search.Info.showAsset(Env.getFrame(c), Env.WINDOW_MAIN);
-		}
-		else if (actionCommand.equals("InfoAccount") && role.hasPermission(IUserRolePermissions.PERMISSION_ShowAcct))
-		{
-			new org.compiere.acct.AcctViewer();
-		}
-		else if (actionCommand.equals("InfoSchedule") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Schedule))
-		{
-			new org.compiere.apps.search.InfoSchedule(Env.getFrame(c), null, false);
-		}
-		// FR [ 1966328 ]
-		else if (actionCommand.equals("InfoMRP") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_MRP))
-		{
-			final CFrame frame = (CFrame)Env.getFrame(c);
-			final int m_menu_id = MMenu.getMenu_ID("MRP Info");
-			final AMenu menu = getAMenu(frame);
-			final AMenuStartItem form = new AMenuStartItem(m_menu_id, true, Services.get(IMsgBL.class).translate(Env.getCtx(), "MRP Info"), menu);		// async load
-			form.start();
-		}
-		else if (actionCommand.equals("InfoCRP") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_CRP))
-		{
-			final CFrame frame = (CFrame)Env.getFrame(c);
-			final int m_menu_id = MMenu.getMenu_ID("CRP Info");
-			final AMenu menu = getAMenu(frame);
-			final AMenuStartItem form = new AMenuStartItem(m_menu_id, true, Services.get(IMsgBL.class).translate(Env.getCtx(), "CRP Info"), menu);		// async load
-			form.start();
-		}
-		else if (actionCommand.equals("InfoOrder") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Order))
-		{
-			org.compiere.apps.search.Info.showOrder(Env.getFrame(c), Env.WINDOW_MAIN, "");
-		}
-		else if (actionCommand.equals("InfoInvoice") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Invoice))
-		{
-			org.compiere.apps.search.Info.showInvoice(Env.getFrame(c), Env.WINDOW_MAIN, "");
-		}
-		else if (actionCommand.equals("InfoInOut") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_InOut))
-		{
-			org.compiere.apps.search.Info.showInOut(Env.getFrame(c), Env.WINDOW_MAIN, "");
-		}
-		else if (actionCommand.equals("InfoPayment") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Payment))
-		{
-			org.compiere.apps.search.Info.showPayment(Env.getFrame(c), Env.WINDOW_MAIN, "");
-		}
-		else if (actionCommand.equals("InfoCashLine") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_CashJournal))
-		{
-			org.compiere.apps.search.Info.showCashLine(Env.getFrame(c), Env.WINDOW_MAIN, "");
-		}
-		else if (actionCommand.equals("InfoAssignment") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Resource))
-		{
-			org.compiere.apps.search.Info.showAssignment(Env.getFrame(c), Env.WINDOW_MAIN, "");
 		}
 
 		// Go Menu ------------------------
@@ -620,6 +555,7 @@ public final class AEnv
 		}
 		else if (actionCommand.equals("Preference"))
 		{
+			final IUserRolePermissions role = Env.getUserRolePermissions();
 			if (role.isShowPreference())
 			{
 				showCenterScreen(new Preference(Env.getFrame(c), WindowNo));
@@ -917,7 +853,7 @@ public final class AEnv
 	 *
 	 * @param frame
 	 */
-	public static AMenu getAMenu(final CFrame frame)
+	public static AMenu getAMenu(final JFrame frame)
 	{
 		final JFrame top = Env.getWindow(Env.WINDOW_MAIN);
 		if (top instanceof AMenu)
@@ -1250,55 +1186,6 @@ public final class AEnv
 			}
 		}
 	}
-
-	/**
-	 * Validate permissions to access Info queries on the view menu
-	 *
-	 * @author kstan_79
-	 * @return true if access is allowed
-	 */
-
-	private static boolean canAccessInfo(final String infoWindowName)
-	{
-		boolean result = false;
-		final int roleid = Env.getAD_Role_ID(Env.getCtx());
-		final String sqlRolePermission = "Select COUNT(AD_ROLE_ID) AS ROWCOUNT FROM AD_ROLE WHERE AD_ROLE_ID=" + roleid
-				+ " AND ALLOW_INFO_" + infoWindowName + "='Y'";
-
-		log.config(sqlRolePermission);
-		PreparedStatement prolestmt = null;
-		ResultSet rs = null;
-		try
-		{
-			prolestmt = DB.prepareStatement(sqlRolePermission, null);
-
-			rs = prolestmt.executeQuery();
-
-			rs.next();
-
-			if (rs.getInt("ROWCOUNT") > 0)
-			{
-				result = true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		catch (final Exception e)
-		{
-			System.out.println(e);
-			log.log(Level.SEVERE, "(1)", e);
-		}
-		finally
-		{
-			DB.close(rs, prolestmt);
-			rs = null;
-			prolestmt = null;
-		}
-
-		return result;
-	} // canAccessInfo
 
 	/**
 	 * Helper method which gets the {@link Window} of given {@link Component}

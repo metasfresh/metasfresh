@@ -18,7 +18,10 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=552767 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
-
+-- 06.10.2015 14:18
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE AD_Field ADD DisplayLengthGrid NUMERIC(10) DEFAULT NULL 
+;
 
 -- 06.10.2015 14:19
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -30,6 +33,10 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=552768 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
+-- 06.10.2015 14:19
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE AD_Field ADD SpanX NUMERIC(10) DEFAULT 1 NOT NULL
+;
 
 -- 06.10.2015 14:19
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -39,6 +46,11 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 -- 06.10.2015 14:19
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=552769 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 06.10.2015 14:19
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE AD_Field ADD SpanY NUMERIC(10) DEFAULT 1 NOT NULL
 ;
 
 -- 06.10.2015 14:25
@@ -281,16 +293,7 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=552767
 DELETE FROM AD_Column WHERE AD_Column_ID=552767
 ;
 
-COMMIT;
+alter table AD_Field drop column DIsplayLengthGrid;
 
 
--- 06.10.2015 14:19
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE AD_Field ADD SpanX NUMERIC(10) DEFAULT 1 NOT NULL
-;
 
-
--- 06.10.2015 14:19
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE AD_Field ADD SpanY NUMERIC(10) DEFAULT 1 NOT NULL
-;

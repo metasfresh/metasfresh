@@ -174,7 +174,7 @@ public class InfoGeneral extends Info
 			where.append(" AND ").append(p_whereClause);
 		final String sqlOrderBy = buildSqlOrderBy();
 		prepareTable(m_generalLayout,
-			p_tableName,
+			getTableName(),
 			where.toString(),
 			sqlOrderBy);
 
@@ -289,7 +289,7 @@ public class InfoGeneral extends Info
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setString(1, p_tableName);
+			pstmt.setString(1, getTableName());
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -436,7 +436,7 @@ public class InfoGeneral extends Info
 							.append(MLookupFactory.getLookup_TableDirEmbed(
 									language, // language
 									columnName, // ColumnName
-									p_tableName, // BaseTable
+									getTableName(), // BaseTable
 									columnSql // BaseColumn
 									))
 							.append(")");
@@ -450,7 +450,7 @@ public class InfoGeneral extends Info
 							.append(MLookupFactory.getLookup_TableEmbed(
 									language, // language
 									columnSql, // BaseColumn,
-									p_tableName, // BaseTable,
+									getTableName(), // BaseTable,
 									AD_Reference_Value_ID // AD_Reference_Value_ID
 									)
 							)
@@ -488,6 +488,7 @@ public class InfoGeneral extends Info
 		}
 		if (list.size() == 0)
 		{
+			final int p_WindowNo = getWindowNo();
 			ADialog.error(p_WindowNo, getWindow(), "Error", "No Info Columns");
 			log.log(Level.SEVERE, "No Info for AD_Table_ID=" + AD_Table_ID + " - " + sql);
 			return false;
@@ -507,6 +508,7 @@ public class InfoGeneral extends Info
 	 *  Includes first AND
 	 * 	@return where clause
 	 */
+	@Override
 	protected String getSQLWhere()
 	{
 		StringBuffer sql = new StringBuffer();
@@ -553,6 +555,7 @@ public class InfoGeneral extends Info
 	 *  @param forCount for counting records
 	 *  @throws SQLException
 	 */
+	@Override
 	protected void setParameters(PreparedStatement pstmt, boolean forCount) throws SQLException
 	{
 		int index = 1;

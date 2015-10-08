@@ -159,6 +159,8 @@ public class InfoInvoice extends Info
 	 */
 	private void statInit() throws Exception
 	{
+		final int p_WindowNo = getWindowNo();
+		
 		lDocumentNo.setLabelFor(fDocumentNo);
 		fDocumentNo.setBackground(AdempierePLAF.getInfoBackground());
 		fDocumentNo.addActionListener(this);
@@ -235,6 +237,7 @@ public class InfoInvoice extends Info
 	private boolean initInfo ()
 	{
 		//  Set Defaults
+		final int p_WindowNo = getWindowNo();
 		String bp = Env.getContext(Env.getCtx(), p_WindowNo, "C_BPartner_ID");
 		if (bp != null && bp.length() != 0)
 			fBPartner_ID.setValue(new Integer(bp));
@@ -259,6 +262,7 @@ public class InfoInvoice extends Info
 	 *  Includes first AND
 	 *  @return sql
 	 */
+	@Override
 	protected String getSQLWhere()
 	{
 		StringBuffer sql = new StringBuffer();
@@ -277,8 +281,8 @@ public class InfoInvoice extends Info
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
-			Timestamp from = (Timestamp)fDateFrom.getValue();
-			Timestamp to = (Timestamp)fDateTo.getValue();
+			Timestamp from = fDateFrom.getValue();
+			Timestamp to = fDateTo.getValue();
 			if (from == null && to != null)
 				sql.append(" AND TRUNC(i.DateInvoiced) <= ?");
 			else if (from != null && to == null)
@@ -312,6 +316,7 @@ public class InfoInvoice extends Info
 	 *  @param forCount for counting records
 	 *  @throws SQLException
 	 */
+	@Override
 	protected void setParameters(PreparedStatement pstmt, boolean forCount) throws SQLException
 	{
 		int index = 1;
@@ -338,8 +343,8 @@ public class InfoInvoice extends Info
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
-			Timestamp from = (Timestamp)fDateFrom.getValue();
-			Timestamp to = (Timestamp)fDateTo.getValue();
+			Timestamp from = fDateFrom.getValue();
+			Timestamp to = fDateTo.getValue();
 			log.fine("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
@@ -388,6 +393,7 @@ public class InfoInvoice extends Info
 	/**
 	 *	Zoom
 	 */
+	@Override
 	protected void zoom()
 	{
 		log.info( "InfoInvoice.zoom");
@@ -405,6 +411,7 @@ public class InfoInvoice extends Info
 	 *	Has Zoom
 	 *  @return true
 	 */
+	@Override
 	protected boolean hasZoom()
 	{
 		return true;
@@ -413,9 +420,11 @@ public class InfoInvoice extends Info
 	/**
 	 *	Save Selection Settings
 	 */
+	@Override
 	protected void saveSelectionDetail()
 	{
 		//  publish for Callout to read
+		final int p_WindowNo = getWindowNo();
 		Integer ID = getSelectedRowKey();
 		Env.setContext(Env.getCtx(), p_WindowNo, Env.TAB_INFO, "C_Invoice_ID", ID == null ? "0" : ID.toString());
 		//

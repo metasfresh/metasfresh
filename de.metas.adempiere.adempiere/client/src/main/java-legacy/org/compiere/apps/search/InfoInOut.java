@@ -137,6 +137,8 @@ public class InfoInOut extends Info
 	 */
 	private void statInit() throws Exception
 	{
+		final int p_WindowNo = getWindowNo();
+		
 		lDocumentNo.setLabelFor(fDocumentNo);
 		fDocumentNo.setBackground(AdempierePLAF.getInfoBackground());
 		fDocumentNo.addActionListener(this);
@@ -194,6 +196,7 @@ public class InfoInOut extends Info
 	private boolean initInfo ()
 	{
 		//  Set Defaults
+		final int p_WindowNo = getWindowNo();
 		String bp = Env.getContext(Env.getCtx(), p_WindowNo, "C_BPartner_ID");
 		if (bp != null && bp.length() != 0)
 			fBPartner_ID.setValue(new Integer(bp));
@@ -218,6 +221,7 @@ public class InfoInOut extends Info
 	 *  Includes first AND
 	 * 	@return where clause
 	 */
+	@Override
 	protected String getSQLWhere()
 	{
 		StringBuffer sql = new StringBuffer();
@@ -233,8 +237,8 @@ public class InfoInOut extends Info
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
-			Timestamp from = (Timestamp)fDateFrom.getValue();
-			Timestamp to = (Timestamp)fDateTo.getValue();
+			Timestamp from = fDateFrom.getValue();
+			Timestamp to = fDateTo.getValue();
 			if (from == null && to != null)
 				sql.append(" AND TRUNC(i.MovementDate) <= ?");
 			else if (from != null && to == null)
@@ -255,6 +259,7 @@ public class InfoInOut extends Info
 	 *  @param forCount for counting records
 	 *  @throws SQLException
 	 */
+	@Override
 	protected void setParameters(PreparedStatement pstmt, boolean forCount) throws SQLException
 	{
 		int index = 1;
@@ -274,8 +279,8 @@ public class InfoInOut extends Info
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
-			Timestamp from = (Timestamp)fDateFrom.getValue();
-			Timestamp to = (Timestamp)fDateTo.getValue();
+			Timestamp from = fDateFrom.getValue();
+			Timestamp to = fDateTo.getValue();
 			log.fine("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
@@ -307,6 +312,7 @@ public class InfoInOut extends Info
 	/**
 	 *	Zoom
 	 */
+	@Override
 	protected void zoom()
 	{
 		log.info( "InfoInOut.zoom");
@@ -324,6 +330,7 @@ public class InfoInOut extends Info
 	 *	Has Zoom
 	 *  @return true
 	 */
+	@Override
 	protected boolean hasZoom()
 	{
 		return true;

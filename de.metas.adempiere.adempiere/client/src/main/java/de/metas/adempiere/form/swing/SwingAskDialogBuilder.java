@@ -153,7 +153,7 @@ public class SwingAskDialogBuilder implements IAskDialogBuilder
 			parent = Env.getParent((Component)_parentCompObj);
 		}
 
-		if (parent == null && _parentWindowNo >= 0)
+		if (parent == null && Env.isRegularOrMainWindowNo(_parentWindowNo))
 		{
 			parent = Env.getWindow(_parentWindowNo);
 		}

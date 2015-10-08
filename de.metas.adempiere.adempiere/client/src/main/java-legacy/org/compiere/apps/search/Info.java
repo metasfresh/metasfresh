@@ -38,13 +38,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
@@ -68,7 +64,6 @@ import javax.swing.event.ListSelectionListener;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.service.IADInfoWindowBL;
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.DefaultTableColorProvider;
@@ -118,15 +113,7 @@ import org.compiere.util.Util;
 /**
  * Search Information and return selection - Base Class.
  *
- * <pre>
- *  Structure:
- *      parameterPanel  (JPanel) - for subclasses to add parameter fields
- *      scrollPame      (JScrollPane)
- *          m_table     (MiniTable)
- *      southPanel      (JPanel)
- *          confirmPanel
- *          statusPanel
- * </pre>
+ * To create a new instance, please use {@link InfoBuilder}.
  *
  * @author Jorg Janke
  * @version $Id: Info.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
@@ -147,282 +134,10 @@ public abstract class Info extends Component
 	 */
 	private static final long serialVersionUID = -5606614040914295869L;
 
-	public static final String SYSCONFIG_INFO_DEFAULTSELECTED = "INFO_DEFAULTSELECTED";
-	public static final String SYSCONFIG_INFO_DOUBLECLICKTOGGLESSELECTION = "INFO_DOUBLECLICKTOGGLESSELECTION";
+	private static final String SYSCONFIG_INFO_DEFAULTSELECTED = "INFO_DEFAULTSELECTED";
+	private static final String SYSCONFIG_INFO_DOUBLECLICKTOGGLESSELECTION = "INFO_DOUBLECLICKTOGGLESSELECTION";
 
 	private static final String SORTPREF_Action = X_AD_User_SortPref_Hdr.ACTION_Info_Fenster;
-
-	/**
-	 * Factory Constructor
-	 *
-	 * @param frame parent frame
-	 * @param modal new window is modal
-	 * @param WindowNo window no
-	 * @param tableName table name of the search
-	 * @param keyColumn key column of the search
-	 * @param value query value
-	 * @param multiSelection allow to select more than one row
-	 * @param whereClause fully qualified where clause for the search
-	 * @return special or general Info Window
-	 */
-	public static Info create(final Frame frame, final boolean modal, final int WindowNo,
-			final String tableName, final String keyColumn, final String value,
-			final boolean multiSelection, final String whereClause)
-	{
-		// metas: begin
-		final Map<String, Object> attributes = null;
-		return create(frame, modal, WindowNo, tableName, keyColumn, value, multiSelection, whereClause, attributes);
-	}
-
-	public static Info create(final Frame frame, final int WindowNo, final String tableName, final Map<String, Object> attributes)
-	{
-		// We assume the info window shall be modal if WindowNo is an actual WindowNo,
-		// because else the window won't be added to window manager,
-		// so in case of a logout, the window will remain open.
-		final boolean modal = WindowNo > 0;
-		
-		final String keyColumn = tableName + "_ID";
-		final String value = "";
-		final boolean multiSelection = false;
-		return create(frame, modal, WindowNo, tableName, keyColumn, value, multiSelection, value, attributes);
-	}
-
-	public static Info create(final Frame frame, final boolean modal, final int WindowNo,
-			final String tableName, final String keyColumn, final String value,
-			final boolean multiSelection, final String whereClause, final Map<String, Object> attributes)
-	{
-		// metas: end
-		Info info = null;
-
-		// metas: begin
-		final I_AD_InfoWindow infoWindow = Services.get(IADInfoWindowDAO.class).retrieveInfoWindowByTableName(getCtx(), tableName);
-		if (infoWindow != null && infoWindow.isActive())
-		{
-			info = create(frame, modal, WindowNo, tableName, keyColumn, value, multiSelection, whereClause, attributes, infoWindow);
-		}
-		else
-		// metas: end
-		if (tableName.equals("C_BPartner"))
-		{
-			info = new InfoBPartner(frame, modal, WindowNo, value, !Env.getContext(getCtx(), "IsSOTrx").equals("N"),
-					multiSelection, whereClause);
-		}
-		else if (tableName.equals("M_Product"))
-		{
-			info = new InfoProduct(frame, modal, WindowNo, 0, 0, value,	multiSelection, whereClause);
-		}
-		else if (tableName.equals("C_Invoice"))
-		{
-			info = new InfoInvoice(frame, modal, WindowNo, value,
-					multiSelection, whereClause);
-		}
-		else if (tableName.equals("A_Asset"))
-		{
-			info = new InfoAsset(frame, modal, WindowNo, 0, value,
-					multiSelection, whereClause);
-		}
-		else if (tableName.equals("C_Order"))
-		{
-			info = new InfoOrder(frame, modal, WindowNo, value,
-					multiSelection, whereClause);
-		}
-		else if (tableName.equals("M_InOut"))
-		{
-			info = new InfoInOut(frame, modal, WindowNo, value,
-					multiSelection, whereClause);
-		}
-		else if (tableName.equals("C_Payment"))
-		{
-			info = new InfoPayment(frame, modal, WindowNo, value,
-					multiSelection, whereClause);
-		}
-		else if (tableName.equals("C_CashLine"))
-		{
-			info = new InfoCashLine(frame, modal, WindowNo, value,
-					multiSelection, whereClause);
-		}
-		else if (tableName.equals("S_ResourceAssigment"))
-		{
-			info = new InfoAssignment(frame, modal, WindowNo, value,
-					multiSelection, whereClause);
-		}
-		else
-		{
-			info = new InfoGeneral(frame, modal, WindowNo, value,
-					tableName, keyColumn,
-					multiSelection, whereClause);
-		}
-		//
-		AEnv.positionCenterWindow(frame, info.getWindow());
-		return info;
-	} // create
-
-	private static Info create(final Frame frame, final boolean modal, final int WindowNo,
-			final String tableName, final String keyColumn, final String value,
-			final boolean multiSelection, final String whereClause, final Map<String, Object> attributes,
-			final I_AD_InfoWindow infoWindow)
-	{
-		String className = infoWindow.getClassname();
-		if (Check.isEmpty(className, true))
-		{
-			className = InfoSimple.class.getCanonicalName();
-		}
-
-		try
-		{
-			@SuppressWarnings("unchecked")
-			final Class<InfoSimple> clazz = (Class<InfoSimple>)Info.class.getClassLoader().loadClass(className);
-			final java.lang.reflect.Constructor<? extends Info> ctor = clazz.getConstructor(Frame.class, Boolean.class);
-			final InfoSimple infoSimple = (InfoSimple)ctor.newInstance(frame, modal);
-			if (attributes != null)
-			{
-				for (final Entry<String, Object> e : attributes.entrySet())
-				{
-					infoSimple.setCtxAttribute(e.getKey(), e.getValue());
-				}
-			}
-			infoSimple.init(modal, WindowNo, infoWindow, keyColumn, value, multiSelection, whereClause);
-			return infoSimple;
-		}
-		catch (final Exception e)
-		{
-			throw new AdempiereException(e);
-		}
-	}
-
-	public static Info create(final int WindowNo, final I_AD_InfoWindow infoWindow)
-	{
-		final JFrame frame = Env.getWindow(WindowNo);
-		final String tableName = Services.get(IADInfoWindowBL.class).getTableName(infoWindow);
-		final String keyColumn = tableName + "_ID";
-		final String value = "";
-		final boolean multiSelection = false;
-		final String whereClause = null;
-		final Map<String, Object> attributes = Collections.emptyMap();
-		final boolean modal = false;
-		return create(frame, modal, WindowNo, tableName, keyColumn, value, multiSelection, whereClause, attributes, infoWindow);
-	}
-
-	/**
-	 * Show BPartner Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 */
-	public static void showBPartner(final Frame frame, final int WindowNo)
-	{
-		final Info info = create(frame, WindowNo, "C_BPartner", null); // metas: c.ghita@metas.ro
-		// Info info = new InfoBPartner (frame, false, WindowNo, "",
-		// !Env.getContext(getCtx(),"IsSOTrx").equals("N"), false, "");
-		AEnv.showCenterWindow(frame, info.getWindow());
-	} // showBPartner
-
-	/**
-	 * Show Asset Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 */
-	public static void showAsset(final Frame frame, final int WindowNo)
-	{
-		final Info info = create(frame, false, WindowNo, "A_Asset", "C_CashLine_ID", "", false, ""); // metas:
-		// c.ghita@metas.ro
-		AEnv.showCenterWindow(frame, info.getWindow());
-	} // showBPartner
-
-	/**
-	 * Show Product Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 */
-	public static void showProduct(final Frame frame, final int WindowNo)
-	{
-		final Map<String, Object> attributes = new HashMap<String, Object>();
-		attributes.put("M_Warehouse_ID", Env.getContextAsInt(getCtx(), WindowNo, "M_Warehouse_ID"));
-		attributes.put("M_PriceList_ID", Env.getContextAsInt(getCtx(), WindowNo, "M_PriceList_ID"));
-
-		final Info info = create(frame, WindowNo, "M_Product", attributes); // metas: c.ghita@metas.ro
-		AEnv.showCenterWindow(frame, info.getWindow());
-	} // showProduct
-
-	/**
-	 * Show Order Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	public static void showOrder(final Frame frame, final int WindowNo, final String value)
-	{
-		final Info info = create(frame, false, WindowNo, "C_Order", "C_Order_ID", value, false, ""); // metas: c.ghita@metas.ro
-		AEnv.showCenterWindow(frame, info.getWindow());
-	} // showOrder
-
-	/**
-	 * Show Invoice Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	public static void showInvoice(final Frame frame, final int WindowNo, final String value)
-	{
-		final Info info = create(frame, false, WindowNo, "C_Invoice", "C_Invoice_ID", value, false, ""); // metas: c.ghita@metas.ro
-		AEnv.showCenterWindow(frame, info.getWindow());
-	} // showInvoice
-
-	/**
-	 * Show Shipment Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	public static void showInOut(final Frame frame, final int WindowNo, final String value)
-	{
-		final Info info = create(frame, false, WindowNo, "M_InOut", "M_InOut_ID", value, false, ""); // metas: c.ghita@metas.ro
-		AEnv.showCenterWindow(frame, info.getWindow());
-	} // showInOut
-
-	/**
-	 * Show Payment Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	public static void showPayment(final Frame frame, final int WindowNo, final String value)
-	{
-		final Info info = create(frame, false, WindowNo, "C_Payment", "C_Payment_ID", value, false, ""); // metas: c.ghita@metas.ro
-		AEnv.showCenterWindow(frame, info.getWindow());
-	} // showPayment
-
-	/**
-	 * Show Cash Line Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	public static void showCashLine(final Frame frame, final int WindowNo, final String value)
-	{
-		final Info info = create(frame, false, WindowNo, "C_CashLine", "C_CashLine_ID", value, false, ""); // metas: c.ghita@metas.ro
-		AEnv.showCenterWindow(frame, info.getWindow());
-	} // showCashLine
-
-	/**
-	 * Show Assignment Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	public static void showAssignment(final Frame frame, final int WindowNo, final String value)
-	{
-		final Info info = new InfoAssignment(frame, false, WindowNo, value, false, "");
-		AEnv.showCenterWindow(frame, info.getWindow());
-	} // showAssignment
 
 	/** Window Width */
 	// metas: changed from protected to public
@@ -523,7 +238,8 @@ public abstract class Info extends Component
 		{
 			if (!modal)
 			{
-				log.log(Level.WARNING, "Posible window leak because modal=false and WindowNo is provided. This window won't be added to window manager.");
+				new AdempiereException("Posible window leak because modal=false and WindowNo is provided. This window won't be added to window manager.")
+						.throwOrLogWarningIfDeveloperMode(log);
 			}
 			p_WindowNo = WindowNo;
 			localWindowNo = false;
@@ -556,16 +272,16 @@ public abstract class Info extends Component
 	} // Info
 
 	/** Master (owning) Window */
-	protected int p_WindowNo;
+	private int p_WindowNo;
 	/** true if WindowNo was created locally */
 	private boolean localWindowNo = false;
 
 	/** Table Name */
-	protected String p_tableName;
+	private String p_tableName;
 	/** Key Column Name */
-	protected String p_keyColumn;
+	private String p_keyColumn;
 	/** Enable more than one selection */
-	protected boolean p_multiSelection;
+	private boolean p_multiSelection;
 	/** Specify if the records should be checked(selected) by default (multi selection mode only) */
 	private boolean p_isDefaultSelected = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_INFO_DEFAULTSELECTED, false, getCtxAD_Client_ID());
 	/** True if double click on a row toggles if row is selected (multi selection mode only) */
@@ -611,8 +327,15 @@ public abstract class Info extends Component
 
 	/** Static Layout */
 	private final CPanel southPanel = new CPanel();
-	private final BorderLayout southLayout = new BorderLayout();
-	protected ConfirmPanel confirmPanel = new ConfirmPanel(true, true, true, true, true, true, true);
+	protected final ConfirmPanel confirmPanel = ConfirmPanel.builder()
+			.withCancelButton(true)
+			.withRefreshButton(true)
+			.withResetButton(true)
+			.withCustomizeButton(true)
+			.withHistoryButton(true)
+			.withZoomButton(true)
+			.withText(true)
+			.build();
 	// Begin - [FR 1823612 ] Product Info Screen Improvements
 	protected CPanel addonPanel = new CPanel();
 	// End - [FR 1823612 ] Product Info Screen Improvements
@@ -633,7 +356,7 @@ public abstract class Info extends Component
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		getWindow().setIconImage(org.compiere.Adempiere.getProductIconSmall());
 
-		southPanel.setLayout(southLayout);
+		southPanel.setLayout(new BorderLayout());
 		// Begin - [FR 1823612 ] Product Info Screen Improvements
 		southPanel.add(addonPanel, BorderLayout.NORTH);
 		// End - [FR 1823612 ] Product Info Screen Improvements
@@ -949,8 +672,8 @@ public abstract class Info extends Component
 	private volatile boolean _workerShallRunAgain = false;
 
 	/**
-	 * Only accessed within areas that are synchronized by {@link #_workerRepeatLoadData}. Note that we use this variable instead of relying on {@link Thread#isAlive()} because the thread might still be alive
-	 * after having exited its internal loop and therefore won't be able to repeat the work. This member is <code>true</code> only while the worker can still be made to repeat its work.
+	 * Only accessed within areas that are synchronized by {@link #_workerRepeatLoadData}. Note that we use this variable instead of relying on {@link Thread#isAlive()} because the thread might still
+	 * be alive after having exited its internal loop and therefore won't be able to repeat the work. This member is <code>true</code> only while the worker can still be made to repeat its work.
 	 *
 	 * @see #isWorkerRepeatLoadData()
 	 * @see #executeQuery()
@@ -1060,8 +783,8 @@ public abstract class Info extends Component
 		// Armen: add role checking (Patch #1694788 )
 
 		final GridTabMaxRowsRestrictionChecker maxRowsChecker = GridTabMaxRowsRestrictionChecker.builder()
-				//.setAD_Role(role) // use default role
-				//.setGridTab(gridTab) // no grid tab available
+				// .setAD_Role(role) // use default role
+				// .setGridTab(gridTab) // no grid tab available
 				.build();
 		if (maxRowsChecker.isQueryMax(no))
 		{
@@ -1584,6 +1307,11 @@ public abstract class Info extends Component
 	{
 		return p_keyColumn;
 	} // getKeyColumn
+	
+	protected final boolean isMultiSelection()
+	{
+		return p_multiSelection;
+	}
 
 	/**************************************************************************
 	 * Table Selection Changed
@@ -1944,7 +1672,7 @@ public abstract class Info extends Component
 			finally
 			{
 				// restore the wait cursor
-				setCursor(Cursor.getDefaultCursor()); 
+				setCursor(Cursor.getDefaultCursor());
 			}
 		} // run
 

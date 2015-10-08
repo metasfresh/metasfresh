@@ -101,7 +101,7 @@ public class MRPInfoWindowAttribGroups
 		final Properties ctx = Env.getCtx();
 
 		final ColumnInfo[] s_layoutAttribValues = new ColumnInfo[] {
-				new ColumnInfo(msgBL.translate(ctx, " "), "M_Product_ID", IDColumn.class).setColumnName("M_Product_ID"),
+				new ColumnInfo(" ", "M_Product_ID", IDColumn.class).setColumnName("M_Product_ID"),
 				// new ColumnInfo(msgBL.translate(ctx, "ProductValue"), "(select p.Value from M_Product p where p.M_Product_ID=" + TABLE_NAME + ".M_Product_ID)", String.class),
 				new ColumnInfo(msgBL.translate(ctx, "ValueAggregateName"), "GroupName", String.class).setColumnName("GroupName"),
 				new ColumnInfo(msgBL.translate(ctx, "qtyreserved_ondate"), "qtyreserved_ondate", Double.class),
@@ -194,7 +194,7 @@ public class MRPInfoWindowAttribGroups
 
 	public java.awt.Component getComponent()
 	{
-		return (java.awt.Component)dimensionsTbl;
+		return dimensionsTbl;
 	}
 
 	public void setPanelWarehouse(MRPInfoWindowAttribs panelWarehouse)

@@ -49,10 +49,10 @@ public class GridTabValidationContext implements IValidationContext
 	public GridTabValidationContext(final Properties ctx, final int windowNo, final int tabNo, final String tableName)
 	{
 		Check.assume(ctx != null, "context not null");
-		//Check.assume(windowNo >= 0, "windowNo >= 0"); // Env.WINDOW_None is allowed
+		// any windowNo, even Env.WINDOW_None is allowed
 		Check.assume(tableName != null, "tableName not null");
 
-		if (windowNo == 0 && tabNo == 0)
+		if (windowNo == Env.WINDOW_MAIN && tabNo <= 0)
 		{
 			final AdempiereException ex = new AdempiereException("Possible invalid definition of GridTabValidationContext: windowNo=" + windowNo + ", tabNo=" + tabNo + ", tableName=" + tableName);
 			logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);

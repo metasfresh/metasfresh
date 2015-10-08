@@ -29,7 +29,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.KeyStroke;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -40,12 +39,15 @@ import org.compiere.apps.AGlassPane;
 import org.compiere.apps.AMenu;
 import org.compiere.apps.Help;
 import org.compiere.apps.WindowMenu;
+import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.model.I_AD_Form;
 import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CFrame;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+
+import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
 
@@ -150,52 +152,20 @@ public class FormFrame extends CFrame
 		//      View
 		JMenu mView = AEnv.getMenu("View");
 		menuBar.add(mView);
-
-		if (Env.getUserRolePermissions().isAllow_Info_Product())
-		{
-			AEnv.addMenuItem("InfoProduct", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK), mView, this);			
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_BPartner())
-		{
-			AEnv.addMenuItem("InfoBPartner", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK+Event.CTRL_MASK), mView, this);
-		}
-		if (Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_ShowAcct) && Env.getUserRolePermissions().isAllow_Info_Account())
-		{
-			AEnv.addMenuItem("InfoAccount", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK+Event.CTRL_MASK), mView, this);
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Schedule())
-		{
-			AEnv.addMenuItem("InfoSchedule", null, null, mView, this);			
-		}
-		mView.addSeparator();
-		if (Env.getUserRolePermissions().isAllow_Info_Order())
-		{
-			AEnv.addMenuItem("InfoOrder", "Info", null, mView, this);	
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Invoice())
-		{
-			AEnv.addMenuItem("InfoInvoice", "Info", null, mView, this);			
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_InOut())
-		{
-			AEnv.addMenuItem("InfoInOut", "Info", null, mView, this);	
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Payment())
-		{
-			AEnv.addMenuItem("InfoPayment", "Info", null, mView, this);	
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_CashJournal())
-		{
-			AEnv.addMenuItem("InfoCashLine", "Info", null, mView, this);	
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Resource())
-		{
-			AEnv.addMenuItem("InfoAssignment", "Info", null, mView, this);	
-		}
-		if (Env.getUserRolePermissions().isAllow_Info_Asset())
-		{
-			AEnv.addMenuItem("InfoAsset", "Info", null, mView, this);	
-		}
+		InfoWindowMenuBuilder.newBuilder()
+				.setCtx(Env.getCtx())
+				// Provide a supplier for WindowNo because the windowNo is not available at this moment
+				.setParentWindowNo(new Supplier<Integer>()
+				{
+					@Override
+					public Integer get()
+					{
+						return getWindowNo();
+					}
+				})
+				.setMenu(mView)
+				.build();
+		
 		//      Tools
 		JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);

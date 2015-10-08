@@ -64,11 +64,14 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.APanel;
 import org.compiere.apps.search.FindHelper;
 import org.compiere.apps.search.Info;
+import org.compiere.apps.search.InfoBuilder;
 import org.compiere.apps.search.InfoFactory;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.ILookupDisplayColumn;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.Lookup;
 import org.compiere.model.MColumn;
 import org.compiere.model.MInvoiceLine;
@@ -1116,24 +1119,28 @@ public class VLookup extends JComponent
 			//  Replace Value with name if no value exists
 			if (queryValue.length() == 0 && m_text.getText().length() > 0)
 				queryValue = "@" + m_text.getText() + "@";   //  Name indicator - otherwise Value
-			int M_Warehouse_ID = Env.getContextAsInt(Env.getCtx(), lookup.getWindowNo(), "M_Warehouse_ID");
-			int M_PriceList_ID = Env.getContextAsInt(Env.getCtx(), lookup.getWindowNo(), "M_PriceList_ID");
 
 			if(m_mField != null)
 			{
 				int AD_Table_ID = MColumn.getTable_ID(Env.getCtx(), m_mField.getAD_Column_ID(), null);
 				multipleSelection = (MOrderLine.Table_ID ==  AD_Table_ID) || (MInvoiceLine.Table_ID == AD_Table_ID) || (I_PP_Product_BOMLine.Table_ID == AD_Table_ID) || (MProductPrice.Table_ID == AD_Table_ID);
 			}
-			//	Show Info
-			//metas: c.ghita@metas.ro start
-			Map<String, Object> attributes = new HashMap<String, Object>();
-			attributes.put("M_Warehouse_ID",M_Warehouse_ID);
-			attributes.put("M_PriceList_ID", M_PriceList_ID);
 			
-			Info ip = Info.create (frame, true, lookup.getWindowNo(), "M_Product", "M_Product_ID", queryValue,
-									multipleSelection, whereClause, attributes); // metas: changed
-			//metas: c.ghita@metas.ro end
-			ip.showWindow(); // show window and wait until the modal dialog closes
+			//	Show Info
+			final Map<String, Object> attributes = new HashMap<String, Object>();
+			attributes.put("M_Warehouse_ID", Env.getContextAsInt(Env.getCtx(), lookup.getWindowNo(), "M_Warehouse_ID"));
+			attributes.put("M_PriceList_ID", Env.getContextAsInt(Env.getCtx(), lookup.getWindowNo(), "M_PriceList_ID"));
+			
+			final Info ip = InfoBuilder.newBuilder()
+					.setParentFrame(frame)
+					.setWindowNo(lookup.getWindowNo())
+					.setModal(true)
+					.setTableName(I_M_Product.Table_Name)
+					.setSearchValue(queryValue)
+					.setMultiSelection(multipleSelection)
+					.setWhereClause(whereClause)
+					.setAttributes(attributes)
+					.buildAndShow(); // show window and wait until the modal dialog closes
 			cancelled = ip.isCancelled();
 			result = ip.getSelectedKeys();
 			resetValue = true;
@@ -1146,9 +1153,15 @@ public class VLookup extends JComponent
 //			boolean isSOTrx = true;     //  default
 //			if (Env.getContext(Env.getCtx(), m_lookup.getWindowNo(), "IsSOTrx").equals("N"))
 //				isSOTrx = false;
-			Info ip = Info.create (frame, true, lookup.getWindowNo(), "C_BPartner", "C_BPartner_ID", queryValue,
-					multipleSelection, whereClause, null); // metas: c.ghita@metas.ro
-			ip.showWindow(); // show window and wait until the modal dialog closes
+			final Info ip = InfoBuilder.newBuilder()
+					.setParentFrame(frame)
+					.setWindowNo(lookup.getWindowNo())
+					.setModal(true)
+					.setTableName(I_C_BPartner.Table_Name)
+					.setSearchValue(queryValue)
+					.setMultiSelection(multipleSelection)
+					.setWhereClause(whereClause)
+					.buildAndShow(); // show window and wait until the modal dialog closes
 			cancelled = ip.isCancelled();
 			result = ip.getSelectedKeys();
 		}
@@ -1156,9 +1169,16 @@ public class VLookup extends JComponent
 		{
 //			if (m_tableName == null)	//	sets table name & key column
 //				getDirectAccessSQL("*");
-			final Info ig = Info.create (frame, true, lookup.getWindowNo(),
-				tableName, keyColumnName, queryValue, multipleSelection, whereClause);
-			ig.showWindow(); // show window and wait until the modal dialog closes
+			final Info ig = InfoBuilder.newBuilder()
+					.setParentFrame(frame)
+					.setWindowNo(lookup.getWindowNo())
+					.setModal(true)
+					.setTableName(tableName)
+					.setKeyColumn(keyColumnName)
+					.setSearchValue(queryValue)
+					.setMultiSelection(multipleSelection)
+					.setWhereClause(whereClause)
+					.buildAndShow(); // show window and wait until the modal dialog closes
 			cancelled = ig.isCancelled();
 			result = ig.getSelectedKeys();
 		}

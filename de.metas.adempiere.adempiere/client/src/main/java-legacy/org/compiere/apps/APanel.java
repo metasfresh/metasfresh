@@ -64,10 +64,8 @@ import javax.swing.event.ChangeListener;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.images.Images;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -80,7 +78,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.search.Find;
-import org.compiere.apps.search.Info;
+import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.grid.APanelTab;
 import org.compiere.grid.GridController;
 import org.compiere.grid.GridSynchronizer;
@@ -105,7 +103,6 @@ import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.GridWorkbench;
 import org.compiere.model.I_AD_Form;
-import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.Lookup;
 import org.compiere.model.MLookupFactory;
@@ -116,7 +113,6 @@ import org.compiere.print.AReport;
 import org.compiere.process.DocAction;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoUtil;
-import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.CLogMgt;
@@ -377,9 +373,9 @@ public class APanel extends CPanel
 	public AppsAction		aLock;
 	//	Local (added to toolbar)
 	@SuppressWarnings("unused")
-	private AppsAction	    aReport, aEnd, aHome, aHelp, aProduct, aLogout,
-							aAccount, aPreference,
-							aOnline, aMailSupport, aAbout, aPrintScr, aScrShot, aExit, aBPartner, 
+	private AppsAction	    aReport, aEnd, aHome, aHelp, aLogout,
+							aPreference,
+							aOnline, aMailSupport, aAbout, aPrintScr, aScrShot, aExit, 
 							aDeleteSelection;
 	//private AppsAction aCalculator, aCalendar, aEditor, aScript;
 	
@@ -433,82 +429,11 @@ public class APanel extends CPanel
 		//								View
 		JMenu mView = AEnv.getMenu("View");
 		menuBar.add(mView);
-		if (role.isAllow_Info_Product())
-		{
-			aProduct =	addAction("InfoProduct",	mView, 	KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK),	false);
-		}
-		if (role.isAllow_Info_BPartner())		
-		{
-			aBPartner =	addAction("InfoBPartner",	mView, 	KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.SHIFT_MASK+Event.ALT_MASK),	false);
-		}
-		if (role.hasPermission(IUserRolePermissions.PERMISSION_ShowAcct) && role.isAllow_Info_Account())
-		{
-			aAccount =  addAction("InfoAccount",mView, 	KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK+Event.CTRL_MASK),	false);
-		}
-		if (role.isAllow_Info_Schedule())
-		{
-			AEnv.addMenuItem("InfoSchedule", null, null, mView, this);			
-		}
-		//FR [ 1966328 ] 
-		if (role.isAllow_Info_MRP())
-		{
-			AEnv.addMenuItem("InfoMRP", "Info", null, mView, this);	
-		}
-		if (role.isAllow_Info_CRP())
-		{
-			AEnv.addMenuItem("InfoCRP", "Info", null, mView, this);	
-		}
-		mView.addSeparator();
-		if (role.isAllow_Info_Order())
-		{
-			AEnv.addMenuItem("InfoOrder", "Info", null, mView, this);	
-		}
-		if (role.isAllow_Info_Invoice())
-		{
-			AEnv.addMenuItem("InfoInvoice", "Info", null, mView, this);			
-		}
-		if (role.isAllow_Info_InOut())
-		{
-			AEnv.addMenuItem("InfoInOut", "Info", null, mView, this);	
-		}
-		if (role.isAllow_Info_Payment())
-		{
-			AEnv.addMenuItem("InfoPayment", "Info", null, mView, this);	
-		}
-		if (role.isAllow_Info_CashJournal())
-		{
-			AEnv.addMenuItem("InfoCashLine", "Info", null, mView, this);	
-		}
-		if (role.isAllow_Info_Resource())
-		{
-			AEnv.addMenuItem("InfoAssignment", "Info", null, mView, this);	
-		}
-		if (role.isAllow_Info_Asset())
-		{
-			AEnv.addMenuItem("InfoAsset", "Info", null, mView, this);	
-		}
-		
-		//
-		// Add all custom windows to menu
-		//
-		for (final I_AD_InfoWindow infoWindow : Services.get(IADInfoWindowDAO.class).retrieveInfoWindowsInMenu(m_ctx))
-		{
-			final CMenuItem mi = new CMenuItem(infoWindow.getName(), Images.getImageIcon2("Info16"));
-
-			mi.setToolTipText(infoWindow.getDescription());
-			mView.add(mi);
-			mi.addActionListener(new ActionListener()
-			{	
-				@Override
-				public void actionPerformed(ActionEvent e)
-				{
-					final Info info = Info.create(getWindowNo(), infoWindow);
-					AEnv.showCenterScreen(info.getWindow());
-				}
-			});
-		}
-
-		
+		InfoWindowMenuBuilder.newBuilder()
+				.setCtx(m_ctx)
+				.setParentWindowNo(getWindowNo())
+				.setMenu(mView)
+				.build();
 
 		mView.addSeparator();
 		aAttachment = addAction("Attachment",	mView, 	KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0),	true);		//	toggle

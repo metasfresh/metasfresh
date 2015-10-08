@@ -161,6 +161,8 @@ public class InfoCashLine extends Info
 	 */
 	private void statInit() throws Exception
 	{
+		final int p_WindowNo = getWindowNo();
+		
 		lName.setLabelFor(fName);
 		fName.setBackground(AdempierePLAF.getInfoBackground());
 		fName.addActionListener(this);
@@ -251,6 +253,7 @@ public class InfoCashLine extends Info
 	 *  Includes first AND
 	 *  @return sql where clause
 	 */
+	@Override
 	protected String getSQLWhere()
 	{
 		StringBuffer sql = new StringBuffer();
@@ -265,8 +268,8 @@ public class InfoCashLine extends Info
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
-			Timestamp from = (Timestamp)fDateFrom.getValue();
-			Timestamp to = (Timestamp)fDateTo.getValue();
+			Timestamp from = fDateFrom.getValue();
+			Timestamp to = fDateTo.getValue();
 			if (from == null && to != null)
 				sql.append(" AND TRUNC(c.StatementDate) <= ?");
 			else if (from != null && to == null)
@@ -311,6 +314,7 @@ public class InfoCashLine extends Info
 	 *  @param forCount for counting records
 	 *  @throws SQLException
 	 */
+	@Override
 	protected void setParameters(PreparedStatement pstmt, boolean forCount) throws SQLException
 	{
 		int index = 1;
@@ -333,8 +337,8 @@ public class InfoCashLine extends Info
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
-			Timestamp from = (Timestamp)fDateFrom.getValue();
-			Timestamp to = (Timestamp)fDateTo.getValue();
+			Timestamp from = fDateFrom.getValue();
+			Timestamp to = fDateTo.getValue();
 			log.fine("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
 				pstmt.setTimestamp(index++, to);
