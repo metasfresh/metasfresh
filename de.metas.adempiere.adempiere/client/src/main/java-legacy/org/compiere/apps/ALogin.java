@@ -78,6 +78,7 @@ import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Language;
 import org.compiere.util.Login;
+import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.adempiere.model.I_AD_Role;
@@ -447,9 +448,8 @@ public final class ALogin extends CDialog
 			displayLanguageCombo = true;
 		}
 		//
-		loadLanguagesFromDatabase();
+		loadLanguagesFromDatabase(adLanguageToPreselect);
 		setLanguageComboVisible(displayLanguageCombo);
-		languageCombo.setSelectedItem(adLanguageToPreselect);
 
 		// AutoLogin - assumes that connection is OK
 		if (Ini.isPropertyBool(Ini.P_A_LOGIN))
@@ -498,50 +498,69 @@ public final class ALogin extends CDialog
 		if (connectOK)
 		{
 			MLanguage.setBaseLanguage();
-			loadLanguagesFromDatabase();
+			loadLanguagesFromDatabase(null); // no preselect suggestion
 		}
 	}
 
 	/**
 	 * Load available languages from database (if available) and update the {@link #languageCombo}.
+	 * 
+	 * @param adLanguageToPreselect AD_Language to preselect or <code>null</code> if no suggestion
 	 */
-	private void loadLanguagesFromDatabase()
+	private void loadLanguagesFromDatabase(final String adLanguageToPreselect)
 	{
 		if (!DB.isConnected())
 		{
 			return;
 		}
+
+		// Language suggested to be preselected
+		ValueNamePair languageToPreselect = null;
 		
-		final ValueNamePair languageNameSelected = languageCombo.getSelectedItem();
-		ValueNamePair languageNameToSelect = null;
+		// Language which was previously selected on language combo
+		final ValueNamePair languagePreviouslySelectedOld = languageCombo.getSelectedItem(); // old value
+		ValueNamePair languagePreviouslySelected = null; // the new value, after languages are loaded
 		
-		final List<I_AD_Language> availableLanguages = Services.get(ILanguageBL.class).getAvailableLanguages(getCtx());
-		final Vector<ValueNamePair> availableLanguageNames = new Vector<>(availableLanguages.size());
-		ValueNamePair baseLanguageName = null;
-		for (final I_AD_Language language : availableLanguages)
+		// Base language
+		ValueNamePair baseLanguage = null;
+		
+		//
+		// Load all available languages
+		// and find out which is the language to preselect, language previously selected and base language
+		final Vector<ValueNamePair> availableLanguageNames;
 		{
-			final ValueNamePair languageVNP = new ValueNamePair(language.getAD_Language(), language.getName());
-			availableLanguageNames.add(languageVNP);
-			
-			if (language.isBaseLanguage())
+			final List<I_AD_Language> availableLanguages = Services.get(ILanguageBL.class).getAvailableLanguages(getCtx());
+			availableLanguageNames = new Vector<>(availableLanguages.size());
+			for (final I_AD_Language language : availableLanguages)
 			{
-				baseLanguageName = languageVNP;
-			}
-			if (languageNameSelected != null && Check.equals(languageVNP.getValue(), languageNameSelected.getValue()))
-			{
-				languageNameToSelect = languageVNP;
+				final ValueNamePair languageVNP = new ValueNamePair(language.getAD_Language(), language.getName());
+				availableLanguageNames.add(languageVNP);
+				
+				if (adLanguageToPreselect != null && adLanguageToPreselect.equals(languageVNP.getValue()))
+				{
+					languageToPreselect = languageVNP;
+				}
+				if (languagePreviouslySelectedOld != null && Check.equals(languageVNP.getValue(), languagePreviouslySelectedOld.getValue()))
+				{
+					languagePreviouslySelected = languageVNP;
+				}
+				if (language.isBaseLanguage())
+				{
+					baseLanguage = languageVNP;
+				}
 			}
 		}
+
+		//
+		// Decide which language to preselect
+		languageToPreselect = Util.coalesce(languageToPreselect, languagePreviouslySelected, baseLanguage);
 		
-		if (languageNameToSelect == null)
-		{
-			languageNameToSelect = baseLanguageName;
-		}
-		
+		//
+		// Update language combo's model and preselect the language
 		languageCombo.setModel(new DefaultComboBoxModel<>(availableLanguageNames));
-		if (languageNameToSelect != null)
+		if (languageToPreselect != null)
 		{
-			languageCombo.setSelectedItem(languageNameToSelect);
+			languageCombo.setSelectedItem(languageToPreselect);
 		}
 	}
 
@@ -610,7 +629,7 @@ public final class ALogin extends CDialog
 
 	private final void actionPerformed0(final ActionEvent e)
 	{
-		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
+		if (ConfirmPanel.A_OK.equals(e.getActionCommand()))
 		{
 			if (loginTabPane.getSelectedIndex() == 0)
 			{
@@ -633,7 +652,7 @@ public final class ALogin extends CDialog
 				}
 			}
 		}
-		else if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
+		else if (ConfirmPanel.A_CANCEL.equals(e.getActionCommand()))
 		{
 			appExit();
 		}
