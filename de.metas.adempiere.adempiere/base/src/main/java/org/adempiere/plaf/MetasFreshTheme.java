@@ -215,6 +215,7 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 		// Button:
 		table.putDefaults(new Object[] {
 				"Button.is3DEnabled", false // all components shall be flat (task 09387)
+				, "Button.borderPaintsFocus", true
 		});
 
 		//

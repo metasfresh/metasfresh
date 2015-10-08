@@ -128,7 +128,7 @@ final class VPanelFieldGroup
 	}
 
 	/** @return container component or {@link #getContentPane()} if there is no container */
-	public final Component getComponent()
+	public final JComponent getComponent()
 	{
 		if (container != null)
 		{

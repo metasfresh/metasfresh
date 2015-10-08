@@ -86,6 +86,10 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 				, "ComboBox.editorBorder", BorderFactory.createEmptyBorder()
 				, "ComboBox.arrowButtonBorder", BorderFactory.createEmptyBorder()
 				, "ComboBox.border", AdempierePLAF.createActiveValueProxy("TextField.border", BorderFactory.createEmptyBorder())
+				
+				// Don't paint combobox's focus border because it looks very ugly.
+				// For future, if we want to change it and paint it nicely (see com.jgoodies.looks.plastic.PlasticComboBoxButton.paintComponent(Graphics))
+				, "ComboBox.borderPaintsFocus", true
 		};
 	}
 

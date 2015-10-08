@@ -28,8 +28,6 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -100,7 +98,6 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.TableCellNone;
 import org.compiere.util.CCache;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -129,8 +126,10 @@ import com.google.common.base.MoreObjects;
  * 						vIncludedGC	GridController
  *                  mrPane  JScrollPane
  *                      vTable  VTable
+ * </pre>
  *
  *  <B>DataBinding:<B>
+ * <pre>
  *  - MultiRow - is automatic between VTable and MTable
  *  - SingleRow
  *		- from VEditors via fireVetoableChange(m_columnName, null, getText());
@@ -172,6 +171,7 @@ import com.google.common.base.MoreObjects;
  *                  + GridController.dataStatusChanged
  *                      + GridController.dynamicDisplay(selective)
  *  </pre>
+ *  
  * @author  Jorg Janke
  * @version $Id: GridController.java,v 1.8 2006/09/25 00:59:52 jjanke Exp $
  * 
@@ -182,7 +182,7 @@ import com.google.common.base.MoreObjects;
  */
 public final class GridController extends CPanel
 	implements DataStatusListener, ListSelectionListener, Evaluatee,
-		VetoableChangeListener,	PropertyChangeListener, MouseListener
+		VetoableChangeListener,	PropertyChangeListener
 {
 	/**
 	 * 
@@ -748,26 +748,25 @@ public final class GridController extends CPanel
 	}
 	
 	/**
-	 * 	Include Tab
-	 * 	@param gc grid controller to add
-	 * 	@return GridSynchronizer
+	 * Include Tab
+	 * 
+	 * @param sync grid synchronizer which contains the child tab to be included
 	 */
 	//FR [ 1757088 ]
-	public boolean includeTab (final GridController detail , final APanel aPanel, final GridSynchronizer sync)
+	public void includeTab (final GridSynchronizer sync)
 	{	
 		Check.assume(this == sync.getParent(), "Valid GridSynchronizer parent");
-		Check.assume(detail == sync.getChild(), "Valid GridSynchronizer child");
+		
+		final GridController detail = sync.getChild();
 		
 		detail.setDetailGrid(true);
-		detail.addMouseListener(detail);
+		detail.setGCParent(this);
 		detail.enableEvents(AWTEvent.HIERARCHY_EVENT_MASK + AWTEvent.MOUSE_EVENT_MASK);
 		
 		vPanel.includeTab(detail);
-		detail.setGCParent(this);
-		detail.getGCParent().setPreferredSize(vPanel.getPreferredSize());
+		
 		synchronizerList.add(sync);
-		return true;
-	}	//	IncludeTab
+	}
 
 	//FR [ 1757088 ]
 	private void setDetailGrid(final boolean detailGrid)
@@ -1756,57 +1755,6 @@ public final class GridController extends CPanel
 	}   //  stopEditors
 
 	/**
-	 * 	Mouse Clicked
-	 *	@param e event
-	 */
-	@Override
-	public void mouseClicked(MouseEvent e)
-	{
-		if (CLogMgt.isLevelFinest())
-			log.finest("" + this + " - " + e);
-	}
-	/**
-	 * 	Mouse Pressed
-	 *	@param e event
-	 */
-	@Override
-	public void mousePressed(MouseEvent e)
-	{
-		if (CLogMgt.isLevelFinest())
-			log.finest("" + this + " - " + e);
-	}
-	/**
-	 * 	Mouse Released
-	 *	@param e event
-	 */
-	@Override
-	public void mouseReleased(MouseEvent e)
-	{
-		if (CLogMgt.isLevelFinest())
-			log.finest("" + this + " - " + e);
-	}
-	/**
-	 * 	Mouse Entered
-	 *	@param e event
-	 */
-	@Override
-	public void mouseEntered(MouseEvent e)
-	{
-		if (CLogMgt.isLevelFinest())
-			log.finest("" + this + " - " + e);
-	}
-	/**
-	 * 	Mouse Exited
-	 *	@param e event
-	 */
-	@Override
-	public void mouseExited(MouseEvent e)
-	{
-		if (CLogMgt.isLevelFinest())
-			log.finest("" + this + " - " + e);
-	}
-
-	/**
 	 * 	Get Variable Value
 	 *	@param variableName name
 	 *	@return value
@@ -2000,20 +1948,24 @@ public final class GridController extends CPanel
 		ve.setBackground(bg);
 	}
 
-	// metas-2009_0021_AP1_CR051: begin
-	private int includedTabHeight = 0;
-
-	public int getIncludedTabHeight()
+	public void setFixedHeight(final int height)
 	{
-		return includedTabHeight;
+		if (height > 0)
+		{
+			final JComponent comp = splitPane;
+			comp.setPreferredSize(new Dimension(comp.getPreferredSize().width, height));
+			comp.setMinimumSize(new Dimension(200, height));
+			comp.setMaximumSize(new Dimension(9999, height));
+		}
 	}
-
-	public void setIncludedTabHeight(int includedTabHeight)
+	
+	/**
+	 * Scroll the view in order to make visible the actual content of this panel (i.e. the single row panel or the grid table).
+	 */
+	public void scrollToVisible()
 	{
-		this.includedTabHeight = includedTabHeight;
+		this.scrollRectToVisible(splitPane.getBounds());
 	}
-
-	// metas-2009_0021_AP1_CR051: end
 
 	@Override
 	public final void requestFocus()
@@ -2029,7 +1981,7 @@ public final class GridController extends CPanel
 		// Fallback: request focus on this component
 		super.requestFocus();
 	}
-
+	
 	@Override
 	public final boolean requestFocusInWindow()
 	{

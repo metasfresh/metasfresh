@@ -26,9 +26,12 @@ package org.compiere.apps.search;
  */
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import org.adempiere.plaf.AdempiereTaskPaneUI;
 import org.adempiere.plaf.IUISubClassIDAware;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
@@ -66,7 +69,7 @@ public class CollapsibleFindPanel extends JXTaskPane implements IUISubClassIDAwa
 
 		setExpanded(!builder.isSearchPanelCollapsed());
 	}
-	
+
 	@Override
 	public String getUISubClassID()
 	{
@@ -94,7 +97,7 @@ public class CollapsibleFindPanel extends JXTaskPane implements IUISubClassIDAwa
 	{
 		return findPanel.requestFocusInWindow();
 	}
-	
+
 	/**
 	 * @return true if it's expanded and the underlying {@link FindPanel} allows focus.
 	 */
@@ -105,7 +108,26 @@ public class CollapsibleFindPanel extends JXTaskPane implements IUISubClassIDAwa
 		{
 			return false;
 		}
-		
+
 		return findPanel.isFocusable();
+	}
+
+	/**
+	 * Adds a runnable to be executed when the this panel is collapsed or expanded.
+	 * 
+	 * @param runnable
+	 */
+	public void runOnCollapsedStateChange(final Runnable runnable)
+	{
+		Check.assumeNotNull(runnable, "runnable not null");
+		this.addPropertyChangeListener("collapsed", new PropertyChangeListener()
+		{
+
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				runnable.run();
+			}
+		});
 	}
 }

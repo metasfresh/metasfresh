@@ -98,13 +98,13 @@ public class CPanel extends JPanel
 
 	/**
 	 *  Common init.
-	 *  Adempiere backround requires that for the base, background is set explictily.
+	 *  Adempiere background requires that for the base, background is set explicitly.
 	 *  The additional panels should be transparent.
 	 */
 	private void init()
 	{
 		setOpaque(false);	//	transparent
-	}   //  init
+	}
 
 	
 	/**************************************************************************

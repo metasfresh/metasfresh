@@ -53,7 +53,7 @@ public class VTabbedPane extends CTabbedPane
 	 *  Constructor
 	 *  @param isWorkbench is this a workbench tab (tabs on the left side)
 	 */
-	public VTabbedPane (boolean isWorkbench)
+	public VTabbedPane (final boolean isWorkbench)
 	{
 		super();
 		setTabLayoutPolicy (JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -104,7 +104,7 @@ public class VTabbedPane extends CTabbedPane
 		setDisabledIconAt(index, s_disabledIcon);
 	}	//	addTab
 	
-	private void hideTab(String tabName)
+	private void hideTab(final String tabName)
 	{	
 		int tabIndex = indexOfTab(tabName);
 		

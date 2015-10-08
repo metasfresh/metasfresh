@@ -1,7 +1,6 @@
 package org.compiere.grid;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,18 +8,19 @@ import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
+import javax.swing.SwingUtilities;
 
 import org.adempiere.plaf.AdempiereLookAndFeel;
-import org.adempiere.plaf.VPanelUI;
 import org.adempiere.util.Services;
 import org.compiere.apps.APanel;
+import org.compiere.apps.search.CollapsibleFindPanel;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.FieldGroupVO;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldLayoutConstraints;
+import org.compiere.model.GridTab;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
@@ -166,11 +166,13 @@ public final class VPanel extends CTabbedPane
 		final int AD_Tab_ID = gridField.getIncluded_Tab_ID();
 		if (AD_Tab_ID > 0)
 		{
+			// Create the included tab field group place holder.
 			final VPanelFieldGroup groupPanel = fieldGroupFactory.newEmptyPanelForIncludedTab(AD_Tab_ID);
 			mainGroupPanel.addIncludedFieldGroup(groupPanel);
-
 			includedGroupPanelsByTabId.put(AD_Tab_ID, groupPanel);
 
+			// If the grid controller for this tab was already added (see includeTab method),
+			// We can really add the grid controller inside this field group.
 			final GridController includedGC = includedTabList.get(AD_Tab_ID);
 			if (includedGC != null)
 			{
@@ -323,41 +325,66 @@ public final class VPanel extends CTabbedPane
 	 */
 	void includeTab(final GridController detail)
 	{
-		final int adTabId = detail.getMTab().getAD_Tab_ID();
+		final GridTab gridTab = detail.getMTab();
+		final int adTabId = gridTab.getAD_Tab_ID();
 
-		final VPanelFieldGroup groupPanel = includedGroupPanelsByTabId.get(adTabId);
-		if (groupPanel != null)
-		{
-			final APanel panel = new APanel(detail, getWindowNo());
-			panel.setBorder(BorderFactory.createEmptyBorder());
-			detail.setAPanel(panel); // metas: 02553: set the actual panel to be used and who will receive events
-			final String name = detail.getMTab().getName();
-			groupPanel.setTitle(name);
-
-			final JPanel groupPanelContent = groupPanel.getContentPane();
-			groupPanelContent.removeAll(); // make sure the panel is empty
-			groupPanelContent.setLayout(new BorderLayout());
-			groupPanelContent.add(panel, BorderLayout.CENTER);
-
-			//
-			// Apply included tab height
-			int includedTabHeight = detail.getIncludedTabHeight();
-			if (includedTabHeight <= 0)
-			{
-				includedTabHeight = UIManager.getInt(VPanelUI.KEY_IncludedTabHeight);
-			}
-			if (includedTabHeight > 0)
-			{
-				detail.setPreferredSize(new Dimension(detail.getPreferredSize().width, includedTabHeight));
-				detail.setMinimumSize(new Dimension(200, includedTabHeight));
-				detail.setMaximumSize(new Dimension(9999, includedTabHeight));
-			}
-		}
-
-		// this can be call before addField
+		//
+		// Add this included grid controller to our internal list.
+		// If we are not able to add it now, we will add it later in "addField".
 		if (!includedTabList.containsKey(adTabId))
 		{
 			includedTabList.put(adTabId, detail);
+		}
+
+		final VPanelFieldGroup groupPanel = includedGroupPanelsByTabId.get(adTabId);
+		if (groupPanel == null)
+		{
+			// the field group was not created yet.
+			// Do nothing. We expect this to be solved, later in "addField".
+			return;
+		}
+		
+		final APanel panel = new APanel(detail, getWindowNo());
+		panel.setBorder(BorderFactory.createEmptyBorder());
+		detail.setAPanel(panel); // metas: 02553: set the actual panel to be used and who will receive events
+		final String name = gridTab.getName();
+		groupPanel.setTitle(name);
+
+		final JPanel groupPanelContent = groupPanel.getContentPane();
+		groupPanelContent.removeAll(); // make sure the panel is empty
+		groupPanelContent.setLayout(new BorderLayout());
+		groupPanelContent.add(panel, BorderLayout.CENTER);
+		
+		//
+		// When the find panel is expended, scroll the outer scroll pane,
+		// in order to have the actual included tab content (single row panel or table) visible to user.
+		// NOTE: usually the included tabs are the last field groups so the effect would be to scroll a bit down.
+		final CollapsibleFindPanel findPanel = detail.getFindPanel();
+		if (findPanel != null)
+		{
+			findPanel.runOnCollapsedStateChange(new Runnable()
+			{
+
+				@Override
+				public void run()
+				{
+					if (findPanel.isCollapsed())
+					{
+						return;
+					}
+
+					// NOTE: because when the change event is triggered only the collapsed state is changed, and the actual component layout is happening later,
+					// we are enqueuing an event to be processed in next EDT round.
+					SwingUtilities.invokeLater(new Runnable()
+					{
+						@Override
+						public void run()
+						{
+							detail.scrollToVisible();
+						}
+					});
+				}
+			});
 		}
 	}
 

@@ -59,6 +59,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -70,6 +71,7 @@ import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.TableInfoVO;
+import org.adempiere.plaf.VPanelUI;
 import org.adempiere.process.event.IProcessEventListener;
 import org.adempiere.process.event.IProcessEventSupport;
 import org.adempiere.process.event.ProcessEvent;
@@ -692,7 +694,9 @@ public class APanel extends CPanel
 	/**	Last Modifier of Action Event					*/
 	private int 			m_lastModifiers;
 
-	private HashMap<Integer, GridController> includedMap;
+	private final Map<Integer, GridController> includedTabId2ParentGC = new HashMap<>(4);
+	private final Map<Integer, Integer> includedTabId2Height = new HashMap<>(); // metas-2009_0021_AP1_CR051
+	private final int defaultIncludedTabHeight = UIManager.getInt(VPanelUI.KEY_IncludedTabHeight);
 	
 	/**************************************************************************
 	 *	Dynamic Panel Initialization - either single window or workbench.
@@ -793,8 +797,6 @@ public class APanel extends CPanel
 			 */
 			if (wbType == GridWorkbench.TYPE_WINDOW)
 			{
-				includedMap = new HashMap<Integer,GridController>(4);
-				//
 				final GridWindowVO wVO;
 				try
 				{
@@ -808,7 +810,7 @@ public class APanel extends CPanel
 					return false;
 				}
 				
-				GridWindow mWindow = new GridWindow (wVO);			                //  Timing: ca. 0.3-1 sec
+				final GridWindow mWindow = new GridWindow (wVO);			                //  Timing: ca. 0.3-1 sec
 				//	Set SO/AutoNew for Window
 				Env.setContext(m_ctx, m_curWindowNo, "IsSOTrx", mWindow.isSOTrx());
 				if (!autoNew && mWindow.isTransaction())
@@ -822,11 +824,12 @@ public class APanel extends CPanel
 				/**
 				 *  Window Tabs
 				 */
-				int tabSize = mWindow.getTabCount();
+				final int tabSize = mWindow.getTabCount();
 				boolean goSingleRow = query != null;	//	Zoom Query
 				for (int tab = 0; tab < tabSize; tab++)
 				{
-					boolean included = false;
+					boolean addToWindowTabbedPane = true;
+					
 					//  MTab
 					if (tab == 0) mWindow.initTab(0);
 					final GridTab gTab = mWindow.getTab(tab);
@@ -874,25 +877,25 @@ public class APanel extends CPanel
 							m_curTab = gTab;
 					}	//	query on first tab
 
-					Component tabElement = null;
+					final Component tabElement;
 					//  GridController
 					if (gTab.isSortTab())
 					{
-						VSortTab st = new VSortTab(m_curWindowNo, gTab.getAD_Table_ID(),
+						final VSortTab st = new VSortTab(m_curWindowNo, gTab.getAD_Table_ID(),
 							gTab.getAD_ColumnSortOrder_ID(), gTab.getAD_ColumnSortYesNo_ID());
 						st.setTabLevel(gTab.getTabLevel());
 						tabElement = st;
 					}
 					else	//	normal tab
 					{
-						// metas-2009_0021_AP1_CR056: begin
+						//
+						// Check if this is an included tab (metas-2009_0021_AP1_CR056)
 						boolean includedTab = false;
-						if (includedMap.size() > 0)
+						if (includedTabId2ParentGC.size() > 0)
 						{
-							if (includedMap.get(gTab.getAD_Tab_ID()) != null)
+							if (includedTabId2ParentGC.get(gTab.getAD_Tab_ID()) != null)
 								includedTab = true;
 						}
-						// metas-2009_0021_AP1_CR056: end
 						
 						final GridController gc = GridController.builder()
 								.setAPanel(this)
@@ -906,71 +909,55 @@ public class APanel extends CPanel
 						if (wb == 0 && tab == 0)
 						{
 							m_curGC = gc;
-							Dimension size = gc.getPreferredSize();     //  Screen Sizing
-							size.width += 4;
-							size.height += 4;
-							gc.setPreferredSize(size);
 						}
 						
 						tabElement = gc;
 						
                         // FR [ 1757088 ]
-						for (final GridField gridField : gc.getMTab().getFields())
+						for (final GridField gridField : gTab.getFields())
 						{
 							final int includedTabId = gridField.getIncluded_Tab_ID();
 							if (includedTabId > 0)
 							{
-								includedMap.put(includedTabId, gc);
-								includedTabHeightMap.put(includedTabId, gridField.getIncludedTabHeight()); // metas-2009_0021_AP1_CR051
+								includedTabId2ParentGC.put(includedTabId, gc);
+								includedTabId2Height.put(includedTabId, gridField.getIncludedTabHeight()); // metas-2009_0021_AP1_CR051
 							}
 						}
 
 						//	Is this tab included?
-						if (includedMap.size() > 0)
+						if (includedTabId2ParentGC.size() > 0)
 						{
-							final GridController parentGC = includedMap.get(gTab.getAD_Tab_ID());
+							final GridController parentGC = includedTabId2ParentGC.get(gTab.getAD_Tab_ID());
 							if (parentGC != null)
 							{
-								// metas-2009_0021_AP1_CR051: begin
-								final Integer height = includedTabHeightMap.get(gTab.getAD_Tab_ID());
-								gc.setIncludedTabHeight(height == null ? 0 : height.intValue());
-								// metas-2009_0021_AP1_CR051: end
+								// 
+								// Set included tab to a fixed height
+								final Integer height = includedTabId2Height.get(gTab.getAD_Tab_ID());
+								gc.setFixedHeight(height == null || height <= 0 ? defaultIncludedTabHeight : height.intValue());
+								
 								// FR [ 1757088 ]
 								gc.removeDataStatusListener(this);
 								isTabIncluded = true; // metas-2009_0021_AP1_CR056
 								final GridSynchronizer synchronizer = new GridSynchronizer(mWindow, parentGC, gc);
 								if (parentGC == m_curGC)
 									synchronizer.activateChild();
-								included = parentGC.includeTab(gc,this,synchronizer);								
+								parentGC.includeTab(synchronizer);
+								
+								addToWindowTabbedPane = false;
 							}
 						}
+						
 						initSwitchLineAction();
 					}	//	normal tab
 
-					if (!included)	//  Add to TabbedPane
+					// Add the tab element to TabbedPane
+					if (addToWindowTabbedPane)
 					{
-						final StringBuilder tabName = new StringBuilder();
-						tabName.append ("<html>");
-						if (gTab.isReadOnly())
-							tabName.append("<i>");
-						int pos = gTab.getName ().indexOf (" ");
-						if (pos == -1)
-							tabName.append (gTab.getName ()).append ("<br>&nbsp;");
-						else
-						{
-							tabName.append (gTab.getName().substring (0, pos))
-							  .append ("<br>")
-							  .append (gTab.getName().substring(pos + 1));
-						}
-						if (gTab.isReadOnly())
-							tabName.append("</i>");
-						tabName.append ("</html>");
-						//	Add Tab - sets ALT-<number> and Shift-ALT-<x>
-						window.addTab (tabName.toString(), gTab, tabElement);
+						// Add Tab - sets ALT-<number> and Shift-ALT-<x>
+						final String tabTitle = buildTabTitle(gTab);
+						window.addTab(tabTitle, gTab, tabElement);
 					}
 				}   //  Tab Loop
-			//  Tab background
-			//	window.setBackgroundColor(new AdempiereColor(Color.magenta, Color.green));
 			}   //  Type-MWindow
 
 			//  Single Workbench Window Tab
@@ -1012,7 +999,29 @@ public class APanel extends CPanel
 		m_curWinTab.requestFocusInWindow();
 		return true;
 	}	//	initPanel
+	
+	private static final String buildTabTitle(final GridTab gridTab)
+	{
+		final StringBuilder tabTitle = new StringBuilder();
+		tabTitle.append ("<html>");
+		if (gridTab.isReadOnly())
+			tabTitle.append("<i>");
+		int pos = gridTab.getName ().indexOf (" ");
+		if (pos == -1)
+			tabTitle.append (gridTab.getName ()).append ("<br>&nbsp;");
+		else
+		{
+			tabTitle.append (gridTab.getName().substring (0, pos))
+			  .append ("<br>")
+			  .append (gridTab.getName().substring(pos + 1));
+		}
+		if (gridTab.isReadOnly())
+			tabTitle.append("</i>");
+		tabTitle.append ("</html>");
 
+		return tabTitle.toString();
+	}
+	
 	private boolean zoomToDetailTab(MQuery query)
 	{
 		if (query != null 
@@ -1105,14 +1114,14 @@ public class APanel extends CPanel
 					targetQuery.addRestriction(gTab.getLinkColumnName(), "=", parentId);
 					gTab.setQuery(targetQuery);
 					GridController gc = null;
-					if (!includedMap.containsKey(gTab.getAD_Tab_ID()))
+					if (!includedTabId2ParentGC.containsKey(gTab.getAD_Tab_ID()))
 					{
 						int target = tabPanel.findTabindex(gTab);
 						gc = (GridController) tabPanel.getComponentAt(target);
 					}
 					else
 					{
-						GridController parent = includedMap.get(gTab.getAD_Tab_ID());
+						GridController parent = includedTabId2ParentGC.get(gTab.getAD_Tab_ID());
 						gc = parent.findChild(gTab);
 					}
 					gc.activate();
@@ -1125,13 +1134,13 @@ public class APanel extends CPanel
     					int id = table.getKeyID(i);
     					if (id == ((Integer)query.getZoomValue()).intValue())
     					{
-    						if (!includedMap.containsKey(gTab.getAD_Tab_ID()))
+    						if (!includedTabId2ParentGC.containsKey(gTab.getAD_Tab_ID()))
     						{
     							tabPanel.setSelectedIndex(tabPanel.findTabindex(gTab));
     						}
     						else
     						{
-    							GridController parent = includedMap.get(gTab.getAD_Tab_ID());
+    							GridController parent = includedTabId2ParentGC.get(gTab.getAD_Tab_ID());
     							int pindex = tabPanel.findTabindex(parent.getMTab());
     							if (pindex >= 0)
     								tabPanel.setSelectedIndex(pindex);
@@ -3242,7 +3251,6 @@ public class APanel extends CPanel
 	private boolean isSearchActive = true; // metas-2009_0021_AP1_CR057
 	private boolean isTabIncluded = false; // metas-2009_0021_AP1_CR056
 	private AppsAction aCopyDetails; // metas
-	private final Map<Integer, Integer> includedTabHeightMap = new HashMap<Integer, Integer>(); // metas-2009_0021_AP1_CR051
 	
 	public GridWorkbench getGridWorkbench()
 	{
