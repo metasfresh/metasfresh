@@ -40,19 +40,17 @@
 		</dependency>
 		-->
 		<!-- 07585 ESR an Debitoren (109078863663) -->
-		<!-- 03301: Mitgliedsrechnung (Jasper) (2012091810000098) -->
+		<!-- 03301 Mitgliedsrechnung (Jasper) (2012091810000098) -->
 		<!-- 03718 ESR-Schein auf Rechnung fertigstellen (2012121810000028) -->
 		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
 		<dependency>
 			<groupId>jp.osdn.ocra</groupId>
 			<artifactId>jp.osdn.ocra</artifactId>
-			<version>0.2</version>
 		</dependency>
 
 		<dependency>
 			<groupId>jp.osdn.ocrb</groupId>
 			<artifactId>jp.osdn.ocrb</artifactId>
-			<version>0.2</version>
 		</dependency>
 
 		<dependency>

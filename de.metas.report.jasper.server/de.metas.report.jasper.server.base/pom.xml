@@ -78,13 +78,10 @@
 		<dependency>
 			<groupId>jp.osdn.ocra</groupId>
 			<artifactId>jp.osdn.ocra</artifactId>
-			<version>0.2</version>
 		</dependency>
-
 		<dependency>
 			<groupId>jp.osdn.ocrb</groupId>
 			<artifactId>jp.osdn.ocrb</artifactId>
-			<version>0.2</version>
 		</dependency>
 
 	</dependencies>
