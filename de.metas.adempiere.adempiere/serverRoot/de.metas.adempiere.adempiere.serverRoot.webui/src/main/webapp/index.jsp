@@ -30,7 +30,7 @@
 						<tbody>
 							<tr>
 								<td align="left" valign="middle" width="477"></td>
-								<td align="left" valign="bottom"><a href="<%=productURL%>" target="_blank"><img src="images/logo.png?width=300" alt="logo" align="right" border="0"></a></td>
+								<td align="left" valign="bottom"><a href="<%=productURL%>" target="_blank"><img src="logo_web_metasfresh_color.gif" alt="logo" align="right" border="0"></a></td>
 							</tr>
 						</tbody>
 					</table>
