@@ -1,6 +1,6 @@
--- 24.09.2015 15:22
+﻿-- 24.09.2015 15:22
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,2019,0,540558,540787,35,'M_AttributeSetInstance_ID',TO_TIMESTAMP('2015-09-24 15:22:43','YYYY-MM-DD HH24:MI:SS'),100,'Instanz des Merkmals-Satzes zum Produkt','de.metas.fresh',0,'The values of the actual Product Attribute Instances.  The product level attributes are defined on Product level.','Y','N','Y','N','N','N','Auspr�gung Merkmals-Satz',40,TO_TIMESTAMP('2015-09-24 15:22:43','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,2019,0,540558,540787,35,'M_AttributeSetInstance_ID',TO_TIMESTAMP('2015-09-24 15:22:43','YYYY-MM-DD HH24:MI:SS'),100,'Instanz des Merkmals-Satzes zum Produkt','de.metas.fresh',0,'The values of the actual Product Attribute Instances.  The product level attributes are defined on Product level.','Y','N','Y','N','N','N','Ausprägung Merkmals-Satz',40,TO_TIMESTAMP('2015-09-24 15:22:43','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 24.09.2015 15:22
