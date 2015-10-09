@@ -11,7 +11,7 @@
         <dependent-module archiveName="de.metas.endcustomer.mf15.serverRoot-1.0_IT-SNAPSHOT.war" deploy-path="/" handle="module:/resource/de.metas.endcustomer.mf15.serverRoot/de.metas.endcustomer.mf15.serverRoot">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="de.metas.report.jasper.server.war-1.0_IT-SNAPSHOT.war" deploy-path="/" handle="module:/resource/de.metas.report.jasper.server.war/de.metas.report.jasper.server.war">
+        <dependent-module archiveName="de.metas.report.jasper.server.war-1.0_IT-20151006.152718-17.war" deploy-path="/" handle="module:/classpath/var/M2_REPO/de/metas/report/jasper/server/de.metas.report.jasper.server.war/1.0_IT-SNAPSHOT/de.metas.report.jasper.server.war-1.0_IT-SNAPSHOT.war">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module archiveName="de.metas.endcustomer.mf15.base-1.0_IT-SNAPSHOT.jar" deploy-path="/" handle="module:/resource/de.metas.endcustomer.mf15.base/de.metas.endcustomer.mf15.base">
@@ -173,7 +173,7 @@
         <dependent-module archiveName="de.metas.materialtracking-1.0_IT-SNAPSHOT.jar" deploy-path="/" handle="module:/resource/de.metas.materialtracking/de.metas.materialtracking">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="de.metas.util-1.0_IT-SNAPSHOT.jar" deploy-path="/" handle="module:/resource/de.metas.util/de.metas.util">
+        <dependent-module archiveName="de.metas.util-1.0_IT-20151006.152519-22.jar" deploy-path="/" handle="module:/classpath/var/M2_REPO/de/metas/util/de.metas.util/1.0_IT-SNAPSHOT/de.metas.util-1.0_IT-SNAPSHOT.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module archiveName="guava-18.0.jar" deploy-path="/" handle="module:/classpath/var/M2_REPO/com/google/guava/guava/18.0/guava-18.0.jar">
@@ -284,7 +284,7 @@
         <dependent-module archiveName="de.metas.adempiere.libero.libero-1.0_IT-SNAPSHOT.jar" deploy-path="/" handle="module:/resource/de.metas.adempiere.libero.libero/de.metas.adempiere.libero.libero">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="de.metas.report.jasper.client-1.0_IT-SNAPSHOT.jar" deploy-path="/" handle="module:/resource/de.metas.report.jasper.client/de.metas.report.jasper.client">
+        <dependent-module archiveName="de.metas.report.jasper.client-1.0_IT-20151006.152713-17.jar" deploy-path="/" handle="module:/classpath/var/M2_REPO/de/metas/report/jasper/client/de.metas.report.jasper.client/1.0_IT-SNAPSHOT/de.metas.report.jasper.client-1.0_IT-SNAPSHOT.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module archiveName="de.metas.aggregation-1.0_IT-SNAPSHOT.jar" deploy-path="/" handle="module:/resource/de.metas.aggregation/de.metas.aggregation">
@@ -317,7 +317,7 @@
         <dependent-module archiveName="commons-codec-1.6.jar" deploy-path="/" handle="module:/classpath/var/M2_REPO/commons-codec/commons-codec/1.6/commons-codec-1.6.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="de.metas.report.jasper.server.base-1.0_IT-SNAPSHOT.jar" deploy-path="/" handle="module:/resource/de.metas.report.jasper.server.base/de.metas.report.jasper.server.base">
+        <dependent-module archiveName="de.metas.report.jasper.server.base-1.0_IT-20151006.152717-17.jar" deploy-path="/" handle="module:/classpath/var/M2_REPO/de/metas/report/jasper/server/de.metas.report.jasper.server.base/1.0_IT-SNAPSHOT/de.metas.report.jasper.server.base-1.0_IT-SNAPSHOT.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module archiveName="jasperreports-4.6.0.jar" deploy-path="/" handle="module:/classpath/var/M2_REPO/net/sf/jasperreports/jasperreports/4.6.0/jasperreports-4.6.0.jar">
@@ -536,7 +536,7 @@
         <dependent-module archiveName="gson-2.3.1.jar" deploy-path="/" handle="module:/classpath/var/M2_REPO/com/google/code/gson/gson/2.3.1/gson-2.3.1.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="de.metas.report.jasper.commons-1.0_IT-SNAPSHOT.jar" deploy-path="/" handle="module:/resource/de.metas.report.jasper.commons/de.metas.report.jasper.commons">
+        <dependent-module archiveName="de.metas.report.jasper.commons-1.0_IT-20151006.152711-17.jar" deploy-path="/" handle="module:/classpath/var/M2_REPO/de/metas/report/jasper/commons/de.metas.report.jasper.commons/1.0_IT-SNAPSHOT/de.metas.report.jasper.commons-1.0_IT-SNAPSHOT.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module archiveName="batik-bridge-1.6-1.jar" deploy-path="/" handle="module:/classpath/var/M2_REPO/batik/batik-bridge/1.6-1/batik-bridge-1.6-1.jar">
