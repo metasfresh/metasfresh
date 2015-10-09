@@ -17,7 +17,7 @@
 	<meta name="description" content="metas Fresh Application Home">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link href="css/standard.css" rel="stylesheet" type="text/css">
-	<link rel="shortcut icon" href="favicon.ico" />
+	<link rel="shortcut icon" href="favicon_32.png" />
 </head>
 <body>
 	<table border="0" cellpadding="0" cellspacing="0" width="100%">
