@@ -1,6 +1,10 @@
+DROP FUNCTION IF EXISTS report.fresh_umsatzreport_report (IN c_period_id numeric, IN issotrx character varying);
+
 DROP FUNCTION IF EXISTS report.fresh_umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric);
 
 DROP TABLE IF EXISTS report.fresh_umsatzreport_report;
+
+DROP FUNCTION IF EXISTS report.fresh_Umsatzreport_Report_Sub (IN c_period_id numeric, IN issotrx character varying);
 
 DROP FUNCTION IF EXISTS report.fresh_Umsatzreport_Report_Sub (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric);
 
