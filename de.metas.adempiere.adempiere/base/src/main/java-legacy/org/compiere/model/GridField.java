@@ -46,6 +46,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.EvaluateeCtx;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.DelayedPropertyChangeSupport;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
@@ -54,6 +55,8 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Env.Scope;
 import org.compiere.util.Evaluatee;
+
+import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
 
@@ -85,19 +88,14 @@ public class GridField
 	 */
 	private static final long serialVersionUID = 1124123543602986028L;
 
-	private GridField()
-	{
-		super();
-	}
-
 	/**
 	 * Field Constructor. requires initField for complete instantiation
 	 * 
 	 * @param vo ValueObjecy
 	 */
-	public GridField(GridFieldVO vo)
+	public GridField(final GridFieldVO vo)
 	{
-		this();
+		super();
 		m_vo = vo;
 
 		// Process Parameters have always Inserting=true because there are on a "new record"
@@ -107,7 +105,6 @@ public class GridField
 		}
 
 		// Set Attributes
-		loadLookup();
 		setError(false);
 	}   // MField
 
@@ -123,19 +120,31 @@ public class GridField
 	 */
 	protected void dispose()
 	{
-		// log.fine( "MField.dispose = " + m_vo.getColumnName());
 		m_propertyChangeListeners = null;
 
-		if (m_lookup != null)
-			m_lookup.dispose();
-		m_lookup = null;
-
+		//
+		// Lookup
+		final ExtendedMemorizingSupplier<Lookup> lookupSupplier = this.lookupSupplier;
+		this.lookupSupplier = null;
+		final Lookup lookup = lookupSupplier == null ? null : lookupSupplier.forget();
+		if (lookup != null)
+		{
+			lookup.dispose();
+		}
 		// m_vo.lookupInfo = null;
+		
 		m_vo = null;
 	}   // dispose
 
-	/** Lookup for this field */
-	private Lookup m_lookup = null;
+	/** Lookup supplier for this field */
+	private ExtendedMemorizingSupplier<Lookup> lookupSupplier = ExtendedMemorizingSupplier.of(new Supplier<Lookup>()
+	{
+		@Override
+		public Lookup get()
+		{
+			return createLookup();
+		}
+	});
 	/** New Row / inserting */
 	private boolean m_inserting = false;
 
@@ -165,46 +174,35 @@ public class GridField
 	private boolean m_errorValueFlag = false;
 
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(GridField.class);
+	private static final CLogger log = CLogger.getCLogger(GridField.class);
 
-	/**************************************************************************
-	 * Set Lookup for columns with lookup
-	 */
-	public void loadLookup()
-	{
-		final boolean alwaysLoad = false;
-		loadLookup(alwaysLoad); // metas: cg: task : 02354
-	}
-
-	/**
-	 * Load lookup. If the lookup is loaded, this method won't load the lookup again
-	 * 
-	 * @param alwaysLoad always load the lookup, even if the field is not displayed
-	 */
-	// metas: cg: task : 02354
-	public void loadLookup(boolean alwaysLoad)
+	public Lookup createLookup()
 	{
 		if (!isLookup())
 		{
-			return;
+			return null;
 		}
 
-		// Don't load again if lookup already loaded - metas 02354
-		if (m_lookup != null)
-			return;
+		log.log(Level.CONFIG, "Loading lookup for {0}", m_vo.getColumnName());
 
-		log.config("(" + m_vo.getColumnName() + ")");
+		// If the field it's not displayed, there is no point to create the lookup
+		if (!isDisplayable())
+		{
+			return null;
+		}
 
 		final Properties ctx = getGridFieldContext();
 		final int displayType = getDisplayType();
 		final String columnName = getColumnName();
-		if (DisplayType.isLookup(displayType) && (alwaysLoad || isDisplayable())) // metas: cg: task : 02354
+		final GridFieldVO vo = getVO();
+		
+		if (DisplayType.isLookup(displayType))
 		{
-			final MLookupInfo lookupInfo = m_vo.getLookupInfo();
+			final MLookupInfo lookupInfo = vo.getLookupInfo();
 			if (lookupInfo == null)
 			{
-				log.log(Level.SEVERE, "(" + m_vo.getColumnName() + ") - No LookupInfo");
-				return;
+				log.log(Level.SEVERE, "(" + vo.getColumnName() + ") - No LookupInfo");
+				return null;
 			}
 			// Prevent loading of CreatedBy/UpdatedBy
 			if (displayType == DisplayType.Table
@@ -215,43 +213,31 @@ public class GridField
 			}
 			//
 			lookupInfo.setIsKey(isKey());
-			MLookup ml = new MLookup(m_vo.getLookupInfo(), m_vo.TabNo);
-			m_lookup = ml;
+			return new MLookup(vo.getLookupInfo(), vo.TabNo);
 		}
 		else if (displayType == DisplayType.Location)   // not cached
 		{
-			MLocationLookup ml = new MLocationLookup(ctx, m_vo.WindowNo);
-			m_lookup = ml;
+			return new MLocationLookup(ctx, vo.WindowNo);
 		}
 		else if (displayType == DisplayType.Locator)
 		{
-			MLocatorLookup ml = new MLocatorLookup(ctx, m_vo.WindowNo);
-			m_lookup = ml;
+			return new MLocatorLookup(ctx, vo.WindowNo);
 		}
 		else if (displayType == DisplayType.Account)    // not cached
 		{
-			MAccountLookup ma = new MAccountLookup(ctx, m_vo.WindowNo);
-			m_lookup = ma;
+			return new MAccountLookup(ctx, vo.WindowNo);
 		}
 		else if (displayType == DisplayType.PAttribute)    // not cached
 		{
-			MPAttributeLookup pa = new MPAttributeLookup(ctx, m_vo.WindowNo);
-			m_lookup = pa;
+			return new MPAttributeLookup(ctx, vo.WindowNo);
 		}
-	}   // m_lookup
+		else
+		{
+			return null;
+		}
+	}
 
 	// metas: end
-
-	/**
-	 * Wait until Load is complete
-	 */
-	public void lookupLoadComplete()
-	{
-		final Lookup lookup = getLookup();
-		if (lookup == null)
-			return;
-		lookup.loadComplete();
-	}   // loadCompete
 
 	/**
 	 * Get Lookup, may return null
@@ -260,7 +246,8 @@ public class GridField
 	 */
 	public Lookup getLookup()
 	{
-		return m_lookup;
+		final Supplier<Lookup> lookupSupplier = this.lookupSupplier; // thread safe
+		return lookupSupplier == null ? null : lookupSupplier.get();
 	}   // getLookup
 
 	/**
@@ -1187,7 +1174,7 @@ public class GridField
 	 */
 	public boolean isHeading()
 	{
-		return m_vo.IsHeading;
+		return m_vo.isHeadingOnly();
 	}
 
 	/**
@@ -1197,7 +1184,7 @@ public class GridField
 	 */
 	public boolean isFieldOnly()
 	{
-		return m_vo.IsFieldOnly;
+		return m_vo.isFieldOnly();
 	}
 
 	/**
@@ -1701,10 +1688,9 @@ public class GridField
 	 * @param AD_Tab_ID tab
 	 * @return array of all fields in display order
 	 */
-	public static GridField[] createFields(Properties ctx, int WindowNo, int TabNo,
-			int AD_Tab_ID)
+	public static GridField[] createSearchFields(Properties ctx, int WindowNo, int TabNo, int AD_Tab_ID)
 	{
-		ArrayList<GridFieldVO> listVO = new ArrayList<GridFieldVO>();
+		final List<GridFieldVO> listVO = new ArrayList<GridFieldVO>();
 		int AD_Window_ID = 0;
 		boolean readOnly = false;
 
@@ -1718,8 +1704,7 @@ public class GridField
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				GridFieldVO vo = GridFieldVO.create(ctx, WindowNo, TabNo,
-						AD_Window_ID, AD_Tab_ID, readOnly, rs);
+				final GridFieldVO vo = GridFieldVO.create(ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, readOnly, rs);
 				// if (vo.lookupInfo != null) vo.lookupInfo.IsIgnoredValidationCodeFail = true; // metas: us1261
 				listVO.add(vo);
 			}
@@ -1740,10 +1725,6 @@ public class GridField
 		for (int i = 0; i < listVO.size(); i++)
 		{
 			retValue[i] = new GridField(listVO.get(i));
-			
-			// Make sure the lookup is loaded, even if the field is not displayed in the grid or single row layout
-			// because we are talking here about fields which will be always displayed in FindPanel.
-			retValue[i].loadLookup(true); // alwaysLoad=true
 		}
 		return retValue;
 	}	// createFields
@@ -2077,33 +2058,6 @@ public class GridField
 	{
 		final Object value = createDefault(valueStr);
 		setValue(value, inserting);
-	}
-
-	/**
-	 * Creates a copy of this object.
-	 * 
-	 * NOTE: also {@link GridFieldVO} will be copied, so you can modify it
-	 * 
-	 * @return copy of this object
-	 */
-	public GridField copy()
-	{
-		GridField newField = new GridField();
-		newField.m_vo = this.m_vo == null ? null : this.m_vo.copy();
-		newField.m_backupValue = this.m_backupValue;
-		newField.m_error = this.m_error;
-		newField.m_errorValue = this.m_errorValue;
-		newField.m_errorValueFlag = this.m_errorValueFlag;
-		newField.m_gridTab = this.m_gridTab;
-		newField.m_inserting = this.m_inserting;
-		newField.m_isBackupValue = this.m_isBackupValue;
-		newField.m_lookup = this.m_lookup;
-		newField.m_mnemonic = this.m_mnemonic;
-		newField.m_oldValue = this.m_oldValue;
-		newField.m_parentValue = this.m_parentValue;
-		// newField.m_propertyChangeListeners = // don't copy them
-		newField.m_valueNoFire = this.m_valueNoFire;
-		return newField;
 	}
 
 	/**

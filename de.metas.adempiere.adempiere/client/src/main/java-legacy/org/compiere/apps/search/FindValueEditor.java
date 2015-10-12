@@ -25,188 +25,138 @@ import javax.swing.table.TableCellEditor;
 
 import org.adempiere.util.Services;
 import org.compiere.grid.ed.VEditor;
-import org.compiere.grid.ed.VNumber;
-import org.compiere.grid.ed.VString;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
-import org.compiere.model.GridField;
-import org.compiere.model.MQuery;
-import org.compiere.util.CLogger;
-import org.compiere.util.DisplayType;
-import org.compiere.util.ValueNamePair;
 
 /**
- * Cell editor for Find Value/ValueTo fields.
- * Editor depends on Column setting.
- * Has to save entries how they are used in the query, i.e. '' for strings.
- *
- * @author Jorg Janke
- * @version $Id: FindValueEditor.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
+ * Cell editor for Find Value/ValueTo fields. Editor depends on Column setting. Has to save entries how they are used in the query, i.e. '' for strings.
  */
-public class FindValueEditor extends AbstractCellEditor implements TableCellEditor
+final class FindValueEditor extends AbstractCellEditor implements TableCellEditor
 {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -4819832280924881253L;
+	private static final long serialVersionUID = 7409932376841865389L;
+
+	// services
+	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
+
+	/** Is ValueTo Column? */
+	private final boolean isValueToColumn;
+	/** Between selected */
+	private boolean isValueToEnabled = false;
+	/** Editor */
+	private VEditor editor = null;
 
 	/**
 	 * Constructor
-	 * 
-	 * @param find find
+	 *
 	 * @param valueTo true if it is the "to" value column
 	 */
-	public FindValueEditor(Find find, boolean valueTo)
+	public FindValueEditor(final boolean valueTo)
 	{
 		super();
-		m_find = find;
-		m_valueToColumn = valueTo;
-	}	// FindValueEditor
-
-	/** Find Window */
-	private Find m_find;
-	/** Is ValueTo Column? */
-	private boolean m_valueToColumn;
-	/** Between selected */
-	private boolean m_between = false;
-	/** Editor */
-	private VEditor m_editor = null;
-	/** Logger */
-	private static CLogger log = CLogger.getCLogger(FindValueEditor.class);
+		isValueToColumn = valueTo;
+	}
 
 	/**
-	 * Get Value
-	 * Need to convert to String
-	 * 
+	 * Get Value Need to convert to String
+	 *
 	 * @return current value
 	 */
 	@Override
 	public Object getCellEditorValue()
 	{
-		if (m_editor == null)
+		if (editor == null)
+		{
 			return null;
-		Object obj = m_editor.getValue();		// returns Integer, BidDecimal, String
-		log.config("Obj=" + obj);
-		return obj;
-		/**
-		 * if (obj == null)
-		 * return null;
-		 * //
-		 * String retValue = obj.toString();
-		 * log.config( "FindValueEditor.getCellEditorValue");
-		 * return retValue;
-		 **/
-	}	// getCellEditorValue
+		}
+		return editor.getValue();
+	}
 
-	/**
-	 * Get Editor
-	 *
-	 * @param table Table
-	 * @param value Value
-	 * @param isSelected cell is selected
-	 * @param row row
-	 * @param col column
-	 * @return Editor component
-	 */
 	@Override
-	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int col)
+	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int rowIndex, final int columnIndex)
 	{
-		// log.config( "FindValueEditor.getTableCellEditorComponent", "r=" + row + ", c=" + col);
-		// Between - enables valueToColumn
-		m_between = false;
-		Object betweenValue = table.getModel().getValueAt(row, FindPanel.INDEX_OPERATOR);
-		if (m_valueToColumn && betweenValue != null
-				&& betweenValue.equals(MQuery.OPERATORS[MQuery.BETWEEN_INDEX]))
-		{
-			m_between = true;
-		}
+		final FindAdvancedSearchTableModelRow row = getRow(table, rowIndex);
 
-		boolean enabled = !m_valueToColumn || (m_valueToColumn && m_between);
-		log.config("(" + value + ") - Enabled=" + enabled);
-
-		String columnName = null;
-		Object column = table.getModel().getValueAt(row, FindPanel.INDEX_COLUMNNAME);
-		if (column != null)
-		{
-			if (column instanceof ValueNamePair)
-			{
-				columnName = ((ValueNamePair)column).getValue();
-			}
-			else
-			{
-				columnName = column.toString();
-			}
-		}
-
-		// Create Editor
-		GridField field = getMField(columnName);
-		
-		// 08880
-		// restore column name (important in case of columnsqls)
-		columnName = field.getColumnName();
-		
-		
-		// log.fine( "Field=" + field.toStringX());
-		if (field.isKey())
-		{
-			m_editor = new VNumber(columnName, false, false, true, DisplayType.Integer, columnName);
-		}
-		else
-		{
-			// metas: cg: start : task : 02354
-			if (DisplayType.isLookup(field.getDisplayType()) && !field.isDisplayable() && field.getLookup() == null)
-			{
-				field.loadLookup(true);
-			}
-			// metas: cg: end : task : 02354
-			m_editor = Services.get(ISwingEditorFactory.class).getEditor(field, true);
-		}
-		if (m_editor == null)
-			m_editor = new VString();
-
-		m_editor.setValue(value);
-		m_editor.setReadWrite(enabled);
-		m_editor.setBorder(null);
 		//
-		return (Component)m_editor;
-	}   // getTableCellEditorComponent
+		// Update valueTo enabled
+		isValueToEnabled = isValueToColumn && row.isBinaryOperator();
 
-	/**
-	 * Cell Editable.
-	 * Called before getTableCellEditorComponent
-	 * 
-	 * @param e event
-	 * @return true if editable
-	 */
-	@Override
-	public boolean isCellEditable(EventObject e)
+		final FindPanelSearchField searchField = row.getSearchField();
+		if (searchField == null)
+		{
+			// shall not happen
+			return null;
+		}
+
+		// Make sure the old editor is destroyed
+		destroyEditor();
+
+		// Create editor
+		editor = searchField.createEditor(true);
+		editor.setReadWrite(isValueDisplayed());
+		editor.setValue(value);
+
+		return swingEditorFactory.getEditorComponent(editor);
+	}
+
+	private final boolean isValueDisplayed()
 	{
-		// log.config( "FindValueEditor.isCellEditable");
+		return !isValueToColumn || isValueToColumn && isValueToEnabled;
+	}
+
+	@Override
+	public boolean isCellEditable(final EventObject e)
+	{
 		return true;
-	}   // isCellEditable
+	}
 
-	/**
-	 * Cell Selectable.
-	 * Called after getTableCellEditorComponent
-	 * 
-	 * @param e event
-	 * @return true if selectable
-	 */
 	@Override
-	public boolean shouldSelectCell(EventObject e)
+	public boolean shouldSelectCell(final EventObject e)
 	{
-		boolean retValue = !m_valueToColumn || (m_valueToColumn && m_between);
-		// log.config( "FindValueEditor.shouldSelectCell - " + retValue);
-		return retValue;
-	}	// shouldSelectCell
+		return isValueDisplayed();
+	}
+
+	private FindAdvancedSearchTableModelRow getRow(final JTable table, final int viewRowIndex)
+	{
+		final FindAdvancedSearchTableModel model = (FindAdvancedSearchTableModel)table.getModel();
+		final int modelRowIndex = table.convertRowIndexToModel(viewRowIndex);
+		return model.getRow(modelRowIndex);
+	}
 
 	/**
-	 * Get MField
+	 * Destroy existing editor.
 	 * 
-	 * @return field
+	 * Very important to be called because this will also unregister the listeners from editor to underlying lookup (if any).
 	 */
-	protected GridField getMField(String columnName)
+	private final void destroyEditor()
 	{
-		return m_find.getTargetMField(columnName);
-	} // getMField
+		if (editor == null)
+		{
+			return;
+		}
+		editor.dispose();
+		editor = null;
+	}
 
-} // FindValueEditor
+	@Override
+	public boolean stopCellEditing()
+	{
+		if (!super.stopCellEditing())
+		{
+			return false;
+		}
+
+		destroyEditor();
+
+		return true;
+	}
+
+	@Override
+	public void cancelCellEditing()
+	{
+		super.cancelCellEditing();
+
+		destroyEditor();
+	}
+}

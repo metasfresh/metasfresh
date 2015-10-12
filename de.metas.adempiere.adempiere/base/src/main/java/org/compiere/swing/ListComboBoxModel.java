@@ -24,6 +24,7 @@ package org.compiere.swing;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -56,6 +57,13 @@ public class ListComboBoxModel<E> extends AbstractListModel<E> implements ComboB
 		super();
 		this.list = new ArrayList<>(list);
 	}
+	
+	public ListComboBoxModel(final E[] array)
+	{
+		super();
+		this.list = new ArrayList<>(Arrays.asList(array));
+	}
+
 
 	@Override
 	public int getSize()

@@ -145,18 +145,6 @@ public class GridWindow implements Serializable
 	}	//	dispose
 
 	/**
-	 *  Load is complete.
-	 *  Return when async load is complete
-	 *  Used for performance tests (Base.test())
-	 */
-	public void loadCompete ()
-	{
-		//  for all tabs
-		for (int i = 0; i < getTabCount(); i++)
-			getTab(i).getMTable().loadComplete();
-	}   //  loadComplete
-
-	/**
 	 *	Get Tab data and create MTab(s)
 	 *  @return true if tab loaded
 	 */

@@ -19,9 +19,11 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -48,23 +50,24 @@ public class MUserQuery extends X_AD_UserQuery
 	 */
 	public static MUserQuery[] get (Properties ctx, int AD_Tab_ID)
 	{
-		int AD_User_ID = Env.getAD_User_ID(ctx);
+		final int AD_User_ID = Env.getAD_User_ID(ctx);
+		final int AD_Client_ID = Env.getAD_Client_ID (ctx);
+		
 		String sql = "SELECT * FROM AD_UserQuery "
 			 + "WHERE AD_Client_ID=? AND AD_Tab_ID=? AND IsActive='Y' "
 			 + "AND AD_User_ID in (0, " + AD_User_ID + ") "
 			 + "ORDER BY Name";
-		int AD_Client_ID = Env.getAD_Client_ID (ctx);
-		ArrayList<MUserQuery> list = new ArrayList<MUserQuery>();
+		final List<MUserQuery> list = new ArrayList<MUserQuery>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement (sql, null);
+			pstmt = DB.prepareStatement (sql, ITrx.TRXNAME_None);
 			pstmt.setInt (1, AD_Client_ID);
 			pstmt.setInt (2, AD_Tab_ID);
 			rs = pstmt.executeQuery();
 			while (rs.next ())
-				list.add(new MUserQuery (ctx, rs, null));
+				list.add(new MUserQuery (ctx, rs, ITrx.TRXNAME_None));
 		}
 		catch (Exception e)
 		{

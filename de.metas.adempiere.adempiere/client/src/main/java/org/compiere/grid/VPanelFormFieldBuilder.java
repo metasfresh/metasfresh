@@ -102,7 +102,7 @@ public final class VPanelFormFieldBuilder
 		final GridFieldLayoutConstraints layoutConstraints = fieldVO.getLayoutConstraints();
 		
 		fieldVO.Header = getHeader();
-		fieldVO.IsFieldOnly = false;
+		fieldVO.setIsFieldOnly(false);
 		fieldVO.IsEncryptedField = false;
 		fieldVO.setColumnName(getColumnName());
 		layoutConstraints.setSameLine(isSameLine());

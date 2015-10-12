@@ -348,9 +348,11 @@ public class CComboBox<E> extends JComboBox<E>
 	
 	/**
 	 * Enables auto completion (while user writes) on this combobox.
+	 * 
+	 * @return combobox's auto-completion instance for further configurations
 	 */
-	public final void enableAutoCompletion()
+	public final ComboBoxAutoCompletion<E> enableAutoCompletion()
 	{
-		ComboBoxAutoCompletion.enable(this);
+		return ComboBoxAutoCompletion.enable(this);
 	}
 }   //  CComboBox

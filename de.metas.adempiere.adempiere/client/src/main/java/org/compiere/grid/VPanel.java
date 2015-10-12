@@ -33,7 +33,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.util.Services;
 import org.compiere.apps.APanel;
 import org.compiere.apps.search.CollapsibleFindPanel;
@@ -129,11 +128,6 @@ public final class VPanel extends CTabbedPane
 				.add("mainTabName", mainGroupPanel == null ? "-" : mainGroupPanel.getFieldGroupName())
 				.add("windowNo", _windowNo)
 				.toString();
-	}
-
-	public final void setHideIfOneTab(final boolean hideIfOneTab)
-	{
-		putClientProperty(AdempiereLookAndFeel.HIDE_IF_ONE_TAB, Boolean.TRUE);
 	}
 
 	final int getWindowNo()

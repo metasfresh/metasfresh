@@ -22,18 +22,13 @@ package org.compiere.apps.search;
  * #L%
  */
 
-
-import java.awt.event.ActionEvent;
+import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
-import javax.swing.JTextField;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
-import org.compiere.apps.ConfirmPanel;
-import org.compiere.model.GridField;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CDialog;
 import org.compiere.util.CLogger;
@@ -56,7 +51,34 @@ public final class Find extends CDialog
 		return new FindPanelBuilder();
 	}
 
+	/** Logger */
+	private static final transient CLogger log = CLogger.getCLogger(Find.class);
+
 	private final FindPanel findPanel;
+	private final FindPanelActionListener findPanelActionListener = new FindPanelActionListener()
+	{
+		@Override
+		public void onSearch(boolean triggeredFromSearchField)
+		{
+			if (triggeredFromSearchField && findPanel.getTotalRecords() <= 0)
+			{
+				return;
+			}
+			dispose();
+		};
+
+		@Override
+		public void onCancel()
+		{
+			dispose();
+		};
+
+		@Override
+		public void onOpenAsNewRecord()
+		{
+			dispose();
+		};
+	};
 
 	Find(final FindPanelBuilder builder)
 	{
@@ -73,9 +95,15 @@ public final class Find extends CDialog
 			this.dispose();
 			return;
 		}
-		// metas: tsa: begin
-		findPanel.addActionListener(this);
-		this.add(findPanel);
+		
+		findPanel.setActionListener(findPanelActionListener);
+
+		// Set panel size
+		// NOTE: we are setting such a big width because the table from advanced panel shall be displayed nicely.
+		findPanel.setPreferredSize(new Dimension(950, 200));
+		
+		this.setContentPane(findPanel);
+
 		// teo_sarca, [ 1670847 ] Find dialog: closing and canceling need same
 		// functionality
 		this.addWindowListener(new WindowAdapter()
@@ -90,8 +118,6 @@ public final class Find extends CDialog
 		AEnv.showCenterWindow(builder.getParentFrame(), this);
 	} // Find
 
-	/** Logger */
-	private CLogger log = CLogger.getCLogger(getClass());
 
 	@Override
 	public void dispose()
@@ -101,31 +127,6 @@ public final class Find extends CDialog
 		removeAll();
 		super.dispose();
 	} // dispose
-
-	@Override
-	public void actionPerformed(ActionEvent e)
-	{
-		log.info(e.getActionCommand());
-		//
-		if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
-		{
-			dispose();
-		}
-		else if (e.getActionCommand().equals(ConfirmPanel.A_NEW))
-		{
-			dispose();
-		}
-		else if (e.getActionCommand().equals(ConfirmPanel.A_OK))
-		{
-			dispose();
-		}
-		// Enter pressed on FindPanel search fields:
-		else if (e.getSource() instanceof JTextField
-				&& findPanel.getTotalRecords() > 0)
-		{
-			dispose();
-		}
-	} // actionPerformed
 
 	/**************************************************************************
 	 * Get Query - Retrieve result
@@ -144,16 +145,4 @@ public final class Find extends CDialog
 	{
 		return findPanel.isCancel();
 	}
-
-	/**
-	 * Get Target MField
-	 * 
-	 * @param columnName
-	 *            column name
-	 * @return MField
-	 */
-	public GridField getTargetMField(String columnName)
-	{
-		return findPanel.getTargetMField(columnName);
-	} // getTargetMField
 } // Find

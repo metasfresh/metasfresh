@@ -81,8 +81,7 @@ public class VTabbedPane extends CTabbedPane
 	@Override
 	public String toString()
 	{
-		return (m_workbenchTab ? "WorkbenchTab" : "WindowTab")
-			+ " - selected " + getSelectedIndex() + " of " + getTabCount();
+		return (m_workbenchTab ? "WorkbenchTab" : "WindowTab") + " - selected " + getSelectedIndex() + " of " + getTabCount();
 	}   //  toString
 
 	/**

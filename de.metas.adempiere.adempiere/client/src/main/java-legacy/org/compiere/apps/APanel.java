@@ -315,10 +315,6 @@ public class APanel extends CPanel
 		// Components
 		{
 			this.setLocale(Env.getLanguage(m_ctx).getLocale());
-
-			toolBar.putClientProperty("JToolBar.isRollover", Boolean.TRUE);
-			toolBar.setBorderPainted(false);
-			toolBar.setFloatable(false); // teo_sarca, [ 1666591 ] Toolbar should not be floatable
 		}
 
 		//
@@ -2640,8 +2636,7 @@ public class APanel extends CPanel
 				//
 				m_curTab.setQuery(null);	//	reset previous queries
 				//
-				log.config("OnlyCurrent=" + m_onlyCurrentRows 
-					+ ", Days=" + m_onlyCurrentDays);
+				log.config("OnlyCurrent=" + m_onlyCurrentRows + ", Days=" + m_onlyCurrentDays);
 				m_curGC.query(m_onlyCurrentRows, m_onlyCurrentDays, GridTabMaxRows.DEFAULT);   //  autoSize
 			}
 			// Restore history button's pressed status

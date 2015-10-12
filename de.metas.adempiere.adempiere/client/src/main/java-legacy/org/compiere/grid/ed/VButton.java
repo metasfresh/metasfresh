@@ -81,6 +81,7 @@ public final class VButton extends CButton
 		super (text);
 		super.setName(columnName);
 		super.setActionCommand(columnName);
+		super.setFocusable(false); // don't allow focus because user won't tab and press buttons
 		m_text = text;
 		m_columnName = columnName;
 		//

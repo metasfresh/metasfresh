@@ -53,7 +53,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -77,7 +76,6 @@ import org.compiere.apps.search.Find;
 import org.compiere.apps.search.Info_Column;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
-import org.compiere.model.GridField;
 import org.compiere.model.MOrder;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTab;
@@ -112,6 +110,7 @@ public class VOrderPlanning extends CPanel
 	 * @param WindowNo window
 	 * @param frame frame
 	 */
+	@Override
 	public void init(int WindowNo, FormFrame frame)
 	{
 		m_WindowNo = WindowNo;
@@ -330,6 +329,7 @@ public class VOrderPlanning extends CPanel
 		executeQuery();
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		// Confirm Panel
@@ -369,6 +369,7 @@ public class VOrderPlanning extends CPanel
 		dispose();
 	}
 
+	@Override
 	public void dispose()
 	{
 
@@ -377,35 +378,43 @@ public class VOrderPlanning extends CPanel
 		m_frame = null;
 	}
 
+	@Override
 	public void executeASync(org.compiere.process.ProcessInfo processInfo)
 	{
 	}
 
+	@Override
 	public boolean isUILocked()
 	{
 		return false;
 	}
 
+	@Override
 	public void lockUI(org.compiere.process.ProcessInfo processInfo)
 	{
 	}
 
+	@Override
 	public void stateChanged(ChangeEvent e)
 	{
 	}
 
+	@Override
 	public void tableChanged(TableModelEvent e)
 	{
 	}
 
+	@Override
 	public void unlockUI(org.compiere.process.ProcessInfo processInfo)
 	{
 	}
 
+	@Override
 	public void valueChanged(ListSelectionEvent e)
 	{
 	}
 
+	@Override
 	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException
 	{
 	}
@@ -415,7 +424,6 @@ public class VOrderPlanning extends CPanel
 		int AD_Window_ID = MTable.get(Env.getCtx(), MOrder.Table_ID).getAD_Window_ID();
 		int AD_Tab_ID = MTab.getTab_ID(AD_Window_ID, "Order");
 		//
-		GridField[] findFields = GridField.createFields(Env.getCtx(), AD_Window_ID, 0, AD_Tab_ID);
 		Find find = Find.builder()
 				.setParentFrame(Env.getFrame(this))
 				// .setTargetWindowNo(AD_Window_ID) // TODO: commented out because it was wrongly used
@@ -424,7 +432,6 @@ public class VOrderPlanning extends CPanel
 				.setAD_Table_ID(AD_Table_ID)
 				.setTableName(getTableName())
 				.setWhereExtended("")
-				.setFindFields(findFields)
 				.setMinRecords(1)
 				.buildFindDialog();
 		MQuery query = find.getQuery();
@@ -684,6 +691,7 @@ public class VOrderPlanning extends CPanel
 		/**
 		 * Do Work (load data)
 		 */
+		@Override
 		public void run()
 		{
 			log.fine("Info.Worker.run");

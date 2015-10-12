@@ -515,9 +515,9 @@ public class GridFieldVO implements Serializable
 	/**	Always Updateable	*/
 	public boolean      IsAlwaysUpdateable = false;
 	/**	Heading Only	*/
-	public boolean      IsHeading = false;
+	private boolean      IsHeading = false;
 	/**	Field Only		*/
-	public boolean      IsFieldOnly = false;
+	private boolean      IsFieldOnly = false;
 	/**	Display Encryption	*/
 	public boolean      IsEncryptedField = false;
 	/**	Storage Encryption	*/
@@ -766,13 +766,13 @@ public class GridFieldVO implements Serializable
 	 *	@return info
 	 */
 	@Override
-	public String toString ()
+	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("MFieldVO[");
-		sb.append(AD_Column_ID).append("-").append(ColumnName)
-			.append ("]");
-		return sb.toString ();
-	}	//	toString
+		return new StringBuilder(getClass().getSimpleName()).append("[")
+				.append(AD_Column_ID).append("-").append(ColumnName)
+				.append("]")
+				.toString();
+	}
 	
 	public int getDisplayType()
 	{
@@ -972,5 +972,25 @@ public class GridFieldVO implements Serializable
 	public FieldGroupVO getFieldGroup()
 	{
 		return fieldGroup;
+	}
+	
+	public void setIsFieldOnly(boolean isFieldOnly)
+	{
+		this.IsFieldOnly = isFieldOnly;
+	}
+	
+	public boolean isFieldOnly()
+	{
+		return IsFieldOnly;
+	}
+	
+	public void setIsHeadingOnly(boolean isHeading)
+	{
+		this.IsHeading = isHeading;
+	}
+	
+	public boolean isHeadingOnly()
+	{
+		return IsHeading;
 	}
 }   //  MFieldVO

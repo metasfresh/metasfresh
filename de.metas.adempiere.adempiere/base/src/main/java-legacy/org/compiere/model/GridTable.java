@@ -738,37 +738,9 @@ public class GridTable extends AbstractTableModel
 	}
 
 	/**
-	 *  Wait until async loader of Table and Lookup Fields is complete
-	 *  Used for performance tests
-	 */
-	public void loadComplete()
-	{
-		//  Wait for loader
-		if (m_loader != null)
-		{
-			if (m_loader.isAlive())
-			{
-				try
-				{
-					m_loader.join();
-				}
-				catch (InterruptedException ie)
-				{
-					log.log(Level.SEVERE, "Join interrupted", ie);
-				}
-			}
-		}
-		//  wait for field lookup loaders
-		for (int i = 0; i < m_fields.size(); i++)
-		{
-			GridField field = m_fields.get(i);
-			field.lookupLoadComplete();
-		}
-	}   //  loadComplete
-
-	/**
-	 *  Is Loading
-	 *  @return true if loading
+	 * Is Loading
+	 * 
+	 * @return true if loading
 	 */
 	public boolean isLoading()
 	{

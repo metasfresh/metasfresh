@@ -1062,7 +1062,7 @@ public class Viewer extends CFrame
 
 		GridField[] findFields = null;
 		if (tableName != null)
-			findFields = GridField.createFields(m_ctx, m_WindowNo, 0, AD_Tab_ID);
+			findFields = GridField.createSearchFields(m_ctx, m_WindowNo, 0, AD_Tab_ID);
 		
 		if (findFields == null)		//	No Tab for Table exists
 			bFind.setEnabled(false);

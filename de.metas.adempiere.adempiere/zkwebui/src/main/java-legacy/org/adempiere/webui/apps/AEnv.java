@@ -388,17 +388,6 @@ public final class AEnv
 
 	} // 	canAccessInfo
 
-    public static void actionRefresh(Lookup lookup, Object value, boolean mandatory)
-    {
-        if (lookup == null)
-            return;
-
-        lookup.refresh();
-        if (lookup.isValidated())
-            lookup.fillComboBox(mandatory, false, false, false);
-        else
-            lookup.fillComboBox(mandatory, true, false, false);
-    }
     /**
      *
      * @param lookup

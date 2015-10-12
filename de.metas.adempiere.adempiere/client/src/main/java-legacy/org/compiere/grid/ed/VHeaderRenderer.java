@@ -152,6 +152,12 @@ public final class VHeaderRenderer implements TableCellRenderer
 		}
 	}
 
+	/**
+	 * Gets {@link JLabel}'s horizontal alignment to be used for given display type.
+	 * 
+	 * @param displayType
+	 * @return label's horizontal alignment or {@link SwingConstants#LEFT} in case the display type is not valid.
+	 */
 	public static int getHorizontalAlignmentForDisplayType(final int displayType)
 	{
 		if (DisplayType.isNumeric(displayType))

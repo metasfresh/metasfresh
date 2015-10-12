@@ -69,8 +69,8 @@ final class VPanelFieldGroupFactory
 
 	public final VPanelFieldGroup newHorizontalFieldGroupPanel(final String fieldGroupName)
 	{
-		final JPanel contentPanel = layoutFactory.createFieldsPanel();
-		contentPanel.setLayout(layoutFactory.createFieldsPanelLayout(false));
+		final boolean zeroInsets = false;
+		final JPanel contentPanel = layoutFactory.createFieldsPanel(zeroInsets);
 		contentPanel.setName(fieldGroupName);
 
 		final VPanelLayoutCallback layoutCallback = layoutFactory.createFieldsPanelLayoutCallback();

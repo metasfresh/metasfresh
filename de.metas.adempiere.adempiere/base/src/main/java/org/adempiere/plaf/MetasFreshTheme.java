@@ -114,6 +114,10 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 				// Plastic L&F settings
 				, Plastic3DLookAndFeel.IS_3D_KEY, false // all components shall be flat (task 09387)  
 		});
+		
+		//
+		// Toolbar
+		table.putDefaults(AdempiereToolBarUI.getUIDefaults());
 
 		//
 		// TaskPane

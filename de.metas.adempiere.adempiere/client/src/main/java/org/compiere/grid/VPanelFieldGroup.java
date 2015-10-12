@@ -70,8 +70,7 @@ final class VPanelFieldGroup
 		// Setup content panel:
 		{
 			final boolean zeroInsets = true; // because this is an included panel
-			contentPanel = layoutFactory.createFieldsPanel();
-			contentPanel.setLayout(layoutFactory.createFieldsPanelLayout(zeroInsets));
+			contentPanel = layoutFactory.createFieldsPanel(zeroInsets);
 		}
 
 		//

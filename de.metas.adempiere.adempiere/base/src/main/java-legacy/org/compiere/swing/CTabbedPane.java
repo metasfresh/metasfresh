@@ -98,6 +98,11 @@ public class CTabbedPane extends JTabbedPane
 	{
 	}   //  init
 
+	/** Hide the tabs if this tabbed pane has only one tab */
+	public final void setHideIfOneTab(final boolean hideIfOneTab)
+	{
+		putClientProperty(AdempiereLookAndFeel.HIDE_IF_ONE_TAB, hideIfOneTab);
+	}
 	
 	/**************************************************************************
 	 *  Set Background - ignored by UI -

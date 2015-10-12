@@ -522,14 +522,22 @@ public final class GridController extends CPanel
 		// metas-2009_0021_AP1_G113: begin
 		if (m_mTab.isSearchActive())
 		{
-			findPanel = CollapsibleFindPanel.builder()
-					.setGridController(this)
-					.setTargetWindowNo(m_WindowNo) // FIXME: i think is redundant
-					// .setReadOnly(m_mTab.isReadOnly()) // NOTE: not used anyways
-					.setSmall(true)
-					.setEmbedded(true) // the panel is embedded (we expect some of the buttons of find panel to be hidden because they make no sense)
-					.buildCollapsibleFindPanel();
-			this.add(findPanel, BorderLayout.NORTH); // metas: teo_sarca
+			try
+			{
+				findPanel = CollapsibleFindPanel.builder()
+						.setGridController(this)
+						.setTargetWindowNo(m_WindowNo) // FIXME: i think is redundant
+						// .setReadOnly(m_mTab.isReadOnly()) // NOTE: not used anyways
+						.setSmall(true)
+						.setEmbedded(true) // the panel is embedded (we expect some of the buttons of find panel to be hidden because they make no sense)
+						.buildCollapsibleFindPanel();
+				this.add(findPanel, BorderLayout.NORTH); // metas: teo_sarca
+			}
+			catch (Exception e)
+			{
+				log.log(Level.WARNING, "Failed creating the find panel", e);
+				// m_mTab.setSearchActive(false); // TODO: introduce method
+			}
 		}
 		// metas-2009_0021_AP1_G113: end
 		

@@ -18,235 +18,235 @@ package org.compiere.apps.search;
 
 import java.awt.Component;
 import java.awt.Insets;
-import java.sql.Date;
 import java.util.logging.Level;
 
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.compiere.model.GridField;
+import org.compiere.grid.ed.VHeaderRenderer;
 import org.compiere.model.Lookup;
-import org.compiere.model.MQuery;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
-import org.compiere.util.ValueNamePair;
 
 /**
- *	Renderer for Find 'Value' Column.
- *	The value is how it would be used in a query, i.e. with '' for strings
- *
- *  @author 	Jorg Janke
- *  @version 	$Id: FindValueRenderer.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
+ * Renderer for Find 'Value' Column. The value is how it would be used in a query, i.e. with '' for strings
  */
-public class FindValueRenderer extends DefaultTableCellRenderer
+final class FindValueRenderer extends DefaultTableCellRenderer
 {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 5290173817551899865L;
+	private static final long serialVersionUID = 7978049705045308657L;
 
 	/**
-	 *	Constructor
-	 *  @param find find
-	 *  @param valueTo true if it is the "to" value column
+	 * Constructor
+	 *
+	 * @param valueTo true if it is the "to" value column
 	 */
-	public FindValueRenderer (Find find, boolean valueTo)
+	public FindValueRenderer(final boolean valueTo)
 	{
 		super();
-		m_find = find;
-		m_valueToColumn = valueTo;
-	}	//	FindValueRenderer
+		isValueToColumn = valueTo;
+	}
 
-	/** Find Window             */
-	private Find			m_find;
-	/** Value 2(to)             */
-	private boolean         m_valueToColumn;
-	/**	Between selected		*/
-	private boolean			m_between = false;
+	/** Value 2(to) */
+	private final boolean isValueToColumn;
 
-	/** Current Row             */
-	private volatile String	m_columnName = null;
-	/** CheckBox                */
-	private JCheckBox       m_check = null;
-	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(FindValueRenderer.class);
+	private FindPanelSearchField currentSearchField;
+	private boolean currentIsValueToEnabled = false;
+
+	/** CheckBox */
+	private JCheckBox m_checkbox = null;
+	/** Logger */
+	private static final transient CLogger log = CLogger.getCLogger(FindValueRenderer.class);
+
+	private final boolean isValueDisplayed()
+	{
+		return !isValueToColumn || isValueToColumn && currentIsValueToEnabled;
+	}
 
 	/**
-	 * 	Get Check Box
-	 *	@return check box
+	 * Get Check Box
+	 *
+	 * @return check box
 	 */
-	private JCheckBox getCheck()
+	private final JCheckBox getCheckbox()
 	{
-		if (m_check == null)
+		if (m_checkbox == null)
 		{
-			m_check = new JCheckBox();
-			m_check.setMargin(new Insets(0,0,0,0));
-			m_check.setHorizontalAlignment(JLabel.CENTER);
+			m_checkbox = new JCheckBox();
+			m_checkbox.setMargin(new Insets(0, 0, 0, 0));
+			m_checkbox.setHorizontalAlignment(SwingConstants.CENTER);
 		}
-		return m_check;
-	}	//	getCheck
+		return m_checkbox;
+	}	// getCheck
 
-
-	/*************************************************************************
-	 *	Get TableCell RendererComponent
-	 *  @param table table
-	 *  @param value value
-	 *  @param isSelected selected
-	 *  @param hasFocus focus
-	 *  @param row row
-	 *  @param col col
-	 *  @return renderer component (Label or CheckBox)
-	 */
 	@Override
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col)
+	public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int rowIndex, final int columnIndex)
 	{
-	//	log.config( "FindValueRenderer.getTableCellRendererComponent", "r=" + row + ", c=" + col );
-		//	Column
-		m_columnName = null;
-		Object column = table.getModel().getValueAt(row, FindPanel.INDEX_COLUMNNAME);
-		if (column != null)
+		final FindAdvancedSearchTableModelRow row = getRow(table, rowIndex);
+
+		//
+		// Column
+		currentSearchField = row.getSearchField();
+
+		//
+		// Update valueTo enabled
+		currentIsValueToEnabled = isValueToColumn && row.isBinaryOperator();
+		final boolean valueDisplayed = isEnabled();
+
+		//
+		// set Background
+		if (valueDisplayed)
 		{
-			if (column instanceof ValueNamePair)
-				m_columnName = ((ValueNamePair)column).getValue();
-			else
-				m_columnName = column.toString();
+			setBackground(AdempierePLAF.getFieldBackground_Normal());
+		}
+		else
+		{
+			setBackground(AdempierePLAF.getFieldBackground_Inactive());
 		}
 
-		//	Between - enables valueToColumn
-		m_between = false;
-		Object betweenValue = table.getModel().getValueAt(row, FindPanel.INDEX_OPERATOR);
-		if (m_valueToColumn && betweenValue != null 
-			&& betweenValue.equals(MQuery.OPERATORS[MQuery.BETWEEN_INDEX]))
-			m_between = true;
-		boolean enabled = !m_valueToColumn || (m_valueToColumn && m_between); 
-
-		//	set Background
-		if (enabled)
-			setBackground(AdempierePLAF.getFieldBackground_Normal());
-		else
-			setBackground(AdempierePLAF.getFieldBackground_Inactive());
-
-	//	log.config( "FindValueRenderer.getTableCellRendererComponent - (" + value + ") - Enabled=" + enabled);
-
-		Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-		if (value == null || (m_valueToColumn && !m_between))
-			return c;
 		//
-		GridField field = getMField();
-		if (field != null && field.getDisplayType() == DisplayType.YesNo)
+		// If value is empty or the value is not enabled, go with the standard renderer
+		if (value == null || !valueDisplayed)
 		{
-			JCheckBox cb = getCheck();
-			if (value instanceof Boolean)
-				cb.setSelected(((Boolean)value).booleanValue());
-			else
-				cb.setSelected(value.toString().indexOf('Y') != -1);
+			return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, rowIndex, columnIndex);
+		}
+
+		//
+		// If we deal with a YesNo value, render it as a checkbox
+		final int displayType = currentSearchField == null ? 0 : currentSearchField.getDisplayType();
+		if (displayType == DisplayType.YesNo)
+		{
+			final JCheckBox cb = getCheckbox();
+			final boolean valueBoolean = DisplayType.toBoolean(value);
+			cb.setSelected(valueBoolean);
 			return cb;
 		}
-		return c;
-	}	//	getTableCellRendererComponent
 
-	
-	/**************************************************************************
-	 *	Format Display Value
-	 *  @param value value
+		//
+		// For any other value type, go with the standard renderer
+		return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, rowIndex, columnIndex);
+	}
+
+	/**
+	 * Format Display Value
+	 *
+	 * NOTE: we assume this method is called exclusively from {@link #getTableCellRendererComponent(JTable, Object, boolean, boolean, int, int)}.
+	 *
+	 * @param value value
 	 */
 	@Override
-	protected void setValue(Object value)
+	protected void setValue(final Object value)
 	{
-		boolean enabled = !m_valueToColumn || (m_valueToColumn && m_between); 
-	//	Log.trace (Log.l4_Data, "FindValueRenderer.setValue (" + value + ") - Enabled=" + enabled);
-		if (value == null || !enabled)
+		if (value == null || !isValueDisplayed())
 		{
 			super.setValue(null);
 			return;
 		}
 
-		String retValue = null;
+		//
+		// Get DisplayType
+		final int displayType;
+		if (currentSearchField != null)
+		{
+			displayType = currentSearchField.getDisplayType();
+		}
+		else
+		{
+			log.log(Level.SEVERE, "FindValueRenderer.setValue (" + value + ") No search field selected");
+			displayType = 0;
+		}
 
-		//	Strip ' '
+		//
+		// Set horizontal alignment
+		setHorizontalAlignment(VHeaderRenderer.getHorizontalAlignmentForDisplayType(displayType));
+
+		//
+		// Get and set the display value
+		final Object displayValue = getDisplayValue(value);
+		super.setValue(displayValue);
+	}	// setValue
+
+	private final Object getDisplayValue(Object value)
+	{
+		// Strip ' '
 		if (value != null)
 		{
 			String str = value.toString();
 			if (str.startsWith("'") && str.endsWith("'"))
 			{
-				str = str.substring(1, str.length()-1);
+				str = str.substring(1, str.length() - 1);
 				value = str;
 			}
 		}
 
-		int displayType = 0;
-		GridField field = getMField();
-		if (field != null)
-			displayType = field.getDisplayType();
-		else
-			log.log(Level.SEVERE, "FindValueRenderer.setValue (" + value + ") ColumnName=" + m_columnName + " No Target Column");
+		//
+		// Convert the value to display value, based on displayType
+		//
+		final int displayType = currentSearchField == null ? 0 : currentSearchField.getDisplayType();
 
-		setHorizontalAlignment(JLabel.LEFT);
-		//	Number
+		// Number
 		if (DisplayType.isNumeric(displayType))
 		{
-			setHorizontalAlignment(JLabel.RIGHT);
-			retValue = DisplayType.getNumberFormat(displayType).format(value);
+			return DisplayType.getNumberFormat(displayType).format(value);
 		}
-		//	Date
+		// Date
 		else if (DisplayType.isDate(displayType))
 		{
-			if (value instanceof Date)
+			if (value instanceof java.util.Date)
 			{
-				retValue = DisplayType.getDateFormat(displayType).format(value);
-				setHorizontalAlignment(JLabel.RIGHT);
+				return DisplayType.getDateFormat(displayType).format(value);
 			}
-			else if (value instanceof String)	//	JDBC format
+			else if (value instanceof String)	// JDBC format
 			{
 				try
 				{
-					java.util.Date date = DisplayType.getDateFormat_JDBC().parse((String)value);
-					retValue = DisplayType.getDateFormat(displayType).format(date);
-					setHorizontalAlignment(JLabel.RIGHT);
+					final java.util.Date date = DisplayType.getDateFormat_JDBC().parse((String)value);
+					return DisplayType.getDateFormat(displayType).format(date);
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
-				//	log.log(Level.SEVERE, "FindValueRenderer.setValue", e);
-					retValue = value.toString();
+					return value;
 				}
 			}
 			else
-				retValue = value.toString();
+			{
+				return value;
+			}
 		}
-		//	Row ID
+		// Row ID
 		else if (displayType == DisplayType.RowID)
-			retValue = "";
-		//	Lookup
-		else if (DisplayType.isLookup(displayType) && field != null)
 		{
-			Lookup lookup = field.getLookup();
-			if (lookup != null)
-				retValue = lookup.getDisplay(value);
+			return "";
 		}
-		//	other
+		// Lookup
+		else if (DisplayType.isLookup(displayType) && currentSearchField != null)
+		{
+			final Lookup lookup = currentSearchField.getLookup();
+			if (lookup != null)
+			{
+				return lookup.getDisplay(value);
+			}
+			else
+			{
+				return "";
+			}
+		}
+		// other
 		else
 		{
-			super.setValue(value);
-			return;
+			return value;
 		}
-	//	log.config( "FindValueRenderer.setValue (" + retValue + ") - DT=" + displayType);
-		super.setValue(retValue);
-	}	//	setValue
-
-	/**
-	 * 	Get MField
-	 * 	@return field
-	 */
-	protected GridField getMField()
-	{
-		return m_find.getTargetMField(m_columnName);
-	}	//	getMField
-
-	public String getColumnName()
-	{
-		return m_columnName;
 	}
-}	//	FindValueRenderer
+
+	private FindAdvancedSearchTableModelRow getRow(final JTable table, final int viewRowIndex)
+	{
+		final FindAdvancedSearchTableModel model = (FindAdvancedSearchTableModel)table.getModel();
+		final int modelRowIndex = table.convertRowIndexToModel(viewRowIndex);
+		return model.getRow(modelRowIndex);
+	}
+}

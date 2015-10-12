@@ -187,9 +187,10 @@ class VPanelLayoutFactory
 		return fieldWidthConstraint;
 	}
 
-	public JPanel createFieldsPanel()
+	public JPanel createFieldsPanel(final boolean zeroInsets)
 	{
 		final JPanel panel = new JPanel();
+		panel.setLayout(createFieldsPanelLayout(zeroInsets));
 		panel.setBackground(AdempierePLAF.getFormBackground());
 
 		//

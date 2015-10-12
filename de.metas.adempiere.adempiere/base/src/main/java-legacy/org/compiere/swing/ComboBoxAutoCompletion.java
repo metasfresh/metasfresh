@@ -26,6 +26,7 @@ package org.compiere.swing;
  * #L%
  */
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -39,12 +40,19 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+import javax.swing.plaf.basic.ComboPopup;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
 
+import org.adempiere.plaf.AdempiereComboBoxUI;
+import org.adempiere.util.Check;
+import org.adempiere.util.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 /**
@@ -64,32 +72,22 @@ import org.apache.commons.lang3.SystemUtils;
  *         <li>BF [ 2861223 ] AutoComplete: Ignoring Whitespace in Search String
  *         </ul>
  */
-class ComboBoxAutoCompletion extends PlainDocument
+public class ComboBoxAutoCompletion<E> extends PlainDocument
 {
 	/**
 	 * Enable auto completion for a combo box (strict mode enabled, see {@link #setStrictMode(boolean)} for more info).
 	 *
 	 * @param comboBox
+	 * @return ComboBoxAutoCompletion instance, for future configuration (strict mode, string converter etc)
 	 */
-	public static void enable(final CComboBox<?> comboBox)
+	public static <E> ComboBoxAutoCompletion<E> enable(final CComboBox<E> comboBox)
 	{
-		final boolean strictMode = true;
-		enable(comboBox, strictMode);
-	}
-
-	/**
-	 * Enable auto completion for a combo box.
-	 *
-	 * @param comboBox
-	 * @param strictMode true if you want to set strict mode (see {@link #setStrictMode(boolean)} for more info)
-	 */
-	public static void enable(final CComboBox<?> comboBox, final boolean strictMode)
-	{
-		ComboBoxAutoCompletion ac = (ComboBoxAutoCompletion)comboBox.getClientProperty(PROPERTY_AutoCompletionInstance);
+		@SuppressWarnings("unchecked")
+		ComboBoxAutoCompletion<E> ac = (ComboBoxAutoCompletion<E>)comboBox.getClientProperty(PROPERTY_AutoCompletionInstance);
 		if (ac == null)
 		{
 			// change the editor's document
-			ac = new ComboBoxAutoCompletion(comboBox);
+			ac = new ComboBoxAutoCompletion<E>(comboBox);
 
 			comboBox.putClientProperty(PROPERTY_AutoCompletionInstance, ac);
 		}
@@ -97,17 +95,18 @@ class ComboBoxAutoCompletion extends PlainDocument
 		// has to be editable
 		comboBox.setEditable(true);
 
-		// set strict mode
-		ac.setStrictMode(strictMode);
+		return ac;
 	}
 
 	private static final long serialVersionUID = 1449135613844313889L;
 
 	private static final String PROPERTY_AutoCompletionInstance = ComboBoxAutoCompletion.class.getName();
 
-	private final CComboBox<?> comboBox;
-	private ComboBoxModel<?> model;
-	private JTextComponent editor;
+	private final CComboBox<E> comboBox;
+	private JTextComponent _editorComp;
+
+	/** Strict mode */
+	private boolean m_strictMode = true; // default: true
 
 	/**
 	 * Flag to indicate if setSelectedItem has been called subsequent calls to remove/insertString should be ignored
@@ -117,144 +116,188 @@ class ComboBoxAutoCompletion extends PlainDocument
 	private static final boolean hidePopupOnFocusLoss = SystemUtils.IS_JAVA_1_5;
 	private boolean hitBackspace = false;
 	private boolean hitBackspaceOnSelection = false;
-	/** Strict mode */
-	private boolean m_strictMode = true;
 
-	KeyListener editorKeyListener;
-	FocusListener editorFocusListener;
-
-	private ComboBoxAutoCompletion(final CComboBox<?> comboBox)
+	/** ComboBox action listener: highlight the whole text when user presses enter in a combobox */
+	private final ActionListener comboBoxActionListener = new ActionListener()
 	{
-		super();
-
-		this.comboBox = comboBox;
-		this.model = comboBox.getModel();
-		comboBox.addActionListener(new ActionListener()
+		@Override
+		public void actionPerformed(final ActionEvent e)
 		{
-			@Override
-			public void actionPerformed(final ActionEvent e)
-			{
-				if (!selecting)
-				{
-					highlightCompletedText(0);
-				}
-			}
-		});
-		comboBox.addPropertyChangeListener(new PropertyChangeListener()
-		{
-			@Override
-			public void propertyChange(final PropertyChangeEvent e)
-			{
-				if ("editor".equals(e.getPropertyName()))
-				{
-					configureEditor((ComboBoxEditor)e.getNewValue());
-				}
-				else if ("model".equals(e.getPropertyName()))
-				{
-					model = (ComboBoxModel<?>)e.getNewValue();
-				}
-			}
-		});
-		editorKeyListener = new KeyAdapter()
-		{
-			/** Resets the flags related to what key a user pressed */
-			private void resetFlags()
-			{
-				hitBackspace = false;
-				hitBackspaceOnSelection = false;
-			}
-			
-			@Override
-			public void keyPressed(final KeyEvent e)
-			{
-				// Ignore keys that do not alter the text - teo_sarca [ 1735043 ]
-				if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED)
-				{
-					return;
-				}
-				// Ignore ESC key - teo_sarca BF [ 1820778 ]
-				if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-				{
-					return;
-				}
-
-				if (comboBox.isDisplayable())
-				{
-					comboBox.setPopupVisible(true);
-				}
-				if (!m_strictMode)
-				{
-					return;
-				}
-
-				resetFlags();
-				switch (e.getKeyCode())
-				{
-				// determine if the pressed key is backspace (needed by the remove method)
-					case KeyEvent.VK_BACK_SPACE:
-						hitBackspace = true;
-						hitBackspaceOnSelection = editor.getSelectionStart() != editor.getSelectionEnd();
-						break;
-					// ignore delete key
-					case KeyEvent.VK_DELETE:
-						e.consume();
-						UIManager.getLookAndFeel().provideErrorFeedback(comboBox);
-						break;
-				}
-			}
-			
-			@Override
-			public void keyReleased(KeyEvent e)
-			{
-				// Make sure we reset the flags after user is releasing the key
-				resetFlags();
-			}
-		};
-		// Highlight whole text when gaining focus
-		editorFocusListener = new FocusAdapter()
-		{
-			@Override
-			public void focusGained(final FocusEvent e)
+			if (!selecting)
 			{
 				highlightCompletedText(0);
 			}
+		}
+	};
 
-			@Override
-			public void focusLost(final FocusEvent e)
-			{
-				// Workaround for Bug 5100422 - Hide Popup on focus loss
-				if (hidePopupOnFocusLoss)
-				{
-					comboBox.setPopupVisible(false);
-				}
-			}
-		};
-		configureEditor(comboBox.getEditor());
-		// Handle initially selected object
-		final Object selected = comboBox.getSelectedItem();
-		if (selected != null)
+	/** ComboBox editor changed listener: when combobox's editor is changed, configure the new editor */
+	private PropertyChangeListener comboBoxEditorChangedListener = new PropertyChangeListener()
+	{
+		@Override
+		public void propertyChange(final PropertyChangeEvent e)
 		{
-			setText(selected.toString());
+			configureEditor();
+		}
+	};
+
+	/** {@link ComboBoxEditor} key listener */
+	private final KeyListener editorKeyListener = new KeyAdapter()
+	{
+		/** Resets the flags related to what key a user pressed */
+		private void resetFlags()
+		{
+			hitBackspace = false;
+			hitBackspaceOnSelection = false;
+		}
+
+		@Override
+		public void keyPressed(final KeyEvent e)
+		{
+			// Ignore keys that do not alter the text - teo_sarca [ 1735043 ]
+			if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED)
+			{
+				return;
+			}
+			// Ignore ESC key - teo_sarca BF [ 1820778 ]
+			if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+			{
+				return;
+			}
+
+			if (comboBox.isDisplayable())
+			{
+				comboBox.setPopupVisible(true);
+			}
+			if (!m_strictMode)
+			{
+				return;
+			}
+
+			resetFlags();
+			switch (e.getKeyCode())
+			{
+			// determine if the pressed key is backspace (needed by the remove method)
+				case KeyEvent.VK_BACK_SPACE:
+					final JTextComponent editor = getComboBoxEditorComponent();
+					hitBackspace = true;
+					hitBackspaceOnSelection = editor != null && editor.getSelectionStart() != editor.getSelectionEnd();
+					break;
+				// ignore delete key
+				case KeyEvent.VK_DELETE:
+					e.consume();
+					UIManager.getLookAndFeel().provideErrorFeedback(comboBox);
+					break;
+			}
+		}
+
+		@Override
+		public void keyReleased(final KeyEvent e)
+		{
+			// Make sure we reset the flags after user is releasing the key
+			resetFlags();
+		}
+	};
+
+	/** {@link ComboBoxEditor} focus listener: Highlight whole text when gaining focus */
+	private final FocusListener editorFocusListener = new FocusAdapter()
+	{
+		@Override
+		public void focusGained(final FocusEvent e)
+		{
+			highlightCompletedText(0);
+		}
+
+		@Override
+		public void focusLost(final FocusEvent e)
+		{
+			// Workaround for Bug 5100422 - Hide Popup on focus loss
+			if (hidePopupOnFocusLoss)
+			{
+				comboBox.setPopupVisible(false);
+			}
+		}
+	};
+
+	private ComboBoxAutoCompletion(final CComboBox<E> comboBox)
+	{
+		super();
+
+		Check.assumeNotNull(comboBox, "comboBox not null");
+		this.comboBox = comboBox;
+
+		comboBox.addActionListener(comboBoxActionListener);
+
+		// When combobox's editor is changed, configure the new editor
+		comboBox.addPropertyChangeListener("editor", comboBoxEditorChangedListener);
+
+		//
+		// Setup the combobox editor
+		configureEditor();
+
+		//
+		// Handle initially selected object
+		final E selectedItem = comboBox.getSelectedItem();
+		if (selectedItem != null)
+		{
+			setText(valueToString(selectedItem));
 		}
 		highlightCompletedText(0);
 	}
 
-	void configureEditor(final ComboBoxEditor newEditor)
+	/**
+	 * Set strict mode. If the strict mode is enabled, you can't enter any other values than the ones from combo box list.
+	 *
+	 * @param mode true if strict mode
+	 * @return
+	 */
+	public ComboBoxAutoCompletion<E> setStrictMode(final boolean mode)
 	{
-		if (editor != null)
-		{
-			editor.removeKeyListener(editorKeyListener);
-			editor.removeFocusListener(editorFocusListener);
-		}
+		m_strictMode = mode;
+		return this;
+	}
 
-		if (newEditor != null)
+	private ComboBoxModel<E> getComboBoxModel()
+	{
+		return comboBox.getModel();
+	}
+
+	private JTextComponent getComboBoxEditorComponent()
+	{
+		return _editorComp;
+	}
+
+	private final synchronized void configureEditor()
+	{
+		if (_configureEditorRunning)
 		{
-			editor = (JTextComponent)newEditor.getEditorComponent();
-			editor.addKeyListener(editorKeyListener);
-			editor.addFocusListener(editorFocusListener);
-			editor.setDocument(this);
+			return;
+		}
+		_configureEditorRunning = true;
+		try
+		{
+			if (_editorComp != null)
+			{
+				_editorComp.removeKeyListener(editorKeyListener);
+				_editorComp.removeFocusListener(editorFocusListener);
+				_editorComp = null;
+			}
+
+			final ComboBoxEditor newEditor = comboBox.getEditor();
+			_editorComp = (JTextComponent)(newEditor == null ? null : newEditor.getEditorComponent());
+			if (_editorComp != null)
+			{
+				_editorComp.addKeyListener(editorKeyListener);
+				_editorComp.addFocusListener(editorFocusListener);
+				_editorComp.setDocument(ComboBoxAutoCompletion.this);
+			}
+		}
+		finally
+		{
+			_configureEditorRunning = false;
 		}
 	}
+
+	private boolean _configureEditorRunning = false;
 
 	@Override
 	public void remove(int offs, final int len) throws BadLocationException
@@ -299,7 +342,7 @@ class ComboBoxAutoCompletion extends PlainDocument
 		super.insertString(offs, str, a);
 
 		// lookup and select a matching item
-		Object item = lookupItem(getText(0, getLength()));
+		E item = lookupItem(getText(0, getLength()));
 
 		if (item != null)
 		{
@@ -331,7 +374,7 @@ class ComboBoxAutoCompletion extends PlainDocument
 
 		if (item != null)
 		{
-			setText(item.toString());
+			setText(valueToString(item));
 		}
 		else
 		{
@@ -356,12 +399,13 @@ class ComboBoxAutoCompletion extends PlainDocument
 		}
 		catch (final BadLocationException e)
 		{
-			throw new RuntimeException(e.toString());
+			throw new RuntimeException(e);
 		}
 	}
 
 	private void highlightCompletedText(int start)
 	{
+		final JTextComponent editor = getComboBoxEditorComponent();
 		editor.setCaretPosition(getLength());
 		if (getLength() < start)
 		{
@@ -375,6 +419,7 @@ class ComboBoxAutoCompletion extends PlainDocument
 		selecting = true;
 		try
 		{
+			final ComboBoxModel<E> model = getComboBoxModel();
 			model.setSelectedItem(item);
 		}
 		finally
@@ -383,11 +428,14 @@ class ComboBoxAutoCompletion extends PlainDocument
 		}
 	}
 
-	private Object lookupItem(final String pattern)
+	private E lookupItem(final String pattern)
 	{
-		final Object selectedItem = model.getSelectedItem();
+		final ComboBoxModel<E> model = getComboBoxModel();
+
+		@SuppressWarnings("unchecked")
+		final E selectedItem = (E)model.getSelectedItem();
 		// only search for a different item if the currently selected does not match
-		if (selectedItem != null && startsWithIgnoreCase(selectedItem.toString(), pattern))
+		if (selectedItem != null && startsWithIgnoreCase(valueToString(selectedItem), pattern))
 		{
 			return selectedItem;
 		}
@@ -396,9 +444,9 @@ class ComboBoxAutoCompletion extends PlainDocument
 			// iterate over all items
 			for (int i = 0, n = model.getSize(); i < n; i++)
 			{
-				final Object currentItem = model.getElementAt(i);
+				final E currentItem = model.getElementAt(i);
 				// current item starts with the pattern?
-				if (currentItem != null && startsWithIgnoreCase(currentItem.toString(), pattern))
+				if (currentItem != null && startsWithIgnoreCase(valueToString(currentItem), pattern))
 				{
 					return currentItem;
 				}
@@ -409,27 +457,69 @@ class ComboBoxAutoCompletion extends PlainDocument
 	}
 
 	/**
-	 * Set strict mode. If the strict mode is enabled, you can't enter any other values than the ones from combo box list.
-	 *
-	 * @param mode true if strict mode
-	 */
-	public void setStrictMode(final boolean mode)
-	{
-		m_strictMode = mode;
-	}
-
-	/**
 	 * Checks if str1 starts with str2 (ignores case, trim leading whitespaces, strip diacritics)
 	 *
 	 * @param str1
 	 * @param str2
 	 * @return true if str1 starts with str2
 	 */
-	private boolean startsWithIgnoreCase(final String str1, final String str2)
+	private static final boolean startsWithIgnoreCase(final String str1, final String str2)
 	{
-		final String s1 = org.adempiere.util.StringUtils.stripDiacritics(str1.toUpperCase()).replaceAll("^\\s+", "");
-		final String s2 = org.adempiere.util.StringUtils.stripDiacritics(str2.toUpperCase()).replaceAll("^\\s+", "");
+		final String s1 = StringUtils.stripDiacritics(str1.toUpperCase()).replaceAll("^\\s+", "");
+		final String s2 = StringUtils.stripDiacritics(str2.toUpperCase()).replaceAll("^\\s+", "");
 		return s1.startsWith(s2);
 	}
 
+	/**
+	 * Converts the combo value to string.
+	 *
+	 * This method tries to fetch the text as is rendered by the renderer if possible. We do this because the value's toString() might be different from what is rendered, and user sees and writes what
+	 * is rendered.
+	 * 
+	 * If it's not possible it will fallback to "toString".
+	 *
+	 * @param value
+	 */
+	private final String valueToString(final E value)
+	{
+		if (value == null)
+		{
+			return "";
+		}
+
+		final ListCellRenderer<? super E> renderer = comboBox.getRenderer();
+		if (renderer == null)
+		{
+			return value.toString();
+		}
+
+		final JList<E> list = getJList();
+		if (list == null)
+		{
+			return value.toString();
+		}
+
+		final int index = 0; // NOTE: most of the renderers are not using it. Also it is known that is not correct.
+		final Component valueComp = renderer.getListCellRendererComponent(list, value, index, false, false);
+		if (valueComp instanceof JLabel)
+		{
+			return ((JLabel)valueComp).getText();
+		}
+
+		return value.toString();
+	}
+
+	/** @return combobox's inner JList (if available) */
+	private final JList<E> getJList()
+	{
+		final ComboPopup comboPopup = AdempiereComboBoxUI.getComboPopup(comboBox);
+		if (comboPopup == null)
+		{
+			return null;
+		}
+
+		@SuppressWarnings("unchecked")
+		final JList<E> list = comboPopup.getList();
+		return list;
+	}
 }

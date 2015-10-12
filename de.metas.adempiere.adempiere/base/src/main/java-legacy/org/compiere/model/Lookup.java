@@ -68,12 +68,12 @@ public abstract class Lookup extends AbstractListModel
 	private Object[]                m_tempData = null;
 
 	/**	Logger					*/
-	protected CLogger				log = CLogger.getCLogger(getClass());
+	protected final transient CLogger log = CLogger.getCLogger(getClass());
 
 	/**	Display Type			*/
-	private int						m_displayType;
+	private final int m_displayType;
 	/**	Window No				*/
-	private int						m_WindowNo;
+	private final int m_WindowNo;
 	
 	private boolean 				m_mandatory;
 	
@@ -96,7 +96,6 @@ public abstract class Lookup extends AbstractListModel
 	{
 		return m_WindowNo;
 	}	//	getWindowNo
-
 	
 	/**************************************************************************
 	 * Set the value of the selected item. The selected item may be null.
@@ -125,7 +124,6 @@ public abstract class Lookup extends AbstractListModel
 				m_selectedObject = null;
 				log.fine(getColumnName() + ": setSelectedItem - Set to NULL");
 			}
-		//	if (m_worker == null || !m_worker.isAlive())
 			fireContentsChanged(this, -1, -1);
 		}
 	}   //  setSelectedItem

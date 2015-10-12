@@ -1,11 +1,8 @@
-/**
- * 
- */
 package org.compiere.apps.search;
 
 /*
  * #%L
- * ADempiere ERP - Desktop Client
+ * de.metas.adempiere.adempiere.client
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -25,32 +22,36 @@ package org.compiere.apps.search;
  * #L%
  */
 
-
-import org.compiere.model.GridField;
-
 /**
- * @author teo_sarca
+ * {@link FindPanel}'s action listener.
  * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
  */
-public class FindPanelValueEditor extends FindValueEditor
+public class FindPanelActionListener
 {
+	public static final transient FindPanelActionListener NULL = new FindPanelActionListener();
+
 	/**
+	 * Called after user performed a search
 	 * 
+	 * @param triggeredFromSearchField true if the search was triggered automatically when user pressed enter in a search field.
 	 */
-	private static final long serialVersionUID = -5735367121927404970L;
-
-	private FindPanel m_findPanel;
-
-	public FindPanelValueEditor(FindPanel find, boolean valueTo)
+	public void onSearch(final boolean triggeredFromSearchField)
 	{
-		super(null, valueTo);
-		this.m_findPanel = find;
 	}
 
-	@Override
-	protected GridField getMField(String columnName)
+	/**
+	 * Called after user pressed the cancel button.
+	 */
+	public void onCancel()
 	{
-		return m_findPanel.getTargetMField(columnName);
 	}
 
+	/**
+	 * Called after user pressed the "New record" button.
+	 */
+	public void onOpenAsNewRecord()
+	{
+	}
 }

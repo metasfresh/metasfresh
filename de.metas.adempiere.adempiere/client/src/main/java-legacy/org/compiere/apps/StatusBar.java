@@ -18,10 +18,10 @@ package org.compiere.apps;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
@@ -40,34 +40,10 @@ import org.compiere.util.Env;
  */
 public class StatusBar extends CPanel implements IStatusBar
 {
-
-	/******************************************************************************
-	 *  Mouse Adapter for Status Bar (statusDB)
-	 */
-	class StatusBar_mouseAdapter extends java.awt.event.MouseAdapter
-	{
-		private StatusBar adaptee;
-
-		/**
-		 *  Constructor
-		 *  @param adaptee adaptee
-		 */
-		StatusBar_mouseAdapter(StatusBar adaptee)
-		{
-			this.adaptee = adaptee;
-		}
-
-		@Override
-		public void mouseClicked(MouseEvent e)
-		{
-			adaptee.mouseClicked(e);
-		}
-	}   //  StatusBar_mouseAdapter
-	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1465783013058042860L;
+	private static final long serialVersionUID = 178093491294124862L;
 
 	/**
 	 *	Standard Status Bar
@@ -89,16 +65,20 @@ public class StatusBar extends CPanel implements IStatusBar
 			jbInit();
 		}
 		catch (Exception e)
-		{}
+		{
+		}
+		
 		this.setName("statusBar");
+		
 		if (!withInfo)
+		{
 			infoLine.setVisible(false);
+		}
 	}	//	StatusBar
 
-	private BorderLayout mainLayout = new BorderLayout();
-	private JLabel statusLine = new JLabel();
-	private JLabel statusDB = new JLabel();
-	private JLabel infoLine = new JLabel();
+	private final JLabel statusLine = new JLabel();
+	private final JLabel statusDB = new JLabel();
+	private final JLabel infoLine = new JLabel();
 	//
 	private boolean		mt_error;
 	private String		mt_text;
@@ -115,31 +95,44 @@ public class StatusBar extends CPanel implements IStatusBar
 		statusLine.setBorder(BorderFactory.createEtchedBorder());
 		statusLine.setText("statusLine");
 		statusLine.setOpaque(false);
+		
 		statusDB.setForeground(Color.blue);
 		statusDB.setBorder(BorderFactory.createEtchedBorder());
 		statusDB.setText("#");
 		statusDB.setOpaque(false);
-		statusDB.addMouseListener(new StatusBar_mouseAdapter(this));
-		this.setLayout(mainLayout);
+		statusDB.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				showRecordInfo();
+			}
+		});
+		
 		infoLine.setFont(AdempierePLAF.getFont_Label());
 		infoLine.setBorder(BorderFactory.createLineBorder(AdempierePLAF.getSecondary2()));
 		infoLine.setHorizontalAlignment(SwingConstants.CENTER);
 		infoLine.setHorizontalTextPosition(SwingConstants.CENTER);
 		infoLine.setText("info");
+
+		//
+		// Layout
+		final BorderLayout mainLayout = new BorderLayout();
 		mainLayout.setHgap(2);
 		mainLayout.setVgap(2);
+		this.setLayout(mainLayout);
 		this.add(statusLine, BorderLayout.CENTER);
 		this.add(statusDB, BorderLayout.EAST);
 		this.add(infoLine, BorderLayout.NORTH);
 	}	//	jbInit
 
 	
-	/**************************************************************************
+	/**
 	 *	Set Standard Status Line (non error)
 	 *  @param text text
 	 */
 	@Override
-	public void setStatusLine (String text)
+	public void setStatusLine(final String text)
 	{
 		if (text == null)
 			setStatusLine("", false);
@@ -178,7 +171,7 @@ public class StatusBar extends CPanel implements IStatusBar
 	 *	Get Status Line text
 	 *  @return StatusLine text
 	 */
-	public String getStatusLine ()
+	public String getStatusLine()
 	{
 		return statusLine.getText().trim();
 	}	//	setStatusLine
@@ -246,34 +239,32 @@ public class StatusBar extends CPanel implements IStatusBar
 	@Override
 	public void setInfo (String text)
 	{
-		if (!infoLine.isVisible())
-			infoLine.setVisible(true);
+		infoLine.setVisible(true);
 		infoLine.setText(text);
 	}	//	setInfo
 
 	/**
-	 *	Add Component to East of StatusBar
-	 *  @param component component
+	 * Show {@link RecordInfo} dialog
 	 */
-	public void addStatusComponent (JComponent component)
-	{
-		this.add(component, BorderLayout.EAST);
-	}   //  addStatusComponent
-
-	/**
-	 *  Show WHO
-	 *  @param e event
-	 */
-	void mouseClicked(MouseEvent e)
+	private void showRecordInfo()
 	{
 		if (m_dse == null 
 			|| m_dse.CreatedBy == null
 			|| !Env.getUserRolePermissions().isShowPreference())
+		{
 			return;
+		}
+		
 		//
-		String title = Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Who") + m_text;
-		RecordInfo info = new RecordInfo (Env.getFrame(this), title, m_dse);
+		final String title = Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Who") + m_text;
+		final RecordInfo info = new RecordInfo(Env.getFrame(this), title, m_dse);
 		AEnv.showCenterScreen(info);
-	}	//	addStatusComponent
+	}
 
-}	//	StatusBar
+	public void removeBorders()
+	{
+		statusLine.setBorder(BorderFactory.createEmptyBorder());
+		statusDB.setBorder(BorderFactory.createEmptyBorder());
+		infoLine.setBorder(BorderFactory.createEmptyBorder());
+	}
+}

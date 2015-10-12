@@ -66,6 +66,15 @@ public class CollapsibleFindPanel extends JXTaskPane implements IUISubClassIDAwa
 		findPanel = builder.buildFindPanel();
 		findPanel.setPreferredSize(new Dimension(500, 230)); // task 08592: the width prior to this task was 160; changing it in order to add yet another search field to the invoice candidate window.
 		this.add(findPanel);
+		
+		runOnCollapsedStateChange(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				onCollapsedStateChanged();
+			}
+		});
 
 		setExpanded(!builder.isSearchPanelCollapsed());
 	}
@@ -85,16 +94,31 @@ public class CollapsibleFindPanel extends JXTaskPane implements IUISubClassIDAwa
 	{
 		setCollapsed(!expanded);
 	}
+	
+	private void onCollapsedStateChanged()
+	{
+		requestFocus();
+	}
 
 	@Override
 	public final void requestFocus()
 	{
+		if (isCollapsed())
+		{
+			return;
+		}
+		
 		findPanel.requestFocus();
 	}
 
 	@Override
 	public final boolean requestFocusInWindow()
 	{
+		if(isCollapsed())
+		{
+			return false;
+		}
+		
 		return findPanel.requestFocusInWindow();
 	}
 

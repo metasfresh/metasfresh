@@ -216,7 +216,7 @@ public class FindPanelBuilder
 	{
 		if (findFields == null)
 		{
-			findFields = GridField.createFields(Env.getCtx(), targetWindowNo, 0, AD_Tab_ID);
+			findFields = GridField.createSearchFields(Env.getCtx(), getTargetWindowNo(), 0, getAD_Tab_ID());
 		}
 
 		return findFields;

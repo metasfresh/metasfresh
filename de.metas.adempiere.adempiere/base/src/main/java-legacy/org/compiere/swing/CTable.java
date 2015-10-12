@@ -261,18 +261,35 @@ public class CTable extends JTable implements ITable
 	 */
 	public void stopEditor(boolean saveValue)
 	{
+		stopEditor(this, saveValue);
+	}
+	
+	/**
+	 * Stop Table Editors and remove focus
+	 *
+	 * @param table
+	 * @param saveValue save value
+	 */
+	public static final void stopEditor(final JTable table, final boolean saveValue)
+	{
+		// Do nothing if no table cell is in editing mode
+		if (!table.isEditing())
+		{
+			return;
+		}
+		
 		// MultiRow - remove editors
-		ChangeEvent ce = new ChangeEvent(this);
+		ChangeEvent ce = new ChangeEvent(table);
 		if (saveValue)
-			editingStopped(ce);
+			table.editingStopped(ce);
 		else
-			editingCanceled(ce);
+			table.editingCanceled(ce);
 		//
-		if (getInputContext() != null)
-			getInputContext().endComposition();
+		if (table.getInputContext() != null)
+			table.getInputContext().endComposition();
 		// change focus to next
-		transferFocus();
-	}   // stopEditor
+		table.transferFocus();
+	}
 
 	/**************************************************************************
 	 * Size Columns.

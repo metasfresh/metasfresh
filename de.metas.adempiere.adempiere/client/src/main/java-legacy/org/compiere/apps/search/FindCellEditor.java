@@ -17,8 +17,6 @@
 package org.compiere.apps.search;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.EventObject;
 
 import javax.swing.AbstractCellEditor;
@@ -35,7 +33,7 @@ import org.compiere.swing.CEditor;
 
 /**
  * Cell Editor.
- * 
+ *
  * <pre>
  * 	Sequence of events:
  * 		isCellEditable
@@ -43,62 +41,39 @@ import org.compiere.swing.CEditor;
  * 		shouldSelectCell
  * 		getCellEditorValue
  * </pre>
- * 
- * A new Editor is created for editable columns.
- * 
+ *
  * @author Jorg Janke
- * @version $Id: VCellEditor.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
-public final class FindCellEditor extends AbstractCellEditor
-		implements TableCellEditor, ActionListener
+abstract class FindCellEditor extends AbstractCellEditor
+		implements TableCellEditor
 {
 	/**
-	 * 
+	 *
 	 */
-	private static final long serialVersionUID = -6542861196427426178L;
+	private static final long serialVersionUID = 6162302205998931936L;
 
-	/** The Table Editor */
-	private CEditor m_editor = null;
+	// /** The Table Editor */
+	// private CEditor _editor = null;
 	private Object valueOld = null;
 
-	/**
-	 * Constructor for Grid
-	 * 
-	 * @param mField
-	 */
-	public FindCellEditor(final CEditor component)
+	public FindCellEditor()
 	{
 		super();
-		m_editor = component;
-		// m_editor.addActionListener(this);
-		// Click
-	}	// FindCellEditor
+	}
 
-	/**
-	 * @param anEvent event
-	 * @return true if editable
-	 */
+	public void dispose()
+	{
+		valueOld = null;
+	}
+
+	protected abstract CEditor getEditor();
+
 	@Override
-	public boolean isCellEditable(EventObject anEvent)
+	public boolean isCellEditable(final EventObject anEvent)
 	{
 		return true;
-	}	// isCellEditable
+	}
 
-	/**
-	 * Sets an initial value for the editor. This will cause the editor to
-	 * stopEditing and lose any partially edited value if the editor is editing
-	 * when this method is called.
-	 * Returns the component that should be added to the client's Component hierarchy.
-	 * Once installed in the client's hierarchy this component
-	 * will then be able to draw and receive user input.
-	 *
-	 * @param table
-	 * @param value
-	 * @param isSelected
-	 * @param row
-	 * @param col
-	 * @return component
-	 */
 	@Override
 	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int row, final int col)
 	{
@@ -108,49 +83,51 @@ public final class FindCellEditor extends AbstractCellEditor
 		}
 
 		// Set Value
-		m_editor.setValue(value);
+		final CEditor editor = getEditor();
+		editor.setValue(value);
 		valueOld = value; // remember the old value
 
 		//
 		// Set Background/Foreground to "normal" (unselected) colors
-		((JComponent)m_editor).setForeground(AdempierePLAF.getTextColor_Normal());
+		((JComponent)editor).setForeground(AdempierePLAF.getTextColor_Normal());
 		// Other UI
-		((JComponent)m_editor).setFont(table.getFont());
-		if (m_editor instanceof JComboBox)
+		((JComponent)editor).setFont(table.getFont());
+		if (editor instanceof JComboBox)
 		{
-			((JComboBox<?>)m_editor).setBorder(BorderFactory.createEmptyBorder());
+			((JComboBox<?>)editor).setBorder(BorderFactory.createEmptyBorder());
 		}
 		else
 		{
-			((JComponent)m_editor).setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
+			((JComponent)editor).setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
 		}
 
 		//
-		return (Component)m_editor;
+		return (Component)editor;
 	}	// getTableCellEditorComponent
 
 	/**
 	 * The editing cell should be selected or not
-	 * 
+	 *
 	 * @param e event
 	 * @return true (constant)
 	 */
 	@Override
-	public boolean shouldSelectCell(EventObject e)
+	public boolean shouldSelectCell(final EventObject e)
 	{
 		return true;
-	}	// shouldSelectCell
+	}
 
-	/**
-	 * Returns the value contained in the editor
-	 * 
-	 * @return value
-	 */
 	@Override
 	public Object getCellEditorValue()
 	{
-		return m_editor.getValue();
-	}	// getCellEditorValue
+		final CEditor editor = getEditor();
+		if (editor == null)
+		{
+			return null;
+		}
+
+		return editor.getValue();
+	}
 
 	public Object getCellEditorValueOld()
 	{
@@ -160,7 +137,8 @@ public final class FindCellEditor extends AbstractCellEditor
 	public boolean isCellEditorValueChanged()
 	{
 		// If editor was disposed, return false
-		if (m_editor == null)
+		final CEditor editor = getEditor();
+		if (editor == null)
 		{
 			return false;
 		}
@@ -173,25 +151,6 @@ public final class FindCellEditor extends AbstractCellEditor
 	{
 		return getCellEditorValue() == null;
 	}
-
-	/**
-	 * Action Editor - Stop Editor
-	 * 
-	 * @param e event
-	 */
-	@Override
-	public void actionPerformed(ActionEvent e)
-	{
-	}
-
-	/**
-	 * Dispose
-	 */
-	public void dispose()
-	{
-		m_editor = null;
-		valueOld = null;
-	}	// dispose
 
 	@Override
 	public boolean stopCellEditing()
@@ -212,5 +171,4 @@ public final class FindCellEditor extends AbstractCellEditor
 		fireEditingCanceled();
 		valueOld = null;  // reset old value
 	}
-
-}	// FindCellEditor
+}
