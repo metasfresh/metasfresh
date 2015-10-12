@@ -1,5 +1,0 @@
-eclipse.preferences.version=1
-extraProperties=sonar.dynamicAnalysis\=true\r\nsonar.java.coveragePlugin\=jacoco
-projectKey=de.metas.device.api\:de.metas.device.api
-serverUrl=http\://deson101\:8080
-version=2
