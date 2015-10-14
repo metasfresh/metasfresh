@@ -67,7 +67,7 @@ public interface I_M_PackageTree
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/** Get Mandant.
-	  * Mandant fÄ‚Ä�?r diese Installation.
+	  * Mandant fuer diese Installation.
 	  */
 	public int getAD_Client_ID();
 
