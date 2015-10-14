@@ -54,7 +54,7 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 	public static final void schedule(final Properties ctx, final String trxName)
 	{
 		Services.get(IWorkPackageQueueFactory.class)
-				.getQueue(ctx, UpdateInvalidShipmentSchedulesWorkpackageProcessor.class)
+				.getQueueForEnqueuing(ctx, UpdateInvalidShipmentSchedulesWorkpackageProcessor.class)
 				.newBlock()
 				.setContext(ctx)
 				.newWorkpackage()

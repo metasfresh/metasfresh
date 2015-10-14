@@ -54,7 +54,7 @@ public class AD_User_ResetPassword_EnqueueForSelection extends SvrProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		queue = Services.get(IWorkPackageQueueFactory.class).getQueue(getCtx(), PasswordResetWorkpackageProcessor.class);
+		queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(getCtx(), PasswordResetWorkpackageProcessor.class);
 
 		int countEnqueued = 0;
 

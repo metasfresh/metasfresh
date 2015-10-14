@@ -262,27 +262,4 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocBaseType);
 	}
-
-	/** Set Is Direct Enqueue.
-		@param IsDirectEnqueue Is Direct Enqueue	  */
-	@Override
-	public void setIsDirectEnqueue (boolean IsDirectEnqueue)
-	{
-		set_Value (COLUMNNAME_IsDirectEnqueue, Boolean.valueOf(IsDirectEnqueue));
-	}
-
-	/** Get Is Direct Enqueue.
-		@return Is Direct Enqueue	  */
-	@Override
-	public boolean isDirectEnqueue () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsDirectEnqueue);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
 }

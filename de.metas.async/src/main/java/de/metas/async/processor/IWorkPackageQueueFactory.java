@@ -33,13 +33,20 @@ import de.metas.async.spi.IWorkpackageProcessor;
 
 public interface IWorkPackageQueueFactory extends ISingletonService
 {
-	IWorkPackageQueue getQueue(I_C_Queue_Processor processor);
+	/**
+	 * Return a queue for a <b>queue processor</b>, in order to poll and lock and process work-packages that were enqueued earlier.
+	 * 
+	 * @param processor
+	 * @return
+	 */
+	IWorkPackageQueue getQueueForPackageProcessing(I_C_Queue_Processor processor);
 
 	/**
+	 * Return a queue instance for a particular <b>work package processor</b>, in order to create new work-packages for it.
 	 * 
 	 * @param ctx
 	 * @param packageProcessorClass
 	 * @return a queue for the given work package processor (as specified by its class)
 	 */
-	IWorkPackageQueue getQueue(Properties ctx, Class<? extends IWorkpackageProcessor> packageProcessorClass);
+	IWorkPackageQueue getQueueForEnqueuing(Properties ctx, Class<? extends IWorkpackageProcessor> packageProcessorClass);
 }

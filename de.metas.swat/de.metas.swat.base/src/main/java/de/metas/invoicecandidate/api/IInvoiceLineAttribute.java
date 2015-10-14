@@ -37,7 +37,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
  * </ul>
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
+ * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
  */
 public interface IInvoiceLineAttribute
 {

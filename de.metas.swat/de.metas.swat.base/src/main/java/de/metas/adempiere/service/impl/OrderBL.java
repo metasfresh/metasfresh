@@ -575,7 +575,7 @@ public class OrderBL implements IOrderBL
 		{
 			order.setDeliveryRule(ss);
 		}
-		if (isSOTrx)
+		if(isSOTrx)
 		{
 			ss = bp.getDeliveryViaRule();
 		}
@@ -583,7 +583,7 @@ public class OrderBL implements IOrderBL
 		{
 			ss = bp.getPO_DeliveryViaRule();
 		}
-
+		
 		if (ss != null)
 		{
 			order.setDeliveryViaRule(ss);

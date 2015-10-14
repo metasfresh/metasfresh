@@ -144,7 +144,7 @@ public class AttributePricing extends PricingRuleAdapter
 		result.setM_PriceList_Version_ID(productPrice.getM_PriceList_Version_ID());
 		result.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());
 		result.setCalculated(true);
-		// fresh 06942 : use product price uom all the time
+		// 06942 : use product price uom all the time
 		result.setPrice_UOM_ID(productPrice.getC_UOM_ID());
 
 		// 08803: store the information about the price relevant attributes

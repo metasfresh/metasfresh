@@ -2,7 +2,7 @@ package org.adempiere.util.reflect;
 
 /*
  * #%L
- * org.adempiere.util
+ * de.metas.util
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

@@ -426,7 +426,7 @@ public class OLCandBL implements IOLCandBL
 		}
 
 		//
-		// fresh 08626: Propagate ProductDescription to C_OrderLine
+		// 08626: Propagate ProductDescription to C_OrderLine
 		resultOrderLine.setProductDescription(candToProcess.getProductDescription());
 
 		resultOrderLine.setLine(candToProcess.getLine());
@@ -817,7 +817,7 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	/**
-	 * FIXME hardcoded (fresh 08691)
+	 * FIXME hardcoded (08691)
 	 *
 	 * @param ctx
 	 * @param processor

@@ -35,6 +35,8 @@ import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -60,7 +62,7 @@ import de.metas.lock.api.LockOwner;
 	private final String _trxName;
 	private final IWorkPackageQueue _workpackageQueue;
 	private final IWorkPackageBlockBuilder _queueBlockBuilder;
-	private final String workpackagePriority = IWorkPackageQueue.PRIORITY_AUTO;
+	private final IWorkpackagePrioStrategy workpackagePriority = SizeBasedWorkpackagePrio.INSTANCE;
 	private ILock invoiceCandidatesLock = ILock.NULL;
 
 	// status
@@ -74,7 +76,7 @@ import de.metas.lock.api.LockOwner;
 		_ctx = ctx;
 		_trxName = trxName; // null/none it's accepted
 
-		_workpackageQueue = workPackageQueueFactory.getQueue(ctx, InvoiceCandWorkpackageProcessor.class);
+		_workpackageQueue = workPackageQueueFactory.getQueueForEnqueuing(ctx, InvoiceCandWorkpackageProcessor.class);
 		_queueBlockBuilder = _workpackageQueue.newBlock()
 				.setContext(getCtx());
 

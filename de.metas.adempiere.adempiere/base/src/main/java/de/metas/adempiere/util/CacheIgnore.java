@@ -2,7 +2,7 @@ package de.metas.adempiere.util;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

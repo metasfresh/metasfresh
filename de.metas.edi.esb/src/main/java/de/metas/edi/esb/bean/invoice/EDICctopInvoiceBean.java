@@ -104,7 +104,7 @@ public class EDICctopInvoiceBean
 			}
 			else
 			{
-				// TODO: see fresh_05725 comments regarding this field; we might need an additional field OR make a proper message out of this 3-char string
+				// TODO: see 05725 comments regarding this field; we might need an additional field OR make a proper message out of this 3-char string
 				creditMemoReasonStr = creditMemoReason.toString();
 			}
 			invoice.setCreditMemoReason(creditMemoReasonStr);
@@ -119,10 +119,14 @@ public class EDICctopInvoiceBean
 		invoice.setInvoiceDocumentno(xmlCctopInvoice.getInvoiceDocumentno());
 		invoice.setIsoCode(xmlCctopInvoice.getISOCode());
 		invoice.setMovementDate(toDate(xmlCctopInvoice.getMovementDate()));
-		// fresh_05768
+		// 05768
 		if (xmlCctopInvoice.getPOReference() != null && !xmlCctopInvoice.getPOReference().isEmpty())
 		{
 			invoice.setPoReference(xmlCctopInvoice.getPOReference());
+		}
+		else if (xmlCctopInvoice.getShipmentDocumentno()!= null && !xmlCctopInvoice.getShipmentDocumentno().isEmpty())
+		{
+			invoice.setPoReference(Util.mkOwnOrderNumber(xmlCctopInvoice.getShipmentDocumentno()));
 		}
 		else
 		{
@@ -222,7 +226,7 @@ public class EDICctopInvoiceBean
 		cctop111V.setmInOutID(formatNumber(xmlCctop111V.getMInOutID(), decimalFormat));
 		cctop111V.setDateOrdered(toDate(xmlCctop111V.getDateOrdered()));
 		cctop111V.setMovementDate(toDate(xmlCctop111V.getMovementDate()));
-		// fresh_05768
+		// 05768
 		if (xmlCctop111V.getPOReference() != null && !xmlCctop111V.getPOReference().isEmpty())
 		{
 			cctop111V.setPoReference(xmlCctop111V.getPOReference());
@@ -377,7 +381,16 @@ public class EDICctopInvoiceBean
 			cctopInvoice500V.setValue(xmlCctopInvoic500V.getValue());
 			cctopInvoice500V.setVendorProductNo(xmlCctopInvoic500V.getVendorProductNo());
 			cctopInvoice500V.setProductDescription(xmlCctopInvoic500V.getProductDescription());
-			cctopInvoice500V.setOrderLine(xmlCctopInvoic500V.getOrderLine().toString());
+			if (xmlCctopInvoic500V.getOrderLine() == null)
+			{
+				throw new RuntimeCamelException(xmlCctopInvoic500V + " must reference an orderline");
+			}
+			else
+			{
+				// task 09182: we outpot the order's POReference which might be different from the POReference of the invoice header.
+				cctopInvoice500V.setOrderPOReference(xmlCctopInvoic500V.getOrderPOReference().toString());
+				cctopInvoice500V.setOrderLine(xmlCctopInvoic500V.getOrderLine().toString());
+			}
 			cctopInvoice500V.setTaxAmount(formatNumber(xmlCctopInvoic500V.getTaxAmtInfo(), decimalFormat));
 
 			cctopInvoice500V.setEancomPriceUom(xmlCctopInvoic500V.getEanComPriceUOM());

@@ -125,7 +125,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	 * TODO: Implement
 	 * 
 	 * @throws UnsupportedOperationException allways.
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
+	 * @task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
 	 */
 	@Override
 	protected int lockByFilters(ILockCommand lockCommand)

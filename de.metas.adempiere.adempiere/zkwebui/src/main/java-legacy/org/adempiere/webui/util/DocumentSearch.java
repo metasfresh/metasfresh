@@ -30,6 +30,7 @@
 **********************************************************************/
 package org.adempiere.webui.util;
 
+
 import org.adempiere.util.AbstractDocumentSearch;
 import org.adempiere.webui.session.SessionManager;
 import org.compiere.model.MQuery;

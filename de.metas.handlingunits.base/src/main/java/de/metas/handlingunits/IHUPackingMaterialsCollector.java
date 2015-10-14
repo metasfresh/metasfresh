@@ -142,7 +142,7 @@ public interface IHUPackingMaterialsCollector
 	 * Sets if we shall collect packing materials only if {@link I_M_HU#isHUPlanningReceiptOwnerPM()} is set.
 	 *
 	 * @param collectIfOwnPackingMaterialsOnly
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08480_Korrekturm%C3%B6glichkeit_Wareneingang_-_Menge%2C_Packvorschrift%2C_Merkmal_%28109195602347%29
+	 * @task http://dewiki908/mediawiki/index.php/08480_Korrekturm%C3%B6glichkeit_Wareneingang_-_Menge%2C_Packvorschrift%2C_Merkmal_%28109195602347%29
 	 */
 	void setCollectIfOwnPackingMaterialsOnly(boolean collectIfOwnPackingMaterialsOnly);
 

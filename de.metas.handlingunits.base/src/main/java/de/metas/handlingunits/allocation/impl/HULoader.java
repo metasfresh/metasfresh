@@ -397,7 +397,7 @@ public class HULoader
 			//
 			// Create and process transactions after each round of unload->load allocation.
 			// If we are not doing like this, on next round, the storage will not consider previous allocations that were performed
-			// TODO: this is subject to change - see http://dewiki908/mediawiki/index.php/fresh_06154_Packtischdialog_Performance_with_many_HU_%28109788330471%29
+			// TODO: this is subject to change - see http://dewiki908/mediawiki/index.php/06154_Packtischdialog_Performance_with_many_HU_%28109788330471%29
 			final IHUTransactionAttributeBuilder trxAttributesBuilder = getTrxAttributesBuilder();
 			final List<IHUTransactionAttribute> attributeTrxs = trxAttributesBuilder.getAndClearTransactions();
 			final IAllocationResult result = AllocationUtils.createQtyAllocationResult(

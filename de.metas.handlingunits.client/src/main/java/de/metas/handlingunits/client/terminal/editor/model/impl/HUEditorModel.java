@@ -257,7 +257,7 @@ public class HUEditorModel implements IDisposable
 		});
 
 		//
-		// fresh 07618: Resize font on HU keys to make them fit more stuff in them
+		// 07618: Resize font on HU keys to make them fit more stuff in them
 		HUTerminalHelper.decreaseKeyLayoutFont(breadcrumbKeyLayout);
 		HUTerminalHelper.decreaseKeyLayoutFont(handlingUnitsKeyLayout);
 
@@ -698,7 +698,7 @@ public class HUEditorModel implements IDisposable
 			return false;
 		}
 
-		// fresh 06989: We disable selection if one of the parent HUs has already been selected.
+		// 06989: We disable selection if one of the parent HUs has already been selected.
 		if (isSelectedOrParentSelected(huKey.getParent()))
 		{
 			return false;

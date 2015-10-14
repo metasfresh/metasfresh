@@ -186,7 +186,7 @@ public abstract class AbstractLTCUModel extends AbstractMaterialMovementModel im
 		selectionModel.setAutoSelectIfOnlyOne(true);
 
 		//
-		// fresh 07618: Resize font on HU keys to make them fit more stuff in them
+		// 07618: Resize font on HU keys to make them fit more stuff in them
 		HUTerminalHelper.decreaseKeyLayoutFont(keyLayout);
 
 		return keyLayout;

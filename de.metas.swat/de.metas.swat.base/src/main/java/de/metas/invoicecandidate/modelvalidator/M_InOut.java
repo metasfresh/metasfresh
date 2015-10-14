@@ -56,8 +56,8 @@ public class M_InOut
 	 * The invoice candidates will be created immediate, synchronously. The need of doing this so eager is described in task's concept.
 	 * 
 	 * @param inout
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08491_Barverkauf_Timing_%28102342055782%29
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08641_Invalidate_invoice_candidates_when_an_reactivated_shipment_is_completed_again_%28100467724190%29
+	 * @task http://dewiki908/mediawiki/index.php/08491_Barverkauf_Timing_%28102342055782%29
+	 * @task http://dewiki908/mediawiki/index.php/08641_Invalidate_invoice_candidates_when_an_reactivated_shipment_is_completed_again_%28100467724190%29
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void invalidateExistingAndCreateMissingInvoiceCandidates(final I_M_InOut inout)

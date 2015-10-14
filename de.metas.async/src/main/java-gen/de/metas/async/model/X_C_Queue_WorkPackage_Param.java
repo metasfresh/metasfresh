@@ -32,7 +32,7 @@ public class X_C_Queue_WorkPackage_Param extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1350643571L;
+	private static final long serialVersionUID = 831626893L;
 
     /** Standard Constructor */
     public X_C_Queue_WorkPackage_Param (Properties ctx, int C_Queue_WorkPackage_Param_ID, String trxName)
@@ -155,6 +155,22 @@ public class X_C_Queue_WorkPackage_Param extends org.compiere.model.PO implement
 		return ii.intValue();
 	}
 
+	/** Set Parameter Name.
+		@param ParameterName Parameter Name	  */
+	@Override
+	public void setParameterName (java.lang.String ParameterName)
+	{
+		set_ValueNoCheck (COLUMNNAME_ParameterName, ParameterName);
+	}
+
+	/** Get Parameter Name.
+		@return Parameter Name	  */
+	@Override
+	public java.lang.String getParameterName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ParameterName);
+	}
+
 	/** Set Process Date.
 		@param P_Date 
 		Prozess-Parameter
@@ -213,21 +229,5 @@ public class X_C_Queue_WorkPackage_Param extends org.compiere.model.PO implement
 	public java.lang.String getP_String () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_P_String);
-	}
-
-	/** Set Parameter Name.
-		@param ParameterName Parameter Name	  */
-	@Override
-	public void setParameterName (java.lang.String ParameterName)
-	{
-		set_ValueNoCheck (COLUMNNAME_ParameterName, ParameterName);
-	}
-
-	/** Get Parameter Name.
-		@return Parameter Name	  */
-	@Override
-	public java.lang.String getParameterName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ParameterName);
 	}
 }

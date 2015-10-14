@@ -825,7 +825,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 			setDocAction(MPPOrder.ACTION_None);
 		}
 
-		// fresh 06946: Commented out for now as a working increment.
+		// 06946: Commented out for now as a working increment.
 		// if (!isDelivered())
 		// {
 		// throw new LiberoException("Cannot close this document because do not exist transactions"); // TODO: Create Message for Translation
@@ -1017,7 +1017,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		final I_PP_Order_Workflow ppOrderWorkflow = Services.get(IPPOrderBL.class).getPP_Order_Workflow(this);
 
 		//
-		// fresh 07619: Preserve the transaction of this PPOrder on the workflow
+		// 07619: Preserve the transaction of this PPOrder on the workflow
 		InterfaceWrapperHelper.setTrxName(ppOrderWorkflow, get_TrxName());
 
 		return LegacyAdapters.convertToPO(ppOrderWorkflow);
@@ -1276,7 +1276,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		{
 			return;
 		}
-		// fresh 06005
+		// 06005
 		if (Services.get(IPPOrderBOMBL.class).isComponentType(line, X_PP_Order_BOMLine.COMPONENTTYPE_Variant))
 		{
 			return;

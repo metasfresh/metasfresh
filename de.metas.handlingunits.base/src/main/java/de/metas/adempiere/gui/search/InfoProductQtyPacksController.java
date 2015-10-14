@@ -52,7 +52,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
  * Implements QtyPack editable column.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_05111_Product_Info_quickentry_also_for_qty_of_Packing_Items_%28109744468671%29
+ * @task http://dewiki908/mediawiki/index.php/05111_Product_Info_quickentry_also_for_qty_of_Packing_Items_%28109744468671%29
  */
 public class InfoProductQtyPacksController extends InfoColumnControllerAdapter implements IInfoQueryCriteria
 {

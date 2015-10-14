@@ -214,7 +214,7 @@ public class OrderLineBL implements IOrderLineBL
 			return;
 		}
 
-		// fresh 06278 : If we have a UOM in product price, we use that one.
+		// 06278 : If we have a UOM in product price, we use that one.
 		setPricesIfNotIgnored(ctx, ol, priceListId, ol.getQtyOrdered(), BigDecimal.ONE, usePriceUOM, trxName);
 	}
 

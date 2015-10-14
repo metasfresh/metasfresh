@@ -72,7 +72,7 @@ import de.metas.handlingunits.movement.api.IHUMovementBL;
  *
  * @author tsa
  *
- * @task http://dewiki908/mediawiki/index.php/fresh_07193_R%C3%BCcknahme_Gebinde_%28104585385527%29
+ * @task http://dewiki908/mediawiki/index.php/07193_R%C3%BCcknahme_Gebinde_%28104585385527%29
  */
 public class EmptiesShipReceiveModel extends AbstractLTCUModel
 {

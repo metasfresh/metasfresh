@@ -100,7 +100,7 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKeyNameBuilder;
 	public Collection<IHUKey> preprocessChildrenBeforeAdding(final Collection<IHUKey> children)
 	{
 		//
-		// fresh 07162: Order root HU Children by (Qty on HU <b>DESC</b>, HU Value <b>ASC</b>)
+		// 07162: Order root HU Children by (Qty on HU <b>DESC</b>, HU Value <b>ASC</b>)
 		final List<IHUKey> childrenSorted = new ArrayList<IHUKey>(children);
 		Collections.sort(childrenSorted, new HUKeyComparator(getKeyFactory()));
 

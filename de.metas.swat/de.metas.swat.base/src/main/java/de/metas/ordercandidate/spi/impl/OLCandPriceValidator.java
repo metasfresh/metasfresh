@@ -54,7 +54,7 @@ public class OLCandPriceValidator implements IOLCandValdiator
 	/**
 	 * Dynamic attribute name used to pass on the pricing result obtained by this class to potential listeners like {@link OLCandPricingASIListener}.
 	 * 
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08803_ADR_from_Partner_versus_Pricelist
+	 * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
 	/* package */static final ModelDynAttributeAccessor<I_C_OLCand, IPricingResult> DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT =
 			new ModelDynAttributeAccessor<I_C_OLCand, IPricingResult>( OLCandPriceValidator.class.getSimpleName() + "#pricingResult", IPricingResult.class);

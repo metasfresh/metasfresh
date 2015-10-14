@@ -47,6 +47,7 @@ import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -157,7 +158,7 @@ public class ShipmentScheduleEnqueuer
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueue(localCtx.getCtx(), GenerateInOutFromShipmentSchedules.class);
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(localCtx.getCtx(), GenerateInOutFromShipmentSchedules.class);
 
 		final IWorkPackageBlockBuilder blockBuilder = queue
 				.newBlock()
@@ -194,7 +195,7 @@ public class ShipmentScheduleEnqueuer
 			{
 				workpackageBuilder = blockBuilder
 						.newWorkpackage()
-						.setPriority(IWorkPackageQueue.PRIORITY_AUTO)
+						.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
 						.bindToTrxName(localCtx.getTrxName());
 
 				workpackageBuilder

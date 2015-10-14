@@ -59,7 +59,7 @@ import de.metas.adempiere.model.I_M_Product;
  * Controller to be used for setting ASI in InfoProduct quick input.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_05769_Merkmalssatz_in_Produkt_Info_%28105973894938%29
+ * @task http://dewiki908/mediawiki/index.php/05769_Merkmalssatz_in_Produkt_Info_%28105973894938%29
  */
 public class InfoProductASIController extends InfoColumnControllerAdapter implements IInfoQueryCriteria
 {

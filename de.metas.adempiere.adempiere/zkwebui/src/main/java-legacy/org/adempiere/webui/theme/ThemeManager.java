@@ -13,6 +13,7 @@
  *****************************************************************************/
 package org.adempiere.webui.theme;
 
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;

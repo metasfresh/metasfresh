@@ -177,12 +177,12 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 		// whatever InvoiceRule set in the conditions should be OK
 		ic.setInvoiceRule(term.getC_Flatrate_Conditions().getInvoiceRule());
 
-		// fresh_05265
+		// 05265
 		ic.setIsSOTrx(true);
 
 		ic.setM_PricingSystem_ID(term.getM_PricingSystem_ID());
 
-		// fresh_07442 activity and tax
+		// 07442 activity and tax
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
 
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, term.getM_Product_ID(), I_M_Product.class, trxName);

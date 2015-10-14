@@ -72,16 +72,4 @@ public interface IDocOutboundProducer
 	 * @param model
 	 */
 	void createDocOutbound(Object model);
-
-	/**
-	 * Creates the document outbound for given model identified by <code>adTableId</code> and <code>recordId</code>.
-	 * 
-	 * NOTE: it is assumed that the API already asked this producer if the model is accepted (see {@link #accept(Object)}).
-	 * 
-	 * @param ctx
-	 * @param adTableId
-	 * @param recordId
-	 * @see #createDocOutbound(Object)
-	 */
-	void createDocOutbound(Properties ctx, int adTableId, int recordId);
 }

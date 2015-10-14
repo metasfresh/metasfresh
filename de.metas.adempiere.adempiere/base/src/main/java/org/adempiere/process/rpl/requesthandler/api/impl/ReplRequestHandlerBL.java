@@ -2,7 +2,7 @@ package org.adempiere.process.rpl.requesthandler.api.impl;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

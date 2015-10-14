@@ -121,7 +121,7 @@ public class AcctViewer extends CFrame
 	 */
 	public AcctViewer()
 	{
-		this (0, 0, 0);
+		this(0, 0, 0);
 	}   //  AcctViewer
 
 	/**
@@ -133,7 +133,7 @@ public class AcctViewer extends CFrame
 	 */
 	public AcctViewer(int AD_Client_ID, final int AD_Table_ID, final int Record_ID)
 	{
-		super (Services.get(IMsgBL.class).getMsg(Env.getCtx(), "AcctViewer"));
+		super(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "AcctViewer"));
 
 		final Properties ctx = Env.getCtx();
 
@@ -154,7 +154,7 @@ public class AcctViewer extends CFrame
 			AD_Org_ID = 0; // assume AD_Org_ID=0
 		}
 		
-		m_data = new AcctViewerData (ctx, Env.createWindowNo(this), AD_Client_ID, AD_Org_ID, AD_Table_ID);
+		m_data = new AcctViewerData(ctx, Env.createWindowNo(this), AD_Client_ID, AD_Org_ID, AD_Table_ID);
 		AEnv.addToWindowManager(this);
 		//
 		try
@@ -170,10 +170,10 @@ public class AcctViewer extends CFrame
 
 			//
 			jbInit();
-			dynInit (AD_Table_ID, Record_ID);
+			dynInit(AD_Table_ID, Record_ID);
 			AEnv.showCenterScreen(this);
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			log.log(Level.SEVERE, "", e);
 			dispose();

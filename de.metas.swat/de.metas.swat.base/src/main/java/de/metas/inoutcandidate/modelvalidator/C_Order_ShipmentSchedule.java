@@ -67,7 +67,7 @@ public class C_Order_ShipmentSchedule
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		
+
 		CreateMissingShipmentSchedulesWorkpackageProcessor.schedule(ctx, trxName);
 	}
 

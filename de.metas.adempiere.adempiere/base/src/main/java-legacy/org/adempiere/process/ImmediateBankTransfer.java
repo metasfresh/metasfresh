@@ -29,7 +29,6 @@
 **********************************************************************/
 package org.adempiere.process;
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;

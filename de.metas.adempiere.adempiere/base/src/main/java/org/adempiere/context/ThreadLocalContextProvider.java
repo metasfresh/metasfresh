@@ -2,7 +2,7 @@ package org.adempiere.context;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -38,7 +38,7 @@ import org.compiere.util.Env;
  * The goal of this implementation is to avoid context pollution.
  * 
  * @author ts
- * @task http://dewiki908/mediawiki/index.php/fresh_08859_Fix_role_and_context_problem_around_Scheduler_%28102015832679%29
+ * @task http://dewiki908/mediawiki/index.php/08859_Fix_role_and_context_problem_around_Scheduler_%28102015832679%29
  */
 public class ThreadLocalContextProvider implements ContextProvider
 {

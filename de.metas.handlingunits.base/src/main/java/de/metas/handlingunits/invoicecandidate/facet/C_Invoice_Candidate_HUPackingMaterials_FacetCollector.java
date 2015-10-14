@@ -55,7 +55,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  *
  * @author al
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_08755_HUs_QtyToInvoiceInPriceUOM_in_Rechnungsdispo_%28106184133770%29
+ * @task http://dewiki908/mediawiki/index.php/08755_HUs_QtyToInvoiceInPriceUOM_in_Rechnungsdispo_%28106184133770%29
  */
 public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends SingleFacetCategoryCollectorTemplate<I_C_Invoice_Candidate>
 {

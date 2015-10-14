@@ -45,7 +45,7 @@ public final class Constants
 	public static final String ATTR_SubProducerBPartner_Value = "SubProducerBPartner";
 
 	/**
-	 * @see http://dewiki908/mediawiki/index.php/fresh_07759_Stockvalue_by_FiFo_%28100951729256%29
+	 * @see http://dewiki908/mediawiki/index.php/07759_Stockvalue_by_FiFo_%28100951729256%29
 	 */
 	public static final String ATTR_CostPrice = "HU_CostPrice";
 

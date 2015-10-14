@@ -32,13 +32,23 @@ import org.compiere.util.Trx;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessorListener;
+import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.lock.exceptions.UnlockFailedException;
 
+/**
+ * Use {@link IWorkPackageQueueFactory} to get an instance.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public interface IWorkPackageQueue
 {
 	/**
@@ -51,7 +61,10 @@ public interface IWorkPackageQueue
 	 */
 	public static final int TIMEOUT_OneTimeOnly = -1;
 
-	public static final String PRIORITY_AUTO = null;
+	/**
+	 * @task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
+	 */
+	public static final IWorkpackagePrioStrategy PRIORITY_AUTO = SizeBasedWorkpackagePrio.INSTANCE;
 
 	/**
 	 * Retrieves the oldest work package with the highest priority that is supposed to be handled by the <code>AD_Process</code> with the given adProcessId.
@@ -94,12 +107,26 @@ public interface IWorkPackageQueue
 	boolean unlockNoFail(I_C_Queue_WorkPackage workPackage);
 
 	/**
+	 * Retrieve the global queue size (i.e. number of unprocessed workpackages). This includes a DB query.
 	 * 
-	 * @return queue size (i.e. number of unprocessed workpackages)
+	 * @return
 	 */
 	int size();
 
-	List<Integer> getPackageProcessorIds();
+	/**
+	 * 
+	 * @return the number of packages enqueued to this instance
+	 * @task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
+	 */
+	int getLocalPackageCount();
+
+	/**
+	 * The context this instance is currently operating with. Changes made to the returned value shall not reflect in this queue.<br>
+	 * However, changes make in the queue shall reflect in the returned instance.
+	 * 
+	 * @return
+	 */
+	Properties getCtx();
 
 	String getPriorityFrom();
 
@@ -125,12 +152,12 @@ public interface IWorkPackageQueue
 	 * NOTE: the workpackage WILL NOT be marked as ready for processing.
 	 * 
 	 * @param block
-	 * @param priority priority ("0" to "9"). If <code>null</code> or {@link #PRIORITY_AUTO} then {@link X_C_Queue_WorkPackage#PRIORITY_Mittel} will be used.
+	 * @param priority priority ("0" to "9"). If <code>null</code> or {@link #PRIORITY_AUTO} then {@link X_C_Queue_WorkPackage#PRIORITY_Medium} will be used.
 	 * @return I_C_Queue_WorkPackage (created workPackage)
 	 * @deprecated Please consider using {@link #newBlock()}
 	 */
 	@Deprecated
-	I_C_Queue_WorkPackage enqueueWorkPackage(I_C_Queue_Block block, String priority);
+	I_C_Queue_WorkPackage enqueueWorkPackage(I_C_Queue_Block block, IWorkpackagePrioStrategy priority);
 
 	/**
 	 * Adds an element to the given <code>workPackage</code>.
@@ -210,10 +237,18 @@ public interface IWorkPackageQueue
 	Future<IWorkpackageProcessorExecutionResult> markReadyForProcessingAfterTrxCommit(I_C_Queue_WorkPackage workPackage, String trxName);
 	
 		/**
-	 * set async batch for every new workpackage
+	 * Set the async batch every new workpackage will be associated with
 	 * 
 	 * @param asyncBatch
 	 * @return this
 	 */
 	IWorkPackageQueue setAsyncBatchForNewWorkpackages(I_C_Async_Batch asyncBatch);
+	/**
+	 * For queues that were created with {@link IWorkPackageQueueFactory#getQueueForEnqueuing(Properties, Class)}, this method returns the <code>InternalName</code> value of the queue's
+	 * {@link I_C_Queue_PackageProcessor}. If the queue doesn't have an internal name, it returns the <code>ClassName</code> value.
+	 * 
+	 * @return
+	 * @throws {@link UnsupportedOperationException} if this queue was not created with {@link IWorkPackageQueueFactory#getQueueForEnqueuing(Properties, Class)}.
+	 */
+	String getEnquingPackageProcessorInternalName();
 }

@@ -662,7 +662,8 @@ public class PromotionRule {
 				}
 				MOrderLine nol = new MOrderLine(order);
 				MOrderLine.copyValues(candidate.orderLine, nol);
-				nol.setQtyReserved(Env.ZERO);
+				// task 09358: get rid of this; instead, update qtyReserved at one central place
+				// nol.setQtyReserved(Env.ZERO);
 				nol.setQtyDelivered(Env.ZERO);
 				nol.setQtyInvoiced(Env.ZERO);
 				nol.setQtyLostSales(Env.ZERO);

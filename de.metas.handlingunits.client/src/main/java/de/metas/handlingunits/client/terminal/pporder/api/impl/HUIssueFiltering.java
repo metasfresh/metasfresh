@@ -69,7 +69,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 	{
 		final List<I_PP_Order> ppOrders = Services.get(IPPOrderDAO.class).retrieveReleasedManufacturingOrdersForWarehouse(ctx, warehouseId);
 		//
-		// fresh 08181: ORDER BY promisedDateTime ASC, preparationDateTime ASC, productName ASC, partner ASC
+		// 08181: ORDER BY promisedDateTime ASC, preparationDateTime ASC, productName ASC, partner ASC
 		Collections.sort(ppOrders, new Comparator<I_PP_Order>()
 		{
 			@Override

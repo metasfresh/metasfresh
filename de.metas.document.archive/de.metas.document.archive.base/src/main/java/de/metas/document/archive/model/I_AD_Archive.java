@@ -25,22 +25,11 @@ package de.metas.document.archive.model;
 
 public interface I_AD_Archive extends org.compiere.model.I_AD_Archive
 {
-	/**
-	 * If <code>true</code>, the printing module shall create a <code>C_Printing_Queue</code> item for this archive, so that it can be printed later.
-	 */
 	//@formatter:off
-	public static final String COLUMNNAME_IsDirectPrint = "IsDirectPrint";
-	public void setIsDirectPrint(boolean IsDirectPrint);
-	public boolean isDirectPrint();
-	//@formatter:on
-
-	/**
-	 * If <code>true</code>, the printing module shall also directly create a <code>C_Print_Job</code>, for this archive. This flag is only evaluated if {@link #COLUMNNAME_IsDirectPrint} is
-	 * <code>true</code>.
-	 */
-	//@formatter:off
-	public static final String COLUMNNAME_IsCreatePrintJob = "IsCreatePrintJob";
-	public void setIsCreatePrintJob(boolean IsCreatePrintJob);
-	public boolean isCreatePrintJob();
+	// task 09417
+	public static final String COLUMNNAME_C_Doc_Outbound_Config_ID = "C_Doc_Outbound_Config_ID";
+	public void setC_Doc_Outbound_Config(I_C_Doc_Outbound_Config config);
+	public I_C_Doc_Outbound_Config getC_Doc_Outbound_Config();
+	public int getC_Doc_Outbound_Config_ID();
 	//@formatter:on
 }

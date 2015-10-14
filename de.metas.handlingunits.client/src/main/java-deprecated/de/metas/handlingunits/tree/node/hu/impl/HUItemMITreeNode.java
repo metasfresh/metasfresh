@@ -239,7 +239,7 @@ public final class HUItemMITreeNode extends AbstractHUTreeNode
 	 */
 	public BigDecimal getQtyAvailableToLoad(final BigDecimal qtyRequested)
 	{
-		// TODO task fresh 05272 Packtischdialog allocated qty smaller than HU PI Item Product capacity (104437025296)
+		// TODO task 05272 Packtischdialog allocated qty smaller than HU PI Item Product capacity (104437025296)
 		return qtyRequested;
 	}
 
@@ -252,7 +252,7 @@ public final class HUItemMITreeNode extends AbstractHUTreeNode
 	 */
 	public void setQtyLocked(BigDecimal qtyLocked)
 	{
-		// TODO task fresh 05272 Packtischdialog allocated qty smaller than HU PI Item Product capacity (104437025296)
+		// TODO task 05272 Packtischdialog allocated qty smaller than HU PI Item Product capacity (104437025296)
 
 	}
 

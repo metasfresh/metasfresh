@@ -2,7 +2,7 @@ package org.adempiere.acct.api;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -66,4 +66,13 @@ public interface IFactAcctDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_Fact_Acct> retrieveForDocumentLine(String tableName, int recordId, Object documentLine);
+
+	/**
+	 * Update directly all the fact accounts of the given document by setting their docStatus with the given docStatus
+	 * 
+	 * @param document
+	 * @param docStatus
+	 * @task http://dewiki908/mediawiki/index.php/09243_Stornobuchungen_ausblenden_%28Liste%2C_Konteninfo%29
+	 */
+	void updateDocStatusForDocument(Object document, String docStatus);
 }

@@ -2,7 +2,7 @@ package org.adempiere.acct.callout;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -40,7 +40,7 @@ public class GL_Journal_TabCallout extends TabCalloutAdapter
 		final I_GL_Journal glJournal = InterfaceWrapperHelper.create(gridTab, I_GL_Journal.class);
 
 		//
-		// fresh 07569: copy description from glJournalBatch to glJournal
+		// 07569: copy description from glJournalBatch to glJournal
 		final I_GL_JournalBatch glJournalBatch = glJournal.getGL_JournalBatch();
 		glJournal.setDescription(glJournalBatch.getDescription());
 	}

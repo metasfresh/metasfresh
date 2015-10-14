@@ -32,7 +32,7 @@ import de.metas.handlingunits.client.terminal.inventory.view.InventoryHUSelectFr
 /**
  * Eigenverbrauch POS
  *
- * @task http://dewiki908/mediawiki/index.php/fresh_07050_Eigenverbrauch_metas_in_Existing_Window_Handling_Unit_Pos
+ * @task http://dewiki908/mediawiki/index.php/07050_Eigenverbrauch_metas_in_Existing_Window_Handling_Unit_Pos
  */
 public class InventoryHUSelectForm extends AbstractHUSelectForm<InventoryHUSelectModel>
 {

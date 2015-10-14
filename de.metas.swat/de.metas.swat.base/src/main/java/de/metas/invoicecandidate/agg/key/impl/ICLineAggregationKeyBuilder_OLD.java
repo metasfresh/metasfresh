@@ -133,7 +133,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		sb.append("/" + priceActual);
 
 		//
-		// fresh_06718: Use UOM in aggregation
+		// 06718: Use UOM in aggregation
 		if (ic.getC_UOM_ID() > 0)
 		{
 			final String uomName = ic.getC_UOM().getName(); // Unique

@@ -130,7 +130,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		trxLine.setVHU_Item(vhuItem);
 
 		//
-		// fresh 07827: Track HU movement locator and status
+		// 07827: Track HU movement locator and status
 		trxLine.setM_Locator(trxLineCandidate.getM_Locator());
 		trxLine.setHUStatus(trxLineCandidate.getHUStatus());
 

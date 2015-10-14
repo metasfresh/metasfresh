@@ -377,7 +377,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 		hu.setM_HU_LUTU_Configuration(lutuConfig);
 
 		//
-		// fresh 07970: Set M_HU.M_HU_PI_Item_Product_ID
+		// 07970: Set M_HU.M_HU_PI_Item_Product_ID
 		final I_M_HU_PI_Item_Product piip = getM_HU_PI_Item_ProductOrNull(lutuConfig, parentHU, hu);
 		hu.setM_HU_PI_Item_Product(piip);
 

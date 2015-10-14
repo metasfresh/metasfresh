@@ -46,7 +46,7 @@ public class AsyncReceiptScheduleProducer extends AbstractReceiptScheduleProduce
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueue(ctx, GenerateReceiptScheduleWorkpackageProcessor.class);
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, GenerateReceiptScheduleWorkpackageProcessor.class);
 
 		queue.enqueueElement(model);
 

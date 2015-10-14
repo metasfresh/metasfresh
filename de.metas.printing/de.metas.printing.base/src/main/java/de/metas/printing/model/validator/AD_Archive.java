@@ -25,15 +25,16 @@ package de.metas.printing.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
-import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.api.impl.SingletonPrintingQueueSource;
+import de.metas.printing.model.I_AD_Archive;
+import de.metas.printing.model.I_C_Doc_Outbound_Config;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.IPrintJobMonitor;
 
@@ -42,19 +43,43 @@ public class AD_Archive
 {
 
 	/**
+	 * Check if the archive references a docOutBoundConfig, and if yes, copy its settings (possibly overriding previous settings).
+	 * 
+	 * Note: if the config id is changed to <code>null</code>, then do nothing.
+	 * 
+	 * @task http://dewiki908/mediawiki/index.php/09417_Massendruck_-_Sofort-Druckjob_via_Ausgehende-Belege_konfig_einstellbar_%28101934367465%29
+	 * @param archive
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_AD_Archive.COLUMNNAME_C_Doc_Outbound_Config_ID)
+	public void updateArchiveFlags(final I_AD_Archive archive)
+	{
+		if (archive.getC_Doc_Outbound_Config_ID() <= 0)
+		{
+			return; // nothing to do
+		}
+
+		// task 09417: also check if the archive references a docOutBoundConfig, and if yes, use its settings.
+		final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.create(archive.getC_Doc_Outbound_Config(),
+				I_C_Doc_Outbound_Config.class);
+		archive.setIsDirectEnqueue(config.isDirectEnqueue());
+		archive.setIsCreatePrintJob(config.isCreatePrintJob());
+	}
+
+	/**
 	 * If direct print is required for given {@link AD_Archive} then this method enqueues the archive to printing queue.
 	 * 
 	 * @param archive
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = {
+					I_AD_Archive.COLUMNNAME_IsCreatePrintJob,
+					I_AD_Archive.COLUMNNAME_IsDirectEnqueue,
+					I_AD_Archive.COLUMNNAME_C_Doc_Outbound_Config_ID,
+					I_AD_Archive.COLUMNNAME_IsActive })
 	public void printArchive(final I_AD_Archive archive)
 	{
-		// Do nothing if module is diabled.
-		if (!Printing_Constants.isEnabled())
-		{
-			return;
-		}
-		
 		if (!archive.isActive())
 		{
 			return;
@@ -90,7 +115,7 @@ public class AD_Archive
 
 		Services.get(IPrintJobBL.class).createPrintJobs(source, monitor);
 	}
-	
+
 	private final boolean isEnqueToPrintingQueue(final I_AD_Archive archive)
 	{
 		// If we need to create a print job, then we shall enqueue to printing queue first
@@ -98,21 +123,41 @@ public class AD_Archive
 		{
 			return true;
 		}
-		
-		if (archive.isDirectPrint())
+
+		if (archive.isDirectEnqueue())
 		{
 			return true;
 		}
-		
+
+		// task 09417: also check if the archive references a docOutBoundConfig, and if yes, use its settings.
+		if (archive.getC_Doc_Outbound_Config_ID() > 0)
+		{
+			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.create(archive.getC_Doc_Outbound_Config(),
+					I_C_Doc_Outbound_Config.class);
+			if (config.isDirectEnqueue() || config.isCreatePrintJob())
+			{
+				return true;
+			}
+		}
 		return false;
 	}
-	
+
 	private final boolean isCreatePrintJob(final I_AD_Archive archive)
 	{
-		// If we are explicitly ask to create a print job, then do it
+		// If we are explicitly asked to create a print job, then do it
 		if (archive.isCreatePrintJob())
 		{
 			return true;
+		}
+
+		if (archive.getC_Doc_Outbound_Config_ID() > 0)
+		{
+			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.create(archive.getC_Doc_Outbound_Config(),
+					I_C_Doc_Outbound_Config.class);
+			if (config.isCreatePrintJob())
+			{
+				return true;
+			}
 		}
 
 		// Backward compatibility: If this is a generic archive we are always creating a print job directly.
@@ -121,10 +166,10 @@ public class AD_Archive
 		{
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	private final boolean isGenericArchive(final I_AD_Archive archive)
 	{
 		final boolean genericArchive = (archive.getAD_Table_ID() <= 0 && archive.getRecord_ID() <= 0);

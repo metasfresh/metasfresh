@@ -28,6 +28,7 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import java.util.Properties;
 
+import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.trx.api.ITrx;
@@ -56,6 +57,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.callout.C_Invoice_Candidate_TabCallout;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.ui.spi.impl.C_Invoice_Candidate_GridTabSummaryInfoProvider;
 
 /**
@@ -92,6 +94,11 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		gridTabSummaryInfoFactory.register(I_C_Invoice_Candidate.Table_Name, new C_Invoice_Candidate_GridTabSummaryInfoProvider());
 
 		setupAggregations();
+
+		// ignoring C_Invoice_Candidate_Recompute from migration scripts; otherwise it might occur that the migration script contains 
+		// are inserts into the table, if an embedded async processor is running somewhere in the background
+		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
+		migrationLogger.addTableToIgnoreList(I_C_Invoice_Candidate_Recompute.Table_Name);
 		
 		//
 		// Setup event bus topics on which swing client notification listener shall subscribe

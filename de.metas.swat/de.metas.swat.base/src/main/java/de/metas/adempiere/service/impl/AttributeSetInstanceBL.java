@@ -67,7 +67,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		{
 			// FIXME: this is a workaround because our persistance engine returns NULL in case
 			// the ID=0, even if is existing in database
-			// Also see task http://dewiki908/mediawiki/index.php/fresh_08765_Introduce_AD_Table.IDRangeStart_%28107200611713%29
+			// Also see task http://dewiki908/mediawiki/index.php/08765_Introduce_AD_Table.IDRangeStart_%28107200611713%29
 			final Properties ctx = InterfaceWrapperHelper.getCtx(asi);
 			as = attributesDAO.retrieveNoAttributeSet(ctx);
 		}
@@ -133,7 +133,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			sb.append(null == as.getLotCharEOverwrite() || as.getSerNoCharEOverwrite().isEmpty() ? "#" : as.getLotCharEOverwrite());
 		}
 
-		//
 		// GuaranteeDate
 		// NOTE: we are not checking if "as.isGuaranteeDate()" because it could be that GuaranteeDate was set even though in attribute set did not mention it (task #09363).
 		if (asi.getGuaranteeDate() != null)
@@ -144,7 +143,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			}
 			sb.append(DisplayType.getDateFormat(DisplayType.Date).format(asi.getGuaranteeDate()));
 		}
-		
 		// Product Attribute Values
 		for (final I_M_Attribute attribute : attributesDAO.retrieveAttributes(as, false))
 		{

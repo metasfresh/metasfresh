@@ -13,6 +13,7 @@
  *****************************************************************************/
 package org.adempiere.webui.dashboard;
 
+
 import org.adempiere.webui.component.Window;
 import org.adempiere.webui.util.ServerPushTemplate;
 

@@ -167,7 +167,7 @@ public class HUIssueModel implements IDisposable
 
 	private void load()
 	{
-		//  06472 : We take the warehouses from the filtering service and keep only the ones allowed in the POS profile.
+		// 06472 : We take the warehouses from the filtering service and keep only the ones allowed in the POS profile.
 		final List<I_M_Warehouse> warehouses = posAccessBL.filterWarehousesByProfile(getCtx(), service.retrieveWarehouse(getCtx()));
 		warehouseKeyLayout.setKeysFromWarehouses(warehouses);
 	}

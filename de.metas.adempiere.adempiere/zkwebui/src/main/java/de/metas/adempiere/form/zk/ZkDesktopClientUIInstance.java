@@ -2,7 +2,7 @@ package de.metas.adempiere.form.zk;
 
 /*
  * #%L
- * ADempiere ERP - ZkWebUI Lib
+ * de.metas.adempiere.adempiere.zkwebui
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

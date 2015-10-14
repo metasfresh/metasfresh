@@ -74,7 +74,7 @@ public class EDI_Desadv_EnqueueForExport extends SvrProcess
 	{
 		final Properties ctx = getCtx();
 
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueue(ctx, EDIWorkpackageProcessor.class);
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, EDIWorkpackageProcessor.class);
 
 		final I_C_Queue_Block block = queue.enqueueBlock(ctx);
 

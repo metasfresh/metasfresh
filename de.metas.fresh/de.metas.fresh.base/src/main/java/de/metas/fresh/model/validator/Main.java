@@ -103,7 +103,7 @@ public class Main extends AbstractModelInterceptor
 		Language.setDefaultTimeStyle(DateFormat.SHORT);
 
 		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance); // task 09028
-		
+
 		//
 		// add model validators
 		engine.addModelValidator(new C_OLCand(), client);
@@ -112,6 +112,7 @@ public class Main extends AbstractModelInterceptor
 		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand(), client);
 		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand_Line(), client);
 		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order.instance, client); // task 09028
+		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order_MFGWarehouse_ReportLine.instance, client); // task 09028
 
 		//
 		// Apply misc workarounds for GOLIVE

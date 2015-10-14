@@ -204,7 +204,7 @@ public class M_HU
 	/**
 	 * 
 	 * @param vhu
-	 * @task http://dewiki908/mediawiki/index.php/fresh_07827_new_Requirements_to_Lagerwertliste_11.11.2014_%28105088333438%29
+	 * @task http://dewiki908/mediawiki/index.php/07827_new_Requirements_to_Lagerwertliste_11.11.2014_%28105088333438%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {

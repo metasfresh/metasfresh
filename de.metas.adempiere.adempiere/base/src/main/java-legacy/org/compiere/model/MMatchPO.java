@@ -290,7 +290,7 @@ public class MMatchPO extends X_M_MatchPO
 								{
 									mpo.setM_AttributeSetInstance_ID(iLine.getM_AttributeSetInstance_ID());
 								}
-								else if (sLine != null // fresh 07742: Try ASI matching only if given receipt line was not null
+								else if (sLine != null // 07742: Try ASI matching only if given receipt line was not null
 										&& mpoASIId != sLine.getM_AttributeSetInstance_ID())
 								{
 									continue;
@@ -315,7 +315,7 @@ public class MMatchPO extends X_M_MatchPO
 								{
 									mpo.setM_AttributeSetInstance_ID(sLine.getM_AttributeSetInstance_ID());
 								}
-								else if (iLine != null // fresh 07742: Try ASI matching only if given receipt line was not null
+								else if (iLine != null // 07742: Try ASI matching only if given receipt line was not null
 										&& mpoASIId != iLine.getM_AttributeSetInstance_ID())
 								{
 									continue;
@@ -329,7 +329,7 @@ public class MMatchPO extends X_M_MatchPO
 					}
 
 					//
-					// fresh 07742: Set the invoice line's receipt line ID from the mpo if matching could be found
+					// 07742: Set the invoice line's receipt line ID from the mpo if matching could be found
 					if (mpo != null)
 					{
 						int iolId = mpo.getM_InOutLine_ID(); // default is the MPO's receipt line

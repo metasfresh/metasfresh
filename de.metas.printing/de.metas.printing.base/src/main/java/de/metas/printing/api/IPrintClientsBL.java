@@ -32,7 +32,7 @@ import de.metas.printing.model.I_AD_Print_Clients;
 public interface IPrintClientsBL extends ISingletonService
 {
 	/**
-	 * task 04072 Creates entries for the applet status table
+	 * 04072 Creates entries for the applet status table
 	 * 
 	 * @param hostkey
 	 */

@@ -65,7 +65,7 @@ public class C_OLCand_Validate_Selected extends SvrProcess
 
 		final Iterator<I_C_OLCand> selectedCands = queryBuilder
 				.create()
-				.iterate(I_C_OLCand.class); // working with a iterator, because the there might be *a lot* of C_OLCands, and the issue-solver that we use in the endcustomer. project also iterates.
+				.iterate(I_C_OLCand.class); // working with a iterator, because the there might be *a lot* of C_OLCands, and the issue-solver that we use in the endcustomer.project also iterates.
 
 		olCandValdiatorBL.setValidationProcessInProgress(true); // avoid the InterfaceWrapperHelper.save to trigger another validation from a MV.
 		try

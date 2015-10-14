@@ -43,9 +43,11 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.CLogger;
+import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.process.ExportArchivePDF;
 import de.metas.document.archive.spi.impl.DocOutboundArchiveEventListener;
 import de.metas.document.archive.spi.impl.RemoteArchiveStorage;
@@ -103,6 +105,10 @@ public class Archive_Main_Validator implements ModelValidator
 		engine.addModelValidator(new C_Doc_Outbound_Config(this), client);
 
 		registerArchiveAwareTables();
+		
+		// task 09417: while we are at it, also make sure that config changes are propagated
+		final CacheMgt cacheMgt = CacheMgt.get();
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_Doc_Outbound_Config.Table_Name);
 	}
 
 	@Override

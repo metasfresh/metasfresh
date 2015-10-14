@@ -42,7 +42,7 @@ public class DD_OrderLine
 	 * @param ddOrderLine
 	 * @param field
 	 * 
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08583_Erfassung_Packvorschrift_in_DD_Order_ist_crap_%28108882381939%29
+	 * @task http://dewiki908/mediawiki/index.php/08583_Erfassung_Packvorschrift_in_DD_Order_ist_crap_%28108882381939%29
 	 *       ("UOM In manual DD_OrderLine shall always be the uom of the product ( as talked with Mark) ")
 	 */
 	@CalloutMethod(columnNames = { I_DD_OrderLine.COLUMNNAME_M_Product_ID})

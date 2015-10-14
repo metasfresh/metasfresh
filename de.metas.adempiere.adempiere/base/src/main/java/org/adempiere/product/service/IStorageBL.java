@@ -2,7 +2,7 @@ package org.adempiere.product.service;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -57,7 +57,7 @@ public interface IStorageBL extends ISingletonService
 	 * @param diffQtyOrdered
 	 * @param trxName
 	 * 
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08999_Lieferdisposition_a.frieden_%28104263801724%29
+	 * @task http://dewiki908/mediawiki/index.php/08999_Lieferdisposition_a.frieden_%28104263801724%29
 	 */
 	void addAsync(Properties ctx,
 			int M_Warehouse_ID,

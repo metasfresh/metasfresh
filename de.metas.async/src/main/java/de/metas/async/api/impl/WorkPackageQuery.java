@@ -53,9 +53,10 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	/**
 	 * @param processed the processed to set
 	 */
-	public void setProcessed(Boolean processed)
+	public WorkPackageQuery setProcessed(Boolean processed)
 	{
 		this.processed = processed;
+		return this;
 	}
 
 	/*
@@ -72,9 +73,10 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	/**
 	 * @param readyForProcessing the readyForProcessing to set
 	 */
-	public void setReadyForProcessing(Boolean readyForProcessing)
+	public WorkPackageQuery setReadyForProcessing(Boolean readyForProcessing)
 	{
 		this.readyForProcessing = readyForProcessing;
+		return this;
 	}
 
 	/*

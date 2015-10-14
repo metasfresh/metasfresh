@@ -354,7 +354,7 @@ public final class POInfo implements Serializable
 						IsAllowLogging);
 				col.IsLazyLoading = IsLazyLoading; // metas
 				col.IsCalculated = IsCalculated; // metas
-				col.IsUseDocumentSequence = isUseDocumentSequence; // metas: 05133
+				col.IsUseDocumentSequence = isUseDocumentSequence; // metas: _05133
 				col.IsStaleable = isStaleable; // metas: 01537
 				col.IsSelectionColumn = isSelectionColumn;
 				list.add(col);

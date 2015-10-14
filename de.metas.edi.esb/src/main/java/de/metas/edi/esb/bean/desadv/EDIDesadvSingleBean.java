@@ -244,7 +244,7 @@ public class EDIDesadvSingleBean extends AbstractEDIDesadvCommonBean
 		h100.setMessageNo(formatNumber(xmlInOut.getSequenceNoAttr(), decimalFormat));
 
 		h100.setOrderDate(toDate(xmlInOut.getDateOrdered()));
-		// fresh_05768
+		// 05768
 		if (xmlInOut.getPOReference() != null && !xmlInOut.getPOReference().isEmpty())
 		{
 			h100.setOrderNumber(xmlInOut.getPOReference());
@@ -388,7 +388,7 @@ public class EDIDesadvSingleBean extends AbstractEDIDesadvCommonBean
 		// p100.setDiffDeliveryDate(EDIDesadvBean.voidDate);
 		p100.setEanTU(voidString);
 		p100.setMessageNo(formatNumber(xmlInOut.getSequenceNoAttr(), decimalFormat));
-		// fresh_05768
+		// 05768
 		if (xmlInOut.getPOReference() != null && !xmlInOut.getPOReference().isEmpty())
 		{
 			p100.setOrderNo(xmlInOut.getPOReference());
@@ -457,7 +457,7 @@ public class EDIDesadvSingleBean extends AbstractEDIDesadvCommonBean
 		// p102.setDiffDeliveryDate(EDIDesadvBean.voidDate);
 		p102.setEanTU(voidString);
 		p102.setMessageNo(formatNumber(xmlInOut.getSequenceNoAttr(), decimalFormat));
-		// fresh_05768
+		// 05768
 		if (xmlInOut.getPOReference() != null && !xmlInOut.getPOReference().isEmpty())
 		{
 			p102.setOrderNo(xmlInOut.getPOReference());

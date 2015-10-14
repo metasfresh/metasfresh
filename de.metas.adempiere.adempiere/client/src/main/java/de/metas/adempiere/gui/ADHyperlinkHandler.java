@@ -5,7 +5,7 @@ package de.metas.adempiere.gui;
 
 /*
  * #%L
- * ADempiere ERP - Desktop Client
+ * de.metas.adempiere.adempiere.client
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

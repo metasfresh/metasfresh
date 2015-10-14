@@ -161,10 +161,10 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setDescriptionBottom(olc.getDescriptionBottom());
 		ic.setDescriptionHeader(olc.getDescriptionHeader());
 
-		// fresh_05265
+		// 05265
 		ic.setIsSOTrx(true);
 
-		// fresh_07442 activity and tax
+		// 07442 activity and tax
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(olc);
 		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, olc.getAD_Org(), olCandEffectiveValuesBL.getM_Product_Effective(olc));
 		ic.setC_Activity(activity);

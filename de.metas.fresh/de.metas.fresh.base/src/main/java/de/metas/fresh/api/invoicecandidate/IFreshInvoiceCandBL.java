@@ -31,7 +31,7 @@ public interface IFreshInvoiceCandBL extends ISingletonService
 {
 
 	/**
-	 * For the time being, the only invoice doc type we set for IC is fresh_Produzentenabrechnung.
+	 * For the time being, the only invoice doc type we set for IC is Produzentenabrechnung.
 	 * 
 	 * In case there will be more in the future, please complete this logic
 	 * 

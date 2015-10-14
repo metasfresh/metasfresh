@@ -86,7 +86,7 @@ public final class InOutCandidateValidator implements ModelValidator
 		}
 
 		//
-		// fresh 07344: Register RS AggregationKey Dependencies
+		// 07344: Register RS AggregationKey Dependencies
 		registerSSAggregationKeyDependencies();
 
 		engine.addModelValidator(new C_Order_ShipmentSchedule(), client);
@@ -178,7 +178,7 @@ public final class InOutCandidateValidator implements ModelValidator
 	{
 		if (po instanceof MStorage)
 		{
-			// NOTE: on  we use M_HU_Storage, so there is no point to trigger it on M_Storage change
+			// NOTE: on we use M_HU_Storage, so there is no point to trigger it on M_Storage change
 			// storageChange((MStorage)po, type, po.get_TrxName());
 		}
 		else if (po instanceof MProduct)

@@ -158,9 +158,10 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 			final MQuery query = createMQuery(po);
 			final PrintInfo printInfo = createPrintInfo(po);
 
+			final boolean readFromDisk = false; // we can go with the cached version, because there is code making sure that we only get a cached version which has an equal ctx!
+			final MPrintFormat printFormat = MPrintFormat.get(ctx, config.getAD_PrintFormat_ID(), readFromDisk);
 			// 04454 and 04430: we need to set the printformat's language;
 			// using the client language is what would also be done by ReportEngine.get() if it can't be determined via a reportEngineDocumentType
-			final MPrintFormat printFormat = MPrintFormat.get(ctx, config.getAD_PrintFormat_ID(), false);
 			printFormat.setLanguage(MClient.get(ctx, po.getAD_Client_ID()).getLanguage());
 
 			reportEngine = new ReportEngine(ctx, printFormat, query, printInfo, trxName);
@@ -187,7 +188,8 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(
 				Services.get(org.adempiere.archive.api.IArchiveBL.class).archive(data, printInfo, forceArchive, trxName),
 				I_AD_Archive.class);
-		archive.setIsDirectPrint(true);
+		// archive.setIsDirectPrint(true);
+		archive.setC_Doc_Outbound_Config(config); // 09417: reference the config and it's settings will decide if a printing queue item shall be created
 		InterfaceWrapperHelper.save(archive);
 		logger.log(Level.FINE, "Archive: {0}", archive);
 
@@ -208,7 +210,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
 		final String trxName = InterfaceWrapperHelper.getTrxName(archive);
 		
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueue(ctx, DocOutboundCCWorkpackageProcessor.class);
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, DocOutboundCCWorkpackageProcessor.class);
 		
 		final I_C_Queue_Block block = queue.enqueueBlock(ctx);
 		final I_C_Queue_WorkPackage workpackage = queue.enqueueWorkPackage(block, IWorkPackageQueue.PRIORITY_AUTO);

@@ -2,7 +2,7 @@ package de.metas.adempiere.report.jasper.server;
 
 /*
  * #%L
- * de.metas.adempiere.adempiereJasper.server.base
+ * de.metas.report.jasper.server.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

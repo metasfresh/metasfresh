@@ -2,7 +2,7 @@ package org.adempiere.mm.attributes.countryattribute;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -45,7 +45,7 @@ public interface ICountryAttributeDAO extends ISingletonService
 	 * Gets the attribute value related to a country. The country attribute is set in Sysconfig de.metas.swat.CountryAttribute. If we don't find an attribute value, behavior is described by Sysconfig
 	 * de.metas.swat.CountryAttributeAction.
 	 * 
-	 * Part of task fresh 05839.
+	 * Part of task 05839.
 	 * 
 	 * @param ctx
 	 * @param country

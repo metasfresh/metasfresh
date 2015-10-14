@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.async.api.IQueueDAO;
@@ -42,9 +43,10 @@ import de.metas.async.spi.IWorkpackageProcessor;
 public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 {
 	@Override
-	public IWorkPackageQueue getQueue(final I_C_Queue_Processor processor)
+	public IWorkPackageQueue getQueueForPackageProcessing(final I_C_Queue_Processor processor)
 	{
-		final List<I_C_Queue_PackageProcessor> packageProcessors = Services.get(IQueueDAO.class).retrieveWorkpackageProcessors(processor);
+		final List<I_C_Queue_PackageProcessor> packageProcessors = Services.get(IQueueDAO.class)
+				.retrieveWorkpackageProcessors(processor);
 		final List<Integer> packageProcessorIds = new ArrayList<Integer>(packageProcessors.size());
 		for (final I_C_Queue_PackageProcessor packageProcessor : packageProcessors)
 		{
@@ -54,17 +56,28 @@ public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 		final Properties ctx = InterfaceWrapperHelper.getCtx(processor);
 		final String priorityFrom = processor.getPriority();
 
-		return new WorkPackageQueue(ctx, packageProcessorIds, priorityFrom);
+		return WorkPackageQueue.createForQueueProcessing(ctx, packageProcessorIds, priorityFrom);
 	}
 
 	@Override
-	public IWorkPackageQueue getQueue(final Properties ctx, final Class<? extends IWorkpackageProcessor> packageProcessorClass)
+	public IWorkPackageQueue getQueueForEnqueuing(final Properties ctx,
+			final Class<? extends IWorkpackageProcessor> packageProcessorClass)
 	{
-		final I_C_Queue_PackageProcessor packageProcessor = Services.get(IQueueDAO.class).retrievePackageProcessorDefByClass(ctx, packageProcessorClass);
-		final List<Integer> packageProcessorIds = Arrays.asList(packageProcessor.getC_Queue_PackageProcessor_ID());
-		final String priorityFrom = null;
+		final I_C_Queue_PackageProcessor packageProcessor = Services.get(IQueueDAO.class)
+				.retrievePackageProcessorDefByClass(ctx, packageProcessorClass);
 
-		return new WorkPackageQueue(ctx, packageProcessorIds, priorityFrom);
+		final String internalNameToUse;
+		if (Check.isEmpty(packageProcessor.getInternalName()))
+		{
+			internalNameToUse = packageProcessor.getClassname();
+		}
+		else
+		{
+			internalNameToUse = packageProcessor.getInternalName();
 	}
 
+		return WorkPackageQueue.createForEnqueuing(ctx,
+				packageProcessor.getC_Queue_PackageProcessor_ID(),
+				internalNameToUse);
+	}
 }

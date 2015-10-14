@@ -2,7 +2,7 @@ package org.adempiere.pricing.api;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -68,7 +68,7 @@ public interface IPriceListBL extends ISingletonService
 	 * @param dsl
 	 * @param adPinstanceId
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/fresh_07286_get_rid_of_jboss-aop_for_good_%28104432455599%29
+	 * @task http://dewiki908/mediawiki/index.php/07286_get_rid_of_jboss-aop_for_good_%28104432455599%29
 	 */
 	void finishPlvCreation(IContextAware ctxAware, Iterator<I_M_ProductPrice> oldProductPrices, I_M_PriceList_Version targetPriceListVersion, I_M_DiscountSchemaLine dsl, int adPinstanceId);
 

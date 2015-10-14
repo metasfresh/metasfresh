@@ -45,7 +45,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  * Collects sales and purchase orders facets.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_08602_Rechnungsdispo_UI_%28106621797084%29
+ * @task http://dewiki908/mediawiki/index.php/08602_Rechnungsdispo_UI_%28106621797084%29
  */
 public class C_Invoice_Candidate_Order_FacetCollector extends SingleFacetCategoryCollectorTemplate<I_C_Invoice_Candidate>
 {
@@ -55,7 +55,7 @@ public class C_Invoice_Candidate_Order_FacetCollector extends SingleFacetCategor
 				.setDisplayName(Services.get(IMsgBL.class).translate(Env.getCtx(), I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, true)
 						+ " / "
 						+ Services.get(IMsgBL.class).translate(Env.getCtx(), I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, false))
-				.setCollapsed(true) // fresh 08755: default collapsed
+				.setCollapsed(true) // 08755: default collapsed
 				.build());
 	}
 

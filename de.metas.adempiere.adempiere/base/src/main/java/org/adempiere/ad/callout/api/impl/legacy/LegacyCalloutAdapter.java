@@ -2,7 +2,7 @@ package org.adempiere.ad.callout.api.impl.legacy;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

@@ -2,7 +2,7 @@ package org.adempiere.acct.api;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -33,7 +33,7 @@ import org.compiere.model.I_C_ValidCombination;
  * Accountable tax record.
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_08351_Automatikibuchung_Steuer_in_Hauptbuchjournal_%28106598648165%29
+ * @task http://dewiki908/mediawiki/index.php/08351_Automatikibuchung_Steuer_in_Hauptbuchjournal_%28106598648165%29
  */
 public interface ITaxAccountable
 {

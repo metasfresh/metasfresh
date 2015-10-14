@@ -199,7 +199,7 @@ public class HUEditorPanel
 			if(huKeyFilterModel != null)
 			{
 				huKeyFilterPanel = factory.createPropertiesPanel(layoutConstants.getProperty(IHUPOSLayoutConstants.PROPERTY_HUEditor_HUKeyFilter_Container_Constraints));
-				huKeyFilterPanel.disableFireValueChangedOnFocusLost(); // fresh 07636: On key typed, do not set internal value on models yet (Performance issues).
+				huKeyFilterPanel.disableFireValueChangedOnFocusLost(); // 07636: On key typed, do not set internal value on models yet (Performance issues).
 				huKeyFilterPanel.setLabelConstraints(layoutConstants.getProperty(IHUPOSLayoutConstants.PROPERTY_HUEditor_HUKeyFilter_Label_Constraints));
 				huKeyFilterPanel.setEditorConstraints(layoutConstants.getProperty(IHUPOSLayoutConstants.PROPERTY_HUEditor_HUKeyFilter_Editor_Constraints));
 				huKeyFilterPanel.setModel(huKeyFilterModel);
@@ -220,7 +220,7 @@ public class HUEditorPanel
 			handlingUnitsKeyLayoutPanel.setRenderer(new HUKeyLayoutRenderer(this));
 
 			propertiesPanel = factory.createPropertiesPanel();
-			propertiesPanel.disableFireValueChangedOnFocusLost(); // fresh 07636: On key typed, do not set internal value on models yet (Performance issues).
+			propertiesPanel.disableFireValueChangedOnFocusLost(); // 07636: On key typed, do not set internal value on models yet (Performance issues).
 			propertiesPanel.setLabelConstraints(layoutConstants.getProperty(IHUPOSLayoutConstants.PROPERTY_HUEditor_Attributes_Label_Constraints));
 			propertiesPanel.setEditorConstraints(layoutConstants.getProperty(IHUPOSLayoutConstants.PROPERTY_HUEditor_Attributes_Editor_Constraints));
 			propertiesPanel.setModel(model.getPropertiesPanelModel());

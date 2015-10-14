@@ -26,7 +26,7 @@ package de.metas.handlingunits.model;
 public interface I_M_Warehouse extends org.adempiere.warehouse.model.I_M_Warehouse
 {
 	//@formatter:off
-	// task: http://dewiki908/mediawiki/index.php/fresh_08205_HU_Pos_Inventory_move_Button_%28105838505937%29
+	// task: http://dewiki908/mediawiki/index.php/08205_HU_Pos_Inventory_move_Button_%28105838505937%29
 	public static final String COLUMNNAME_IsHUStorageDisabled = "IsHUStorageDisabled";
 	public void setIsHUStorageDisabled(boolean IsHUStorageDisabled);
 	public boolean isHUStorageDisabled();

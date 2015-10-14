@@ -598,7 +598,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 		// Make sure everything that was in the cache it's flushed. We do this because:
 		// * the processing is happending outside of our HUKeys (in most of the cases)
 		// * we want to have fresh data from this point on!
-		if (HUConstants.isfresh_08793_HUSelectModel_ResetCacheBeforeProcess())
+		if (HUConstants.is08793_HUSelectModel_ResetCacheBeforeProcess())
 		{
 			getTerminalContext().getService(IHUKeyFactory.class).clearCache();
 		}
@@ -675,7 +675,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 
 	protected final void load()
 	{
-		//  06472 : We take the warehouses from the filtering service and keep only the ones allowed in the POS profile.
+		// 06472 : We take the warehouses from the filtering service and keep only the ones allowed in the POS profile.
 		final List<I_M_Warehouse> warehousesAll = service.retrieveWarehouses(getCtx());
 		final List<I_M_Warehouse> warehouses = posAccessBL.filterWarehousesByProfile(getCtx(), warehousesAll);
 		Check.assumeNotEmpty(warehouses, "At least one warehouse shall be found");

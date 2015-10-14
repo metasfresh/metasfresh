@@ -2,7 +2,7 @@ package de.schaeffer.compiere.forms;
 
 /*
  * #%L
- * de.metas.banking.base
+ * de.metas.banking.swingui
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

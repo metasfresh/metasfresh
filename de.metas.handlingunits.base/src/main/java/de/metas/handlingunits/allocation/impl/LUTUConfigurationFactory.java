@@ -90,7 +90,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 				luProducerDestination.setMaxLUsInfinite();
 
 				//
-				// fresh 07378: Fix behavior when max LUs are infinite, created max TUs are the ones we specify (otherwise we end up creating infinite HUs for 3 x Tomatoes)
+				// 07378: Fix behavior when max LUs are infinite, created max TUs are the ones we specify (otherwise we end up creating infinite HUs for 3 x Tomatoes)
 				luProducerDestination.setMaxTUsForRemainingQty(qtyTU);
 			}
 			else

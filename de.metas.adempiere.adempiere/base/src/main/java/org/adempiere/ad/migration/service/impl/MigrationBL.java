@@ -2,7 +2,7 @@ package org.adempiere.ad.migration.service.impl;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

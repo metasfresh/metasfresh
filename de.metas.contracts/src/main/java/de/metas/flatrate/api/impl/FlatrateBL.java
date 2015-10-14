@@ -422,7 +422,7 @@ public class FlatrateBL implements IFlatrateBL
 		// using the current login date as dateInvoiced
 		// newCand.setDateInvoiced(Env.getContextAsDate(ctx, "#Date"));
 
-		// fresh_07442 activity and tax
+		// 07442 activity and tax
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
 
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, trxName);
@@ -550,7 +550,7 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setAD_Table_ID(adTableDAO.retrieveTableId(I_C_Flatrate_DataEntry.Table_Name));
 		newCand.setRecord_ID(dataEntry.getC_Flatrate_DataEntry_ID());
 
-		// fresh_07442 activity and tax
+		// 07442 activity and tax
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
 
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productIdForIc, I_M_Product.class, trxName);

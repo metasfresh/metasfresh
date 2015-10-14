@@ -122,7 +122,7 @@ public final class ReceiptScheduleHUTrxListener extends HUTrxListenerAdapter
 		final ReceiptScheduleHUAllocations huAllocations = new ReceiptScheduleHUAllocations(receiptSchedule);
 
 		//
-		// fresh 07698: do not delete old allocations when creating them from transaction line
+		// 07698: do not delete old allocations when creating them from transaction line
 		final boolean deleteOldTUAllocations = false;
 		huAllocations.allocate(luHU, tuHU, vhu, qtyToAllocateOnHU, uom, deleteOldTUAllocations);
 	}

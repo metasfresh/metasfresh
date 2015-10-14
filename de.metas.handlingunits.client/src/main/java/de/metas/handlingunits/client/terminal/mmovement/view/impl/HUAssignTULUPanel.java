@@ -55,7 +55,7 @@ public class HUAssignTULUPanel extends AbstractLTCUPanel<HUAssignTULUModel>
 		// create LU-Lane
 		addLULane(false); // useQtyField=false
 
-		// fresh 08382: Add checkbox for LU packing material's owner (vendor/customer or "us")
+		// 08382: Add checkbox for LU packing material's owner (vendor/customer or "us")
 		{
 			mockHorizontalLaneLabelSpace();
 

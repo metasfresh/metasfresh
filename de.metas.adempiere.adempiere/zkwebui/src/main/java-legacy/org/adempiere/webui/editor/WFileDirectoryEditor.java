@@ -13,7 +13,6 @@
  *****************************************************************************/
 package org.adempiere.webui.editor;
 
-
 import org.adempiere.webui.component.FilenameBox;
 import org.adempiere.webui.component.FolderBrowser;
 import org.adempiere.webui.event.ValueChangeEvent;

@@ -98,7 +98,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	 * 
 	 * @param ic
 	 * @return true if we deal with a service which will never ever be received
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08408_Transporte_auf_Rechnungsstellung_sofort_setzen_in_Rechnungsdispo_%28107611160033%29
+	 * @task http://dewiki908/mediawiki/index.php/08408_Transporte_auf_Rechnungsstellung_sofort_setzen_in_Rechnungsdispo_%28107611160033%29
 	 */
 	protected final boolean isNotReceivebleService(final I_C_Invoice_Candidate ic)
 	{

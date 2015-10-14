@@ -39,7 +39,7 @@ import de.metas.picking.terminal.Utils.PackingStates;
  * </ul>
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_05814_Picking_Slots_of_same_customer_not_same_color_%28105763320611%29
+ * @task http://dewiki908/mediawiki/index.php/05814_Picking_Slots_of_same_customer_not_same_color_%28105763320611%29
  */
 public class DefaultPackingStateAggregator implements IPackingStateAggregator
 {

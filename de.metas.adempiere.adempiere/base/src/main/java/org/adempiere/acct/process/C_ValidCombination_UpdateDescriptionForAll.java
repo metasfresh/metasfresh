@@ -2,7 +2,7 @@ package org.adempiere.acct.process;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -40,7 +40,7 @@ import org.compiere.util.DB;
  * Calls {@link IAccountBL#setValueDescription(I_C_ValidCombination)} for all accounts defined in the system.
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_07546_Name_of_validcombination_%28104158977931%29
+ * @task http://dewiki908/mediawiki/index.php/07546_Name_of_validcombination_%28104158977931%29
  */
 public class C_ValidCombination_UpdateDescriptionForAll extends SvrProcess
 {

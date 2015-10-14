@@ -17,7 +17,6 @@
 
 package org.adempiere.webui.component;
 
-
 public class Column extends org.zkoss.zul.Column
 {
     /**

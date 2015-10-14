@@ -98,7 +98,7 @@ public class C_Invoice_Candidate_TabCallout extends TabCalloutAdapter
 	 * Retrieve invoice candidates facets from current grid tab rows and add them to window side panel
 	 *
 	 * @param gridTab
-	 * @param http://dewiki908/mediawiki/index.php/fresh_08602_Rechnungsdispo_UI_%28106621797084%29
+	 * @param http://dewiki908/mediawiki/index.php/08602_Rechnungsdispo_UI_%28106621797084%29
 	 */
 	private void updateFacets(final GridTab gridTab)
 	{

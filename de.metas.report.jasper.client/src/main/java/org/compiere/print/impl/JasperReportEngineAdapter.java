@@ -2,7 +2,7 @@ package org.compiere.print.impl;
 
 /*
  * #%L
- * adempiereJasper-client
+ * de.metas.report.jasper.client
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

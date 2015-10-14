@@ -172,7 +172,7 @@ public class C_Invoice_Candidate
 	 * For new invoice candidates, this method sets the <code>C_Order_ID</code>, if the referenced record is either a <code>C_OrderLine_ID</code> or a <code>M_InOutLine_ID</code>.
 	 *
 	 * @param ic
-	 * @task http://dewiki908/mediawiki/index.php/fresh_07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29
+	 * @task http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void updateOrderId(final I_C_Invoice_Candidate ic)
@@ -207,7 +207,7 @@ public class C_Invoice_Candidate
 	 * Configure {@link I_C_Invoice_Candidate#COLUMN_PriceActual_Net_Effective}, depending on the <code>PriceActual</code> and <code>IsTaxIncluded</code> (which if true, is removed).
 	 *
 	 * @param candidate
-	 * @task fresh 08457
+	 * @task 08457
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
 			ifColumnsChanged = {

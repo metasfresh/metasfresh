@@ -13,7 +13,6 @@
 
 package org.adempiere.webui.editor;
 
-
 import java.util.logging.Level;
 
 import org.adempiere.webui.event.ValueChangeEvent;

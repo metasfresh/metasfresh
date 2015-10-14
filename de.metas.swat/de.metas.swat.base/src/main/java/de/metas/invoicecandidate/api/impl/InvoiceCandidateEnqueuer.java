@@ -171,7 +171,7 @@ import de.metas.lock.api.LockOwner;
 			workpackageAggregator.add(ic);
 
 			//
-			// fresh 07666: Set approval back to false after enqueuing and save within transaction
+			// 07666: Set approval back to false after enqueuing and save within transaction
 			ic.setApprovalForInvoicing(false);
 			InterfaceWrapperHelper.save(ic, trxName);
 
@@ -194,7 +194,7 @@ import de.metas.lock.api.LockOwner;
 		workpackageAggregator.closeAllGroups();
 
 		//
-		// If no workpackages were created, display error message that no selection was made (fresh_07666)
+		// If no workpackages were created, display error message that no selection was made (07666)
 		if (isFailIfNothingEnqueued() && invoiceCandidateSelectionCount <= 0)
 		{
 			throw new AdempiereException(msgBL.getMsg(ctx, InvoiceGenerate.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
@@ -234,7 +234,7 @@ import de.metas.lock.api.LockOwner;
 		final ILoggable loggable = getLoggable();
 
 		//
-		// fresh 07666: If selected, only use the invoices flagged as approved for invoicing
+		// 07666: If selected, only use the invoices flagged as approved for invoicing
 		if (isOnlyApprovedForInvoicing() && !ic.isApprovalForInvoicing())
 		{
 			// don't log; it's obvious for the user, and currently if won't happen anyways (die to the select's whereclause)

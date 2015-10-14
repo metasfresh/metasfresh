@@ -269,29 +269,6 @@ public interface I_C_Doc_Outbound_Config
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Is Direct Enqueue.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsDirectEnqueue (boolean IsDirectEnqueue);
-
-	/**
-	 * Get Is Direct Enqueue.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isDirectEnqueue();
-
-    /** Column definition for IsDirectEnqueue */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Config, Object> COLUMN_IsDirectEnqueue = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Config, Object>(I_C_Doc_Outbound_Config.class, "IsDirectEnqueue", null);
-    /** Column name IsDirectEnqueue */
-    public static final String COLUMNNAME_IsDirectEnqueue = "IsDirectEnqueue";
-
-	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

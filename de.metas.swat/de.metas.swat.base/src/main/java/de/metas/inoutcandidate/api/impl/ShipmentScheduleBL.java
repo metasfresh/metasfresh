@@ -330,7 +330,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			sched.setQtyDeliverable(qtyDeliverable);
 
 			//
-			// fresh 08459: Configure dropShip, and, if true, then set the C_BPartner_Vendor of the C_BPartner (customer) on the shipment schedule
+			// 08459: Configure dropShip, and, if true, then set the C_BPartner_Vendor of the C_BPartner (customer) on the shipment schedule
 			// final boolean dropShip = order.isDropShip();
 			// sched.setIsDropShip(dropShip);
 			// if (dropShip && sched.getC_BPartner_Vendor_ID() <= 0)
@@ -782,7 +782,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			inOutPA.setLineOrderLine(inoutLine, orderLine, locatorId, Env.ZERO);
 			inOutPA.setLineQty(inoutLine, qty); // Correct UOM
 
-			//  05292 : Propagate ASI to InOutLine
+			// 05292 : Propagate ASI to InOutLine
 			// task 08811: no need to clone the ASI. The ASI won't be altered and the inoutLine won't be saved anyways. 
 			inoutLine.setM_AttributeSetInstance_ID(sched.getM_AttributeSetInstance_ID());
 			logger.fine(inoutLine.toString());
@@ -1125,7 +1125,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		Check.assumeNotNull(sched, "sched not null");
 
 		// FIXME: introduce M_ShipmentSchedule.C_UOM_ID
-		// See http://dewiki908/mediawiki/index.php/fresh_05565_Introduce_M_ShipmentSchedule.C_UOM_ID_%28107483088069%29
+		// See http://dewiki908/mediawiki/index.php/05565_Introduce_M_ShipmentSchedule.C_UOM_ID_%28107483088069%29
 
 		// return sched.getC_OrderLine().getC_UOM();
 		return sched.getM_Product().getC_UOM();
@@ -1178,7 +1178,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private boolean isCustomFreightCostRule(final I_C_Order order)
 	{
 		return X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(order.getFreightCostRule())
-		// || X_C_Order.FREIGHTCOSTRULE_FreightIncluded.equals(order.getFreightCostRule()) // fresh 07973: included freight cost rule shall no longer be considered "custom"
+		// || X_C_Order.FREIGHTCOSTRULE_FreightIncluded.equals(order.getFreightCostRule()) // 07973: included freight cost rule shall no longer be considered "custom"
 		;
 	}
 

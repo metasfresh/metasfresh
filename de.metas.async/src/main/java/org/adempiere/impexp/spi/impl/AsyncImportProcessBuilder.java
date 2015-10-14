@@ -80,7 +80,7 @@ public class AsyncImportProcessBuilder implements IAsyncImportProcessBuilder
 		final int selectionId = DB.createT_Selection(importRecordIds, ITrx.TRXNAME_None);
 
 		Services.get(IWorkPackageQueueFactory.class)
-				.getQueue(ctx, AsyncImportWorkpackageProcessor.class)
+				.getQueueForEnqueuing(ctx, AsyncImportWorkpackageProcessor.class)
 				.newBlock()
 				.setContext(ctx)
 				.newWorkpackage()
