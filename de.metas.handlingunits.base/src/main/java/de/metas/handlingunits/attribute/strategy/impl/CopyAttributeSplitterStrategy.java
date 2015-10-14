@@ -31,7 +31,7 @@ import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
  * Split strategy which is copying the attribute to children
  *
  * @author tsa
- * @see http://dewiki908/mediawiki/index.php/06008_Aggregation_Strategy_Top-Down_for_Wareneingang_%28and_others%29_%28103116846664%29#Kurzbeschreibung
+ * @see http://dewiki908/mediawiki/index.php/fresh_06008_Aggregation_Strategy_Top-Down_for_Wareneingang_%28and_others%29_%28103116846664%29#Kurzbeschreibung
  */
 public class CopyAttributeSplitterStrategy implements IAttributeSplitterStrategy
 {

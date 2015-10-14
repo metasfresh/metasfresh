@@ -2,7 +2,7 @@ package de.metas.allocation.api;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -43,10 +43,10 @@ public interface IAllocationDAO extends ISingletonService
 	 * 
 	 * @param invoice
 	 * @return
-	 * @task 04193
+	 * @task 04193 
 	 */
 	List<I_C_Payment> retrieveAvailablePayments(I_C_Invoice invoice);
-
+	
 	/**
 	 * Retrieves that part of the given <code>invoice</code>'s <code>GrandTotal</code> that has not yet been allocated.
 	 * 
@@ -63,7 +63,7 @@ public interface IAllocationDAO extends ISingletonService
 	 * @return
 	 */
 	BigDecimal retrieveAllocatedAmt(org.compiere.model.I_C_Invoice invoice);
-
+	
 	/**
 	 * Similar to {@link #retrieveAllocatedAmt(org.compiere.model.I_C_Invoice)}, but excludes those allocations from the sum that are related to the given <code>C_Payment_ID</code>s.
 	 * 

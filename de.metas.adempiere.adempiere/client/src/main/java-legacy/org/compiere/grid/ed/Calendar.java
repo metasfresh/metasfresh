@@ -17,7 +17,8 @@
 package org.compiere.grid.ed;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -40,53 +41,56 @@ import java.util.TimeZone;
 import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
+import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.ButtonUI;
 
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.plaf.CalendarUI;
+import org.adempiere.plaf.VEditorUI;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.apps.AEnv;
+import org.compiere.grid.ed.Calendar.DayButton.DayButtonType;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
+import org.compiere.swing.ListComboBoxModel;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Language;
 
-/**
- *  Pop up Calendar & Time
- *
- *  @author 	Jorg Janke
- *  @version 	$Id: Calendar.java,v 1.3 2006/07/30 00:51:27 jjanke Exp $
- */
-public class Calendar extends CDialog
-	implements ActionListener, MouseListener, ChangeListener, KeyListener
-{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1547404617639717922L;
+import com.google.common.collect.ImmutableList;
 
-	/**
-	 *  Mimimum Constructor for Date editor
-	 *  @param frame frame
-	 */
-	public Calendar (Frame frame)
+/**
+ * Calendar Date & Time picker.
+ * 
+ * To create a new instance, please use {@link #builder()}.
+ *
+ * @author Jorg Janke
+ */
+public final class Calendar extends CDialog implements ActionListener, MouseListener, ChangeListener, KeyListener
+{
+	private static final long serialVersionUID = -1547404617639717922L;
+	
+	public static Builder builder()
 	{
-		this (frame, Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Calendar"), null, DisplayType.Date);
-	}   //  Calendar
+		return new Builder();
+	}
 
 	/**
 	 *  Constructor
@@ -95,11 +99,13 @@ public class Calendar extends CDialog
 	 *  @param startTS start date/time
 	 *  @param displayType DisplayType (Date, DateTime, Time)
 	 */
-	public Calendar (Frame frame, String title, Timestamp startTS, int displayType)
+	private Calendar (final Frame frame, final String title, final Timestamp startTS, final int displayType)
 	{
 		super (frame, title, true);
-		log.info(startTS==null ? "null" : startTS.toString() + " - DT=" + displayType);
-		m_displayType = displayType;
+		log.log(Level.INFO, "startTS={0}", startTS);
+		log.log(Level.INFO, "displayType={0}", displayType);
+		
+		m_displayType = DisplayType.isDate(displayType) ? displayType : DisplayType.Date;
 		//
 		try
 		{
@@ -110,20 +116,21 @@ public class Calendar extends CDialog
 		{
 			log.log(Level.SEVERE, "Calendar", ex);
 		}
+		
 		//
 		loadData(startTS);
-	}	//	Calendar
-
+	}
+	
 	/** Display Type				*/
-	private int					m_displayType;
+	private final int m_displayType;
 	/**	The Date					*/
 	private GregorianCalendar	m_calendar;
 	/** Is there a PM format		*/
 	private boolean 			m_hasAM_PM = false;
 	//
-	private CButton[] 			m_days;
-	private CButton				m_today;
-	/**	First Dat of week			*/
+	private DayButton[] m_days;
+	private DayButton m_today;
+	/**	First Day of week			*/
 	private int 				m_firstDay;
 	//
 	private int					m_currentDay;
@@ -143,26 +150,32 @@ public class Calendar extends CDialog
 	//
 	private static final Insets	ZERO_INSETS = new Insets(0,0,0,0);
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(Calendar.class);
+	private static final transient CLogger log = CLogger.getCLogger(Calendar.class);
 	//
-	private CPanel mainPanel = new CPanel();
 	private CPanel monthPanel = new CPanel();
-	private CComboBox cMonth = new CComboBox();
+	private CComboBox<KeyNamePair> cMonth = new CComboBox<>();
 	private JSpinner cYear = new JSpinner(new SpinnerNumberModel(2000, 1900,2100,1));
-	private BorderLayout mainLayout = new BorderLayout();
 	private CPanel dayPanel = new CPanel();
-	private GridLayout dayLayout = new GridLayout();
-	private GridBagLayout monthLayout = new GridBagLayout();
-	private CButton bNext = new CButton();
-	private CButton bBack = new CButton();
+	private CButton bMonthNext = new CButton();
+	private CButton bMonthPrev = new CButton();
 	private CPanel timePanel = new CPanel();
-	private CComboBox fHour = new CComboBox(getHours());
-	private CLabel lTimeSep = new CLabel();
-	private JSpinner fMinute = new JSpinner(new MinuteModel(5));	//	5 minute snap size
-	private JCheckBox cbPM = new JCheckBox();
-	private JLabel lTZ = new JLabel();
-	private CButton bOK = new CButton();
-	private GridBagLayout timeLayout = new GridBagLayout();
+	
+	private static final ImmutableList<String> HOURS12 = ImmutableList.copyOf(new String[] {
+			"12"
+			, " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10"
+			, "11"
+	});
+	private static final ImmutableList<String> HOURS24 = ImmutableList.copyOf(new String[] {
+			"00", "01", "02", "03", "04", "05", "06", "07", "08", "09"
+			, "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"
+			, "20", "21", "22", "23"
+	});
+
+	private final CComboBox<String> fHour = new CComboBox<>();
+	private final JSpinner fMinute = new JSpinner(new MinuteModel(5));	//	5 minute snap size
+	private final JCheckBox cbPM = new JCheckBox();
+	private final JLabel lTZ = new JLabel();
+	private final CButton bOK = new CButton();
 
 	/**
 	 *	Static init
@@ -170,72 +183,123 @@ public class Calendar extends CDialog
 	 */
 	private void jbInit() throws Exception
 	{
+		final int componentHeight = VEditorUI.getVEditorHeight();
+
+		this.setResizable(false);
+		this.setUndecorated(false);
 		this.addKeyListener(this);
-		//
-		mainPanel.setLayout(mainLayout);
-		mainLayout.setHgap(2);
-		mainLayout.setVgap(2);
-		//mainPanel.setBorder(BorderFactory.createLoweredBevelBorder());
-		mainPanel.setBorder(BorderFactory.createEmptyBorder(4,4,4,2));
-		getContentPane().add(mainPanel);
-
-		//	Month Panel
-		monthPanel.setLayout(monthLayout);
-		monthPanel.add(bBack,        new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		monthPanel.add(cYear,           new GridBagConstraints(3, 0, 1, 1, 1.0, 0.0
-			,GridBagConstraints.SOUTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 0, 0), 0, 0));
-		monthPanel.add(bNext,    new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		monthPanel.add(cMonth,  new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0
-			,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-		monthPanel.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
 		
-		mainPanel.add(monthPanel, BorderLayout.NORTH);
-		cMonth.addActionListener(this);
-		cYear.addChangeListener(this);
-		bBack.setIcon(Images.getImageIcon2("Parent16"));   // <
-		bBack.setMargin(new Insets(0,0,0,0));
-		bBack.addActionListener(this);
-		bNext.setIcon(Images.getImageIcon2("Detail16"));   // >
-		bNext.setMargin(new Insets(0,0,0,0));
-		bNext.addActionListener(this);
+		//
+		final CPanel mainPanel = new CPanel(new BorderLayout(2, 2));
+		mainPanel.setBorder(BorderFactory.createEmptyBorder(4,4,4,2));
+		setContentPane(mainPanel);
 
+		//
+		//	Month Panel
+		{
+			monthPanel.setLayout(new GridBagLayout());
+			monthPanel.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
+			monthPanel.setBackground(AdempierePLAF.getFormBackground());
+			
+			monthPanel.add(bMonthPrev,        new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
+				,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			monthPanel.add(cMonth,  new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0
+					,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			monthPanel.add(bMonthNext,    new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0
+					,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			monthPanel.add(cYear,           new GridBagConstraints(3, 0, 1, 1, 1.0, 0.0
+				,GridBagConstraints.SOUTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 0, 0), 0, 0));
+			
+			mainPanel.add(monthPanel, BorderLayout.NORTH);
+			
+			cMonth.setMinimumSize(new Dimension(30, componentHeight));
+			cMonth.setMaximumSize(new Dimension(150, componentHeight));
+			cMonth.addActionListener(this);
+			//
+			cYear.setMinimumSize(new Dimension(30, componentHeight));
+			cYear.setMaximumSize(new Dimension(100, componentHeight));
+			cYear.addChangeListener(this);
+			//
+			bMonthPrev.setIcon(Images.getImageIcon2("Parent16"));   // <
+			bMonthPrev.setBorder(BorderFactory.createEmptyBorder());
+			bMonthPrev.setBorderPainted(false);
+			bMonthPrev.setContentAreaFilled(false);
+			bMonthPrev.setMargin(new Insets(0, 0, 0, 0));
+			bMonthPrev.setPreferredSize(new Dimension(componentHeight, componentHeight));
+			bMonthPrev.addActionListener(this);
+			//
+			bMonthNext.setIcon(Images.getImageIcon2("Detail16"));   // >
+			bMonthNext.setBorder(BorderFactory.createEmptyBorder());
+			bMonthNext.setBorderPainted(false);
+			bMonthNext.setContentAreaFilled(false);
+			bMonthNext.setMargin(new Insets(0, 0, 0, 0));
+			bMonthNext.setPreferredSize(new Dimension(componentHeight, componentHeight));
+			bMonthNext.addActionListener(this);
+		}
+
+		//
 		//	Day Panel
-		dayPanel.setLayout(dayLayout);
-		dayLayout.setColumns(7);
-		dayLayout.setHgap(2);
-		dayLayout.setRows(7);
-		dayLayout.setVgap(2);
-		dayPanel.setBackground(Color.white);
-		dayPanel.setOpaque(true);
-		mainPanel.add(dayPanel, BorderLayout.CENTER);
+		{
+			final GridLayout dayLayout = new GridLayout();
+			dayLayout.setColumns(7);
+			dayLayout.setHgap(2);
+			dayLayout.setRows(7);
+			dayLayout.setVgap(2);
+			
+			dayPanel.setLayout(dayLayout);
+			dayPanel.setBackground(UIManager.getColor(CalendarUI.KEY_DayPanel_Background));
+			dayPanel.setOpaque(true);
+			mainPanel.add(dayPanel, BorderLayout.CENTER);
+		}
 
+		//
 		//	Time Panel
-		timePanel.setLayout(timeLayout);
-		lTimeSep.setText(" : ");
-		timePanel.add(fHour,     new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 6, 0, 0), 0, 0));
-		timePanel.add(lTimeSep,     new GridBagConstraints(1, 0, 1, 1, 0.0, 1.0
-			,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		timePanel.add(fMinute,    new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-		timePanel.add(cbPM,     new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 5, 0, 0), 0, 0));
-		timePanel.add(lTZ,      new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
-		timePanel.add(bOK,      new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 6, 0, 2), 0, 0));
-		mainPanel.add(timePanel,  BorderLayout.SOUTH);
-		fHour.addKeyListener(this);		//	Enter returns
-		// JSpinner ignores KeyListener
-		((JSpinner.DefaultEditor)fMinute.getEditor()).getTextField().addKeyListener(this);
-		fMinute.addChangeListener(this);
-		cbPM.addActionListener(this);
-		cbPM.addKeyListener(this);
-		bOK.setIcon(Images.getImageIcon2("Ok16"));
-		bOK.setMargin(new Insets(0,1,0,1));
-		bOK.addActionListener(this);
+		{
+			final CLabel lTimeSep = new CLabel();
+			lTimeSep.setText(" : ");
+			
+			timePanel.setLayout(new GridBagLayout());
+			
+			timePanel.add(fHour,     new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
+				,GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 6, 0, 0), 0, 0));
+			timePanel.add(lTimeSep,     new GridBagConstraints(1, 0, 1, 1, 0.0, 1.0
+				,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			timePanel.add(fMinute,    new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0
+				,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			timePanel.add(cbPM,     new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0
+				,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 5, 0, 0), 0, 0));
+			timePanel.add(lTZ,      new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0
+				,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
+			timePanel.add(Box.createHorizontalGlue(),      new GridBagConstraints(5, 0, 1, 1
+					, 1.0, 0.0 // weightx, weighty
+					,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			timePanel.add(bOK,      new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0
+				,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 6, 0, 2), 0, 0));
+			mainPanel.add(timePanel,  BorderLayout.SOUTH);
+			
+			fHour.setMinimumSize(new Dimension(20, componentHeight));
+			fHour.setMaximumSize(new Dimension(30, componentHeight));
+			fHour.setPreferredSize(new Dimension(45, componentHeight));
+			fHour.addKeyListener(this);		//	Enter returns
+
+			fMinute.setMinimumSize(new Dimension(20, componentHeight));
+			fMinute.setMaximumSize(new Dimension(50, componentHeight));
+			fMinute.setPreferredSize(new Dimension(45, componentHeight));
+			((JSpinner.DefaultEditor)fMinute.getEditor()).getTextField().addKeyListener(this); // JSpinner ignores KeyListener
+			fMinute.addChangeListener(this);
+			
+			cbPM.setMinimumSize(new Dimension(20, componentHeight));
+			cbPM.setMaximumSize(new Dimension(50, componentHeight));
+			cbPM.addActionListener(this);
+			cbPM.addKeyListener(this);
+			
+			bOK.setIcon(Images.getImageIcon2("Ok16"));
+			bOK.setMargin(new Insets(0,0,0,0));
+			bOK.setBorder(BorderFactory.createEmptyBorder());
+			bOK.setContentAreaFilled(false);
+			bOK.setPreferredSize(new Dimension(componentHeight, componentHeight));
+			bOK.addActionListener(this);
+		}
 	}	//	jbInit
 
 	/**
@@ -243,9 +307,8 @@ public class Calendar extends CDialog
 	 *  @param e event
 	 */
 	@Override
-	protected void processWindowEvent(WindowEvent e)
+	protected void processWindowEvent(final WindowEvent e)
 	{
-	//	log.config( "Calendar.processWindowEvent", e);
 		super.processWindowEvent(e);
 		if (e.getID() == WindowEvent.WINDOW_OPENED)
 		{
@@ -264,7 +327,7 @@ public class Calendar extends CDialog
 	 *	- Day Names
 	 *  @param startTS time stamp
 	 */
-	private void loadData (Timestamp startTS)
+	private void loadData (final Timestamp startTS)
 	{
 		final Language language = Env.getLanguage(Env.getCtx());
 		final Locale loc = language.getLocale();
@@ -284,241 +347,231 @@ public class Calendar extends CDialog
 		
 		//
 		//	Short: h:mm a - HH:mm 	Long: h:mm:ss a z - HH:mm:ss z
-		SimpleDateFormat formatTime = (SimpleDateFormat)DateFormat.getTimeInstance(DateFormat.SHORT, loc);
+		final SimpleDateFormat formatTime = (SimpleDateFormat)DateFormat.getTimeInstance(DateFormat.SHORT, loc);
 		m_hasAM_PM = formatTime.toPattern().indexOf('a') != -1;
 		if (m_hasAM_PM)
 			cbPM.setText(formatTime.getDateFormatSymbols().getAmPmStrings()[1]);
 		else
 			cbPM.setVisible(false);
 
+		//
 		//	Years
 		m_currentYear = m_calendar.get(java.util.Calendar.YEAR);
 		cYear.setEditor(new JSpinner.NumberEditor(cYear, "0000"));
-		cYear.setValue(new Integer(m_currentYear));
+		cYear.setValue(m_currentYear);
 
+		//
 		//	Months		-> 0=Jan 12=_
-		SimpleDateFormat formatDate = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.LONG, loc);
+		final SimpleDateFormat formatDate = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.LONG, loc);
 		String[] months = formatDate.getDateFormatSymbols().getMonths();
-		for (int i = 0; i < months.length; i++)
+		for (int monthNo = 0; monthNo < months.length; monthNo++)
 		{
-			KeyNamePair p = new KeyNamePair(i+1, months[i]);
-			if (!months[i].equals(""))
-				cMonth.addItem(p);
+			final String monthName = months[monthNo];
+			if ("".equals(monthName))
+			{
+				continue;
+			}
+			cMonth.addItem(new KeyNamePair(monthNo+1, monthName));
 		}
 		m_currentMonth = m_calendar.get(java.util.Calendar.MONTH) + 1;	//	Jan=0
-		cMonth.setSelectedIndex(m_currentMonth-1);
+		cMonth.setSelectedIndex(m_currentMonth - 1);
 
-		//	Week Days	-> 0=_  1=Su  .. 7=Sa
-		String[] days = formatDate.getDateFormatSymbols().getShortWeekdays();	//	0 is blank, 1 is Sunday
+		//
+		//	Week Days (labels) -> 0=_  1=Su  .. 7=Sa
+		final String[] days = formatDate.getDateFormatSymbols().getShortWeekdays();	//	0 is blank, 1 is Sunday
 		for (int i = m_firstDay; i < 7 + m_firstDay; i++)
 		{
 			int index = i > 7 ? i -7 : i;
-			dayPanel.add(createWeekday(days[index]), null);
+			dayPanel.add(createWeekdayLabel(days[index]), null);
 		}
 
+		//
 		//	Days
-		m_days = new CButton[6*7];
-		m_currentDay = m_calendar.get(java.util.Calendar.DATE);
-		for (int i = 0; i < 6; i++)		//	six weeks a month maximun
-			for (int j = 0; j < 7; j++)	//	seven days
+		m_currentDay = m_calendar.get(java.util.Calendar.DAY_OF_MONTH);
+		m_days = new DayButton[6*7];
+		for (int weekNo = 0; weekNo < 6; weekNo++)		//	six weeks a month maximum
+		{
+			for (int dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++)	//	seven days
 			{
-				int index = i*7 + j;
+				final int index = weekNo*7 + dayOfWeek;
 				m_days[index] = createDay();
-				dayPanel.add(m_days[index], null);
+				dayPanel.add(m_days[index]);
 			}
-
+		}
 		//	Today button
-		m_days[m_days.length-1].setBackground(Color.green);
-		m_days[m_days.length-1].setText("*");
-		m_days[m_days.length-1].setToolTipText(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Today"));
+		m_days[m_days.length-1].setType(DayButtonType.SetCurrentDay);
 		//	Cancel
-		m_days[m_days.length-2].setBackground(Color.red);
-		m_days[m_days.length-2].setText("x");
-		m_days[m_days.length-2].setToolTipText(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Cancel"));
+		// metas-tsa: don't show the cancel button
+		// m_days[m_days.length-2].setType(DayButtonType.Cancel);
 
 		//	Date/Time
 		m_current24Hour = m_calendar.get(java.util.Calendar.HOUR_OF_DAY);
 		m_currentMinute = m_calendar.get(java.util.Calendar.MINUTE);
+		fHour.setModel(new ListComboBoxModel<>(m_hasAM_PM ? HOURS12 : HOURS24));
 
+		//
 		//	What to show
-		timePanel.setVisible(m_displayType == DisplayType.DateTime || m_displayType == DisplayType.Time);
-		monthPanel.setVisible(m_displayType != DisplayType.Time);
-		dayPanel.setVisible(m_displayType != DisplayType.Time);
+		final boolean displayDate = m_displayType == DisplayType.DateTime || m_displayType == DisplayType.Date;
+		final boolean displayTime = m_displayType == DisplayType.DateTime || m_displayType == DisplayType.Time;
+		monthPanel.setVisible(displayDate);
+		dayPanel.setVisible(displayDate);
+		timePanel.setVisible(displayTime);
 		lTZ.setVisible(m_displayType != DisplayType.Time);
 
 		//	update UI from m_current...
 		m_setting = false;
-		setCalendar();
+		updateDateToUI();
 	}	//	loadData
 
 	/**
 	 *	Create Week Day Label
-	 *  @param title Weedkay Title
+	 *  @param title Weekday Title
 	 *  @return week day
 	 */
-	private JLabel createWeekday (String title)
+	private JLabel createWeekdayLabel(final String title)
 	{
-		JLabel label = new JLabel(title);
-		//label.setBorder(BorderFactory.createRaisedBevelBorder());
-		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setHorizontalTextPosition(SwingConstants.CENTER);
-		label.setRequestFocusEnabled(false);
-		label.setBackground(AdempierePLAF.getPrimary1());
-		label.setForeground(Color.white);
-		label.setOpaque(true);
-		return label;
+		final JLabel weekLabel = new JLabel(title);
+		weekLabel.setBorder(BorderFactory.createEmptyBorder());
+		weekLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		weekLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+		weekLabel.setRequestFocusEnabled(false);
+		weekLabel.setBackground(UIManager.getColor(CalendarUI.KEY_DayPanel_WeekLabel_Background));
+		weekLabel.setForeground(UIManager.getColor(CalendarUI.KEY_DayPanel_WeekLabel_Foreground));
+		weekLabel.setOpaque(true);
+		return weekLabel;
 	}	//	createWeekday
 
 	/**
 	 *	Create Day Label
 	 *  @return button
 	 */
-	private CButton createDay()
+	private final DayButton createDay()
 	{
-		CButton button = new CButton();
-		//button.setBorder(BorderFactory.createLoweredBevelBorder());
-		button.setBorder(BorderFactory.createEmptyBorder());
-		button.setHorizontalTextPosition(SwingConstants.CENTER);
-		button.setMargin(ZERO_INSETS);
+		final DayButton button = new DayButton();
 		button.addActionListener(this);
 		button.addMouseListener(this);
 		button.addKeyListener(this);
-		button.setFocusPainted(false);
-		button.putClientProperty("Plastic.is3D", Boolean.FALSE);
+
 		return button;
-	}	//	createWeekday
-
-	/**
-	 * 	Create 12/25 hours
-	 *  @return Array with hours as String
-	 */
-	private Object[] getHours()
-	{
-		final Language language = Env.getLanguage(Env.getCtx());
-		final Locale loc = language.getLocale();
-		
-		//	Short: h:mm a - HH:mm 	Long: h:mm:ss a z - HH:mm:ss z
-		SimpleDateFormat formatTime = (SimpleDateFormat)DateFormat.getTimeInstance(DateFormat.SHORT, loc);
-		m_hasAM_PM = formatTime.toPattern().indexOf('a') != -1;
-		//
-		Object[] retValue = new Object[m_hasAM_PM ? 12 : 24];
-		if (m_hasAM_PM)
-		{
-			retValue[0] = "12";
-			for (int i = 1; i < 10; i++)
-				retValue[i] = " " + String.valueOf(i);
-			for (int i = 10; i < 12; i++)
-				retValue[i] = String.valueOf(i);
-		}
-		else
-		{
-			for (int i = 0; i < 10; i++)
-				retValue[i] = "0" + String.valueOf(i);
-			for (int i = 10; i < 24; i++)
-				retValue[i] = String.valueOf(i);
-		}
-		return retValue;
-	}	//	getHours
-
+	}
 
 	/**************************************************************************
-	 *	Set Calandar from m_current variables and update UI
+	 *	Set Calendar from m_current variables and update UI
 	 */
-	private void setCalendar()
+	private void updateDateToUI()
 	{
 		if (m_setting)
 			return;
-	//	log.config( "Calendar.setCalendar");
 
-		//  --- Set Month & Year
+		//
+		// Set Month & Year
 		m_setting = true;
-		cMonth.setSelectedIndex(m_currentMonth-1);
-		cYear.setValue(new Integer(m_currentYear));
-		m_setting = false;
-
-		//  --- Set Day
-		//	what is the first day in the selected month?
-		m_calendar.set(m_currentYear, m_currentMonth-1, 1);		//	Month is zero based
-		int dayOne = m_calendar.get(java.util.Calendar.DAY_OF_WEEK);
-		int lastDate = m_calendar.getActualMaximum(java.util.Calendar.DATE);
-
-		//	convert to index
-		dayOne -= m_firstDay;
-		if (dayOne < 0)
-			dayOne += 7;
-		lastDate += dayOne - 1;
-
-		//	for all buttons but the last
-		int curDay = 1;
-		for (int i = 0; i < m_days.length-2; i++)
+		try
 		{
-			if (i >= dayOne && i <= lastDate)
+			cMonth.setSelectedIndex(m_currentMonth - 1);
+			cYear.setValue(m_currentYear);
+		}
+		finally
+		{
+			m_setting = false;
+		}
+
+		//
+		//  Set Day
+		{
+			//	what is the first day in the selected month?
+			m_calendar.set(m_currentYear, m_currentMonth - 1, 1);		// Month is zero based
+			int dayOne = m_calendar.get(java.util.Calendar.DAY_OF_WEEK);
+			int lastDay = m_calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH);
+	
+			//	convert to index
+			dayOne -= m_firstDay;
+			if (dayOne < 0)
+				dayOne += 7;
+			lastDay += dayOne - 1;
+	
+			//	for all buttons but the last
+			int nextDay = 1;
+			for (int i = 0; i < m_days.length - 2; i++)
 			{
-				if (m_currentDay == curDay)
+				final DayButton dayButton = m_days[i];
+				if (i >= dayOne && i <= lastDay)
 				{
-					m_days[i].setBackground(Color.blue);
-					m_days[i].setForeground(Color.yellow);
-					m_today = m_days[i];
-					m_today.requestFocus();
+					final int curDay = nextDay++;
+					dayButton.setDayNo(curDay);
+					if (m_currentDay == curDay)
+					{
+						dayButton.setType(DayButtonType.CurrentDay);
+						m_today = dayButton;
+						m_today.requestFocus();
+					}
+					else
+					{
+						dayButton.setType(DayButtonType.RegularDay);
+					}
 				}
 				else
 				{
-					m_days[i].setBackground(Color.white);
-					m_days[i].setForeground(Color.black);
+					dayButton.setDayNo(-1);
+					dayButton.setType(DayButtonType.Inactive);
 				}
-				m_days[i].setText(String.valueOf(curDay++));
-				m_days[i].setReadWrite(true);
-			}
-			else
-			{
-				m_days[i].setText("");
-				m_days[i].setReadWrite(false);
-				m_days[i].setBackground(AdempierePLAF.getFieldBackground_Inactive());
 			}
 		}
 
-		//	Set Hour
-		boolean pm = m_current24Hour > 11;
-		int index = m_current24Hour;
-		if (pm && m_hasAM_PM)
-			index -= 12;
-		if (index < 0 || index >= fHour.getItemCount())
-			index = 0;
-		fHour.setSelectedIndex(index);
-		//	Set Minute
-		int m = m_calendar.get(java.util.Calendar.MINUTE);
-		fMinute.setValue(new Integer(m));
-		//	Set PM
-		cbPM.setSelected(pm);
-		//	Set TZ
-		TimeZone tz = m_calendar.getTimeZone();
-		lTZ.setText(tz.getDisplayName(tz.inDaylightTime(m_calendar.getTime()), TimeZone.SHORT));
+		//
+		//	Set Hour/Minute/AM-PM/TimeZone to UI
+		updateTimeToUI();
 
 		//	Update Calendar
-		m_calendar.set(m_currentYear, m_currentMonth-1, m_currentDay, m_current24Hour, m_currentMinute, 0);
-		m_calendar.set(java.util.Calendar.MILLISECOND, 0);
+		updateCalendar();
 	}	//	setCalendar
+	
+	/** Update {@link #m_calendar} from m_curret variables */
+	private final void updateCalendar()
+	{
+		m_calendar.set(m_currentYear, m_currentMonth - 1, m_currentDay, m_current24Hour, m_currentMinute, 0);
+		m_calendar.set(java.util.Calendar.MILLISECOND, 0);
+	}
 
 	/**
 	 * 	Set Current Time from UI.
 	 * 	- set m_current.. variables
 	 */
-	private void setTime()
+	private void updateTimeFromUI()
 	{
 		//	Hour
-		int h = fHour.getSelectedIndex();
-		m_current24Hour = h;
+		final int hour = fHour.getSelectedIndex();
+		m_current24Hour = hour;
 		if (m_hasAM_PM && cbPM.isSelected())
 			m_current24Hour += 12;
 		if (m_current24Hour < 0 || m_current24Hour > 23)
 			m_current24Hour = 0;
 
 		//	Minute
-		Integer ii = (Integer)fMinute.getValue();
-		m_currentMinute = ii.intValue();
+		final Integer minute = (Integer)fMinute.getValue();
+		m_currentMinute = minute.intValue();
 		if (m_currentMinute < 0 || m_currentMinute > 59)
 			m_currentMinute = 0;
 	}	//	setTime
+	
+	private void updateTimeToUI()
+	{
+		final boolean pm = m_current24Hour > 11;
+		int hourIndex = m_current24Hour;
+		if (pm && m_hasAM_PM)
+			hourIndex -= 12;
+		if (hourIndex < 0 || hourIndex >= fHour.getItemCount())
+			hourIndex = 0;
+		fHour.setSelectedIndex(hourIndex);
+		//	Set Minute
+		final int minute = m_calendar.get(java.util.Calendar.MINUTE);
+		fMinute.setValue(new Integer(minute));
+		//	Set PM
+		cbPM.setSelected(pm);
+		//	Set TZ
+		final TimeZone tz = m_calendar.getTimeZone();
+		lTZ.setText(tz.getDisplayName(tz.inDaylightTime(m_calendar.getTime()), TimeZone.SHORT));
+	}
 
 	/**
 	 *	Return Time stamp
@@ -526,14 +579,15 @@ public class Calendar extends CDialog
 	 */
 	public Timestamp getTimestamp()
 	{
-	//	log.config( "Calendar.getTimeStamp");
 		//	Set Calendar
-		m_calendar.set(m_currentYear, m_currentMonth-1, m_currentDay, m_current24Hour, m_currentMinute, 0);
-		m_calendar.set(java.util.Calendar.MILLISECOND, 0);
+		updateCalendar();
 
 		//	Return value
 		if (m_abort || m_cancel)
+		{
 			return null;
+		}
+		
 		long time = m_calendar.getTimeInMillis();
 		if (m_displayType == DisplayType.Date)
 			time = new java.sql.Date(time).getTime();
@@ -562,8 +616,8 @@ public class Calendar extends CDialog
 	{
 		if (m_setting)
 			return;
-	//	log.config( "Calendar.actionPerformed");
-		setTime();
+		
+		updateTimeFromUI();
 
 		if (e.getSource() == bOK)
 		{
@@ -571,7 +625,7 @@ public class Calendar extends CDialog
 			dispose();
 			return;
 		}
-		else if (e.getSource() == bBack)
+		else if (e.getSource() == bMonthPrev)
 		{
 			if (--m_currentMonth < 1)
 			{
@@ -580,7 +634,7 @@ public class Calendar extends CDialog
 			}
 			m_lastDay = -1;
 		}
-		else if (e.getSource() == bNext)
+		else if (e.getSource() == bMonthNext)
 		{
 			if (++m_currentMonth > 12)
 			{
@@ -589,12 +643,12 @@ public class Calendar extends CDialog
 			}
 			m_lastDay = -1;
 		}
-		else if (e.getSource() instanceof JButton)
+		else if (e.getSource() instanceof DayButton)
 		{
-			JButton b = (JButton)e.getSource();
-			String text = b.getText();
+			final DayButton b = (DayButton)e.getSource();
+			final DayButtonType type = b.getType();
 			//	Today - Set to today's date
-			if (text.equals("*"))
+			if (type == DayButtonType.SetCurrentDay)
 			{
 				m_calendar.setTime(new Timestamp(System.currentTimeMillis()));
 				m_currentDay = m_calendar.get(java.util.Calendar.DATE);
@@ -602,17 +656,17 @@ public class Calendar extends CDialog
 				m_currentYear = m_calendar.get(java.util.Calendar.YEAR);
 			}
 			//	Cancel
-			else if (text.equals("x"))
+			else if (type == DayButtonType.Cancel)
 			{
 				m_cancel = true;
 				dispose();
 				return;
 			}
 			//	we have a day
-			else if (text.length() > 0)
+			else if (b.isDayNo())
 			{
-				m_currentDay = Integer.parseInt(text);
-				long currentClick = System.currentTimeMillis();
+				m_currentDay = b.getDayNo();
+				final long currentClick = System.currentTimeMillis();
 				if (m_currentDay == m_lastDay
 					&& currentClick-m_lastClick < 1000)		//  double click 1 second
 				{
@@ -626,7 +680,7 @@ public class Calendar extends CDialog
 		}
 		else if (e.getSource() == cbPM)
 		{
-			setTime();
+			updateTimeFromUI();
 			m_lastDay = -1;
 		}
 		else
@@ -635,7 +689,8 @@ public class Calendar extends CDialog
 			m_currentMonth = cMonth.getSelectedIndex()+1;
 			m_lastDay = -1;
 		}
-		setCalendar();
+		
+		updateDateToUI();
 	}	//	actionPerformed
 
 	/**
@@ -651,13 +706,15 @@ public class Calendar extends CDialog
 		//	Set Minute
 		if (e.getSource() == fMinute)
 		{
-			setTime();
+			updateTimeFromUI();
 			return;
 		}
+		
 		//	Set Year
 		m_currentYear = ((Integer)cYear.getValue()).intValue();
 		m_lastDay = -1;
-		setCalendar();
+		
+		updateDateToUI();
 	}   //  stateChanged
 
 	
@@ -666,7 +723,7 @@ public class Calendar extends CDialog
 	 *  @param e Evant
 	 */
 	@Override
-	public void mouseClicked(MouseEvent e)
+	public void mouseClicked(final MouseEvent e)
 	{
 		if (e.getClickCount() == 2)
 		{
@@ -675,99 +732,65 @@ public class Calendar extends CDialog
 		}
 	}   //  mouseClicked
 
-	/**
-	 * 	mousePressed
-	 *	@param e
-	 */
-	@Override
-	public void mousePressed(MouseEvent e) {}
-	/**
-	 * 	mouseEntered
-	 *	@param e
-	 */
-	@Override
-	public void mouseEntered(MouseEvent e) {}
-	/**
-	 * 	mouseExited
-	 *	@param e
-	 */
-	@Override
-	public void mouseExited(MouseEvent e) {}
-	/**
-	 * 	mouseReleased
-	 *	@param e
-	 */
-	@Override
-	public void mouseReleased(MouseEvent e) {}
-
 	
 	/**************************************************************************
 	 * 	Key Released - Return on enter
 	 *  @param e event
 	 */
 	@Override
-	public void keyReleased(KeyEvent e)
+	public void keyReleased(final KeyEvent e)
 	{
-	//	System.out.println("Released " + e);
 		//	Day Buttons
-		if (e.getSource() instanceof JButton)
+		if (e.getSource() instanceof DayButton)
 		{
+			int dayOffset = 0;
+			int monthOffset = 0;
 			if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN)
 			{
-				if (++m_currentMonth > 12)
-				{
-					 m_currentMonth = 1;
-					 m_currentYear++;
-				}
-				setCalendar();
-				return;
+				monthOffset = 1;
 			}
 			if (e.getKeyCode() == KeyEvent.VK_PAGE_UP)
 			{
-				if (--m_currentMonth < 1)
-				{
-					 m_currentMonth = 12;
-					 m_currentYear--;
-				}
-				setCalendar();
-				return;
+				monthOffset = -1;
 			}
-
-			//	Arrows
-			int offset = 0;
-			if (e.getKeyCode() == KeyEvent.VK_RIGHT)
-				offset = 1;
-			else if (e.getKeyCode() == KeyEvent.VK_LEFT)
-				offset = -1;
-			else if (e.getKeyCode() == KeyEvent.VK_UP)
-				offset = -7;
-			else if (e.getKeyCode() == KeyEvent.VK_DOWN)
-				offset = 7;
-			if (offset != 0)
+			else if (e.getKeyCode() == KeyEvent.VK_RIGHT)
 			{
-				System.out.println(m_calendar.getTime() + "  offset=" + offset);
-				m_calendar.add(java.util.Calendar.DAY_OF_YEAR, offset);
-				System.out.println(m_calendar.getTime());
+				dayOffset = 1;
+			}
+			else if (e.getKeyCode() == KeyEvent.VK_LEFT)
+			{
+				dayOffset = -1;
+			}
+			else if (e.getKeyCode() == KeyEvent.VK_UP)
+			{
+				dayOffset = -7;
+			}
+			else if (e.getKeyCode() == KeyEvent.VK_DOWN)
+			{
+				dayOffset = 7;
+			}
+			//
+			if (dayOffset != 0 || monthOffset != 0)
+			{
+				m_calendar.add(java.util.Calendar.DAY_OF_YEAR, dayOffset);
+				m_calendar.add(java.util.Calendar.MONTH, monthOffset);
 
 				m_currentDay = m_calendar.get(java.util.Calendar.DAY_OF_MONTH);
 				m_currentMonth = m_calendar.get(java.util.Calendar.MONTH) + 1;
 				m_currentYear = m_calendar.get(java.util.Calendar.YEAR);
-				setCalendar();
+				updateDateToUI();
 				return;
 			}
-			//	something else
-			actionPerformed(new ActionEvent(e.getSource(), ActionEvent.ACTION_PERFORMED, ""));
 		}
-
+		
 		//	Pressed Enter anywhere
 		if (e.getKeyCode() == KeyEvent.VK_ENTER)
 		{
 			m_abort = false;
-			setTime();
+			updateTimeFromUI();
 			dispose();
 			return;
 		}
-		
 		//	ESC = Cancel - teo_sarca, [ 1660164 ]
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
 		{
@@ -776,8 +799,8 @@ public class Calendar extends CDialog
 			return;
 		}
 
-		//	Modified Hour/Miinute
-		setTime();
+		//	Modified Hour/Minute
+		updateTimeFromUI();
 		m_lastDay = -1;
 	}	//	keyReleased
 
@@ -788,85 +811,302 @@ public class Calendar extends CDialog
 	@Override
 	public void keyTyped(KeyEvent e)
 	{
-	//	System.out.println("Typed " + e);
+		//nothing
 	}
-	/**
-	 * 	keyPressed
-	 *	@param e
-	 */
+	
 	@Override
 	public void keyPressed(KeyEvent e)
 	{
-	//	System.out.println("Pressed " + e);
+		//nothing
 	}
 
-}	//	Calendar
-
-/**
- *	Minute Spinner Model.
- *  Based on Number Model - uses snap size to determine next value.
- *  Allows to manually set any ninute, but return even snap value
- *  when spinner buttons are used.
- *
- * 	@author 	Jorg Janke
- * 	@version 	$Id: Calendar.java,v 1.3 2006/07/30 00:51:27 jjanke Exp $
- */
-class MinuteModel extends SpinnerNumberModel
-{
 	/**
+	 * Calendar dialog builder
 	 * 
+	 * @author metas-dev <dev@metas-fresh.com>
+	 *
 	 */
-	private static final long serialVersionUID = -7328155195096551848L;
+	public static final class Builder
+	{
+		private Component parentComp;
+		private String dialogTitle;
+		private Timestamp date = null;
+		private int displayType = DisplayType.Date;
+
+		private Builder()
+		{
+			super();
+		}
+		
+		/** Show the dialog and return the user selected date */
+		public Timestamp buildAndGet()
+		{
+			final Frame parentFrame = getParentFrame();
+			
+			final Timestamp dateInitial = getDate();
+			final Calendar calendarDialog = new Calendar(parentFrame, getDialogTitle(), dateInitial, getDisplayType());
+			AEnv.showCenterWindow(parentFrame, calendarDialog); //
+			if (calendarDialog.isCancel())
+			{
+				return dateInitial;
+			}
+			
+			Timestamp datePicked = calendarDialog.getTimestamp();
+			if (datePicked == null && !calendarDialog.isCancel())
+			{
+				datePicked = dateInitial;		// original
+			}
+			
+			return datePicked;
+		}
+		
+		// Container jc, Timestamp value, SimpleDateFormat format, int displayType, String title
+		public Builder setParentComponent(final Component parentComp)
+		{
+			this.parentComp = parentComp;
+			return this;
+		}
+		
+		private final Frame getParentFrame()
+		{
+			return parentComp == null ? null : Env.getFrame(parentComp);
+		}
+		
+		public Builder setDialogTitle(final String dialogTitle)
+		{
+			this.dialogTitle = dialogTitle;
+			return this;
+		}
+		
+		private final String getDialogTitle()
+		{
+			if(Check.isEmpty(dialogTitle))
+			{
+				return Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Calendar");
+			}
+			return dialogTitle;
+		}
+	
+		/** Sets initial date */
+		public Builder setDate(final Timestamp date)
+		{
+			this.date = date;
+			return this;
+		}
+		
+		private final Timestamp getDate()
+		{
+			return date;
+		}
+		
+		public Builder setDateFormat(final DateFormat dateFormat)
+		{
+			// not used
+			// this.dateFormat = dateFormat;
+			return this;
+		}
+		
+		public Builder setDisplayType(final int displayType)
+		{
+			this.displayType = displayType;
+			return this;
+		}
+		
+		private final int getDisplayType()
+		{
+			return displayType;
+		}
+	}
 
 	/**
-	 *  Constructor.
-	 *  Creates Integer Spinner with minimum=0, maximum=59, stepsize=1
-	 *  @param snapSize snap size
+	 * Day button
+	 * @author metas-dev <dev@metas-fresh.com>
 	 */
-	public MinuteModel(int snapSize)
+	static final class DayButton extends CButton 
 	{
-		super(0,0,59, 1);	//	Integer Model
-		m_snapSize = snapSize;
-	}	//	MinuteModel
+		private static final long serialVersionUID = 1L;
+		
+		public static enum DayButtonType
+		{
+			Inactive,
+			RegularDay,
+			CurrentDay,
+			SetCurrentDay,
+			Cancel,
+		}
 
-	/**	Snap size			*/
-	private int		m_snapSize;
+		private DayButtonType type = DayButtonType.Inactive;
+		private int dayNo = -1;
+
+		private DayButton()
+		{
+			super();
+		}
+		
+		@Override
+		public void setUI(final ButtonUI ui)
+		{
+			super.setUI(ui);
+			
+			setBorder(BorderFactory.createEmptyBorder());
+			setHorizontalTextPosition(SwingConstants.CENTER);
+			setVerticalAlignment(SwingConstants.CENTER);
+			setMargin(ZERO_INSETS);
+			setFocusPainted(false);
+			putClientProperty("Plastic.is3D", Boolean.FALSE);
+			
+			updateUIFromType();
+		}
+		
+		public final void setType(final DayButtonType type)
+		{
+			Check.assumeNotNull(type, "type not null");
+			if (this.type == type)
+			{
+				return;
+			}
+			this.type = type;
+			updateUIFromType();
+		}
+		
+		public final DayButtonType getType()
+		{
+			return type;
+		}
+		
+		public boolean isDayNo()
+		{
+			return type == DayButtonType.CurrentDay || type == DayButtonType.RegularDay;
+		}
+		
+		public void setDayNo(final int dayNo)
+		{
+			this.dayNo = dayNo;
+			if (isDayNo())
+			{
+				this.setText(String.valueOf(dayNo));
+			}
+		}
+		
+		public int getDayNo()
+		{
+			if (isDayNo())
+			{
+				return dayNo;
+			}
+			return -1;
+		}
+
+		private void updateUIFromType()
+		{
+			if (type == DayButtonType.Inactive || type == null)
+			{
+				setBackground(AdempierePLAF.getFieldBackground_Inactive());
+				setText("");
+				setToolTipText(null);
+				setReadWrite(false);
+			}
+			else if (type == DayButtonType.RegularDay)
+			{
+				setBackground(UIManager.getColor(CalendarUI.KEY_DayButton_Regular_Background));
+				setForeground(UIManager.getColor(CalendarUI.KEY_DayButton_Regular_Foreground));
+				setText(String.valueOf(getDayNo()));
+				setToolTipText(null);
+				setReadWrite(true);
+			}
+			else if (type == DayButtonType.CurrentDay)
+			{
+				setBackground(UIManager.getColor(CalendarUI.KEY_DayButton_Current_Background));
+				setForeground(UIManager.getColor(CalendarUI.KEY_DayButton_Current_Foreground));
+				setText(String.valueOf(getDayNo()));
+				setToolTipText(null);
+				setReadWrite(true);
+			}
+			else if (type == DayButtonType.SetCurrentDay)
+			{
+				setBackground(UIManager.getColor(CalendarUI.KEY_DayButton_SetCurrent_Background));
+				setForeground(UIManager.getColor(CalendarUI.KEY_DayButton_SetCurrent_Foreground));
+				setText("*");
+				setToolTipText(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Today"));
+				setReadWrite(true);
+			}
+			else if (type == DayButtonType.Cancel)
+			{
+				setBackground(UIManager.getColor(CalendarUI.KEY_DayButton_Cancel_Background));
+				setForeground(UIManager.getColor(CalendarUI.KEY_DayButton_Cancel_Foreground));
+				setText("X");
+				setToolTipText(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Cancel"));
+				setReadWrite(true);
+			}
+			else
+			{
+				throw new IllegalStateException("Unknown type: " + type); // shall not happen
+			}
+		}
+	}
 
 	/**
-	 * 	Return next full snap value
-	 *  @return next snap value
+	 * Minute Spinner Model.
+	 * 
+	 * Based on Number Model - uses snap size to determine next value. Allows to manually set any minute, but return even snap value when spinner buttons are used.
+	 *
+	 * @author Jorg Janke
 	 */
-	@Override
-	public Object getNextValue()
+	private static final class MinuteModel extends SpinnerNumberModel
 	{
-		int minutes = ((Integer)getValue()).intValue();
-		minutes += m_snapSize;
-		if (minutes >= 60)
-			minutes -= 60;
-		//
-		int steps = minutes / m_snapSize;
-		return new Integer(steps * m_snapSize);
-	}	//	getNextValue
+		private static final long serialVersionUID = -7328155195096551848L;
 
+		/**
+		 * Constructor. Creates Integer Spinner with minimum=0, maximum=59, stepsize=1
+		 * 
+		 * @param snapSize snap size
+		 */
+		public MinuteModel(final int snapSize)
+		{
+			super(0, 0, 59, 1);	// Integer Model
+			m_snapSize = snapSize;
+		}	// MinuteModel
 
-	/**
-	 * 	Return previous full step value
-	 *  @return previous snap value
-	 */
-	@Override
-	public Object getPreviousValue()
-	{
-		int minutes = ((Integer)getValue()).intValue();
-		minutes -= m_snapSize;
-		if (minutes < 0)
-			minutes += 60;
-		//
-		int steps = minutes / m_snapSize;
-		if (minutes % m_snapSize != 0)
-			steps++;
-		if (steps * m_snapSize > 59)
-			steps = 0;
-		return new Integer(steps * m_snapSize);
-	}	//	getNextValue
+		/** Snap size */
+		private final int m_snapSize;
 
-}	//	MinuteModel
+		/**
+		 * Return next full snap value
+		 * 
+		 * @return next snap value
+		 */
+		@Override
+		public Object getNextValue()
+		{
+			int minutes = ((Integer)getValue()).intValue();
+			minutes += m_snapSize;
+			if (minutes >= 60)
+				minutes -= 60;
+			//
+			int steps = minutes / m_snapSize;
+			return steps * m_snapSize;
+		}	// getNextValue
+
+		/**
+		 * Return previous full step value
+		 * 
+		 * @return previous snap value
+		 */
+		@Override
+		public Object getPreviousValue()
+		{
+			int minutes = ((Integer)getValue()).intValue();
+			minutes -= m_snapSize;
+			if (minutes < 0)
+				minutes += 60;
+			//
+			int steps = minutes / m_snapSize;
+			if (minutes % m_snapSize != 0)
+				steps++;
+			if (steps * m_snapSize > 59)
+				steps = 0;
+			return steps * m_snapSize;
+		}	// getNextValue
+	}	// MinuteModel
+
+}	//	Calendar

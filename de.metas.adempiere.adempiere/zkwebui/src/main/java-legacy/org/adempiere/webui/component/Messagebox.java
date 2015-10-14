@@ -17,7 +17,6 @@
 
 package org.adempiere.webui.component;
 
-
 import java.util.Properties;
 
 import org.adempiere.webui.LayoutUtils;

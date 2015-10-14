@@ -40,13 +40,13 @@ public interface I_C_Payment extends org.compiere.model.I_C_Payment {
 
 	public void setCCPaymentState(String ccPaymentState);
 	
-	// 04193
+	// task 04193
 	public static final String COLUMNNAME_IsAutoAllocateAvailableAmt = "isAutoAllocateAvailableAmt";
 
-	// 04193
+	//task 04193
 	public void setIsAutoAllocateAvailableAmt(boolean IsAutoAllocateAvailableAmt);
 
-	// 04193
+	// task 04193
 	public boolean isAutoAllocateAvailableAmt();
 	
 }

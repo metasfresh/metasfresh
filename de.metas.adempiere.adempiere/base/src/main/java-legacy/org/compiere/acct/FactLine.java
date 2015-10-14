@@ -349,10 +349,6 @@ public final class FactLine extends X_Fact_Acct
 			setC_Period_ID(m_doc.getC_Period_ID());
 		if (m_docLine != null)
 			setC_Tax_ID(m_docLine.getC_Tax_ID());
-		
-		// DocStatus
-		setDocStatus(m_doc.getDocStatus());
-		
 		// Description
 		StringBuilder description = new StringBuilder(m_doc.getDocumentNo());
 		if (m_docLine != null)

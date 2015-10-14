@@ -60,6 +60,7 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.db.CConnection;
 import org.compiere.grid.ed.Calculator;
+import org.compiere.grid.ed.Calendar;
 import org.compiere.interfaces.Server;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_AD_Form;
@@ -543,7 +544,7 @@ public final class AEnv
 		}
 		else if (actionCommand.equals("Calendar"))
 		{
-			showCenterScreen(new org.compiere.grid.ed.Calendar(Env.getFrame(c)));
+			Calendar.builder().buildAndGet();
 		}
 		else if (actionCommand.equals("Editor"))
 		{

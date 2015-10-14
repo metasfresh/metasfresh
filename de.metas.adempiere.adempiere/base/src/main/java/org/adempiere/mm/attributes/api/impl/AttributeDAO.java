@@ -2,7 +2,7 @@ package org.adempiere.mm.attributes.api.impl;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -249,7 +249,7 @@ public class AttributeDAO implements IAttributeDAO
 		final int attributeId = attribute.getM_Attribute_ID();
 
 		//
-		// 07708: Apply AD_Val_Rule when filtering attributes for current context
+		// fresh 07708: Apply AD_Val_Rule when filtering attributes for current context
 		final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter;
 		final int adValRuleId = attribute.getAD_Val_Rule_ID();
 		if (adValRuleId > 0)

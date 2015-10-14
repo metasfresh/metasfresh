@@ -52,7 +52,7 @@ public class CreateCreditMemoFromInvoice extends SvrProcess
 	private boolean referenceInvoice = false;
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/08927_Add_feature_Gutgeschriebener_Betrag_erneut_abrechenbar_%28101267285473%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08927_Add_feature_Gutgeschriebener_Betrag_erneut_abrechenbar_%28101267285473%29
 	 */
 	private static final String PARA_IsCreditedInvoiceReinvoicable = "IsCreditedInvoiceReinvoicable";
 	private boolean creditedInvoiceReinvoicable = false;

@@ -2,7 +2,7 @@ package org.adempiere.warehouse.validationrule;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -42,7 +42,7 @@ import org.compiere.util.NamePair;
 /**
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/04416_Possibility_to_define_Warehouses_which_are_joined_to_certain_Business_Processes_%282013062010000051%29
+ * @task http://dewiki908/mediawiki/index.php/fresh_04416_Possibility_to_define_Warehouses_which_are_joined_to_certain_Business_Processes_%282013062010000051%29
  */
 public class FilterWarehouseByDocTypeValidationRule extends AbstractJavaValidationRule
 {

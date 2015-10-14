@@ -139,7 +139,7 @@ rollout_common()
 
 	local TARGET_HOST=$1
 	check_var TARGET_HOST $TARGET_HOST
-	check_ssh $TARGET_HOST $SSH_PORT $TARGET_USER
+	check_ssh $TARGET_HOST $SSH_PORT
 	
 	
 	trace rollout_common "Creating remote directory ${REMOTE_DIR}"
@@ -229,14 +229,13 @@ check_ssh()
 
 	local host=$1
 	local port=$2
-	local user=$3
-	
-	trace check_ssh "Trying to log into TARGET_HOST ${host} port ${port} as user ${user}"
+
+	trace check_ssh "Trying to log into TARGET_HOST ${host} port ${port} as user adempiere"
 	
 	#check if we can connect to the remote host as user adempiere	
-	ssh -p ${port} ${user}@${host} 'echo ssh connect to TARGET_HOST ${host} port ${port} successfull'
+	ssh -p ${port} adempiere@${host} 'echo ssh connect to TARGET_HOST ${host} port ${port} successfull'
 	if [ "$?" != "0" ]  ; then
-		trace check_ssh "Can't log into TARGET_HOST ${host} port ${port} as user ${user}, trying metas"
+		trace check_ssh "Can't log into TARGET_HOST ${host} port ${port} as user adempiere, trying metas"
 		ssh -p ${port} metas@${host} 'echo ssh connect to TARGET_HOST ${host} port ${port} successfull'
 		if [ "$?" != "0" ]  ; then
 		  trace check_ssh "Can't log into TARGET_HOST ${host} port ${port} as user metas either"

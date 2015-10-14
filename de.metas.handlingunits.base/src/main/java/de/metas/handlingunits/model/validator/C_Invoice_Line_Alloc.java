@@ -45,7 +45,7 @@ public class C_Invoice_Line_Alloc
 	 * Updates invoice line's QtyTU by summing up the invoice candidate's QtyTUs.
 	 *
 	 * @param invoiceLineAlloc
-	 * @task http://dewiki908/mediawiki/index.php/08469_Produzentenabrechnung:_Quantity_of_LU_wrong_%28100093568946%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08469_Produzentenabrechnung:_Quantity_of_LU_wrong_%28100093568946%29
 	 */
 	@ModelChange(
 			timings = {

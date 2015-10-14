@@ -784,7 +784,7 @@ public class EMailDialog
 	private String sendEMail(final EMail email)
 	{
 		final boolean useExternalEMail = isAlwaysUseExternalEMailClient();
-		// useExternalEMail = ADialog.ask(getWindowNo(), this, "de.metas.letters.SendExternalEMail"); // 06933: do not ask if we want to use external email service if not configured
+		// useExternalEMail = ADialog.ask(getWindowNo(), this, "de.metas.letters.SendExternalEMail"); // fresh 06933: do not ask if we want to use external email service if not configured
 
 		if (!useExternalEMail)
 		{

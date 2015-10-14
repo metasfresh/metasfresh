@@ -47,7 +47,7 @@ import de.metas.interfaces.I_M_Movement;
 
 /**
  *
- * @task http://dewiki908/mediawiki/index.php/07050_Eigenverbrauch_metas_in_Existing_Window_Handling_Unit_Pos
+ * @task http://dewiki908/mediawiki/index.php/fresh_07050_Eigenverbrauch_metas_in_Existing_Window_Handling_Unit_Pos
  */
 public class InventoryHUEditorModel extends HUEditorModel
 {
@@ -71,7 +71,7 @@ public class InventoryHUEditorModel extends HUEditorModel
 	/**
 	 * Move selected HUs to the warehouse for direct movements
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/08205_HU_Pos_Inventory_move_Button_%28105838505937%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08205_HU_Pos_Inventory_move_Button_%28105838505937%29
 	 */
 	public I_M_Movement doDirectMoveToWarehouse()
 	{

@@ -80,33 +80,27 @@ install_adempiere()
 	prepare
 		
 	stop_adempiere
-	
-	local JBOSS_APP_FOLDER=adempiere
-
-	if [[ -d "${ADEMPIERE_HOME}/jboss/server/metasfresh" ]]; then
-	   JBOSS_APP_FOLDER=metasfresh
-	fi
 
 	#This is only required until we also modernized the server-rollout
 	trace install_adempiere "Deleting the legacy adempiere.ear if it exists"
-	if [ -d "${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/adempiere.ear" ]; then
-		rm -vr ${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/adempiere.ear
+	if [ -d "${ADEMPIERE_HOME}/jboss/server/adempiere/deploy/adempiere.ear" ]; then
+		rm -vr ${ADEMPIERE_HOME}/jboss/server/adempiere/deploy/adempiere.ear
 	fi
 
 	#This is only required until we also modernized the server-rollout
 	trace install_adempiere "Deleting the legacy adempiereJasper.war if it exists"
-	if [ -f "${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/adempiereJasper.war" ]; then
-		rm -vr ${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/adempiereJasper.war
+	if [ -f "${ADEMPIERE_HOME}/jboss/server/adempiere/deploy/adempiereJasper.war" ]; then
+		rm -vr ${ADEMPIERE_HOME}/jboss/server/adempiere/deploy/adempiereJasper.war
 	fi
 	
 	trace install_adempiere "Copying our deployable files to the jboss deploy folder" 
-	cp -Rv ${ROLLOUT_DIR}/deploy/* ${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy
+	cp -Rv ${ROLLOUT_DIR}/deploy/* ${ADEMPIERE_HOME}/jboss/server/adempiere/deploy
 	
 	trace install_adempiere "Copying the 'client' allInOne jar to ${ADEMPIERE_HOME}/lib" 
 	cp -v ${ROLLOUT_DIR}/adempiere_lib/* ${ADEMPIERE_HOME}/lib
 	
-	trace install_adempiere "Making ${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/reports.war writable to allowing everyone to install jasper files"
-	chmod -R a+w ${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/reports.war
+	trace install_adempiere "Making ${ADEMPIERE_HOME}/jboss/server/adempiere/deploy/reports.war writable to allowing everyone to install jasper files"
+	chmod -R a+w ${ADEMPIERE_HOME}/jboss/server/adempiere/deploy/reports.war
 
 	trace install_adempiere "Calling RUN_Post_Rollout_Processes.sh" 
 	cd $ADEMPIERE_HOME/utils

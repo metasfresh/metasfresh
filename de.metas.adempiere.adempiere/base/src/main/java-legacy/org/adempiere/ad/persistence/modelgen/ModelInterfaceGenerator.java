@@ -31,6 +31,29 @@
 
 package org.adempiere.ad.persistence.modelgen;
 
+/*
+ * #%L
+ * ADempiere ERP - Base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -80,7 +103,31 @@ public class ModelInterfaceGenerator
 
 	/** File Header */
 	public static final String COPY = "";
+	//@formatter:off
 	// NOTE: we are not appending ANY license to generated files because we assume this will be done automatically by a maven plugin.
+//			"/*" + NL
+//					+ " * #%L" + NL
+//					+ " * ADempiere ERP - Base" + NL
+//					+ " * %%" + NL
+//					+ " * Copyright (C) 2015 metas GmbH" + NL
+//					+ " * %%" + NL
+//					+ " * This program is free software: you can redistribute it and/or modify" + NL
+//					+ " * it under the terms of the GNU General Public License as" + NL
+//					+ " * published by the Free Software Foundation, either version 2 of the" + NL
+//					+ " * License, or (at your option) any later version." + NL
+//					+ " * " + NL
+//					+ " * This program is distributed in the hope that it will be useful," + NL
+//					+ " * but WITHOUT ANY WARRANTY; without even the implied warranty of" + NL
+//					+ " * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the" + NL
+//					+ " * GNU General Public License for more details." + NL
+//					+ " * " + NL
+//					+ " * You should have received a copy of the GNU General Public" + NL
+//					+ " * License along with this program.  If not, see" + NL
+//					+ " * <http://www.gnu.org/licenses/gpl-2.0.html>." + NL
+//					+ " * #L%" + NL
+//					+ " */" + NL
+//					+ NL;
+	//@formatter:on
 
 	/** Logger */
 	private static CLogger log = CLogger.getCLogger(ModelInterfaceGenerator.class);

@@ -2,7 +2,7 @@ package org.adempiere.exceptions;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -34,7 +34,7 @@ import org.adempiere.util.Check;
  * </ul>
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/08508_NPE_when_opening_Warenbewegung_-_%C3%9Cbersicht_with_role_Handel_%28109844897323%29
+ * @task http://dewiki908/mediawiki/index.php/fresh_08508_NPE_when_opening_Warenbewegung_-_%C3%9Cbersicht_with_role_Handel_%28109844897323%29
  */
 public class WindowLoadException extends AdempiereException
 {

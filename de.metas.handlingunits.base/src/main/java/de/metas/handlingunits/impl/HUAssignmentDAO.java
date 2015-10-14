@@ -174,7 +174,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.andCollect(I_M_HU_Assignment.COLUMN_M_HU_ID);
 
 		//
-		// 07612: Order by HU ID to preserve allocation order (i.e highest HU quantities / full HUs first)
+		// fresh 07612: Order by HU ID to preserve allocation order (i.e highest HU quantities / full HUs first)
 		queryBuilder.orderBy()
 				.addColumn(I_M_HU.COLUMN_M_HU_ID);
 

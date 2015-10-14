@@ -490,7 +490,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		{
 			type = PayableDocumentType.Invoice;
 			reference = new TableRecordReference(I_C_Invoice.Table_Name, invoiceRow.getC_Invoice_ID());
-			creditMemo = invoiceRow.isCreditMemo() ;
+			creditMemo = invoiceRow.isCreditMemo();
 		}
 		else if (invoiceRow.getC_Order_ID() > 0)
 		{

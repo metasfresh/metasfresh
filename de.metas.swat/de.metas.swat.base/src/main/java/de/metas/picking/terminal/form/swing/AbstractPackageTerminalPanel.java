@@ -127,7 +127,7 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		this.panel = factory.createContainer();
 		this.panelCenter = factory.createContainer();
 
-		// NOTE: init order is important because of our fucked-up architecture. This order was tested on only.
+		// NOTE: init order is important because of our fucked-up architecture. This order was tested on  only.
 		this.productKeysPanel = createProductKeysPanel();
 		this.pickingData = createPackageDataPanel();
 		this.packingMaterialsPanel = createPackingMaterialsKeyLayoutPanel();
@@ -248,7 +248,7 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	{
 		this.frame = frame;
 		frame.setMinimumSize(new Dimension(1024, 760));
-		frame.setMaximumSize(new Dimension(1024, 760));	// cg: maximum size should be 1024x768 : see task 03520
+		frame.setMaximumSize(new Dimension(1024, 760));	// cg: maximum size should be 1024x768 : see task customer03520
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setJMenuBar(null);
 

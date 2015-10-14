@@ -39,7 +39,7 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
  * This workpackage processor invokes {@link MStorage#add(java.util.Properties, int, int, int, int, int, java.math.BigDecimal, java.math.BigDecimal, java.math.BigDecimal, String)}.
  *
  * @author ts
- * @task http://dewiki908/mediawiki/index.php/08999_Lieferdisposition_a.frieden_%28104263801724%29
+ * @task http://dewiki908/mediawiki/index.php/fresh_08999_Lieferdisposition_a.frieden_%28104263801724%29
  */
 public class M_Storage_Add extends WorkpackageProcessorAdapter
 {

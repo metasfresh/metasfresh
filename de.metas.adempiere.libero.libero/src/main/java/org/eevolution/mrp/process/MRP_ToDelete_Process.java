@@ -32,7 +32,7 @@ import org.eevolution.mrp.api.IMRPDocumentDeleteService;
  * Delete all documents which were flagged to be deleted
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/08470_speed_up_MRP_cleanup_%28100715712605%29
+ * @task http://dewiki908/mediawiki/index.php/fresh_08470_speed_up_MRP_cleanup_%28100715712605%29
  */
 public class MRP_ToDelete_Process extends SvrProcess
 {

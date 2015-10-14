@@ -848,7 +848,7 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	/**
 	 * If this DD Order's MRP demand record was fully allocated from QOH then complete forward DD Orders
 	 * 
-	 * @task http://dewiki908/mediawiki/index.php/07961_Handelsware_DD_Order_automatisieren_%28101259925191%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_07961_Handelsware_DD_Order_automatisieren_%28101259925191%29
 	 */
 	@Override
 	public void onQtyOnHandReservation(final IMRPContext mrpContext,

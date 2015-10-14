@@ -26,6 +26,7 @@
 * Sponsors:                                                           *
 * - Company (http://www.globalqss.com)                                *
 ***********************************************************************/
+
 package org.adempiere.process;
 
 import java.util.logging.Level;

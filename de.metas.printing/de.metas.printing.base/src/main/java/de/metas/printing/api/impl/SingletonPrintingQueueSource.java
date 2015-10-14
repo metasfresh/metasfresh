@@ -62,13 +62,6 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 
 	private final List<Integer> AD_User_ToPrint_IDs;
 
-	/**
-	 * Create a new instance
-	 * 
-	 * @param item the item to create the printjob for
-	 * @param adUserPrintJobId the <b>printjob</b>-user. If the queue has {@link I_C_Printing_Queue#isPrintoutForOtherUser()} <code>= true</code>, then the print job's print-job-instruction(s) will
-	 *            not have this user-ID, but the items' reciepents' user-IDs.
-	 */
 	public SingletonPrintingQueueSource(final I_C_Printing_Queue item,
 			final int adUserPrintJobId)
 	{
@@ -89,13 +82,11 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 		}
 	}
 
-	/**
-	 * If the item is for ourselves, then also our hostkey shall be added to the printing instructions.
-	 * Otherwise, the job might be printed by someone else who is logged in with our user-id (e.g SuperUser).
-	 */
 	@Override
 	public PrintingQueueProcessingInfo getProcessingInfo()
 	{
+		// If the item is for ourselves, then also our hostkey shall be added to the printing instructions. 
+		// Otherwise, the job might be printed by someone else who is logged in with our user-id (e.g SuperUser).
 		final boolean createWithSpecificHostKey = !item.isPrintoutForOtherUser();
 		return new PrintingQueueProcessingInfo(adUserPrintJobId, AD_User_ToPrint_IDs, createWithSpecificHostKey);
 	}

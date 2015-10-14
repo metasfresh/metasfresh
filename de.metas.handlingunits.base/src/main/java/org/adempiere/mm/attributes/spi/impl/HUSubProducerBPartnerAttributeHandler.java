@@ -65,7 +65,7 @@ import de.metas.interfaces.I_C_BP_Relation;
  * Retrieve all subproducer BPartners for {@link I_M_HU#getC_BPartner_ID()}.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/06135_Gesch%C3%A4ftspartner_Unterlieferanten_%28108858601576%29
+ * @task http://dewiki908/mediawiki/index.php/fresh_06135_Gesch%C3%A4ftspartner_Unterlieferanten_%28108858601576%29
  */
 public class HUSubProducerBPartnerAttributeHandler
 		extends AttributeValueCalloutAdapter

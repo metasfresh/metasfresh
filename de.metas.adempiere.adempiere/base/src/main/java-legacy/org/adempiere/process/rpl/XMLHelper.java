@@ -165,7 +165,7 @@ public class XMLHelper
 		return writer.toString();
 	}
 
-	// t.schoneberg@metas.de, 03132: code extraced from class 'TopicRplExportProcessor'
+	// t.schoneberg@metas.de, 3132: code extraced from class 'TopicRplExportProcessor'
 	public static void writeDocument(final Writer writer, final Node node)
 	{
 		// Construct Transformer Factory and Transformer

@@ -2,7 +2,7 @@ package org.adempiere.bpartner.service.impl;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -181,7 +181,7 @@ public class BPartnerBL implements IBPartnerBL
 		}
 
 		//
-		// 07973: Attempt to override SO shipment consolidation if configured
+		// fresh 07973: Attempt to override SO shipment consolidation if configured
 		if (isSOTrx)
 		{
 			final boolean allowConsolidateInOutOverrideDefault = false; // default=false (preserve existing logic)

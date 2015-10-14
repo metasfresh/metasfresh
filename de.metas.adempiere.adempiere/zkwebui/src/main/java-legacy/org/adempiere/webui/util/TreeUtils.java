@@ -13,7 +13,6 @@
  *****************************************************************************/
 package org.adempiere.webui.util;
 
-
 import java.util.List;
 
 import org.compiere.model.MTreeNode;

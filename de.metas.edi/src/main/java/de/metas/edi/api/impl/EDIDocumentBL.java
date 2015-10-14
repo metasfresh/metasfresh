@@ -157,7 +157,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 						org.compiere.model.I_C_Invoice.COLUMNNAME_C_Order_ID, order.getDocumentNo()));
 			}
 		}
-		// 05768 took out poreference mandatory
+		// fresh_05768 took out poreference mandatory
 		// if (Check.isEmpty(invoice.getPOReference()))
 		// {
 		// feedback.add(new EDIFillMandatoryException(org.compiere.model.I_C_Invoice.COLUMNNAME_POReference));
@@ -225,7 +225,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			feedback.addAll(isValidBPLocation(dropShipLocation));
 		}
 
-		// 05768 took out poreference mandatory
+		// fresh_05768 took out poreference mandatory
 		// if (Check.isEmpty(inOut.getPOReference()))
 		// {
 		// feedback.add(new EDIFillMandatoryException(org.compiere.model.I_M_InOut.COLUMNNAME_POReference));

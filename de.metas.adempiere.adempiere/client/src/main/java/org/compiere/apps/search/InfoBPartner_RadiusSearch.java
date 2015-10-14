@@ -5,7 +5,7 @@ package org.compiere.apps.search;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.client
+ * ADempiere ERP - Desktop Client
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

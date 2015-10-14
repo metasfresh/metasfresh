@@ -17,7 +17,6 @@
 
 package org.adempiere.webui.panel;
 
-
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.component.Panel;
 import org.adempiere.webui.theme.ITheme;

@@ -2,7 +2,7 @@ package org.adempiere.plaf;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -50,7 +50,7 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 	public static final String NAME = "metas Fresh Theme";
 
 	public static final String KEY_Logo_TextColor = "Logo.text.color";
-	private static final ColorUIResource LOGO_TEXT_COLOR = new ColorUIResource(118, 184, 40); // #76B828
+	static final ColorUIResource LOGO_TEXT_COLOR = new ColorUIResource(118, 184, 40); // #76B828
 	private static final ColorUIResource LOGO_TEXT_COLOR_LIGHT = new ColorUIResource(187, 237, 128); // #BBED80
 
 	public static final String KEY_Logo_BackgroundColor = "Logo.background.color";
@@ -62,12 +62,12 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 	public static final String KEY_Logo_TextFontSmall = "Logo.text.font.small";
 	private static final FontUIResource LOGO_TEXT_FONT_SMALL = new FontUIResource("Serif", Font.ITALIC, 10);
 
-	@SuppressWarnings("unused")
-	private static final ColorUIResource COLOR_RED_METAS = new ColorUIResource(135, 3, 0);
+	static final ColorUIResource COLOR_RED_METAS = new ColorUIResource(135, 3, 0);
 	private static final ColorUIResource COLOR_RED_LIGHT = new ColorUIResource(255, 204, 204);
 	private static final ColorUIResource COLOR_RED = new ColorUIResource(Color.RED);
 	private static final ColorUIResource COLOR_LightGray = new ColorUIResource(230, 230, 230);
-	private static final ColorUIResource COLOR_LightGreen = new ColorUIResource(235, 250, 217);
+	static final ColorUIResource COLOR_Green = LOGO_TEXT_COLOR_LIGHT;
+	static final ColorUIResource COLOR_LightGreen = new ColorUIResource(235, 250, 217);
 	@SuppressWarnings("unused")
 	private static final ColorUIResource COLOR_Transparent = new ColorUIResource(new Color(0, 0, 0, 0));
 
@@ -229,6 +229,10 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 		//
 		// Swing Event Notifier
 		table.putDefaults(SwingEventNotifierUI.getUIDefaults());
+		
+		//
+		// Color date+time picker
+		table.putDefaults(CalendarUI.getUIDefaults());
 
 		//
 		// Load UIDefaults from sysconfigs database

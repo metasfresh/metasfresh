@@ -2,7 +2,7 @@ package org.adempiere.webui.panel;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.zkwebui
+ * ADempiere ERP - ZkWebUI Lib
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

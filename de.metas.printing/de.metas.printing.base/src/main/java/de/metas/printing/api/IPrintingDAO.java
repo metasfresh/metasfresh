@@ -142,11 +142,10 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Retrieves a printer config by host key or user ID. One off both has to be set.
-	 * If no printer config exists, the method returns <code>null</code>.
 	 * 
 	 * @param ctx ctx and trxName to use
-	 * @param hostKey the hostKey to retrieve the config for. May be <code>null</code> or empty string.
-	 * @param userToPrintId if the given <code>hostKey</code> is <code>null</code> or empty then this parameter must be <code>> 0</code>. Used to retrieve the config by its
+	 * @param hostKey the hostKey to retrieve the config for. May be <code>null</code>
+	 * @param userToPrintId if the given <code>hostKey</code> is <code>null</code> then this parameter must be <code>> 0</code>. Used to retrieve the config by its
 	 *            {@link I_AD_Printer_Config#COLUMN_CreatedBy CreatedBy} value
 	 * @return
 	 */

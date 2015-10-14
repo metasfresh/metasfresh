@@ -35,16 +35,15 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MUser;
 import org.compiere.util.EMail;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -58,8 +57,6 @@ import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor;
-import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
@@ -147,7 +144,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	public void enqueueAsyncBatch(final I_C_Async_Batch asyncBatch)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, CheckProcessedAsynBatchWorkpackageProcessor.class);
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueue(ctx, CheckProcessedAsynBatchWorkpackageProcessor.class);
 		queue.setAsyncBatchForNewWorkpackages(asyncBatch);
 		I_C_Queue_Block queueBlock = null;
 
@@ -156,7 +153,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			queueBlock = queue.enqueueBlock(ctx);
 		}
 
-		final IWorkpackagePrioStrategy prio = NullWorkpackagePrio.INSTANCE; // don't specify a particular prio. this is OK because we assume that there is a dedicated queue/thread for CheckProcessedAsynBatchWorkpackageProcessor
+		final String prio = null; // don't specify a particular prio. this is OK because we assume that there is a dedicated queue/thread for CheckProcessedAsynBatchWorkpackageProcessor
 
 		final I_C_Queue_WorkPackage queueWorkpackage = queue.enqueueWorkPackage(queueBlock, prio);
 
@@ -308,7 +305,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			@Override
 			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
 			{
-				final MClient client = LegacyAdapters.convertToPO(Services.get(IClientDAO.class).retriveClient(ctx));
+				final MClient client = MClient.get(ctx, Env.getAD_Client_ID(ctx));
 
 				variables.put(MADBoilerPlate.VAR_UserPO, asyncBatch);
 

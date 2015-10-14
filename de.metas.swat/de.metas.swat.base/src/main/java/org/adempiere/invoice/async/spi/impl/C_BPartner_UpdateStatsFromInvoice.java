@@ -38,7 +38,7 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
  * <code>async == false</code>.
  * 
  * @author ts
- * @task http://dewiki908/mediawiki/index.php/08999_Lieferdisposition_a.frieden_%28104263801724%29
+ * @task http://dewiki908/mediawiki/index.php/fresh_08999_Lieferdisposition_a.frieden_%28104263801724%29
  */
 public class C_BPartner_UpdateStatsFromInvoice extends WorkpackageProcessorAdapter
 {

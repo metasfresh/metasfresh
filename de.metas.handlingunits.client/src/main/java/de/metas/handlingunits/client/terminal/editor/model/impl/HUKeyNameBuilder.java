@@ -283,7 +283,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 		//
 		// FontMetrics are used / created to analyze the string width
 		final ITerminalFactory terminalFactory = huKey.getTerminalFactory();
-		final Font font = HUTerminalHelper.getDecreasedFontSize(terminalFactory.getDefaultFieldFont()); // 06936: Calculate by decreased font size
+		final Font font = HUTerminalHelper.getDecreasedFontSize(terminalFactory.getDefaultFieldFont()); // fresh 06936: Calculate by decreased font size
 
 		//
 		// Actual HUKey / Box width MINUS some pixels so that we get some small border space
@@ -297,7 +297,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 		// Do not calculate considering capacity string width if it's on the next line
 		String productNameTrunc = productName;
 
-		// 06936: Only start cutting letters if the name without last 3 characters exceeds box width
+		// fresh 06936: Only start cutting letters if the name without last 3 characters exceeds box width
 		// Reason: ... are sometimes shorter and it's acceptable if a maximum of 3 characters "violate" the padding
 		if (terminalFactory.computeStringWidth(productNameTrunc.substring(0, 3), font) > boxWidth)
 		{

@@ -100,7 +100,7 @@ public class StorageBL implements IStorageBL
 			final String trxName)
 	{
 		// @formatter:off
-		Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, M_Storage_Add.class)
+		Services.get(IWorkPackageQueueFactory.class).getQueue(ctx, M_Storage_Add.class)
 			.newBlock()
 				.newWorkpackage()
 				.bindToTrxName(trxName)

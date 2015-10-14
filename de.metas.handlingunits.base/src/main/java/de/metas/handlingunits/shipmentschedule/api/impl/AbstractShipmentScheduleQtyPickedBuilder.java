@@ -450,7 +450,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	protected final IAllocationRequest createShipmentScheduleAllocationRequest(final I_M_ShipmentSchedule sched, final BigDecimal qty, final I_C_UOM uom)
 	{
 		// Force Qty Allocation: we need to allocate even if the HU is full
-		// see http://dewiki908/mediawiki/index.php/05706_Meldung_im_Aktuellen_UAT%3F_Sollte_schon_weg_sein%2C_oder%3F_%28105871951705%29
+		// see http://dewiki908/mediawiki/index.php/fresh_05706_Meldung_im_Aktuellen_UAT%3F_Sollte_schon_weg_sein%2C_oder%3F_%28105871951705%29
 		final boolean forceQtyAllocation = true;
 
 		final IHUContext huContext = getHUContext();

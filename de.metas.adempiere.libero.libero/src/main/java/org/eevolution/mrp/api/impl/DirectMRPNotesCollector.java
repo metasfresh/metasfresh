@@ -31,7 +31,7 @@ import org.eevolution.mrp.api.IMRPNotesCollector;
  * An {@link IMRPNotesCollector} which is simply saving the notes in database without doing any notes collecting.
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/08470_speed_up_MRP_cleanup_%28100715712605%29
+ * @task http://dewiki908/mediawiki/index.php/fresh_08470_speed_up_MRP_cleanup_%28100715712605%29
  */
 public final class DirectMRPNotesCollector implements IMRPNotesCollector
 {

@@ -424,7 +424,7 @@ public class ReceiptScheduleHUGenerator
 	 *
 	 * Also, it:
 	 * <ul>
-	 * <li>Makes sure LU/TU configuration is adjusted to CUs/TUs to order quantity to not produce more HUs then needed. (07378)
+	 * <li>Makes sure LU/TU configuration is adjusted to CUs/TUs to order quantity to not produce more HUs then needed. (fresh 07378)
 	 * </ul>
 	 */
 	private void createInitialLUTUConfiguration(final I_M_ReceiptSchedule schedule)
@@ -441,7 +441,7 @@ public class ReceiptScheduleHUGenerator
 
 		//
 		// Make sure LU/TU configuration is adjusted to CUs/TUs to order quantity
-		// to not produce more HUs then needed. (07378)
+		// to not produce more HUs then needed. (fresh 07378)
 		final I_C_OrderLine orderLine = getC_OrderLine(schedule);
 		final BigDecimal qtyToOrderCUs = orderLine.getQtyOrdered();
 		final BigDecimal qtyToOrderTUs = orderLine.getQtyEnteredTU();

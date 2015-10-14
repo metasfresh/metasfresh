@@ -2,7 +2,7 @@ package org.adempiere.util.agg.key;
 
 /*
  * #%L
- * de.metas.util
+ * org.adempiere.util
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

@@ -2,7 +2,7 @@ package de.metas.banking.misc;
 
 /*
  * #%L
- * de.metas.banking.swingui
+ * de.metas.banking.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -818,16 +818,16 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 					+ auszugsnummer.getText() + "-"
 					+ datum.getText().substring(0, 4));
 		} else if (e.getSource() == chooseDate) {
-			Calendar c = new Calendar(this, "Datum", new Timestamp(System
-					.currentTimeMillis()), DisplayType.Date);
-			c.setSize(250, 250);
-			c.setLocation(650, 450);
-			c.setVisible(true);
-			date = new Date(c.getTimestamp().getTime());
+			
+			final Timestamp datePicked = Calendar.builder()
+					.setParentComponent(chooseDate)
+					.setDialogTitle("Datum")
+					.setDisplayType(DisplayType.Date)
+					.setDate(new Timestamp(System.currentTimeMillis()))
+					.buildAndGet();
+			date = new Date(datePicked.getTime());
 			datum.setText(date.toString());
-			name.setText(comboBox.getSelectedItem() + " "
-					+ auszugsnummer.getText() + "-"
-					+ datum.getText().substring(0, 4));
+			name.setText(comboBox.getSelectedItem() + " " + auszugsnummer.getText() + "-" + datum.getText().substring(0, 4));
 		} else if (e.getSource() == createNewBS
 				&& auszugsnummer.getText() != null
 				&& !"".equals(auszugsnummer.getText())) {

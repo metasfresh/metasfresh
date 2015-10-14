@@ -153,7 +153,7 @@ public class ProductKey extends TerminalKey
 
 		// Max text length
 		// NOTE: please think twice before changing this number because it was tuned for 1024x740 resolution
-		// see http://dewiki908/mediawiki/index.php/05863_Fenster_Kommissionierung_-_bessere_Ausnutzung_Kn%C3%B6pfefelder_f%C3%BCr_Textausgabe_%28102244669218%29
+		// see http://dewiki908/mediawiki/index.php/fresh_05863_Fenster_Kommissionierung_-_bessere_Ausnutzung_Kn%C3%B6pfefelder_f%C3%BCr_Textausgabe_%28102244669218%29
 		final int maxLength = 25;
 		
 		final String pValue = Utils.mkTruncatedstring(product.getValue(), maxLength);

@@ -1,5 +1,5 @@
 /**
- * This package is about <a href="http://dewiki908/mediawiki/index.php/07344_Karottenabrechnung_%28108429238530%29">07344 Karottenabrechnung (108429238530)</a>.
+ * This package is about <a href="http://dewiki908/mediawiki/index.php/fresh_07344_Karottenabrechnung_%28108429238530%29">fresh 07344 Karottenabrechnung (108429238530)</a>.
  * <p>
  * The rough workflow from a user's perspective is as follows:
  * <ul>

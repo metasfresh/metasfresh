@@ -114,7 +114,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	{
 		Check.assumeNotNull(model, "model not null");
 
-		// 07669: Use the transaction of the thread and do not rely on the model's transaction
+		// fresh 07669: Use the transaction of the thread and do not rely on the model's transaction
 		final IContextAware threadContextAware = Services.get(ITrxManager.class).createThreadContextAware(model);
 
 		return new MaterialTrackingQueryCompiler()

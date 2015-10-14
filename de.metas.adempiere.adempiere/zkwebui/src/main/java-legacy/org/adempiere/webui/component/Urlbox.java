@@ -12,7 +12,6 @@
  *****************************************************************************/
 package org.adempiere.webui.component;
 
-
 /**
  * URL Box
  * @author Low Heng Sin

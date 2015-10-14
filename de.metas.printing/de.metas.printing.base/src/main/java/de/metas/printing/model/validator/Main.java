@@ -22,8 +22,7 @@ package de.metas.printing.model.validator;
  * #L%
  */
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.cache.IModelCacheService;
+
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -32,7 +31,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.report.IJasperServiceRegistry;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
-import org.compiere.util.CacheMgt;
 
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -41,8 +39,6 @@ import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_Calibration;
 import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
-import de.metas.printing.model.I_AD_PrinterRouting;
-import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_AD_User_Login;
 import de.metas.printing.model.I_C_PrintPackageData;
@@ -117,7 +113,7 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new AD_PrinterTray_Matching(), client);
 		engine.addModelValidator(new C_BPartner(), client); // task 08958
 
-		engine.addModelValidator(new C_Printing_Queue(), client);
+		engine.addModelValidator(new C_Printing_Queue(), client); 
 		engine.addModelValidator(new C_Printing_Queue_Recipient(), client);
 
 		// NOTE: we have an entry in AD_ModelValidator for "SwingPrintingClientValidator", so don't add it programmatically
@@ -128,23 +124,5 @@ public class Main extends AbstractModuleInterceptor
 		//
 		// Adapter: Old school Jasper Printing Service to our Printing
 		Services.get(IJasperServiceRegistry.class).registerJasperService(ServiceType.MASS_PRINT_FRAMEWORK, de.metas.printing.adapter.JasperServiceAdapter.instance);
-
-		// callouts
-		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-
-		// task 09417 
-		programaticCalloutProvider.registerAnnotatedCallout(de.metas.printing.callout.C_Doc_Outbound_Config.instance);
 	}
-
-	@Override
-	protected void setupCaching(IModelCacheService cachingService)
-	{
-		// task 09417: while we are in the area, also make sure that config changes are propagated
-		final CacheMgt cacheMgt = CacheMgt.get();
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_PrinterRouting.Table_Name);
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Config.Table_Name);
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Matching.Table_Name);
-	}
-	
-	
 }

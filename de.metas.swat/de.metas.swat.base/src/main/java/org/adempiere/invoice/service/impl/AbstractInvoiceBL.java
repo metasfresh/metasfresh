@@ -277,7 +277,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				}
 			}
 		}
-
+		
 		InterfaceWrapperHelper.save(to);
 
 		final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> additionalDocLineCopyHandler;
@@ -1236,7 +1236,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			//
 			// Retrieve the reversal invoice line
 			final I_C_InvoiceLine reversalLine = invoiceDAO.retrieveReversalLine(il, reversalInvoiceId);
-
+			
 			// 08809
 			// Also set the Attribute Set Instance in the reversal line
 			attributeSetInstanceBL.cloneASI(reversalLine, il);
@@ -1304,7 +1304,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final String trxName = InterfaceWrapperHelper.getTrxName(invoices.get(0));
 
 			final IWorkPackageBuilder newWorkpackage = Services.get(IWorkPackageQueueFactory.class)
-					.getQueueForEnqueuing(ctx, C_BPartner_UpdateStatsFromInvoice.class)
+					.getQueue(ctx, C_BPartner_UpdateStatsFromInvoice.class)
 					.newBlock()
 					.newWorkpackage();
 

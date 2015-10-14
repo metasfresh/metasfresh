@@ -225,7 +225,7 @@ public class HUIssuePanel implements IHUSelectPanel
 				final String action = String.valueOf(evt.getNewValue());
 				if (IConfirmPanel.ACTION_OK.equals(action) || IConfirmPanel.ACTION_Cancel.equals(action))
 				{
-					// 06946: OK and Cancel now both close the window. Issuing moved to its own button.
+					// fresh 06946: OK and Cancel now both close the window. Issuing moved to its own button.
 					dispose();
 				}
 				else if (HUIssuePanel.ACTION_Issue.equals(action))

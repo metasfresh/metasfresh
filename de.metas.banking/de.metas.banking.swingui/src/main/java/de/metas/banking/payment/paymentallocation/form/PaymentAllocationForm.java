@@ -69,7 +69,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
@@ -127,7 +126,6 @@ public class PaymentAllocationForm
 	private final IPaymentRequestDAO paymentRequestDAO = Services.get(IPaymentRequestDAO.class);
 	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	
 	/** This AD_Form_ID */
 	public static final int AD_FORM_ID = 104;
@@ -138,9 +136,6 @@ public class PaymentAllocationForm
 	private static final String PROPERTY_C_Currency_ID = "C_Currency_ID";
 	private static final String PROPERTY_RefreshButton = "Refresh";
 	private final List<Object> componentList = new ArrayList<>();
-
-	// sys config vars
-	private static final String SYSCONFIG_HideIsmultiCurrencyField = "PaymentAllocation.HideIsmultiCurrencyField";
 
 	// private static final String HEADER_PAYMENT_INVOICE_CANDIDATE_FORM = "ReadPaymentForm";
 	private static final int ReadPaymentForm_ID = 540056;
@@ -287,8 +282,6 @@ public class PaymentAllocationForm
 			currencyField.setValue(Env.getContextAsInt(ctx, "$C_Currency_ID"), false);
 			setC_Currency_ID(Env.getContextAsInt(ctx, "$C_Currency_ID"));
 		}
-		// hide multicurrency flag
-		if (!sysConfigBL.getBooleanValue(SYSCONFIG_HideIsmultiCurrencyField, true))
 		{
 			final GridField multiCurrencyField = parameterPanel.newFormField()
 					.setDisplayType(DisplayType.YesNo)
@@ -660,13 +653,13 @@ public class PaymentAllocationForm
 			createUpdatePaySelection();
 		}
 		//
-		// Assign current Payment Reference to selected Invoice (08129)
+		// Assign current Payment Reference to selected Invoice (fresh_08129)
 		else if (e.getActionCommand().equalsIgnoreCase(assignPaymentReference.getColumnName()))
 		{
 			assignPaymentReferenceToSelectedInvoice();
 		}
 		//
-		// 08296: Functionality not used as it was originally intended; instead, they wish to directly read the Payment string and use it's reference
+		// fresh 08296: Functionality not used as it was originally intended; instead, they wish to directly read the Payment string and use it's reference
 		//
 		// else if (e.getActionCommand().equals(readPaymentFormButton.getColumnName()))
 		// {
@@ -883,7 +876,7 @@ public class PaymentAllocationForm
 	/**
 	 * Assign current Payment Reference to selected Invoice.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/08129_Referenznummer_speichern_zu_Eingangsrechnung_%28100097741294%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08129_Referenznummer_speichern_zu_Eingangsrechnung_%28100097741294%29
 	 */
 	private void assignPaymentReferenceToSelectedInvoice()
 	{
@@ -1123,7 +1116,7 @@ public class PaymentAllocationForm
 
 	/**
 	 * Open Payment Invoice Candidate Form<br>
-	 * 08296: Functionality not used as it was originally intended; instead, they wish to directly read the Payment string and use it's reference
+	 * fresh 08296: Functionality not used as it was originally intended; instead, they wish to directly read the Payment string and use it's reference
 	 */
 	@SuppressWarnings("unused")
 	private void openReadPaymentForm()
@@ -1287,7 +1280,7 @@ public class PaymentAllocationForm
 	 *
 	 * NOTE: this method was introduced to support the use-case when user is deleting/inactivating a payment request he just created, and then he presses refresh button.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/08596_Zahlschein_Zuordnung_l%C3%B6schen_k%C3%B6nnen_%28105873815729%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08596_Zahlschein_Zuordnung_l%C3%B6schen_k%C3%B6nnen_%28105873815729%29
 	 */
 	private final void resetCurrentPaymentRequestIfSomethingChanged()
 	{

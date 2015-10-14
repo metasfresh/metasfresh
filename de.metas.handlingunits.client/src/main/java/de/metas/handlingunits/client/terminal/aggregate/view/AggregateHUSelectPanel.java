@@ -83,7 +83,7 @@ public class AggregateHUSelectPanel extends InventoryHUSelectPanel<AggregateHUSe
 		});
 
 		//
-		// 07834: Close open picked HUs
+		// fresh 07834: Close open picked HUs
 		final ITerminalButton bCloseOpenPickedHUs = confirmPanel.addButton(ACTION_CloseOpenPickedHUs);
 		bCloseOpenPickedHUs.addListener(new UILoadingPropertyChangeListener(getComponent())
 		{
@@ -95,7 +95,7 @@ public class AggregateHUSelectPanel extends InventoryHUSelectPanel<AggregateHUSe
 		});
 
 		//
-		// 07560: Display Drafted/Prepared shipments
+		// fresh 07560: Display Drafted/Prepared shipments
 		final ITerminalButton bShowDraftedShipments = confirmPanel.addButton(ACTION_ShowDraftedShipments);
 		bShowDraftedShipments.addListener(new UILoadingPropertyChangeListener(getComponent())
 		{

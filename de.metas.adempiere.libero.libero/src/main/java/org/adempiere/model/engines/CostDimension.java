@@ -279,7 +279,7 @@ public final class CostDimension
 		// Filter by organization, only if it's set and we are querying the M_Cost table.
 		// Else, you can get no results.
 		// e.g. querying PP_Order_Cost, have this.AD_Org_ID=0 but PP_Order_Costs are created using PP_Order's AD_Org_ID
-		// see http://dewiki908/mediawiki/index.php/07741_Rate_Variance_%28103334042334%29.
+		// see http://dewiki908/mediawiki/index.php/fresh_07741_Rate_Variance_%28103334042334%29.
 		if (this.AD_Org_ID > 0 || I_M_Cost.Table_Name.equals(tableName))
 		{
 			queryBuilder.addEqualsFilter(COLUMNNAME_AD_Org_ID, this.AD_Org_ID);

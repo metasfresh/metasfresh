@@ -36,8 +36,8 @@ public class C_Queue_PackageProcessor
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
 			, ifColumnsChanged = I_C_Queue_PackageProcessor.COLUMNNAME_Classname)
-	public void validateClassname(final I_C_Queue_PackageProcessor packageProcessor)
+	public void validateClassname(final I_C_Queue_PackageProcessor packageProcessorDef)
 	{
-		Services.get(IWorkpackageProcessorFactory.class).validateWorkpackageProcessor(packageProcessor);
+		Services.get(IWorkpackageProcessorFactory.class).validateWorkpackageProcessor(packageProcessorDef);
 	}
 }

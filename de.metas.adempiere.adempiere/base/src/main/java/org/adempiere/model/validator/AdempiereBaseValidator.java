@@ -2,7 +2,7 @@ package org.adempiere.model.validator;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -37,7 +37,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Ref_List;
-import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
@@ -175,8 +174,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_ClientInfo.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Org.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_OrgInfo.Table_Name);
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Image.Table_Name); // mainly for logos
-
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_SysConfig.Table_Name); // also broadcast sysconfig changes
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Image.Table_Name); // mainly for Logos
 	}
 }

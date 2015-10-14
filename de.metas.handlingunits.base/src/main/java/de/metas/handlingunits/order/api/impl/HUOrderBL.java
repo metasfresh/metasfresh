@@ -75,7 +75,7 @@ public class HUOrderBL implements IHUOrderBL
 			else
 			{
 				// pip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(olPO.getM_Product(), olPO.getC_BPartner(), olPO.getDateOrdered(), huUnitType);
-				// 06730 : Removed functionality for now.
+				// fresh 06730 : Removed functionality for now.
 				pip = null;
 			}
 		}
@@ -109,7 +109,7 @@ public class HUOrderBL implements IHUOrderBL
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 			final I_M_HU_PI_Item_Product pipVirtual = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 			ol.setM_HU_PI_Item_Product(pipVirtual);
-			// 05825 : Update Prices and set prices
+			//  05825 : Update Prices and set prices
 			Services.get(IOrderLineBL.class).updatePrices(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 			Services.get(IOrderLineBL.class).setPricesIfNotIgnored(ctx, ol,
@@ -133,12 +133,12 @@ public class HUOrderBL implements IHUOrderBL
 			packDescription.append(Check.isEmpty(description, true) ? "" : description);
 			ol.setPackDescription(packDescription.toString());
 
-			// 05131 : Changed column from virtual to real.
+			//  05131 : Changed column from virtual to real.
 			if (!ol.isManualQtyItemCapacity())
 			{
 				ol.setQtyItemCapacity(qtyCap);
 			}
-			// 05825 : Update Prices and set prices
+			//  05825 : Update Prices and set prices
 			Services.get(IOrderLineBL.class).updatePrices(ol);
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);

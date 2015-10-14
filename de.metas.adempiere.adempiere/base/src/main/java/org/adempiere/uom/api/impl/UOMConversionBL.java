@@ -2,7 +2,7 @@ package org.adempiere.uom.api.impl;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -142,7 +142,7 @@ public class UOMConversionBL implements IUOMConversionBL
 	protected BigDecimal convertQty0(I_M_Product product, BigDecimal qty, I_C_UOM uomFrom, I_C_UOM uomTo)
 	{
 		// FIXME: this is actually a workaround. We shall refactor the MUOMConversion completely
-		// see http://dewiki908/mediawiki/index.php/05529_Fix_UOM_Conversion_%28109933191619%29
+		// see http://dewiki908/mediawiki/index.php/fresh_05529_Fix_UOM_Conversion_%28109933191619%29
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 

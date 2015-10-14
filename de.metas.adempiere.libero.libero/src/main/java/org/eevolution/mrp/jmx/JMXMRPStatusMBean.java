@@ -43,7 +43,7 @@ public interface JMXMRPStatusMBean
 	 * Helper method to check forward DD Order demands for a given {@link I_PP_MRP} demand.
 	 * 
 	 * @param ppMRPDemandId
-	 * @task http://dewiki908/mediawiki/index.php/07961_Handelsware_DD_Order_automatisieren_%28101259925191%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_07961_Handelsware_DD_Order_automatisieren_%28101259925191%29
 	 */
 	void checkForwardDDOrderDemandsByDDOrderDocumentNo(String ddOrderDocumentNo);
 	

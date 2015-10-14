@@ -32,7 +32,7 @@ public interface I_C_Queue_PackageProcessor
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 6 - System - Client
+    /** AccessLevel = 6 - System - Client 
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
 
@@ -85,29 +85,6 @@ public interface I_C_Queue_PackageProcessor
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Java-Klasse.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setClassname (java.lang.String Classname);
-
-	/**
-	 * Get Java-Klasse.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getClassname();
-
-    /** Column definition for Classname */
-    public static final org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object> COLUMN_Classname = new org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object>(I_C_Queue_PackageProcessor.class, "Classname", null);
-    /** Column name Classname */
-    public static final String COLUMNNAME_Classname = "Classname";
-
-	/**
 	 * Set WorkPackage Processor.
 	 *
 	 * <br>Type: ID
@@ -129,6 +106,29 @@ public interface I_C_Queue_PackageProcessor
     public static final org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object> COLUMN_C_Queue_PackageProcessor_ID = new org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object>(I_C_Queue_PackageProcessor.class, "C_Queue_PackageProcessor_ID", null);
     /** Column name C_Queue_PackageProcessor_ID */
     public static final String COLUMNNAME_C_Queue_PackageProcessor_ID = "C_Queue_PackageProcessor_ID";
+
+	/**
+	 * Set Java-Klasse.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setClassname (java.lang.String Classname);
+
+	/**
+	 * Get Java-Klasse.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getClassname();
+
+    /** Column definition for Classname */
+    public static final org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object> COLUMN_Classname = new org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object>(I_C_Queue_PackageProcessor.class, "Classname", null);
+    /** Column name Classname */
+    public static final String COLUMNNAME_Classname = "Classname";
 
 	/**
 	 * Get Erstellt.
@@ -209,29 +209,6 @@ public interface I_C_Queue_PackageProcessor
     public static final org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object>(I_C_Queue_PackageProcessor.class, "EntityType", null);
     /** Column name EntityType */
     public static final String COLUMNNAME_EntityType = "EntityType";
-
-	/**
-	 * Set Interner Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setInternalName (java.lang.String InternalName);
-
-	/**
-	 * Get Interner Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getInternalName();
-
-    /** Column definition for InternalName */
-    public static final org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object>(I_C_Queue_PackageProcessor.class, "InternalName", null);
-    /** Column name InternalName */
-    public static final String COLUMNNAME_InternalName = "InternalName";
 
 	/**
 	 * Set Aktiv.

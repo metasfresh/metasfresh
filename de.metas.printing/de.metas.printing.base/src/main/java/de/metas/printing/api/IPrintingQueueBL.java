@@ -105,16 +105,6 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * @return a list of queue sources; note that the size of this list is expected to be moderate, while the number of items in each source instance might be very large.
 	 */
 	List<IPrintingQueueSource> createPrintingQueueSources(Properties ctx, IPrintingQueueQuery printingQueueQuery);
-
-	/**
-	 * Note: even if there is only one single user, we still have set IsPrintoutForOtherUser <code>true</code> and therefore create a recipients list, because we will be creating a print job for
-	 * another user, and that's a big difference to creating one for ourselves, as we do not know the other user's <code>HostKey</code>.
-	 * <p>
-	 * Also see
-	 * {@link IPrintJobBL#createPrintJobInstructions(de.metas.printing.model.I_C_Print_Job, int, boolean, de.metas.printing.model.I_C_Print_Job_Line, de.metas.printing.model.I_C_Print_Job_Line, int)}.
-	 * 
-	 * @param item
-	 * @param userToPrintIds
-	 */
-	void setPrintoutForOtherUsers(final I_C_Printing_Queue item, final Set<Integer> userToPrintIds);
+	
+	void setUsersToPrint(final I_C_Printing_Queue item, final Set<Integer> userToPrintIds);
 }

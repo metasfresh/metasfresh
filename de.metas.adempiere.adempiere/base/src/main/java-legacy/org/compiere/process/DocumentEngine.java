@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -291,13 +290,13 @@ public class DocumentEngine implements DocAction
 					return false;
 			}
 			status = completeIt();
-
+			
 			// Post it if applies
 			if (STATUS_Completed.equals(status))
 			{
 				postIt(PostImmediate.IfConfigured);
 			}
-
+			
 			return STATUS_Completed.equals(status)
 					|| STATUS_InProgress.equals(status)
 					|| STATUS_WaitingPayment.equals(status)
@@ -479,7 +478,7 @@ public class DocumentEngine implements DocAction
 		{
 			return ;
 		}
-
+		
 		// Make sure document is saved before we are asking to be posted
 		InterfaceWrapperHelper.save(m_document);
 
@@ -491,7 +490,7 @@ public class DocumentEngine implements DocAction
 				.setFailOnError(false) // backward compatibility
 				.postIt();
 	}	// postIt
-
+	
 	/**
 	 * Void Document. Status: Voided
 	 * 
@@ -547,9 +546,6 @@ public class DocumentEngine implements DocAction
 			{
 				m_status = STATUS_Closed;
 				m_document.setDocStatus(m_status);
-
-				// task 09243: update doc status in the fact accounts of the document
-				Services.get(IFactAcctDAO.class).updateDocStatusForDocument(m_document, m_status);
 				return true;
 			}
 			return false;
@@ -575,9 +571,6 @@ public class DocumentEngine implements DocAction
 			{
 				m_status = STATUS_Reversed;
 				m_document.setDocStatus(m_status);
-
-				// task 09243: update doc status in the fact accounts of the document
-				Services.get(IFactAcctDAO.class).updateDocStatusForDocument(m_document, m_status);
 				return true;
 			}
 			return false;
@@ -603,9 +596,6 @@ public class DocumentEngine implements DocAction
 			{
 				m_status = STATUS_Reversed;
 				m_document.setDocStatus(m_status);
-				
-				// task 09243: update doc status in the fact accounts of the document
-				Services.get(IFactAcctDAO.class).updateDocStatusForDocument(m_document, m_status);
 				return true;
 			}
 			return false;
@@ -808,7 +798,7 @@ public class DocumentEngine implements DocAction
 	{
 		throw new IllegalStateException(EXCEPTION_MSG);
 	}
-
+	
 	@Override
 	public I_AD_Client getAD_Client()
 	{

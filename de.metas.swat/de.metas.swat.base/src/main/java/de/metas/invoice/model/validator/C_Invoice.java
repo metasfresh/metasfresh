@@ -82,7 +82,7 @@ public class C_Invoice
 	}
 
 	/**
-	 * 07634: Remove lines of products which are not in the invoice's price list / version.
+	 * fresh 07634: Remove lines of products which are not in the invoice's price list / version.
 	 *
 	 * @param invoice
 	 */

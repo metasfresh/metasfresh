@@ -35,7 +35,7 @@ import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
  * Background: we need them in the order document, but not in the shipment schedule. See task 07042.
  *
  * @author ts
- * @task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29
+ * @task http://dewiki908/mediawiki/index.php/fresh_07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29
  */
 public class ShipmentSchedulePackingMaterialLineListener implements IInOutCandHandlerListener
 {

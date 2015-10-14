@@ -986,6 +986,7 @@ public class TimeUtil
 		return new Timestamp(gc.getTimeInMillis());
 	}
 
+	/** @return date as timestamp or null if the date is null */
 	public static Timestamp asTimestamp(Date date)
 	{
 		if (date instanceof Timestamp)

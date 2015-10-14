@@ -2,7 +2,7 @@ package org.adempiere.util.jaxb;
 
 /*
  * #%L
- * de.metas.util
+ * org.adempiere.util
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

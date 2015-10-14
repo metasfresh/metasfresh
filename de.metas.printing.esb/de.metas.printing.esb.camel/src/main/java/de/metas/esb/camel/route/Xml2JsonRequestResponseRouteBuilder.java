@@ -2,7 +2,7 @@ package de.metas.esb.camel.route;
 
 /*
  * #%L
- * de.metas.printing.esb.camel
+ * Metas :: Components :: Request-Response Framework for Mass Printing (SMX-4.5.2)
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

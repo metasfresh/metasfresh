@@ -99,7 +99,7 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 	/**
 	 * Move selected HUs to the warehouse for direct movements
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/08205_HU_Pos_Inventory_move_Button_%28105838505937%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08205_HU_Pos_Inventory_move_Button_%28105838505937%29
 	 */
 	private final void doDirectMoveToWarehouse()
 	{

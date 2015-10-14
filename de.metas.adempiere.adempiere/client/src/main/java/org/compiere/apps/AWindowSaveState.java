@@ -2,7 +2,7 @@ package org.compiere.apps;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.client
+ * ADempiere ERP - Desktop Client
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -39,7 +39,7 @@ import org.compiere.model.GridTab;
 /**
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/05731_Spaltenbreite_persitieren_%28103033707449%29
+ * @task http://dewiki908/mediawiki/index.php/fresh_05731_Spaltenbreite_persitieren_%28103033707449%29
  */
 public class AWindowSaveState
 {

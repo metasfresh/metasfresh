@@ -30,7 +30,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1107222488L;
+	private static final long serialVersionUID = -132951175L;
 
     /** Standard Constructor */
     public X_C_Queue_WorkPackage (Properties ctx, int C_Queue_WorkPackage_ID, String trxName)
@@ -41,8 +41,6 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 			setC_Queue_Block_ID (0);
 			setC_Queue_WorkPackage_ID (0);
 			setIsError (false);
-// N
-			setIsErrorAcknowledged (false);
 // N
 			setIsReadyForProcessing (false);
 // N
@@ -230,7 +228,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 0) 
+		if (AD_User_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
@@ -410,29 +408,6 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Fehler zur Kentnis genommen.
-		@param IsErrorAcknowledged Fehler zur Kentnis genommen	  */
-	@Override
-	public void setIsErrorAcknowledged (boolean IsErrorAcknowledged)
-	{
-		set_Value (COLUMNNAME_IsErrorAcknowledged, Boolean.valueOf(IsErrorAcknowledged));
-	}
-
-	/** Get Fehler zur Kentnis genommen.
-		@return Fehler zur Kentnis genommen	  */
-	@Override
-	public boolean isErrorAcknowledged () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsErrorAcknowledged);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Bereit zur Verarbeitung.
 		@param IsReadyForProcessing 
 		Zeigt an, ob das Zusammentstellen eines Arbeitspakets abgeschlossen ist.
@@ -593,22 +568,6 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Zuletzt Übersprungen um.
-		@param SkippedAt Zuletzt Übersprungen um	  */
-	@Override
-	public void setSkippedAt (java.sql.Timestamp SkippedAt)
-	{
-		set_Value (COLUMNNAME_SkippedAt, SkippedAt);
-	}
-
-	/** Get Zuletzt Übersprungen um.
-		@return Zuletzt Übersprungen um	  */
-	@Override
-	public java.sql.Timestamp getSkippedAt () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_SkippedAt);
-	}
-
 	/** Set Skipped Count.
 		@param Skipped_Count Skipped Count	  */
 	@Override
@@ -658,6 +617,22 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	public java.lang.String getSkipped_Last_Reason () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Skipped_Last_Reason);
+	}
+
+	/** Set Zuletzt Übersprungen um.
+		@param SkippedAt Zuletzt Übersprungen um	  */
+	@Override
+	public void setSkippedAt (java.sql.Timestamp SkippedAt)
+	{
+		set_Value (COLUMNNAME_SkippedAt, SkippedAt);
+	}
+
+	/** Get Zuletzt Übersprungen um.
+		@return Zuletzt Übersprungen um	  */
+	@Override
+	public java.sql.Timestamp getSkippedAt () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_SkippedAt);
 	}
 
 	/** Set Skip Timeout (millis).

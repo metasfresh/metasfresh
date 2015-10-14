@@ -71,7 +71,7 @@ public interface I_M_InOutLine extends de.metas.materialtracking.model.I_M_InOut
 	// @formatter:on
 
 	// @formatter:off
-	// task: http://dewiki908/mediawiki/index.php/08228_Packvorschrift_%C3%A4nderbar_in_Lieferschen_plus_Recalc_plus_Abweichende_Menge_plus_Prozess_plus_Rolle_Spedition
+	// task: http://dewiki908/mediawiki/index.php/fresh_08228_Packvorschrift_%C3%A4nderbar_in_Lieferschen_plus_Recalc_plus_Abweichende_Menge_plus_Prozess_plus_Rolle_Spedition
 	public static final String COLUMNNAME_IsManualPackingMaterial = "IsManualPackingMaterial";
 	public void setIsManualPackingMaterial(boolean IsManualPackingMaterial);
 	public boolean isManualPackingMaterial();

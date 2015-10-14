@@ -41,9 +41,7 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 
@@ -51,7 +49,7 @@ import de.metas.lock.api.ILockCommand;
 {
 	// Parameters
 	private final WorkPackageBlockBuilder _blockBuilder;
-	private IWorkpackagePrioStrategy _priority = SizeBasedWorkpackagePrio.INSTANCE;
+	private String _priority = IWorkPackageQueue.PRIORITY_AUTO;
 	private I_C_Async_Batch asyncBatch = null;
 	private boolean asyncBatchSet = false; 
 	private WorkPackageParamsBuilder _parametersBuilder;
@@ -99,12 +97,10 @@ import de.metas.lock.api.ILockCommand;
 		// Create the workpackage
 		final IWorkPackageQueue workpackageQueue = getWorkpackageQueue();
 		final I_C_Queue_Block queueBlock = getC_Queue_Block();
-		final IWorkpackagePrioStrategy workpackagePriority = getPriority();
+		final String workpackagePriority = getPriority();
 
 		@SuppressWarnings("deprecation") // surpressing the warning, because *this class* is the workpackage builder to be used
-		final I_C_Queue_WorkPackage workpackage = workpackageQueue.enqueueWorkPackage(
-				queueBlock, 
-				workpackagePriority);
+		final I_C_Queue_WorkPackage workpackage = workpackageQueue.enqueueWorkPackage(queueBlock, workpackagePriority);
 		
 		// Set the Async batch if provided
 		// TODO: optimize this and set everything in one shot and then save it.
@@ -149,7 +145,7 @@ import de.metas.lock.api.ILockCommand;
 	}
 
 	@Override
-	public WorkPackageBuilder setPriority(final IWorkpackagePrioStrategy priority)
+	public WorkPackageBuilder setPriority(final String priority)
 	{
 		assertNotBuilt();
 
@@ -157,7 +153,7 @@ import de.metas.lock.api.ILockCommand;
 		return this;
 	}
 
-	private final IWorkpackagePrioStrategy getPriority()
+	private final String getPriority()
 	{
 		return _priority;
 	}

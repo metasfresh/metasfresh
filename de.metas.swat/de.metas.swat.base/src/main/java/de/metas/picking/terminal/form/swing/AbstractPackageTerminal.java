@@ -113,7 +113,7 @@ public abstract class AbstractPackageTerminal implements FormPanel
 		this.frame = frame;
 		
 		// Set second frame's dimension to be maximum of our resolution
-		// see 05863 Fenster Kommissionierung - bessere Ausnutzung Knopfefelder fur Textausgabe (102244669218)
+		// see fresh 05863 Fenster Kommissionierung - bessere Ausnutzung Knopfefelder fur Textausgabe (102244669218)
 		frame.setMinimumSize(new Dimension(1024, 740)); 
 		frame.setMaximumSize(new Dimension(1024, 740));
 		

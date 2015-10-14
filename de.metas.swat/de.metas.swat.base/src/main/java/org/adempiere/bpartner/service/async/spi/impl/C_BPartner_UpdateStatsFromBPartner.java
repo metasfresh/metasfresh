@@ -57,7 +57,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		}
 
 		final IWorkPackageBuilder newWorkpackage = Services.get(IWorkPackageQueueFactory.class)
-				.getQueueForEnqueuing(ctx, C_BPartner_UpdateStatsFromBPartner.class)
+				.getQueue(ctx, C_BPartner_UpdateStatsFromBPartner.class)
 				.newBlock()
 				.newWorkpackage();
 

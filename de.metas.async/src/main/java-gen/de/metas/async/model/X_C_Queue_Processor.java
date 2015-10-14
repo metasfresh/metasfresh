@@ -30,7 +30,7 @@ public class X_C_Queue_Processor extends org.compiere.model.PO implements I_C_Qu
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1661696074L;
+	private static final long serialVersionUID = 180035277L;
 
     /** Standard Constructor */
     public X_C_Queue_Processor (Properties ctx, int C_Queue_Processor_ID, String trxName)
@@ -41,6 +41,8 @@ public class X_C_Queue_Processor extends org.compiere.model.PO implements I_C_Qu
 			setC_Queue_Processor_ID (0);
 			setKeepAliveTimeMillis (0);
 // 0
+			setMaxPoolSize (0);
+// 10
 			setName (null);
 			setPoolSize (0);
 // 10
@@ -105,6 +107,12 @@ public class X_C_Queue_Processor extends org.compiere.model.PO implements I_C_Qu
 			 return 0;
 		return ii.intValue();
 	}
+
+	/** Set Maximum Pool Size.
+		@param MaxPoolSize 
+		The maximum number of threads to allow in the pool
+	  */
+	
 
 	/** Set Name.
 		@param Name 

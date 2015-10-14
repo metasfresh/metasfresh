@@ -73,7 +73,7 @@ public final class MAccountLookup extends Lookup implements Serializable
 	 *         <li><code>"<" + value + ">"</code> of the given value is not null, but not the key of an active <code>C_ValidCombination</code>.
 	 *         <li><code>Combination + " (" + Description + ")"</code> otherwise
 	 *         
-	 * @task 07502 Name in Validcombination (107086145302)
+	 * @task fresh 07502 Name in Validcombination (107086145302)
 	 */
 	@Override
 	public String getDisplay(final IValidationContext ignored_evalCtx, final Object value)

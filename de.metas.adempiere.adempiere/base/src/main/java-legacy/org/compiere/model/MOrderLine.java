@@ -995,7 +995,7 @@ public class MOrderLine extends X_C_OrderLine
 				setC_UOM_ID(C_UOM_ID);
 		}
 
-		// Price_UOM task 06942
+		// Price_UOM task fresh 06942
 		// note: we do not set the price-UOM, because that would only make sense if we also set the prices themselves.
 
 		// Qty Precision

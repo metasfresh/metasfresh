@@ -2,7 +2,7 @@ package org.adempiere.archive.api.impl;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -73,10 +73,7 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
-	public I_AD_Archive archive(final LayoutEngine layout,
-			final PrintInfo printInfo,
-			final boolean force,
-			final String trxName)
+	public I_AD_Archive archive(final LayoutEngine layout, final PrintInfo printInfo, final boolean force, final String trxName)
 	{
 		final Properties ctx = layout.getCtx();
 		if (force || isToArchive(ctx, printInfo))
@@ -148,7 +145,7 @@ public class ArchiveBL implements IArchiveBL
 	public boolean isToArchive(final Properties ctx, final PrintInfo printInfo)
 	{
 		final String autoArchive = getAutoArchiveType(ctx);
-
+		
 		// Nothing to Archive
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_None))
 		{
@@ -157,7 +154,7 @@ public class ArchiveBL implements IArchiveBL
 		// Archive External only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_ExternalDocuments))
 		{
-			if (printInfo == null // avoid NPE when exporting to PDF from the print preview window
+			if (printInfo == null // avoid NPE when exporting to PDF from the print preview window 
 					|| printInfo.isReport())
 			{
 				return false;
@@ -166,7 +163,7 @@ public class ArchiveBL implements IArchiveBL
 		// Archive Documents only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_Documents))
 		{
-			if (printInfo == null // avoid NPE when exporting to PDF from the print preview window
+			if (printInfo == null // avoid NPE when exporting to PDF from the print preview window 
 					|| printInfo.isReport())
 			{
 				return false;
@@ -185,7 +182,7 @@ public class ArchiveBL implements IArchiveBL
 	public boolean isToArchive(final Properties ctx, final ProcessInfo processInfo)
 	{
 		final String autoArchive = getAutoArchiveType(ctx);
-
+		
 		// Nothing to Archive
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_None))
 			return false;

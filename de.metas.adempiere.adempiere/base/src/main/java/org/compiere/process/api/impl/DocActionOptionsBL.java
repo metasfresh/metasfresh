@@ -2,7 +2,7 @@ package org.compiere.process.api.impl;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -137,7 +137,7 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 		// Complete .. CO
 		else if (docStatus.equals(DocAction.STATUS_Completed))
 		{
-			if (AD_Table_ID == I_M_InOut.Table_ID) // 08656: Default action Re-Activate
+			if (AD_Table_ID == I_M_InOut.Table_ID) // fresh 08656: Default action Re-Activate
 			{
 				options.add(DocAction.ACTION_ReActivate);
 			}

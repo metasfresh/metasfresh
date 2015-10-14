@@ -507,7 +507,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 	public static MRelationType retrieveForInternalName(final Properties ctx, final String internalName, final String trxName)
 	{
-		// TODO us197:
+		// TODO _us197:
 		// * Make 'InternalName' unique
 		final String wc = COLUMNNAME_InternalName + "=?";
 

@@ -1551,12 +1551,7 @@ public abstract class Doc
 		m_DocumentNo = (String)p_po.get_Value(index);
 		return m_DocumentNo;
 	}	// getDocumentNo
-	
-	public final String getDocStatus()
-	{
-		return m_DocStatus;
-	}
-	
+
 	/**
 	 * Get Description
 	 *

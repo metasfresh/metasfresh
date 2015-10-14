@@ -156,7 +156,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 	 *
 	 * @param huContext
 	 * @param hu
-	 * @task http://dewiki908/mediawiki/index.php/08027_Lieferdispo_Freigabe_nach_BPartner_%28100002853810%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08027_Lieferdispo_Freigabe_nach_BPartner_%28100002853810%29
 	 */
 	private final void resetVendor(final IHUContext huContext, final I_M_HU hu)
 	{

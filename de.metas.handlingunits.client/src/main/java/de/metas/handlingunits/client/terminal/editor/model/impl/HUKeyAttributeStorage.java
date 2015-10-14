@@ -234,7 +234,7 @@ import de.metas.handlingunits.model.I_M_HU;
 					+ "\n Storage: " + this
 					+ "\n Disposed on: " + (disposedTS > 0 ? new Date(disposedTS).toString() : "")
 					);
-			if (HUConstants.isAttributeStorageFailOnDisposed())
+			if (HUConstants.isfresh_AttributeStorageFailOnDisposed())
 			{
 				throw ex;
 			}

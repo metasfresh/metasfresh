@@ -50,7 +50,7 @@ import org.compiere.util.DB;
 /**
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/04831_Produktinfo_Auftrag_%28103646722250%29
+ * @task http://dewiki908/mediawiki/index.php/fresh_04831_Produktinfo_Auftrag_%28103646722250%29
  */
 public class InfoProductQtyController extends InfoColumnControllerAdapter implements IInfoQueryCriteria
 {

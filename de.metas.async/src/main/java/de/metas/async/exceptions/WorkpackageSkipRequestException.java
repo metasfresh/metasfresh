@@ -32,7 +32,7 @@ import de.metas.async.processor.IWorkpackageSkipRequest;
 import de.metas.async.spi.IWorkpackageProcessor;
 
 /**
- * Exception to be thrown from {@link IWorkpackageProcessor} implementation if we want current workpackage to be skipped this time.
+ * Exception to be thrown from {@link IWorkpackageProcessor} implementation if we want current workpackage to be skipped this timeO
  *
  * @author tsa
  *

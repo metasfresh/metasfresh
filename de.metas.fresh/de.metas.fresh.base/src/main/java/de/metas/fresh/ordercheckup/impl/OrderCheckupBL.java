@@ -47,7 +47,6 @@ import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
-import de.metas.fresh.ordercheckup.model.I_C_BPartner;
 import de.metas.handlingunits.model.I_C_OrderLine;
 
 /**
@@ -156,7 +155,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		{
 			reportBuilder.build();
 		}
-
+		
 		//
 		// Create the reports for plant managers
 		for (final I_S_Resource plant : plants)
@@ -174,10 +173,10 @@ public class OrderCheckupBL implements IOrderCheckupBL
 				{
 					continue;
 				}
-
+				
 				reportBuilder.addOrderLine(orderLine);
 			}
-
+			
 			reportBuilder.build();
 		}
 
@@ -188,7 +187,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	{
 		if (!order.isSOTrx())
 		{
-			logger.log(Level.FINE, "C_Order_ID {0} is not a sales order; nothing to do", order.getC_Order_ID());
+			logger.log(Level.FINE, "{0} is not a sales order; nothing to do", order);
 			return false; // nothing to do
 		}
 
@@ -201,11 +200,6 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	@Override
 	public final boolean isGenerateReportsOnOrderComplete(final I_C_Order order)
 	{
-		if (!isEligibleForReporting(order))
-		{
-			return false; // nothing to do; log messages were already created in isEligibleForReporting
-		}
-		
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final boolean sysConfigValueIsTrue = sysConfigBL.getBooleanValue(
 				SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE,
@@ -215,22 +209,11 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 		if (!sysConfigValueIsTrue)
 		{
-			logger.log(Level.FINE, "AD_SysConfig {0} is *not* set to 'Y' for AD_Client_ID={1} and AD_Org_ID={2}; nothing to do for C_Order_ID {3}.",
+			logger.log(Level.FINE, "AD_SysConfig {0} is not set to 'Y' for AD_Client_ID={1} and AD_Org_ID={2}; nothing to do",
 					new Object[] {
 							SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE,
 							order.getAD_Client_ID(),
-							order.getAD_Org_ID(),
-							order.getC_Order_ID() });
-			return false; // nothing to do
-		}
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
-		if (bpartner.isDisableOrderCheckup())
-		{
-			logger.log(Level.FINE, "C_BPartner {0} has IsDisableOrderCheckup='Y'; nothing to do for C_Order_ID {1}.",
-					new Object[] {
-							bpartner.getValue(),
-							order.getC_Order_ID()
-					});
+							order.getAD_Org_ID() });
 			return false; // nothing to do
 		}
 

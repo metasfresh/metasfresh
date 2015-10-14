@@ -5,7 +5,7 @@ package org.compiere.model;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -485,7 +485,7 @@ public class MIndexTable extends X_AD_Index_Table
 	 *     Column1='Y' AND Column2='N'
 	 * </pre>
 	 * 
-	 * @task 02627
+	 * @task _02627
 	 */
 	private boolean isWhereClauseMatched(final GridTab tab)
 	{

@@ -24,7 +24,6 @@
 ***********************************************************************/
 package org.adempiere.process;
 
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

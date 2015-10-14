@@ -87,7 +87,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
  * </ul>
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary
+ * @task http://dewiki908/mediawiki/index.php/fresh_07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary
  */
 public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdapter
 {

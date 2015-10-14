@@ -32,7 +32,7 @@ public interface I_C_Queue_WorkPackage_Param
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 7 - System - Client - Org
+    /** AccessLevel = 7 - System - Client - Org 
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
 
@@ -219,29 +219,6 @@ public interface I_C_Queue_WorkPackage_Param
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Parameter Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setParameterName (java.lang.String ParameterName);
-
-	/**
-	 * Get Parameter Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getParameterName();
-
-    /** Column definition for ParameterName */
-    public static final org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage_Param, Object> COLUMN_ParameterName = new org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage_Param, Object>(I_C_Queue_WorkPackage_Param.class, "ParameterName", null);
-    /** Column name ParameterName */
-    public static final String COLUMNNAME_ParameterName = "ParameterName";
-
-	/**
 	 * Set Process Date.
 	 * Prozess-Parameter
 	 *
@@ -315,6 +292,29 @@ public interface I_C_Queue_WorkPackage_Param
     public static final org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage_Param, Object> COLUMN_P_String = new org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage_Param, Object>(I_C_Queue_WorkPackage_Param.class, "P_String", null);
     /** Column name P_String */
     public static final String COLUMNNAME_P_String = "P_String";
+
+	/**
+	 * Set Parameter Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setParameterName (java.lang.String ParameterName);
+
+	/**
+	 * Get Parameter Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getParameterName();
+
+    /** Column definition for ParameterName */
+    public static final org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage_Param, Object> COLUMN_ParameterName = new org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage_Param, Object>(I_C_Queue_WorkPackage_Param.class, "ParameterName", null);
+    /** Column name ParameterName */
+    public static final String COLUMNNAME_ParameterName = "ParameterName";
 
 	/**
 	 * Get Aktualisiert.

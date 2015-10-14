@@ -16,11 +16,11 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 
+import javax.swing.UIManager;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.AttributeSet;
@@ -28,7 +28,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
 
-import org.compiere.apps.ADialog;
 import org.compiere.util.CLogger;
 
 /**
@@ -39,7 +38,7 @@ import org.compiere.util.CLogger;
  *  @author Jorg Janke
  *  @version  $Id: MDocDate.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
-public final class MDocDate extends PlainDocument implements CaretListener
+final class MDocDate extends PlainDocument implements CaretListener
 {
 	/**
 	 * 
@@ -48,49 +47,50 @@ public final class MDocDate extends PlainDocument implements CaretListener
 
 	/**
 	 *	Constructor
-	 *  @param displayType display type
 	 *  @param format format
 	 *  @param tc text component
-	 *  @param title title
 	 */
-	public MDocDate (int displayType, SimpleDateFormat format,
-		JTextComponent tc, String title)
+	public MDocDate (final SimpleDateFormat format, final JTextComponent tc)
 	{
 		super();
-		m_displayType = displayType;
+		
 		m_tc = tc;
 		m_tc.addCaretListener(this);
+		
 		//
-		m_format = format;
-		if (m_format == null)
+		// Set format
+		if (format == null)
+		{
 			m_format = new SimpleDateFormat();
+		}
+		else
+		{
+			m_format = format;
+		}
 		m_format.setLenient(false);
 
+		//
+		// Build the mask
 		//	Mark delimiters as '^' in Pattern
-		char[] pattern = m_format.toPattern().toCharArray();
+		final char[] pattern = m_format.toPattern().toCharArray();
 		for (int i = 0; i < pattern.length; i++)
 		{
 			//	do we have a delimiter?
-			if ("dMyHms".indexOf(pattern[i]) == -1)
+			if ("dMyHms".indexOf(pattern[i]) < 0)
+			{
 				pattern[i] = DELIMITER;
+			}
 		}
 		m_mask = new String(pattern);
-		//
-		m_title = title;
-		if (m_title == null)
-			m_title = "";
-	}	//	MDocDate
+	}
 
-	private JTextComponent 		m_tc;
-	private SimpleDateFormat	m_format;
-	private String				m_mask;
-	private static final char	DELIMITER = '^';
-	//	for Calendar
-	private String				m_title;
-	private int					m_displayType;
-	private int					m_lastDot = 0;		//	last dot position
+	private final JTextComponent m_tc;
+	private final SimpleDateFormat m_format;
+	private final String m_mask;
+	private static final char DELIMITER = '^';
+	private int	m_lastDot = 0;		//	last dot position
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(MDocDate.class);
+	private static final CLogger log = CLogger.getCLogger(MDocDate.class);
 	
 	/**
 	 *	Insert String
@@ -100,75 +100,95 @@ public final class MDocDate extends PlainDocument implements CaretListener
 	 *  @throws BadLocationException
 	 */
 	@Override
-	public void insertString (int offset, String string, AttributeSet attr)
-		throws BadLocationException
+	public void insertString (int offset, final String string, final AttributeSet attr) throws BadLocationException
 	{
-		log.finest("Offset=" + offset + ",String=" + string + ",Attr=" + attr
-			+ ",OldText=" + getText() + ",OldLength=" + getText().length());
-
-		//	manual entry
-		//	DBTextDataBinder.updateText sends stuff at once - length=8
-		if (string != null && string.length() == 1)
+		if (log.isLoggable(Level.FINEST))
+			log.finest("Offset=" + offset + ",String=" + string + ",Attr=" + attr + ",OldText=" + getText() + ",OldLength=" + getText().length());
+		
+		//
+		// Empty string => do nothing
+		if (string == null || string.isEmpty())
+		{
+			return;
+		}
+		//
+		//	Manual entry (one char string)
+		else if (string.length() == 1)
 		{
 			//	ignore if too long
 			if (offset >= m_mask.length())
 				return;
-
+			
+			//	is it a digit ?
+			final boolean isDigit = Character.isDigit(string.charAt(0));
+			
 			//	is it an empty field?
 			int length = getText().length();
 			if (offset == 0 && length == 0)
 			{
-				Date today = new Date(System.currentTimeMillis());
+				final Date today = new Date(System.currentTimeMillis());
 				String dateStr = m_format.format(today);
-				super.insertString(0, string + dateStr.substring(1), attr);
-				m_tc.setCaretPosition(1);
+				int caretPosition = 0;
+				if (isDigit)
+				{
+					dateStr = string + dateStr.substring(1);
+					caretPosition = 1;
+				}
+				
+				super.insertString(0, dateStr, attr);
+				m_tc.setCaretPosition(caretPosition);
 				return;
 			}
 
 			//	is it a digit ?
-			try
+			if (!isDigit)
 			{
-				Integer.parseInt(string);
-			}
-			catch (Exception pe)
-			{
-				//hengsin, [ 1660175 ] Date field - anoying popup
-				//startDateDialog();
-				ADialog.beep();
+				provideErrorFeedback();
 				return;
 			}
-
-			//	try to get date in field, if invalid, get today's
-			/*try
-			{
-				char[] cc = getText().toCharArray();
-				cc[offset] = string.charAt(0);
-				m_format.parse(new String(cc));
-			}
-			catch (ParseException pe)
-			{
-				startDateDialog();
-				return;
-			}*/
 
 			//	positioned before the delimiter - jump over delimiter
-			if (offset != m_mask.length()-1 && m_mask.charAt(offset+1) == DELIMITER)
-				m_tc.setCaretPosition(offset+2);
+			if (offset != m_mask.length() - 1 && m_mask.charAt(offset + 1) == DELIMITER)
+			{
+				m_tc.setCaretPosition(offset + 2);
+			}
 
 			//	positioned at the delimiter
 			if (m_mask.charAt(offset) == DELIMITER)
 			{
 				offset++;
-				m_tc.setCaretPosition(offset+1);
+				m_tc.setCaretPosition(offset + 1);
 			}
 			super.remove(offset, 1);	//	replace current position
+			super.insertString(offset, string, attr); // set the new char
 		}
-
-		//	Set new character
-		super.insertString(offset, string, attr);
-		//	New value set Cursor
-		if (offset == 0 && string != null && string.length() > 1)
-			m_tc.setCaretPosition(0);
+		//
+		// More then one character (setting the whole value or copy paste)
+		else
+		{
+			// Make sure the resulting text content would be valid
+			try
+			{
+				final String textOld = getText();
+				final String textNew = textOld.isEmpty() ? string : textOld.substring(0, offset) + string + textOld.substring(offset);
+				m_format.parse(textNew);
+			}
+			catch (Exception e)
+			{
+				log.log(Level.FINE, "Cannot insert " + string + " because the resulting text won't be valid anymore", e);
+				provideErrorFeedback();
+				return;
+			}
+			
+			//	Set new character
+			super.insertString(offset, string, attr);
+			
+			//	New value set Cursor
+			if (offset == 0)
+			{
+				m_tc.setCaretPosition(0);
+			}
+		}
 	}	//	insertString
 
 	/**
@@ -178,10 +198,17 @@ public final class MDocDate extends PlainDocument implements CaretListener
 	 *  @throws BadLocationException
 	 */
 	@Override
-	public void remove (int offset, int length)
-		throws BadLocationException
+	public void remove (final int offset, final int length) throws BadLocationException
 	{
-		log.finest("Offset=" + offset + ",Length=" + length);
+		if (log.isLoggable(Level.FINEST))
+			log.finest("Offset=" + offset + ",Length=" + length);
+
+		// Case: clear the field (i.e removing the whole content)
+		if (offset == 0 && length == getLength())
+		{
+			super.remove(offset, length);
+			return;
+		}
 
 		//	begin of string
 		if (offset == 0 || length == 0)
@@ -192,7 +219,7 @@ public final class MDocDate extends PlainDocument implements CaretListener
 				super.remove(offset, length);
 			return;
 		}
-
+		
 		//	one position behind delimiter
 		if (offset-1 >= 0 && offset-1 < m_mask.length()
 			&& m_mask.charAt(offset-1) == DELIMITER)
@@ -205,15 +232,23 @@ public final class MDocDate extends PlainDocument implements CaretListener
 		else
 			m_tc.setCaretPosition(offset-1);
 	}	//	deleteString
+	
+	@Override
+	public void replace(final int offset, final int length, final String text, final AttributeSet attrs) throws BadLocationException
+	{
+		super.replace(offset, length, text, attrs);
+	}
 
 	/**
 	 *	Caret Listener
 	 *  @param e event
 	 */
+	@Override
 	public void caretUpdate(CaretEvent e)
 	{
-		log.finest("Dot=" + e.getDot() + ",Last=" + m_lastDot
-			+ ", Mark=" + e.getMark());
+		if(log.isLoggable(Level.FINEST))
+			log.finest("Dot=" + e.getDot() + ",Last=" + m_lastDot + ", Mark=" + e.getMark());
+		
 		//	Selection
 		if (e.getDot() != e.getMark())
 		{
@@ -241,8 +276,8 @@ public final class MDocDate extends PlainDocument implements CaretListener
 		else if (e.getDot() == m_mask.length()-1)	//	last
 			newDot = e.getDot() - 1;
 		//
-		log.fine("OnFixedChar=" + m_mask.charAt(e.getDot())
-			+ ", newDot=" + newDot + ", last=" + m_lastDot);
+		if (log.isLoggable(Level.FINE))
+				log.fine("OnFixedChar=" + m_mask.charAt(e.getDot()) + ", newDot=" + newDot + ", last=" + m_lastDot);
 		//
 		m_lastDot = e.getDot();
 		if (newDot >= 0 && newDot < getText().length())
@@ -258,46 +293,18 @@ public final class MDocDate extends PlainDocument implements CaretListener
 		String str = "";
 		try
 		{
-			str = getContent().getString(0, getContent().length()-1);		//	cr at end
+			str = getContent().getString(0, getContent().length() - 1);		// cr at end
 		}
 		catch (Exception e)
 		{
 			str = "";
 		}
 		return str;
-	}	//	getString
-
-	/**
-	 *	Call Calendar Dialog
-	 */
-	private void startDateDialog()
+	}
+	
+	private final void provideErrorFeedback()
 	{
-		log.config("");
-
-		//	Date Dialog
-		String result = getText();
-		Timestamp ts = null;
-		try
-		{
-			ts = new Timestamp(m_format.parse(result).getTime());
-		}
-		catch (Exception pe)
-		{
-			ts = new Timestamp(System.currentTimeMillis());
-		}
-		ts = VDate.startCalendar(m_tc, ts, m_format, m_displayType, m_title);
-		result = m_format.format(ts);
-
-		//	move to field
-		try
-		{
-			super.remove(0, getText().length());
-			super.insertString(0, result, null);
-		}
-		catch (BadLocationException ble)
-		{
-			log.log(Level.SEVERE, "", ble);
-		}
-	}	//	startDateDialog
+		UIManager.getLookAndFeel().provideErrorFeedback(m_tc);
+	}
 
 }	//	MDocDate

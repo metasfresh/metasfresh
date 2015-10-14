@@ -2,7 +2,7 @@ package org.adempiere.pricing.spi.impl.rules;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -156,7 +156,7 @@ public class PriceListVB extends AbstractPriceListBasedRule
 		result.setTaxIncluded(m_isTaxIncluded);
 		result.setCalculated(true);
 		result.setDisallowDiscount(true);
-		// 06942 : use product price uom all the time
+		// fresh 06942 : use product price uom all the time
 		if (ppUOMId <= 0)
 		{
 			result.setPrice_UOM_ID(m_C_UOM_ID);

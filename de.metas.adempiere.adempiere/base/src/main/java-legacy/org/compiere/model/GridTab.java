@@ -3111,7 +3111,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		}
 
 		//
-		// 07633: Skip callout execution in copy-mode if the field is NOT calculated (was copied from the other record).
+		// fresh 07633: Skip callout execution in copy-mode if the field is NOT calculated (was copied from the other record).
 		// Note that we do not care about nulls because if the old record would have had it mandatory, then it means that it would've been set in the first place.
 		final boolean isCalculated = field.getVO().IsCalculated;
 		if (isDataNewCopy() && !isCalculated)

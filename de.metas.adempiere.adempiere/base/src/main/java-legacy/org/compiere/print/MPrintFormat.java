@@ -30,7 +30,6 @@ import java.util.logging.Level;
 import javax.sql.RowSet;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_AD_PrintFormatItem;
 import org.compiere.model.MQuery;
@@ -44,8 +43,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
-
-import de.metas.adempiere.util.cache.CacheCtxParamDescriptor;
 
 /**
  *	AD_PrintFormat - Print Format Model.
@@ -840,36 +837,21 @@ public class MPrintFormat extends X_AD_PrintFormat
 	 *  @param readFromDisk refresh from disk
 	 * 	@return Format
 	 */
-	static public MPrintFormat get (final Properties ctx, final int AD_PrintFormat_ID, final boolean readFromDisk)
+	static public MPrintFormat get (Properties ctx, int AD_PrintFormat_ID, boolean readFromDisk)
 	{
 		final Integer key = AD_PrintFormat_ID;
-		MPrintFormat printFormat = null;
+		MPrintFormat pf = null;
 		if (!readFromDisk)
+			pf = s_formats.get(key);
+		if (pf == null)
 		{
-			printFormat = s_formats.get(key);
-			
-			// Validate the context
-			if (printFormat != null && !CacheCtxParamDescriptor.isSameCtx(ctx, printFormat.getCtx()))
-			{
-				printFormat = null;
-			}
-		}
-		if (printFormat == null)
-		{
-			printFormat = new MPrintFormat (ctx, AD_PrintFormat_ID, ITrx.TRXNAME_None);
-			if (printFormat.get_ID() <= 0)
-				printFormat = null;
+			pf = new MPrintFormat (ctx, AD_PrintFormat_ID, null);
+			if (pf.get_ID() <= 0)
+				pf = null;
 			else
-				s_formats.put(key, printFormat);
+				s_formats.put(key, pf);
 		}
-		
-		//
-		// Return a copy
-		if (printFormat != null)
-		{
-			return (MPrintFormat)printFormat.copy();
-		}
-		return null;
+		return pf;
 	}	//	get
 
 	/**

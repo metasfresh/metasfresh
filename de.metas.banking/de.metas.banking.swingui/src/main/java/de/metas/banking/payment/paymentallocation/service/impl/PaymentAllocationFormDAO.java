@@ -303,7 +303,11 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		}
 
 		final String documentNo = rs.getString("docno");
-		
+
+		final BigDecimal multiplierAP = rs.getBigDecimal("multiplierap"); // Vendor=-1, Customer=+1
+		final BigDecimal multiplierCreditMemo = rs.getBigDecimal("multiplier"); // CreditMemo=-1, Regular Invoice=+1
+		final boolean isCreditMemo = multiplierCreditMemo.signum() < 0;
+
 		//
 		// Fetch amounts
 		// NOTE: we assume those amounts are already CreditMemo adjusted but not AP adjusted
@@ -314,10 +318,6 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		{
 			openAmt = Env.ZERO;
 		}
-
-		final BigDecimal multiplierAP = rs.getBigDecimal("multiplierap"); // Vendor=-1, Customer=+1
-		final BigDecimal multiplierCreditMemo = rs.getBigDecimal("multiplier"); // CreditMemo=-1, Regular Invoice=+1
-		final boolean isCreditMemo = multiplierCreditMemo.signum() < 0 || grandTotal.signum() < 0; // task 09429: also if grandTotal<0
 
 		if (!isPrePayOrder && grandTotalOrig.signum() == 0 && !isPaid)
 		{

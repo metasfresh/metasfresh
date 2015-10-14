@@ -150,7 +150,7 @@ class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 
 	private IQueueProcessor createProcessor(I_C_Queue_Processor processorDef)
 	{
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForPackageProcessing(processorDef);
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueue(processorDef);
 		return Services.get(IQueueProcessorFactory.class).createAsynchronousQueueProcessor(processorDef, queue);
 	}
 

@@ -129,7 +129,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 			if (attributeInstance == null)
 			{
 				//
-				// 07698: If configured to not used in ASI, skip creation of the attribute
+				// fresh 07698: If configured to not be used in ASI, skip creation of the attribute
 				if (!piAttribute.isUseInASI())
 				{
 					continue;

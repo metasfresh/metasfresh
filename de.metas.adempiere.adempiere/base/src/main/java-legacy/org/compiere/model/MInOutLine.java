@@ -572,7 +572,7 @@ public class MInOutLine extends X_M_InOutLine
 
 		// Receipt should not allow lines with Qty=0 - teo_sarca [ 2797938 ]
 		//
-		// 08278: Receipt shall allow lines with Qty=0 (i.e corrected SHIPMENTS after Auswahl Lieferung)
+		// fresh 08278: Receipt shall allow lines with Qty=0 (i.e corrected SHIPMENTS after Auswahl Lieferung)
 		//
 		// if (!isDescription()
 		// && getMovementQty().signum() == 0

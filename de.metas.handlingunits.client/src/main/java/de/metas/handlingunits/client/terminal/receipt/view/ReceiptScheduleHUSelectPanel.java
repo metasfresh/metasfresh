@@ -79,7 +79,7 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 	/**
 	 * i.e. empties (packing materials) ship (to vendor) / receive (from customer)
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/07193_R%C3%BCcknahme_Gebinde_%28104585385527%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_07193_R%C3%BCcknahme_Gebinde_%28104585385527%29
 	 */
 	private static final String ACTION_EmptiesShipReceive = "ACTION_EmptiesShipReceive";
 
@@ -398,7 +398,7 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 	}
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/07193_R%C3%BCcknahme_Gebinde_%28104585385527%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_07193_R%C3%BCcknahme_Gebinde_%28104585385527%29
 	 */
 	private void doEmptiesShipReceive()
 	{
@@ -417,7 +417,7 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 	}
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/08480_Korrekturm%C3%B6glichkeit_Wareneingang_-_Menge%2C_Packvorschrift%2C_Merkmal_%28109195602347%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08480_Korrekturm%C3%B6glichkeit_Wareneingang_-_Menge%2C_Packvorschrift%2C_Merkmal_%28109195602347%29
 	 */
 	private void doCorrectReceivedHU()
 	{

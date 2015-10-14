@@ -211,7 +211,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 			return printingQueueQuery.getAD_User_ID();
 		}
 
-		// 03870 R2
+		// task 03870 R2
 		// if possible, use the AD_User_ID of the user that started the process which is calling this method
 		if (printingQueueQuery.getOnlyAD_PInstance_ID() > 0)
 		{
@@ -276,10 +276,9 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		final String key = Util.mkKey(keyItems.toArray()).toString();
 		item.setPrintingQueueAggregationKey(key);
 	}
-
+	
 	@Override
-	public void setPrintoutForOtherUsers(final I_C_Printing_Queue item, 
-			final Set<Integer> userToPrintIds)
+	public void setUsersToPrint(final I_C_Printing_Queue item, final Set<Integer> userToPrintIds)
 	{
 		//
 		// Make sure the item is not null and it was not already printed (i.e. processed)
@@ -300,7 +299,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 			userToPrintIdsActual.add(userToPrintId);
 		}
 		Check.assumeNotEmpty(userToPrintIdsActual, "userToPrintIdsActual not empty");
-
+		
 		//
 		// Delete existing queue item recipients (if any),
 		// but don't update the aggregation key. We will update it later in this method.
@@ -308,21 +307,43 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		printingDAO.deletePrintingQueueRecipients(item);
 
 		//
-		// Create new recipients
-		// Make sure the item was saved.
-		// We are not saving it here, because that shall be the responsibility of the caller.
-		Check.errorIf(item.getC_Printing_Queue_ID() < 0, "Item shall be saved: {0}", item);
-
-		item.setIsPrintoutForOtherUser(true);
-		for (final int userToPrintId : userToPrintIdsActual)
+		// Create new recipients:
+		//
+		// Case: only one user case: we don't have to create a recipients list, we just set the user to print
+		if (userToPrintIdsActual.size() == 1)
 		{
-			final I_C_Printing_Queue_Recipient recipient = InterfaceWrapperHelper.newInstance(I_C_Printing_Queue_Recipient.class, item);
-			recipient.setC_Printing_Queue(item);
-			recipient.setAD_User_ToPrint_ID(userToPrintId);
-			printingDAO.setDisableAggregationKeyUpdate(recipient); // don't update the aggregation key
-			InterfaceWrapperHelper.save(recipient);
+			// 
+			item.setIsPrintoutForOtherUser(false);
+			
+			final int userToPrintId = userToPrintIdsActual.iterator().next();
+			if (item.getAD_User_ID() == userToPrintId)
+			{
+				// nothing changed
+			}
+			else
+			{
+				item.setAD_User_ID(userToPrintId);
+				item.setAD_Role(null); // reset the AD_Role_ID because it does not longer apply
+			}
 		}
-
+		// Case: more then one user case: we build up a recipients list
+		else
+		{
+			// Make sure the item was saved.
+			// We are not saving it here, because that shall be the responsibility of the caller.
+			Check.errorIf(item.getC_Printing_Queue_ID() < 0, "Item shall be saved: {0}", item);
+			
+			item.setIsPrintoutForOtherUser(true);
+			for (final int userToPrintId : userToPrintIdsActual)
+			{
+				final I_C_Printing_Queue_Recipient recipient = InterfaceWrapperHelper.newInstance(I_C_Printing_Queue_Recipient.class, item);
+				recipient.setC_Printing_Queue(item);
+				recipient.setAD_User_ToPrint_ID(userToPrintId);
+				printingDAO.setDisableAggregationKeyUpdate(recipient); // don't update the aggregation key
+				InterfaceWrapperHelper.save(recipient);
+			}
+		}
+		
 		// Make sure the aggregation key is up2date.
 		setItemAggregationKey(item);
 	}

@@ -71,7 +71,7 @@ public class M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor extends 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
 
 		final IWorkPackageQueueFactory workpackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-		final IWorkPackageQueue queue = workpackageQueueFactory.getQueueForEnqueuing(ctx, M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor.class);
+		final IWorkPackageQueue queue = workpackageQueueFactory.getQueue(ctx, M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor.class);
 
 		//
 		// Create an enqueue workpackage

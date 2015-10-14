@@ -5,7 +5,7 @@ package org.adempiere.model;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -25,7 +25,7 @@ package org.adempiere.model;
  * #L%
  */
 
-import org.adempiere.util.lang.ObjectUtils;
+
 import org.compiere.model.GridTab;
 
 /**
@@ -41,17 +41,17 @@ public class TableInfoVO
 	public String parentTableName;
 	public String parentColumnName;
 	public GridTab gridTab;
-
+	
 	public String getName()
 	{
 		return name;
 	}
-
+	
 	public void setName(final String name)
 	{
 		this.name = name;
 	}
-
+	
 	private final int getAD_Tab_ID()
 	{
 		return gridTab != null ? gridTab.getAD_Tab_ID() : -1;
@@ -62,7 +62,7 @@ public class TableInfoVO
 	{
 		final int prime = 31;
 		int result = 1;
-		// result = prime * result + getAD_Tab_ID();
+//		result = prime * result + getAD_Tab_ID();
 		result = prime * result + ((linkColumnName == null) ? 0 : linkColumnName.hashCode());
 		result = prime * result + ((parentTableName == null) ? 0 : parentTableName.hashCode());
 		result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
@@ -103,11 +103,5 @@ public class TableInfoVO
 		else if (!tableName.equals(other.tableName))
 			return false;
 		return true;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 }

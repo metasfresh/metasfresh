@@ -101,7 +101,7 @@ public class PrintJobBL implements IPrintJobBL
 			final IPrintJobMonitor monitor)
 	{
 		final String trxName = source.getTrxName();
-		final PrintingQueueProcessingInfo printingQueueProcessingInfo = source.getProcessingInfo();
+		final PrintingQueueProcessingInfo printJobUserIds = source.getProcessingInfo();
 
 		int printJobCount = 0;
 		final IPrintJobBatchMonitor batchMonitor = monitor.createBatchMonitor();
@@ -140,10 +140,7 @@ public class PrintJobBL implements IPrintJobBL
 							return printJobCount;
 						}
 
-						final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJob(source, 
-								currentItems, 
-								printingQueueProcessingInfo, 
-								trxName);
+						final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJob(source, currentItems, printJobUserIds, trxName);
 						if (printJobInstructions.isEmpty())
 						{
 							break;
@@ -400,34 +397,25 @@ public class PrintJobBL implements IPrintJobBL
 
 		if (createWithSpecificHostKey)
 		{
-			if (Check.isEmpty(hostKey, true))
+			final String hostKeyToUse;
+			final int userToPrintIdToUse;
+			final I_AD_Printer_Config printerConfig = printingDAO.retrievePrinterConfig(new PlainContextAware(ctx), hostKey, userToPrintId);
+			if (printerConfig.getAD_Printer_Config_Shared_ID() > 0)
 			{
-				// note that without a hostkey, we also can't retrieve the I_AD_Printer_Config
-				logger.log(Level.INFO, "Ignoring createWithSpecificHostKey=true, because there is no hostkey");
+				final I_AD_Printer_Config ad_Printer_Config_Shared = printerConfig.getAD_Printer_Config_Shared();
+				hostKeyToUse = ad_Printer_Config_Shared.getHostKey();
+				userToPrintIdToUse = ad_Printer_Config_Shared.getCreatedBy();
 			}
 			else
 			{
-				final String hostKeyToUse;
-				final int userToPrintIdToUse;
-				final I_AD_Printer_Config printerConfig = printingDAO.retrievePrinterConfig(new PlainContextAware(ctx), hostKey, userToPrintId);
-				if (printerConfig.getAD_Printer_Config_Shared_ID() > 0)
-				{
-					final I_AD_Printer_Config ad_Printer_Config_Shared = printerConfig.getAD_Printer_Config_Shared();
-					hostKeyToUse = ad_Printer_Config_Shared.getHostKey();
-					userToPrintIdToUse = ad_Printer_Config_Shared.getCreatedBy();
-				}
-				else
-				{
-					hostKeyToUse = hostKey;
-					userToPrintIdToUse = userToPrintId;
-				}
-				instructions.setHostKey(hostKeyToUse);
-				instructions.setAD_User_ToPrint_ID(userToPrintIdToUse);
-				// task 09028: workaround: don't set the hostkey.
-				// therefore the next print client of the given user will be able to print this
+				hostKeyToUse = hostKey;
+				userToPrintIdToUse = userToPrintId;
 			}
-		}
-		else
+			instructions.setHostKey(hostKeyToUse);
+			instructions.setAD_User_ToPrint_ID(userToPrintIdToUse);
+			// task 09028: workaround: don't set the hostkey.
+			// therefore the next print client of the given user will be able to print this
+		}else
 		{
 			instructions.setAD_User_ToPrint_ID(userToPrintId);
 		}

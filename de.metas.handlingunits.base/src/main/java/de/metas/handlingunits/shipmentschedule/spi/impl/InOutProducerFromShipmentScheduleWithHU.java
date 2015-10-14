@@ -238,7 +238,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		}
 
 		//
-		// M_ShipperTransportation (07973: set it on the shipment so that it can be re-used in aggregation)
+		// M_ShipperTransportation (fresh 07973: set it on the shipment so that it can be re-used in aggregation)
 		{
 			final List<I_M_HU> hus = new ArrayList<>();
 			hus.add(candidate.getVHU());

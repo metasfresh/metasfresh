@@ -108,7 +108,7 @@ public class BPartnerAwareAttributeUpdater
 			// The product's attribute set doesn't contain the attribute. Do nothing.
 			return;
 		}
-		// Don't update the attribute if it's not document relevant (08642)
+		// Don't update the attribute if it's not document relevant (fresh_08642)
 		if (!isAttrDocumentRelevant(attribute))
 		{
 			return;
@@ -149,7 +149,7 @@ public class BPartnerAwareAttributeUpdater
 		// Case: sales transaction
 		if (isSOTrx)
 		{
-			// We shall not copy the attributes for Sales Transactions (06790)
+			// We shall not copy the attributes for Sales Transactions (fresh_06790)
 			// Except when we are explicitly asked to do so.
 			return forceApplyForSOTrx;
 		}
@@ -157,7 +157,7 @@ public class BPartnerAwareAttributeUpdater
 		// Case: purchase transaction
 		else
 		{
-			// We must copy the attributes for Purchase Transactions (06790)
+			// We must copy the attributes for Purchase Transactions (fresh_06790)
 			return true;
 		}
 	}

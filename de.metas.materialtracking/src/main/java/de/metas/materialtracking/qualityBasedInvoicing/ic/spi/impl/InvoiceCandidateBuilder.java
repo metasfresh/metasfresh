@@ -382,7 +382,7 @@ public class InvoiceCandidateBuilder
 		newIc.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID());
 		newIc.setPriceEntered(pricingResult.getPriceStd());
 		newIc.setPriceActual(pricingResult.getPriceStd());
-		newIc.setIsTaxIncluded(pricingResult.isTaxIncluded()); // 08457: Configure new IC from pricing result
+		newIc.setIsTaxIncluded(pricingResult.isTaxIncluded()); // fresh 08457: Configure new IC from pricing result
 		newIc.setDiscount(pricingResult.getDiscount());
 		newIc.setC_Currency_ID(pricingResult.getC_Currency_ID());
 
@@ -410,7 +410,7 @@ public class InvoiceCandidateBuilder
 
 	protected void setC_Activity_ID(final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		// 07442 activity; TODO: clarify (al: clarify what?)
+		// fresh_07442 activity; TODO: clarify (al: clarify what?)
 		final IContextAware context = getContext();
 		final I_C_Activity activity = productAcctDAO.retrieveActivityForAcct(context, invoiceCandidate.getAD_Org(), invoiceCandidate.getM_Product());
 		invoiceCandidate.setC_Activity(activity);

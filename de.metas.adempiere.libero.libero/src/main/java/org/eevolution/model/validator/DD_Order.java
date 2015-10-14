@@ -43,7 +43,7 @@ public class DD_Order
 	/**
 	 * Sys config used to Disable the Forward/Backward DD Order processing
 	 * 
-	 * @task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
 	 */
 	private static final String SYSCONFIG_DisableProcessForwardAndBackwardDraftDDOrders = "org.eevolution.mrp.spi.impl.DDOrderMRPSupplyProducer.DisableProcessForwardAndBackwardDraftDDOrders";
 
@@ -84,7 +84,7 @@ public class DD_Order
 	 * If {@link I_DD_Order#COLUMN_MRP_AllowCleanup} is set to <code>false</code> then propagate this flag to forward and backward DD Orders too.
 	 * 
 	 * @param ddOrder
-	 * @task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_DD_Order.COLUMNNAME_MRP_AllowCleanup)
 	public void propagate_MRPDisallowCleanup(final I_DD_Order ddOrder)
@@ -118,7 +118,7 @@ public class DD_Order
 	 * Complete all forward and backward DD Orders (but on the same plant)
 	 * 
 	 * @param ddOrder
-	 * @task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void completeForwardAndBackwardDDOrders(final I_DD_Order ddOrder)

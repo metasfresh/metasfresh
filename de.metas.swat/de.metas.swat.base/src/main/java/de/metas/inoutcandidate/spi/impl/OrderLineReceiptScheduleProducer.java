@@ -203,7 +203,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		//
 		// Try to retrieve destination warehouse from planning
-		// see: http://dewiki908/mediawiki/index.php/07058_Destination_Warehouse_Wareneingang_%28102083181965%29#Development_infrastructure
+		// see: http://dewiki908/mediawiki/index.php/fresh_07058_Destination_Warehouse_Wareneingang_%28102083181965%29#Development_infrastructure
 		final I_M_Warehouse distributionNetworkWarehouseDestination = getDistributionNetworkWarehouseDestination(ctx, line, trxName);
 		if (distributionNetworkWarehouseDestination != null)
 		{
@@ -212,7 +212,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		//
 		// Fallback if no planning destination warehouse was found
-		// see: http://dewiki908/mediawiki/index.php/05940_Wareneingang_Lagerumbuchung
+		// see: http://dewiki908/mediawiki/index.php/fresh_05940_Wareneingang_Lagerumbuchung
 		final I_M_Locator locator = line.getM_Product().getM_Locator();
 		if (locator != null && locator.getM_Locator_ID() > 0)
 		{

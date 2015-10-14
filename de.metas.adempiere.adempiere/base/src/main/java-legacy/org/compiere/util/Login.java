@@ -78,7 +78,7 @@ public class Login
 	 */
 	private static final String SYSCONFIG_UI_WindowHeader_Notice = "UI_WindowHeader_Notice";
 	/**
-	 * see http://dewiki908/mediawiki/index.php/06009_Login_Lager_weg_%28106922640136%29
+	 * see http://dewiki908/mediawiki/index.php/fresh_06009_Login_Lager_weg_%28106922640136%29
 	 */
 	private static final String SYSCONFIG_ShowWarehouseOnLogin = "ShowWarehouseOnLogin";
 

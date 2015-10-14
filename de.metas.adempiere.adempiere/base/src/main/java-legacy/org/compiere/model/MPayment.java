@@ -2152,7 +2152,7 @@ public final class MPayment extends X_C_Payment
 		final BigDecimal allocationAmt = getPayAmt().min(invoiceOpenAmt);
 		// 04627 end
 
-		// 04614 (commented out old code)
+		// 04614 (commented out old code) 
 		// OverUnderAmt shall not be part of the allocation amount. It's just an information!
 		// if (getOverUnderAmt().signum() < 0 && getPayAmt().signum() > 0)
 		// allocationAmt = allocationAmt.add(getOverUnderAmt()); // overpayment (negative)
@@ -2312,7 +2312,7 @@ public final class MPayment extends X_C_Payment
 		{
 			final String docStatus = allocations[i].getDocStatus();
 
-			// 07570: Skip allocations which were already Reversed or Voided
+			// fresh 07570: Skip allocations which were already Reversed or Voided
 			if (DocAction.STATUS_Reversed.equals(docStatus)
 					|| DocAction.STATUS_Voided.equals(docStatus))
 			{

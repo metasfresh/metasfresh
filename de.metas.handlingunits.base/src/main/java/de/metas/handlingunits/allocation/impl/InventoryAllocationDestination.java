@@ -58,7 +58,7 @@ import de.metas.handlingunits.impl.HUTransaction;
  *
  * Useful when you want to destroy an HU and you want also to "internal use" it's M_Storage counter-part.
  *
- * @task http://dewiki908/mediawiki/index.php/07050_Eigenverbrauch_metas_in_Existing_Window_Handling_Unit_Pos
+ * @task http://dewiki908/mediawiki/index.php/fresh_07050_Eigenverbrauch_metas_in_Existing_Window_Handling_Unit_Pos
  */
 public class InventoryAllocationDestination implements IAllocationDestination
 {

@@ -32,6 +32,6 @@ package org.adempiere.ui.notifications;
 interface INotificationItemPanelCallback
 {
 	/** Called when the notification was closed by the user */
-	void notificationClosed(NotificationItem item);
+	void notificationClosed(final NotificationItem item);
 
 }

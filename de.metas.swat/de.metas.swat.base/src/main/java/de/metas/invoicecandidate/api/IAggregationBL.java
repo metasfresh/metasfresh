@@ -118,7 +118,7 @@ public interface IAggregationBL extends ISingletonService
 	 * @return invoice line product attributes
 	 * 
 	 * @task 08451- this task was the one that initially demanded to aggregate invoice lines per ASI relevant attributes
-	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
 	List<IInvoiceLineAttribute> extractInvoiceLineAttributes(final I_M_InOutLine inOutLine);
 

@@ -155,7 +155,7 @@ public class InOutCandidateHandler extends AbstractInvoiceCandidateHandler
 		//
 		// Handle Transaction Type: Shipment / Receipt
 		final boolean isSOTrx = inOut.isSOTrx();
-		ic.setIsSOTrx(isSOTrx); // 05265
+		ic.setIsSOTrx(isSOTrx); // fresh_05265
 
 		//
 		// Handler Customer/Verdor Returns

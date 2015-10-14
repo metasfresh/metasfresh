@@ -2,7 +2,7 @@ package org.adempiere.util.net;
 
 /*
  * #%L
- * de.metas.util
+ * org.adempiere.util
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

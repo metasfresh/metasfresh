@@ -13,6 +13,7 @@
  *****************************************************************************/
 package org.adempiere.webui.theme;
 
+
 /**
  * Interface to hold global theme constant
  * @author hengsin

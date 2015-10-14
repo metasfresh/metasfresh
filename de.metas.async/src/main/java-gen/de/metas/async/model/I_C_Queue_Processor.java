@@ -32,7 +32,7 @@ public interface I_C_Queue_Processor
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 6 - System - Client
+    /** AccessLevel = 6 - System - Client 
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
 
@@ -187,6 +187,7 @@ public interface I_C_Queue_Processor
     /** Column name KeepAliveTimeMillis */
     public static final String COLUMNNAME_KeepAliveTimeMillis = "KeepAliveTimeMillis";
 
+	
 	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity

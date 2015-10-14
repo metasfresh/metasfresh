@@ -18,8 +18,6 @@ package org.compiere.grid.ed;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -37,7 +35,6 @@ import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
-import javax.swing.text.Document;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
@@ -46,13 +43,12 @@ import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.NullCopyPasteSupportEditor;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.swing.CTextField;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 /**
  * Date Edit.
@@ -172,19 +168,9 @@ public class VDate extends JComponent
 		m_mField = null;
 	}   // dispose
 
-	/**
-	 * Set Document
-	 * 
-	 * @param doc doc
-	 */
-	protected void setDocument(Document doc)
-	{
-		m_text.setDocument(doc);
-	}	// getDocument
-
 	private final String m_columnName;
 	private final int m_displayType;
-	private String m_title;
+	private final String m_title;
 	/**
 	 * This member is true while the method {@link #commitEdit()} is executed.
 	 */
@@ -204,7 +190,7 @@ public class VDate extends JComponent
 
 	private GridField m_mField = null;
 	/** Logger */
-	private static CLogger log = CLogger.getCLogger(VDate.class);
+	private static final transient CLogger log = CLogger.getCLogger(VDate.class);
 
 	/**
 	 * Set ReadWrite - field is always r/o for Time or DateTime
@@ -289,14 +275,13 @@ public class VDate extends JComponent
 	}   // setForeground
 
 	/**
-	 * Set Format
-	 * Required when Format/Locale changed
+	 * Set Format. Required when Format/Locale changed.
 	 */
 	public void setFormat()
 	{
 		m_format = DisplayType.getDateFormat(m_displayType);
 
-		m_text.setDocument(new MDocDate(m_displayType, m_format, m_text, m_title));
+		m_text.setDocument(new MDocDate(m_format, m_text));
 	}	// setFormat
 
 	/**
@@ -306,7 +291,7 @@ public class VDate extends JComponent
 	public void requestFocus()
 	{
 		m_text.requestFocus();
-	}	// requestFocus
+	}
 
 	/**
 	 * Set Editor to value
@@ -314,48 +299,21 @@ public class VDate extends JComponent
 	 * @param value timestamp/date or String to be parsed
 	 */
 	@Override
-	public void setValue(Object value)
+	public void setValue(final Object value)
 	{
 		log.log(Level.FINEST, "Value={0}", value);
-		m_oldText = "";
-		if (value == null || value.toString().isEmpty())
-		{
-			;
-		}
-		else if (value instanceof java.util.Date)
-		{
-			m_oldText = m_format.format(value);
-		}
-		else
-		{
-			String strValue = value.toString();
-			// String values - most likely in YYYY-MM-DD (JDBC format)
-			try
-			{
-				java.util.Date date = DisplayType.getDateFormat_JDBC().parse(strValue);
-				m_oldText = m_format.format(date);		// convert to display value
-			}
-			catch (ParseException pe0)
-			{
-				// Try local string format
-				try
-				{
-					java.util.Date date = m_format.parse(strValue);
-					m_oldText = m_format.format(date);
-				}
-				catch (ParseException pe1)
-				{
-					log.log(Level.SEVERE, "setValue - " + pe1.getMessage());
-					m_oldText = "";
-				}
-			}
-		}
+		
+		final Timestamp valueAsTS = toTimestamp(value);
+		setValueOld(valueAsTS);
+		
 		if (m_withinCommitEdit)
 		{
 			return;
 		}
-		m_text.setText(m_oldText);
-		m_initialText = m_oldText;
+		
+		final String valueOldAsString = getValueOldAsString();
+		m_text.setText(valueOldAsString);
+		m_initialText = valueOldAsString;
 	}	// setValue
 
 	// metas
@@ -391,45 +349,103 @@ public class VDate extends JComponent
 		}
 		final String value = m_text.getText();
 
-		return getTimeStamp(value);
+		return toTimestamp(value);
 	}	// getValue
 
 	/**
-	 * Parses the given string into a timestamp.
+	 * Parses the given string into a {@link Timestamp}.
 	 * 
-	 * @param value: date string to parse
+	 * @param value date string to parse
+	 * @return time stamp or null
 	 */
-	private Timestamp getTimeStamp(final String value)
+	private Timestamp toTimestamp(final String value)
 	{
-
 		if (Check.isEmpty(value, true))
 		{
 			return null;
 		}
+		
 		//
-		Timestamp ts = null;
 		try
 		{
-			java.util.Date date = m_format.parse(value);
-			ts = new Timestamp(date.getTime());
+			final java.util.Date date = m_format.parse(value.trim());
+			return TimeUtil.asTimestamp(date);
 		}
 		catch (ParseException pe)
 		{
-			log.fine(pe.getMessage());
+			log.log(Level.FINE, pe.getMessage(), pe);
 		}
-		return ts;
+		
+		return null;
+	}
+	
+	private Timestamp toTimestamp(final Object value)
+	{
+		Timestamp valueAsTS = null;
+		if (value == null || value.toString().isEmpty())
+		{
+			valueAsTS = null;
+		}
+		else if (value instanceof java.util.Date)
+		{
+			valueAsTS = TimeUtil.asTimestamp((java.util.Date)value);
+		}
+		else
+		{
+			final String valueAsString = value.toString();
+			// String values - most likely in YYYY-MM-DD (JDBC format)
+			try
+			{
+				valueAsTS = TimeUtil.asTimestamp(DisplayType.getDateFormat_JDBC().parse(valueAsString));
+			}
+			catch (ParseException pe0)
+			{
+				// Try local string format
+				try
+				{
+					valueAsTS = TimeUtil.asTimestamp(m_format.parse(valueAsString));
+				}
+				catch (ParseException pe1)
+				{
+					log.log(Level.SEVERE, "Failed to convert " + value + " to timestamp", pe1);
+					valueAsTS = null;
+				}
+			}
+		}
+		
+		return valueAsTS;
 	}
 
 	/**
-	 * Return Editor value (Timestamp)
+	 * Return Editor value (timestamp)
 	 * 
-	 * @return value
+	 * @return value as timestamp
 	 */
 	@Override
 	public Timestamp getValue()
 	{
 		return getTimestamp();
 	}	// getValue
+	
+	private final Timestamp getValueOld()
+	{
+		return toTimestamp(m_oldText);
+	}
+	
+	private final String getValueOldAsString()
+	{
+		return m_oldText;
+	}
+	
+	private final void setValueOld(final Timestamp valueOld)
+	{
+		m_oldText = valueOld == null ? null : m_format.format(valueOld);
+	}
+	
+	private final void setValueOld(final String valueOldAsString)
+	{
+		m_oldText = valueOldAsString;
+	}
 
 	/**
 	 * Return Display Value
@@ -450,16 +466,16 @@ public class VDate extends JComponent
 	 * @param e event
 	 */
 	@Override
-	public void actionPerformed(ActionEvent e)
+	public void actionPerformed(final ActionEvent e)
 	{
 		if (e.getSource() == m_button)
 		{
 			try(final IAutoCloseable buttonDisabled = m_button.temporaryDisable())
 			{
-				final Timestamp ts_old = getTimeStamp(m_oldText);
-				setValue(startCalendar(this, getTimestamp(), m_format, m_displayType, m_title));
+				final Timestamp valueOld = getValueOld();
+				setValue(pickDate());
 
-				fireVetoableChange(m_columnName, ts_old, getValue());
+				fireVetoableChange(m_columnName, valueOld, getValue());
 			}
 			catch (PropertyVetoException pve)
 			{
@@ -504,7 +520,6 @@ public class VDate extends JComponent
 	@Override
 	public void keyReleased(KeyEvent e)
 	{
-		log.finest("Key=" + e.getKeyCode() + " - " + e.getKeyChar() + " -> " + m_text.getText());
 		// ESC
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
 		{
@@ -520,27 +535,28 @@ public class VDate extends JComponent
 		m_withinCommitEdit = true;
 		try
 		{
-			final Timestamp ts = getTimestamp();		// getValue
-			final Timestamp ts_old = getTimeStamp(m_oldText); // task 08672: get the old value, also as timestamp. Otherwise, listeners will compare apples with cucumbas and will always fire without need.
-
 			// metas: begin: if the user clears the content of this field, we need to handle it as he
 			// is trying to remove the date value
-			if (Check.isEmpty(getDisplay(), true)) // metas
+			final String valueAsText = getDisplay();
+			if (Check.isEmpty(valueAsText, true)) // metas
 			{
 				fireVetoableChange(m_columnName, null, null); // metas
 			}
-			// metas: end
-			if (ts == null) // format error - just indicate change
+			
+			final Timestamp value = getValue();
+			final Timestamp valueOld = getValueOld(); // task 08672: get the old value, also as timestamp. Otherwise, listeners will compare apples with cucumbers and will always fire without need.
+			if (value == null) // format error - just indicate change
 			{
-				fireVetoableChange(m_columnName, ts_old, null);
+				fireVetoableChange(m_columnName, valueOld, null);
 			}
 			else
 			{
-				fireVetoableChange(m_columnName, ts_old, ts);
+				fireVetoableChange(m_columnName, valueOld, value);
 			}
+			
 			// task 08775: update m_oldText so on the next commitEdit() invocation we have it and therefore reasonable inform out change listeners about old and new value.
 			// without this, every left/right arrow keystroke might trigger a refresh.
-			m_oldText = m_text.getText();
+			setValueOld(m_text.getText());
 		}
 		catch (PropertyVetoException pve)
 		{
@@ -576,24 +592,33 @@ public class VDate extends JComponent
 		{
 			return;
 		}
-		// log.config( "VDate.focusLost");
-		if (m_text == null || m_text.getText() == null)
+		
+		//
+		// If the text field is empty
+		if (m_text == null || Check.isEmpty(m_text.getText(), false))
 		{
 			return;
 		}
+		
 		final Object value = getValue();
 		if (value == null && isMandatory())
 		{
-			// teo_sarca [ 1660595 ] Date field: incorrect functionality on paste
-			// setValue(startCalendar(this, getTimestamp(), m_format, m_displayType, m_title));
-			final Timestamp ts = startCalendar(this, getTimestamp(), m_format, m_displayType, m_title);
+			final Timestamp ts = pickDate();
 			if (ts != null)
 			{
 				setValue(ts);
 			}
 			else
 			{
-				setValue(m_oldText);
+				final Timestamp valueOld = getValueOld();
+				if (valueOld != null)
+				{
+					setValue(valueOld);
+				}
+				else
+				{
+					setValue(m_initialText);
+				}
 			}
 		}
 		else
@@ -601,34 +626,17 @@ public class VDate extends JComponent
 			setValue(value);
 		}
 	}	// focusLost
-
-	/**
-	 * Invalid Entry - Start Calendar
-	 * 
-	 * @param jc parent
-	 * @param value value
-	 * @param format format
-	 * @param displayType display type
-	 * @param title title
-	 * @return formatted Date
-	 */
-	public static Timestamp startCalendar(Container jc, Timestamp value,
-			SimpleDateFormat format, int displayType, String title)
+	
+	private final Timestamp pickDate()
 	{
-		log.config("Date=" + value);
-
-		// Find frame
-		Frame frame = Env.getFrame(jc);
-		// Actual Call
-		Calendar cal = new Calendar(frame, title, value, displayType);
-		AEnv.showCenterWindow(frame, cal);
-		Timestamp result = cal.getTimestamp();
-		log.config("Result=" + result);
-		if (result == null && !cal.isCancel()) // F3P: added check for 'isCancel',
-			result = value;		// original
-		cal = null;
-		return result;
-	}	// startCalendar
+		return Calendar.builder()
+				.setParentComponent(this)
+				.setDialogTitle(m_title)
+				.setDateFormat(m_format)
+				.setDisplayType(m_displayType)
+				.setDate(getTimestamp())
+				.buildAndGet();
+	}
 
 	/**
 	 * Set Field/WindowNo for ValuePreference
@@ -663,55 +671,11 @@ public class VDate extends JComponent
 		m_button.setReadWrite(enabled && m_readWrite);
 	}	// setEnabled
 
-	/**************************************************************************
-	 * Remove Action Listner
-	 * 
-	 * @param l Action Listener
-	 */
-	public void removeActionListener(ActionListener l)
-	{
-		listenerList.remove(ActionListener.class, l);
-	}	// removeActionListener
-
-	/**
-	 * Add Action Listner
-	 * 
-	 * @param l Action Listener
-	 */
 	@Override
 	public void addActionListener(ActionListener l)
 	{
 		listenerList.add(ActionListener.class, l);
 	}	// addActionListener
-
-	// @formatter:off
-	/**
-	 * Fire Action Event to listeners
-	 *
-	protected void fireActionPerformed()
-	{
-		int modifiers = 0;
-		AWTEvent currentEvent = EventQueue.getCurrentEvent();
-		if (currentEvent instanceof InputEvent)
-			modifiers = ((InputEvent)currentEvent).getModifiers();
-		else if (currentEvent instanceof ActionEvent)
-			modifiers = ((ActionEvent)currentEvent).getModifiers();
-		ActionEvent ae = new ActionEvent (this, ActionEvent.ACTION_PERFORMED,
-			"VDate", EventQueue.getMostRecentEventTime(), modifiers);
-
-		// Guaranteed to return a non-null array
-		Object[] listeners = listenerList.getListenerList();
-		// Process the listeners last to first, notifying those that are interested in this event
-		for (int i = listeners.length-2; i>=0; i-=2)
-		{
-			if (listeners[i]==ActionListener.class)
-			{
-				((ActionListener)listeners[i+1]).actionPerformed(ae);
-			}
-		}
-	}	//	fireActionPerformed
-	/**/
-	// @formatter:on
 	
 	@Override
 	public void setBackground(final Color bg)

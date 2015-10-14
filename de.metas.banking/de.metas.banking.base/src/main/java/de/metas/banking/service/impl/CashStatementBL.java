@@ -42,7 +42,6 @@ import de.metas.banking.service.ICashStatementBL;
 
 public class CashStatementBL implements ICashStatementBL
 {
-	// metas: us025b
 	@Override
 	public I_C_BankStatementLine createCashStatementLine(final I_C_Payment payment)
 	{

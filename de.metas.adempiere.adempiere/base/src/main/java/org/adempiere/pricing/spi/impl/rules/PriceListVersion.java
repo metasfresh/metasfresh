@@ -2,7 +2,7 @@ package org.adempiere.pricing.spi.impl.rules;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -166,7 +166,7 @@ public class PriceListVersion  extends AbstractPriceListBasedRule
 		result.setM_PriceList_Version_ID(m_M_PriceList_Version_ID); // make sure that the result doesn't lack this important info, even if it was already known from the context!
 		result.setCalculated(true);
 		
-		// 06942 : use product price uom all the time
+		// fresh 06942 : use product price uom all the time
 		if (ppUOMId <= 0)
 		{
 			result.setPrice_UOM_ID(m_C_UOM_ID);

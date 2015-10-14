@@ -2,7 +2,7 @@ package org.adempiere.acct.api;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -75,7 +75,7 @@ public interface IGLJournalLineBL extends ISingletonService
 	 * @param glJournalLine
 	 * @param accountSignDR
 	 * @return tax accountable; never returns <code>null</code>
-	 * @task http://dewiki908/mediawiki/index.php/08351_Automatikibuchung_Steuer_in_Hauptbuchjournal_%28106598648165%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08351_Automatikibuchung_Steuer_in_Hauptbuchjournal_%28106598648165%29
 	 */
 	ITaxAccountable asTaxAccountable(I_GL_JournalLine glJournalLine, boolean accountSignDR);
 
@@ -86,7 +86,7 @@ public interface IGLJournalLineBL extends ISingletonService
 	 * @param accountSignDR
 	 * @return tax accountable; never returns <code>null</code>
 	 * @throws AdempiereException if given journal line is not about tax accouting
-	 * @task http://dewiki908/mediawiki/index.php/08351_Automatikibuchung_Steuer_in_Hauptbuchjournal_%28106598648165%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08351_Automatikibuchung_Steuer_in_Hauptbuchjournal_%28106598648165%29
 	 */
 	ITaxAccountable asTaxAccountable(I_GL_JournalLine glJournalLine);
 

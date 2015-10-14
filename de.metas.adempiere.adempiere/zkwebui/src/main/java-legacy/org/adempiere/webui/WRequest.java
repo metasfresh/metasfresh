@@ -14,7 +14,6 @@
 
 package org.adempiere.webui;
 
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.logging.Level;

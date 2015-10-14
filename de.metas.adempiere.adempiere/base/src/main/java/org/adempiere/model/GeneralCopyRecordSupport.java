@@ -2,7 +2,7 @@ package org.adempiere.model;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -142,7 +142,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	/**
-	 * Called after the record was copied, right before saving it. This default implementation makes sure that <b>if</b> both <code>to</code> and <code>from</code> have an ASI, then the ASI is cloned (see {@task http://dewiki908/mediawiki/index.php/08789_CopyWithDetails:_clone_ASI_instead_of_just_coyping_its_ID_%28100318477643%29}).
+	 * Called after the record was copied, right before saving it. This default implementation makes sure that <b>if</b> both <code>to</code> and <code>from</code> have an ASI, then the ASI is cloned (see {@task http://dewiki908/mediawiki/index.php/fresh_08789_CopyWithDetails:_clone_ASI_instead_of_just_coyping_its_ID_%28100318477643%29}).
 	 * 
 	 * Can be overridden by extending classes, but generally, please call this super-method.
 	 * 
@@ -533,7 +533,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 		// TODO: NOTE!! This is out of sync with org.compiere.model.GridField.getDefaultNoCheck()
 		//
-		// 07896: If PO column is considered calculated for AD_Org and AD_Client, consider using the System
+		// fresh 07896: If PO column is considered calculated for AD_Org and AD_Client, consider using the System
 		// Otherwise, treat them like any other column
 		//
 		if (poInfo.isCalculated(index))

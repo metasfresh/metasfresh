@@ -25,7 +25,7 @@ package de.metas.handlingunits.model;
 
 public interface I_M_Locator extends org.compiere.model.I_M_Locator
 {
-	// 06902: Marks that HUs will be moved to this locator after picking.
+	//  06902: Marks that HUs will be moved to this locator after picking.
 
 	public static final String COLUMNNAME_IsAfterPickingLocator = "IsAfterPickingLocator";
 

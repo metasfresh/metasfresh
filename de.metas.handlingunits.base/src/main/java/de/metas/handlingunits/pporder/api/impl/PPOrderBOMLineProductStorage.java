@@ -71,8 +71,8 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 		//
 		// Case: if this is an Issue BOM Line, IssueMethod is Backflush and we did not over-issue on it yet
 		// => enforce the capacity to Projected Qty Required (i.e. standard Qty that needs to be issued on this line).
-		// initial concept: http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
-		// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
+		// initial concept: http://dewiki908/mediawiki/index.php/fresh_07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
+		// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/fresh_07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
 		final String issueMethod = orderBOMLine.getIssueMethod();
 		if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod) && !ppOrderBOMBL.isReceipt(orderBOMLine))
 		{

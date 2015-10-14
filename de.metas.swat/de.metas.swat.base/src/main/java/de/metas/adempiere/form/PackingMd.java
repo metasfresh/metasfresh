@@ -103,7 +103,7 @@ public class PackingMd extends MvcMdGenForm
 	 * 
 	 * Default: true.
 	 * 
-	 * @task http://dewiki908/mediawiki/index.php/05522_Picking_Terminal_extension_-_Regroup_by_product_%28104598600159%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_05522_Picking_Terminal_extension_-_Regroup_by_product_%28104598600159%29
 	 */
 	private boolean groupByProduct = Services.get(ISysConfigBL.class).getBooleanValue("de.metas.adempiere.form.PackingMd.groupByProduct", false);
 
@@ -702,7 +702,7 @@ public class PackingMd extends MvcMdGenForm
 		final String deliveryVia = item.getDeliveryVia();
 		// final String deliveryViaName = item.getDeliveryViaName();
 		// final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
-		final Timestamp deliveryDate = item.getDeliveryDate(); // 01676
+		final Timestamp deliveryDate = item.getDeliveryDate(); // customer01676
 		final int shipmentScheduleId = item.getShipmentScheduleId();
 		final String bPartnerValue = item.getBPartnerValue();
 		final String bPartnerName = item.getBPartnerName();

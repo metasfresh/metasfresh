@@ -554,7 +554,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		//
 		// Fetch only those PI Items which have our given huPI included
-		// 08254: if No-PI, don't add included HU filter
+		// fresh 08254: if No-PI, don't add included HU filter
 		if (huPIId != getNo_HU_PI_ID())
 		{
 			piItemsQueryBuilder.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, huPIId);

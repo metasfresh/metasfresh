@@ -3,7 +3,7 @@ package org.adempiere.util.text;
 
 /*
  * #%L
- * de.metas.util
+ * org.adempiere.util
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

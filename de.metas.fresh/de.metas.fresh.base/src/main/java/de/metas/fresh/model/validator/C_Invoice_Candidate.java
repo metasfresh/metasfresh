@@ -36,9 +36,9 @@ public class C_Invoice_Candidate
 {
 	
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void setProduzentenabrechnung(final I_C_Invoice_Candidate candidate)
+	public void setFresh_Produzentenabrechnung(final I_C_Invoice_Candidate candidate)
 	{
-		// set DocType invoice Produzentenabrechnung based on the flag Produzentenabrechnung from c_BPartner
+		// set DocType invoice fresh_Produzentenabrechnung based on the flag fresh_Produzentenabrechnung from c_BPartner
 		Services.get(IFreshInvoiceCandBL.class).updateC_DocTypeInvoice(candidate);
 	}
 }

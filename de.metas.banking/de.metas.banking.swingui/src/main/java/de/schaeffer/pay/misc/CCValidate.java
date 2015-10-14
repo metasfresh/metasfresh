@@ -2,7 +2,7 @@ package de.schaeffer.pay.misc;
 
 /*
  * #%L
- * de.metas.banking.swingui
+ * de.metas.banking.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

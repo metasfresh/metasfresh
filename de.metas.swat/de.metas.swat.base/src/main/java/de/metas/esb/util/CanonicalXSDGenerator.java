@@ -117,7 +117,7 @@ public class CanonicalXSDGenerator
 
 	private final List<Element> complexTypes = new ArrayList<Element>();
 
-	// 02775: exporting AD_Reference_Values of List references as XSD enums
+	// _02775: exporting AD_Reference_Values of List references as XSD enums
 	private final Map<String, Element> enumTypes = new HashMap<String, Element>();
 
 	private final Map<String, Element> refTypes = new HashMap<String, Element>();
@@ -278,7 +278,7 @@ public class CanonicalXSDGenerator
 		{
 			final I_AD_Ref_List listValue = listValues.get(index);
 			final String value = listValue.getValue();
-			final String valueName = listValue.getValueName(); // 08456: Take valueName instead of name when generating enumerations (Names can be equal!)
+			final String valueName = listValue.getValueName(); // fresh 08456: Take valueName instead of name when generating enumerations (Names can be equal!)
 
 			map.put(
 					toJavaName(value),
@@ -397,7 +397,7 @@ public class CanonicalXSDGenerator
 				{
 					checkReferenceValue(column);
 
-					// 02775
+					// _02775
 					// Notes:
 					// We don't want the XSD file to contain non-ascii chars, because it might lead to trouble, e.g.
 					// when the file is used to create binding code
@@ -709,7 +709,7 @@ public class CanonicalXSDGenerator
 		}
 		else if (displayType == DisplayType.YesNo)
 		{
-			xsdType = XSD_TYPE_YES_NO; // 02585
+			xsdType = XSD_TYPE_YES_NO; // _02585
 			ensureYesNoTypeExists();
 		}
 		else if (displayType == DisplayType.Button)
@@ -744,7 +744,7 @@ public class CanonicalXSDGenerator
 			return; // nothing to do
 		}
 
-		// 02585
+		// _02585
 		final Element e = document.createElement(XSD_SIMPLE_TYPE);
 		e.setAttribute(XSD_NAME, XSD_TYPE_YES_NO);
 

@@ -45,7 +45,6 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MFactAcct;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MRefList;
-import org.compiere.model.X_Fact_Acct;
 import org.compiere.report.core.RColumn;
 import org.compiere.report.core.RModel;
 import org.compiere.util.CLogger;
@@ -151,12 +150,6 @@ class AcctViewerData
 	boolean displayDocumentInfo = false;
 	/** Display Account Ending Balance */
 	boolean displayEndingBalance = true;
-	
-	/**
-	 * task 09243: flag to tell if the void/reversed docs are to be displayed or not
-	 */
-	boolean displayVoidDocuments = true;
-	
 	//
 	String sortBy1 = "";
 	String sortBy2 = "";
@@ -423,14 +416,6 @@ class AcctViewerData
 			// Add Account_ID between Account_ID and AccountTo_ID
 			appendAccountWhereClause(whereClause);
 		}
-		
-		if(!isDisplayVoidDocuments())
-		{
-			whereClause.append( "AND ").append(RModel.TABLE_ALIAS).append(".DocStatus NOT IN (")
-			.append("'").append(X_Fact_Acct.DOCSTATUS_Reversed).append("',")
-			.append("'").append(X_Fact_Acct.DOCSTATUS_Closed).append("',")
-			.append("'").append(X_Fact_Acct.DOCSTATUS_Voided).append("')");
-		}
 
 		RModel rm = getRModel();
 
@@ -564,7 +549,7 @@ class AcctViewerData
 			max = keys.size();
 		for (int i = 0; i < max; i++)
 		{
-			String column = keys.get(i);
+			String column = (String)keys.get(i);
 			if (column != null && column.startsWith("Date"))
 				rm.addColumn(new RColumn(ctx, column, DisplayType.Date));
 			else if (column != null && column.endsWith("_ID"))
@@ -600,7 +585,7 @@ class AcctViewerData
 		// Remaining Keys
 		for (int i = max; i < keys.size(); i++)
 		{
-			String column = keys.get(i);
+			String column = (String)keys.get(i);
 			if (column != null && column.startsWith("Date"))
 				rm.addColumn(new RColumn(ctx, column, DisplayType.Date));
 			else if (column.startsWith("UserElement"))
@@ -635,9 +620,6 @@ class AcctViewerData
 					RModel.TABLE_ALIAS + ".PostingType",
 					MFactAcct.POSTINGTYPE_AD_Reference_ID,
 					null));
-		
-		// task 09243: add docstatus
-		rm.addColumn(new RColumn(ctx, "DocStatus", DisplayType.String));
 		return rm;
 	}   // createRModel
 
@@ -935,16 +917,5 @@ class AcctViewerData
 	public void setDisplayEndingBalance(boolean displayEndingBalance)
 	{
 		this.displayEndingBalance = displayEndingBalance;
-	}
-
-	public void setDisplayVoidDocuments(boolean isDisplayVoidDocuments)
-	{
-		this.displayVoidDocuments = isDisplayVoidDocuments;
-		
-	}
-	
-	public boolean isDisplayVoidDocuments()
-	{
-		return displayVoidDocuments;
 	}
 }   // AcctViewerData

@@ -426,7 +426,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		//	}
 		// @formatter:off
 		//
-		// 07451: Always set LU qty to ONE
+		// fresh 07451: Always set LU qty to ONE
 		// Background: even if 10 LUs are received, the user wants to deal with them 1-by-1 in 95% of all cases.
 		//
 		// Case: selected LU Key is actually No-PI => set QtyLU to ZERO

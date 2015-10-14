@@ -202,10 +202,10 @@ public final class DisplayType
 	}	//	isText
 
 	/**
-	 *	Returns true if DisplayType is a Date.
-	 *  (stored as Timestamp)
-	 *  @param displayType Display Type
-	 *  @return true if date
+	 * Returns true if DisplayType is a Date or Time.
+	 * 
+	 * @param displayType Display Type
+	 * @return true if date, time or date+time
 	 */
 	public static boolean isDate (int displayType)
 	{

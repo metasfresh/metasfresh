@@ -45,13 +45,8 @@ public interface IOrderCheckupBL extends ISingletonService
 	void generateReportsIfEligible(I_C_Order order);
 
 	/**
-	 * Return <code>true</code> if the system is configured to generate the {@link I_C_Order_MFGWarehouse_Report}s when the given order is completed.
-	 * <p>
-	 * Note that this method can return <code>false</code>, but the order might still be eligible for reporting (see {@link #isEligibleForReporting(I_C_Order)}) if the reporting process is started
-	 * manually.
-	 * 
 	 * @param order
-	 * @return
+	 * @return true if the system is configured to generate the {@link I_C_Order_MFGWarehouse_Report}s when the given order is completed.
 	 */
 	boolean isGenerateReportsOnOrderComplete(I_C_Order order);
 

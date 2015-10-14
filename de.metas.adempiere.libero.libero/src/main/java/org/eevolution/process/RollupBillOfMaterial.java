@@ -254,7 +254,7 @@ public class RollupBillOfMaterial extends SvrProcess
 			{
 				continue;
 			}
-			//06005
+			//fresh_06005
 			if (X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bomline.getComponentType()))
 			{
 				continue;

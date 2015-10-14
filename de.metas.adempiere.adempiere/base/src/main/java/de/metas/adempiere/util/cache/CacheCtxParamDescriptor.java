@@ -2,7 +2,7 @@ package de.metas.adempiere.util.cache;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * ADempiere ERP - Base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -39,13 +39,13 @@ import de.metas.adempiere.util.CacheCtx;
  * @author tsa
  *
  */
-public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
+class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 {
 	private static final transient CLogger logger = CLogger.getCLogger(CacheCtxParamDescriptor.class);
 
 	private final int parameterIndex;
 
-	CacheCtxParamDescriptor(Class<?> parameterType, int parameterIndex, Annotation annotation)
+	public CacheCtxParamDescriptor(Class<?> parameterType, int parameterIndex, Annotation annotation)
 	{
 		super();
 
@@ -96,47 +96,12 @@ public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 		}
 
 		final Properties ctx = (Properties)ctxObj;
-		final ArrayKey key = buildCacheKey(ctx);
-		keyBuilder.add(key);
-	}
-
-	private static final ArrayKey buildCacheKey(final Properties ctx)
-	{
-		return new ArrayKey(
+		final ArrayKey key = new ArrayKey(
 				Env.getAD_Client_ID(ctx),
 				Env.getAD_Role_ID(ctx),
 				Env.getAD_User_ID(ctx),
-				Env.getAD_Language(ctx));
-	}
-
-	/**
-	 * Method used to compare if to contexts are considered to be equal from caching perspective.
-	 * Equality from caching perspective means that the following is equal:
-	 * <ul>
-	 * <li>AD_Client_ID
-	 * <li>AD_Role_ID
-	 * <li>AD_User_ID
-	 * <li>AD_Language
-	 * </ul>
-	 * The aim of this method is to be used for hot fixes, where we can not implement services which annotated cached methods, but want just to fix the issue.
-	 * That's also why the method is flagged as deprecated from the very beginning.
-	 * 
-	 * @param ctx1
-	 * @param ctx2
-	 * @return true if given contexts shall be considered equal from caching perspective
-	 */
-	@Deprecated
-	public static final boolean isSameCtx(final Properties ctx1, final Properties ctx2)
-	{
-		if (ctx1 == ctx2)
-		{
-			return true;
-		}
-		if (ctx1 == null || ctx2 == null)
-		{
-			return false;
-		}
-
-		return buildCacheKey(ctx1).equals(buildCacheKey(ctx2));
+				Env.getAD_Language(ctx)
+				);
+		keyBuilder.add(key);
 	}
 }

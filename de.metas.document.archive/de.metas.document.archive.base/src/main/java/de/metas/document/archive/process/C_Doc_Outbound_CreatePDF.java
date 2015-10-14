@@ -53,7 +53,7 @@ public class C_Doc_Outbound_CreatePDF extends SvrProcess
 	{
 		final Properties ctx = getCtx();
 
-		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, DocOutboundWorkpackageProcessor.class);
+		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueue(ctx, DocOutboundWorkpackageProcessor.class);
 		final IQueueProcessor queueProcessor = Services.get(IQueueProcessorFactory.class).createSynchronousQueueProcessor(workpackageQueue);
 
 		queueProcessor.run();

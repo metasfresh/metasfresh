@@ -66,7 +66,7 @@ public interface IInvoicingParams
 	 * This parameter is created and when invoice candidates to invoice workpackage is enqueued.
 	 * 
 	 * @return total net amount to invoice checksum
-	 * @task http://dewiki908/mediawiki/index.php/08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29
+	 * @task http://dewiki908/mediawiki/index.php/fresh_08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29
 	 */
 	BigDecimal getCheck_NetAmtToInvoice();
 

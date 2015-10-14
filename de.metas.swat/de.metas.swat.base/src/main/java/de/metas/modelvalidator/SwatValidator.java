@@ -40,8 +40,6 @@ import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.appdict.validation.model.validator.AD_JavaClass;
 import org.adempiere.appdict.validation.model.validator.AD_JavaClass_Type;
 import org.adempiere.appdict.validation.model.validator.ApplicationDictionary;
-import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
-import org.adempiere.bpartner.service.impl.AsyncBPartnerTotalOpenBalanceUpdater;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.impl.AbstractInvoiceBL;
 import org.adempiere.model.POWrapper;
@@ -166,10 +164,6 @@ public class SwatValidator implements ModelValidator
 		setupTableCacheConfig();
 
 		configDatabase();
-		
-		//
-		// Services
-		Services.registerService(IBPartnerTotalOpenBalanceUpdater.class, new AsyncBPartnerTotalOpenBalanceUpdater());
 
 		engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
 		engine.addModelChange(I_M_InOutLine.Table_Name, this);

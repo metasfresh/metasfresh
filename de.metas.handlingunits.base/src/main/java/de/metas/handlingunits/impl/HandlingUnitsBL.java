@@ -892,7 +892,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final boolean isExchangeGebindelagerWhenEmpty = statusEntry.isExchangeGebindelagerWhenEmpty();
 
 		//
-		// 08157: If forced packing material fetching is enabled, then make sure to pull packing material from Gebinde warehouse (i.e when bringing a blank LU)
+		// fresh 08157: If forced packing material fetching is enabled, then make sure to pull packing material from Gebinde warehouse (i.e when bringing a blank LU)
 		if (forceFetchPackingMaterial)
 		{
 			if (isPhysicalHU(initialHUStatus))

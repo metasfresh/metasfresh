@@ -70,7 +70,7 @@ import de.metas.interfaces.I_M_Movement;
  * Generate {@link I_M_Movement} to move given {@link I_M_HU}s
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/08205_HU_Pos_Inventory_move_Button_%28105838505937%29
+ * @task http://dewiki908/mediawiki/index.php/fresh_08205_HU_Pos_Inventory_move_Button_%28105838505937%29
  */
 public class HUMovementBuilder
 {

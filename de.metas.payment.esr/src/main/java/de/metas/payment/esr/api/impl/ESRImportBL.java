@@ -482,7 +482,7 @@ public class ESRImportBL implements IESRImportBL
 		// NOTE: locking not required
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(esrImport);
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, LoadESRImportFileWorkpackageProcessor.class);
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueue(ctx, LoadESRImportFileWorkpackageProcessor.class);
 
 		queue.newBlock()
 				.setContext(ctx)

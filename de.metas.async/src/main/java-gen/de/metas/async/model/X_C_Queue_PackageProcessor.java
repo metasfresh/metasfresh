@@ -30,7 +30,7 @@ public class X_C_Queue_PackageProcessor extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -449147806L;
+	private static final long serialVersionUID = 653990729L;
 
     /** Standard Constructor */
     public X_C_Queue_PackageProcessor (Properties ctx, int C_Queue_PackageProcessor_ID, String trxName)
@@ -38,8 +38,8 @@ public class X_C_Queue_PackageProcessor extends org.compiere.model.PO implements
       super (ctx, C_Queue_PackageProcessor_ID, trxName);
       /** if (C_Queue_PackageProcessor_ID == 0)
         {
-			setClassname (null);
 			setC_Queue_PackageProcessor_ID (0);
+			setClassname (null);
 			setEntityType (null);
         } */
     }
@@ -58,22 +58,6 @@ public class X_C_Queue_PackageProcessor extends org.compiere.model.PO implements
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	/** Set Java-Klasse.
-		@param Classname Java-Klasse	  */
-	@Override
-	public void setClassname (java.lang.String Classname)
-	{
-		set_Value (COLUMNNAME_Classname, Classname);
-	}
-
-	/** Get Java-Klasse.
-		@return Java-Klasse	  */
-	@Override
-	public java.lang.String getClassname () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Classname);
-	}
 
 	/** Set WorkPackage Processor.
 		@param C_Queue_PackageProcessor_ID WorkPackage Processor	  */
@@ -95,6 +79,22 @@ public class X_C_Queue_PackageProcessor extends org.compiere.model.PO implements
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Java-Klasse.
+		@param Classname Java-Klasse	  */
+	@Override
+	public void setClassname (java.lang.String Classname)
+	{
+		set_Value (COLUMNNAME_Classname, Classname);
+	}
+
+	/** Get Java-Klasse.
+		@return Java-Klasse	  */
+	@Override
+	public java.lang.String getClassname () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Classname);
 	}
 
 	/** Set Beschreibung.
@@ -136,21 +136,5 @@ public class X_C_Queue_PackageProcessor extends org.compiere.model.PO implements
 	public java.lang.String getEntityType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
-	}
-
-	/** Set Interner Name.
-		@param InternalName Interner Name	  */
-	@Override
-	public void setInternalName (java.lang.String InternalName)
-	{
-		set_Value (COLUMNNAME_InternalName, InternalName);
-	}
-
-	/** Get Interner Name.
-		@return Interner Name	  */
-	@Override
-	public java.lang.String getInternalName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
 	}
 }

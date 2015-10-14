@@ -692,7 +692,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				qtyInvoiced = qtyInvoiced.add(ila.getQtyInvoiced());
 
 				//
-				// 07202: We update the net amount invoice according to price UOM.
+				// fresh 07202: We update the net amount invoice according to price UOM.
 				final BigDecimal priceActual = invoiceLine.getPriceActual();
 				final BigDecimal rawNetAmtInvoiced = ila.getQtyInvoiced().multiply(priceActual);
 				final boolean errorIfNotPossible = false;
@@ -1162,7 +1162,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IStatefulWorkpackageProcessorFactory packageProcessorFactory = Services.get(IStatefulWorkpackageProcessorFactory.class);
 		packageProcessorFactory.registerWorkpackageProcessor(packageProcessor);
 
-		final IWorkPackageQueue packageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, packageProcessor.getClass());
+		final IWorkPackageQueue packageQueue = Services.get(IWorkPackageQueueFactory.class).getQueue(ctx, packageProcessor.getClass());
 
 		final IQueueProcessor queueProcessor = Services.get(IQueueProcessorFactory.class).createSynchronousQueueProcessor(packageQueue);
 		queueProcessor.setWorkpackageProcessorFactory(packageProcessorFactory);

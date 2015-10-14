@@ -844,7 +844,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		copyValues(this, reversal);
 
 		//
-		// 07570: Keep AD_Org of original document
+		// fresh 07570: Keep AD_Org of original document
 		reversal.setAD_Org_ID(this.getAD_Org_ID());
 
 		reversal.setDocumentNo(""); // let it generate a new document# 
@@ -865,7 +865,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 			MAllocationLine.copyValues(line, reversalLine);
 
 			//
-			// 07570: Keep AD_Org of original document
+			// fresh 07570: Keep AD_Org of original document
 			reversalLine.setAD_Org_ID(line.getAD_Org_ID());
 
 			reversalLine.setC_AllocationHdr_ID(reversal.getC_AllocationHdr_ID());
