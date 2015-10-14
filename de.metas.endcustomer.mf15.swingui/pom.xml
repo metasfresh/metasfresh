@@ -206,7 +206,7 @@
 							<outfile>target/metas-fresh.exe</outfile>
 							<jar>target/de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar</jar>
 							<errTitle>metas Fresh</errTitle>
-							<icon>src/main/resources/favicon_32.png</icon>
+							<icon>src/main/launch4j/metas_fresh_32.ico</icon>
 							<classPath>
 								<mainClass>org.compiere.Adempiere</mainClass>
 								<addDependencies>true</addDependencies>
