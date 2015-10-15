@@ -469,6 +469,20 @@ public interface I_I_BPartner
     /** Column name ContactDescription */
     public static final String COLUMNNAME_ContactDescription = "ContactDescription";
 
+    /** Column name ContactName */
+    public static final String COLUMNNAME_ContactName = "ContactName";
+
+	/** Set Contact Name.
+	  * Business Partner Contact Name
+	  */
+	public void setContactName (String ContactName);
+
+	/** Get Contact Name.
+	  * Business Partner Contact Name
+	  */
+	public String getContactName();
+
+    
 	/**
 	 * Set ISO Ländercode.
 	 * Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html

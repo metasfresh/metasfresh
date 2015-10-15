@@ -22,8 +22,6 @@ package de.metas.fresh.model;
  * #L%
  */
 
-
-
 public interface I_C_BPartner extends de.metas.interfaces.I_C_BPartner
 {
 	// @formatter:off
@@ -38,6 +36,11 @@ public interface I_C_BPartner extends de.metas.interfaces.I_C_BPartner
 	public boolean isADRCustomer();
 	// @formatter:on
 	
+	// @formatter:off
+	public static final String COLUMNNAME_Fresh_AdRRegion = "Fresh_AdRRegion";
+	public void setFresh_AdRRegion(String Fresh_AdRRegion);
+	public String getFresh_AdRRegion();
+	// @formatter:on
 	
 	// @formatter:off
 	public static final String COLUMNNAME_IsADRVendor = "IsADRVendor";
@@ -52,7 +55,7 @@ public interface I_C_BPartner extends de.metas.interfaces.I_C_BPartner
 	// @formatter:on
 	
 	// @formatter:off
-	public static final int ADRZertifizierung_L_AD_Reference_ID=540414;
+	public static final int ADRZertifizierung_L_AD_Reference_ID = 540414;
 	public static final String ADRZertifizierung_L_Keine = "01";
 	public static final String ADRZertifizierung_L_GMAA = "02";
 	public static final String ADRZertifizierung_L_GMNF = "03";

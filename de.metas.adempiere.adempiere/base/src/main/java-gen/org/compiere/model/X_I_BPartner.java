@@ -451,6 +451,23 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_ContactDescription);
 	}
 
+	/** Set Contact Name.
+	@param ContactName 
+	Business Partner Contact Name
+	  */
+	public void setContactName (String ContactName)
+	{
+		set_Value (COLUMNNAME_ContactName, ContactName);
+	}
+	
+	/** Get Contact Name.
+		@return Business Partner Contact Name
+	  */
+	public String getContactName () 
+	{
+		return (String)get_Value(COLUMNNAME_ContactName);
+	}
+	
 	/** Set ISO Ländercode.
 		@param CountryCode 
 		Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
