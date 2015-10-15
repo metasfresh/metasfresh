@@ -1878,6 +1878,7 @@ public class APanel extends CPanel
 			setBusy (true, true);
 		}
 		
+		boolean requestFocus = true;
 		try
 		{
 			//  Command Buttons
@@ -1938,8 +1939,7 @@ public class APanel extends CPanel
 			else if (cmd.equals(aHome.getName()))
 			{
 				cmd_home();
-				// return right away, to not let subsequent code to show this window back
-				return;
+				requestFocus = false; // to not let subsequent code to show this window back
 			}
 			else if (cmd.equals(aFirst.getName()))
 			{	/*cmd_save(false);*/
@@ -2033,14 +2033,17 @@ public class APanel extends CPanel
 		}
 		finally
 		{
-			m_curWinTab.requestFocusInWindow();
-			setBusy(false, true);
+			if (requestFocus)
+			{
+				m_curWinTab.requestFocusInWindow();
+			}
+			setBusy(false, requestFocus);
 		}
 	}	//	actionPerformed
 
 	private void cmd_logout()
 	{
-		JFrame top = Env.getWindow(0);
+		JFrame top = Env.getWindow(Env.WINDOW_MAIN);
 		if (top instanceof AMenu) {
 			((AMenu)top).logout();
 		}	
@@ -2677,7 +2680,11 @@ public class APanel extends CPanel
 		}
 
 		getCurrentFrame().dispose();		// calls this dispose
-		AEnv.exit(0);
+		
+		if (doExitApplication)
+		{
+			AEnv.exit(0);
+		}
 	}   // cmd_end
 
 	/**
@@ -2706,8 +2713,6 @@ public class APanel extends CPanel
 	
 	private void cmd_home()
 	{
-		setBusy(false, false);
-		
 		// Actually show the window in another event to make sure it's the last one (see 07315)
 		EventQueue.invokeLater(new Runnable()
 		{
@@ -2715,7 +2720,7 @@ public class APanel extends CPanel
 			@Override
 			public void run()
 			{
-				AEnv.showWindow(Env.getWindow(0));
+				AEnv.showWindow(Env.getWindow(Env.WINDOW_MAIN));
 			}
 		});
 	}
