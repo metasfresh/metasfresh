@@ -45,6 +45,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.ComponentInputMapUIResource;
 import javax.swing.plaf.metal.MetalLabelUI;
@@ -59,6 +60,8 @@ public class AdempiereLabelUI extends MetalLabelUI
 {
 	/** the UI Class ID to bind this UI to */
 	public static final String uiClassID = AdempierePLAF.getUIClassID(JLabel.class, "LabelUI");
+	
+	public static final String KEY_Border = "Label.border";
 
 	/** Singleton				*/
 	private static final AdempiereLabelUI adempiereLabelUI = new AdempiereLabelUI();
@@ -72,6 +75,14 @@ public class AdempiereLabelUI extends MetalLabelUI
     {
     	return adempiereLabelUI;
     }	//	createUI
+
+    @Override
+    protected void installDefaults(final JLabel c)
+    {
+    	super.installDefaults(c);
+    	
+    	LookAndFeel.installBorder(c, KEY_Border);
+    }
 	
 	/**
 	 * 	Install Keyboard Actions

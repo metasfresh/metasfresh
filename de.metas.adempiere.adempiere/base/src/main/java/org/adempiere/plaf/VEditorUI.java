@@ -26,7 +26,9 @@ package org.adempiere.plaf;
 import java.awt.Color;
 import java.awt.Dimension;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.ColorUIResource;
 
 /**
@@ -44,8 +46,13 @@ public class VEditorUI
 	{
 		return new Object[] {
 				//
+				// Label (and also editor's labels) border
+				// NOTE: we add a small space on top in order to have the label text aligned on same same base line as the text from the right text field.
+				AdempiereLabelUI.KEY_Border, new BorderUIResource(BorderFactory.createEmptyBorder(3, 0, 0, 0))
+				
+				//
 				// Editor button align (i.e. that small button of an editor field which is opening the Info Window)
-				VEditorDialogButtonAlign.DEFAULT_EditorUI, VEditorDialogButtonAlign.Right
+				, VEditorDialogButtonAlign.DEFAULT_EditorUI, VEditorDialogButtonAlign.Right
 				// , VEditorDialogButtonAlign.createUIKey("VNumber"), VEditorDialogButtonAlign.Hide
 				// , VEditorDialogButtonAlign.createUIKey("VDate"), VEditorDialogButtonAlign.Hide
 				// , VEditorDialogButtonAlign.createUIKey("VURL"), VEditorDialogButtonAlign.Right // i.e. the online button
