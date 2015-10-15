@@ -112,6 +112,12 @@ public final class Find extends CDialog
 		this.addWindowListener(new WindowAdapter()
 		{
 			@Override
+			public void windowOpened(WindowEvent e)
+			{
+				findPanel.requestFocus();
+			}
+			
+			@Override
 			public void windowClosing(WindowEvent e)
 			{
 				findPanel.doCancel();
