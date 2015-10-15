@@ -373,7 +373,7 @@ public class APanel extends CPanel
 	@SuppressWarnings("unused")
 	private AppsAction	    aReport, aEnd, aHome, aHelp, aLogout,
 							aPreference,
-							aOnline, aMailSupport, aAbout, aPrintScr, aScrShot, aExit, 
+							aOnline, aMailSupport, aAbout, aExit, 
 							aDeleteSelection;
 	//private AppsAction aCalculator, aCalendar, aEditor, aScript;
 	
@@ -391,12 +391,9 @@ public class APanel extends CPanel
 		/**
 		 *	Menu
 		 */
-	//	menuBar.setHelpMenu();
 		//								File
 		JMenu mFile = AEnv.getMenu("File");
 		menuBar.add(mFile);
-		aPrintScr =	addAction("PrintScreen",	mFile,	KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, 0), 	false);
-		aScrShot =	addAction("ScreenShot",		mFile,	KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, Event.SHIFT_MASK), 	false);
 		aReport = 	addAction("Report",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0),	false);
 		aPrint = 	addAction("Print",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0),	false);
 		aPrintPreview = addAction("PrintPreview",	mFile, KeyStroke.getKeyStroke(KeyEvent.VK_P, Event.SHIFT_MASK+Event.ALT_MASK), false);
@@ -1874,12 +1871,6 @@ public class APanel extends CPanel
 			
 		m_lastModifiers = e.getModifiers();
 		String cmd = e.getActionCommand();
-		//	Do ScreenShot w/o busy
-		if (cmd.equals("ScreenShot"))
-		{
-			AEnv.actionPerformed (e.getActionCommand(), m_curWindowNo, this);
-			return;
-		}
 
 		//  Problem: doubleClick detection - can't disable button as clicking button may change button status
 		if (!WindowMenu.ShowAllWindows_ActionName.equals(cmd))
@@ -1887,17 +1878,16 @@ public class APanel extends CPanel
 			setBusy (true, true);
 		}
 		
-		//  Command Buttons
-		if (e.getSource() instanceof VButton)
-		{
-			setStatusLine(processButtonCallout((VButton)e.getSource()), true);
-			actionButton((VButton)e.getSource());
-			setBusy(false, true);
-			return;
-		}
-
 		try
 		{
+			//  Command Buttons
+			if (e.getSource() instanceof VButton)
+			{
+				setStatusLine(processButtonCallout((VButton)e.getSource()), true);
+				actionButton((VButton)e.getSource());
+				return;
+			}
+			
 			//	File
 			if (cmd.equals(aReport.getName()))
 				cmd_report();
@@ -2041,9 +2031,11 @@ public class APanel extends CPanel
 			msg = Services.get(IMsgBL.class).parseTranslation(m_ctx, msg);
 			ADialog.error(m_curWindowNo, this, "Error", msg);
 		}
-		//
-		m_curWinTab.requestFocusInWindow();
-		setBusy(false, true);
+		finally
+		{
+			m_curWinTab.requestFocusInWindow();
+			setBusy(false, true);
+		}
 	}	//	actionPerformed
 
 	private void cmd_logout()
