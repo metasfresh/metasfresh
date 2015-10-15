@@ -116,10 +116,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 	}
 
 	/** @return the name of the property to be used for storing the collector in {@link ITrx} properties. */
-	protected String getTrxProperyName()
-	{
-		return getClass().getName();
-	}
+	protected abstract String getTrxProperyName();
 
 	/**
 	 * Extracts and returns the trxName to be used from given item

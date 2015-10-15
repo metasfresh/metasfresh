@@ -43,6 +43,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 {
 	private final Class<? extends IWorkpackageProcessor> workpackageProcessorClass;
+	private String trxPropertyName;
 
 	/**
 	 * 
@@ -54,6 +55,8 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 		Check.assumeNotNull(workpackageProcessorClass, "workpackageProcessorClass not null");
 		this.workpackageProcessorClass = workpackageProcessorClass;
+
+		this.trxPropertyName = getClass().getSimpleName() + "-" + workpackageProcessorClass.getName();
 	}
 
 	/**
@@ -124,6 +127,12 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	private final TrxOnCommitCollectorFactory<Scheduler, ItemType> scheduleFactory = new TrxOnCommitCollectorFactory<Scheduler, ItemType>()
 	{
 		@Override
+		protected String getTrxProperyName()
+		{
+			return WorkpackagesOnCommitSchedulerTemplate.this.trxPropertyName;
+		};
+
+		@Override
 		protected String extractTrxNameFromItem(final ItemType item)
 		{
 			return WorkpackagesOnCommitSchedulerTemplate.this.extractTrxNameFromItem(item);
@@ -158,7 +167,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	{
 		private final Properties ctx;
 		private final LinkedHashSet<Object> models = new LinkedHashSet<>();
-		
+
 		private boolean processed = false;
 
 		private Scheduler(final Properties ctx)
@@ -166,12 +175,12 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			super();
 			this.ctx = ctx;
 		}
-		
+
 		private final void assertNotProcessed()
 		{
 			Check.assume(!processed, "Not processed: {0}", this);
 		}
-		
+
 		private final void markAsProcessed()
 		{
 			assertNotProcessed();
@@ -181,7 +190,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		public Scheduler addItem(final ItemType item)
 		{
 			assertNotProcessed();
-			
+
 			final Object model = WorkpackagesOnCommitSchedulerTemplate.this.extractModelToEnqueueFromItem(item);
 			if (model != null)
 			{
@@ -193,7 +202,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		public void createAndSubmitWorkpackage()
 		{
 			markAsProcessed();
-			
+
 			if (models.isEmpty() && !isEnqueueWorkpackageWhenNoModelsEnqueued())
 			{
 				return;
