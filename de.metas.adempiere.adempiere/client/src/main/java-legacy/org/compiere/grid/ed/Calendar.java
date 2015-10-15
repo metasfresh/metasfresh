@@ -1000,13 +1000,14 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 		{
 			if (type == DayButtonType.Inactive || type == null)
 			{
-				setBackground(AdempierePLAF.getFieldBackground_Inactive());
+				setContentAreaFilled(false);
 				setText("");
 				setToolTipText(null);
 				setReadWrite(false);
 			}
 			else if (type == DayButtonType.RegularDay)
 			{
+				setContentAreaFilled(true);
 				setBackground(UIManager.getColor(CalendarUI.KEY_DayButton_Regular_Background));
 				setForeground(UIManager.getColor(CalendarUI.KEY_DayButton_Regular_Foreground));
 				setText(String.valueOf(getDayNo()));
@@ -1015,6 +1016,7 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 			}
 			else if (type == DayButtonType.CurrentDay)
 			{
+				setContentAreaFilled(true);
 				setBackground(UIManager.getColor(CalendarUI.KEY_DayButton_Current_Background));
 				setForeground(UIManager.getColor(CalendarUI.KEY_DayButton_Current_Foreground));
 				setText(String.valueOf(getDayNo()));
@@ -1023,6 +1025,7 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 			}
 			else if (type == DayButtonType.SetCurrentDay)
 			{
+				setContentAreaFilled(true);
 				setBackground(UIManager.getColor(CalendarUI.KEY_DayButton_SetCurrent_Background));
 				setForeground(UIManager.getColor(CalendarUI.KEY_DayButton_SetCurrent_Foreground));
 				setText("*");
@@ -1031,6 +1034,7 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 			}
 			else if (type == DayButtonType.Cancel)
 			{
+				setContentAreaFilled(true);
 				setBackground(UIManager.getColor(CalendarUI.KEY_DayButton_Cancel_Background));
 				setForeground(UIManager.getColor(CalendarUI.KEY_DayButton_Cancel_Foreground));
 				setText("X");
