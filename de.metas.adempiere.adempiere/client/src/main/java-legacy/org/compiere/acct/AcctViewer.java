@@ -53,7 +53,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
-import org.compiere.apps.PrintScreenPainter;
 import org.compiere.apps.search.Info;
 import org.compiere.apps.search.InfoBuilder;
 import org.compiere.grid.ed.VDate;
@@ -199,7 +198,6 @@ public class AcctViewer extends CFrame
 	private ResultTable table = new ResultTable();
 	private CPanel southPanel = new CPanel();
 	private CButton bQuery = new CButton();
-	private CButton bPrint = new CButton();
 	private CButton bExport = new CButton();
 	private CLabel statusLine = new CLabel();
 	private BorderLayout southLayout = new BorderLayout();
@@ -528,11 +526,6 @@ public class AcctViewer extends CFrame
 		bExport.addActionListener(this);
 		rightSide.add(bExport);
 
-		bPrint.setIcon(Images.getImageIcon2("Print16"));
-		bPrint.setToolTipText(msgBL.getMsg(ctx, "Print"));
-		bPrint.addActionListener(this);
-		rightSide.add(bPrint);
-
 		bQuery.setIcon(Images.getImageIcon2("Refresh16"));
 		bQuery.setToolTipText(msgBL.getMsg(ctx, "Refresh"));
 		bQuery.addActionListener(this);
@@ -672,10 +665,6 @@ public class AcctViewer extends CFrame
 		else if (source == bRePost)
 		{
 			actionRePost();
-		}
-		else if (source == bPrint)
-		{
-			PrintScreenPainter.printScreen(this);
 		}
 		else if (source == bExport)
 		{

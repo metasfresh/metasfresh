@@ -53,7 +53,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 
-import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -285,15 +284,11 @@ public class VOrderPlanning extends CPanel
 
 		scrollPane.getViewport().add(p_table, null);
 		//
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		confirmPanel.getResetButton().setVisible(hasReset());
 		confirmPanel.getCustomizeButton().setVisible(hasCustomize());
 		confirmPanel.getHistoryButton().setVisible(hasHistory());
 		confirmPanel.getZoomButton().setVisible(hasZoom());
-		//
-		JButton print = ConfirmPanel.createPrintButton(true);
-		print.addActionListener(this);
-		confirmPanel.addButton(print);
 		//
 		popup.add(calcMenu);
 		calcMenu.setText(Msg.getMsg(Env.getCtx(), "Calculator"));

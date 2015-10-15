@@ -155,7 +155,6 @@ public class ProcessDialog extends CFrame
 
 	private final CButton bOK = ConfirmPanel.createOKButton(true);
 	private final CButton bBack = ConfirmPanel.createBackButton(true);
-	private final CButton bPrint = ConfirmPanel.createPrintButton(true);
 
 	/**
 	 * Static Layout
@@ -216,14 +215,11 @@ public class ProcessDialog extends CFrame
 			bBack.setText(msgBL.getMsg(Env.getCtx(), "Back")); // make sure the text is set
 			bBack.addActionListener(this);
 
-			bPrint.addActionListener(this);
-
 			final FlowLayout southLayout = new FlowLayout();
 			final CPanel southPanel = new CPanel();
 			southPanel.setLayout(southLayout);
 			southLayout.setAlignment(FlowLayout.RIGHT);
 			dialog.add(southPanel, BorderLayout.SOUTH);
-			southPanel.add(bPrint, null);
 			southPanel.add(bBack, null);
 			southPanel.add(bOK, null);
 		}
@@ -423,10 +419,6 @@ public class ProcessDialog extends CFrame
 		{
 			showCard(CARDNAME_ProcessParameters);
 		}
-		else if (e.getSource() == bPrint)
-		{
-			printScreen();
-		}
 	}	// actionPerformed
 
 	/**
@@ -605,14 +597,6 @@ public class ProcessDialog extends CFrame
 		}
 		while (retValue == ADialogDialog.A_CANCEL);
 	}	// printInvoices
-
-	/**
-	 * Print Screen
-	 */
-	private void printScreen()
-	{
-		PrintScreenPainter.printScreen(this);
-	}	// printScreen
 
 	/**
 	 * Message panel component

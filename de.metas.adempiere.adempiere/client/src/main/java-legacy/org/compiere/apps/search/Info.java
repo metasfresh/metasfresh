@@ -48,7 +48,6 @@ import java.util.logging.Level;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -81,7 +80,6 @@ import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
 import org.compiere.apps.ConfirmPanel;
-import org.compiere.apps.PrintScreenPainter;
 import org.compiere.apps.StatusBar;
 import org.compiere.apps.search.impl.InfoWindowGridRowBuilders;
 import org.compiere.grid.ed.Calculator;
@@ -375,10 +373,6 @@ public abstract class Info extends Component
 		confirmPanel.getCustomizeButton().setVisible(hasCustomize());
 		confirmPanel.getHistoryButton().setVisible(hasHistory());
 		confirmPanel.getZoomButton().setVisible(hasZoom());
-		//
-		final JButton print = ConfirmPanel.createPrintButton(true);
-		print.addActionListener(this);
-		confirmPanel.addButton(print);
 		//
 		popup.add(calcMenu);
 		calcMenu.setText(Services.get(IMsgBL.class).getMsg(getCtx(), "Calculator"));
@@ -1120,11 +1114,6 @@ public abstract class Info extends Component
 		else if (cmd.equals(ConfirmPanel.A_RESET))
 		{
 			doReset();
-		}
-		else if (cmd.equals(ConfirmPanel.A_PRINT))
-		{
-			PrintScreenPainter.printScreen(getWindow());
-			// Default
 		}
 		else
 		{

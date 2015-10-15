@@ -228,11 +228,11 @@ public final class ADialogDialog extends CDialog implements ActionListener
 	private JMenuBar menuBar = new JMenuBar();
 	private JMenu mFile = AEnv.getMenu("File");
 	private CMenuItem mEMail = new CMenuItem();
-	private CMenuItem mPrintScreen = new CMenuItem();
-	private CMenuItem mScreenShot = new CMenuItem();
 	private CMenuItem mEnd = new CMenuItem();
 	private CMenuItem mPreference = new CMenuItem();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true); // withCancelButton=true
+	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
+			.withCancelButton(true)
+			.build();
 	private CPanel westPanel = new CPanel();
 	private CLabel iconLabel = new CLabel();
 	private GridBagLayout westLayout = new GridBagLayout();
@@ -253,14 +253,6 @@ public final class ADialogDialog extends CDialog implements ActionListener
 		mEMail.setIcon(Images.getImageIcon2("EMailSupport16"));
 		mEMail.setText(msgBL.getMsg(Env.getCtx(), "EMailSupport"));
 		mEMail.addActionListener(this);
-		mPrintScreen.setIcon(Images.getImageIcon2("PrintScreen16"));
-		mPrintScreen.setText(msgBL.getMsg(Env.getCtx(), "PrintScreen"));
-		mPrintScreen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, 0));
-		mPrintScreen.addActionListener(this);
-		mScreenShot.setIcon(Images.getImageIcon2("ScreenShot16"));
-		mScreenShot.setText(msgBL.getMsg(Env.getCtx(), "ScreenShot"));
-		mScreenShot.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, Event.SHIFT_MASK));
-		mScreenShot.addActionListener(this);
 		mPreference.setIcon(Images.getImageIcon2("Preference16"));
 		mPreference.setText(msgBL.getMsg(Env.getCtx(), "Preference"));
 		mPreference.addActionListener(this);
@@ -284,9 +276,6 @@ public final class ADialogDialog extends CDialog implements ActionListener
 				, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0));
 		//
 		menuBar.add(mFile);
-		mFile.add(mPrintScreen);
-		mFile.add(mScreenShot);
-		mFile.addSeparator();
 		mFile.add(mEMail);
 		if (Env.getUserRolePermissions().isShowPreference())
 			mFile.add(mPreference);
@@ -332,7 +321,6 @@ public final class ADialogDialog extends CDialog implements ActionListener
 		size.height = (Math.max(paras, message.length() / 60) + 1) * 30;
 		size.height = Math.min(size.height, 600);
 		info.setPreferredSize(size);
-		// Log.print("Para=" + paras + " - " + info.getPreferredSize());
 
 		info.setRequestFocusEnabled(false);
 		info.setReadWrite(false);
@@ -395,10 +383,6 @@ public final class ADialogDialog extends CDialog implements ActionListener
 			m_returnCode = A_CANCEL;
 			dispose();
 		}
-		else if (e.getSource() == mPrintScreen)
-		{
-			printScreen();
-		}
 		else if (e.getSource() == mEMail)
 		{
 			String title = getTitle();
@@ -414,7 +398,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 				p.setVisible(true);
 			}
 		}
-	}	// actionPerformed
+	}
 
 	/**
 	 * Get Return Code
@@ -425,14 +409,6 @@ public final class ADialogDialog extends CDialog implements ActionListener
 	{
 		return m_returnCode;
 	}	// getReturnCode
-
-	/**
-	 * PrintScreen
-	 */
-	private void printScreen()
-	{
-		PrintScreenPainter.printScreen(this);
-	}	// printScreen
 
 	/**
 	 * Sets initial answer (i.e. button that will be preselected by default).

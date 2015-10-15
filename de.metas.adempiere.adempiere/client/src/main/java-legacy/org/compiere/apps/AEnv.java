@@ -499,19 +499,7 @@ public final class AEnv
 	public static boolean actionPerformed(final String actionCommand, final int WindowNo, final Container c)
 	{
 		// File Menu ------------------------
-		if (actionCommand.equals("PrintScreen"))
-		{
-			PrintScreenPainter.printScreen(Env.getFrame(c));
-		}
-		else if (actionCommand.equals("ScreenShot"))
-		{
-			ScreenShot.createJPEG(Env.getFrame(c), null);
-		}
-		// else if (actionCommand.equals("Report"))
-		// {
-		// showCenterScreen (new ProcessStart());
-		// }
-		else if (actionCommand.equals("Exit"))
+		if (actionCommand.equals("Exit"))
 		{
 			if (ADialog.ask(WindowNo, c, "ExitApplication?"))
 			{

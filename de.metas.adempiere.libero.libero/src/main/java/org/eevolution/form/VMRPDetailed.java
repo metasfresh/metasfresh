@@ -59,8 +59,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -979,10 +977,6 @@ public class VMRPDetailed
 		confirmPanel.getHistoryButton().setVisible(hasHistory());
 		confirmPanel.getZoomButton().setVisible(hasZoom());
 		//
-		final JButton print = ConfirmPanel.createPrintButton(true);
-		print.addActionListener(this);
-		confirmPanel.addButton(print);
-		//
 		popup.add(calcMenu);
 		calcMenu.setText(msgBL.getMsg(ctx, "Calculator"));
 		calcMenu.setIcon(Images.getImageIcon2("Calculator16"));
@@ -995,7 +989,7 @@ public class VMRPDetailed
 		bZoomProductPlanning.setActionCommand(ACTION_ProductDataPlanning);
 		bZoomProductPlanning.addActionListener(this);
 		bZoomProductPlanning.setMargin(ConfirmPanel.s_insets);
-		bZoomProductPlanning.setSize(print.getSize());
+		bZoomProductPlanning.setSize(confirmPanel.getZoomButton().getSize());
 		confirmPanel.addButton(bZoomProductPlanning);
 
 		enableButtons();
@@ -1298,7 +1292,7 @@ public class VMRPDetailed
 
 			final List<Object> documentNoList = new ArrayList<Object>();
 			documentNoList.add(documentNo);
-			final String whereClauseStr = FindHelper.buildStringRestriction("documentNo(PP_MRP.PP_MRP_ID)", (Object)documentNo, false, sqlParams);
+			final String whereClauseStr = FindHelper.buildStringRestriction("documentNo(PP_MRP.PP_MRP_ID)", documentNo, false, sqlParams);
 			if (!Check.isEmpty(whereClauseStr))
 			{
 				sql.append(" AND ").append(whereClauseStr).append(" ");
