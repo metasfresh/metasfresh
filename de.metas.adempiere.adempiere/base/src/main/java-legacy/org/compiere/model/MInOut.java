@@ -1678,7 +1678,7 @@ public class MInOut extends X_M_InOut implements DocAction
 				// Note: we now also create a MatchInv for SO-InOuts.
 				// However, we only do it "if (sLine.getM_Product_ID() != 0	&& !isReversal())" as before.
 				// I don't really understand what the "!isReversal()" part about, so i'll leave it too
-				// fresh 07742: Load line again in case it was changed by the MMatchPO
+				// 07742: Load line again in case it was changed by the MMatchPO
 				iLine = MInvoiceLine.getOfInOutLine(sLine);
 				if (iLine != null && iLine.getM_Product_ID() > 0)
 				{
@@ -1731,7 +1731,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 		m_processMsg = info.toString();
 		setProcessed(true);
-		setDocAction(DOCACTION_Re_Activate); // fresh 08656: Default action Re-Activate
+		setDocAction(DOCACTION_Re_Activate); // 08656: Default action Re-Activate
 		return DocAction.STATUS_Completed;
 	} // completeIt
 
@@ -1739,7 +1739,7 @@ public class MInOut extends X_M_InOut implements DocAction
 	 * Order the lines to avoid deadlocks in MStorage, when multiple concurrent threads try to acquire locks on on the same set of storages, but in different orderings
 	 * 
 	 * @param lines
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08999_Lieferdisposition_a.frieden_%28104263801724%29
+	 * @task http://dewiki908/mediawiki/index.php/08999_Lieferdisposition_a.frieden_%28104263801724%29
 	 */
 	private static void sortByProductAndASI(final MInOutLine[] lines)
 	{

@@ -38,7 +38,9 @@ import org.compiere.process.ProcessInfo;
 import org.compiere.report.AbstractJasperService;
 import org.compiere.report.IJasperService;
 
-import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.printing.model.I_AD_Archive;
+
+
 
 /**
  * Adapt the old school Jasper Printing Service ( {@link IJasperService}) to our printing module.
@@ -85,7 +87,7 @@ public final class JasperServiceAdapter extends AbstractJasperService
 
 		//
 		// Ask our printing service to printing it right now
-		archive.setIsDirectPrint(true);
+		archive.setIsDirectEnqueue(true);
 		archive.setIsCreatePrintJob(true); // create the print job not only enque to printing queue
 
 		//

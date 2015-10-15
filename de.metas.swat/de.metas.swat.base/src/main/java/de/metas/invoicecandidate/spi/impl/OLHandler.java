@@ -132,12 +132,12 @@ public class OLHandler extends AbstractInvoiceCandidateHandler
 
 		ic.setM_PricingSystem_ID(order.getM_PricingSystem_ID());
 
-		// fresh_05265
+		// 05265
 		ic.setIsSOTrx(orderLine.getC_Order().isSOTrx());
 
 		ic.setQtyOrderedOverUnder(orderLine.getQtyOrderedOverUnder());
 
-		// fresh_07442 activity and tax
+		// 07442 activity and tax
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(orderLine);
 
 		// final I_M_Product product = InterfaceWrapperHelper.create(ctx, orderLine.getM_Product_ID(), I_M_Product.class, trxName);

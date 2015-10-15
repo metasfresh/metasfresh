@@ -212,7 +212,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 
 	protected Boolean getAllowNegativeCapacityOverride(final IAllocationRequest request)
 	{
-		if (getCapacity().isInfiniteCapacity()) // fresh 08443: For infinite capacity, disallow negative capacity overrides ()
+		if (getCapacity().isInfiniteCapacity()) // 08443: For infinite capacity, disallow negative capacity overrides ()
 		{
 			return false;
 		}

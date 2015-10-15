@@ -53,7 +53,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	public static final void schedule(final Properties ctx, final String trxName)
 	{
 		Services.get(IWorkPackageQueueFactory.class)
-				.getQueue(ctx, CreateMissingShipmentSchedulesWorkpackageProcessor.class)
+				.getQueueForEnqueuing(ctx, CreateMissingShipmentSchedulesWorkpackageProcessor.class)
 				.newBlock()
 				.setContext(ctx)
 				.newWorkpackage()

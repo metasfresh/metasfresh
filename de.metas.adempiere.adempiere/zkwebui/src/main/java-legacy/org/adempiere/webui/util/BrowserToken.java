@@ -13,6 +13,7 @@
  *****************************************************************************/
 package org.adempiere.webui.util;
 
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;

@@ -59,7 +59,7 @@ public interface IHUContext extends IContextAware, IPropertiesContainer
 	 * 
 	 * In this case, we would expect transaction listeners to NOT change some Weight attribute because some storage qty was changed.
 	 * 
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08728_HU_Weight_Net_changes_after_Material_Receipt_%28107972107210%29
+	 * @task http://dewiki908/mediawiki/index.php/08728_HU_Weight_Net_changes_after_Material_Receipt_%28107972107210%29
 	 */
 	String PROPERTY_IsStorageAdjustmentFromWeightAttribute = "IsStorageAdjustmentFromWeightAttribute";
 

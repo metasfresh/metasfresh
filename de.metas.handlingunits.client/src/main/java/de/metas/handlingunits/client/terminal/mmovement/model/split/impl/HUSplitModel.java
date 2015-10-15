@@ -105,7 +105,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 	public void init()
 	{
 		//
-		// fresh 08130: Always have one CU-key selected - in this case the first - before trying to calculate default Qtys
+		// 08130: Always have one CU-key selected - in this case the first - before trying to calculate default Qtys
 		// Bugfix is applied for when we have multiple VPIs available to be split
 		final IKeyLayout cuKeyLayout = getCUKeyLayout();
 		final ITerminalKey selectedCUKey = cuKeyLayout.getKeyLayoutSelectionModel().getSelectedKeyOrNull();
@@ -125,7 +125,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 		}
 
 		//
-		// fresh 07558: Auto-detect & select qtys from given huToSplit
+		// 07558: Auto-detect & select qtys from given huToSplit
 		defaultQtyHandler.calculateDefaultQtys(this);
 	}
 
@@ -330,7 +330,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 	@Override
 	protected final void onLUPressed(final ITerminalKey key)
 	{
-		defaultQtyHandler.calculateDefaultQtys(this); // Task fresh 07084
+		defaultQtyHandler.calculateDefaultQtys(this); // Task 07084
 
 		updateQtysReadonly();
 	}

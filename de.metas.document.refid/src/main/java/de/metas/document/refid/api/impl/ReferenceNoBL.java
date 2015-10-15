@@ -72,8 +72,9 @@ public class ReferenceNoBL implements IReferenceNoBL
 		final I_C_ReferenceNo referenceNo = dao.getCreateReferenceNo(localCtx, instance.getType(), referenceNoStr, trxName);
 		dao.getCreateReferenceNoDoc(referenceNo, tableId, recordId);
 
+		
 		// 04153 : mark the reference numbers with 'referenceNoStr' created by the system with isManual = N
-		if (referenceNo != null)
+		if(referenceNo != null)
 		{
 			referenceNo.setIsManual(false);
 			InterfaceWrapperHelper.save(referenceNo); // make sure the flag is saved

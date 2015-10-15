@@ -50,7 +50,7 @@ public class ReceiptScheduleValidator extends AbstractModuleInterceptor
 	protected void onInit(IModelValidationEngine engine, I_AD_Client client)
 	{
 		//
-		// fresh 07344: Register RS AggregationKey Dependencies
+		// 07344: Register RS AggregationKey Dependencies
 		registerRSAggregationKeyDependencies();
 
 		engine.addModelValidator(new C_Order_ReceiptSchedule(), client);

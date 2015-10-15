@@ -287,13 +287,13 @@ public final class Main extends AbstractModuleInterceptor
 			OrderFastInput.addOrderFastInputHandler(new HUOrderFastInputHandler());
 		}
 
-		//  06040 - Add handler for default pricing
+		// 06040 - Add handler for default pricing
 		{
 			Services.get(IHUDocumentHandlerFactory.class).registerHandler(I_C_Order.Table_Name, OrderPricingHUDocumentHandler.class);
 			Services.get(IHUDocumentHandlerFactory.class).registerHandler(I_C_OrderLine.Table_Name, OrderLinePricingHUDocumentHandler.class);
 		}
 
-		//  07255 - Add handler for Distribution Orders
+		// 07255 - Add handler for Distribution Orders
 		{
 			Services.get(IHUDocumentHandlerFactory.class).registerHandler(I_DD_OrderLine.Table_Name, DDOrderLineHUDocumentHandler.class);
 		}
@@ -335,7 +335,7 @@ public final class Main extends AbstractModuleInterceptor
 	private void registerServices()
 	{
 		//
-		//  07085 - Set storage for invoice history and apply filters
+		// 07085 - Set storage for invoice history and apply filters
 		{
 			Services.registerService(IInvoiceHistoryDAO.class, new HUInvoiceHistoryDAO());
 		}

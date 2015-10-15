@@ -45,7 +45,7 @@ import org.compiere.util.CLogger;
  * </pre>
  * 
  * @author ts
- * @task http://dewiki908/mediawiki/index.php/fresh_07286_get_rid_of_jboss-aop_for_good_%28104432455599%29
+ * @task http://dewiki908/mediawiki/index.php/07286_get_rid_of_jboss-aop_for_good_%28104432455599%29
  */
 @Interceptor(I_C_PaySelectionCheck.class)
 public class C_PaySelectionCheck

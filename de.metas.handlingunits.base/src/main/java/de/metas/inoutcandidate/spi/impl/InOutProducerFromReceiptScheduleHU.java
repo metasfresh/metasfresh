@@ -494,8 +494,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			final I_M_InOutLine receiptLine)
 	{
 		//
-		// Gebinde Lager packing materials collector; will be used when the HU's owner is "us",
-		// so on receipt, we need to fetch our packing materials from there and move along with the HUs.
+		// Gebinde Lager packing materials collector; will be used when the HU's owner is "us"
 		final IHUPackingMaterialsCollector destroyedHUPackingMaterialsCollector = huContext.getDestroyedHUPackingMaterialsCollector();
 
 		//
@@ -531,7 +530,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			//
 			// Collect packing materials
 			//
-			// fresh 08162: Only collect them if the owner is not us. Otherwise, take them from the Gebinde Lager
+			// 08162: Only collect them if the owner is not us. Otherwise, take them from the Gebinde Lager
 			if (!tuHU.isHUPlanningReceiptOwnerPM())
 			{
 				packingMaterialsCollector.addTU(tuHU);
@@ -540,7 +539,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			{
 				destroyedHUPackingMaterialsCollector.removeTU(tuHU);
 			}
-			//
+
 			if (luHUId > 0)
 			{
 				final I_M_HU luHU = rsa.getM_LU_HU();
@@ -572,7 +571,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		}
 
 		//
-		// fresh 08162: Process all TU/LU retrievals from Gebinde Lager in a single movement
+		// 08162: Process all TU/LU retrievals from Gebinde Lager in a single movement
 		fetchPackingMaterialsFromGebindeLager(huContext);
 
 		//
@@ -698,7 +697,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	{
 		//
 		// De-activate this allocation because we moved the HU to receipt line
-		// TODO: provide proper implementation. See http://dewiki908/mediawiki/index.php/fresh_06103_Create_proper_HU_transactions_when_creating_Receipt_from_Schedules_%28102206835942%29
+		// TODO: provide proper implementation. See http://dewiki908/mediawiki/index.php/06103_Create_proper_HU_transactions_when_creating_Receipt_from_Schedules_%28102206835942%29
 		rsa.setIsActive(false);
 		InterfaceWrapperHelper.save(rsa);
 	}

@@ -39,7 +39,7 @@ public interface ISubProducerAttributeBL extends ISingletonService
 	 * <p>
 	 * If called with <code>subProducerInitialized==true</code>, then don't overwrite pre-existing ADR attribute values, but only set them if there aren't values set yet. This behavior is supposed to
 	 * prevent us from loosing attribute values that were explicitly set while the sub-producer was not yet set or propagated. See task <a
-	 * href="http://dewiki908/mediawiki/index.php/fresh_08782_ADR_not_correct_in_MRP_Product_Info%2C_Passende_Best%C3%A4nde">fresh 08782 ADR not correct in MRP Product Info, Passende Bestände</a> for a
+	 * href="http://dewiki908/mediawiki/index.php/08782_ADR_not_correct_in_MRP_Product_Info%2C_Passende_Best%C3%A4nde">08782 ADR not correct in MRP Product Info, Passende Bestände</a> for a
 	 * bug that happens if we <i>always</i> reset/recalculate the attributes. On the other hand, if the subproducer changes, from one not-empty value to another one, then we reset the ADR attribute to
 	 * the new partner's value.
 	 *

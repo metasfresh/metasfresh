@@ -46,9 +46,9 @@ public class AcctProcessor_RunNow
 	{
 		final String username = System.getProperty("user.name");
 		
-		// final String propertyDir = "../de.metas.endcustomer./";
-		//final String propertyDir = "c:/workspaces/live/de.metas.endcustomer./";
-		final String propertyDir = "c:/workspaces//de.metas.endcustomer./";
+		// final String propertyDir = "../de.metas.endcustomer/";
+		//final String propertyDir = "c:/workspaces/live/de.metas.endcustomer/";
+		final String propertyDir = "c:/workspaces//de.metas.endcustomer/";
 		
 		final String propertyFile = new File(propertyDir, "Adempiere.properties_" + username).getAbsolutePath();
 		System.setProperty("PropertyFile", propertyFile);

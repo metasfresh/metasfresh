@@ -299,7 +299,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final Timestamp payDate;
 
 		//
-		// fresh 08419: depending on whether onlyDue is checked, consider p_Date either DateTo or DateFrom
+		// 08419: depending on whether onlyDue is checked, consider p_Date either DateTo or DateFrom
 		if (getPayDate() != null)
 		{
 			payDate = getPayDate();
@@ -347,7 +347,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sql += " AND i.DocStatus IN ('CO','CL')";
 		}
 
-		// Only those invoices which are matching C_PaySelection's currency (fresh 07885)
+		// Only those invoices which are matching C_PaySelection's currency (07885)
 		{
 			sql += " AND i.C_Currency_ID=?";
 			sqlParams.add(C_CurrencyTo_ID);

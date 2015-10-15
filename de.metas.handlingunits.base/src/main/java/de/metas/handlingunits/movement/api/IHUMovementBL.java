@@ -95,7 +95,7 @@ public interface IHUMovementBL extends ISingletonService
 	 * @param ctx the context we use to get the <code>AD_Client_ID</code> and <code>AD_Org_ID</code> used to retrieve the AD_SysConfig value.
 	 * @param throwEx if <code>true</code> then the method throws a exception rather than of returning <code>null</code>.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08205_HU_Pos_Inventory_move_Button_%28105838505937%29
+	 * @task http://dewiki908/mediawiki/index.php/08205_HU_Pos_Inventory_move_Button_%28105838505937%29
 	 * @return {@link I_M_Warehouse} for direct movements or <code>null</code>.
 	 */
 	I_M_Warehouse getDirectMove_Warehouse(Properties ctx, boolean throwEx);

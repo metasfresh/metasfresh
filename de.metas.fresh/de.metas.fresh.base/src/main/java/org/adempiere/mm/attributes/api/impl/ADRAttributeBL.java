@@ -137,9 +137,9 @@ public class ADRAttributeBL implements IADRAttributeBL
 	{
 		if (isSOTrx)
 		{
-			final boolean isADRcustomer = partner.isADRcustomer();
+			final boolean isADRCustomer = partner.isADRcustomer();
 
-			if (isADRcustomer)
+			if (isADRCustomer)
 			{
 				return partner.getFresh_AdRRegion();
 			}

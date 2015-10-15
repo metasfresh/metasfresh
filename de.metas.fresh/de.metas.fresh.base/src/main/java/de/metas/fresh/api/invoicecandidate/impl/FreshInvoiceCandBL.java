@@ -76,7 +76,7 @@ public class FreshInvoiceCandBL implements IFreshInvoiceCandBL
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(candidate.getBill_BPartner(), I_C_BPartner.class);
 
-		final boolean isFresh_Produzentenabrechnung = partner.isFresh_Produzentenabrechnung();
+		final boolean isFresh_Produzentenabrechnung = partner.isProduzentenabrechnung();
 
 		if (!isFresh_Produzentenabrechnung)
 		{

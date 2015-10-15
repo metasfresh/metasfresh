@@ -34,7 +34,7 @@ import org.compiere.model.I_S_Resource;
  * NOTES to who will extend this interface: Please don't extend this interface, or if u extend, please MRPSegment.equals works!
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_07843_Review_quantity_of_CMP_runs
+ * @task http://dewiki908/mediawiki/index.php/07843_Review_quantity_of_CMP_runs
  */
 public interface IMRPSegment
 {

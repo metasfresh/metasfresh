@@ -62,7 +62,7 @@ public final class HUConstants
 	/**
 	 *
 	 * @return true if we shall use caching while generating handling units
-	 * @task http://dewiki908/mediawiki/index.php/fresh_07504_Performance_HU_%28108650725490%29
+	 * @task http://dewiki908/mediawiki/index.php/07504_Performance_HU_%28108650725490%29
 	 */
 	public static boolean isUseCacheWhenCreatingHUs()
 	{
@@ -77,9 +77,9 @@ public final class HUConstants
 	/**
 	 * Enable/Disable the feature of quickly creating the shipments without any HU generation or something.
 	 *
-	 * NOTE: this will be a temporary solution until  will go live with shipment HUs.
+	 * NOTE: this will be a temporary solution until will go live with shipment HUs.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08214_Fix_shipment_schedule_performances
+	 * @task http://dewiki908/mediawiki/index.php/08214_Fix_shipment_schedule_performances
 	 */
 	private static final boolean DEFAULT_fresh_QuickShipment = true;
 	private static final String SYSCONFIG_fresh_QuickShipment = "de.metas.handlingunits.HUConstants.Fresh_QuickShipment";
@@ -92,24 +92,24 @@ public final class HUConstants
 	/**
 	 * @return true if we shall reset the cache after HUEditor is called, and right before the process lines is called.
 	 */
-	public static final boolean isfresh_08793_HUSelectModel_ResetCacheBeforeProcess()
+	public static final boolean is08793_HUSelectModel_ResetCacheBeforeProcess()
 	{
-		final String SYSCONFIG_fresh_08793_HUSelectModel_ResetCacheBeforeProcess = "de.metas.handlingunits.client.terminal.select.model.AbstractHUSelectModel.ResetCacheBeforeProcess";
-		final boolean DEFAULT_fresh_08793_HUSelectModel_ResetCacheBeforeProcess = false;
+		final String SYSCONFIG_08793_HUSelectModel_ResetCacheBeforeProcess = "de.metas.handlingunits.client.terminal.select.model.AbstractHUSelectModel.ResetCacheBeforeProcess";
+		final boolean DEFAULT_08793_HUSelectModel_ResetCacheBeforeProcess = false;
 		final boolean resetCacheBeforeProcessing = Services.get(ISysConfigBL.class).getBooleanValue(
-				SYSCONFIG_fresh_08793_HUSelectModel_ResetCacheBeforeProcess,
-				DEFAULT_fresh_08793_HUSelectModel_ResetCacheBeforeProcess);
+				SYSCONFIG_08793_HUSelectModel_ResetCacheBeforeProcess,
+				DEFAULT_08793_HUSelectModel_ResetCacheBeforeProcess);
 		return resetCacheBeforeProcessing;
 	}
 
-	private static final String SYSCONFIG_fresh_AttributeStorageFailOnDisposed = "de.metas.handlingunits.attribute.storage.IAttributeStorage.FailOnDisposed";
-	private static final boolean DEFAULT_fresh_AttributeStorageFailOnDisposed = true;
+	private static final String SYSCONFIG_AttributeStorageFailOnDisposed = "de.metas.handlingunits.attribute.storage.IAttributeStorage.FailOnDisposed";
+	private static final boolean DEFAULT_AttributeStorageFailOnDisposed = true;
 
-	public static final boolean isfresh_AttributeStorageFailOnDisposed()
+	public static final boolean isAttributeStorageFailOnDisposed()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(
-				SYSCONFIG_fresh_AttributeStorageFailOnDisposed,
-				DEFAULT_fresh_AttributeStorageFailOnDisposed);
+				SYSCONFIG_AttributeStorageFailOnDisposed,
+				DEFAULT_AttributeStorageFailOnDisposed);
 	}
 
 	public static final String DIM_PP_Order_ProductAttribute_To_Transfer = "PP_Order_ProductAttribute_Transfer";

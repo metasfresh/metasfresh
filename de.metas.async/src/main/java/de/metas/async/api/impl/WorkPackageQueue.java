@@ -65,6 +65,8 @@ import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.processor.NullQueueProcessorListener;
 import de.metas.async.processor.impl.SyncQueueProcessorListener;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.UnlockFailedException;
 
@@ -87,6 +89,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	private final int enquingPackageProcessorId;
 
 	/**
+	 * @task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
+	 */
+	private final String enquingPackageProcessorInternalName;
+
+	/**
 	 * {@link I_C_Async_Batch} to be used when enquing new workpackages
 	 */
 	private I_C_Async_Batch asyncBatchForNewWorkpackages;
@@ -95,7 +102,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 	private final ReentrantLock mainLock = new ReentrantLock();
 
-	public WorkPackageQueue(final Properties ctx, final List<Integer> packageProcessorIds, final String priorityFrom)
+	private WorkPackageQueue(final Properties ctx,
+			final List<Integer> packageProcessorIds,
+			final String enquingPackageProcessorInternalName,
+			final String priorityFrom,
+			final boolean forEnqueing)
 	{
 		Check.assumeNotNull(ctx, "ctx is not null");
 		Check.assumeNotNull(packageProcessorIds, "packageProcessorIds not null");
@@ -109,14 +120,38 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		this.priorityFrom = priorityFrom;
 		this.skipRetryTimeoutMillis = Async_Constants.DEFAULT_RETRY_TIMEOUT_MILLIS;
 
-		if (packageProcessorIds.size() == 1)
+		if (forEnqueing)
 		{
-			enquingPackageProcessorId = packageProcessorIds.get(0);
+			this.enquingPackageProcessorId = packageProcessorIds.get(0);
+			this.enquingPackageProcessorInternalName = enquingPackageProcessorInternalName;
 		}
 		else
 		{
-			enquingPackageProcessorId = -1;
+			this.enquingPackageProcessorId = -1;
+			this.enquingPackageProcessorInternalName = null;
 		}
+	}
+
+	public static WorkPackageQueue createForEnqueuing(final Properties ctx,
+			final int packageProcessorId,
+			final String enquingPackageProcessorInternalName)
+	{
+		return new WorkPackageQueue(ctx,
+				Collections.singletonList(packageProcessorId),
+				enquingPackageProcessorInternalName,
+				null,
+				true);
+		}
+
+	public static WorkPackageQueue createForQueueProcessing(final Properties ctx,
+			final List<Integer> packageProcessorIds,
+			final String priorityFrom)
+	{
+		return new WorkPackageQueue(ctx,
+				packageProcessorIds,
+				null, // enquingPackageProcessorInternalName
+				priorityFrom,
+				false);
 	}
 
 	@Override
@@ -128,15 +163,6 @@ public class WorkPackageQueue implements IWorkPackageQueue
 				+ ", skipRetryTimeoutMillis=" + skipRetryTimeoutMillis
 				+ ", enquingPackageProcessorId=" + enquingPackageProcessorId
 				+ "]";
-	}
-
-	/**
-	 * @return the packageProcessorIds
-	 */
-	@Override
-	public List<Integer> getPackageProcessorIds()
-	{
-		return packageProcessorIds;
 	}
 
 	/**
@@ -253,7 +279,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		//
 		// User
 		final int adUserId;
-		if(!InterfaceWrapperHelper.isNull(workPackage, I_C_Queue_WorkPackage.COLUMNNAME_AD_User_ID))
+		if (!InterfaceWrapperHelper.isNull(workPackage, I_C_Queue_WorkPackage.COLUMNNAME_AD_User_ID))
 		{
 			adUserId = workPackage.getAD_User_ID();
 		}
@@ -266,7 +292,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		//
 		// Role
 		final int adRoleId;
-		if(!InterfaceWrapperHelper.isNull(workPackage, I_C_Queue_WorkPackage.COLUMNNAME_AD_Role_ID))
+		if (!InterfaceWrapperHelper.isNull(workPackage, I_C_Queue_WorkPackage.COLUMNNAME_AD_Role_ID))
 		{
 			adRoleId = workPackage.getAD_Role_ID();
 		}
@@ -313,6 +339,20 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		{
 			mainLock.unlock();
 		}
+	}
+
+	private int localPackagecount = 0; // task 09049
+
+	@Override
+	public int getLocalPackageCount()
+	{
+		return localPackagecount;
+	}
+
+	@Override
+	public Properties getCtx()
+	{
+		return new Properties(ctx);
 	}
 
 	@Override
@@ -374,11 +414,12 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public I_C_Queue_WorkPackage enqueueWorkPackage(final I_C_Queue_Block block, final String priority)
+	public I_C_Queue_WorkPackage enqueueWorkPackage(final I_C_Queue_Block block, final IWorkpackagePrioStrategy priority)
 	{
 		// TODO: please really consider to move this method somewhere inside de.metas.async.api.impl.WorkPackageBuilder.build()
 		
 		Check.assume(block != null, "block not null");
+		Check.assume(priority != null, "priority not null. Use {0} to indicate 'no priority'", NullWorkpackagePrio.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(block);
 		final String trxName = InterfaceWrapperHelper.getTrxName(block);
@@ -395,7 +436,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		workPackage.setProcessed(false);
 		workPackage.setIsReadyForProcessing(false);
 
-		if (priority == null)
+		if (priority == NullWorkpackagePrio.INSTANCE)
 		{
 			// Priority - get it from context if available : task 06283
 			final String priorityDefault = getPriorityForNewWorkpackage();
@@ -403,7 +444,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 		else
 		{
-			workPackage.setPriority(priority);
+			workPackage.setPriority(priority.getPrioriy(this));
 		}
 
 		//
@@ -426,6 +467,8 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		// increase enqueued counter
 		asyncBatchBL.increaseEnqueued(workPackage);
+
+		localPackagecount++; // task 09049
 
 		//
 		// Statistics
@@ -736,5 +779,16 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		//
 		// No priority set => return default priority
 		return X_C_Queue_WorkPackage.PRIORITY_Medium;
+	}
+
+	@Override
+	public String getEnquingPackageProcessorInternalName()
+	{
+		Check.errorIf(Check.isEmpty(enquingPackageProcessorInternalName, true),
+				UnsupportedOperationException.class,
+				"Queue {0} has no EnqueuingProcessorInternalName. It was problably not intended for enqueuing, but for queue processing",
+				this);
+
+		return enquingPackageProcessorInternalName;
 	}
 }

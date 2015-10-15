@@ -5,7 +5,7 @@ package de.metas.adempiere.report.jasper;
 
 /*
  * #%L
- * adempiereJasper-commons
+ * de.metas.report.jasper.commons
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

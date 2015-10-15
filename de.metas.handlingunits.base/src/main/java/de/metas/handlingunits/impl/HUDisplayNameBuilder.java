@@ -80,7 +80,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		final StringBuilder displayNameBuilder = new StringBuilder(huValue);
 
 		//
-		// fresh 07618: Display included HU count next to the HU Value if needed
+		// 07618: Display included HU count next to the HU Value if needed
 		if (isShowIncludedHUCount())
 		{
 			final int includedHUCount = getIncludedHUsCount();

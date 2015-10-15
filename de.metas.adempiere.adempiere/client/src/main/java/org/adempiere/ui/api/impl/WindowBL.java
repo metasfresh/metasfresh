@@ -2,7 +2,7 @@ package org.adempiere.ui.api.impl;
 
 /*
  * #%L
- * ADempiere ERP - Desktop Client
+ * de.metas.adempiere.adempiere.client
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

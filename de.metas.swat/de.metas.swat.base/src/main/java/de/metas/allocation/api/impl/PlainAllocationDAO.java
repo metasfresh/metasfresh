@@ -2,7 +2,7 @@ package de.metas.allocation.api.impl;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

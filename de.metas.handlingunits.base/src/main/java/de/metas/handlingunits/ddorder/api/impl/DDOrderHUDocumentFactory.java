@@ -50,7 +50,7 @@ import de.metas.handlingunits.model.I_M_HU;
  * Actually it selects all handling units from each {@link I_DD_OrderLine#getM_Locator()}s.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_05392_Rolle_Bereitsteller_%28109951640418%29#HU_Editor
+ * @task http://dewiki908/mediawiki/index.php/05392_Rolle_Bereitsteller_%28109951640418%29#HU_Editor
  */
 public class DDOrderHUDocumentFactory extends AbstractHUDocumentFactory<I_DD_Order>
 {

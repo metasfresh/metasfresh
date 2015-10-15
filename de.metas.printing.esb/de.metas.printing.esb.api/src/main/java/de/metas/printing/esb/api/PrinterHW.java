@@ -2,7 +2,7 @@ package de.metas.printing.esb.api;
 
 /*
  * #%L
- * ESB Printing API
+ * de.metas.printing.esb.api
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

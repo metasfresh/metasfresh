@@ -77,7 +77,7 @@ public class C_PaySelectionLine
 		paymentRequestBL.updatePaySelectionLineFromPaymentRequestIfExists(paySelectionLine);
 
 		//
-		// fresh 08297: After trying to set the Reference from the payment request, fallback (if still empty) to the Invoice's POReference
+		// 08297: After trying to set the Reference from the payment request, fallback (if still empty) to the Invoice's POReference
 		final boolean trimWhitespaces = true;
 		if (Check.isEmpty(paySelectionLine.getReference(), trimWhitespaces))
 		{

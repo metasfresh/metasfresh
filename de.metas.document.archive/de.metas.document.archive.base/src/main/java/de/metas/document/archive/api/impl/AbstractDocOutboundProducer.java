@@ -159,15 +159,7 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 	public void createDocOutbound(final Object model)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final IWorkPackageQueue packageQueue = Services.get(IWorkPackageQueueFactory.class).getQueue(ctx, DocOutboundWorkpackageProcessor.class);
+		final IWorkPackageQueue packageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, DocOutboundWorkpackageProcessor.class);
 		packageQueue.enqueueElement(model);
 	}
-
-	@Override
-	public void createDocOutbound(final Properties ctx, final int adTableId, final int recordId)
-	{
-		final IWorkPackageQueue packageQueue = Services.get(IWorkPackageQueueFactory.class).getQueue(ctx, DocOutboundWorkpackageProcessor.class);
-		packageQueue.enqueueElement(ctx, adTableId, recordId);
-	}
-
 }

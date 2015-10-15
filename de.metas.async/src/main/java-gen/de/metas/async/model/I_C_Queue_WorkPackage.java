@@ -32,7 +32,7 @@ public interface I_C_Queue_WorkPackage
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -435,6 +435,29 @@ public interface I_C_Queue_WorkPackage
     public static final String COLUMNNAME_IsError = "IsError";
 
 	/**
+	 * Set Fehler zur Kentnis genommen.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsErrorAcknowledged (boolean IsErrorAcknowledged);
+
+	/**
+	 * Get Fehler zur Kentnis genommen.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isErrorAcknowledged();
+
+    /** Column definition for IsErrorAcknowledged */
+    public static final org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_IsErrorAcknowledged = new org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, Object>(I_C_Queue_WorkPackage.class, "IsErrorAcknowledged", null);
+    /** Column name IsErrorAcknowledged */
+    public static final String COLUMNNAME_IsErrorAcknowledged = "IsErrorAcknowledged";
+
+	/**
 	 * Set Bereit zur Verarbeitung.
 	 * Zeigt an, ob das Zusammentstellen eines Arbeitspakets abgeschlossen ist.
 	 *
@@ -602,6 +625,29 @@ public interface I_C_Queue_WorkPackage
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set Zuletzt Übersprungen um.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSkippedAt (java.sql.Timestamp SkippedAt);
+
+	/**
+	 * Get Zuletzt Übersprungen um.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getSkippedAt();
+
+    /** Column definition for SkippedAt */
+    public static final org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_SkippedAt = new org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, Object>(I_C_Queue_WorkPackage.class, "SkippedAt", null);
+    /** Column name SkippedAt */
+    public static final String COLUMNNAME_SkippedAt = "SkippedAt";
+
+	/**
 	 * Set Skipped Count.
 	 *
 	 * <br>Type: Integer
@@ -669,29 +715,6 @@ public interface I_C_Queue_WorkPackage
     public static final org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_Skipped_Last_Reason = new org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, Object>(I_C_Queue_WorkPackage.class, "Skipped_Last_Reason", null);
     /** Column name Skipped_Last_Reason */
     public static final String COLUMNNAME_Skipped_Last_Reason = "Skipped_Last_Reason";
-
-	/**
-	 * Set Zuletzt Übersprungen um.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setSkippedAt (java.sql.Timestamp SkippedAt);
-
-	/**
-	 * Get Zuletzt Übersprungen um.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getSkippedAt();
-
-    /** Column definition for SkippedAt */
-    public static final org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_SkippedAt = new org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, Object>(I_C_Queue_WorkPackage.class, "SkippedAt", null);
-    /** Column name SkippedAt */
-    public static final String COLUMNNAME_SkippedAt = "SkippedAt";
 
 	/**
 	 * Set Skip Timeout (millis).

@@ -33,21 +33,21 @@ public final class Printing_Constants
 	private Printing_Constants()
 	{
 	}
-
+	
 	public static final String ENTITY_TYPE = "de.metas.printing";
-
+	
 	/**
-	 * @see task 03758
+	 * @see http://dewiki908/mediawiki/index.php/03758_Drucker_Kalibrierung_%282013010410000055%29# Detailbeschreibung_fachlich
 	 */
 	public static final BigDecimal AD_PrinterHW_Calibration_JASPER_PIXEL_PER_MM = new BigDecimal("2.835");
 
 	/**
-	 * @see task 03758
+	 * @see http://dewiki908/mediawiki/index.php/03758_Drucker_Kalibrierung_%282013010410000055%29# Detailbeschreibung_fachlich
 	 */
 	public static final BigDecimal AD_PrinterHW_Calibration_JASPER_REF_X_MM = new BigDecimal("170.04");
 
 	/**
-	 * @see task 03758
+	 * @see http://dewiki908/mediawiki/index.php/03758_Drucker_Kalibrierung_%282013010410000055%29# Detailbeschreibung_fachlich
 	 */
 	public static final BigDecimal AD_PrinterHW_Calibration_JASPER_REF_Y_MM = new BigDecimal("170.04");
 

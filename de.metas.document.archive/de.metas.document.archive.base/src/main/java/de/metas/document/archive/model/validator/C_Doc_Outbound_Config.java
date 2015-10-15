@@ -79,13 +79,7 @@ class C_Doc_Outbound_Config
 
 		if (!config.isActive())
 		{
-			// configuration is not active, no need to be registered
-			return;
-		}
-
-		if (!config.isDirectEnqueue())
-		{
-			// configuration is not set for direct enqueueing, no need to be registered
+			// configuration is not active, no need to be (re-)registered
 			return;
 		}
 

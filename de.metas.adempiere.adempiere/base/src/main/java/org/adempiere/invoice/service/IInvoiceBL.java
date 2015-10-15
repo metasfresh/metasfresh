@@ -2,7 +2,7 @@ package org.adempiere.invoice.service;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -276,14 +276,16 @@ public interface IInvoiceBL extends ISingletonService
 	de.metas.adempiere.model.I_C_Invoice adjustmentCharge(I_C_Invoice invoice, String docSubType);
 
 	/**
-	 * Updates {@link I_C_InvoiceLine#COLUMNNAME_IsPriceReadOnly} and {@link I_C_InvoiceLine#COLUMNNAME_IsQtyReadOnly} acccording to the invoice's {@link I_C_Invoice#COLUMNNAME_C_DocTypeTarget_ID}.<br>
+	 * Updates {@link I_C_InvoiceLine}'s {@link I_C_InvoiceLine#COLUMNNAME_IsPriceReadOnly IsPriceReadOnly}, {@link I_C_InvoiceLine#COLUMNNAME_IsQtyReadOnly IsQtyReadOnly} and
+	 * {@link I_C_InvoiceLine#COLUMNNAME_IsOrderLineReadOnly IsOrderLineReadOnly} flags according to the invoice's {@link I_C_Invoice#COLUMNNAME_C_DocTypeTarget_ID}.<br>
 	 * <br>
 	 * If the target doctype is empty or if the if has a subtype other than {@link de.metas.adempiere.model.I_C_Invoice#DOC_SUBTYPE_ARI_AP},
 	 * {@link de.metas.adempiere.model.I_C_Invoice#DOC_SUBTYPE_ARI_AQ}, {@link de.metas.adempiere.model.I_C_Invoice#DOC_SUBTYPE_ARC_CQ} or
-	 * {@link de.metas.adempiere.model.I_C_Invoice#DOC_SUBTYPE_ARC_CR}, then both read-only flags are set to <code>false</code>.<br>
+	 * {@link de.metas.adempiere.model.I_C_Invoice#DOC_SUBTYPE_ARC_CR}, then both <code>IsPriceReadOnly</code> and <code>IsQtyReadOnly</code> are set to <code>false</code>.<br>
 	 * <br>
 	 * If the document subtype is {@code DOC_SUBTYPE_ARI_AP} or {@code DOC_SUBTYPE_ARC_CR}, then the qty shall be read-only.<br>
-	 * If the document subtype is {@code DOC_SUBTYPE_ARI_AQ} or {@code DOC_SUBTYPE_ARC_CQ}, then the price shall be read-only.
+	 * If the document subtype is {@code DOC_SUBTYPE_ARI_AQ} or {@code DOC_SUBTYPE_ARC_CQ}, then the price shall be read-only.<br>
+	 * IF (and only if!, as of now) the the document subtype is {@code DOC_SUBTYPE_ARC_CS}, then the order line shall be editable.
 	 * 
 	 * @param invoice may not be null
 	 * @param invoiceLines optional, the lines to update; if <code>null</code> or empty, then all invoice lines are updated <b>and saved</b>. Otherwise, the given lines are only updated, but not saved.
@@ -373,7 +375,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param invoices
 	 * @param async if <code>true</code>, then an async workpackage is enqueued to do the jobs asynchronously.
 	 * 
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08999_Lieferdisposition_a.frieden_%28104263801724%29
+	 * @task http://dewiki908/mediawiki/index.php/08999_Lieferdisposition_a.frieden_%28104263801724%29
 	 */
 	void updateBPartnerStats(List<I_C_Invoice> invoices, boolean async);
 

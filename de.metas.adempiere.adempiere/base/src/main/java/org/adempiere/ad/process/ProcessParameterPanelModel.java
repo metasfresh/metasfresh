@@ -2,7 +2,7 @@ package org.adempiere.ad.process;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -137,7 +137,7 @@ public class ProcessParameterPanelModel
 					+ "p.DefaultValue, p.DefaultValue2, p.VFormat, p.ValueMin, p.ValueMax, "
 					+ "p.SeqNo, p.AD_Reference_Value_ID, p.AD_Val_Rule_ID, p.ReadOnlyLogic, p.DisplayLogic "
 					+ ", p.IsEncrypted " // metas: tsa: US745
-					+ ", p.isAutoComplete" // fresh_05887 
+					+ ", p.isAutoComplete" // 05887 
 					+ " FROM AD_Process_Para p"
 					+ " WHERE p.AD_Process_ID=?"		// 1
 					+ " AND p.IsActive='Y' "
@@ -149,7 +149,7 @@ public class ProcessParameterPanelModel
 					+ "p.DefaultValue, p.DefaultValue2, p.VFormat, p.ValueMin, p.ValueMax, "
 					+ "p.SeqNo, p.AD_Reference_Value_ID, p.AD_Val_Rule_ID, p.ReadOnlyLogic, p.DisplayLogic "
 					+ ", p.IsEncrypted " // metas: tsa: US745
-					+ ", p.isAutoComplete" // fresh_05887 
+					+ ", p.isAutoComplete" // 05887 
 					+ " FROM AD_Process_Para p"
 					+ " INNER JOIN AD_Process_Para_Trl t ON (p.AD_Process_Para_ID=t.AD_Process_Para_ID)"
 					+ "WHERE p.AD_Process_ID=?"		// 1

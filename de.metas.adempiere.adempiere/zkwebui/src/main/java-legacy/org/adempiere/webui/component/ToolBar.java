@@ -17,6 +17,7 @@
 
 package org.adempiere.webui.component;
 
+
 /**
  * @author Sendy Yagambrum
  * @date July, 10 2007

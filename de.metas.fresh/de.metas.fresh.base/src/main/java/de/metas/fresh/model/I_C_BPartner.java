@@ -74,16 +74,14 @@ public interface I_C_BPartner extends de.metas.interfaces.I_C_BPartner
 	public static final String ADRZertifizierung_L_GMVD = "04";
 
 	public static final String ADRZertifizierung_L_GMAA_GMNF = "05";
-	
+
 	public static final String ADRZertifizierung_L_GMAA_GMNF_GMVD = "06";
-	
-	// fresh_07849
-	// Add column Fresh_Produzentenabrechnung
-	
-	public static final String COLUMNNAME_Fresh_Produzentenabrechnung = "Fresh_Produzentenabrechnung";
-	
-	public void setFresh_Produzentenabrechnung(boolean Fresh_Produzentenabrechnung);
-	
-	public boolean isFresh_Produzentenabrechnung();
-	
+
+	// @formatter:off
+	// 07849
+	// Add column Produzentenabrechnung
+	public static final String COLUMNNAME_Produzentenabrechnung = "Produzentenabrechnung";
+	public void setProduzentenabrechnung(boolean Produzentenabrechnung);
+	public boolean isProduzentenabrechnung();
+	// @formatter:on
 }

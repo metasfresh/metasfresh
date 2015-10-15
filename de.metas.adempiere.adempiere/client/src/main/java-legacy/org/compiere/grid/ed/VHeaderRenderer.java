@@ -170,7 +170,7 @@ public final class VHeaderRenderer implements TableCellRenderer
 		}
 		else if (DisplayType.isDate(displayType))
 		{
-			// NOTE: Right alignment required by http://dewiki908/mediawiki/index.php/fresh_05863_Fenster_Kommissionierung_-_bessere_Ausnutzung_Kn%C3%B6pfefelder_f%C3%BCr_Textausgabe_%28102244669218%29
+			// NOTE: Right alignment required by http://dewiki908/mediawiki/index.php/05863_Fenster_Kommissionierung_-_bessere_Ausnutzung_Kn%C3%B6pfefelder_f%C3%BCr_Textausgabe_%28102244669218%29
 			return JLabel.RIGHT;
 		}
 		else

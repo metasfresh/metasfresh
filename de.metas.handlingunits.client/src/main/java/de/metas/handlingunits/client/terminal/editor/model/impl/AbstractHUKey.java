@@ -529,7 +529,7 @@ import de.metas.handlingunits.model.I_M_HU;
 		// Make sure our parent has this node already
 		// NOTE: user shall not call this method directly
 		//
-		// fresh 07914: Allow setting directly; TODO see how this affects the API - this is a workaround!
+		// 07914: Allow setting directly; TODO see how this affects the API - this is a workaround!
 		//
 		// if (parent != null && !parent.hasChild(this))
 		// {

@@ -38,7 +38,7 @@ public interface ILTCUModel extends IMaterialMovementModel
 	/**
 	 * If this property is <code>true</code> then do not allow infinite capacity in POS/HU splitting, except the case when the TU we are splitting is unlimited.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/fresh_07990_LU_unbestimmte_Kapazit%C3%A4t_zulassen_%28107264303343%29
+	 * @task http://dewiki908/mediawiki/index.php/07990_LU_unbestimmte_Kapazit%C3%A4t_zulassen_%28107264303343%29
 	 */
 	String PROPERTY_AllowSameTUInfiniteCapacity = "AllowSameTUInfiniteCapacity";
 

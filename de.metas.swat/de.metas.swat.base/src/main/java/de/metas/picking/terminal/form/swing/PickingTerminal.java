@@ -80,7 +80,7 @@ public class PickingTerminal implements FormPanel
 			panel = new SwingPickingTerminalPanel();
 		}
 
-		// cg:  maximum size should be 1024x768 : see task customer03520
+		// cg:  maximum size should be 1024x768 : see task 03520
 		final Dimension frameSize = new Dimension(1024, 740);
 		
 		frame.setResizable(true);

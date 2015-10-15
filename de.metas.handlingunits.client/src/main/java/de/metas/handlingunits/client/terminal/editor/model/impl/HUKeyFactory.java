@@ -148,7 +148,7 @@ public class HUKeyFactory implements IHUKeyFactory
 
 	private final List<IHUKey> aggregateKeys(final AbstractHUKey parent, final List<IHUKey> childKeys, final boolean newAggregationKey)
 	{
-		Check.assumeNotNull(parent, "parent not null"); // fresh 07914: Aggregated keys shall never be null! Composite keys shall be bound to a parent (even if it's Root)
+		Check.assumeNotNull(parent, "parent not null"); // 07914: Aggregated keys shall never be null! Composite keys shall be bound to a parent (even if it's Root)
 
 		if (childKeys == null || childKeys.isEmpty())
 		{
@@ -210,7 +210,7 @@ public class HUKeyFactory implements IHUKeyFactory
 		else
 		{
 			//
-			// fresh 07914: Allow setting directly; TODO see how this affects the API - this is a workaround!
+			// 07914: Allow setting directly; TODO see how this affects the API - this is a workaround!
 			// We need to set parent without actually loading the children
 			//
 			for (final IHUKey huKeyAggregated : huKeysAggregated)
@@ -442,7 +442,7 @@ public class HUKeyFactory implements IHUKeyFactory
 				if (clearedDocumentLines.add(documentLine))
 				{
 					//
-					// fresh 07451: do NOT destroy ALL HU assignments; only destroy those with which were given (with which the editor was opened)
+					// 07451: do NOT destroy ALL HU assignments; only destroy those with which were given (with which the editor was opened)
 					// huAllocations.clearAssignmentsAndAllocations();
 					// FIXME: i think we shall take care of them on VHU level, not sure yet...
 					huAllocations.removeAssignedHUs(originalAllocatedHUs);
@@ -450,7 +450,7 @@ public class HUKeyFactory implements IHUKeyFactory
 
 				final I_M_HU luHU = luHUKey == null ? null : luHUKey.getM_HU();
 				final I_M_HU tuHU = tuHUKey.getM_HU();
-				// fresh 07692: Delete old TU allocations when doing HU operations on HUKey-level
+				// 07692: Delete old TU allocations when doing HU operations on HUKey-level
 				boolean deleteOldTUAllocations = true;
 
 				//

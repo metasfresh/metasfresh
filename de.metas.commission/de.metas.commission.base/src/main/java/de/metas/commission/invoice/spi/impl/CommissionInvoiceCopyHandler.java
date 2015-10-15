@@ -40,7 +40,7 @@ import de.metas.commission.interfaces.I_C_Invoice;
  * </pre>
  * 
  * @author ts
- * @task http://dewiki908/mediawiki/index.php/fresh_07286_get_rid_of_jboss-aop_for_good_%28104432455599%29
+ * @task http://dewiki908/mediawiki/index.php/07286_get_rid_of_jboss-aop_for_good_%28104432455599%29
  */
 public class CommissionInvoiceCopyHandler implements IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine>
 {

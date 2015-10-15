@@ -99,7 +99,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 		final Properties ctx = getCtx();
 		final String trxName = getTrxName();
 
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueue(ctx, EDIWorkpackageProcessor.class);
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, EDIWorkpackageProcessor.class);
 
 		//
 		// Enqueue selected archives as workpackages

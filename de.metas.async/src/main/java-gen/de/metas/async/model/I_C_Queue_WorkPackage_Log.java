@@ -32,7 +32,7 @@ public interface I_C_Queue_WorkPackage_Log
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -193,7 +193,7 @@ public interface I_C_Queue_WorkPackage_Log
 	 * Set Message Text.
 	 * Textual Informational, Menu or Error Message
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -203,7 +203,7 @@ public interface I_C_Queue_WorkPackage_Log
 	 * Get Message Text.
 	 * Textual Informational, Menu or Error Message
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

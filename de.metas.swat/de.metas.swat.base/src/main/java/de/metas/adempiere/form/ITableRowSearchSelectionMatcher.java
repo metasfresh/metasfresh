@@ -29,7 +29,7 @@ package de.metas.adempiere.form;
  * Specific implementations are used, based on what type of barcode we search (e.g. Product UPC, HU's SSCC18 etc).
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_06821_Kommissionier_Terminal_Extension_%28104171338645%29
+ * @task http://dewiki908/mediawiki/index.php/06821_Kommissionier_Terminal_Extension_%28104171338645%29
  */
 public interface ITableRowSearchSelectionMatcher
 {

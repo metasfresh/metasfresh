@@ -701,7 +701,7 @@ public class MPPOrderWorkflow extends X_PP_Order_Workflow
 		}
 
 		//
-		// fresh 07619: Forcefully always set the TrxName with the workflow's current one
+		// 07619: Forcefully always set the TrxName with the workflow's current one
 		InterfaceWrapperHelper.setTrxName(m_order, get_TrxName());
 
 		return m_order;

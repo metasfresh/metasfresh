@@ -38,7 +38,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
  * Or returns <code>null</code> if the given parameter is null or not an olCand.
  *
  * @see IOLCandEffectiveValuesBL#getM_Product_Effective(I_C_OLCand)
- * @task http://dewiki908/mediawiki/index.php/fresh_08803_ADR_from_Partner_versus_Pricelist
+ * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
  */
 public class OLCandASIAwareFactory implements IAttributeSetInstanceAwareFactory
 {

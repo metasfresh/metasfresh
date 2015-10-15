@@ -41,7 +41,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  * Side Action: set {@link I_C_Invoice_Candidate#COLUMN_ApprovalForInvoicing} to current selected invoice candidates.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_08602_Rechnungsdispo_UI_%28106621797084%29
+ * @task http://dewiki908/mediawiki/index.php/08602_Rechnungsdispo_UI_%28106621797084%29
  */
 /* package */class IC_ApproveForInvoicing_Action extends ExecutableSideAction
 {

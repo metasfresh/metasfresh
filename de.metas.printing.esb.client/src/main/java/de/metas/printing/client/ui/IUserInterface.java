@@ -2,7 +2,7 @@ package de.metas.printing.client.ui;
 
 /*
  * #%L
- * Printing Client
+ * de.metas.printing.esb.client
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

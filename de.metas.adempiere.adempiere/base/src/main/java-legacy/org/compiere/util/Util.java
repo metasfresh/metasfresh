@@ -34,6 +34,7 @@ import java.math.BigDecimal;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.text.MessageFormat;
+import java.text.AttributedCharacterIterator.Attribute;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -53,6 +54,8 @@ import javax.swing.KeyStroke;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
+import org.adempiere.util.reflect.ClassInstanceProvider;
+import org.adempiere.util.reflect.IClassInstanceProvider;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -524,7 +527,7 @@ public class Util
 			AttributedCharacterIterator.Attribute[] relevantAttributes)
 	{
 		AttributedCharacterIterator iter = aString.getIterator();
-		Set set = iter.getAllAttributeKeys();
+		Set<Attribute> set = iter.getAllAttributeKeys();
 		// System.out.println("AllAttributeKeys=" + set);
 		if (set.size() == 0)
 			return iter;
@@ -542,10 +545,10 @@ public class Util
 		aString = new AttributedString(sb.toString());
 
 		// copy relevant attributes
-		Iterator it = iter.getAllAttributeKeys().iterator();
+		Iterator<Attribute> it = iter.getAllAttributeKeys().iterator();
 		while (it.hasNext())
 		{
-			AttributedCharacterIterator.Attribute att = (AttributedCharacterIterator.Attribute)it.next();
+			AttributedCharacterIterator.Attribute att = it.next();
 			if (!unwanted.contains(att))
 			{
 				for (char c = iter.first(); c != AttributedCharacterIterator.DONE; c = iter.next())
@@ -572,6 +575,7 @@ public class Util
 	 * 
 	 * @param map Map
 	 */
+	@SuppressWarnings("rawtypes")
 	static public void dump(Map map)
 	{
 		System.out.println("Dump Map - size=" + map.size());
@@ -792,10 +796,25 @@ public class Util
 		getIterator(aString, new AttributedCharacterIterator.Attribute[] { TextAttribute.UNDERLINE });
 	}	// main
 
+	private static IClassInstanceProvider classInstanceProvider = ClassInstanceProvider.instance; // default/production implementation.
+
+	/**
+	 * Sets an alternative {@link IClassInstanceProvider} implementation. Intended use is for testing. This method is called by {@link org.adempiere.test.AdempiereTestHelper#init()}.
+	 * Also see {@link org.adempiere.util.reflect.TestingClassInstanceProvider}.
+	 * 
+	 * @param classInstanceProvider
+	 */
+	public static void setClassInstanceProvider(final IClassInstanceProvider classInstanceProvider)
+	{
+		Util.classInstanceProvider = classInstanceProvider;
+	}
+
 	/**
 	 * Create an instance of given className.
-	 * 
+	 * <p>
 	 * This method works exactly like {@link #getInstanceOrNull(Class, String)} but it also throws and {@link AdempiereException} if class was not found.
+	 * <p>
+	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, RuntimeException)}.
 	 * 
 	 * @param interfaceClazz interface class or super class that needs to be implemented by class. May be <code>NULL</code>. If set, then the method will check if the given class name extends this
 	 *            param value.
@@ -806,23 +825,13 @@ public class Util
 	public static <T> T getInstance(final Class<T> interfaceClazz, final String className)
 	{
 		Check.assumeNotNull(className, "className is not null");
-
 		try
 		{
-			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-			if (classLoader == null)
-			{
-				classLoader = Util.class.getClassLoader();
-			}
-			final Class<?> clazz = classLoader.loadClass(className);
+			final Class<?> clazz = classInstanceProvider.provideClass(className);
 
 			if (interfaceClazz != null)
 			{
-				if (!interfaceClazz.isAssignableFrom(clazz))
-				{
-					throw new AdempiereException("Class " + interfaceClazz + " is not assignable from " + className);
-				}
-				return clazz.asSubclass(interfaceClazz).newInstance();
+				return classInstanceProvider.provideInstance(interfaceClazz, clazz);
 			}
 			else
 			{
@@ -832,22 +841,16 @@ public class Util
 				return instance;
 			}
 		}
-		catch (ClassNotFoundException e)
-		{
-			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
-		}
-		catch (InstantiationException e)
-		{
-			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
-		}
-		catch (IllegalAccessException e)
+		catch (ReflectiveOperationException e)
 		{
 			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
 		}
 	}
 
 	/**
-	 * Create an instance of given className
+	 * Create an instance of given className.
+	 * <p>
+	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, RuntimeException)}.
 	 * 
 	 * @param interfaceClazz interface class that needs to be implemented by class
 	 * @param className class name
@@ -860,29 +863,14 @@ public class Util
 		Check.assumeNotNull(interfaceClazz, "interfaceClazz may not be null");
 		try
 		{
-			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-			if (classLoader == null)
-			{
-				classLoader = Util.class.getClassLoader();
-			}
-			final Class<?> clazz = classLoader.loadClass(className);
-
-			if (!interfaceClazz.isAssignableFrom(clazz))
-			{
-				throw new AdempiereException("Class " + className + " doesn't implement " + interfaceClazz);
-			}
-			return clazz.asSubclass(interfaceClazz).newInstance();
-
+			final Class<?> clazz = classInstanceProvider.provideClass(className);
+			return classInstanceProvider.provideInstance(interfaceClazz, clazz);
 		}
 		catch (ClassNotFoundException e)
 		{
 			return null;
 		}
-		catch (InstantiationException e)
-		{
-			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
-		}
-		catch (IllegalAccessException e)
+		catch (ReflectiveOperationException e)
 		{
 			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
 		}

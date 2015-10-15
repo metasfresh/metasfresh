@@ -247,7 +247,7 @@ import de.metas.handlingunits.conversion.ConversionHelper;
 			weightTareTotal = weightTareTotal.add(weightTare);
 		}
 
-		// fresh_07023_Tara_changeable_in_LU
+		// 07023_Tara_changeable_in_LU
 		// We have to also check if there is any tare adjust
 		if (hasWeightTareAdjust())
 		{

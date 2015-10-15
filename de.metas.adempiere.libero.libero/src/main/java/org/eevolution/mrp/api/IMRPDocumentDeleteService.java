@@ -30,7 +30,7 @@ import org.adempiere.util.IMultitonService;
  * Multiton service used to delete MRP documents.
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_08470_speed_up_MRP_cleanup_%28100715712605%29
+ * @task http://dewiki908/mediawiki/index.php/08470_speed_up_MRP_cleanup_%28100715712605%29
  */
 public interface IMRPDocumentDeleteService extends IMultitonService
 {

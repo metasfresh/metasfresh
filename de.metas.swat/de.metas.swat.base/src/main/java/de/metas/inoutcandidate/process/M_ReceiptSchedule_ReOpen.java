@@ -38,7 +38,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
  * This is counter-part of {@link M_ReceiptSchedule_Close}.
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_08480_Korrekturm%C3%B6glichkeit_Wareneingang_-_Menge%2C_Packvorschrift%2C_Merkmal_%28109195602347%29
+ * @task http://dewiki908/mediawiki/index.php/08480_Korrekturm%C3%B6glichkeit_Wareneingang_-_Menge%2C_Packvorschrift%2C_Merkmal_%28109195602347%29
  */
 public class M_ReceiptSchedule_ReOpen extends SvrProcess implements ISvrProcessPrecondition
 {

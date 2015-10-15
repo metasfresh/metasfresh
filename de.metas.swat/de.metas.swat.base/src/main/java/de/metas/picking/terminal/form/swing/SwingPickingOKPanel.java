@@ -786,8 +786,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		{
 			addColumn(miniTable, COLUMNNAME_M_Product_ID);
 			addColumn(miniTable, COLUMNNAME_Qty);
-			addColumn(miniTable, COLUMNNAME_DeliveryDate); // customer01676
-			addColumn(miniTable, COLUMNNAME_PreparationDate); // customer01676
+			addColumn(miniTable, COLUMNNAME_DeliveryDate); // 01676
+			addColumn(miniTable, COLUMNNAME_PreparationDate); // 01676
 		}
 		else
 		{
@@ -799,7 +799,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			{
 				addColumn(miniTable, COLUMNNAME_M_Warehouse_Dest_ID);
 			}
-			addColumn(miniTable, COLUMNNAME_DeliveryDate); // customer01676
+			addColumn(miniTable, COLUMNNAME_DeliveryDate); // 01676
 		}
 
 		addColumn(miniTable, COLUMNNAME_MatchingType);
@@ -813,7 +813,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		// ((MiniTable)miniTable).setColorColumn(idColumnIndex); // not needed
 		setupColumnIfExists(miniTable, COLUMNNAME_M_Product_ID, DisplayType.String, String.class);
 		setupColumnIfExists(miniTable, COLUMNNAME_Qty, DisplayType.Quantity, BigDecimal.class);
-		setupColumnIfExists(miniTable, COLUMNNAME_DeliveryDate, DisplayType.Date, Timestamp.class); // customer01676
+		setupColumnIfExists(miniTable, COLUMNNAME_DeliveryDate, DisplayType.Date, Timestamp.class); // 01676
 		setupColumnIfExists(miniTable, COLUMNNAME_PreparationDate, DisplayType.Time, Timestamp.class);
 		setupColumnIfExists(miniTable, COLUMNNAME_BPValue, DisplayType.String, String.class);
 		setupColumnIfExists(miniTable, COLUMNNAME_C_BPartner_Location_ID, DisplayType.String, String.class);

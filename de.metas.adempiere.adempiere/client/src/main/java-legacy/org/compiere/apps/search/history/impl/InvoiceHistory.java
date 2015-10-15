@@ -287,7 +287,7 @@ public class InvoiceHistory
 
 		confirmPanel.setActionListener(this);
 
-		setModal(false); // fresh 08574: for Zoom buttons
+		setModal(false); // 08574: for Zoom buttons
 		getOwner().setEnabled(false); // disable owner
 
 		//
@@ -549,9 +549,9 @@ public class InvoiceHistory
 		columnNames.add(msgBL.translate(ctx, "Discount"));
 		columnNames.add(msgBL.translate(ctx, "DocumentNo"));
 		columnNames.add(msgBL.translate(ctx, "DateOrdered"));
-		columnNames.add(msgBL.translate(ctx, "DatePromised"));  // added Date promised fresh_06998
+		columnNames.add(msgBL.translate(ctx, "DatePromised"));  // added Date promised 06998
 		columnNames.add(msgBL.translate(ctx, "M_Warehouse_ID"));
-		columnNames.add(msgBL.translate(ctx, "M_AttributeSetInstance_ID")); // fresh 08264: display ASI
+		columnNames.add(msgBL.translate(ctx, "M_AttributeSetInstance_ID")); // 08264: display ASI
 
 		final String columnNameC_Order_ID = msgBL.translate(ctx, reserved ? "C_Order_ID" : "C_OrderPO_ID") + "-ID";
 		columnNames.add(columnNameC_Order_ID);
@@ -894,7 +894,7 @@ public class InvoiceHistory
 	}	// initAtpTab
 
 	/**
-	 * fresh 08754: M_InOut history tab
+	 * 08754: M_InOut history tab
 	 *
 	 * Query Received/Delivered
 	 *

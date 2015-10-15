@@ -160,7 +160,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		result.setTaxIncluded(m_isTaxIncluded);
 		result.setCalculated(true);
 
-		// fresh 06942 : use product price uom all the time
+		// 06942 : use product price uom all the time
 		if (m_pp_C_UOM_ID <= 0)
 		{
 			result.setPrice_UOM_ID(m_C_UOM_ID);

@@ -34,7 +34,7 @@ import org.eevolution.model.I_DD_Order;
  * Process used to manually trigger the completion of forward and backward {@link I_DD_Order}s
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
+ * @task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
  */
 public class DD_Order_CompleteForwardBackward extends SvrProcess
 {

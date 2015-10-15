@@ -37,7 +37,7 @@ import de.metas.handlingunits.client.terminal.receipt.model.ReceiptCorrectHUEdit
  * Helper panel used to allow user selecting some HUs and then reverse the receipts which are containing those HUs.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_08480_Korrekturm%C3%B6glichkeit_Wareneingang_-_Menge%2C_Packvorschrift%2C_Merkmal_%28109195602347%29
+ * @task http://dewiki908/mediawiki/index.php/08480_Korrekturm%C3%B6glichkeit_Wareneingang_-_Menge%2C_Packvorschrift%2C_Merkmal_%28109195602347%29
  */
 public class ReceiptCorrectHUEditorPanel extends HUEditorPanel
 {

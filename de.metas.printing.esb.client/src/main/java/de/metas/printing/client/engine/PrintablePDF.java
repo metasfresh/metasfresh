@@ -2,7 +2,7 @@ package de.metas.printing.client.engine;
 
 /*
  * #%L
- * Printing Client
+ * de.metas.printing.esb.client
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

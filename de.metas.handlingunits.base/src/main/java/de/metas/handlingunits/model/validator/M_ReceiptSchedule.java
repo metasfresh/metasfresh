@@ -42,7 +42,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 
 /**
- * fresh 06833: ReceiptSchedules (which are created by async) shall directly destroy HUs depending on their status.
+ * 06833: ReceiptSchedules (which are created by async) shall directly destroy HUs depending on their status.
  *
  * @author al
  */

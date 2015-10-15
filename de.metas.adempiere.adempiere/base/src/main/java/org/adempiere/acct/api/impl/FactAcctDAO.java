@@ -2,7 +2,7 @@ package org.adempiere.acct.api.impl;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -69,7 +69,7 @@ public class FactAcctDAO implements IFactAcctDAO
 
 		// make sure we have a predictable order
 		queryBuilder.orderBy()
-		.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID);
+				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID);
 
 		return queryBuilder;
 	}
@@ -90,9 +90,18 @@ public class FactAcctDAO implements IFactAcctDAO
 
 		// make sure we have a predictable order
 		queryBuilder.orderBy()
-		.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID);
+				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID);
 
 		return queryBuilder.create().list();
 	}
 
+	@Override
+	public void updateDocStatusForDocument(final Object document, final String docStatus)
+	{
+		retrieveQueryForDocument(document)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_DocStatus, docStatus)
+				.execute();
+	}
 }

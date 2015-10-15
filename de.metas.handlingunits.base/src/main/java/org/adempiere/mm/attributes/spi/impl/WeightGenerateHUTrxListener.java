@@ -44,7 +44,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
  * Aim: in case we are transferring quantity between a document and a HU and we are dealing with a weightable or non weightable product we need to use it's standard weight.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/fresh_06936_Packtischdialog_weights_%28103796014800%29
+ * @task http://dewiki908/mediawiki/index.php/06936_Packtischdialog_weights_%28103796014800%29
  */
 public class WeightGenerateHUTrxListener extends HUTrxListenerAdapter
 {
@@ -90,7 +90,7 @@ public class WeightGenerateHUTrxListener extends HUTrxListenerAdapter
 	 * <strike>If the product has a weightable UOM then <code>null</code> will be returned because it does not apply for our case.</strike>
 	 *
 	 * Now our case changed. This logic is used for all UOMs, weightable or not Task:
-	 * http://dewiki908/mediawiki/index.php/fresh_08175_Gewicht_aus_Gebindeconfig_nach_Nettogewicht_%C3%BCbernehmen_bei_kg_Artikel_%28104866551966%29
+	 * http://dewiki908/mediawiki/index.php/08175_Gewicht_aus_Gebindeconfig_nach_Nettogewicht_%C3%BCbernehmen_bei_kg_Artikel_%28104866551966%29
 	 *
 	 * @param trxLine
 	 * @return weight or <code>null</code> if it does not apply.
@@ -115,7 +115,7 @@ public class WeightGenerateHUTrxListener extends HUTrxListenerAdapter
 		}
 
 		//
-		// fresh 08175: Apply TrxListener and generate NET weights for both weightable and non-weightable products
+		// 08175: Apply TrxListener and generate NET weights for both weightable and non-weightable products
 		// if (Services.get(IWeightableBL.class).isWeightable(product))
 		// {
 		// return null;

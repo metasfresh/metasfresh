@@ -210,7 +210,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 
 			//
 			// Create quality discount invoice line with "minus qtyWithIssues".
-			// The quality discount invoice line shall have the same attributes as the original invoice line (fresh_08642)
+			// The quality discount invoice line shall have the same attributes as the original invoice line (08642)
 			final IInvoiceCandAggregate discountInvoiceCandidateAggregate = createQualityDiscountInvoiceLine(candidate,
 					qtyQualityDiscount,
 					originalInvoiceLineRW_Attributes);

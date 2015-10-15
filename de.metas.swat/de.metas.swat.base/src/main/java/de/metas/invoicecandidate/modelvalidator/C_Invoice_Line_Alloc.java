@@ -56,7 +56,7 @@ public class C_Invoice_Line_Alloc
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void checkConsistency(final I_C_Invoice_Line_Alloc ila)
 	{
-//		Commented out for now, interferes with fresh 05420
+//		Commented out for now, interferes with 05420
 //
 //		final I_C_Invoice_Candidate ic = ila.getC_Invoice_Candidate();
 //		

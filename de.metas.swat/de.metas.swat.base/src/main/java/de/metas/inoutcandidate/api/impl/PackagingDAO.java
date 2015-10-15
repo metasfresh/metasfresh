@@ -445,7 +445,7 @@ public class PackagingDAO implements IPackagingDAO
 		final String shipper = rs.getString(COLUMNNAME_SHIPPER_NAME);
 		packageable.setShipperName(shipper);
 
-		final Timestamp deliveryDate = rs.getTimestamp(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate); // customer01676
+		final Timestamp deliveryDate = rs.getTimestamp(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate); // 01676
 		packageable.setDeliveryDate(deliveryDate);
 
 		final Timestamp preparationDate = rs.getTimestamp(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate);

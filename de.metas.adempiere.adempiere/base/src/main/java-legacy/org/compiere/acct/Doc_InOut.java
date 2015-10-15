@@ -227,7 +227,7 @@ public class Doc_InOut extends Doc
 					final String costingMethod = productBL.getCostingMethod(product, as);
 					if (!MAcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
 					{
-							// fresh 08447: we shall allow zero costs in case CostingMethod=Standard costing
+						// 08447: we shall allow zero costs in case CostingMethod=Standard costing
 						p_Error = "No Costs for product=" + line.getProduct()
 								+ ", product is stocked and costing method=" + costingMethod + " is != " + MAcctSchema.COSTINGMETHOD_StandardCosting;
 						log.log(Level.WARNING, p_Error);
@@ -333,7 +333,7 @@ public class Doc_InOut extends Doc
 					final String costingMethod = productBL.getCostingMethod(product, as);
 					if (!MAcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
 					{
-							// fresh 08447: we shall allow zero costs in case CostingMethod=Standard costing
+						// 08447: we shall allow zero costs in case CostingMethod=Standard costing
 						p_Error = "No Costs for product=" + line.getProduct()
 								+ ", product is stocked and costing method=" + costingMethod + " is != " + MAcctSchema.COSTINGMETHOD_StandardCosting;
 						log.log(Level.WARNING, p_Error);
@@ -466,7 +466,7 @@ public class Doc_InOut extends Doc
 				
 				if (ProductCost.isNoCosts(costs))
 				{
-						// fresh 08447: we shall allow zero costs in case CostingMethod=Standard costing
+					// 08447: we shall allow zero costs in case CostingMethod=Standard costing
 					if (!MAcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
 					{
 						p_Error = "Resubmit - No Costs for product=" + line.getProduct()
@@ -586,7 +586,7 @@ public class Doc_InOut extends Doc
 				costs = line.getProductCosts(as, line.getAD_Org_ID(), false);	// current costs
 				if (ProductCost.isNoCosts(costs))
 				{
-						// fresh 08447: we shall allow zero costs in case CostingMethod=Standard costing
+					// 08447: we shall allow zero costs in case CostingMethod=Standard costing
 					final String costingMethod = productBL.getCostingMethod(product, as);
 					if (!MAcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
 					{

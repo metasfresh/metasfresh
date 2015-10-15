@@ -72,7 +72,7 @@ public class C_Order
 		Services.get(IOrderBL.class).updateAddresses(order);
 	}
 
-	// fresh 04579 Cannot change order's warehouse (2013071510000103)
+	// 04579 Cannot change order's warehouse (2013071510000103)
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void unreserveStock(final I_C_Order order) throws Exception
 	{
@@ -147,5 +147,4 @@ public class C_Order
 			order.setDeliveryViaRule(deliveryViaRule);
 		}
 	}
-	
 }

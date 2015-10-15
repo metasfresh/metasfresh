@@ -120,7 +120,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 		final Properties ctx = getCtx();
 		final String trxName = getTrxName();
 
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueue(ctx, getWorkpackageProcessor());
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, getWorkpackageProcessor());
 
 		//
 		// Enqueue selected archives as workpackages

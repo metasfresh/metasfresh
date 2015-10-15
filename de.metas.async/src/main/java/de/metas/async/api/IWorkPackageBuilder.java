@@ -29,6 +29,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 
@@ -46,7 +47,7 @@ public interface IWorkPackageBuilder
 	 *
 	 * <b>IMPORTANT</b> as of now, the method does nothing about possible locks.
 	 * 
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
+	 * @task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
 	 */
 	void discard();
 
@@ -60,8 +61,10 @@ public interface IWorkPackageBuilder
 	 */
 	IWorkPackageParamsBuilder parameters();
 
-	/** Sets workpackage's queue priority */
-	IWorkPackageBuilder setPriority(String priority);
+	/**
+	 * Sets the workpackage's queue priority. If no particular priority is set, the system will use {@link IWorkPackageQueue#PRIORITY_AUTO}.
+	 */
+	IWorkPackageBuilder setPriority(IWorkpackagePrioStrategy priority);
 
 	/**
 	 * Sets the async batch (optional).

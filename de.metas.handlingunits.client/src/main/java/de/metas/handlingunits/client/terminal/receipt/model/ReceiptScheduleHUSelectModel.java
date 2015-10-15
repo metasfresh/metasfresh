@@ -316,7 +316,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	 * @param rows
 	 * @param editorCallback
 	 * @return
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08270_Wareneingang_POS_multiple_lines_in_1_TU_%28107035315495%29
+	 * @task http://dewiki908/mediawiki/index.php/08270_Wareneingang_POS_multiple_lines_in_1_TU_%28107035315495%29
 	 */
 	private final HUEditorModel createHUEditorModel_MultiRow(final Collection<IPOSTableRow> rows, final IHUEditorCallback<HUEditorModel> editorCallback)
 	{
@@ -549,7 +549,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 				DEFAULT_QtyCUReadonlyAlwaysIfNotVirtualPI); // default fallback if not configure
 		if (isQtyCUReadonlyAlwaysIfNotVirtualPI)
 		{
-			lutuConfigurationEditingModel.setQtyCUReadonlyAlwaysIfNotVirtualPI(); // fresh 07501, 08310: Qty CU shall be configurable R-O in Receipt Schedule POS
+			lutuConfigurationEditingModel.setQtyCUReadonlyAlwaysIfNotVirtualPI(); // 07501, 08310: Qty CU shall be configurable R-O in Receipt Schedule POS
 		}
 		lutuConfigurationEditingModel.load(lutuConfiguration, altConfigurations);
 

@@ -38,7 +38,7 @@ import de.metas.handlingunits.model.I_M_ProductPrice_Attribute;
  * Model validator <b>with attached callout</b>. See {@link #unsetIsHUPrice(I_M_ProductPrice_Attribute)} for what it does.
  * 
  * @author ts
- * @task http://dewiki908/mediawiki/index.php/fresh_09045_Changes_on_Excel_Export-Import_%28107395757529%29
+ * @task http://dewiki908/mediawiki/index.php/09045_Changes_on_Excel_Export-Import_%28107395757529%29
  *
  */
 @Callout(I_M_ProductPrice_Attribute.class)

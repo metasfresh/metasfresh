@@ -97,7 +97,7 @@ public interface IAttributePricingBL extends ISingletonService
 	 * @param pricingResult
 	 * @param asiAware
 	 * 
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08803_ADR_from_Partner_versus_Pricelist
+	 * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
 	void addToASI(IPricingResult pricingResult, IAttributeSetInstanceAware asiAware);
 
@@ -123,7 +123,7 @@ public interface IAttributePricingBL extends ISingletonService
 	 * @param productPriceAttribute
 	 * @param pricingAttributes
 	 * 
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08803_ADR_from_Partner_versus_Pricelist
+	 * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
 	void addToPricingAttributes(I_M_ProductPrice_Attribute productPriceAttribute, List<IPricingAttribute> pricingAttributes);
 
@@ -133,7 +133,7 @@ public interface IAttributePricingBL extends ISingletonService
 	 * 
 	 * @param asiAware
 	 * @param productPriceAttributeAware
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08839_Import_of_Orders_per_Excel-Pricelist_%28100553254746%29
+	 * @task http://dewiki908/mediawiki/index.php/08839_Import_of_Orders_per_Excel-Pricelist_%28100553254746%29
 	 */
 	void setDynAttrProductPriceAttributeAware(IAttributeSetInstanceAware asiAware, Optional<IProductPriceAttributeAware> productPriceAttributeAware);
 

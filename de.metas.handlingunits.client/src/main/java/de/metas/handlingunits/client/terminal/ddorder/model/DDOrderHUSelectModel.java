@@ -231,7 +231,7 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 	{
 		if (isManualStart && null != pp_Order)
 		{
-			// fresh 06597 : We filter order lines by PP order's BOM if we have a manual start.
+			// 06597 : We filter order lines by PP order's BOM if we have a manual start.
 			return rowsFilterPPOrder;
 		}
 		else

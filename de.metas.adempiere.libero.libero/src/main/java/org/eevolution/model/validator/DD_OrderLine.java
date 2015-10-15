@@ -106,7 +106,7 @@ public class DD_OrderLine
 	 * Calls {@link IDDOrderLineBL#setUOMInDDOrderLine(I_DD_OrderLine)}.
 	 * 
 	 * @param ddOrderLine
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08583_Erfassung_Packvorschrift_in_DD_Order_ist_crap_%28108882381939%29
+	 * @task http://dewiki908/mediawiki/index.php/08583_Erfassung_Packvorschrift_in_DD_Order_ist_crap_%28108882381939%29
 	 *       ("UOM In manual DD_OrderLine shall always be the uom of the product ( as talked with Mark) ")
 	 */
 	@ModelChange(

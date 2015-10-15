@@ -57,7 +57,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 	private static final transient CLogger logger = CLogger.getCLogger(OrderCheckupPrintingQueueHandler.class);
 
 	@Override
-	public void afterEnqueueBeforeSave(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
+	public void afterEnqueueAfterSave(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
 	{
 		//
 		// Get the underlying report if applies
@@ -102,7 +102,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 
 		//
 		// Set the new recipient
-		Services.get(IPrintingQueueBL.class).setUsersToPrint(queueItem, ImmutableSet.of(userToPrintId));
+		Services.get(IPrintingQueueBL.class).setPrintoutForOtherUsers(queueItem, ImmutableSet.of(userToPrintId));
 
 	}
 

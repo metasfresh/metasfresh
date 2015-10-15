@@ -2,7 +2,7 @@ package de.metas.adempiere.model;
 
 /*
  * #%L
- * ADempiere ERP - Base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -110,7 +110,7 @@ public interface I_C_Invoice extends org.compiere.model.I_C_Invoice, IDocumentLo
 	// 02527 end
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/fresh_08927_Add_feature_Gutgeschriebener_Betrag_erneut_abrechenbar_%28101267285473%29
+	 * @task http://dewiki908/mediawiki/index.php/08927_Add_feature_Gutgeschriebener_Betrag_erneut_abrechenbar_%28101267285473%29
 	 */
 	// @formatter:off
 	public static final String COLUMNNAME_IsCreditedInvoiceReinvoicable = "IsCreditedInvoiceReinvoicable";

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_title" pageWidth="501" pageHeight="842" columnWidth="501" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems_fibu/report" uuid="39e92b5e-fc7e-4200-84d5-4f7d227bd7cf">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.5937424601000028"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="IsSOTrx" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Reference_Date" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[SELECT
+	getDate() AS today,
+	CASE
+		WHEN $P{IsSOTrx} = 'Y' THEN 'Ja'
+		WHEN $P{IsSOTrx} = 'N' THEN 'Nein'
+		WHEN $P{IsSOTrx} IS NULL THEN 'Alle'
+	END AS IsSOTrx
+;]]>
+	</queryString>
+	<field name="today" class="java.sql.Timestamp"/>
+	<field name="issotrx" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="83" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="0ba00d35-11c8-46c2-8b18-6052f7ffe473" key="textField-1" x="153" y="4" width="194" height="19"/>
+				<textElement textAlignment="Center" markup="none">
+					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Offene Posten Fibu]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="384bc7f6-505c-4d69-82af-c5831aa61d21" key="textField-2" x="44" y="35" width="90" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{parm1}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="f0b3e4c0-0ca0-495f-8ab9-83c533574c8b" key="textField-3" x="133" y="35" width="167" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{issotrx}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="b69d3780-c577-4309-9ebb-29b8ed5f1177" key="textField-5" x="44" y="47" width="90" height="12"/>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Stichtag]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement uuid="b0389c3a-0697-4f07-8c9d-e59b7015d280" key="textField-8" x="133" y="47" width="104" height="12"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Reference_Date}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

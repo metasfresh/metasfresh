@@ -71,7 +71,7 @@ public class M_ShipperTransportation
 	}
 
 	// 08743
-	// ported from gastro, but not required yet in 
+	// ported from other branch, but not required yet
 	// @DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	// public void addHUsToPickingSlots(final I_M_ShipperTransportation shipperTransportation)
 	// {

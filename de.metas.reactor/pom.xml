@@ -35,7 +35,7 @@
 		<module>../de.metas.storage</module>
 
 		<module>../de.metas.swat</module>
-		
+
 		<module>../de.metas.async</module>
 		<module>../de.metas.banking</module>
 		<module>../de.metas.commission</module>
@@ -52,13 +52,14 @@
 		<module>../de.metas.dunning</module>
 		<module>../de.metas.edi</module>
 		<module>../de.metas.materialtracking</module>
-		
+
 		<module>../de.metas.handlingunits.base</module>
 		<module>../de.metas.handlingunits.client</module>
 
 		<module>../de.metas.payment.esr</module>
 		<module>../de.metas.payment.sepa</module>
 		<module>../de.metas.printing</module>
+		
 		<module>../de.metas.printing.esb</module>
 		<module>../de.metas.printing.esb.client</module>
 		<module>../de.metas.printing.esb.client-webapp</module>

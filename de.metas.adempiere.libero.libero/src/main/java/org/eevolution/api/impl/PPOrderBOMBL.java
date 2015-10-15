@@ -160,7 +160,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		orderBOMLine.setValidFrom(bomLine.getValidFrom());
 		orderBOMLine.setValidTo(bomLine.getValidTo());
 		orderBOMLine.setBackflushGroup(bomLine.getBackflushGroup());
-		// fresh_06005
+		// 06005
 		orderBOMLine.setVariantGroup(bomLine.getVariantGroup());
 
 		//
@@ -302,7 +302,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 			//
 			// We also need to multiply by BOM UOM to BOM Line UOM multiplier
-			// see http://dewiki908/mediawiki/index.php/fresh_06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
+			// see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
 			final I_PP_Order_BOM orderBOM = orderBOMLine.getPP_Order_BOM();
 			final I_M_Product bomProduct = orderBOM.getM_Product();
 			final I_C_UOM bomUOM = orderBOM.getC_UOM();
