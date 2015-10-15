@@ -47,9 +47,9 @@ public class VPaymentDirectDebit extends AbstractPaymentDirectDebit
 	private final CPanel tPanel = new CPanel();
 	private final GridBagLayout tPanelLayout = new GridBagLayout();
 	private final CLabel tBPAccountLabel = new CLabel();
-	private final CComboBox tBPAccountCombo = new CComboBox();
+	private final CComboBox<KeyNamePair> tBPAccountCombo = new CComboBox<>();
 	private final CLabel tAccountLabel = new CLabel();
-	private final CComboBox tAccountCombo = new CComboBox();
+	private final CComboBox<KeyNamePair> tAccountCombo = new CComboBox<>();
 	private final CTextField tRoutingField = new CTextField();
 	private final CTextField tNumberField = new CTextField();
 	private final CLabel tStatus = new CLabel();
@@ -111,6 +111,7 @@ public class VPaymentDirectDebit extends AbstractPaymentDirectDebit
 		// , GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
 	}
 
+	@Override
 	public java.awt.Component getComponent()
 	{
 		return tPanel;
@@ -138,7 +139,7 @@ public class VPaymentDirectDebit extends AbstractPaymentDirectDebit
 
 	public KeyNamePair getBPAccountKNP()
 	{
-		return (KeyNamePair)tBPAccountCombo.getSelectedItem();
+		return tBPAccountCombo.getSelectedItem();
 	}
 
 	public void setBPAccountError(boolean error)
@@ -151,7 +152,7 @@ public class VPaymentDirectDebit extends AbstractPaymentDirectDebit
 
 	public KeyNamePair getAccountKNP()
 	{
-		return (KeyNamePair)tAccountCombo.getSelectedItem();
+		return tAccountCombo.getSelectedItem();
 	}
 
 	public void setAccountError(boolean error)
@@ -178,19 +179,19 @@ public class VPaymentDirectDebit extends AbstractPaymentDirectDebit
 		}
 	}
 
-	private static void loadBPBankAccounts(CComboBox tBPAccountCombo, int m_C_BPartner_ID)
+	private static void loadBPBankAccounts(CComboBox<KeyNamePair> tBPAccountCombo, int m_C_BPartner_ID)
 	{
 		VPayment.loadComboValues(tBPAccountCombo, retrieveBPBankAccounts(m_C_BPartner_ID), m_C_BPartner_ID);
 	}
 
-	private static void loadBankAccounts(CComboBox tAccountCombo)
+	private static void loadBankAccounts(CComboBox<KeyNamePair> tAccountCombo)
 	{
 		VPayment.loadComboValues(tAccountCombo, retrieveBankAccounts(), 0);
 	}
 
 	public int getC_BP_BankAccount_ID()
 	{
-		KeyNamePair kp = (KeyNamePair)tBPAccountCombo.getSelectedItem();
+		KeyNamePair kp = tBPAccountCombo.getSelectedItem();
 		if (kp != null)
 			return kp.getKey();
 		else
@@ -200,7 +201,7 @@ public class VPaymentDirectDebit extends AbstractPaymentDirectDebit
 
 	public int getC_BankAccount_ID()
 	{
-		KeyNamePair kp = (KeyNamePair)tAccountCombo.getSelectedItem();
+		KeyNamePair kp = tAccountCombo.getSelectedItem();
 		if (kp != null)
 			return kp.getKey();
 		else
@@ -208,6 +209,7 @@ public class VPaymentDirectDebit extends AbstractPaymentDirectDebit
 
 	}
 
+	@Override
 	public void setFrom(I_C_Payment payment)
 	{
 		if (payment == null)

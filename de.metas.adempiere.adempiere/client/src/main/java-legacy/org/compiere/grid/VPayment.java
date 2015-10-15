@@ -36,8 +36,12 @@ import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
@@ -57,10 +61,7 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
-import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable2;
-import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 
 /**
@@ -134,7 +135,7 @@ public class VPayment extends CDialog
 	 */
 	public VPayment(int WindowNo, GridTab mTab, VButton button)
 	{
-		super(Env.getWindow(WindowNo), Msg.getMsg(Env.getCtx(), "Payment"), true);
+		super(Env.getWindow(WindowNo), Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Payment"), true);
 		m_ctx = Env.getCtx();
 		m_WindowNo = WindowNo;
 		m_mTab = mTab;
@@ -189,12 +190,14 @@ public class VPayment extends CDialog
 	private CPanel centerPanel = new CPanel();
 	private FlowLayout northLayout = new FlowLayout();
 	private CLabel paymentLabel = new CLabel();
-	private CComboBox paymentCombo = new CComboBox();
+	private CComboBox<ValueNamePair> paymentCombo = new CComboBox<>();
 	private CardLayout centerLayout = new CardLayout();
 
 	private final Map<String, IVPaymentPanel> paymentRulePanels = new HashMap<String, IVPaymentPanel>();
 
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
+			.withCancelButton(true)
+			.build();
 	
 	private final PropertyChangeListener paymentRulePanelsListener = new PropertyChangeListener()
 	{
@@ -215,13 +218,13 @@ public class VPayment extends CDialog
 	 */
 	private void jbInit() throws Exception
 	{
-		centerPanel.setBorder(BorderFactory.createRaisedBevelBorder());
+		centerPanel.setBorder(BorderFactory.createEmptyBorder());
 		getContentPane().add(mainPanel);
 		mainPanel.setLayout(mainLayout);
 		mainPanel.add(centerPanel, BorderLayout.CENTER);
 		//
 		northPanel.setLayout(northLayout);
-		paymentLabel.setText(Msg.translate(getCtx(), "PaymentRule"));
+		paymentLabel.setText(Services.get(IMsgBL.class).translate(getCtx(), "PaymentRule"));
 		mainPanel.add(northPanel, BorderLayout.NORTH);
 		northPanel.add(paymentLabel, null);
 		northPanel.add(paymentCombo, null);
@@ -229,7 +232,7 @@ public class VPayment extends CDialog
 		centerPanel.setLayout(centerLayout);
 		//
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 	} // jbInit
 
 	private static List<ValueNamePair> getPaymentRules(VButton button)
@@ -327,7 +330,7 @@ public class VPayment extends CDialog
 
 		// Amount
 		BigDecimal payAmount = doc.getGrandTotal();
-		if (!m_onlyRule && Util.isEmpty(payAmount))
+		if (!m_onlyRule && Check.isEmpty(payAmount))
 		{
 			throw new AdempiereException("@PaymentZero@");
 		}
@@ -440,7 +443,7 @@ public class VPayment extends CDialog
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				ValueNamePair vp = (ValueNamePair)paymentCombo.getSelectedItem();
+				ValueNamePair vp = paymentCombo.getSelectedItem();
 				String paymentRule = vp != null ? vp.getValue() : null;
 				m_PaymentRule = paymentRule;
 
@@ -449,11 +452,11 @@ public class VPayment extends CDialog
 		});
 	}
 
-	public static void loadComboValues(CComboBox combo, KeyNamePair[] values, int defaultKey)
+	public static void loadComboValues(CComboBox<KeyNamePair> combo, KeyNamePair[] values, int defaultKey)
 	{
 		combo.removeAllItems();
 
-		if (Util.isEmpty(values))
+		if (Check.isEmpty(values))
 			return;
 
 		KeyNamePair kp = null;
@@ -600,7 +603,7 @@ public class VPayment extends CDialog
 
 		for (int i = 0; i < paymentCombo.getItemCount(); i++)
 		{
-			ValueNamePair vp = (ValueNamePair)paymentCombo.getItemAt(i);
+			ValueNamePair vp = paymentCombo.getItemAt(i);
 			if (paymentRule.equals(vp.getValue()))
 			{
 				paymentCombo.setSelectedIndex(i);
@@ -655,7 +658,7 @@ public class VPayment extends CDialog
 			return;
 		}
 
-		Trx.run(p);
+		Services.get(ITrxManager.class).run(p);
 	}
 
 	public static class ProcessingCtx
@@ -727,7 +730,7 @@ public class VPayment extends CDialog
 
 			proc.updatePayableDocument();
 			String info = proc.getInfo();
-			if (!Util.isEmpty(info))
+			if (!Check.isEmpty(info))
 				ADialog.info(m_WindowNo, VPayment.this, "PaymentCreated", info);
 			VPayment.this.dispose();
 		}

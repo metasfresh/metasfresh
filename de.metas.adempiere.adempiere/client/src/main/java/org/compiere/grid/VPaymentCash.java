@@ -49,16 +49,16 @@ public class VPaymentCash extends AbstractPaymentCash
 {
 	private final CPanel bPanel = new CPanel();
 	private final CLabel bCurrencyLabel = new CLabel();
-	private final CComboBox bCurrencyCombo = new CComboBox();
+	private final CComboBox<KeyNamePair> bCurrencyCombo = new CComboBox<>();
 	private final CLabel bAmountLabel = new CLabel();
 	private final VNumber bAmountField = new VNumber();
 	private final VDate bDateField = new VDate("DateAcct", false, false, true, DisplayType.Date, "DateAcct");
 	private final CLabel bDateLabel = new CLabel();
 	private final GridBagLayout bPanelLayout = new GridBagLayout();
 	private final CLabel sBankAccountLabel = new CLabel();
-	private final CComboBox sBankAccountCombo = new CComboBox();
+	private final CComboBox<KeyNamePair> sBankAccountCombo = new CComboBox<>();
 	private final CLabel bCashBookLabel = new CLabel();
-	private final CComboBox bCashBookCombo = new CComboBox();
+	private final CComboBox<KeyNamePair> bCashBookCombo = new CComboBox<>();
 
 	private final JComponent[] fields = new JComponent[] {
 			bCurrencyCombo,
@@ -170,7 +170,7 @@ public class VPaymentCash extends AbstractPaymentCash
 		return loaded != null && loaded.booleanValue() == true;
 	}
 
-	private void loadComboValues(CComboBox combo, KeyNamePair[] values, int defaultKey)
+	private void loadComboValues(CComboBox<KeyNamePair> combo, KeyNamePair[] values, int defaultKey)
 	{
 		VPayment.loadComboValues(combo, values, defaultKey);
 		combo.putClientProperty(PROP_Loaded, true);
@@ -187,7 +187,7 @@ public class VPaymentCash extends AbstractPaymentCash
 	{
 		for (int i = 0; i < bCashBookCombo.getItemCount(); i++)
 		{
-			KeyNamePair knp = (KeyNamePair)bCashBookCombo.getItemAt(i);
+			KeyNamePair knp = bCashBookCombo.getItemAt(i);
 			if (knp.getKey() == C_CashBook_ID)
 			{
 				bCashBookCombo.setSelectedIndex(i);
@@ -236,7 +236,7 @@ public class VPaymentCash extends AbstractPaymentCash
 	@Override
 	public int getC_Currency_ID()
 	{
-		KeyNamePair pp = (KeyNamePair)bCurrencyCombo.getSelectedItem();
+		KeyNamePair pp = bCurrencyCombo.getSelectedItem();
 		if (pp == null)
 			return -1;
 		return pp.getKey();
@@ -251,7 +251,7 @@ public class VPaymentCash extends AbstractPaymentCash
 	@Override
 	public Timestamp getDate()
 	{
-		return (Timestamp)bDateField.getValue();
+		return bDateField.getValue();
 	}
 
 	@Override
@@ -263,7 +263,7 @@ public class VPaymentCash extends AbstractPaymentCash
 	@Override
 	public int getC_CashBook_ID()
 	{
-		KeyNamePair kp = (KeyNamePair)bCashBookCombo.getSelectedItem();
+		KeyNamePair kp = bCashBookCombo.getSelectedItem();
 		if (kp != null)
 			return kp.getKey();
 		else
@@ -273,7 +273,7 @@ public class VPaymentCash extends AbstractPaymentCash
 	@Override
 	public int getC_BP_BankAccount_ID()
 	{
-		KeyNamePair kp = (KeyNamePair)sBankAccountCombo.getSelectedItem();
+		KeyNamePair kp = sBankAccountCombo.getSelectedItem();
 		if (kp != null)
 			return kp.getKey();
 		else
@@ -285,7 +285,7 @@ public class VPaymentCash extends AbstractPaymentCash
 	{
 		for (int i = 0; i < sBankAccountCombo.getItemCount(); i++)
 		{
-			KeyNamePair knp = (KeyNamePair)sBankAccountCombo.getItemAt(i);
+			KeyNamePair knp = sBankAccountCombo.getItemAt(i);
 			if (knp.getKey() == C_BP_BankAccount_ID)
 			{
 				sBankAccountCombo.setSelectedIndex(i);

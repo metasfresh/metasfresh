@@ -60,12 +60,12 @@ public class VPaymentCheck extends AbstractPaymentCheck
 	private final CLabel sRoutingLabel = new CLabel();
 	private final CTextField sRoutingField = new CTextField();
 	private final CLabel sCurrencyLabel = new CLabel();
-	private final CComboBox sCurrencyCombo = new CComboBox();
+	private final CComboBox<KeyNamePair> sCurrencyCombo = new CComboBox<>();
 	private final CLabel sAmountLabel = new CLabel();
 	private final CTextField sCheckField = new CTextField();
 	private final CLabel sCheckLabel = new CLabel();
 	private final CButton sOnline = new CButton();
-	private final CComboBox sBankAccountCombo = new CComboBox();
+	private final CComboBox<KeyNamePair> sBankAccountCombo = new CComboBox<>();
 	private final CLabel sBankAccountLabel = new CLabel();
 	private final CLabel sStatus = new CLabel();
 	private final VNumber sAmountField = new VNumber();
@@ -146,11 +146,13 @@ public class VPaymentCheck extends AbstractPaymentCheck
 
 
 
+	@Override
 	public java.awt.Component getComponent()
 	{
 		return sPanel;
 	}
 
+	@Override
 	public void setFrom(I_C_Payment payment)
 	{
 		if (payment == null)
@@ -193,6 +195,7 @@ public class VPaymentCheck extends AbstractPaymentCheck
 		VPayment.loadComboValues(sBankAccountCombo, retrieveBankAccounts(), -1);
 	}
 
+	@Override
 	public void setC_Currency_ID(int C_Currency_ID)
 	{
 		final Map<Integer, KeyNamePair> currencies = VPaymentCheck.getCurrencies();
@@ -202,9 +205,10 @@ public class VPaymentCheck extends AbstractPaymentCheck
 		}
 	}
 
+	@Override
 	public int getC_Currency_ID()
 	{
-		KeyNamePair pp = (KeyNamePair)sCurrencyCombo.getSelectedItem();
+		KeyNamePair pp = sCurrencyCombo.getSelectedItem();
 		if (pp == null)
 			return -1;
 		return pp.getKey();
@@ -213,18 +217,19 @@ public class VPaymentCheck extends AbstractPaymentCheck
 	@Override
 	public int getC_BP_BankAccount_ID()
 	{
-		KeyNamePair kp = (KeyNamePair)sBankAccountCombo.getSelectedItem();
+		KeyNamePair kp = sBankAccountCombo.getSelectedItem();
 		if (kp != null)
 			return kp.getKey();
 		else
 			return -1;
 	}
 
+	@Override
 	public void setC_BP_BankAccount_ID(int C_BP_BankAccount_ID)
 	{
 		for (int i = 0; i < sBankAccountCombo.getItemCount(); i++)
 		{
-			KeyNamePair knp = (KeyNamePair)sBankAccountCombo.getItemAt(i);
+			KeyNamePair knp = sBankAccountCombo.getItemAt(i);
 			if (knp.getKey() == C_BP_BankAccount_ID)
 			{
 				sBankAccountCombo.setSelectedIndex(i);
@@ -234,6 +239,7 @@ public class VPaymentCheck extends AbstractPaymentCheck
 		sBankAccountCombo.setSelectedItem(null);
 	}
 
+	@Override
 	public String getRoutingNo()
 	{
 		return sRoutingField.getText();
@@ -245,6 +251,7 @@ public class VPaymentCheck extends AbstractPaymentCheck
 		return sNumberField.getText();
 	}
 
+	@Override
 	public String getCheckNo()
 	{
 		return sCheckField.getText();
@@ -312,11 +319,13 @@ public class VPaymentCheck extends AbstractPaymentCheck
 		uiHelper.updateFieldRO();
 	}
 
+	@Override
 	public void setAmount(BigDecimal amount)
 	{
 		sAmountField.setValue(amount);
 	}
 
+	@Override
 	public BigDecimal getAmount()
 	{
 		return (BigDecimal)sAmountField.getValue();

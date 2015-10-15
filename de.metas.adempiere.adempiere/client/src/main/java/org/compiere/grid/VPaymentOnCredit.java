@@ -44,7 +44,7 @@ public class VPaymentOnCredit extends AbstractPaymentOnCredit
 {
 	private CPanel pPanel = new CPanel();;
 	private CLabel pTermLabel = new CLabel();;
-	private CComboBox pTermCombo = new CComboBox();
+	private CComboBox<KeyNamePair> pTermCombo = new CComboBox<>();
 	private GridBagLayout pPanelLayout = new GridBagLayout();
 
 	private final JComponent[] fields = new JComponent[] {
@@ -57,6 +57,7 @@ public class VPaymentOnCredit extends AbstractPaymentOnCredit
 		initUI();
 	}
 
+	@Override
 	protected void initUI()
 	{
 		
@@ -70,6 +71,7 @@ public class VPaymentOnCredit extends AbstractPaymentOnCredit
 		loadPaymentTerms();
 	}
 
+	@Override
 	public java.awt.Component getComponent()
 	{
 		return pPanel;
@@ -85,7 +87,7 @@ public class VPaymentOnCredit extends AbstractPaymentOnCredit
 	{
 		for (int i = 0; i < pTermCombo.getItemCount(); i++)
 		{
-			KeyNamePair knp = (KeyNamePair)pTermCombo.getItemAt(i);
+			KeyNamePair knp = pTermCombo.getItemAt(i);
 			if (knp.getKey() == C_PaymentTerm_ID)
 			{
 				pTermCombo.setSelectedIndex(i);
@@ -95,9 +97,10 @@ public class VPaymentOnCredit extends AbstractPaymentOnCredit
 		pTermCombo.setSelectedItem(null);
 	}
 
+	@Override
 	public int getC_PaymentTerm_ID()
 	{
-		KeyNamePair kp = (KeyNamePair)pTermCombo.getSelectedItem();
+		KeyNamePair kp = pTermCombo.getSelectedItem();
 		if (kp != null)
 			return kp.getKey();
 		else
@@ -121,6 +124,7 @@ public class VPaymentOnCredit extends AbstractPaymentOnCredit
 	{
 	}
 
+	@Override
 	public void setEnabled(boolean enabled)
 	{
 		super.setEnabled(enabled);
@@ -146,6 +150,7 @@ public class VPaymentOnCredit extends AbstractPaymentOnCredit
 		return null; // nothing: don't generate, don't reverse
 	}
 
+	@Override
 	public void setReadOnly(boolean readOnly)
 	{
 		super.setReadOnly(readOnly);
