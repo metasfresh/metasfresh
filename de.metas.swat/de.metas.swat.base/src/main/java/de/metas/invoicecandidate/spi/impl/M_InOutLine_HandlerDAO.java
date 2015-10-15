@@ -37,12 +37,18 @@ import org.compiere.process.DocAction;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 
-/* package */class InOutCandidateHandlerDAO
+/**
+ * DAO to support {@link M_InOut_Handler} and {@link M_InOutLine_Handler}.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
+/* package */class M_InOutLine_HandlerDAO
 {
 	/**
 	 * Get all {@link I_M_InOutLine}s which are not linked to an {@link I_C_OrderLine} and there is no invoice candidate already generated for them.
 	 * 
-	 * NOTE: this method will be used to identify those inout lines for which {@link InOutCandidateHandler} will generate invoice candidates.
+	 * NOTE: this method will be used to identify those inout lines for which {@link M_InOutLine_Handler} will generate invoice candidates.
 	 * 
 	 * @param ctx
 	 * @param limit

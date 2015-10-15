@@ -46,6 +46,7 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_PInstance;
@@ -157,7 +158,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		m_trx = ITrx.TRX_None;
 
 		boolean success = false;
-		try
+		try(final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(this))
 		{
 			lock();
 
@@ -218,6 +219,8 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		}
 		finally
 		{
+			// NOTE: at this point the thread local loggable was restored
+			
 			endTrx(success);
 			unlock();
 		}

@@ -53,8 +53,6 @@ public class M_InOut
 	 * Note1: If it is a receipt, then we don't need to create the IC directly. Instead we leave it to the process which runs frequently.<br>
 	 * Note2: Also "Leergutrücknahme" is a shipment in that sense (i.e. it has shipment.isSOTrx() == true), so we are fine to directly create the IC there as well
 	 * 
-	 * The invoice candidates will be created immediate, synchronously. The need of doing this so eager is described in task's concept.
-	 * 
 	 * @param inout
 	 * @task http://dewiki908/mediawiki/index.php/08491_Barverkauf_Timing_%28102342055782%29
 	 * @task http://dewiki908/mediawiki/index.php/08641_Invalidate_invoice_candidates_when_an_reactivated_shipment_is_completed_again_%28100467724190%29
@@ -72,8 +70,9 @@ public class M_InOut
 
 		//
 		// Create missing invoice candidates
+		// NOTE: The invoice candidates will be created immediate, synchronously. The need of doing this so eager is described in 08491 task's concept.
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-		invoiceCandidateHandlerBL.createMissingCandidatesFor(I_M_InOutLine.Table_Name, inout);
+		invoiceCandidateHandlerBL.createMissingCandidatesFor(inout);
 	}
 
 	/**

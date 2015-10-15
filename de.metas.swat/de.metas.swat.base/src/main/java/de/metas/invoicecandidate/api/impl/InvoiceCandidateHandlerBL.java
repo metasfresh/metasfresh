@@ -25,6 +25,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -32,7 +33,6 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.CLoggerLoggable;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
@@ -43,12 +43,21 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.Iterators;
+
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockAutoCloseable;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
 import de.metas.workflow.api.IWFExecutionFactory;
 
 public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
@@ -103,29 +112,29 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	@Override
-	public void createMissingCandidates(final Properties ctx, final ILoggable loggable)
+	public void createMissingCandidates(final Properties ctx)
 	{
 		Services.get(ITrxManager.class).run(new TrxRunnable()
 		{
 			@Override
 			public void run(final String trxName) throws Exception
 			{
-				createInvoiceCandidates(ctx, Services.get(IInvoiceCandidateHandlerDAO.class).retrieveAll(ctx), InvoiceCandidateHandlerBL.NO_MODEL, loggable, trxName);
+				createInvoiceCandidates(ctx, Services.get(IInvoiceCandidateHandlerDAO.class).retrieveAll(ctx), InvoiceCandidateHandlerBL.NO_MODEL, trxName);
 			}
 		});
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> createMissingCandidatesFor(final String tableName, final Object model)
+	public List<I_C_Invoice_Candidate> createMissingCandidatesFor(final Object model)
 	{
 		Check.assumeNotNull(model, "model is not null");
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
+		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 
 		final List<I_C_ILCandHandler> icCandHandlers = Services.get(IInvoiceCandidateHandlerDAO.class).retrieveForTable(ctx, tableName);
-		final CLoggerLoggable loggable = new CLoggerLoggable(InvoiceCandidateHandlerBL.logger, Level.INFO);
-		return createInvoiceCandidates(ctx, icCandHandlers, model, loggable, trxName);
+		return createInvoiceCandidates(ctx, icCandHandlers, model, trxName);
 	}
 
 	/**
@@ -142,11 +151,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final Properties ctx,
 			final List<I_C_ILCandHandler> handlerRecords,
 			final Object model,
-			final ILoggable loggable,
 			final String trxName)
 	{
 		final List<I_C_Invoice_Candidate> result = new ArrayList<I_C_Invoice_Candidate>();
-
 		if (handlerRecords == null || handlerRecords.isEmpty())
 		{
 			logger.log(Level.WARNING, "No C_ILCandHandler were provided for '{0}'. Nothing to do.", model);
@@ -154,6 +161,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 		// services
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggableOrLogger(logger, Level.INFO);
 
 		for (final I_C_ILCandHandler handlerRecord : handlerRecords)
 		{
@@ -187,7 +196,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			catch (final RuntimeException e)
 			{
 				// log the error, but go on
-				final Throwable rootCause = ExceptionUtils.getRootCause(e);
+				final Throwable rootCause = Throwables.getRootCause(e);
 				final String errmsg = "Caught " + (rootCause != null ? rootCause : e).getClass()
 						+ " calling createMissingCandidates() method of handler " + handlerRecord.getName() + " (class " + handlerRecord.getClassname() + ") : "
 						+ ExceptionUtils.getRootCauseMessage(e);
@@ -212,64 +221,104 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	 * Create candidates. If model is {@link #NO_MODEL} then all missing candidates will be created.
 	 *
 	 * @param ctx
-	 * @param model if set to a value != {@link #NO_MODEL}, then only candidates for the given model are created,
+	 * @param modelOrNoModel if set to a value != {@link #NO_MODEL}, then only candidates for the given model are created,
 	 * @param bufferSize used only when creating missing candidates. See limit parameter of {@link IInvoiceCandidateHandler#createMissingCandidates(Properties, int, String)}.
 	 * @param invoiceCandiateHandler
 	 * @param trxName
 	 * @return created candidates
 	 */
-	private List<I_C_Invoice_Candidate> createCandidates(final Properties ctx, final Object model, final int bufferSize, final IInvoiceCandidateHandler invoiceCandiateHandler, final String trxName)
+	private List<I_C_Invoice_Candidate> createCandidates(final Properties ctx, final Object modelOrNoModel, final int bufferSize, final IInvoiceCandidateHandler invoiceCandiateHandler, final String trxName)
 	{
-		final List<I_C_Invoice_Candidate> newCandidates = new ArrayList<I_C_Invoice_Candidate>();
-
-		if (Util.same(model, InvoiceCandidateHandlerBL.NO_MODEL))
+		//
+		// Retrieve actual models for whom we will generate invoice candidates
+		final Iterator<? extends Object> models;
+		if (Util.same(modelOrNoModel, InvoiceCandidateHandlerBL.NO_MODEL))
 		{
-			newCandidates.addAll(invoiceCandiateHandler.createMissingCandidates(ctx, bufferSize, trxName));
+			models = invoiceCandiateHandler.retrieveAllModelsWithMissingCandidates(ctx, bufferSize, trxName);
 		}
 		else
 		{
-			newCandidates.addAll(invoiceCandiateHandler.createCandidatesFor(model));
+			models = Iterators.singletonIterator(modelOrNoModel);
 		}
+		
+		//
+		// Locking
+		final ILockManager lockManager = Services.get(ILockManager.class);
+		final LockOwner lockOwner = LockOwner.forOwnerName(getClass().getSimpleName() + "#generateInvoiceCandidates");
 
-		updateDefaultsAndSave(invoiceCandiateHandler, newCandidates, model);
+		//
+		// Iterate retrieved models and generate invoice candidates for them
+		final List<I_C_Invoice_Candidate> invoiceCandidatesAll = new ArrayList<>();
+		while(models.hasNext())
+		{
+			//
+			// Create the initial request and then ask the handler to expand it to proper models to be used.
+			final Object model = models.next();
+			final InvoiceCandidateGenerateRequest requestInitial = InvoiceCandidateGenerateRequest.of(invoiceCandiateHandler, model);
+			final List<InvoiceCandidateGenerateRequest> requests = invoiceCandiateHandler.expandRequest(requestInitial);
 
-		return newCandidates;
+			//
+			// Iterate each request and generate the invoice candidates
+			for (final InvoiceCandidateGenerateRequest request : requests)
+			{
+				// Lock the "model" to make sure nobody else would generate invoice candidates for it.
+				final ILock lock = lockManager.lock()
+						.setOwner(lockOwner)
+						.setRecordByModel(model)
+						.setAutoCleanup(true)
+						.setFailIfAlreadyLocked(true)
+						.acquire();
+				
+				try (ILockAutoCloseable unlocker = lock.asAutoCloseable())
+				{
+					final IInvoiceCandidateHandler handler = request.getHandler();
+					final InvoiceCandidateGenerateResult result = handler.createCandidatesFor(request);
+
+					// Update generated invoice candidates
+					updateDefaultsAndSave(result);
+
+					// Collect candidates (we will invalidate them all together)
+					invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
+				}
+			}
+		}
+		
+		// Invalidate all generated invoice candidates in one run.
+		invalidateNewCandidates(invoiceCandidatesAll);
+
+		return invoiceCandidatesAll;
 	}
-
+	
 	/**
 	 * Make sure all candidates are persisted to database. It also:
 	 * <ul>
-	 * <li>set AD_User_InChange_ID
+	 * <li> {@link I_C_Invoice_Candidate#setC_ILCandHandler(I_C_ILCandHandler)}
+	 * <li> {@link I_C_Invoice_Candidate#setAD_User_InCharge_ID(int)}
 	 * </ul>
 	 *
-	 * @param handler
-	 * @param candidates
-	 * @param model source model
+	 * @param result invoice candidate generate result
 	 */
-	private void updateDefaultsAndSave(final IInvoiceCandidateHandler handler, final List<I_C_Invoice_Candidate> candidates, final Object model)
+	private void updateDefaultsAndSave(final InvoiceCandidateGenerateResult result)
 	{
-		if (candidates == null || candidates.isEmpty())
+		final IInvoiceCandidateHandler handler = result.getHandler();
+		
+		for (final I_C_Invoice_Candidate ic : result.getC_Invoice_Candidates())
 		{
-			return;
+			updateDefaultsAndSaveSingleCandidate(handler, ic);
 		}
-
-		for (final I_C_Invoice_Candidate ic : candidates)
-		{
-			updateDefaultsAndSaveSingleCandidate(handler, ic, model);
-		}
-
-		invalidateNewCandidates(candidates);
 	}
 
-	private void updateDefaultsAndSaveSingleCandidate(final IInvoiceCandidateHandler handler, final I_C_Invoice_Candidate ic, final Object model)
+	private void updateDefaultsAndSaveSingleCandidate(final IInvoiceCandidateHandler handler, final I_C_Invoice_Candidate ic)
 	{
 		Check.assumeNotNull(handler, "handler not null");
 
-		// Make sure there is a link to creator/handler
+		//
+		// Make sure there is a link to creator/handler.
+		// We are setting the handler only if it was not set because it might be that the handler was set by a delegated handler which is not this one. 
 		final I_C_ILCandHandler handlerDef = handler.getHandlerRecord();
-		if (handlerDef != null)
+		if (handlerDef != null && ic.getC_ILCandHandler_ID() <= 0)
 		{
-			ic.setC_ILCandHandler_ID(handlerDef.getC_ILCandHandler_ID());
+			ic.setC_ILCandHandler(handlerDef);
 		}
 
 		// Make sure User InCharge is set

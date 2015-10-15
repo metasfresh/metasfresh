@@ -35,7 +35,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
@@ -93,24 +92,16 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 	}
 
 	/**
-	 * Creates invoice candidates for those quality orders which don't have.
+	 * All quality orders which are suitable for invoices and there are no invoice candidates created yet.
 	 *
 	 * @param ctx
 	 * @param limit how many quality orders to retrieve
 	 * @param trxName
 	 * @return created invoice candidates
 	 */
-	public List<I_C_Invoice_Candidate> createMissingInvoiceCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_PP_Order> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
 	{
-		final Iterator<I_PP_Order> ppOrders = qualityInspectionHandlerDAO.retrievePPOrdersWithMissingICs(ctx, limit, trxName);
-		final List<I_C_Invoice_Candidate> result = new ArrayList<I_C_Invoice_Candidate>();
-		for (final I_PP_Order ppOrder : IteratorUtils.asIterable(ppOrders))
-		{
-			final List<I_C_Invoice_Candidate> invoiceCandidatesForPPOrder = createInvoiceCandidates(ppOrder);
-			result.addAll(invoiceCandidatesForPPOrder);
-		}
-
-		return result;
+		return qualityInspectionHandlerDAO.retrievePPOrdersWithMissingICs(ctx, limit, trxName);
 	}
 
 	/**

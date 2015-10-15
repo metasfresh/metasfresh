@@ -23,9 +23,11 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  */
 
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
@@ -33,16 +35,40 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.materialtracking.model.I_PP_Order;
+import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
 
 /**
- * Creates invoice candidates for PP_Orders which have DocType with BaseType <code>MOP</code> and a special subtype to indicate it's a quality order
+ * Creates invoice candidates for {@link I_PP_Order}s which have DocType with BaseType <code>MOP</code> and a special subtype to indicate it's a quality order
  *
  * @author ts
  *
  */
 public class QualityInspectionHandler extends AbstractInvoiceCandidateHandler
 {
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically()
+	{
+		return true;
+	}
+	
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	{
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(model, I_PP_Order.class);
+		return Services.get(IQualityInspectionHandlerDAO.class)
+				.getInvoiceableOrderFilter()
+				.accept(ppOrder);
+	}
+	
+	@Override
+	public DocTimingType getAutomaticallyCreateMissingCandidatesDocTiming()
+	{
+		return DocTimingType.AFTER_CLOSE;
+	}
+	
 	private final PPOrder2InvoiceCandidatesProducer createInvoiceCandidatesProducer()
 	{
 		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = new PPOrder2InvoiceCandidatesProducer();
@@ -51,21 +77,20 @@ public class QualityInspectionHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> createMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_PP_Order> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
 	{
 		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = createInvoiceCandidatesProducer();
-		final List<de.metas.materialtracking.model.I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidatesProducer.createMissingInvoiceCandidates(ctx, limit, trxName);
-		return InterfaceWrapperHelper.createList(invoiceCandidates, I_C_Invoice_Candidate.class);
+		return invoiceCandidatesProducer.retrieveAllModelsWithMissingCandidates(ctx, limit, trxName);
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> createCandidatesFor(final Object model)
+	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
 	{
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(model, I_PP_Order.class);
+		final I_PP_Order ppOrder = request.getModel(I_PP_Order.class);
 
 		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = createInvoiceCandidatesProducer();
 		final List<de.metas.materialtracking.model.I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidatesProducer.createInvoiceCandidates(ppOrder);
-		return InterfaceWrapperHelper.createList(invoiceCandidates, I_C_Invoice_Candidate.class);
+		return InvoiceCandidateGenerateResult.of(this, invoiceCandidates);
 	}
 
 	@Override

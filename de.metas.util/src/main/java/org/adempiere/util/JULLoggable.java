@@ -1,8 +1,11 @@
 package org.adempiere.util;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.util
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -22,24 +25,34 @@ package org.adempiere.util;
  * #L%
  */
 
-import java.util.logging.Level;
-
-import org.compiere.util.CLogger;
-
 /**
- * Wraps {@link CLogger} as {@link ILoggable}
+ * Wraps JUL's {@link Logger} as {@link ILoggable}
  * 
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
-public class CLoggerLoggable extends JULLoggable
+public class JULLoggable implements ILoggable
 {
+	private final Logger logger;
+	private final Level level;
+
 	/**
-	 * @param logger
+	 * @param logger JUL's logger
 	 * @param level the logging level to be used when {@link #addLog(String)} is called.
 	 */
-	public CLoggerLoggable(final CLogger logger, final Level level)
+	public JULLoggable(final Logger logger, final Level level)
 	{
-		super(logger, level);
+		super();
+		Check.assumeNotNull(logger, "logger not null");
+		Check.assumeNotNull(level, "level not null");
+		this.logger = logger;
+		this.level = level;
 	}
+
+	@Override
+	public void addLog(final String msg)
+	{
+		logger.log(level, msg);
+	}
+
 }

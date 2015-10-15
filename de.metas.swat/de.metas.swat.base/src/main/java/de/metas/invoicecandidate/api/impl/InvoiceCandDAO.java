@@ -66,6 +66,7 @@ import de.metas.adempiere.util.CacheTrx;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
+import de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
@@ -169,15 +170,20 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 	@Override
 	public void invalidateCand(final I_C_Invoice_Candidate ic)
 	{
-		Check.assume(ic.getC_Invoice_Candidate_ID() > 0, "ic has an ID>0; ic={0}", ic);
+		final int invoiceCandidateId = ic.getC_Invoice_Candidate_ID();
+		Check.assume(invoiceCandidateId > 0, "ic has an ID>0; ic={0}", ic);
 
 		final String sql = "INSERT INTO " + I_C_Invoice_Candidate_Recompute.Table_Name + " (C_Invoice_Candidate_ID) VALUES (?)";
 
-		final int c_Invoice_Candidate_ID = ic.getC_Invoice_Candidate_ID();
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
-		final int count = DB.executeUpdateEx(sql, new Object[] { c_Invoice_Candidate_ID }, trxName);
-		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates C_Invoice_Candidate_ID={1}", new Object[] { count, c_Invoice_Candidate_ID });
+		final int count = DB.executeUpdateEx(sql, new Object[] { invoiceCandidateId }, trxName);
+		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates C_Invoice_Candidate_ID={1}", new Object[] { count, invoiceCandidateId });
+		
+		if (count > 0)
+		{
+			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(InterfaceWrapperHelper.getCtx(ic), trxName);
+		}
 	}
 
 	@Override
@@ -211,6 +217,11 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int count = DB.executeUpdateEx(sql, new Object[] { headerAggregationKey }, trxName);
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for HeaderAggregationKey={1}", new Object[] { count, headerAggregationKey });
+		
+		if (count > 0)
+		{
+			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(ctx, trxName);
+		}
 	}
 
 	@Override
@@ -229,6 +240,12 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int count = DB.executeUpdateEx(sql, new Object[] { ad_Table_ID, record_ID }, trxName);
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for AD_Table_ID={1} and Record_ID={2}", new Object[] { count, ad_Table_ID, record_ID });
+		
+		if (count > 0)
+		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(ctx, trxName);
+		}
 	}
 
 	@Override
@@ -246,6 +263,13 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 				.execute();
 
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for bPartner={1}", new Object[] { count, bPartner });
+		
+		if (count > 0)
+		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
+			final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
+			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(ctx, trxName);
+		}
 	}
 
 	@Override
@@ -295,6 +319,11 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 				.mapColumn(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				.execute();
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for aggregation={1}", new Object[] { count, aggregation });
+		
+		if (count > 0)
+		{
+			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(ctx, trxName);
+		}
 	}
 
 	@Override
@@ -313,6 +342,12 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int count = DB.executeUpdateEx(sql, new Object[] { bPartner.getC_BPartner_ID() }, trxName);
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for bPartner={1}", new Object[] { count, bPartner });
+		
+		if (count > 0)
+		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
+			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(ctx, trxName);
+		}
 	}
 
 	@Override
@@ -325,6 +360,11 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int updCnt = DB.executeUpdate(sql, trxName);
 		logger.fine("Invalidated " + updCnt + " records");
+		
+		if (updCnt > 0)
+		{
+			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(ctx, trxName);
+		}
 	}
 
 	protected void invalidateCandsForSelection(final int adPInstanceId, final String trxName)
@@ -337,6 +377,11 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int count = DB.executeUpdateEx(sql, new Object[] { adPInstanceId }, trxName);
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for AD_PInstance_ID={1}", new Object[] { count, adPInstanceId });
+		
+		if (count > 0)
+		{
+			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
+		}
 	}
 
 	@Cached
@@ -827,7 +872,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 				+ " SELECT " + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID
 				+ " FROM " + I_C_Invoice_Candidate.Table_Name
 				+ " WHERE "
-				// Only our shipment schedule Ids
+				// Only our invoice candidates IDs
 				+ I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + " IN " + sqlInWhereClause
 				// Only those which were not already added (technically not necessary, but shall reduce unnecessary bloat)
 				+ "   AND NOT EXISTS (select 1 from " + I_C_Invoice_Candidate_Recompute.Table_Name + " e where e.AD_PInstance_ID is NULL and e.C_Invoice_Candidate_ID="
@@ -835,6 +880,11 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
 		logger.log(Level.INFO, "Invalidated {0} shipment schedules for M_ShipmentSchedule_IDs={1}", new Object[] { count, icIds });
+		
+		if (count > 0)
+		{
+			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
+		}
 	}
 
 	@Override

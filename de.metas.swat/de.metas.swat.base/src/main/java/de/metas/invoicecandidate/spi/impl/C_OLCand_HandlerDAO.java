@@ -23,14 +23,13 @@ package de.metas.invoicecandidate.spi.impl;
  */
 
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.Query;
+import org.compiere.model.IQuery;
 
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -40,33 +39,38 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 
 public class C_OLCand_HandlerDAO
 {
-	public Iterator<I_C_OLCand> retrieveMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public IQueryBuilder<I_C_OLCand> retrieveMissingCandidatesQuery(final Properties ctx, final String trxName)
 	{
-		final I_AD_InputDataSource dataSource = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_C_OLCand> queryBuilder = queryBL.createQueryBuilder(I_C_OLCand.class)
+				.setContext(ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient();
+
+		//
+		// Only which are for our data source
+		{
+			final I_AD_InputDataSource dataSource = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
+			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_DataDestination_ID, dataSource.getAD_InputDataSource_ID());
+		}
+
+		//
+		// Only those which were not already created
+		{
+			final IQuery<I_C_Invoice_Candidate> existingICsQuery = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+					.setContext(ctx, trxName)
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OLCand.class))
+					.create();
+			
+			queryBuilder.addNotInSubQueryFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, I_C_OLCand.COLUMNNAME_Record_ID, existingICsQuery);
+		}
 		
-		final StringBuilder whereClause = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
-
-		// Only which are for our datasource
-		whereClause.append(I_C_OLCand.COLUMNNAME_AD_DataDestination_ID).append("=?");
-		params.add(dataSource.getAD_InputDataSource_ID());
-
-		// Only those which were not created
-		whereClause.append(" AND ").append(I_C_OLCand.COLUMNNAME_C_OLCand_ID).append(" NOT IN (")
-				.append(" SELECT ").append(I_C_Invoice_Candidate.COLUMNNAME_Record_ID)
-				.append(" FROM ").append(I_C_Invoice_Candidate.Table_Name)
-				.append(" WHERE ").append(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID).append("=?")
-				.append(")");
-		params.add(adTableDAO.retrieveTableId(I_C_OLCand.Table_Name));
-
-		return new Query(ctx, I_C_OLCand.Table_Name, whereClause.toString(), trxName)
-				.setParameters(params)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_C_OLCand.COLUMNNAME_C_OLCand_ID)
-				.setLimit(limit)
-				.iterate(I_C_OLCand.class);
+		//
+		// Order by
+		queryBuilder.orderBy()
+				.addColumn(I_C_OLCand.COLUMN_C_OLCand_ID);
+		
+		return queryBuilder;
 	}
 
 }

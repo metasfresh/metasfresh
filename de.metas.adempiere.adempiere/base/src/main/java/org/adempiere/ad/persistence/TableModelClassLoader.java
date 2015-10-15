@@ -287,6 +287,10 @@ public class TableModelClassLoader
 	String getEntityTypeForTableName(final String tableName)
 	{
 		final I_AD_Table table = MTable.get(Env.getCtx(), tableName);
+		if (table == null)
+		{
+			throw new AdempiereException("@NotFound@ @AD_Table_ID@: " + tableName);
+		}
 		final String entityType = table.getEntityType();
 		return entityType;
 	}

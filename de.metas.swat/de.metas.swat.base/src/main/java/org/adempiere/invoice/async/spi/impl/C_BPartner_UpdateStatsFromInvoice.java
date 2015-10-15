@@ -48,7 +48,7 @@ public class C_BPartner_UpdateStatsFromInvoice extends WorkpackageProcessorAdapt
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
-		final List<I_C_Invoice> invoices = queueDAO.retrieveItems(workpackage, I_C_Invoice.class, localTrxName);
+		final List<I_C_Invoice> invoices = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_Invoice.class, localTrxName);
 		final boolean async = false; // because *this* is already the async invocation
 		invoiceBL.updateBPartnerStats(invoices, async);
 

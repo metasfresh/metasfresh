@@ -24,7 +24,6 @@ package de.metas.async.processor.impl;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -74,7 +73,7 @@ public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 		else
 		{
 			internalNameToUse = packageProcessor.getInternalName();
-	}
+		}
 
 		return WorkPackageQueue.createForEnqueuing(ctx,
 				packageProcessor.getC_Queue_PackageProcessor_ID(),

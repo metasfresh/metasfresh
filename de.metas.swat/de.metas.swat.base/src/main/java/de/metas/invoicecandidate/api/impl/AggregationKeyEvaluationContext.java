@@ -39,7 +39,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.impl.InOutCandidateHandler;
+import de.metas.invoicecandidate.spi.impl.M_InOutLine_Handler;
 
 /**
  * Evaluation context used to parse the header and line aggregation key right before aggregating to invoice or invoice lines
@@ -137,7 +137,7 @@ public class AggregationKeyEvaluationContext implements Evaluatee2
 			return inoutLine;
 		}
 
-		inoutLine = InOutCandidateHandler.getM_InOutLine(invoiceCandidate);
+		inoutLine = M_InOutLine_Handler.getM_InOutLine(invoiceCandidate);
 		inoutLineSet = true;
 		return inoutLine;
 	}

@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -63,24 +62,21 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	 *
 	 * Each created invoice candidate has a reference to the {@link I_C_ILCandGenerator} from whose {@link IInvoiceCandidateHandler} implementation it has been created.
 	 *
-	 * Note: this method does not return the created candiates because there might be too many of them.
+	 * Note: this method does not return the created candidates because there might be too many of them.
 	 *
 	 * @param ctx
-	 * @param loggable
 	 */
-	void createMissingCandidates(Properties ctx, ILoggable loggable);
+	void createMissingCandidates(Properties ctx);
 
 	/**
-	 * Creates missing invoice candidates for the given table name and model. It is assumes that 'model' can be handled by {@link InterfaceWrapperHelper} and that it corresponds to a data record from
-	 * 'tableName'.
+	 * Creates missing invoice candidates for the given table name and model. It is assumes that 'model' can be handled by {@link InterfaceWrapperHelper}.
 	 *
-	 * Each created invoice candidate has a reference to the {@link I_C_ILCandGenerator} from whose {@link IInvoiceCandidateHandler} implementation it has been created.
+	 * Each created invoice candidate has a reference to the {@link I_C_ILCandHandler} from whose {@link IInvoiceCandidateHandler} implementation it has been created.
 	 *
-	 * @param tableName
 	 * @param model
-	 * @return
+	 * @return generated invoice candidates
 	 */
-	List<I_C_Invoice_Candidate> createMissingCandidatesFor(String tableName, Object model);
+	List<I_C_Invoice_Candidate> createMissingCandidatesFor(Object model);
 
 	void setNetAmtToInvoice(I_C_Invoice_Candidate ic);
 

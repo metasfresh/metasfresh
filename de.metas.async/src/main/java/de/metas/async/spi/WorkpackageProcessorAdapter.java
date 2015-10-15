@@ -31,7 +31,6 @@ import org.adempiere.util.api.IParams;
 
 import com.google.common.base.Optional;
 
-import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Log;
 import de.metas.lock.api.ILock;
@@ -48,7 +47,6 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 {
 	private IParams parameters = null;
 	private I_C_Queue_WorkPackage workpackage;
-	private ILoggable _loggable;
 
 	@Override
 	public final void setParameters(final IParams parameters)
@@ -87,27 +85,16 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 
 	/**
 	 * Gets the {@link ILoggable} to be used to record important informations about how current workpackage is processed.
-	 * 
+	 *
 	 * Mainly it will write to {@link I_C_Queue_WorkPackage_Log}.
 	 * 
-	 * @return loggable; never returns <code>null</code>
+	 * @return {@link ILoggable}; never returns <code>null</code>
 	 */
 	protected final ILoggable getLoggable()
 	{
-		if (_loggable == null)
-		{
-			if (workpackage != null)
-			{
-				_loggable = Services.get(IWorkPackageBL.class).createLoggable(workpackage);
-			}
-			else
-			{
-				// Usually this shall not happen, with one exception: the JUnit tests
-				return NullLoggable.instance;
-			}
-		}
-
-		return _loggable;
+		// NOTE: Usually the thread local ILoggable is not null because the workpackage task executor is registering a thread local ILoggable instance.
+		// There is one one exception: the JUnit tests which are calling the workpackage processor directly.
+		return ILoggable.THREADLOCAL.getLoggableOr(NullLoggable.instance);
 	}
 
 	@Override

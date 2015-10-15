@@ -10,21 +10,18 @@ package de.metas.invoicecandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -47,6 +44,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -69,33 +68,62 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	private final C_OLCand_HandlerDAO dao = new C_OLCand_HandlerDAO();
 
 	@Override
+	public boolean isCreateMissingCandidatesAutomatically()
+	{
+		return true;
+	}
+	
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	{
+		final I_C_OLCand olCand = InterfaceWrapperHelper.create(model, I_C_OLCand.class);
+		if (!isEligibleForInvoiceCandidateCreate(olCand))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
 	public String getSourceTable()
 	{
 		return I_C_OLCand.Table_Name;
 	}
-
+	
 	@Override
-	public List<I_C_Invoice_Candidate> createMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
 	{
-		final List<I_C_Invoice_Candidate> result = new ArrayList<I_C_Invoice_Candidate>();
-
-		final Iterator<I_C_OLCand> olCandidates = dao.retrieveMissingCandidates(ctx, limit, trxName);
-		while (olCandidates.hasNext())
-		{
-			final I_C_OLCand olc = olCandidates.next();
-			final I_C_Invoice_Candidate ic = createInvoiceCandidateForOLCand(olc);
-			result.add(ic);
-		}
-
-		return result;
+		return dao.retrieveMissingCandidatesQuery(ctx, trxName)
+				.setLimit(limit)
+				.create()
+				.iterate(I_C_OLCand.class);
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> createCandidatesFor(final Object model)
+	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
 	{
-		final I_C_OLCand olc = InterfaceWrapperHelper.create(model, I_C_OLCand.class);
+		final I_C_OLCand olCand = request.getModel(I_C_OLCand.class);
 
-		return Collections.singletonList(createInvoiceCandidateForOLCand(olc));
+		//
+		// Make sure the OL_Cand is eligible for creating invoice candidates
+		if (!isEligibleForInvoiceCandidateCreate(olCand))
+		{
+			return InvoiceCandidateGenerateResult.of(this);
+		}
+
+		final I_C_Invoice_Candidate ic = createInvoiceCandidateForOLCand(olCand);
+		return InvoiceCandidateGenerateResult.of(this, ic);
+	}
+
+	private boolean isEligibleForInvoiceCandidateCreate(final I_C_OLCand olCand)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
+		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
+		return dao.retrieveMissingCandidatesQuery(ctx, trxName)
+				.addEqualsFilter(I_C_OLCand.COLUMN_C_OLCand_ID, olCand.getC_OLCand_ID())
+				.create()
+				.match();
 	}
 
 	private I_C_Invoice_Candidate createInvoiceCandidateForOLCand(final I_C_OLCand olc)
@@ -116,7 +144,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final int orgId = olc.getAD_Org_ID();
 		ic.setAD_Org_ID(orgId);
 
-		ic.setC_ILCandHandler_ID(getHandlerRecord().getC_ILCandHandler_ID());
+		ic.setC_ILCandHandler(getHandlerRecord());
 
 		ic.setAD_Table_ID(adTableDAO.retrieveTableId(I_C_OLCand.Table_Name));
 		ic.setRecord_ID(olc.getC_OLCand_ID());

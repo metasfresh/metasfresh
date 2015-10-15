@@ -22,10 +22,11 @@ package de.metas.invoicecandidate.spi;
  * #L%
  */
 
-
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -49,23 +50,48 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  */
 public interface IInvoiceCandidateHandler
 {
-	// /**
-	// * Message can be used by implementors to indicate that they can't find a PriceActual value for a given invoice candidate.
-	// */
-	// String MSG_NO_PRICE_1P = "InvoiceCandCreator_No_Price";
+	/**
+	 * Checks if this handler, in general, can create invoice candidates automatically.
+	 * 
+	 * This is a preliminary condition, and when the business logic has to create invoice candidates automatically, first it will call {@link #isCreateMissingCandidatesAutomatically(Object)}.
+	 * 
+	 * @return true if the invoice candidates shall be automatically generated for {@link #getSourceTable()}.
+	 */
+	boolean isCreateMissingCandidatesAutomatically();
 
 	/**
-	 * Creates <b>and saves</b> missing candidates.
-	 *
-	 * Note: usually this method should be called from {@link IInvoiceCandidateHandlerBL} only, because SPI-implementors are not expected to set the new candidates' <code>C_ILCandGenerator_ID</code>
-	 * columns.
-	 *
-	 * @param ctx
-	 * @param limit how many candidates shall be generated. Note that, at this moment, this is a recommendation which could be respected or not by current implementations.
-	 * @param trxName
-	 * @return
+	 * Checks if this handler can generate invoice candidates for given model.
+	 * 
+	 * @param model
+	 * @return true if the invoice candidates shall be automatically generated for given model.
 	 */
-	List<I_C_Invoice_Candidate> createMissingCandidates(Properties ctx, int limit, String trxName);
+	boolean isCreateMissingCandidatesAutomatically(final Object model);
+
+	/** @return {@link DocTimingType} when to create the missing invoice candidates automatically; shall never return null. */
+	DocTimingType getAutomaticallyCreateMissingCandidatesDocTiming();
+
+	/**
+	 * Retrieves all models which are eligible for invoicing but they have no invoice candidates.
+	 * 
+	 * @param ctx
+	 * @param limit how many models shall be retrieved. Note that, at this moment, this is a recommendation which could be respected or not by current implementations.
+	 * @param trxName
+	 * @return models
+	 */
+	Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(Properties ctx, int limit, String trxName);
+
+	/**
+	 * Called by API to expand an initial invoice candidate generate request.
+	 * 
+	 * Usually this method will return exactly the request which was provided as parameter, but there are some cases when an handler cannot generate missing candidates for a given model but the
+	 * handler can advice which handlers can do that and which models shall be used.
+	 * 
+	 * An example would be the M_InOut handler which will expand the initial request to M_InOutLine requests.
+	 * 
+	 * @param request initial request
+	 * @return actual requests to be used. never returns null
+	 */
+	List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request);
 
 	/**
 	 * Creates missing candidates for the given model.
@@ -78,10 +104,10 @@ public interface IInvoiceCandidateHandler
 	 * Note: usually this method should be called from {@link IInvoiceCandidateHandlerBL} only, because SPI-implementors are not expected to set the new candidates' <code>C_ILCandGenerator_ID</code>
 	 * columns.
 	 *
-	 * @param model
-	 * @return
+	 * @param request
+	 * @return result containing invoice candidates that were created
 	 */
-	List<I_C_Invoice_Candidate> createCandidatesFor(Object model);
+	InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request);
 
 	/**
 	 * Invalidates invoice candidates for the given model.

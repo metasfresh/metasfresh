@@ -23,18 +23,18 @@ package de.metas.invoicecandidate.spi;
  */
 
 
-import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.impl.OLHandler;
+import de.metas.invoicecandidate.spi.impl.C_OrderLine_Handler;
 
 /**
- * DAO to be used for {@link OLHandler}.
+ * DAO to be used for {@link C_OrderLine_Handler}.
  * 
  * @author tsa
  * 
@@ -49,7 +49,7 @@ public interface IOLHandlerDAO extends ISingletonService
 	 * @param trxName
 	 * @return
 	 */
-	List<I_C_OrderLine> retrieveMissingOrderLines(Properties ctx, String trxName);
+	IQueryBuilder<I_C_OrderLine> retrieveMissingOrderLinesQuery(Properties ctx, String trxName);
 
 	/**
 	 * Add additional filters to allow other modules restricting the set of order lines for which the system automatically creates invoice candidates.

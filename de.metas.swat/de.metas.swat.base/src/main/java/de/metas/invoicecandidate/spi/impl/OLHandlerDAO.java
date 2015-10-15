@@ -23,7 +23,6 @@ package de.metas.invoicecandidate.spi.impl;
  */
 
 
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -56,7 +55,7 @@ public class OLHandlerDAO implements IOLHandlerDAO
 	}
 
 	@Override
-	public List<I_C_OrderLine> retrieveMissingOrderLines(final Properties ctx, final String trxName)
+	public IQueryBuilder<I_C_OrderLine> retrieveMissingOrderLinesQuery(final Properties ctx, final String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -132,9 +131,7 @@ public class OLHandlerDAO implements IOLHandlerDAO
 				.filter(filters)
 				.filterByClientId();
 
-		final List<I_C_OrderLine> ols = queryBuilder.create().list(I_C_OrderLine.class);
-
-		return ols;
+		return queryBuilder;
 	}
 
 	@Override

@@ -25,9 +25,7 @@ package de.metas.flatrate.invoicecandidate.spi.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -53,6 +51,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 
@@ -64,30 +64,34 @@ import de.metas.tax.api.ITaxBL;
  */
 public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 {
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically()
+	{
+		return false;
+	}
+	
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	{
+		return false;
+	}
+	
 	/**
-	 * One invocation creates a maximum of <code>limit</code> invoice candidates for completed subscription <code>C_Flatrate_Terms</code> that don't have a <code>C_OrderLine_Term_ID</code>.
+	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have a <code>C_OrderLine_Term_ID</code>.
 	 */
 	@Override
-	public List<I_C_Invoice_Candidate> createMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_C_Flatrate_Term> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
 	{
-		// Getting the SQL for the sqlColumn "Type_Conditions". Note that we don't want the alias which would be
-		// included in the string if we called POInfo.getColumnSQL()
-
-		final List<I_C_Flatrate_Term> termsWithMissingCandidates = Services.get(IContractsDAO.class).retrieveCFlatrateTermsWithMissingCandidates(ctx, limit, trxName);
-		final List<I_C_Invoice_Candidate> result = new ArrayList<I_C_Invoice_Candidate>();
-		for (final I_C_Flatrate_Term term : termsWithMissingCandidates)
-		{
-			result.add(createCandidateForTerm(term));
-		}
-		return result;
+		return Services.get(IContractsDAO.class).retrieveCFlatrateTermsWithMissingCandidates(ctx, limit, trxName).iterator();
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> createCandidatesFor(final Object model)
+	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
 	{
-		final I_C_Flatrate_Term term = InterfaceWrapperHelper.create(model, I_C_Flatrate_Term.class);
+		final I_C_Flatrate_Term term = request.getModel(I_C_Flatrate_Term.class);
 
-		return Collections.singletonList(createCandidateForTerm(term));
+		final I_C_Invoice_Candidate ic = createCandidateForTerm(term);
+		return InvoiceCandidateGenerateResult.of(this, ic);
 	}
 
 	@Override
@@ -144,7 +148,7 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 		ic.setAD_Org_ID(term.getAD_Org_ID());
-		ic.setC_ILCandHandler_ID(getHandlerRecord().getC_ILCandHandler_ID());
+		ic.setC_ILCandHandler(getHandlerRecord());
 
 		ic.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Flatrate_Term.Table_Name));
 		ic.setRecord_ID(term.getC_Flatrate_Term_ID());

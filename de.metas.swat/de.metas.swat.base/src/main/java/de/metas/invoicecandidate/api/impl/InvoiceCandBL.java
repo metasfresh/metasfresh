@@ -153,12 +153,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final CLogger logger = CLogger.getCLogger(getClass());
 
 	@Override
-	public void createMissingCandidates(final I_AD_PInstance adPinstance, final ILoggable loggable, final String trxName)
+	public void createMissingCandidates(final I_AD_PInstance adPinstance, final String trxName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(adPinstance);
 
 		final IInvoiceCandidateHandlerBL handlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-		handlerBL.createMissingCandidates(ctx, loggable);
+		handlerBL.createMissingCandidates(ctx);
 	}
 
 	@Override
@@ -1654,7 +1654,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					logger.log(Level.FINE, "Current C_InvoiceLine {0} has a C_OrderLine {1} which is not referenced by any C_Invoice_Candidate", new Object[] { il, ol });
 					final IInvoiceCandidateHandlerBL creatorBL = Services.get(IInvoiceCandidateHandlerBL.class);
-					final List<I_C_Invoice_Candidate> invoiceCandsNew = creatorBL.createMissingCandidatesFor(org.compiere.model.I_C_OrderLine.Table_Name, ol);
+					final List<I_C_Invoice_Candidate> invoiceCandsNew = creatorBL.createMissingCandidatesFor(ol);
 
 					logger.log(Level.FINE, "Created C_Invoice_Candidates for C_OrderLine {0}: {1}", new Object[] { ol, invoiceCandsNew });
 					toLinkAgainstIl.addAll(invoiceCandsNew);

@@ -128,11 +128,11 @@ public class MPPOrder extends X_PP_Order implements DocAction
 				int M_AttributeSetInstance_ID = 0;
 				if (value == null && isSelected)
 				{
-					M_AttributeSetInstance_ID = (Integer)key.getKey();
+					M_AttributeSetInstance_ID = key.getKey();
 				}
 				else if (value != null && isSelected)
 				{
-					int PP_Order_BOMLine_ID = (Integer)key.getKey();
+					int PP_Order_BOMLine_ID = key.getKey();
 					if (PP_Order_BOMLine_ID > 0)
 					{
 						final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(order.getCtx(), PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, order.get_TrxName());
@@ -667,7 +667,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 			final BigDecimal qtyToDeliver = model.getQtyToDeliver();
 			BigDecimal qtyScrapComponent = model.getQtyScrapComponent();
 
-			int PP_Order_BOMLine_ID = (Integer)key.getKey();
+			int PP_Order_BOMLine_ID = key.getKey();
 			if (PP_Order_BOMLine_ID > 0)
 			{
 				final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(getCtx(), PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, get_TrxName());
@@ -870,6 +870,13 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		}
 
 		//
+		// Set Document status.
+		// Do this before firing the AFTER_CLOSE events because the interceptors shall see the DocStatus=CLosed, in case some BLs are depending on that.
+		setDocStatus(DOCSTATUS_Closed);
+		setProcessed(true);
+		setDocAction(DOCACTION_None);
+		
+		//
 		// Call Model Validator: AFTER_CLOSE
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
@@ -877,11 +884,6 @@ public class MPPOrder extends X_PP_Order implements DocAction
 			return false;
 		}
 
-		//
-		// Set Document status and return true
-		setDocStatus(DOCSTATUS_Closed);
-		setProcessed(true);
-		setDocAction(DOCACTION_None);
 		return true;
 	} // closeIt
 

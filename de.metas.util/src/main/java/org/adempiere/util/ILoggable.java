@@ -36,6 +36,9 @@ public interface ILoggable
 {
 	public static ILoggable NULL = NullLoggable.instance;
 	
+	/** Holds the {@link ILoggable} instance of current thread */
+	public static final ThreadLocalLoggableHolder THREADLOCAL = ThreadLocalLoggableHolder.instance;
+	
 	/**
 	 * Add a log message.
 	 * 

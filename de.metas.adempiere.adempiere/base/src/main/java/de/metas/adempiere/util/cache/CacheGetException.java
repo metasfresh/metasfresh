@@ -50,6 +50,7 @@ public class CacheGetException extends AdempiereException
 	public CacheGetException(final String message)
 	{
 		super(message);
+		setParseTranslation(false); // don't try to translate the build message because it's not translatable
 	}
 
 	@Override

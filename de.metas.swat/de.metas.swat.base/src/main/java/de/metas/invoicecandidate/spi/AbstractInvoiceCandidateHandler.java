@@ -25,11 +25,15 @@ package de.metas.invoicecandidate.spi;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
+import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -55,6 +59,18 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	public final void setHandlerRecord(final I_C_ILCandHandler record)
 	{
 		this.record = record;
+	}
+	
+	@Override
+	public DocTimingType getAutomaticallyCreateMissingCandidatesDocTiming()
+	{
+		return DocTimingType.AFTER_COMPLETE;
+	}
+	
+	@Override
+	public List<InvoiceCandidateGenerateRequest> expandRequest(InvoiceCandidateGenerateRequest request)
+	{
+		return ImmutableList.of(request);
 	}
 
 	/**

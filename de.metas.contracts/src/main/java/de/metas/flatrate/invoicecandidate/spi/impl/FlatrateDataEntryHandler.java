@@ -24,7 +24,7 @@ package de.metas.flatrate.invoicecandidate.spi.impl;
 
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,25 +37,39 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 
 public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 {
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically()
+	{
+		return false;
+	}
+	
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	{
+		return false;
+	}
+	
 	/**
-	 * Implementation returns the empty list.
+	 * @return empty iterator
 	 */
 	@Override
-	public List<I_C_Invoice_Candidate> createMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_C_Flatrate_DataEntry> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
 	{
-		return Collections.emptyList();
+		return Collections.emptyIterator();
 	}
 
 	/**
-	 * Implementation returns the empty list.
+	 * @return empty result
 	 */
 	@Override
-	public List<I_C_Invoice_Candidate> createCandidatesFor(final Object model)
+	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
 	{
-		return Collections.emptyList();
+		return InvoiceCandidateGenerateResult.of(this);
 	}
 
 	/**

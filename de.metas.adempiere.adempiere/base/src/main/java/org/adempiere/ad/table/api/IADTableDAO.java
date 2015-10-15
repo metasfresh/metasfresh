@@ -91,6 +91,9 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	boolean isTableId(String tableName, int adTableId);
 
+	/** @return true if given table name really exist */
+	boolean isExistingTable(String tableName);
+
 	/**
 	 * Retrieves the default window name of given table.
 	 * 

@@ -78,7 +78,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	IInvoiceCandInvalidUpdater updateInvalid();
 
-	void createMissingCandidates(I_AD_PInstance adPinstance, ILoggable loggable, String trxName);
+	void createMissingCandidates(I_AD_PInstance adPinstance, String trxName);
 
 	/**
 	 * Start generating invoices

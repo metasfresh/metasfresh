@@ -120,6 +120,16 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
+	public boolean isExistingTable(final String tableName)
+	{
+		if (Check.isEmpty(tableName, true))
+		{
+			return false;
+		}
+		return retrieveTableId(tableName) > 0;
+	}
+
+	@Override
 	public boolean isTableId(final String tableName, final int adTableId)
 	{
 		if (adTableId <= 0)

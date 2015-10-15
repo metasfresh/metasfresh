@@ -22,9 +22,7 @@ package de.metas.invoicecandidate.spi.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -51,6 +49,8 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IOLHandlerDAO;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 
@@ -58,28 +58,36 @@ import de.metas.tax.api.ITaxBL;
  * Converts {@link I_C_OrderLine} to {@link I_C_Invoice_Candidate}.
  *
  */
-public class OLHandler extends AbstractInvoiceCandidateHandler
+public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	@Override
-	public List<I_C_Invoice_Candidate> createMissingCandidates(final Properties ctx, final int limit_IGNORED, final String trxName)
+	public boolean isCreateMissingCandidatesAutomatically()
 	{
-		final List<I_C_OrderLine> ols = Services.get(IOLHandlerDAO.class).retrieveMissingOrderLines(ctx, trxName);
+		return false;
+	}
+	
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	{
+		return false;
+	};
 
-		final List<I_C_Invoice_Candidate> result = new ArrayList<I_C_Invoice_Candidate>();
-		for (final I_C_OrderLine ol : ols)
-		{
-			final I_C_Invoice_Candidate newCand = createCandidateForOrderLine(ol);
-			result.add(newCand);
-		}
-		return result;
+	@Override
+	public Iterator<I_C_OrderLine> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	{
+		return Services.get(IOLHandlerDAO.class).retrieveMissingOrderLinesQuery(ctx, trxName)
+				.create()
+				.list(I_C_OrderLine.class)
+				.iterator();
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> createCandidatesFor(final Object model)
+	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
 	{
-		final I_C_OrderLine ol = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
+		final I_C_OrderLine orderLine = request.getModel(I_C_OrderLine.class);
 
-		return Collections.singletonList(createCandidateForOrderLine(ol));
+		final I_C_Invoice_Candidate ic = createCandidateForOrderLine(orderLine);
+		return InvoiceCandidateGenerateResult.of(this, ic);
 	}
 
 	private I_C_Invoice_Candidate createCandidateForOrderLine(final I_C_OrderLine orderLine)
@@ -92,7 +100,7 @@ public class OLHandler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 
 		ic.setAD_Org_ID(orderLine.getAD_Org_ID());
-		ic.setC_ILCandHandler_ID(getHandlerRecord().getC_ILCandHandler_ID());
+		ic.setC_ILCandHandler(getHandlerRecord());
 
 		ic.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
 		ic.setRecord_ID(orderLine.getC_OrderLine_ID());
@@ -162,14 +170,13 @@ public class OLHandler extends AbstractInvoiceCandidateHandler
 				);
 
 		ic.setC_Tax_ID(taxId);
-		
+
 		// set Quality Issue Percentage Override
-		
+
 		final I_M_AttributeSetInstance asi = orderLine.getM_AttributeSetInstance();
 		final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
 
 		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, instances);
-		
 
 		// Don't save.
 		// That's done by the invoking API-impl, because we want to avoid C_Invoice_Candidate.invalidateCandidates() from beeing called on every single IC that is created here.
@@ -196,7 +203,7 @@ public class OLHandler extends AbstractInvoiceCandidateHandler
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine) + "";
+		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 
 		final List<I_C_Invoice_Candidate> ics = invoiceCandDB.fetchInvoiceCandidates(ctx, org.compiere.model.I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID(), trxName);
 		for (final I_C_Invoice_Candidate ic : ics)
@@ -281,13 +288,13 @@ public class OLHandler extends AbstractInvoiceCandidateHandler
 		for (final I_C_InvoiceCandidate_InOutLine icIol : icIols)
 		{
 			final I_M_InOut inOut = icIol.getM_InOutLine().getM_InOut();
-			
+
 			// Consider only completed shipments/receipts
 			if (!docActionBL.isStatusCompletedOrClosed(inOut))
 			{
 				continue;
 			}
-			
+
 			if (firstInOut == null)
 			{
 				firstInOut = inOut;
@@ -328,9 +335,9 @@ public class OLHandler extends AbstractInvoiceCandidateHandler
 		ic.setBill_Location_ID(order.getBill_Location_ID());
 		ic.setBill_User_ID(order.getBill_User_ID());
 
-//		// 05350 : Set the consolidate invoice flag from the BP
-//		final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
-//		aggregationBL.setAllowConsolidateInvoice(ic);
+		// // 05350 : Set the consolidate invoice flag from the BP
+		// final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
+		// aggregationBL.setAllowConsolidateInvoice(ic);
 	}
 
 	@Override

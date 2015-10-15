@@ -25,6 +25,7 @@ package de.metas.adempiere.util.cache;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -147,7 +148,7 @@ class CacheInterceptor implements Serializable
 			final CacheGetException ex = new CacheGetException("Could not get the cache storage, maybe because transaction was not found"
 					+ "\n TrxName: " + cacheKeyBuilder.getTrxName()
 					+ "\n Method: " + method
-					+ "\n Method arguments: " + invCtx.getParameters()
+					+ "\n Method arguments: " + (invCtx == null ? "-" : Arrays.asList(invCtx.getParameters()))
 					+ "\n Target Object: " + invCtx.getTarget()
 					+ "\n Method descriptor: " + methodDescriptor);
 			logger.log(Level.WARNING, "No cache storage found. Invoking cached method directly.", ex);

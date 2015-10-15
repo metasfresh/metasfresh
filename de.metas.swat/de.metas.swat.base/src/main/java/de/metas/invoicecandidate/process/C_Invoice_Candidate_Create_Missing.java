@@ -65,7 +65,7 @@ public class C_Invoice_Candidate_Create_Missing extends SvrProcess
 			// make sure that the code in the thread knows..
 			// this avoids the effort of invalidating candidates over and over by different model validators etc
 			service.setUpdateProcessInProgress(true);
-			service.createMissingCandidates(adPInstance, this, trxName);
+			service.createMissingCandidates(adPInstance, trxName);
 		}
 		finally
 		{

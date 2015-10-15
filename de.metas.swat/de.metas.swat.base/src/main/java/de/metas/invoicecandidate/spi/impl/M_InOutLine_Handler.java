@@ -25,7 +25,6 @@ package de.metas.invoicecandidate.spi.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -36,7 +35,6 @@ import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.inout.service.IInOutBL;
-import org.adempiere.inout.service.IInOutDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,6 +64,8 @@ import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 
@@ -75,59 +75,38 @@ import de.metas.tax.api.ITaxBL;
  * @author tsa
  *
  */
-public class InOutCandidateHandler extends AbstractInvoiceCandidateHandler
+public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	//
 	// Services
-	private static final transient InOutCandidateHandlerDAO dao = new InOutCandidateHandlerDAO();
-	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private static final transient M_InOutLine_HandlerDAO dao = new M_InOutLine_HandlerDAO();
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
-
+	
 	@Override
-	public List<I_C_Invoice_Candidate> createMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public boolean isCreateMissingCandidatesAutomatically()
 	{
-		final Iterator<I_M_InOutLine> inOutLines = dao.retrieveAllLinesWithoutOrderLine(ctx, limit, trxName);
-		final List<I_C_Invoice_Candidate> candidates = new ArrayList<>();
-
-		while (inOutLines.hasNext())
-		{
-			final I_M_InOutLine inOutLine = inOutLines.next();
-			final I_C_Invoice_Candidate ic = createCandidateForInOutLine(inOutLine);
-
-			// skip it if there was no invoice candidate generated
-			if (ic == null)
-			{
-				continue;
-			}
-
-			candidates.add(ic);
-		}
-
-		return candidates;
+		return false;
+	}
+	
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	{
+		return false;
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> createCandidatesFor(final Object model)
+	public Iterator<I_M_InOutLine> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
 	{
-		Check.assumeNotNull(model, "model not null");
+		return dao.retrieveAllLinesWithoutOrderLine(ctx, limit, trxName);
+	}
 
-		final I_M_InOut inOut = InterfaceWrapperHelper.create(model, I_M_InOut.class);
+	@Override
+	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
+	{
+		final I_M_InOutLine inOutLine = request.getModel(I_M_InOutLine.class);
 
-		final List<I_C_Invoice_Candidate> candidatesAll = new ArrayList<>();
-		for (final I_M_InOutLine inOutLine : inOutDAO.retrieveLinesWithoutOrderLine(inOut, I_M_InOutLine.class))
-		{
-			final I_C_Invoice_Candidate invoiceCandidate = createCandidateForInOutLine(inOutLine);
-
-			// skip it if there was no invoice candidate generated
-			if (invoiceCandidate == null)
-			{
-				continue;
-			}
-
-			candidatesAll.add(invoiceCandidate);
-		}
-
-		return candidatesAll;
+		final I_C_Invoice_Candidate invoiceCandidate = createCandidateForInOutLine(inOutLine);
+		return InvoiceCandidateGenerateResult.of(this, invoiceCandidate);
 	}
 
 	/**
@@ -150,7 +129,7 @@ public class InOutCandidateHandler extends AbstractInvoiceCandidateHandler
 		final int adOrgId = inOutLine.getAD_Org_ID();
 		ic.setAD_Org_ID(adOrgId);
 
-		ic.setC_ILCandHandler_ID(getHandlerRecord().getC_ILCandHandler_ID());
+		ic.setC_ILCandHandler(getHandlerRecord());
 
 		//
 		// Handle Transaction Type: Shipment / Receipt

@@ -110,7 +110,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		engine.addModelValidator(new C_BPartner(), client);
-		engine.addModelValidator(new C_ILCandHandler(), client);
+		engine.addModelValidator(C_ILCandHandler.instance, client);
 		engine.addModelValidator(new C_Invoice_Candidate_Agg(), client);
 		engine.addModelValidator(new C_Invoice_Candidate(), client);
 		engine.addModelValidator(new C_Invoice_Line_Alloc(), client);

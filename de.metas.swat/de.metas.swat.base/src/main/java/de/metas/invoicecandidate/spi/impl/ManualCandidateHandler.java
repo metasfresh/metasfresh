@@ -28,7 +28,7 @@ package de.metas.invoicecandidate.spi.impl;
 
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -41,6 +41,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
 import de.metas.invoicecandidate.exceptions.InvalidQtyForPartialAmtToInvoiceException;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 
 /**
  * @author cg
@@ -54,23 +56,35 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	final public static String MANUAL = "ManualCandidateHandler";
 
 	private final static transient CLogger logger = CLogger.getCLogger(ManualCandidateHandler.class);
-
-	/**
-	 * Implementation returns the empty list.
-	 */
+	
 	@Override
-	public List<I_C_Invoice_Candidate> createMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public boolean isCreateMissingCandidatesAutomatically()
 	{
-		return Collections.emptyList();
+		return false;
+	}
+	
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	{
+		return false;
 	}
 
 	/**
-	 * Implementation returns the empty list.
+	 * @return empty iterator
 	 */
 	@Override
-	public List<I_C_Invoice_Candidate> createCandidatesFor(final Object model)
+	public Iterator<Object> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
 	{
-		return Collections.emptyList();
+		return Collections.emptyIterator();
+	}
+
+	/**
+	 * @return empty result
+	 */
+	@Override
+	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
+	{
+		return InvoiceCandidateGenerateResult.of(this);
 	}
 
 	/**

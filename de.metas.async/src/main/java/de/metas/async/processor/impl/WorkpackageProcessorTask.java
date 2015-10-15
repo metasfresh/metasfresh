@@ -37,6 +37,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -53,6 +54,7 @@ import com.google.common.base.Optional;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.model.I_C_Async_Batch;
@@ -113,10 +115,12 @@ import de.metas.lock.exceptions.LockFailedException;
 	public void run()
 	{
 		final Properties processingCtx = createProcessingCtx();
+		final ILoggable loggable = Services.get(IWorkPackageBL.class).createLoggable(workPackage);
 
 		boolean finallyReleaseElementLockIfAny = true; // task 08999: only release the lock if there is no skip request.
-
-		try (final IAutoCloseable contextRestorer = Env.switchContext(processingCtx))
+		
+		try (final IAutoCloseable contextRestorer = Env.switchContext(processingCtx); 
+				final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(loggable))
 		{
 			final IMutable<Result> resultRef = new Mutable<>(null);
 

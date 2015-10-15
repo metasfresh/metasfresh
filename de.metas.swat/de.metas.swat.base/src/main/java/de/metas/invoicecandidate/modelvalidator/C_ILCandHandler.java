@@ -10,72 +10,85 @@ package de.metas.invoicecandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import java.util.HashSet;
+import java.util.Set;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
+import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 
-public class C_ILCandHandler implements ModelValidator
+@Interceptor(I_C_ILCandHandler.class)
+public class C_ILCandHandler
 {
-	private int m_AD_Client_ID = -1;
+	public static final transient C_ILCandHandler instance = new C_ILCandHandler();
 
-	@Override
-	public int getAD_Client_ID()
+	private C_ILCandHandler()
 	{
-		return m_AD_Client_ID;
+		super();
 	}
 
-	@Override
-	public void initialize(ModelValidationEngine engine, MClient client)
+	@Init
+	public void init(final IModelValidationEngine engine)
 	{
-		if (client != null)
-			m_AD_Client_ID = client.getAD_Client_ID();
-
-		engine.addModelChange(I_C_ILCandHandler.Table_Name, this);
-	}
-
-	@Override
-	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
-	{
-		return null;
-	}
-
-	@Override
-	public String modelChange(final PO po, final int type) throws Exception
-	{
-		if (type == TYPE_BEFORE_CHANGE || type == TYPE_BEFORE_NEW)
+		//
+		// Register one document interceptor for each table name/handler.
 		{
-			if (po.is_ValueChanged(I_C_ILCandHandler.COLUMNNAME_Classname))
+			final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+			final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
+			final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+			final Set<String> registeredTableNames = new HashSet<>();
+			for (final I_C_ILCandHandler handlerDef : invoiceCandidateHandlerDAO.retrieveAll(Env.getCtx()))
 			{
-				final I_C_ILCandHandler ilCandGenerator = POWrapper.create(po, I_C_ILCandHandler.class);
-				Services.get(IInvoiceCandidateHandlerBL.class).evalClassName(ilCandGenerator);
+				final IInvoiceCandidateHandler handler = invoiceCandidateHandlerBL.mkInstance(handlerDef);
+				final String tableName = handler.getSourceTable();
+
+				// Skip if the handler is not about an actual existing table name (e.g. like Manual handler)
+				if (!tableDAO.isExistingTable(tableName))
+				{
+					continue;
+				}
+				if (!registeredTableNames.add(tableName))
+				{
+					throw new AdempiereException("More then one handler for table " + tableName + " is not supported");
+				}
+
+				final ILHandlerModelInterceptor modelInterceptor = ILHandlerModelInterceptor.builder()
+						.setTableName(tableName)
+						.setCreateInvoiceCandidates(handler.isCreateMissingCandidatesAutomatically())
+						.setCreateInvoiceCandidatesTiming(handler.getAutomaticallyCreateMissingCandidatesDocTiming())
+						.build();
+				engine.addModelValidator(modelInterceptor, null);
 			}
 		}
-		return null;
 	}
 
-	@Override
-	public String docValidate(final PO po, final int timing)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
+			, ifColumnsChanged = { I_C_ILCandHandler.COLUMNNAME_Classname })
+	public void validateClassname(final I_C_ILCandHandler handlerDef)
 	{
-		// nothing to do
-		return null;
+		Services.get(IInvoiceCandidateHandlerBL.class).evalClassName(handlerDef);
 	}
 }

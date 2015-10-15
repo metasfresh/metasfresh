@@ -46,6 +46,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -856,7 +857,7 @@ public class InterfaceWrapperHelper
 	 * <li>model is not supported
 	 * </ul>
 	 * 
-	 * @param model
+	 * @param model persistent object, wrapped model, {@link ITableRecordReference}
 	 * @return table name or null
 	 */
 	public static String getModelTableNameOrNull(final Object model)
@@ -876,6 +877,10 @@ public class InterfaceWrapperHelper
 		else if (POJOWrapper.isHandled(model))
 		{
 			return POJOWrapper.getWrapper(model).getTableName();
+		}
+		else if (model instanceof ITableRecordReference)
+		{
+			return ((ITableRecordReference)model).getTableName();
 		}
 		else
 		{

@@ -22,77 +22,39 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
-
 import java.util.List;
+import java.util.Properties;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.MClient;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
-import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.adempiere.service.IOrderDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 
-public class C_Order implements ModelValidator
+@Interceptor(I_C_Order.class)
+public class C_Order
 {
-	private int m_AD_Client_ID = -1;
-
-	@Override
-	public int getAD_Client_ID()
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_CLOSE })
+	public void invalidateInvoiceCandidates(final I_C_Order order)
 	{
-		return m_AD_Client_ID;
-	}
-
-	@Override
-	public void initialize(ModelValidationEngine engine, MClient client)
-	{
-		if (client != null)
-			m_AD_Client_ID = client.getAD_Client_ID();
-
-		engine.addDocValidate(I_C_Order.Table_Name, this);
-	}
-
-	@Override
-	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
-	{
-		return null;
-	}
-
-	@Override
-	public String modelChange(final PO po, final int type) throws Exception
-	{
-		return null;
-	}
-
-	@Override
-	public String docValidate(final PO po, final int timing)
-	{
-		if (TIMING_AFTER_COMPLETE == timing
-				|| TIMING_AFTER_REACTIVATE == timing
-				|| TIMING_AFTER_CLOSE == timing)
+		final IInvoiceCandidateHandlerBL creatorBL = Services.get(IInvoiceCandidateHandlerBL.class);
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		
+		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
+		final List<IInvoiceCandidateHandler> invalidators = creatorBL.retrieveImplementationsForTable(ctx, I_C_OrderLine.Table_Name);
+		
+		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order))
 		{
-			final IInvoiceCandidateHandlerBL creatorBL = Services.get(IInvoiceCandidateHandlerBL.class);
-
-			final MOrder order = (MOrder)po;
-			final List<IInvoiceCandidateHandler> invalidators = creatorBL.retrieveImplementationsForTable(po.getCtx(), I_C_OrderLine.Table_Name);
-
-			for (final MOrderLine olPO : order.getLines())
+			for (final IInvoiceCandidateHandler invalidator : invalidators)
 			{
-				final I_C_OrderLine ol = POWrapper.create(olPO, I_C_OrderLine.class);
-
-				for (final IInvoiceCandidateHandler invalidator : invalidators)
-				{
-					invalidator.invalidateCandidatesFor(ol);
-				}
+				invalidator.invalidateCandidatesFor(ol);
 			}
 		}
-		return null;
 	}
-
 }
