@@ -377,7 +377,7 @@ public final class AMenu extends CFrame
 		mainLayout.setHgap(0);
 		mainLayout.setVgap(2);
 		//
-		getContentPane().add(mainPanel);
+		setContentPane(mainPanel);
 		mainPanel.add(Box.createHorizontalStrut(3), BorderLayout.EAST);
 		mainPanel.add(Box.createHorizontalStrut(3), BorderLayout.WEST);
 		
@@ -385,6 +385,7 @@ public final class AMenu extends CFrame
 		// Center panel
 		{
 			final CTabbedPane centerPane = new CTabbedPane();
+			centerPane.setHideIfOneTab(true);
 			centerPane.setFont(centerPane.getFont().deriveFont(centerPane.getFont().getSize2D() + 1));
 			mainPanel.add(centerPane, BorderLayout.CENTER);
 

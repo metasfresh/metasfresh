@@ -115,6 +115,12 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 		//
 		// Toolbar
 		table.putDefaults(AdempiereToolBarUI.getUIDefaults());
+		// MenuBar
+		{
+			table.putDefaults(new Object[] {
+					"MenuBar.border", new BorderUIResource(BorderFactory.createEmptyBorder())
+			});
+		}
 
 		//
 		// TaskPane
