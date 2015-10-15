@@ -65,7 +65,7 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 	static final ColorUIResource COLOR_RED_METAS = new ColorUIResource(135, 3, 0);
 	private static final ColorUIResource COLOR_RED_LIGHT = new ColorUIResource(255, 204, 204);
 	private static final ColorUIResource COLOR_RED = new ColorUIResource(Color.RED);
-	private static final ColorUIResource COLOR_LightGray = new ColorUIResource(230, 230, 230);
+	private static final ColorUIResource COLOR_LightGray = new ColorUIResource(243, 242, 228);
 	static final ColorUIResource COLOR_Green = LOGO_TEXT_COLOR_LIGHT;
 	static final ColorUIResource COLOR_LightGreen = new ColorUIResource(235, 250, 217);
 	@SuppressWarnings("unused")
@@ -103,12 +103,9 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 
 				//
 				// Text
-				// , "textText", LOGO_TEXT_COLOR // for labels etc
 				, AdempiereLookAndFeel.MANDATORY_BG_KEY, LOGO_TEXT_COLOR_LIGHT
 				, AdempiereLookAndFeel.ERROR_BG_KEY, COLOR_RED_LIGHT
-				// , AdempiereLookAndFeel.ERROR_FG_KEY, txt_error
-				// , AdempiereLookAndFeel.INACTIVE_BG_KEY, inactive
-				// , AdempiereLookAndFeel.INFO_BG_KEY, info
+				, AdempiereLookAndFeel.INACTIVE_BG_KEY, COLOR_LightGray
 				
 				//
 				// Plastic L&F settings
