@@ -61,7 +61,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
-import org.compiere.grid.ed.Calendar.DayButton.DayButtonType;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
@@ -918,23 +917,23 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 		}
 	}
 
+	private static enum DayButtonType
+	{
+		Inactive,
+		RegularDay,
+		CurrentDay,
+		SetCurrentDay,
+		Cancel,
+	}
+
 	/**
 	 * Day button
 	 * @author metas-dev <dev@metas-fresh.com>
 	 */
-	static final class DayButton extends CButton 
+	private static final class DayButton extends CButton 
 	{
 		private static final long serialVersionUID = 1L;
 		
-		public static enum DayButtonType
-		{
-			Inactive,
-			RegularDay,
-			CurrentDay,
-			SetCurrentDay,
-			Cancel,
-		}
-
 		private DayButtonType type = DayButtonType.Inactive;
 		private int dayNo = -1;
 
