@@ -1212,11 +1212,13 @@ public final class FindPanel extends CPanel implements ActionListener
 		final Component labelComp = label != null ? label : Box.createHorizontalStrut(1);
 		simplePanelContent.add(labelComp, new CC()
 				.alignX("trailing")
+				.alignY("top")
 				.growPrioX(0)
 				.growX(0)
 				);
 
 		simplePanelContent.add(editorComp, new CC()
+				.alignY("top")
 				.sizeGroupX("editors")
 				.growPrioX(100)
 				.growX()
