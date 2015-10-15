@@ -713,7 +713,8 @@ public class APanel extends CPanel
 	 */
 	public boolean initPanel (int AD_Workbench_ID, int AD_Window_ID, MQuery query)
 	{
-		log.info("WB=" + AD_Workbench_ID + ", Win=" + AD_Window_ID + ", Query=" + query);
+		log.log(Level.INFO, "WB={0}, Win={1}, Query={2}", new Object[] { AD_Workbench_ID, AD_Window_ID, query });
+		
 		this.setName("APanel" + AD_Window_ID);
 
 		//  Single Window
@@ -817,11 +818,16 @@ public class APanel extends CPanel
 				if (windowSize == null)
 					windowSize = mWindow.getWindowSize();
 
+				//
+				// Shall we open the window in single row layout mode?
+				// * if the window is opened from zoom and the query is about one record => go single row layout
+				// * else allow the window to decide (based on its settings)
+				boolean goSingleRow = query != null && query.getRecordCount() == 1;
+
 				/**
 				 *  Window Tabs
 				 */
 				final int tabSize = mWindow.getTabCount();
-				boolean goSingleRow = query != null;	//	Zoom Query
 				for (int tab = 0; tab < tabSize; tab++)
 				{
 					boolean addToWindowTabbedPane = true;
@@ -854,9 +860,12 @@ public class APanel extends CPanel
 							isCancel = false; //Goodwill
 							query = initialQuery (query, gTab);
 							if (isCancel) return false; //Cancel opening window
+							
 							if (query != null && query.getRecordCount() <= 1
 									&& !query.toString().equals("1=2")) // metas: query.toString().equals("1=2") um Fenster die ohne queryOnLoad geladen werden in Zeilenansicht zu oeffnen
+							{
 								goSingleRow = true;
+							}
 						}
 						else if (wb != 0)
 						//  workbench dynamic query for dependent windows
@@ -877,8 +886,7 @@ public class APanel extends CPanel
 					//  GridController
 					if (gTab.isSortTab())
 					{
-						final VSortTab st = new VSortTab(m_curWindowNo, gTab.getAD_Table_ID(),
-							gTab.getAD_ColumnSortOrder_ID(), gTab.getAD_ColumnSortYesNo_ID());
+						final VSortTab st = new VSortTab(m_curWindowNo, gTab.getAD_Table_ID(), gTab.getAD_ColumnSortOrder_ID(), gTab.getAD_ColumnSortYesNo_ID());
 						st.setTabLevel(gTab.getTabLevel());
 						tabElement = st;
 					}
