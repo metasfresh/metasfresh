@@ -25,6 +25,7 @@ package org.adempiere.plaf;
 import java.awt.Color;
 import java.awt.Font;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.logging.Level;
 
 import javax.swing.plaf.ColorUIResource;
@@ -41,6 +42,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
@@ -107,6 +109,31 @@ class UIDefaultsSerializer
 
 	private Class<?> getType(JsonElement json)
 	{
+		if(json.isJsonPrimitive())
+		{
+			final JsonPrimitive jsonPrimitive = json.getAsJsonPrimitive();
+			if (jsonPrimitive.isNumber())
+			{
+				final Number number = jsonPrimitive.getAsNumber();
+				if(number instanceof BigDecimal)
+				{
+					return BigDecimal.class;
+				}
+				return Integer.class;
+			}
+			else if (jsonPrimitive.isBoolean())
+			{
+				return Boolean.class;
+			}
+			else if (jsonPrimitive.isString())
+			{
+				return String.class;
+			}
+			else
+			{
+				throw new IllegalArgumentException("JSON primitive not supported: " + jsonPrimitive);
+			}
+		}
 		final String classname = json.getAsJsonObject().get(UIResourceJsonSerializer.PROPERTY_Classname).getAsString();
 		try
 		{

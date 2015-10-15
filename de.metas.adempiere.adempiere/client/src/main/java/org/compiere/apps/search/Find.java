@@ -26,6 +26,8 @@ import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.plaf.FindPanelUI;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
@@ -100,7 +102,8 @@ public final class Find extends CDialog
 
 		// Set panel size
 		// NOTE: we are setting such a big width because the table from advanced panel shall be displayed nicely.
-		findPanel.setPreferredSize(new Dimension(950, 200));
+		final int findPanelHeight = AdempierePLAF.getInt(FindPanelUI.KEY_Dialog_Height, FindPanelUI.DEFAULT_Dialog_Height);
+		findPanel.setPreferredSize(new Dimension(950, findPanelHeight));
 		
 		this.setContentPane(findPanel);
 

@@ -29,7 +29,9 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.AdempiereTaskPaneUI;
+import org.adempiere.plaf.FindPanelUI;
 import org.adempiere.plaf.IUISubClassIDAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -64,7 +66,8 @@ public class CollapsibleFindPanel extends JXTaskPane implements IUISubClassIDAwa
 		setTitle(msgBL.getMsg(Env.getCtx(), "Find"));
 
 		findPanel = builder.buildFindPanel();
-		findPanel.setPreferredSize(new Dimension(500, 230)); // task 08592: the width prior to this task was 160; changing it in order to add yet another search field to the invoice candidate window.
+		final int findPanelHeight = AdempierePLAF.getInt(FindPanelUI.KEY_StandardWindow_Height, FindPanelUI.DEFAULT_StandardWindow_Height);
+		findPanel.setPreferredSize(new Dimension(500, findPanelHeight));
 		this.add(findPanel);
 		
 		runOnCollapsedStateChange(new Runnable()

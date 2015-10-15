@@ -22,7 +22,6 @@ package org.adempiere.plaf;
  * #L%
  */
 
-
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -41,8 +40,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 /**
- * {@link UIDefaults} SysConfig repository.
- * It supports following actions:
+ * {@link UIDefaults} SysConfig repository. It supports following actions:
  * <ul>
  * <li>load all UIDefaults from {@link I_AD_SysConfig} table: {@link #loadAllFromSysConfigTo(UIDefaults)}
  * <li>persist one value to {@link I_AD_SysConfig} table: {@link #setValue(Object, Object)}
@@ -153,7 +151,7 @@ public class SysConfigUIDefaultsRepository
 			}
 			catch (Exception ex)
 			{
-				logger.log(Level.SEVERE, "Failed loading " + key + ": " + valueStr, ex);
+				logger.log(Level.WARNING, "Failed loading " + key + ": " + valueStr + ". Skipped.", ex);
 			}
 		}
 	}

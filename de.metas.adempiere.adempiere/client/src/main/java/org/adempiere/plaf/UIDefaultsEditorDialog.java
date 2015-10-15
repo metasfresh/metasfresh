@@ -744,6 +744,11 @@ public class UIDefaultsEditorDialog extends JDialog
 				final VEditorDialogButtonAlign buttonAlign = (VEditorDialogButtonAlign)value;
 				editVEditorDialogButtonAlign(table, rowIndexView, buttonAlign);
 			}
+			else if (value instanceof Integer)
+			{
+				final Integer valueInt = (Integer)value;
+				editInteger(table, rowIndexView, valueInt);
+			}
 		}
 
 		private void editColor(final JTable table, final int rowIndexView, final Color color)
@@ -822,6 +827,29 @@ public class UIDefaultsEditorDialog extends JDialog
 			
 			setValue(table, rowIndexView, buttonAlignNew, buttonAlign);
 		}
+		
+		private void editInteger(final JTable table, final int rowIndexView, final Integer valueInt)
+		{
+			final Dialog owner = AEnv.getDialog(table);
+			final String key = getKey(table, rowIndexView);
+			final String title = "Editing: "+key;
+			
+			final String valueStrNew = JOptionPane.showInputDialog(owner, title, valueInt);
+			if(Check.isEmpty(valueStrNew, true))
+			{
+				return; // cancel
+			}
+			
+			final Integer valueIntNew = Integer.parseInt(valueStrNew.trim());
+			
+			if (Check.equals(valueInt, valueIntNew))
+			{
+				return; // nothing changed
+			}
+			
+			setValue(table, rowIndexView, valueIntNew, valueInt);
+		}
+
 
 
 		private final String getKey(final JTable table, final int rowIndexView)

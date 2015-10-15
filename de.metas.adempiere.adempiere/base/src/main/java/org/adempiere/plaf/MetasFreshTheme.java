@@ -205,6 +205,8 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 					, "TaskPane.borderColor", vpanelTaskPaneBackgroundColor
 			}));
 		}
+		// Find panel settings
+		table.putDefaults(FindPanelUI.getUIDefaults());
 
 		//
 		// Table
