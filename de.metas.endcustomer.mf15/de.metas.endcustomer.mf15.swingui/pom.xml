@@ -31,8 +31,7 @@
 	==> That is why we don't just add these dependencies to adempiereJasper.commons
 -->
 		<!-- 06489 Label is not printed when completing Kommissionierung -->
-		<!-- we exclude these fonts for now because at least for the ocr-B font we are not allowed to share it.
-			 Possible solution: http://ansuz.sooke.bc.ca/page/fonts#ocrb
+		<!-- 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiereJasper</groupId>
 			<artifactId>adempiereJasper-fonts</artifactId>
@@ -94,7 +93,7 @@
 						</goals>
 						<configuration>
 							<stripVersion>true</stripVersion>
-							<outputDirectory>${dist.dir}/Adempiere/lib</outputDirectory>
+							<outputDirectory>${dist.dir}/metas-fresh/lib</outputDirectory>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<overWriteIfNewer>true</overWriteIfNewer>
@@ -123,11 +122,11 @@
 						</goals>
 						<configuration>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
-							<!-- >outputDirectory>${dist.dir}/Adempiere/lib/</outputDirectory -->
+							<!-- >outputDirectory>${dist.dir}/metas-fresh/lib/</outputDirectory -->
 
 							<artifactSet>
+								<!-- see the comment near the dependency declaration for these artifacts -->
 								<excludes>
-									<!-- see the comment near the dependency declaration for these artifacts -->
 									<exclude>jp.osdn.ocra:jp.osdn.ocra</exclude>
 									<exclude>jp.osdn.ocrb:jp.osdn.ocrb</exclude>
 								</excludes>
@@ -159,7 +158,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${dist.dir}/Adempiere</outputDirectory>
+							<outputDirectory>${dist.dir}/metas-fresh</outputDirectory>
 							<resources>
 								<resource>
 									<directory>src/main/resources</directory>
@@ -175,7 +174,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${dist.dir}/Adempiere/lib</outputDirectory>
+							<outputDirectory>${dist.dir}/metas-fresh/lib</outputDirectory>
 							<stripVersion>true</stripVersion>
 							<resources>
 								<resource>
@@ -189,11 +188,11 @@
 					</execution>
 				</executions>
 			</plugin>
-<!--
+
 			<plugin>
 				<groupId>com.akathist.maven.plugins.launch4j</groupId>
 				<artifactId>launch4j-maven-plugin</artifactId>
-				<version>1.7.7</version>
+				<version>1.7.8</version>
 				<executions>
 					<execution>
 						<id>l4j-clui</id>
@@ -203,14 +202,16 @@
 						</goals>
 						<configuration>
 							<headerType>gui</headerType>
-							<outfile>target/metas-fresh.exe</outfile>
-							<jar>target/de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar</jar>
+							<outfile>target/swingui/metas-fresh/RUN_metas-fresh.exe</outfile>
+							<dontWrapJar>true</dontWrapJar>
+							<jar>lib/de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar</jar>
 							<errTitle>metas Fresh</errTitle>
-							<icon>src/main/resources/favicon_32.png</icon>
+							<icon>src/main/resources/misc/favicon_32.ico</icon>
 							<classPath>
 								<mainClass>org.compiere.Adempiere</mainClass>
-								<addDependencies>true</addDependencies>
-								<preCp>anything</preCp>
+								<addDependencies>false</addDependencies>
+								<jarLocation>lib/</jarLocation>
+								<preCp>lib/jp.osdn.ocra.jar; lib/jp.osdn.ocrb.jar</preCp>
 							</classPath>
 							<jre>
 								<minVersion>1.7.0</minVersion>
@@ -222,7 +223,7 @@
 									<opt>-XX:+HeapDumpOnOutOfMemoryError</opt>
 									xml-comment: java.util.Arrays.useLegacyMergeSort: related to task "07072 Comparison method violates its general contract (100965620270)"
 									<opt>-Djava.util.Arrays.useLegacyMergeSort=true</opt>
-									<opt>-Dorg.adempiere.client.lang="Deutsch (Schweiz)"</opt>
+									<opt>-Dorg.adempiere.client.lang="Deutsch"</opt>
 									xml-comment: always create a log file because there is no other way to check the console when running gui/javaw
 									<opt>-DTraceFile=true</opt>
 								</opts>
@@ -242,6 +243,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
@@ -264,7 +266,7 @@
 					</execution>
 				</executions>
 			</plugin>
--->
+ -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
