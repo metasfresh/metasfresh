@@ -71,6 +71,7 @@ import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.TableInfoVO;
+import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VPanelUI;
 import org.adempiere.process.event.IProcessEventListener;
 import org.adempiere.process.event.IProcessEventSupport;
@@ -80,6 +81,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.search.Find;
+import org.compiere.apps.search.FindPanelContainer;
 import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.grid.APanelTab;
 import org.compiere.grid.GridController;
@@ -175,6 +177,9 @@ public class APanel extends CPanel
 	 * 
 	 */
 	private static final long serialVersionUID = 6066778919781303581L;
+	
+	private static final String UIKEY_AlignVerticalTabsWithHorizontalTabs = "APanel.AlignVerticalTabsWithHorizontalTabs";
+	private boolean alignVerticalTabsWithHorizontalTabs = false;
 
 	/**
 	 * Included tab constructor.
@@ -224,6 +229,8 @@ public class APanel extends CPanel
 		m_ctx = Env.getCtx();
 		isNested = false;
 		m_window = window;
+		alignVerticalTabsWithHorizontalTabs = AdempierePLAF.getBoolean(UIKEY_AlignVerticalTabsWithHorizontalTabs, true);
+		tabPanel.setAlignVerticalTabsWithHorizontalTabs(alignVerticalTabsWithHorizontalTabs);
 				
 		//
 		try
@@ -2500,35 +2507,39 @@ public class APanel extends CPanel
 	 */
 	private void cmd_find()
 	{
-		// metas: teo_sarca: begin: metas-2009_0021_AP1_G113
-		if (m_curGC != null && m_curGC.getFindPanel() != null)
+		//
+		// Use the embedded find panel if available (metas-2009_0021_AP1_G113)
+		final FindPanelContainer findPanel = m_curGC != null ? m_curGC.getFindPanel() : null;
+		if (findPanel != null)
 		{
-			final boolean expanded = m_curGC.getFindPanel().isExpanded();
-			m_curGC.getFindPanel().setExpanded(!expanded);
-			aFind.setPressed(!expanded);
-			return;
+			findPanel.setExpanded(!findPanel.isExpanded()); // toggle expanded flag
+			aFind.setPressed(findPanel.isExpanded());
 		}
-		// metas: teo_sarca: end: metas-2009_0021_AP1_G113
-		if (m_curTab == null)
-			return;
-		cmd_save(false);
-		
-		Find find = Find.builder()
-				.setGridController(m_curGC)
-				.setMinRecords(1)
-				.buildFindDialog();
-		MQuery query = find.getQuery();
-		find.dispose();
-		find = null;
-
-		//	Confirmed query
-		if (query != null)
+		//
+		// Use the Find dialog
+		else
 		{
-			m_onlyCurrentRows = false;      	//  search history too
-			m_curTab.setQuery(query);
-			m_curGC.query(m_onlyCurrentRows, m_onlyCurrentDays, GridTabMaxRows.NO_RESTRICTION);   //  autoSize
+			if (m_curTab == null)
+				return;
+			cmd_save(false);
+			
+			Find find = Find.builder()
+					.setGridController(m_curGC)
+					.setMinRecords(1)
+					.buildFindDialog();
+			MQuery query = find.getQuery();
+			find.dispose();
+			find = null;
+	
+			//	Confirmed query
+			if (query != null)
+			{
+				m_onlyCurrentRows = false;      	//  search history too
+				m_curTab.setQuery(query);
+				m_curGC.query(m_onlyCurrentRows, m_onlyCurrentDays, GridTabMaxRows.NO_RESTRICTION);   //  autoSize
+			}
+			aFind.setPressed(m_curTab.isQueryActive());
 		}
-		aFind.setPressed(m_curTab.isQueryActive());
 	}	//	cmd_find
 
 	/**
@@ -3363,5 +3374,9 @@ public class APanel extends CPanel
 	{
 		return aIgnore;
 	}
-// metas: end
+	
+	public final boolean isAlignVerticalTabsWithHorizontalTabs()
+	{
+		return alignVerticalTabsWithHorizontalTabs;
+	}
 }	//	APanel

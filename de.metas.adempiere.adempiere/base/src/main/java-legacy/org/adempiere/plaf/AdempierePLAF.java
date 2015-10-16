@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.ImageIcon;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
@@ -38,6 +37,7 @@ import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
 
+import org.adempiere.images.Images;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.plaf.PlafRes;
@@ -374,6 +374,11 @@ public final class AdempierePLAF
 				break;
 			}
 		}
+		// Set default L&F
+		if (plaf == null)
+		{
+			plaf = LOOKANDFEEL_DEFAULT;
+		}
 		
 		//
 		// Search for plastic themes
@@ -404,8 +409,13 @@ public final class AdempierePLAF
 			}
 		}
 		
+		if (theme == null)
+		{
+			theme = THEME_PLASTIC_DEFAULT;
+		}
+		
 		//  Set PLAF
-		setPLAF(plaf == null ? LOOKANDFEEL_DEFAULT : plaf, theme, true); // updateIni=true
+		setPLAF(plaf, theme, true); // updateIni=true
 	}   //  setPLAF
 
 	/**
@@ -531,7 +541,7 @@ public final class AdempierePLAF
 	public static CButton getOKButton()
 	{
 		CButton b = new CButton();
-		b.setIcon(new ImageIcon(AdempierePLAF.class.getResource("icons/Ok24.gif")));
+		b.setIcon(Images.getImageIcon2("Ok24"));
 		b.setMargin(new Insets(0,10,0,10));
 		b.setToolTipText (s_res.getString("OK"));
 		return b;
@@ -544,7 +554,7 @@ public final class AdempierePLAF
 	public static CButton getCancelButton()
 	{
 		CButton b = new CButton();
-		b.setIcon(new ImageIcon(AdempierePLAF.class.getResource("icons/Cancel24.gif")));
+		b.setIcon(Images.getImageIcon2("Cancel24"));
 		b.setMargin(new Insets(0,10,0,10));
 		b.setToolTipText (s_res.getString("Cancel"));
 		return b;

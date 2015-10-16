@@ -138,6 +138,30 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 	/** the UI Class ID to bind this UI to */
 	public static final String uiClassID = AdempierePLAF.getUIClassID(JTabbedPane.class, "TabbedPaneUI");
 
+	public static final String KEY_AlignVerticalTabsWithHorizontalTabs_Enabled = "TabbedPane.AlignVerticalTabsWithHorizontalTabs";
+
+	public static final String KEY_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab = "VPanel.StandardWindow.AlignVerticalTabsWithHorizontalTabs.GapBeforeFirstTab";
+	public static final int DEFAULT_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab = 25;
+
+	/**
+	 * Creates the <code>PlasticTabbedPaneUI</code>.
+	 * 
+	 * @see javax.swing.plaf.ComponentUI#createUI(JComponent)
+	 */
+	public static ComponentUI createUI(JComponent tabPane)
+	{
+		return new AdempiereTabbedPaneUI();
+	}
+	
+	public static final Object[] getUIDefaults()
+	{
+		return new Object[] {
+				uiClassID, AdempiereTabbedPaneUI.class.getName()
+				//
+				, KEY_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab, DEFAULT_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab
+		};
+	}
+
 	// State ******************************************************************
 
 	/**
@@ -169,17 +193,7 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 	private ScrollableTabSupport tabScroller;
 
 	private Boolean hideIfOneTab;
-
-	/**
-	 * Creates the <code>PlasticTabbedPaneUI</code>.
-	 * 
-	 * @see javax.swing.plaf.ComponentUI#createUI(JComponent)
-	 */
-	public static ComponentUI createUI(JComponent tabPane)
-	{
-		return new AdempiereTabbedPaneUI();
-	}
-
+	
 	/**
 	 * Installs the UI.
 	 * 
@@ -300,7 +314,7 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 			tabScroller.scrollBackwardButton.setAction(backwardAction);
 		}
 	}
-
+	
 	/**
 	 * Checks and answers if content border will be painted.
 	 * This is controlled by the component's client property
@@ -367,7 +381,7 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 	@Override
 	protected PropertyChangeListener createPropertyChangeListener()
 	{
-		return new MyPropertyChangeHandler();
+		return new TabbedPanePropertyChangeHandler();
 	}
 
 	@Override
@@ -386,10 +400,11 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 	}
 
 	/**
-	 * Updates the renderer and layout. This message is sent by
-	 * my PropertyChangeHandler whenever the tab placement changes.
+	 * Updates the renderer and layout.
+	 * 
+	 * This message is sent by {@link TabbedPanePropertyChangeHandler} whenever a property which needs relayouting is changed.
 	 */
-	private void tabPlacementChanged()
+	private void updateRendererAndDoLayout()
 	{
 		renderer = createRenderer(tabPane);
 		if (scrollableTabLayoutEnabled())
@@ -443,12 +458,11 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 	}
 
 	@Override
-	protected void paintTab(Graphics g, int tabPlacement, Rectangle[] rects,
-			int tabIndex, Rectangle iconRect, Rectangle textRect)
+	protected void paintTab(final Graphics g, final int tabPlacement, final Rectangle[] rects, final int tabIndex, final Rectangle iconRect, final Rectangle textRect)
 	{
-		Rectangle tabRect = rects[tabIndex];
-		int selectedIndex = tabPane.getSelectedIndex();
-		boolean isSelected = selectedIndex == tabIndex;
+		final Rectangle tabRect = rects[tabIndex];
+		final int selectedIndex = tabPane.getSelectedIndex();
+		final boolean isSelected = selectedIndex == tabIndex;
 		Graphics2D g2 = null;
 		Polygon cropShape = null;
 		Shape save = null;
@@ -551,8 +565,7 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 
 	private static final int CROP_SEGMENT = 12;
 
-	private Polygon createCroppedTabClip(int tabPlacement, Rectangle tabRect,
-			int cropline)
+	private Polygon createCroppedTabClip(int tabPlacement, Rectangle tabRect, int cropline)
 	{
 		int rlen = 0;
 		int start = 0;
@@ -1071,27 +1084,13 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 	protected Insets getTabInsets(int tabPlacement, int tabIndex)
 	{
 		Insets insets = renderer.getTabInsets(tabIndex, tabInsets);
+		
+		//
 		// adempiere hierarchical tab
-		int level = 0;
-		Component comp = tabPane.getComponentAt(tabIndex);
-		if (comp instanceof JComponent)
+		if (tabPlacement == LEFT)
 		{
-			JComponent jc = (JComponent)comp;
-			try
-			{
-				Integer ll = (Integer)jc.getClientProperty(AdempiereLookAndFeel.TABLEVEL);
-				if (ll != null)
-					level = ll.intValue();
-			}
-			catch (Exception e)
-			{
-				System.err.println("AdempiereTabbedPaneUI - ClientProperty: " + e.getMessage());
-			}
-		}
-		if (level != 0)
-		{
-			if (tabPlacement == LEFT)
-				insets.left += level * 10;
+			final int tabLevelIndent = getTabLevelIndent(tabIndex, tabPlacement);
+			insets.left += tabLevelIndent;
 		}
 		return insets;
 	}
@@ -1154,6 +1153,83 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 		return false;
 	}
 
+	/**
+	 * @param tabIndex
+	 * @param tabPlacement
+	 * @return indentation that was to be added based on tab level.
+	 */
+	protected int getTabLevelIndent(final int tabIndex, final int tabPlacement)
+	{
+		// Applies only to LEFT or RIGHT tab placement
+		if (tabPlacement != LEFT && tabPlacement != RIGHT)
+		{
+			return 0;
+		}
+		
+		int tabLevel = 0;
+		final Component comp = tabPane.getComponentAt(tabIndex);
+		if (comp instanceof JComponent)
+		{
+			final JComponent jc = (JComponent)comp;
+			try
+			{
+				final Integer levelObj = (Integer)jc.getClientProperty(AdempiereLookAndFeel.TABLEVEL);
+				if (levelObj != null)
+					tabLevel = levelObj.intValue();
+			}
+			catch (Exception e)
+			{
+				System.err.println("AdempiereTabbedPaneUI - ClientProperty: " + e.getMessage());
+				e.printStackTrace();
+			}
+		}
+		
+		if (tabLevel != 0)
+		{
+			return tabLevel * 10;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	/**
+	 * Adjust rectangle's X and width by tab level's insets.
+	 * 
+	 * @param rect
+	 * @param tabIndex
+	 * @param tabPlacement
+	 */
+	protected void adjustRectangleByTabLevelIndent(final Rectangle rect, final int tabIndex, final int tabPlacement)
+	{
+		final int tabLevelIndent = getTabLevelIndent(tabIndex, tabPlacement);
+		if (tabPlacement == LEFT)
+		{
+			rect.x += tabLevelIndent;
+		}
+		rect.width -= tabLevelIndent;
+	}
+	
+	protected static boolean isAlignVerticalTabsWithHorizontalTabs(final JTabbedPane tabbedPane, final int tabPlacement)
+	{
+		if (tabPlacement != LEFT)
+		{
+			return false;
+		}
+		final Boolean enabled = (Boolean)tabbedPane.getClientProperty(KEY_AlignVerticalTabsWithHorizontalTabs_Enabled);
+		if (enabled == null)
+		{
+			return false; // default: do not align
+		}
+		return enabled;
+	}
+	
+	protected int getGapBeforeFirstVerticalTab()
+	{
+		return AdempierePLAF.getInt(KEY_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab, DEFAULT_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab);
+	}
+
 	private class TabSelectionHandler implements ChangeListener
 	{
 
@@ -1192,39 +1268,42 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 	 * class behavior we listen to changes of the ancestor, tab placement,
 	 * and JGoodies options for content border, and embedded tabs.
 	 */
-	private class MyPropertyChangeHandler extends BasicTabbedPaneUI.PropertyChangeHandler
+	private class TabbedPanePropertyChangeHandler extends BasicTabbedPaneUI.PropertyChangeHandler
 	{
 		@Override
 		public void propertyChange(PropertyChangeEvent e)
 		{
-			final String pName = e.getPropertyName();
+			final String propertyName = e.getPropertyName();
 
-			if (null == pName)
+			if (null == propertyName)
 			{
 				return;
 			}
 
 			super.propertyChange(e);
 
-			if (pName.equals("tabPlacement"))
+			if (propertyName.equals("tabPlacement"))
 			{
-				tabPlacementChanged();
+				updateRendererAndDoLayout();
 				return;
 			}
-			if (pName.equals(Options.EMBEDDED_TABS_KEY))
+			else if (propertyName.equals(Options.EMBEDDED_TABS_KEY))
 			{
 				embeddedTabsPropertyChanged((Boolean)e.getNewValue());
 				return;
 			}
-			if (pName.equals(Options.NO_CONTENT_BORDER_KEY))
+			else if (propertyName.equals(Options.NO_CONTENT_BORDER_KEY))
 			{
 				noContentBorderPropertyChanged((Boolean)e.getNewValue());
 				return;
 			}
-
-			if (pName.equals(AdempiereLookAndFeel.HIDE_IF_ONE_TAB))
+			else if (propertyName.equals(AdempiereLookAndFeel.HIDE_IF_ONE_TAB))
 			{
 				hideIfOneTab = (Boolean)e.getNewValue();
+			}
+			else if (propertyName.equals(KEY_AlignVerticalTabsWithHorizontalTabs_Enabled))
+			{
+				updateRendererAndDoLayout();
 			}
 		}
 	}
@@ -1239,60 +1318,52 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 		@Override
 		protected void calculateTabRects(int tabPlacement, int tabCount)
 		{
-			FontMetrics metrics = getFontMetrics();
-			Dimension size = tabPane.getSize();
-			Insets insets = tabPane.getInsets();
-			Insets theTabAreaInsets = getTabAreaInsets(tabPlacement);
-			int fontHeight = metrics.getHeight();
-			int selectedIndex = tabPane.getSelectedIndex();
-			int theTabRunOverlay;
-			int i, j;
-			int x, y;
-			int returnAt;
-			boolean verticalTabRuns = (tabPlacement == LEFT || tabPlacement == RIGHT);
-			boolean leftToRight = tabPane.getComponentOrientation().isLeftToRight();
+			final FontMetrics metrics = getFontMetrics();
+			final Dimension size = tabPane.getSize();
+			final Insets insets = tabPane.getInsets();
+			final Insets theTabAreaInsets = getTabAreaInsets(tabPlacement);
+			final int fontHeight = metrics.getHeight();
+			final int selectedIndex = tabPane.getSelectedIndex();
+			final boolean verticalTabRuns = (tabPlacement == LEFT || tabPlacement == RIGHT);
+			final boolean leftToRight = tabPane.getComponentOrientation().isLeftToRight();
 
 			//
 			// Calculate bounds within which a tab run must fit
-			//
+			int tabX;
+			int tabY;
+			final int returnAt;
 			switch (tabPlacement)
 			{
 				case LEFT:
 					maxTabWidth = calculateMaxTabWidth(tabPlacement);
-					x = insets.left + theTabAreaInsets.left;
-					y = insets.top + theTabAreaInsets.top;
+					tabX = insets.left + theTabAreaInsets.left;
+					tabY = insets.top + theTabAreaInsets.top;
 					returnAt = size.height - (insets.bottom + theTabAreaInsets.bottom);
 					break;
 				case RIGHT:
 					maxTabWidth = calculateMaxTabWidth(tabPlacement);
-					x = size.width - insets.right - theTabAreaInsets.right - maxTabWidth;
-					y = insets.top + theTabAreaInsets.top;
+					tabX = size.width - insets.right - theTabAreaInsets.right - maxTabWidth;
+					tabY = insets.top + theTabAreaInsets.top;
 					returnAt = size.height - (insets.bottom + theTabAreaInsets.bottom);
 					break;
 				case BOTTOM:
 					maxTabHeight = calculateMaxTabHeight(tabPlacement);
-					x = insets.left + theTabAreaInsets.left;
-					y = size.height - insets.bottom - theTabAreaInsets.bottom - maxTabHeight;
+					tabX = insets.left + theTabAreaInsets.left;
+					tabY = size.height - insets.bottom - theTabAreaInsets.bottom - maxTabHeight;
 					returnAt = size.width - (insets.right + theTabAreaInsets.right);
 					break;
 				case TOP:
 				default:
 					maxTabHeight = calculateMaxTabHeight(tabPlacement);
-					x = insets.left + theTabAreaInsets.left;
-					y = insets.top + theTabAreaInsets.top;
+					tabX = insets.left + theTabAreaInsets.left;
+					tabY = insets.top + theTabAreaInsets.top;
 					returnAt = size.width - (insets.right + theTabAreaInsets.right);
 					break;
 			}
-
-			theTabRunOverlay = getTabRunOverlay(tabPlacement);
-
+			
+			final int theTabRunOverlay = getTabRunOverlay(tabPlacement);
 			runCount = 0;
 			selectedRun = -1;
-			// keeps track of where we are in the current run.
-			// this helps not to rely on fragile positioning
-			// informaion to find out wheter the active Tab
-			// is the first in run
-			int tabInRun = -1;
 			// make a copy of returnAt for the current run and modify
 			// that so returnAt may still be used later on
 			int runReturnAt = returnAt;
@@ -1301,7 +1372,6 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 			{
 				return;
 			}
-
 			if (tabCount == 1 && isHideIfOneTab())
 			{
 				rects[0].height = 0;
@@ -1311,29 +1381,35 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 				return;
 			}
 
+			// Keeps track of where we are in the current run.
+			// This helps not to rely on fragile positioning.
+			// Information to find out whether the active Tab is the first in run.
+			int tabInRun = -1;
+
+			//
 			// Run through tabs and partition them into runs
-			Rectangle rect;
-			for (i = 0; i < tabCount; i++)
+			for (int tabIndex = 0; tabIndex < tabCount; tabIndex++)
 			{
-				rect = rects[i];
+				final Rectangle rect = rects[tabIndex];
 				tabInRun++;
 
+				//
+				// Tabs on TOP or BOTTOM....
 				if (!verticalTabRuns)
 				{
-					// Tabs on TOP or BOTTOM....
-					if (i > 0)
+					if (tabIndex > 0)
 					{
-						rect.x = rects[i - 1].x + rects[i - 1].width;
+						rect.x = rects[tabIndex - 1].x + rects[tabIndex - 1].width;
 					}
 					else
 					{
 						tabRuns[0] = 0;
 						runCount = 1;
 						maxTabWidth = 0;
-						rect.x = x;
+						rect.x = tabX;
 						// tabInRun = 0;
 					}
-					rect.width = calculateTabWidth(tabPlacement, i, metrics);
+					rect.width = calculateTabWidth(tabPlacement, tabIndex, metrics);
 					maxTabWidth = Math.max(maxTabWidth, rect.width);
 
 					// Never move a TAB down a run if it is the first in run.
@@ -1350,37 +1426,37 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 						}
 						// just created a new run, adjust some counters
 						tabInRun = 0;
-						tabRuns[runCount] = i;
+						tabRuns[runCount] = tabIndex;
 						runCount++;
-						rect.x = x;
+						rect.x = tabX;
 						runReturnAt = runReturnAt - 2 * getTabRunIndent(tabPlacement, runCount);
 					}
 					// Initialize y position in case there's just one run
-					rect.y = y;
+					rect.y = tabY;
 					rect.height = maxTabHeight /* - 2 */;
 
 				}
+				//
+				// Tabs on LEFT or RIGHT...
 				else
 				{
-					// Tabs on LEFT or RIGHT...
-					if (i > 0)
+					if (tabIndex > 0)
 					{
-						rect.y = rects[i - 1].y + rects[i - 1].height;
+						rect.y = rects[tabIndex - 1].y + rects[tabIndex - 1].height;
 					}
 					else
 					{
 						tabRuns[0] = 0;
 						runCount = 1;
 						maxTabHeight = 0;
-						rect.y = y;
+						rect.y = tabY;
 						// tabInRun = 0;
 					}
-					rect.height = calculateTabHeight(tabPlacement, i, fontHeight);
+					rect.height = calculateTabHeight(tabPlacement, tabIndex, fontHeight);
 					maxTabHeight = Math.max(maxTabHeight, rect.height);
 
 					// Never move a TAB over a run if it is the first in run.
-					// Even if there isn't enough room, moving it to a fresh
-					// run won't help.
+					// Even if there isn't enough room, moving it to a fresh run won't help.
 					// if (rect.y != 2 + insets.top && rect.y + rect.height > returnAt) {
 					if (tabInRun != 0 && rect.y + rect.height > runReturnAt)
 					{
@@ -1388,43 +1464,23 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 						{
 							expandTabRunsArray();
 						}
-						tabRuns[runCount] = i;
+						tabRuns[runCount] = tabIndex;
 						runCount++;
-						rect.y = y;
+						rect.y = tabY;
 						tabInRun = 0;
 						runReturnAt -= 2 * getTabRunIndent(tabPlacement, runCount);
 					}
 					// Initialize x position in case there's just one column
-					rect.x = x;
+					rect.x = tabX;
 					rect.width = maxTabWidth /* - 2 */;
 
 				}
 
+				//
 				// adempiere hierarchical tab
-				int level = 0;
-				Component comp = tabPane.getComponentAt(i);
-				if (comp instanceof JComponent)
-				{
-					JComponent jc = (JComponent)comp;
-					try
-					{
-						Integer ll = (Integer)jc.getClientProperty(AdempiereLookAndFeel.TABLEVEL);
-						if (ll != null)
-							level = ll.intValue();
-					}
-					catch (Exception e)
-					{
-						System.err.println("AdempiereTabbedPaneUI - ClientProperty: " + e.getMessage());
-					}
-				}
-				if (level != 0)
-				{
-					if (tabPlacement == LEFT)
-						rect.x += level * 10;
-					rect.width -= level * 10;
-				}
+				adjustRectangleByTabLevelIndent(rect, tabIndex, tabPlacement);
 
-				if (i == selectedIndex)
+				if (tabIndex == selectedIndex)
 				{
 					selectedRun = runCount - 1;
 				}
@@ -1447,18 +1503,21 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 
 			// Step through runs from back to front to calculate
 			// tab y locations and to pad runs appropriately
-			for (i = runCount - 1; i >= 0; i--)
+			for (int i = runCount - 1; i >= 0; i--)
 			{
 				int start = tabRuns[i];
 				int next = tabRuns[i == (runCount - 1) ? 0 : i + 1];
 				int end = (next != 0 ? next - 1 : tabCount - 1);
 				int indent = getTabRunIndent(tabPlacement, i);
+				
+				//
+				// Tabs on TOP or BOTTOM....
 				if (!verticalTabRuns)
 				{
-					for (j = start; j <= end; j++)
+					for (int j = start; j <= end; j++)
 					{
-						rect = rects[j];
-						rect.y = y;
+						final Rectangle rect = rects[j];
+						rect.y = tabY;
 						rect.x += indent;
 						// try to make tabRunIndent symmetric
 						// rect.width -= 2* indent + 20;
@@ -1469,19 +1528,21 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 					}
 					if (tabPlacement == BOTTOM)
 					{
-						y -= (maxTabHeight - theTabRunOverlay);
+						tabY -= (maxTabHeight - theTabRunOverlay);
 					}
 					else
 					{
-						y += (maxTabHeight - theTabRunOverlay);
+						tabY += (maxTabHeight - theTabRunOverlay);
 					}
 				}
+				//
+				// Tabs on LEFT or RIGHT....
 				else
 				{
-					for (j = start; j <= end; j++)
+					for (int j = start; j <= end; j++)
 					{
-						rect = rects[j];
-						rect.x = x;
+						final Rectangle rect = rects[j];
+						rect.x = tabX;
 						rect.y += indent;
 					}
 					if (shouldPadTabRun(tabPlacement, i))
@@ -1490,11 +1551,11 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 					}
 					if (tabPlacement == RIGHT)
 					{
-						x -= (maxTabWidth - theTabRunOverlay);
+						tabX -= (maxTabWidth - theTabRunOverlay);
 					}
 					else
 					{
-						x += (maxTabWidth - theTabRunOverlay);
+						tabX += (maxTabWidth - theTabRunOverlay);
 					}
 				}
 			}
@@ -1507,10 +1568,9 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 			if (!leftToRight && !verticalTabRuns)
 			{
 				int rightMargin = size.width - (insets.right + theTabAreaInsets.right);
-				for (i = 0; i < tabCount; i++)
+				for (int i = 0; i < tabCount; i++)
 				{
-					rects[i].x = rightMargin - rects[i].x - rects[i].width
-							+ renderer.getTabsOverlay();
+					rects[i].x = rightMargin - rects[i].x - rects[i].width + renderer.getTabsOverlay();
 				}
 			}
 		}
@@ -1665,7 +1725,7 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 
 				// In order to allow programs to use a single component
 				// as the display for multiple tabs, we will not change
-				// the visible compnent if the currently selected tab
+				// the visible component if the currently selected tab
 				// has a null component. This is a bit dicey, as we don't
 				// explicitly state we support this in the spec, but since
 				// programs are now depending on this, we're making it work.
@@ -1887,16 +1947,20 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 		@Override
 		protected void calculateTabRects(int tabPlacement, int tabCount)
 		{
-			FontMetrics metrics = getFontMetrics();
-			Dimension size = tabPane.getSize();
-			Insets insets = tabPane.getInsets();
-			Insets tabAreaInsets = getTabAreaInsets(tabPlacement);
-			int fontHeight = metrics.getHeight();
-			int selectedIndex = tabPane.getSelectedIndex();
-			boolean verticalTabRuns = (tabPlacement == LEFT || tabPlacement == RIGHT);
-			boolean leftToRight = tabPane.getComponentOrientation().isLeftToRight();
-			int x = tabAreaInsets.left;
-			int y = tabAreaInsets.top;
+			final FontMetrics metrics = getFontMetrics();
+			final Dimension size = tabPane.getSize();
+			final Insets insets = tabPane.getInsets();
+			final Insets tabAreaInsets = getTabAreaInsets(tabPlacement);
+			final int fontHeight = metrics.getHeight();
+			final int selectedIndex = tabPane.getSelectedIndex();
+			final boolean verticalTabRuns = (tabPlacement == LEFT || tabPlacement == RIGHT);
+			final boolean leftToRight = tabPane.getComponentOrientation().isLeftToRight();
+			final int tabX = tabAreaInsets.left;
+			int tabY = tabAreaInsets.top;
+			if (isAlignVerticalTabsWithHorizontalTabs(tabPane, tabPlacement))
+			{
+				tabY = getGapBeforeFirstVerticalTab();
+			}
 			int totalWidth = 0;
 			int totalHeight = 0;
 
@@ -1936,79 +2000,59 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 			runCount = 1;
 
 			// Run through tabs and lay them out in a single run
-			Rectangle rect;
-			for (int i = 0; i < tabCount; i++)
+			for (int tabIndex = 0; tabIndex < tabCount; tabIndex++)
 			{
-				rect = rects[i];
+				final Rectangle rect = rects[tabIndex];
 
+				//
+				// Tabs on TOP or BOTTOM....
 				if (!verticalTabRuns)
 				{
-					// Tabs on TOP or BOTTOM....
-					if (i > 0)
+					if (tabIndex > 0)
 					{
-						rect.x = rects[i - 1].x + rects[i - 1].width;
+						rect.x = rects[tabIndex - 1].x + rects[tabIndex - 1].width;
 					}
 					else
 					{
 						tabRuns[0] = 0;
 						maxTabWidth = 0;
 						totalHeight += maxTabHeight;
-						rect.x = x;
+						rect.x = tabX;
 					}
-					rect.width = calculateTabWidth(tabPlacement, i, metrics);
+					rect.width = calculateTabWidth(tabPlacement, tabIndex, metrics);
 					totalWidth = rect.x + rect.width + renderer.getTabsOverlay();
 					maxTabWidth = Math.max(maxTabWidth, rect.width);
 
-					rect.y = y;
+					rect.y = tabY;
 					rect.height = maxTabHeight/* - 2 */;
 
 				}
+				//
+				// Tabs on LEFT or RIGHT...
 				else
 				{
-					// Tabs on LEFT or RIGHT...
-					if (i > 0)
+					if (tabIndex > 0)
 					{
-						rect.y = rects[i - 1].y + rects[i - 1].height;
+						rect.y = rects[tabIndex - 1].y + rects[tabIndex - 1].height;
 					}
 					else
 					{
 						tabRuns[0] = 0;
 						maxTabHeight = 0;
 						totalWidth = maxTabWidth;
-						rect.y = y;
+						rect.y = tabY;
 					}
-					rect.height = calculateTabHeight(tabPlacement, i, fontHeight);
+					rect.height = calculateTabHeight(tabPlacement, tabIndex, fontHeight);
 					totalHeight = rect.y + rect.height;
 					maxTabHeight = Math.max(maxTabHeight, rect.height);
 
-					rect.x = x;
+					rect.x = tabX;
 					rect.width = maxTabWidth/* - 2 */;
 
 				}
 
 				// adempiere hierarchical tab
-				int level = 0;
-				Component comp = tabPane.getComponentAt(i);
-				if (comp instanceof JComponent)
-				{
-					JComponent jc = (JComponent)comp;
-					try
-					{
-						Integer ll = (Integer)jc.getClientProperty(AdempiereLookAndFeel.TABLEVEL);
-						if (ll != null)
-							level = ll.intValue();
-					}
-					catch (Exception e)
-					{
-						System.err.println("AdempiereTabbedPaneUI - ClientProperty: " + e.getMessage());
-					}
-				}
-				if (level != 0)
-				{
-					if (tabPlacement == LEFT)
-						rect.x += level * 10;
-					rect.width -= level * 10;
-				}
+				adjustRectangleByTabLevelIndent(rect, tabIndex, tabPlacement);
 			}
 
 			// Pad the selected tab so that it appears raised in front
@@ -2018,11 +2062,10 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 			// the bottom, flip x positions and adjust by widths
 			if (!leftToRight && !verticalTabRuns)
 			{
-				int rightMargin = size.width
-						- (insets.right + tabAreaInsets.right);
-				for (int i = 0; i < tabCount; i++)
+				final int rightMargin = size.width - (insets.right + tabAreaInsets.right);
+				for (int tabIndex = 0; tabIndex < tabCount; tabIndex++)
 				{
-					rects[i].x = rightMargin - rects[i].x - rects[i].width;
+					rects[tabIndex].x = rightMargin - rects[tabIndex].x - rects[tabIndex].width;
 				}
 			}
 			tabScroller.tabPanel.setPreferredSize(new Dimension(totalWidth, totalHeight));
@@ -3298,9 +3341,17 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 				// Break line to show visual connection to selected tab
 				
 				// line from top until tab starts
-				g.fillRect(x, y, 1, selRect.y + 1 - y);
+				if (isAlignVerticalTabsWithHorizontalTabs(tabPane, LEFT))
+				{
+					// Put a point to close the gap between this first vertical tab and the line of horizontal tabs which are assumed to be embedded in this component
+					g.fillRect(x, selRect.y, 1, 1);
+				}
+				else
+				{
+					g.fillRect(x, y, 1, selRect.y + 1 - y);
+				}
 
-				// line from tap end until bottom
+				// line from tab end until bottom
 				if (selRect.y + selRect.height < y + h - 2)
 				{
 					g.fillRect(x, selRect.y + selRect.height - 1, 1, y + h - selRect.y - selRect.height);

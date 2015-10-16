@@ -22,7 +22,6 @@ package org.compiere.apps.search;
  * #L%
  */
 
-
 import java.awt.Window;
 
 import org.adempiere.util.Check;
@@ -35,7 +34,7 @@ import org.compiere.model.MQuery;
 import org.compiere.util.Env;
 
 /**
- * Builder which is able to configure and create instances of {@link Find} dialog, {@link FindPanel}, {@link CollapsibleFindPanel}.
+ * Builder which is able to configure and create instances of {@link Find} dialog, {@link FindPanel}, {@link FindPanelContainer}.
  * 
  * @author tsa
  *
@@ -82,9 +81,13 @@ public class FindPanelBuilder
 		return new Find(this);
 	}
 
-	public CollapsibleFindPanel buildCollapsibleFindPanel()
+	public FindPanelContainer buildFindPanelContainer()
 	{
-		return new CollapsibleFindPanel(this);
+		if (gridController != null && gridController.isAlignVerticalTabsWithHorizontalTabs())
+		{
+			return new FindPanelContainer_Embedded(this);
+		}
+		return new FindPanelContainer_Collapsible(this);
 	}
 
 	/**
@@ -247,8 +250,7 @@ public class FindPanelBuilder
 	/**
 	 * Sets grid controller to be used.
 	 * 
-	 * NOTE: this method will configure ALL other parameters, so make sure, if you want to tune some of them,
-	 * you are calling the setters AFTER this method.
+	 * NOTE: this method will configure ALL other parameters, so make sure, if you want to tune some of them, you are calling the setters AFTER this method.
 	 * 
 	 * @param gridController
 	 */
@@ -261,7 +263,7 @@ public class FindPanelBuilder
 
 		final GridTab gridTab = gridController.getMTab();
 		setGridTab(gridTab);
-		
+
 		return this;
 	}
 
@@ -273,8 +275,7 @@ public class FindPanelBuilder
 	/**
 	 * Initialize the parameters based on given gridTab.
 	 * 
-	 * NOTE: this method will configure ALL other parameters, so make sure, if you want to tune some of them,
-	 * you are calling the setters AFTER this method.
+	 * NOTE: this method will configure ALL other parameters, so make sure, if you want to tune some of them, you are calling the setters AFTER this method.
 	 * 
 	 * @param gridTab
 	 */
@@ -307,7 +308,7 @@ public class FindPanelBuilder
 	{
 		return gridTab;
 	}
-	
+
 	/**
 	 * Sets if the find panel will be embedded in the window.
 	 */
@@ -316,7 +317,7 @@ public class FindPanelBuilder
 		this.embedded = embedded;
 		return this;
 	}
-	
+
 	/** @return true if the find panel will be embedded in the window */
 	public boolean isEmbedded()
 	{

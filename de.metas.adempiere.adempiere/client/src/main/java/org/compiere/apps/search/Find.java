@@ -26,6 +26,7 @@ import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.FindPanelUI;
 import org.adempiere.util.Services;
@@ -88,7 +89,7 @@ public final class Find extends CDialog
 				Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Find") + ": " + builder.getTitle(),
 				true // modal=true
 		);
-
+		
 		findPanel = builder.buildFindPanel();
 
 		// metas: tsa: begin
@@ -104,7 +105,8 @@ public final class Find extends CDialog
 		// NOTE: we are setting such a big width because the table from advanced panel shall be displayed nicely.
 		final int findPanelHeight = AdempierePLAF.getInt(FindPanelUI.KEY_Dialog_Height, FindPanelUI.DEFAULT_Dialog_Height);
 		findPanel.setPreferredSize(new Dimension(950, findPanelHeight));
-		
+
+		setIconImage(Images.getImage2("Find24"));
 		this.setContentPane(findPanel);
 
 		// teo_sarca, [ 1670847 ] Find dialog: closing and canceling need same

@@ -38,6 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
 import org.compiere.Adempiere;
+import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 
 /**
@@ -46,12 +47,24 @@ import org.compiere.swing.CPanel;
  * @author Jorg Janke
  * @version $Id: IniDialog.java,v 1.3 2006/10/12 00:58:32 jjanke Exp $
  */
-public final class IniDialog extends JDialog implements ActionListener
+public final class IniDialog extends CDialog implements ActionListener
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2629728001114463544L;
+
+	static
+	{
+		// NOTE: we need to set the L&F here because if the ini file is missing, this is the first window which is opened,
+		// even before the PLAF is set.
+		try
+		{
+			AdempierePLAF.setPLAF();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 
 	/**
 	 * Display License and exit if rejected.

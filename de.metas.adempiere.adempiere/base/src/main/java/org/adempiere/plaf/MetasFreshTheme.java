@@ -121,6 +121,10 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 					"MenuBar.border", new BorderUIResource(BorderFactory.createEmptyBorder())
 			});
 		}
+		
+		//
+		// VTreePanel (the tree which is displayed in main window and in standard windows which have a tree)
+		table.putDefaults(VTreePanelUI.getUIDefaults());
 
 		//
 		// TaskPane

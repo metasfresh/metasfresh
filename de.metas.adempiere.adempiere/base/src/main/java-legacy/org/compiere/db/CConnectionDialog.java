@@ -33,6 +33,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 
+import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
@@ -51,12 +52,9 @@ import org.compiere.util.Ini;
  *  @author     Marek Mosiewicz<marek.mosiewicz@jotel.com.pl> - support for RMI over HTTP
  *  @version    $Id: CConnectionDialog.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class CConnectionDialog extends CDialog implements ActionListener
+class CConnectionDialog extends CDialog implements ActionListener
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 9132784527503780794L;
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 *  Connection Dialog using current Connection
@@ -86,17 +84,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	}   //  CConnection
 
 	/** Resources							*/
-	private static ResourceBundle res = ResourceBundle.getBundle("org.compiere.db.DBRes");
-
-	// static
-	// {
-	// /** Connection Profiles */
-	// CConnection.CONNECTIONProfiles = new ValueNamePair[]{
-	// new ValueNamePair("L", res.getString("LAN")),
-	// new ValueNamePair("V", res.getString("VPN")),
-	// new ValueNamePair("W", res.getString("WAN"))
-	// };
-	// }
+	private static final transient ResourceBundle res = ResourceBundle.getBundle("org.compiere.db.DBRes");
 	
 	/**	 Default HTTP Port					*/
 	public static final String	APPS_PORT_HTTP = "80";
@@ -155,6 +143,8 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	private void jbInit() throws Exception
 	{
 		this.setTitle(res.getString("CConnectionDialog"));
+		this.setIconImage(Images.getImage2("Database16"));
+		
 		mainPanel.setLayout(mainLayout);
 		southPanel.setLayout(southLayout);
 		southLayout.setAlignment(FlowLayout.RIGHT);

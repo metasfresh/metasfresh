@@ -26,12 +26,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
+import javax.swing.SwingConstants;
 
+import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorUI;
 import org.compiere.swing.CEditor;
@@ -72,22 +73,15 @@ public class CConnectionEditor extends JComponent
 		m_text.addMouseListener(ml);
 		
 		//
-		// Server icon
-		m_server.setIcon(new ImageIcon(getClass().getResource("Server16.gif")));
-		m_server.setFocusable(false);
-		m_server.setBorder(BorderFactory.createEmptyBorder());
-		m_server.setOpaque(true);
-		m_server.setPreferredSize(new Dimension(height, height));
-		m_server.addMouseListener(ml);
-		
-		//
-		// Database icon
-		m_db.setIcon(new ImageIcon(getClass().getResource("Database16.gif")));
-		m_db.setFocusable(false);
-		m_db.setBorder(BorderFactory.createEmptyBorder());
-		m_db.setOpaque(true);
-		m_db.setPreferredSize(new Dimension(height, height));
-		m_db.addMouseListener(ml);
+		// Connection indicator
+		btnConnection.setHorizontalAlignment(SwingConstants.CENTER);
+		btnConnection.setVerticalAlignment(SwingConstants.CENTER);
+		btnConnection.setIcon(Images.getImageIcon2("Database16"));
+		btnConnection.setFocusable(false);
+		btnConnection.setBorder(BorderFactory.createEmptyBorder());
+		btnConnection.setOpaque(true);
+		btnConnection.setPreferredSize(new Dimension(height, height));
+		btnConnection.addMouseListener(ml);
 		
 		//
 		// This component
@@ -96,17 +90,14 @@ public class CConnectionEditor extends JComponent
 		//
 		// Layout
 		setLayout(new BorderLayout(0,0));
-		add(m_server, BorderLayout.WEST);
 		add(m_text, BorderLayout.CENTER);
-		add(m_db, BorderLayout.EAST);
+		add(btnConnection, BorderLayout.EAST);
 	}   //  CConnectionEditor
 
-	/** Text Element        */
+	/** Text field */
 	private JTextField  m_text = new JTextField(10);
-	/** DB Button Element   */
-	private JLabel      m_db = new JLabel();
-	/** Host Button Element */
-	private JLabel      m_server = new JLabel();
+	/** Connection indicator */
+	private JLabel btnConnection = new JLabel();
 	/** The Value           */
 	private CConnection m_value = null;
 	/** ReadWrite           */
@@ -160,7 +151,7 @@ public class CConnectionEditor extends JComponent
 	 *  @param error if true, set background to error color, otherwise mandatory/editable
 	 */
 	@Override
-	public void setBackground (boolean error)
+	public void setBackground (final boolean error)
 	{
 		Color c = null;
 		if (error)
@@ -181,30 +172,25 @@ public class CConnectionEditor extends JComponent
 	@Override
 	public void setBackground (Color color)
 	{
-		m_server.setBackground(color);
 		m_text.setBackground(color);
-		m_db.setBackground(color);
+		btnConnection.setBackground(color);
 	}   //  setBackground
-
-	/**
-	 *  Set Visible
-	 *  @param visible true if field is to be shown
-	 */
-	@Override
-	public void setVisible (boolean visible)
-	{
-		super.setVisible(visible);
-	}
 
 	/**
 	 *	Set Editor to value
 	 *  @param value value of the editor
 	 */
 	@Override
-	public void setValue (Object value)
+	public void setValue (final Object value)
 	{
-		if (value != null && value instanceof CConnection)
+		if (value instanceof CConnection)
+		{
 			m_value = (CConnection)value;
+		}
+		else
+		{
+			m_value = null;
+		}
 		setDisplay();
 	}   //  setValue
 
@@ -213,7 +199,7 @@ public class CConnectionEditor extends JComponent
 	 *  @return current value
 	 */
 	@Override
-	public Object getValue()
+	public CConnection getValue()
 	{
 		return m_value;
 	}   //  getValue
@@ -236,40 +222,26 @@ public class CConnectionEditor extends JComponent
 	public void setDisplay()
 	{
 		m_text.setText(getDisplay());
-		if (m_value == null)
-			return;
-		//  Text
-		if (m_value.isAppsServerOK(false) || m_value.isDatabaseOK())
-		{
-			m_text.setForeground(AdempierePLAF.getTextColor_OK());
-			setBackground(false);
-			if (!m_value.isAppsServerOK(false))
-				m_server.setBackground(AdempierePLAF.getFieldBackground_Error());
-			if (!m_value.isDatabaseOK())
-				m_db.setBackground(AdempierePLAF.getFieldBackground_Error());
-		}
-		else
-		{
-			m_text.setForeground(AdempierePLAF.getTextColor_Issue());
-			setBackground(true);
-		}
-	}   //  setDisplay
+		
+		final boolean isAppsServerOK = m_value != null && m_value.isAppsServerOK(false);
+		final boolean isDatabaseOK = m_value != null && m_value.isDatabaseOK();
+		
+		final boolean isAppsServerOrDatabaseOK = isAppsServerOK || isDatabaseOK;
+		final boolean isAppsServerAndDatabaseOK = isAppsServerOK && isDatabaseOK;
 
+		// Mark the text field as error if both AppsServer and DB connections are not established
+		setBackground(!isAppsServerOrDatabaseOK);
 
-	/**************************************************************************
-	 *  Remove Action Listener
-	 *  @param l
-	 */
-	public synchronized void removeActionListener(ActionListener l)
-	{
-		listenerList.remove(ActionListener.class, l);
-	}   //  removeActionListener
+		// Mark the connection indicator button as error if any of AppsServer or DB connection is not established. 
+		btnConnection.setBackground(isAppsServerAndDatabaseOK ? AdempierePLAF.getFieldBackground_Normal() : AdempierePLAF.getFieldBackground_Error());
+	}
 
 	/**
-	 *  Add Action Listener
-	 *  @param l
+	 * Add Action Listener
+	 * 
+	 * @param l
 	 */
-	public synchronized void addActionListener(ActionListener l)
+	public synchronized void addActionListener(final ActionListener l)
 	{
 	    listenerList.add(ActionListener.class, l);
 	}   //  addActionListener
@@ -288,45 +260,59 @@ public class CConnectionEditor extends JComponent
        		listeners[i].actionPerformed(e);
         }
 	}   //  fireActionPerformed
+	
+	private void actionEditConnection()
+	{
+		if (!isEnabled() || !m_rw)
+		{
+			return;
+		}
+		
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		try
+		{
+			final CConnection connection = getValue();
+			final CConnectionDialog dialog = new CConnectionDialog(connection);
+			if (dialog.isCancel())
+			{
+				return;
+			}
+			
+			final CConnection connectionNew = dialog.getConnection();
+			setValue(connectionNew);
+			DB.setDBTarget(connectionNew);
+			fireActionPerformed();
+		}
+		finally
+		{
+			setCursor(Cursor.getDefaultCursor());
+		}
+		
+	}
 
 	/**
 	 *  MouseListener
 	 */
 	private class CConnectionEditor_MouseListener extends MouseAdapter
 	{
-		/**
-		 *  Mouse Clicked - Open Dialog
-		 *  @param e
-		 */
+		/** Mouse Clicked - Open connection editor */
 		@Override
 		public void mouseClicked(final MouseEvent e)
 		{
-			if (!isEnabled() || !m_rw || m_active)
+			if (m_active)
 				return;
 			m_active = true;
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try
 			{
-				final CConnectionDialog cd = new CConnectionDialog(m_value);
-				setValue(cd.getConnection());
-				if (!cd.isCancel())
-				{
-					fireActionPerformed();
-				}
-				else
-				{
-					DB.closeTarget();
-					DB.setDBTarget(m_value);
-				}
+				actionEditConnection();
 			}
 			finally
 			{
-				setCursor(Cursor.getDefaultCursor());
 				m_active = false;
 			}
-		}   //  mouseClicked
+		}
 
 		private boolean m_active = false;
-	}   //  CConnectionExitor_MouseListener
+	}
 
 }   //  CConnectionEditor

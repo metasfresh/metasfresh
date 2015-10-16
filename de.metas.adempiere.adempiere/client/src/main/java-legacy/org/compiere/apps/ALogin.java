@@ -46,7 +46,6 @@ import javax.swing.event.ChangeListener;
 
 import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.MetasFreshTheme;
 import org.adempiere.service.ISysConfigBL;
@@ -392,13 +391,11 @@ public final class ALogin extends CDialog
 		//
 		southPanel.add(confirmPanel, BorderLayout.NORTH);
 		southPanel.add(statusBar, BorderLayout.SOUTH);
-		// helpScollPane.getViewport().add(onlineHelp, null);
 		confirmPanel.setActionListener(this);
 
-		CButton helpBtn = new CButton(Images.getImageIcon2("Help24"));
-		helpBtn.setActionCommand("onlineLoginHelp");
-		helpBtn.addActionListener(this);
+		final CButton helpBtn = ConfirmPanel.createHelpButton(false);
 		helpBtn.setToolTipText(res.getString("Help"));
+		helpBtn.addActionListener(this);
 		confirmPanel.addComponent(helpBtn);
 
 		statusBar.setStatusDB(null);
@@ -678,7 +675,7 @@ public final class ALogin extends CDialog
 		{
 			orgComboChanged();
 		}
-		else if ("onlineLoginHelp".equals(e.getActionCommand()))
+		else if (ConfirmPanel.A_HELP.equals(e.getActionCommand()))
 		{
 			OnlineHelp.openInDefaultBrowser();
 		}

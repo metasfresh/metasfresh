@@ -35,7 +35,7 @@ import javax.swing.SwingUtilities;
 
 import org.adempiere.util.Services;
 import org.compiere.apps.APanel;
-import org.compiere.apps.search.CollapsibleFindPanel;
+import org.compiere.apps.search.FindPanelContainer;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.FieldGroupVO;
@@ -67,7 +67,8 @@ public final class VPanel extends CTabbedPane
 	public static final VPanel newStandardWindowPanel(final String mainTabName, final int windowNo)
 	{
 		final VPanelLayoutFactory layoutFactory = VPanelLayoutFactory.newStandardWindowLayout();
-		return new VPanel(mainTabName, windowNo, layoutFactory);
+		final VPanel panel = new VPanel(mainTabName, windowNo, layoutFactory);
+		return panel;
 	}
 
 	/**
@@ -376,16 +377,17 @@ public final class VPanel extends CTabbedPane
 		// When the find panel is expended, scroll the outer scroll pane,
 		// in order to have the actual included tab content (single row panel or table) visible to user.
 		// NOTE: usually the included tabs are the last field groups so the effect would be to scroll a bit down.
-		final CollapsibleFindPanel findPanel = detail.getFindPanel();
+		final FindPanelContainer findPanel = detail.getFindPanel();
 		if (findPanel != null)
 		{
-			findPanel.runOnCollapsedStateChange(new Runnable()
+			findPanel.runOnExpandedStateChange(new Runnable()
 			{
 
 				@Override
 				public void run()
 				{
-					if (findPanel.isCollapsed())
+					// Skip if the find panel is not expanded
+					if (!findPanel.isExpanded())
 					{
 						return;
 					}

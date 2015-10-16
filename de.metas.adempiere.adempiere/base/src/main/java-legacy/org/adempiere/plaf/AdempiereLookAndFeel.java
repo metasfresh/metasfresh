@@ -121,7 +121,7 @@ public class AdempiereLookAndFeel extends com.jgoodies.looks.plastic.Plastic3DLo
 		//  Overwrite
 		putDefault(table, AdempiereComboBoxUI.uiClassID, AdempiereComboBoxUI.class);
 		putDefault(table, AdempiereLabelUI.uiClassID, AdempiereLabelUI.class);
-		putDefault(table, AdempiereTabbedPaneUI.uiClassID, AdempiereTabbedPaneUI.class);
+		table.putDefaults(AdempiereTabbedPaneUI.getUIDefaults());
 		putDefault(table, AdempiereEditorPaneUI.uiClassID, AdempiereEditorPaneUI.class);
 		
 		//

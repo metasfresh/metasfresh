@@ -30,6 +30,7 @@ import javax.swing.KeyStroke;
 
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.plaf.AdempiereTabbedPaneUI;
 import org.adempiere.plaf.UIAction;
 import org.compiere.plaf.CompiereColor;
 
@@ -102,6 +103,11 @@ public class CTabbedPane extends JTabbedPane
 	public final void setHideIfOneTab(final boolean hideIfOneTab)
 	{
 		putClientProperty(AdempiereLookAndFeel.HIDE_IF_ONE_TAB, hideIfOneTab);
+	}
+	
+	public final void setAlignVerticalTabsWithHorizontalTabs(final boolean enabled)
+	{
+		putClientProperty(AdempiereTabbedPaneUI.KEY_AlignVerticalTabsWithHorizontalTabs_Enabled, enabled);
 	}
 	
 	/**************************************************************************

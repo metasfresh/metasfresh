@@ -220,10 +220,10 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 	private int _initialAnswer = -100; // will be initialized on construction time
 
-	private static Icon i_inform = Images.getImageIcon2("Inform32");
-	private static Icon i_warn = Images.getImageIcon2("Warn32");
-	private static Icon i_question = Images.getImageIcon2("Question32");
-	private static Icon i_error = Images.getImageIcon2("Error32");
+	static Icon i_inform = Images.getImageIcon2("Inform32");
+	static Icon i_warn = Images.getImageIcon2("Warn32");
+	static Icon i_question = Images.getImageIcon2("Question32");
+	static Icon i_error = Images.getImageIcon2("Error32");
 
 	private JMenuBar menuBar = new JMenuBar();
 	private JMenu mFile = AEnv.getMenu("File");

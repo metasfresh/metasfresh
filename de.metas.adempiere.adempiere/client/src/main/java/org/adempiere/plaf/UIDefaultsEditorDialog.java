@@ -749,6 +749,11 @@ public class UIDefaultsEditorDialog extends JDialog
 				final Integer valueInt = (Integer)value;
 				editInteger(table, rowIndexView, valueInt);
 			}
+			else if (value instanceof Boolean)
+			{
+				final Boolean valueBoolean = (Boolean)value;
+				editBoolean(table, rowIndexView, valueBoolean);
+			}
 		}
 
 		private void editColor(final JTable table, final int rowIndexView, final Color color)
@@ -848,6 +853,33 @@ public class UIDefaultsEditorDialog extends JDialog
 			}
 			
 			setValue(table, rowIndexView, valueIntNew, valueInt);
+		}
+
+		private void editBoolean(final JTable table, final int rowIndexView, Boolean valueBoolean)
+		{
+			final Dialog owner = AEnv.getDialog(table);
+			final String key = getKey(table, rowIndexView);
+			final String title = "Editing: "+key;
+			
+			if (valueBoolean == null)
+			{
+				valueBoolean = false;
+			}
+			
+			final String valueStrNew = JOptionPane.showInputDialog(owner, title, valueBoolean.toString());
+			if(Check.isEmpty(valueStrNew, true))
+			{
+				return; // cancel
+			}
+			
+			final Boolean valueBooleanNew = Boolean.parseBoolean(valueStrNew);
+			
+			if (Check.equals(valueBoolean, valueBooleanNew))
+			{
+				return; // nothing changed
+			}
+			
+			setValue(table, rowIndexView, valueBooleanNew, valueBoolean);
 		}
 
 

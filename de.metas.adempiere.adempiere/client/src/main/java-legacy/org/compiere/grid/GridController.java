@@ -67,7 +67,8 @@ import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.APanel;
 import org.compiere.apps.AppsAction;
-import org.compiere.apps.search.CollapsibleFindPanel;
+import org.compiere.apps.search.FindPanel;
+import org.compiere.apps.search.FindPanelContainer;
 import org.compiere.grid.ed.VCellEditor;
 import org.compiere.grid.ed.VCellRenderer;
 import org.compiere.grid.ed.VEditor;
@@ -96,6 +97,7 @@ import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
+import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.TableCellNone;
 import org.compiere.util.CCache;
 import org.compiere.util.CLogger;
@@ -201,6 +203,7 @@ public final class GridController extends CPanel
 	/**
 	 *  Constructor - you need to call initGrid for instantiation
 	 */
+	@Deprecated
 	public GridController()
 	{
 		super();
@@ -213,12 +216,23 @@ public final class GridController extends CPanel
 		{
 			log.log(Level.SEVERE, "", e);
 		}
-	}   //  GridController
+	}
 
 	private GridController(final Builder builder)
 	{
-		this();
+		super();
+		final APanel aPanel = builder.getAPanel();
+		this.alignVerticalTabsWithHorizontalTabs = !builder.isIncludedTab() && aPanel != null && aPanel.isAlignVerticalTabsWithHorizontalTabs();
 		
+		try
+		{
+			jbInit();
+		}
+		catch(Exception e)
+		{
+			log.log(Level.SEVERE, "", e);
+		}
+
 		final CompiereColor backgroundColor = builder.getBackgroundColor();
 		if (backgroundColor != null)
 		{
@@ -229,15 +243,14 @@ public final class GridController extends CPanel
 				builder.getGridTab(), // mTab,
 				builder.isGridModeOnly(), // onlyMultiRow,
 				builder.getWindowNo(), // WindowNo,
-				builder.getAPanel(), // APanel
+				aPanel, // APanel
 				builder.getGridWindow(), // mWindow,
-				builder.isLazyInitialization(), // lazy,
-				builder.isIncludedTab()// isIncludedTab_NOTUSED
+				builder.isLazyInitialization() // lazyInitialization
 		);
 		
 		//
 		// Bindings
-		addDataStatusListener(builder.getAPanel());
+		addDataStatusListener(aPanel);
 		registerESCAction(builder.getIgnoreAction()); //  register Escape Key
 		
 		if (builder.isGoSingleRowLayout())
@@ -245,7 +258,7 @@ public final class GridController extends CPanel
 			switchSingleRow();
 		}
 	}
-
+	
 	/**
 	 *  toString
 	 *  @return string representation
@@ -257,9 +270,20 @@ public final class GridController extends CPanel
 				.add("tab", m_mTab)
 				.toString();
 	}   //  toString
+	
+	public boolean isAlignVerticalTabsWithHorizontalTabs()
+	{
+		return alignVerticalTabsWithHorizontalTabs;
+	}
+	
+	private boolean alignVerticalTabsWithHorizontalTabs = false;
 
 	/**
-	 *  The Layout
+	 * Main panel:
+	 * <ul>
+	 * <li>Left - the {@link #graphPanel} (e.g. were we will put the tree if needed)
+	 * <li>Right - the actual content (single/multi view panels)
+	 * </ul>
 	 */
 	private JSplitPane splitPane = new JSplitPane();
 	
@@ -268,19 +292,26 @@ public final class GridController extends CPanel
 	/** Tree Panel (optional)       */
 	private VTreePanel  treePanel;
 
+	/** The tab content layout, contains single row layout ({@link #vPanel}) and grid layout ({@link #vTable}) */
 	private final CPanel cardPanel = new CPanel();
 	private final CardLayout cardLayout = new CardLayout();
 	private static final String CARDNAME_SingleRowView = "SingleRowView";
 	private static final String CARDNAME_MultiRowView = "MultiRowView";
 	
-	/** Single-row scroll pane which includes {@link #vPanel} */
+	/** Single-row scroll pane with horizontal tabs */
 	private VPanel vPanel = null;
 	/** Multi-row grid panel */
 	private VTable vTable = new VTable();
+	/**
+	 * Optional tabbed pane, with one tab which contains the {@link #vTable}. Used for vertical tabs with horizontal tabs alignment.
+	 * 
+	 * @see #isAlignVerticalTabsWithHorizontalTabs()
+	 */
+	private CTabbedPane vTableTabbedPane = null;
 
 	private boolean detailGrid = false;
 	
-	private CollapsibleFindPanel findPanel = null; // metas: teo_sarca
+	private FindPanelContainer findPanel = null; // metas: teo_sarca
 	
 	/**
 	 * Action Listener which delegates everything to _aPanel.
@@ -307,7 +338,7 @@ public final class GridController extends CPanel
 	{
 		return vTable;
 	}
-
+	
 	/**
 	 *  Static Layout init
 	 *  @throws Exception
@@ -345,22 +376,33 @@ public final class GridController extends CPanel
 				
 				// Multi view (grid mode) panel
 				{
-					final CScrollPane mrPane = new CScrollPane();
-					cardPanel.add(mrPane, CARDNAME_MultiRowView);
-					mrPane.setName("gc_mrPane");
-					mrPane.setBorder(BorderFactory.createEmptyBorder());
+					final CScrollPane vTableScrollPane = new CScrollPane();
+					vTableScrollPane.setName("gc_mrPane");
+					vTableScrollPane.setBorder(BorderFactory.createEmptyBorder());
 
 					// bugfix/workaround: Change scrollmode from BLIT_SCROLL_MODE to BACKINGSTORE_SCROLL_MODE, because in some cases (see task description),
 					// the JTable inside the scroll pane is weird painted when scrolling up and down.
 					// It could be related to a particular JVM, OS, graphics hardware, but we reproduced on several machines....
 					// See also:
 					// * http://stackoverflow.com/questions/23886275/jscrollpane-visual-glitch-when-scrolling
-					mrPane.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE); // task 09389
+					vTableScrollPane.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE); // task 09389
 					
-					mrPane.setViewportView(vTable);
+					vTableScrollPane.setViewportView(vTable);
 					// increase mouse-wheel scroll speed:
-					mrPane.getVerticalScrollBar().setUnitIncrement(32);
-					mrPane.getHorizontalScrollBar().setUnitIncrement(16);
+					vTableScrollPane.getVerticalScrollBar().setUnitIncrement(32);
+					vTableScrollPane.getHorizontalScrollBar().setUnitIncrement(16);
+
+					//
+					// Do we have to do vertical tabs to horizontal tabs alignment?
+					if (isAlignVerticalTabsWithHorizontalTabs())
+					{
+						this.vTableTabbedPane = new CTabbedPane(CTabbedPane.TOP);
+						vTableTabbedPane.setHideIfOneTab(false);
+						vTableTabbedPane.addTab("", vTableScrollPane); // tab name will be set later when it's available (now it's not)
+					}
+					
+					// Add it to main panel
+					cardPanel.add(vTableTabbedPane != null ? vTableTabbedPane : vTableScrollPane, CARDNAME_MultiRowView);
 				}
 			}
 		}
@@ -371,7 +413,8 @@ public final class GridController extends CPanel
 	 */
 	public void dispose()
 	{
-		log.config( "(" + m_mTab.toString() + ")");
+		log.log(Level.CONFIG, "Disposing: {0}", m_mTab);
+		
 		//  clear info
 		stopEditor(false);
 		if (m_mTab.isLoadComplete())
@@ -400,27 +443,48 @@ public final class GridController extends CPanel
 				mField.removePropertyChangeListener(vEditor);
 			vEditor.dispose();
 		}
-		/** @todo Remove APanel Button listeners */
+		
+		// TODO Remove APanel Button listeners
 		
 		// metas: clear colors cache for current window (#02530)
 		if (m_mTab != null) // metas
 		{
 			s_cacheColors.remove(m_mTab.getWindowNo()); // metas
 		}
-		vTable.removeAll();
-		vTable.setModel(new DefaultTableModel());   //  remove reference
-		vTable = null;
-		vPanel.removeAll();
-		vPanel = null;
-		//srPane.removeAll();
-		//srPane = null;
-		splitPane.removeAll();
-		splitPane = null;
+		
+		if (vTableTabbedPane != null)
+		{
+			vTableTabbedPane.removeAll();
+			vTableTabbedPane = null;
+		}
+		if(vTable != null)
+		{
+			vTable.removeAll();
+			vTable.setModel(new DefaultTableModel());   //  remove reference
+			vTable = null;
+		}
+		
+		if (vPanel != null)
+		{
+			vPanel.removeAll();
+			vPanel = null;
+		}
+
+		if (splitPane != null)
+		{
+			splitPane.removeAll();
+			splitPane = null;
+		}
+		
 		m_mTab = null;
-		// metas: remove the tree panel from the event support listeners
-		Services.get(IProcessEventSupport.class).removeListener(treePanel);
-		// metas end
-		treePanel = null;
+		
+		if(treePanel != null)
+		{
+			// metas: remove the tree panel from the event support listeners
+			Services.get(IProcessEventSupport.class).removeListener(treePanel);
+			treePanel = null;
+		}
+		
 		this.removeAll();
 	}   //  dispose
 
@@ -461,9 +525,8 @@ public final class GridController extends CPanel
 			final APanel aPanel,
 			final GridWindow mWindow)
 	{
-		final boolean lazy = false;
-		final boolean isIncludedTab = false;
-		return initGrid(mTab, onlyMultiRow, WindowNo, aPanel, mWindow, lazy, isIncludedTab);
+		final boolean lazyInitialization = false;
+		return initGrid(mTab, onlyMultiRow, WindowNo, aPanel, mWindow, lazyInitialization);
 	}
 	
 	/**************************************************************************
@@ -486,8 +549,7 @@ public final class GridController extends CPanel
 			final int WindowNo,
 			final APanel aPanel,
 			final GridWindow mWindow,
-			final boolean lazy,
-			final boolean isIncludedTab_NOTUSED) // metas
+			final boolean lazyInitialization)
 	{
 		log.log(Level.CONFIG,  "Init: {0}", mTab);
 		
@@ -509,7 +571,7 @@ public final class GridController extends CPanel
 
 		//
 		// Init if needed
-		if (!lazy)
+		if (!lazyInitialization)
 		{
 			initIfNeeded();
 		}
@@ -524,14 +586,14 @@ public final class GridController extends CPanel
 		{
 			try
 			{
-				findPanel = CollapsibleFindPanel.builder()
+				findPanel = FindPanel.builder()
 						.setGridController(this)
 						.setTargetWindowNo(m_WindowNo) // FIXME: i think is redundant
 						// .setReadOnly(m_mTab.isReadOnly()) // NOTE: not used anyways
 						.setSmall(true)
 						.setEmbedded(true) // the panel is embedded (we expect some of the buttons of find panel to be hidden because they make no sense)
-						.buildCollapsibleFindPanel();
-				this.add(findPanel, BorderLayout.NORTH); // metas: teo_sarca
+						.buildFindPanelContainer();
+				this.add(findPanel.getComponent(), BorderLayout.NORTH); // metas: teo_sarca
 			}
 			catch (Exception e)
 			{
@@ -679,7 +741,9 @@ public final class GridController extends CPanel
 			return;
 		}
 		
-		vPanel.setHideIfOneTab(true); // hide the tabs if there will be only one horizontal tab
+		// Hide the tabs if there will be only one horizontal tab
+		// NOTE: we hide if one tab, only if aligning vertical tabs with panel's horizontal tabs is NOT enabled (because we need to align with horizontal tabs anyway)
+		vPanel.setHideIfOneTab(!isAlignVerticalTabsWithHorizontalTabs());
 
 		//
 		//	Set Softcoded Mnemonic &x
@@ -812,6 +876,13 @@ public final class GridController extends CPanel
 		if (!m_mTab.isDisplayed())
 		{
 			return;
+		}
+
+		//
+		// Set the title of grid layout's first tab (if any)
+		if (vTableTabbedPane != null)
+		{
+			vTableTabbedPane.setTitleAt(0, m_mTab.getName());
 		}
 		
 		vTable.setColumnControlVisible(false); // don't show it because we are showing it in toolbar
@@ -1831,7 +1902,7 @@ public final class GridController extends CPanel
 	}
 
 	/** @return tab's top search panel or <code>null</code> if the tab search is not allowed */
-	public final CollapsibleFindPanel getFindPanel()
+	public final FindPanelContainer getFindPanel()
 	{
 		return this.findPanel;
 	}
@@ -1979,7 +2050,7 @@ public final class GridController extends CPanel
 	public final void requestFocus()
 	{
 		// Try requesting focus on find panel if possible
-		final CollapsibleFindPanel findPanel = getFindPanelIfFocusable();
+		final FindPanelContainer findPanel = getFindPanelIfFocusable();
 		if (findPanel != null)
 		{
 			findPanel.requestFocus();
@@ -1994,7 +2065,7 @@ public final class GridController extends CPanel
 	public final boolean requestFocusInWindow()
 	{
 		// Try requesting focus on find panel if possible
-		final CollapsibleFindPanel findPanel = getFindPanelIfFocusable();
+		final FindPanelContainer findPanel = getFindPanelIfFocusable();
 		if (findPanel != null && findPanel.requestFocusInWindow())
 		{
 			return true;
@@ -2005,7 +2076,7 @@ public final class GridController extends CPanel
 	}
 	
 	/** @return the find panel if exists and it's focusable; <code>null</code> otherwise */
-	private final CollapsibleFindPanel getFindPanelIfFocusable()
+	private final FindPanelContainer getFindPanelIfFocusable()
 	{
 		if (!m_singleRow)
 		{
@@ -2019,7 +2090,7 @@ public final class GridController extends CPanel
 		}
 		
 		// Only if the find panel exists
-		final CollapsibleFindPanel findPanel = getFindPanel();
+		final FindPanelContainer findPanel = getFindPanel();
 		if(findPanel == null)
 		{
 			return null;

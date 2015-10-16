@@ -271,6 +271,11 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setAppsHost(String apps_host)
 	{
+		if (Check.equals(attrs.getAppsHost(), apps_host))
+		{
+			return;
+		}
+		
 		attrs.setAppsHost(apps_host);
 		setName();
 		m_okApps = false;
@@ -294,6 +299,10 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public void setAppsPort(int apps_port)
 	{
+		if (Check.equals(attrs.getAppsPort(), apps_port))
+		{
+			return;
+		}
 		attrs.setAppsPort(apps_port);
 		m_okApps = false;
 		m_queryAppsServer = false;
@@ -499,6 +508,11 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setDbHost(String db_host)
 	{
+		if (Check.equals(attrs.getDbHost(), db_host))
+		{
+			return;
+		}
+		
 		attrs.setDbHost(db_host);
 		setName();
 		closeDataSource();
@@ -521,6 +535,10 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setDbName(String db_name)
 	{
+		if (Check.equals(attrs.getDbName(), db_name))
+		{
+			return;
+		}
 		attrs.setDbName(db_name);
 		setName();
 		closeDataSource();
@@ -543,6 +561,10 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setDbPort(int db_port)
 	{
+		if (Check.equals(attrs.getDbPort(), db_port))
+		{
+			return;
+		}
 		attrs.setDbPort(db_port);
 		closeDataSource();
 	}	// setDbPort
@@ -584,6 +606,10 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setDbPwd(String db_pwd)
 	{
+		if (Check.equals(attrs.getDbPwd(), db_pwd))
+		{
+			return;
+		}
 		attrs.setDbPwd(db_pwd);
 		closeDataSource();
 	}	// setDbPwd
@@ -605,6 +631,10 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setDbUid(String db_uid)
 	{
+		if (Check.equals(attrs.getDbUid(), db_uid))
+		{
+			return;
+		}
 		attrs.setDbUid(db_uid);
 		setName();
 		closeDataSource();
@@ -868,8 +898,11 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			if (Database.DB_NAMES[i].equals(type))
 			{
-				attrs.setDbType(type);
-				closeDataSource();
+				if (!Check.equals(attrs.getDbType(), type))
+				{
+					attrs.setDbType(type);
+					closeDataSource();
+				}
 				break;
 			}
 		}
@@ -1496,7 +1529,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public static boolean isServerEmbedded()
 	{
-		return "true".equalsIgnoreCase(System.getProperty(SERVER_EMBEDDED));
+		return Boolean.getBoolean(SERVER_EMBEDDED);
 	}
 
 	public void setAppServerCredential(String principal, String credential)

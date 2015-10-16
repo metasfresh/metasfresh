@@ -20,6 +20,7 @@ package org.compiere.grid.tree;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -67,6 +68,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.plaf.VTreePanelUI;
 import org.adempiere.process.event.IProcessEventListener;
 import org.adempiere.process.event.ProcessEvent;
 import org.adempiere.util.Check;
@@ -425,7 +427,7 @@ public final class VTreePanel extends CPanel
 		}
 
 		//
-		// Center: Tree panel
+		// Center: Tree panel (the tree with it's toolbar)
 		final CPanel treePart = new CPanel();
 		{
 			final BorderLayout treePartLayout = new BorderLayout();
@@ -434,7 +436,7 @@ public final class VTreePanel extends CPanel
 			treePart.setBorder(BorderFactory.createEmptyBorder());
 
 			//
-			// Center panel
+			// Center panel: the actual tree
 			{
 				final JScrollPane treePane = new JScrollPane();
 				treePane.setViewportView(tree);
@@ -443,7 +445,7 @@ public final class VTreePanel extends CPanel
 			}
 
 			//
-			// South panel
+			// North/South panel: the tree toolbar (search field, expand checkbox)
 			{
 				treeExpand.setText(msgBL.getMsg(Env.getCtx(), "ExpandTree"));
 				treeExpand.setActionCommand("Expand");
@@ -458,13 +460,15 @@ public final class VTreePanel extends CPanel
 				treeSearch.setBackground(AdempierePLAF.getInfoBackground());
 				treeSearch.addKeyListener(keyListener);
 
-				final CPanel southPanel = new CPanel();
-				southPanel.setLayout(new BorderLayout());
-				southPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
-				southPanel.add(treeExpand, BorderLayout.WEST);
-				southPanel.add(treeSearchLabel, BorderLayout.CENTER);
-				southPanel.add(treeSearch, BorderLayout.EAST);
-				treePart.add(southPanel, BorderLayout.SOUTH);
+				final CPanel treeToolbar = new CPanel();
+				treeToolbar.setLayout(new FlowLayout(FlowLayout.LEADING));
+				treeToolbar.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
+				treeToolbar.add(treeSearchLabel);
+				treeToolbar.add(treeSearch);
+				treeToolbar.add(treeExpand);
+				
+				final boolean showOnTop = AdempierePLAF.getBoolean(VTreePanelUI.KEY_SearchPanelAnchorOnTop, VTreePanelUI.DEFAULT_SearchPanelAnchorOnTop);
+				treePart.add(treeToolbar, showOnTop ? BorderLayout.NORTH : BorderLayout.SOUTH);
 			}
 		}
 		

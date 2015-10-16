@@ -37,6 +37,9 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 
+import org.adempiere.plaf.AdempierePLAF;
+import org.compiere.Adempiere;
+
 /**
  * Conveniance Dialog Class.
  * Adempiere Background + Dispose on Close
@@ -198,7 +201,7 @@ public class CDialog extends JDialog
 	{
 		super(owner, title, modal ? ModalityType.APPLICATION_MODAL : ModalityType.MODELESS);
 	}
-
+	
 	/**
 	 * Initialize.
 	 * Install ALT-Pause
@@ -217,7 +220,13 @@ public class CDialog extends JDialog
 			panel.getActionMap().put(ACTION_DISPOSE, s_dialogAction);
 			panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(s_disposeKeyStroke, ACTION_DISPOSE);
 		}
-	}	// init
+		
+		// By default all dialog shall have our product icon.
+		// Later, the caller can change it.
+		setIconImage(Adempiere.getProductIconSmall());
+		
+		setBackground(AdempierePLAF.getFormBackground());
+	}
 
 	/**************************************************************************
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
