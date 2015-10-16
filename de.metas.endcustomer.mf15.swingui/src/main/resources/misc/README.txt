@@ -1,0 +1,1 @@
+This folder contains files that are usually needed, but might still be useful for certain purposes.
