@@ -256,12 +256,6 @@ SQL and jasper dependencies
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
 			<version>${project.version}</version>
-			<classifier>jasper</classifier>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.swat</groupId>
-			<artifactId>de.metas.swat.base</artifactId>
-			<version>${project.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
