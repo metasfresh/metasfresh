@@ -345,24 +345,24 @@ public class CalloutOrder extends CalloutEngine
 
 		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
 
-		if(order == null)
+		if (order == null)
 		{
 			return NO_ERROR; // nothing to do
 		}
 
-		if(order.getC_BPartner() == null)
+		if (order.getC_BPartner() == null)
 		{
 			return NO_ERROR; // nothing to do
 		}
 
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		
+
 		if (null == order.getC_BPartner_Location())
 		{
 			orderBL.setBPLocation(order, order.getC_BPartner());
 		}
-		
-		if(!orderBL.setBillLocation(order))
+
+		if (!orderBL.setBillLocation(order))
 		{
 			throw new BPartnerNoBillToAddressException(order.getC_BPartner());
 		}
@@ -390,7 +390,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		final boolean IsSOTrx = "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
 		final String defaultUserOrderByClause = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact : I_AD_User.COLUMNNAME_IsPurchaseContact;
-		
+
 		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
 				+ " p.SO_Description,p.IsDiscountPrinted,"
@@ -408,12 +408,12 @@ public class CalloutOrder extends CalloutEngine
 				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
 				// metas (2009 0027 G1): making sure that the default billTo
 				// and shipTo location is used
-				+ " ORDER BY lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC" 
+				+ " ORDER BY lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC"
 				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipTo + " DESC"
 				// metas end
-				//  08578 take default users first. I saw cases were flags were null in the DB, so I added Coalesce
+				// 08578 take default users first. I saw cases were flags were null in the DB, so I added Coalesce
 				// FIXME: make the columns mandatory with default=N, then remove the coalesce
-				+ " , COALESCE(c." + defaultUserOrderByClause + ", 'N')" + " DESC" 
+				+ " , COALESCE(c." + defaultUserOrderByClause + ", 'N')" + " DESC"
 				+ " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
 				+ " , c." + I_AD_User.COLUMNNAME_AD_User_ID + " ASC ";
 		; // #1
@@ -1152,20 +1152,20 @@ public class CalloutOrder extends CalloutEngine
 		// -> LineNetAmt
 		if (I_C_OrderLine.COLUMNNAME_Discount.equals(changedColumnName))
 		{
-			// metas 
+			// metas
 			// if (PriceList.doubleValue() != 0)
 			// PriceActual = new BigDecimal((100.0 - Discount.doubleValue())
 			// / 100.0 * PriceList.doubleValue());
-			// metas  ende
+			// metas ende
 			if (PriceEntered.doubleValue() != 0)
 				PriceActual = new BigDecimal((100.0 - Discount.doubleValue()) / 100.0 * PriceEntered.doubleValue());
 
 			if (PriceActual.scale() > StdPrecision)
 				PriceActual = PriceActual.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
-			// metas 
+			// metas
 			// PriceEntered = MUOMConversion.convertProductFrom(ctx, M_Product_ID,
 			// C_UOM_To_ID, PriceActual);
-			// metas  ende
+			// metas ende
 
 			// metas us1064
 			// if (PriceEntered == null)
@@ -1179,14 +1179,14 @@ public class CalloutOrder extends CalloutEngine
 		{
 			if (PriceList.intValue() == 0)
 				Discount = Env.ZERO;
-			// metas 
+			// metas
 			// else
 			// Discount = new BigDecimal(
 			// (PriceList.doubleValue() - PriceActual.doubleValue())
 			// / PriceList.doubleValue() * 100.0);
 			if (Discount.scale() > 2)
 				Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
-			// metas 
+			// metas
 			// mTab.setValue("Discount", Discount);
 			// Discount = new BigDecimal(0);
 			// mTab.setValue("Discount", Discount);
@@ -1222,10 +1222,10 @@ public class CalloutOrder extends CalloutEngine
 		orderLine.setPriceActual(PriceActual);
 		// 07090: this (complicated, legacy) is just about updating price amounts, not priceUOM -> not touching the price UOM here
 		// Make sure we use the converted quantity for calculation, since the priceActual is for the price's UOM, while the quantity ordered is for the product's UOM.
-		
+
 		// Line Net Amt
 		final BigDecimal qtyEnteredInPriceUOM = Services.get(IOrderLineBL.class).calculateQtyEnteredInPriceUOM(orderLine);
-		
+
 		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(PriceActual);
 		if (LineNetAmt.scale() > StdPrecision)
 			LineNetAmt = LineNetAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
@@ -1285,7 +1285,7 @@ public class CalloutOrder extends CalloutEngine
 				QtyOrdered = QtyEntered;
 			}
 			boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
-			//PriceActual = (BigDecimal)mTab.getValue("PriceActual");
+			// PriceActual = (BigDecimal)mTab.getValue("PriceActual");
 			// metas us1064
 			// PriceEntered = MUOMConversion.convertProductFrom(ctx, M_Product_ID, C_UOM_To_ID, PriceActual);
 			// if (PriceEntered == null)

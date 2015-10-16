@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -288,6 +289,41 @@ public class MBPartner extends X_C_BPartner {
 		// ts: doesn't work with table level caching, when this instance is created by PO.copy(). 
 		// Reason: at this stage we don't yet have a POInfo, but the toString() method calls getValue which requires a POInfo
 		// log.fine(toString());  
+	} // MBPartner
+
+	/**
+	 * Import Contstructor
+	 * 
+	 * @param impBP
+	 *            import
+	 */
+	public MBPartner(final I_I_BPartner impBP)
+	{
+		this(InterfaceWrapperHelper.getCtx(impBP),
+				0,
+				InterfaceWrapperHelper.getTrxName(impBP));
+		setClientOrg(InterfaceWrapperHelper.getPO(impBP));
+		setUpdatedBy(impBP.getUpdatedBy());
+		//
+		String value = impBP.getValue();
+		if (value == null || value.length() == 0)
+			value = impBP.getEMail();
+		if (value == null || value.length() == 0)
+			value = impBP.getContactName();
+		setValue(value);
+		String name = impBP.getName();
+		if (name == null || name.length() == 0)
+			name = impBP.getContactName();
+		if (name == null || name.length() == 0)
+			name = impBP.getEMail();
+		setName(name);
+		setName2(impBP.getName2());
+		setDescription(impBP.getDescription());
+		// setHelp(impBP.getHelp());
+		setDUNS(impBP.getDUNS());
+		setTaxID(impBP.getTaxID());
+		setNAICS(impBP.getNAICS());
+		setC_BP_Group_ID(impBP.getC_BP_Group_ID());
 	} // MBPartner
 
 	/** Users */

@@ -53,6 +53,7 @@ import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.terminal.BreadcrumbKeyLayout;
 import de.metas.adempiere.form.terminal.CompositePropertiesPanelModel;
+import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.IPropertiesPanelModel;
@@ -297,22 +298,11 @@ public class HUEditorModel implements IDisposable
 			pcs.clear();
 		}
 
-		if (breadcrumbKeyLayout != null)
-		{
-			breadcrumbKeyLayout.dispose();
-		}
-		if (_huKeyFilterModel != null)
-		{
-			_huKeyFilterModel.dispose();
-		}
-		if (handlingUnitsKeyLayout != null)
-		{
-			handlingUnitsKeyLayout.dispose();
-		}
-		if (propertiesPanelModel != null)
-		{
-			propertiesPanelModel.dispose();
-		}
+		DisposableHelper.disposeAll(
+				breadcrumbKeyLayout
+				, _huKeyFilterModel
+				, handlingUnitsKeyLayout
+				, propertiesPanelModel);
 
 		rootHUKey = null;
 		_currentKey = null;

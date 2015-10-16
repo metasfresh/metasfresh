@@ -126,7 +126,7 @@ public class ADRAttributeBL implements IADRAttributeBL
 
 	private boolean isBPartnerRequiresADR(final I_C_BPartner partner, final boolean isSOTrx)
 	{
-		final boolean hasADRChecked = (isSOTrx ? partner.isADRcustomer() : partner.isADRVendor());
+		final boolean hasADRChecked = (isSOTrx ? partner.isADRCustomer() : partner.isADRVendor());
 		final boolean hasADRSpecified = !Check.isEmpty(getADRForBPartner(partner, isSOTrx));
 
 		return (hasADRChecked && hasADRSpecified);
@@ -137,7 +137,7 @@ public class ADRAttributeBL implements IADRAttributeBL
 	{
 		if (isSOTrx)
 		{
-			final boolean isADRCustomer = partner.isADRcustomer();
+			final boolean isADRCustomer = partner.isADRCustomer();
 
 			if (isADRCustomer)
 			{

@@ -314,7 +314,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 				if (updateProcessedFlag(sched))
 				{
-					//  04870 : Delivery rule force assumes we deliver full quantity ordered if qtyToDeliver_Override is null.
+					// 04870 : Delivery rule force assumes we deliver full quantity ordered if qtyToDeliver_Override is null.
 					// 06019 : check both DeliveryRule, as DeliveryRule_Override
 					Check.errorIf(sched.getQtyToDeliver().signum() != 0
 							&& !X_C_Order.DELIVERYRULE_Force.equals(shipmentScheduleEffectiveBL.getDeliveryRule(sched)), "{0} has QtyToDeliver = {1} (should be zero)",

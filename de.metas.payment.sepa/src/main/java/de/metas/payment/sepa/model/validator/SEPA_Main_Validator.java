@@ -48,7 +48,7 @@ public class SEPA_Main_Validator implements ModelValidator
 
 		engine.addModelValidator(new SEPA_Export_Line(), client); // task 07789
 
-		engine.addModelValidator(new C_BP_BankAccount(), client); //  08477 Supporting IBAN and BIC
+		engine.addModelValidator(new C_BP_BankAccount(), client); // 08477 Supporting IBAN and BIC
 		
 		Services.get(ISEPADocumentSourceFactory.class).registerSEPADocumentSource(I_SEPA_Export_Line.Table_Name, SEPAExportLineDocumentSource.class);
 		

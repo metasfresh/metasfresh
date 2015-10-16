@@ -591,23 +591,32 @@ public abstract class AbstractHUSelectModel implements IDisposable
 			return;
 		}
 
-		//
-		// Call the actual UI Editor and wait for it's answer
-		final boolean edited = editorCallback.editHUs(huEditorModel);
-		
-		// Make sure everything that was in the cache it's flushed. We do this because:
-		// * the processing is happending outside of our HUKeys (in most of the cases)
-		// * we want to have fresh data from this point on!
-		if (HUConstants.is08793_HUSelectModel_ResetCacheBeforeProcess())
+		try
 		{
-			getTerminalContext().getService(IHUKeyFactory.class).clearCache();
+			//
+			// Call the actual UI Editor and wait for it's answer
+			final boolean edited = editorCallback.editHUs(huEditorModel);
+			
+			// Make sure everything that was in the cache it's flushed. We do this because:
+			// * the processing is happending outside of our HUKeys (in most of the cases)
+			// * we want to have fresh data from this point on!
+			if (HUConstants.is08793_HUSelectModel_ResetCacheBeforeProcess())
+			{
+				getTerminalContext().getService(IHUKeyFactory.class).clearCache();
+			}
+	
+			//
+			// If user actually edited something, try processing selected rows/lines
+			if (edited)
+			{
+				processRows(selectedRows, huEditorModel);
+			}
 		}
-
-		//
-		// If user actually edited something, try processing selected rows/lines
-		if (edited)
+		finally
 		{
-			processRows(selectedRows, huEditorModel);
+			// Dispose the HU Editor model even if there was some error, because from this point on it's not needed anymore.
+			// More, this will make sure all listeners will be decoupled.
+			huEditorModel.dispose();
 		}
 
 		//

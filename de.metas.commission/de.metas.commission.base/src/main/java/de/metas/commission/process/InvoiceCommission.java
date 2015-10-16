@@ -66,7 +66,7 @@ import de.metas.commission.service.ICommissionConditionDAO;
 /**
  * 
  * @author ts
- * @see "<a href="http://dewiki908/mediawiki/index.php/US691:_Provisionsberechnung_08-2010_%282010090110000033%29 "> US691: Provisionsberechnung 08-2010 (2010090110000033)</a>"
+ * @see "<a href="http://dewiki908/mediawiki/index.php/US691:_Provisionsberechnung_08-2010_%282010090110000033%29 ">US691: Provisionsberechnung 08-2010 (2010090110000033)</a>"
  */
 public class InvoiceCommission extends SvrProcess
 {

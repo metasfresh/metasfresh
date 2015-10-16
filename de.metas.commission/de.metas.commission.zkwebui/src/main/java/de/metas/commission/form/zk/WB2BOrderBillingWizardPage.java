@@ -431,7 +431,7 @@ public class WB2BOrderBillingWizardPage implements WizardPage
 	@Override
 	public void onShow()
 	{
-		throw new UnsupportedOperationException(); // FIXME implement task  04464
+		throw new UnsupportedOperationException(); // FIXME implement task 04464
 		/*
 		setOverviewInfo();
 		initPaymentPanel();
@@ -517,7 +517,7 @@ public class WB2BOrderBillingWizardPage implements WizardPage
 
 	private void processPayment(String trxName)
 	{
-		throw new UnsupportedOperationException(); // FIXME implement  04464
+		throw new UnsupportedOperationException(); // FIXME implement 04464
 		/*
 		if (!payment.saveChangesInTrx(trxName))
 		{
@@ -550,7 +550,7 @@ public class WB2BOrderBillingWizardPage implements WizardPage
 
 	private String checkCreditCard(MOrder order)
 	{
-		throw new UnsupportedOperationException(); // FIXME implement  04464
+		throw new UnsupportedOperationException(); // FIXME implement 04464
 		/*
 		final ITelecashBL teleCashBL = Services.get(ITelecashBL.class);
 		Integer mm = MPaymentValidate.getCreditCardExpMM(payment.kExpField.getText());

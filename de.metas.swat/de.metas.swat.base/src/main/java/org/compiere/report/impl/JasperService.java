@@ -159,7 +159,7 @@ public final class JasperService extends AbstractJasperService
 		}
 		catch (JRException e)
 		{
-			// metas: ts:  US1176: add better diagnostics
+			// metas: ts: US1176: add better diagnostics
 			final StringBuilder sb = new StringBuilder();
 			sb.append(e.getLocalizedMessage() + "\n");
 			sb.append("PrintServiceName=" + printServiceName);

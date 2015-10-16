@@ -68,12 +68,12 @@ public interface I_C_Sponsor
     public static final String COLUMNNAME_C_AdvCommissionSalaryGroup_ID = "C_AdvCommissionSalaryGroup_ID";
 
 	/** Set Vergütungsgruppe.
-	  *  US1026:  Änderung Vergütungsplan (2011010610000028) R01A06
+	  * US1026: Aenderung Vergütungsplan (2011010610000028) R01A06
 	  */
 	public void setC_AdvCommissionSalaryGroup_ID (int C_AdvCommissionSalaryGroup_ID);
 
 	/** Get Vergütungsgruppe.
-	  *  US1026:  Änderung Vergütungsplan (2011010610000028) R01A06
+	  * US1026: Aenderung Vergütungsplan (2011010610000028) R01A06
 	  */
 	public int getC_AdvCommissionSalaryGroup_ID();
 
@@ -83,12 +83,12 @@ public interface I_C_Sponsor
     public static final String COLUMNNAME_C_AdvComRank_System_ID = "C_AdvComRank_System_ID";
 
 	/** Set Vergütungsgruppe (System).
-	  *  US1026:  Änderung Vergütungsplan (2011010610000028) R01A06
+	  * US1026:  Aenderung Vergütungsplan (2011010610000028) R01A06
 	  */
 	public void setC_AdvComRank_System_ID (int C_AdvComRank_System_ID);
 
 	/** Get Vergütungsgruppe (System).
-	  *  US1026:  Änderung Vergütungsplan (2011010610000028) R01A06
+	  * US1026:  Aenderung Vergütungsplan (2011010610000028) R01A06
 	  */
 	public int getC_AdvComRank_System_ID();
 
@@ -182,12 +182,12 @@ public interface I_C_Sponsor
     public static final String COLUMNNAME_IsManualRank = "IsManualRank";
 
 	/** Set fixierte VG.
-	  *  US1026:  Änderung Vergütungsplan (2011010610000028)  R01A06
+	  * US1026: Aenderung Vergütungsplan (2011010610000028)  R01A06
 	  */
 	public void setIsManualRank (boolean IsManualRank);
 
 	/** Get fixierte VG.
-	  *  US1026:  Änderung Vergütungsplan (2011010610000028)  R01A06
+	  * US1026: Aenderung Vergütungsplan (2011010610000028)  R01A06
 	  */
 	public boolean isManualRank();
 

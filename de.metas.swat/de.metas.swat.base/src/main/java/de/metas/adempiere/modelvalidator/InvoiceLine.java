@@ -107,7 +107,7 @@ public class InvoiceLine implements ModelValidator
 				invoiceLineBL.setTaxAmtInfo(po.getCtx(), il, po.get_TrxName());				
 			}
 
-			// Introduced by  US1184, because having the same price on Order and Invoice is enforced by German Law
+			// Introduced by US1184, because having the same price on Order and Invoice is enforced by German Law
 			if (invoiceLineBL.isPriceLocked(il))
 			{
 				assertOrderInvoicePricesMatch(il);

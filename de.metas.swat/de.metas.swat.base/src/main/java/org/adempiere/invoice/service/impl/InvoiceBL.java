@@ -69,7 +69,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 
 		final MInvoice invoice = new MInvoice(inOutPO, dateInvoiced);
 		invoice.setIsSOTrx(inOut.isSOTrx());
-		invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); //  US1184
+		invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); // US1184
 
 		invoice.saveEx(trxName);
 

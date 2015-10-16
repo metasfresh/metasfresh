@@ -388,8 +388,8 @@ public class InvoiceGenerate extends SvrProcess {
 
 		if (m_invoice == null) {
 			m_invoice = new MInvoice(order, 0, p_DateInvoiced);
-			m_invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); //  US1184
-			m_invoice.setC_Currency_ID(order.getC_Currency_ID()); //  US1184
+			m_invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); // US1184
+			m_invoice.setC_Currency_ID(order.getC_Currency_ID()); // US1184
 			if (!m_invoice.save())
 				throw new IllegalStateException("Could not create Invoice (o)");
 		}
@@ -434,8 +434,8 @@ public class InvoiceGenerate extends SvrProcess {
 
 		if (m_invoice == null) {
 			m_invoice = new MInvoice(order, 0, p_DateInvoiced);
-			m_invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); //  US1184
-			m_invoice.setC_Currency_ID(order.getC_Currency_ID()); //  US1184
+			m_invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); // US1184
+			m_invoice.setC_Currency_ID(order.getC_Currency_ID()); // US1184
 			if (!m_invoice.save())
 				throw new IllegalStateException("Could not create Invoice (s)");
 		}

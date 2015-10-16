@@ -180,7 +180,7 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 		{
 			return true;
 		}
-		
+
 		MLocation address = getLocation(true);
 		m_uniqueName = getName();
 		if (m_uniqueName != null && m_uniqueName.equals("."))	//	default

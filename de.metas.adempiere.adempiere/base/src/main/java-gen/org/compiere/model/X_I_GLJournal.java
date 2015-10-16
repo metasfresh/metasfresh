@@ -19,21 +19,20 @@ package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for I_GLJournal
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_I_GLJournal extends org.compiere.model.PO implements I_I_GLJournal, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 362856913L;
 
     /** Standard Constructor */
     public X_I_GLJournal (Properties ctx, int I_GLJournal_ID, String trxName)
@@ -52,94 +51,157 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 2 - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_I_GLJournal[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	public I_C_ElementValue getAccount() throws RuntimeException
-    {
-		return (I_C_ElementValue)MTable.get(getCtx(), I_C_ElementValue.Table_Name)
-			.getPO(getAccount_ID(), get_TrxName());	}
-
-	/** Set Account.
-		@param Account_ID 
-		Account used
-	  */
-	public void setAccount_ID (int Account_ID)
+	@Override
+	public org.compiere.model.I_C_ElementValue getAccountFrom() throws RuntimeException
 	{
-		if (Account_ID < 1) 
-			set_Value (COLUMNNAME_Account_ID, null);
-		else 
-			set_Value (COLUMNNAME_Account_ID, Integer.valueOf(Account_ID));
+		return get_ValueAsPO(COLUMNNAME_AccountFrom_ID, org.compiere.model.I_C_ElementValue.class);
 	}
 
-	/** Get Account.
-		@return Account used
-	  */
-	public int getAccount_ID () 
+	@Override
+	public void setAccountFrom(org.compiere.model.I_C_ElementValue AccountFrom)
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Account_ID);
+		set_ValueFromPO(COLUMNNAME_AccountFrom_ID, org.compiere.model.I_C_ElementValue.class, AccountFrom);
+	}
+
+	/** Set Konto Aus.
+		@param AccountFrom_ID 
+		Verwendetes Konto
+	  */
+	@Override
+	public void setAccountFrom_ID (int AccountFrom_ID)
+	{
+		if (AccountFrom_ID < 1) 
+			set_Value (COLUMNNAME_AccountFrom_ID, null);
+		else 
+			set_Value (COLUMNNAME_AccountFrom_ID, Integer.valueOf(AccountFrom_ID));
+	}
+
+	/** Get Konto Aus.
+		@return Verwendetes Konto
+	  */
+	@Override
+	public int getAccountFrom_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AccountFrom_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
 	}
 
-	/** Set Account Key.
-		@param AccountValue 
-		Key of Account Element
-	  */
-	public void setAccountValue (String AccountValue)
+	@Override
+	public org.compiere.model.I_C_ElementValue getAccountTo() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_AccountValue, AccountValue);
+		return get_ValueAsPO(COLUMNNAME_AccountTo_ID, org.compiere.model.I_C_ElementValue.class);
 	}
 
-	/** Get Account Key.
-		@return Key of Account Element
-	  */
-	public String getAccountValue () 
+	@Override
+	public void setAccountTo(org.compiere.model.I_C_ElementValue AccountTo)
 	{
-		return (String)get_Value(COLUMNNAME_AccountValue);
+		set_ValueFromPO(COLUMNNAME_AccountTo_ID, org.compiere.model.I_C_ElementValue.class, AccountTo);
 	}
 
-	/** Set Account Schema Name.
+	/** Set Konto Zu.
+		@param AccountTo_ID 
+		Verwendetes Konto
+	  */
+	@Override
+	public void setAccountTo_ID (int AccountTo_ID)
+	{
+		if (AccountTo_ID < 1) 
+			set_Value (COLUMNNAME_AccountTo_ID, null);
+		else 
+			set_Value (COLUMNNAME_AccountTo_ID, Integer.valueOf(AccountTo_ID));
+	}
+
+	/** Get Konto Zu.
+		@return Verwendetes Konto
+	  */
+	@Override
+	public int getAccountTo_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AccountTo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Konto-Schlüssel Aus.
+		@param AccountValueFrom Konto-Schlüssel Aus	  */
+	@Override
+	public void setAccountValueFrom (java.lang.String AccountValueFrom)
+	{
+		set_Value (COLUMNNAME_AccountValueFrom, AccountValueFrom);
+	}
+
+	/** Get Konto-Schlüssel Aus.
+		@return Konto-Schlüssel Aus	  */
+	@Override
+	public java.lang.String getAccountValueFrom () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AccountValueFrom);
+	}
+
+	/** Set Konto-Schlüssel Zu.
+		@param AccountValueTo Konto-Schlüssel Zu	  */
+	@Override
+	public void setAccountValueTo (java.lang.String AccountValueTo)
+	{
+		set_Value (COLUMNNAME_AccountValueTo, AccountValueTo);
+	}
+
+	/** Get Konto-Schlüssel Zu.
+		@return Konto-Schlüssel Zu	  */
+	@Override
+	public java.lang.String getAccountValueTo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AccountValueTo);
+	}
+
+	/** Set Kontenschema-Bezeichnung.
 		@param AcctSchemaName 
 		Name of the Accounting Schema
 	  */
-	public void setAcctSchemaName (String AcctSchemaName)
+	@Override
+	public void setAcctSchemaName (java.lang.String AcctSchemaName)
 	{
 		set_Value (COLUMNNAME_AcctSchemaName, AcctSchemaName);
 	}
 
-	/** Get Account Schema Name.
+	/** Get Kontenschema-Bezeichnung.
 		@return Name of the Accounting Schema
 	  */
-	public String getAcctSchemaName () 
+	@Override
+	public java.lang.String getAcctSchemaName () 
 	{
-		return (String)get_Value(COLUMNNAME_AcctSchemaName);
+		return (java.lang.String)get_Value(COLUMNNAME_AcctSchemaName);
 	}
 
-	/** Set Document Org.
+	@Override
+	public org.compiere.model.I_AD_Org getAD_OrgDoc() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_OrgDoc_ID, org.compiere.model.I_AD_Org.class);
+	}
+
+	@Override
+	public void setAD_OrgDoc(org.compiere.model.I_AD_Org AD_OrgDoc)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_OrgDoc_ID, org.compiere.model.I_AD_Org.class, AD_OrgDoc);
+	}
+
+	/** Set Beleg-Organisation.
 		@param AD_OrgDoc_ID 
 		Document Organization (independent from account organization)
 	  */
+	@Override
 	public void setAD_OrgDoc_ID (int AD_OrgDoc_ID)
 	{
 		if (AD_OrgDoc_ID < 1) 
@@ -148,9 +210,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_AD_OrgDoc_ID, Integer.valueOf(AD_OrgDoc_ID));
 	}
 
-	/** Get Document Org.
+	/** Get Beleg-Organisation.
 		@return Document Organization (independent from account organization)
 	  */
+	@Override
 	public int getAD_OrgDoc_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgDoc_ID);
@@ -159,10 +222,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Trx Organization.
+	@Override
+	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class);
+	}
+
+	@Override
+	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class, AD_OrgTrx);
+	}
+
+	/** Set Buchende Organisation.
 		@param AD_OrgTrx_ID 
 		Performing or initiating organization
 	  */
+	@Override
 	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
 	{
 		if (AD_OrgTrx_ID < 1) 
@@ -171,9 +247,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
 	}
 
-	/** Get Trx Organization.
+	/** Get Buchende Organisation.
 		@return Performing or initiating organization
 	  */
+	@Override
 	public int getAD_OrgTrx_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
@@ -182,19 +259,21 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Accounted Credit.
+	/** Set Haben.
 		@param AmtAcctCr 
-		Accounted Credit Amount
+		Ausgewiesener Forderungsbetrag
 	  */
-	public void setAmtAcctCr (BigDecimal AmtAcctCr)
+	@Override
+	public void setAmtAcctCr (java.math.BigDecimal AmtAcctCr)
 	{
 		set_Value (COLUMNNAME_AmtAcctCr, AmtAcctCr);
 	}
 
-	/** Get Accounted Credit.
-		@return Accounted Credit Amount
+	/** Get Haben.
+		@return Ausgewiesener Forderungsbetrag
 	  */
-	public BigDecimal getAmtAcctCr () 
+	@Override
+	public java.math.BigDecimal getAmtAcctCr () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr);
 		if (bd == null)
@@ -202,19 +281,21 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return bd;
 	}
 
-	/** Set Accounted Debit.
+	/** Set Soll.
 		@param AmtAcctDr 
-		Accounted Debit Amount
+		Ausgewiesener Verbindlichkeitsbetrag
 	  */
-	public void setAmtAcctDr (BigDecimal AmtAcctDr)
+	@Override
+	public void setAmtAcctDr (java.math.BigDecimal AmtAcctDr)
 	{
 		set_Value (COLUMNNAME_AmtAcctDr, AmtAcctDr);
 	}
 
-	/** Get Accounted Debit.
-		@return Accounted Debit Amount
+	/** Get Soll.
+		@return Ausgewiesener Verbindlichkeitsbetrag
 	  */
-	public BigDecimal getAmtAcctDr () 
+	@Override
+	public java.math.BigDecimal getAmtAcctDr () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr);
 		if (bd == null)
@@ -222,19 +303,21 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return bd;
 	}
 
-	/** Set Source Credit.
+	/** Set Ausgangsforderung.
 		@param AmtSourceCr 
 		Source Credit Amount
 	  */
-	public void setAmtSourceCr (BigDecimal AmtSourceCr)
+	@Override
+	public void setAmtSourceCr (java.math.BigDecimal AmtSourceCr)
 	{
 		set_Value (COLUMNNAME_AmtSourceCr, AmtSourceCr);
 	}
 
-	/** Get Source Credit.
+	/** Get Ausgangsforderung.
 		@return Source Credit Amount
 	  */
-	public BigDecimal getAmtSourceCr () 
+	@Override
+	public java.math.BigDecimal getAmtSourceCr () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceCr);
 		if (bd == null)
@@ -242,19 +325,21 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return bd;
 	}
 
-	/** Set Source Debit.
+	/** Set Ausgangsverbindlichkeit.
 		@param AmtSourceDr 
 		Source Debit Amount
 	  */
-	public void setAmtSourceDr (BigDecimal AmtSourceDr)
+	@Override
+	public void setAmtSourceDr (java.math.BigDecimal AmtSourceDr)
 	{
 		set_Value (COLUMNNAME_AmtSourceDr, AmtSourceDr);
 	}
 
-	/** Get Source Debit.
+	/** Get Ausgangsverbindlichkeit.
 		@return Source Debit Amount
 	  */
-	public BigDecimal getAmtSourceDr () 
+	@Override
+	public java.math.BigDecimal getAmtSourceDr () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceDr);
 		if (bd == null)
@@ -262,66 +347,80 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return bd;
 	}
 
-	/** Set Batch Description.
+	/** Set Beschreibung Lauf.
 		@param BatchDescription 
 		Description of the Batch
 	  */
-	public void setBatchDescription (String BatchDescription)
+	@Override
+	public void setBatchDescription (java.lang.String BatchDescription)
 	{
 		set_Value (COLUMNNAME_BatchDescription, BatchDescription);
 	}
 
-	/** Get Batch Description.
+	/** Get Beschreibung Lauf.
 		@return Description of the Batch
 	  */
-	public String getBatchDescription () 
+	@Override
+	public java.lang.String getBatchDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_BatchDescription);
+		return (java.lang.String)get_Value(COLUMNNAME_BatchDescription);
 	}
 
-	/** Set Batch Document No.
+	/** Set Beleg-Nr. Lauf.
 		@param BatchDocumentNo 
 		Document Number of the Batch
 	  */
-	public void setBatchDocumentNo (String BatchDocumentNo)
+	@Override
+	public void setBatchDocumentNo (java.lang.String BatchDocumentNo)
 	{
 		set_Value (COLUMNNAME_BatchDocumentNo, BatchDocumentNo);
 	}
 
-	/** Get Batch Document No.
+	/** Get Beleg-Nr. Lauf.
 		@return Document Number of the Batch
 	  */
-	public String getBatchDocumentNo () 
+	@Override
+	public java.lang.String getBatchDocumentNo () 
 	{
-		return (String)get_Value(COLUMNNAME_BatchDocumentNo);
+		return (java.lang.String)get_Value(COLUMNNAME_BatchDocumentNo);
 	}
 
-	/** Set Business Partner Key.
+	/** Set Geschäftspartner-Schlüssel.
 		@param BPartnerValue 
 		Key of the Business Partner
 	  */
-	public void setBPartnerValue (String BPartnerValue)
+	@Override
+	public void setBPartnerValue (java.lang.String BPartnerValue)
 	{
 		set_Value (COLUMNNAME_BPartnerValue, BPartnerValue);
 	}
 
-	/** Get Business Partner Key.
+	/** Get Geschäftspartner-Schlüssel.
 		@return Key of the Business Partner
 	  */
-	public String getBPartnerValue () 
+	@Override
+	public java.lang.String getBPartnerValue () 
 	{
-		return (String)get_Value(COLUMNNAME_BPartnerValue);
+		return (java.lang.String)get_Value(COLUMNNAME_BPartnerValue);
 	}
 
-	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
-    {
-		return (I_C_AcctSchema)MTable.get(getCtx(), I_C_AcctSchema.Table_Name)
-			.getPO(getC_AcctSchema_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
+	}
 
-	/** Set Accounting Schema.
+	@Override
+	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
+	{
+		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
+	}
+
+	/** Set Buchführungs-Schema.
 		@param C_AcctSchema_ID 
 		Rules for accounting
 	  */
+	@Override
 	public void setC_AcctSchema_ID (int C_AcctSchema_ID)
 	{
 		if (C_AcctSchema_ID < 1) 
@@ -330,9 +429,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_AcctSchema_ID, Integer.valueOf(C_AcctSchema_ID));
 	}
 
-	/** Get Accounting Schema.
+	/** Get Buchführungs-Schema.
 		@return Rules for accounting
 	  */
+	@Override
 	public int getC_AcctSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
@@ -341,15 +441,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Activity getC_Activity() throws RuntimeException
-    {
-		return (I_C_Activity)MTable.get(getCtx(), I_C_Activity.Table_Name)
-			.getPO(getC_Activity_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
+	}
 
-	/** Set Activity.
+	@Override
+	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
+	}
+
+	/** Set Kostenstelle.
 		@param C_Activity_ID 
-		Business Activity
+		Kostenstelle
 	  */
+	@Override
 	public void setC_Activity_ID (int C_Activity_ID)
 	{
 		if (C_Activity_ID < 1) 
@@ -358,9 +466,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
 	}
 
-	/** Get Activity.
-		@return Business Activity
+	/** Get Kostenstelle.
+		@return Kostenstelle
 	  */
+	@Override
 	public int getC_Activity_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
@@ -369,32 +478,42 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Category Name.
+	/** Set Kategorie-Bezeichnung.
 		@param CategoryName 
 		Name of the Category
 	  */
-	public void setCategoryName (String CategoryName)
+	@Override
+	public void setCategoryName (java.lang.String CategoryName)
 	{
 		set_Value (COLUMNNAME_CategoryName, CategoryName);
 	}
 
-	/** Get Category Name.
+	/** Get Kategorie-Bezeichnung.
 		@return Name of the Category
 	  */
-	public String getCategoryName () 
+	@Override
+	public java.lang.String getCategoryName () 
 	{
-		return (String)get_Value(COLUMNNAME_CategoryName);
+		return (java.lang.String)get_Value(COLUMNNAME_CategoryName);
 	}
 
-	public I_C_BPartner getC_BPartner() throws RuntimeException
-    {
-		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
-			.getPO(getC_BPartner_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
 
-	/** Set Business Partner .
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Identifies a Business Partner
 	  */
+	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -403,9 +522,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
-	/** Get Business Partner .
+	/** Get Geschäftspartner.
 		@return Identifies a Business Partner
 	  */
+	@Override
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
@@ -414,15 +534,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Campaign getC_Campaign() throws RuntimeException
-    {
-		return (I_C_Campaign)MTable.get(getCtx(), I_C_Campaign.Table_Name)
-			.getPO(getC_Campaign_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
+	}
 
-	/** Set Campaign.
+	@Override
+	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
+	}
+
+	/** Set Werbemassnahme.
 		@param C_Campaign_ID 
 		Marketing Campaign
 	  */
+	@Override
 	public void setC_Campaign_ID (int C_Campaign_ID)
 	{
 		if (C_Campaign_ID < 1) 
@@ -431,9 +559,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
 	}
 
-	/** Get Campaign.
+	/** Get Werbemassnahme.
 		@return Marketing Campaign
 	  */
+	@Override
 	public int getC_Campaign_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_ID);
@@ -442,15 +571,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_ConversionType getC_ConversionType() throws RuntimeException
-    {
-		return (I_C_ConversionType)MTable.get(getCtx(), I_C_ConversionType.Table_Name)
-			.getPO(getC_ConversionType_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_ConversionType getC_ConversionType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_ConversionType_ID, org.compiere.model.I_C_ConversionType.class);
+	}
 
-	/** Set Currency Type.
+	@Override
+	public void setC_ConversionType(org.compiere.model.I_C_ConversionType C_ConversionType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_ConversionType_ID, org.compiere.model.I_C_ConversionType.class, C_ConversionType);
+	}
+
+	/** Set Kursart.
 		@param C_ConversionType_ID 
 		Currency Conversion Rate Type
 	  */
+	@Override
 	public void setC_ConversionType_ID (int C_ConversionType_ID)
 	{
 		if (C_ConversionType_ID < 1) 
@@ -459,9 +596,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_ConversionType_ID, Integer.valueOf(C_ConversionType_ID));
 	}
 
-	/** Get Currency Type.
+	/** Get Kursart.
 		@return Currency Conversion Rate Type
 	  */
+	@Override
 	public int getC_ConversionType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_ConversionType_ID);
@@ -470,15 +608,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Currency getC_Currency() throws RuntimeException
-    {
-		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
-			.getPO(getC_Currency_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
 
-	/** Set Currency.
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
 		@param C_Currency_ID 
 		The Currency for this record
 	  */
+	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
@@ -487,9 +633,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
-	/** Get Currency.
+	/** Get Währung.
 		@return The Currency for this record
 	  */
+	@Override
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
@@ -498,15 +645,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_DocType getC_DocType() throws RuntimeException
-    {
-		return (I_C_DocType)MTable.get(getCtx(), I_C_DocType.Table_Name)
-			.getPO(getC_DocType_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
+	}
 
-	/** Set Document Type.
+	@Override
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
+	}
+
+	/** Set Belegart.
 		@param C_DocType_ID 
 		Document type or rules
 	  */
+	@Override
 	public void setC_DocType_ID (int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0) 
@@ -515,9 +670,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
 	}
 
-	/** Get Document Type.
+	/** Get Belegart.
 		@return Document type or rules
 	  */
+	@Override
 	public int getC_DocType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
@@ -526,32 +682,42 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Client Key.
+	/** Set Mandanten-Schlüssel.
 		@param ClientValue 
 		Key of the Client
 	  */
-	public void setClientValue (String ClientValue)
+	@Override
+	public void setClientValue (java.lang.String ClientValue)
 	{
 		set_Value (COLUMNNAME_ClientValue, ClientValue);
 	}
 
-	/** Get Client Key.
+	/** Get Mandanten-Schlüssel.
 		@return Key of the Client
 	  */
-	public String getClientValue () 
+	@Override
+	public java.lang.String getClientValue () 
 	{
-		return (String)get_Value(COLUMNNAME_ClientValue);
+		return (java.lang.String)get_Value(COLUMNNAME_ClientValue);
 	}
 
-	public I_C_Location getC_LocFrom() throws RuntimeException
-    {
-		return (I_C_Location)MTable.get(getCtx(), I_C_Location.Table_Name)
-			.getPO(getC_LocFrom_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Location getC_LocFrom() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_LocFrom_ID, org.compiere.model.I_C_Location.class);
+	}
 
-	/** Set Location From.
+	@Override
+	public void setC_LocFrom(org.compiere.model.I_C_Location C_LocFrom)
+	{
+		set_ValueFromPO(COLUMNNAME_C_LocFrom_ID, org.compiere.model.I_C_Location.class, C_LocFrom);
+	}
+
+	/** Set Von Ort.
 		@param C_LocFrom_ID 
 		Location that inventory was moved from
 	  */
+	@Override
 	public void setC_LocFrom_ID (int C_LocFrom_ID)
 	{
 		if (C_LocFrom_ID < 1) 
@@ -560,9 +726,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_LocFrom_ID, Integer.valueOf(C_LocFrom_ID));
 	}
 
-	/** Get Location From.
+	/** Get Von Ort.
 		@return Location that inventory was moved from
 	  */
+	@Override
 	public int getC_LocFrom_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_LocFrom_ID);
@@ -571,15 +738,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Location getC_LocTo() throws RuntimeException
-    {
-		return (I_C_Location)MTable.get(getCtx(), I_C_Location.Table_Name)
-			.getPO(getC_LocTo_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Location getC_LocTo() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_LocTo_ID, org.compiere.model.I_C_Location.class);
+	}
 
-	/** Set Location To.
+	@Override
+	public void setC_LocTo(org.compiere.model.I_C_Location C_LocTo)
+	{
+		set_ValueFromPO(COLUMNNAME_C_LocTo_ID, org.compiere.model.I_C_Location.class, C_LocTo);
+	}
+
+	/** Set Nach Ort.
 		@param C_LocTo_ID 
 		Location that inventory was moved to
 	  */
+	@Override
 	public void setC_LocTo_ID (int C_LocTo_ID)
 	{
 		if (C_LocTo_ID < 1) 
@@ -588,9 +763,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_LocTo_ID, Integer.valueOf(C_LocTo_ID));
 	}
 
-	/** Get Location To.
+	/** Get Nach Ort.
 		@return Location that inventory was moved to
 	  */
+	@Override
 	public int getC_LocTo_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_LocTo_ID);
@@ -599,32 +775,42 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Currency Type Key.
+	/** Set Kursart-Schlüssel.
 		@param ConversionTypeValue 
 		Key value for the Currency Conversion Rate Type
 	  */
-	public void setConversionTypeValue (String ConversionTypeValue)
+	@Override
+	public void setConversionTypeValue (java.lang.String ConversionTypeValue)
 	{
 		set_Value (COLUMNNAME_ConversionTypeValue, ConversionTypeValue);
 	}
 
-	/** Get Currency Type Key.
+	/** Get Kursart-Schlüssel.
 		@return Key value for the Currency Conversion Rate Type
 	  */
-	public String getConversionTypeValue () 
+	@Override
+	public java.lang.String getConversionTypeValue () 
 	{
-		return (String)get_Value(COLUMNNAME_ConversionTypeValue);
+		return (java.lang.String)get_Value(COLUMNNAME_ConversionTypeValue);
 	}
 
-	public I_C_Period getC_Period() throws RuntimeException
-    {
-		return (I_C_Period)MTable.get(getCtx(), I_C_Period.Table_Name)
-			.getPO(getC_Period_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Period getC_Period() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
+	}
 
-	/** Set Period.
+	@Override
+	public void setC_Period(org.compiere.model.I_C_Period C_Period)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class, C_Period);
+	}
+
+	/** Set Periode.
 		@param C_Period_ID 
 		Period of the Calendar
 	  */
+	@Override
 	public void setC_Period_ID (int C_Period_ID)
 	{
 		if (C_Period_ID < 1) 
@@ -633,9 +819,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_Period_ID, Integer.valueOf(C_Period_ID));
 	}
 
-	/** Get Period.
+	/** Get Periode.
 		@return Period of the Calendar
 	  */
+	@Override
 	public int getC_Period_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Period_ID);
@@ -644,15 +831,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Project getC_Project() throws RuntimeException
-    {
-		return (I_C_Project)MTable.get(getCtx(), I_C_Project.Table_Name)
-			.getPO(getC_Project_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
+	}
 
-	/** Set Project.
+	@Override
+	public void setC_Project(org.compiere.model.I_C_Project C_Project)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class, C_Project);
+	}
+
+	/** Set Projekt.
 		@param C_Project_ID 
 		Financial Project
 	  */
+	@Override
 	public void setC_Project_ID (int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
@@ -661,9 +856,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
 	}
 
-	/** Get Project.
+	/** Get Projekt.
 		@return Financial Project
 	  */
+	@Override
 	public int getC_Project_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
@@ -672,15 +868,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_SalesRegion getC_SalesRegion() throws RuntimeException
-    {
-		return (I_C_SalesRegion)MTable.get(getCtx(), I_C_SalesRegion.Table_Name)
-			.getPO(getC_SalesRegion_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_SalesRegion getC_SalesRegion() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_SalesRegion_ID, org.compiere.model.I_C_SalesRegion.class);
+	}
 
-	/** Set Sales Region.
+	@Override
+	public void setC_SalesRegion(org.compiere.model.I_C_SalesRegion C_SalesRegion)
+	{
+		set_ValueFromPO(COLUMNNAME_C_SalesRegion_ID, org.compiere.model.I_C_SalesRegion.class, C_SalesRegion);
+	}
+
+	/** Set Vertriebsgebiet.
 		@param C_SalesRegion_ID 
 		Sales coverage region
 	  */
+	@Override
 	public void setC_SalesRegion_ID (int C_SalesRegion_ID)
 	{
 		if (C_SalesRegion_ID < 1) 
@@ -689,9 +893,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_SalesRegion_ID, Integer.valueOf(C_SalesRegion_ID));
 	}
 
-	/** Get Sales Region.
+	/** Get Vertriebsgebiet.
 		@return Sales coverage region
 	  */
+	@Override
 	public int getC_SalesRegion_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_SalesRegion_ID);
@@ -700,15 +905,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_UOM getC_UOM() throws RuntimeException
-    {
-		return (I_C_UOM)MTable.get(getCtx(), I_C_UOM.Table_Name)
-			.getPO(getC_UOM_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
 
-	/** Set UOM.
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Unit of Measure
 	  */
+	@Override
 	public void setC_UOM_ID (int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -717,9 +930,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
 	}
 
-	/** Get UOM.
+	/** Get Maßeinheit.
 		@return Unit of Measure
 	  */
+	@Override
 	public int getC_UOM_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
@@ -728,19 +942,21 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Rate.
+	/** Set Wechselkurs.
 		@param CurrencyRate 
 		Currency Conversion Rate
 	  */
-	public void setCurrencyRate (BigDecimal CurrencyRate)
+	@Override
+	public void setCurrencyRate (java.math.BigDecimal CurrencyRate)
 	{
 		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
 	}
 
-	/** Get Rate.
+	/** Get Wechselkurs.
 		@return Currency Conversion Rate
 	  */
-	public BigDecimal getCurrencyRate () 
+	@Override
+	public java.math.BigDecimal getCurrencyRate () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrencyRate);
 		if (bd == null)
@@ -748,94 +964,151 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return bd;
 	}
 
-	public I_C_ValidCombination getC_ValidCombination() throws RuntimeException
-    {
-		return (I_C_ValidCombination)MTable.get(getCtx(), I_C_ValidCombination.Table_Name)
-			.getPO(getC_ValidCombination_ID(), get_TrxName());	}
-
-	/** Set Combination.
-		@param C_ValidCombination_ID 
-		Valid Account Combination
-	  */
-	public void setC_ValidCombination_ID (int C_ValidCombination_ID)
+	@Override
+	public org.compiere.model.I_C_ElementValue getC_ValidCombinationFrom() throws RuntimeException
 	{
-		if (C_ValidCombination_ID < 1) 
-			set_Value (COLUMNNAME_C_ValidCombination_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_ValidCombination_ID, Integer.valueOf(C_ValidCombination_ID));
+		return get_ValueAsPO(COLUMNNAME_C_ValidCombinationFrom_ID, org.compiere.model.I_C_ElementValue.class);
 	}
 
-	/** Get Combination.
-		@return Valid Account Combination
-	  */
-	public int getC_ValidCombination_ID () 
+	@Override
+	public void setC_ValidCombinationFrom(org.compiere.model.I_C_ElementValue C_ValidCombinationFrom)
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_ValidCombination_ID);
+		set_ValueFromPO(COLUMNNAME_C_ValidCombinationFrom_ID, org.compiere.model.I_C_ElementValue.class, C_ValidCombinationFrom);
+	}
+
+	/** Set Kombination Aus.
+		@param C_ValidCombinationFrom_ID 
+		Gültige Kontenkombination
+	  */
+	@Override
+	public void setC_ValidCombinationFrom_ID (int C_ValidCombinationFrom_ID)
+	{
+		if (C_ValidCombinationFrom_ID < 1) 
+			set_Value (COLUMNNAME_C_ValidCombinationFrom_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_ValidCombinationFrom_ID, Integer.valueOf(C_ValidCombinationFrom_ID));
+	}
+
+	/** Get Kombination Aus.
+		@return Gültige Kontenkombination
+	  */
+	@Override
+	public int getC_ValidCombinationFrom_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_ValidCombinationFrom_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
 	}
 
-	/** Set Account Date.
+	@Override
+	public org.compiere.model.I_C_ElementValue getC_ValidCombinationTo() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_ValidCombinationTo_ID, org.compiere.model.I_C_ElementValue.class);
+	}
+
+	@Override
+	public void setC_ValidCombinationTo(org.compiere.model.I_C_ElementValue C_ValidCombinationTo)
+	{
+		set_ValueFromPO(COLUMNNAME_C_ValidCombinationTo_ID, org.compiere.model.I_C_ElementValue.class, C_ValidCombinationTo);
+	}
+
+	/** Set Kombination Zu.
+		@param C_ValidCombinationTo_ID 
+		Gültige Kontenkombination
+	  */
+	@Override
+	public void setC_ValidCombinationTo_ID (int C_ValidCombinationTo_ID)
+	{
+		if (C_ValidCombinationTo_ID < 1) 
+			set_Value (COLUMNNAME_C_ValidCombinationTo_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_ValidCombinationTo_ID, Integer.valueOf(C_ValidCombinationTo_ID));
+	}
+
+	/** Get Kombination Zu.
+		@return Gültige Kontenkombination
+	  */
+	@Override
+	public int getC_ValidCombinationTo_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_ValidCombinationTo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Buchungsdatum.
 		@param DateAcct 
 		Accounting Date
 	  */
-	public void setDateAcct (Timestamp DateAcct)
+	@Override
+	public void setDateAcct (java.sql.Timestamp DateAcct)
 	{
 		set_Value (COLUMNNAME_DateAcct, DateAcct);
 	}
 
-	/** Get Account Date.
+	/** Get Buchungsdatum.
 		@return Accounting Date
 	  */
-	public Timestamp getDateAcct () 
+	@Override
+	public java.sql.Timestamp getDateAcct () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_DateAcct);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Document Type Name.
+	/** Set Belegart-Bezeichnung.
 		@param DocTypeName 
 		Name of the Document Type
 	  */
-	public void setDocTypeName (String DocTypeName)
+	@Override
+	public void setDocTypeName (java.lang.String DocTypeName)
 	{
 		set_Value (COLUMNNAME_DocTypeName, DocTypeName);
 	}
 
-	/** Get Document Type Name.
+	/** Get Belegart-Bezeichnung.
 		@return Name of the Document Type
 	  */
-	public String getDocTypeName () 
+	@Override
+	public java.lang.String getDocTypeName () 
 	{
-		return (String)get_Value(COLUMNNAME_DocTypeName);
+		return (java.lang.String)get_Value(COLUMNNAME_DocTypeName);
 	}
 
-	public I_GL_Budget getGL_Budget() throws RuntimeException
-    {
-		return (I_GL_Budget)MTable.get(getCtx(), I_GL_Budget.Table_Name)
-			.getPO(getGL_Budget_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_GL_Budget getGL_Budget() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_GL_Budget_ID, org.compiere.model.I_GL_Budget.class);
+	}
+
+	@Override
+	public void setGL_Budget(org.compiere.model.I_GL_Budget GL_Budget)
+	{
+		set_ValueFromPO(COLUMNNAME_GL_Budget_ID, org.compiere.model.I_GL_Budget.class, GL_Budget);
+	}
 
 	/** Set Budget.
 		@param GL_Budget_ID 
 		General Ledger Budget
 	  */
+	@Override
 	public void setGL_Budget_ID (int GL_Budget_ID)
 	{
 		if (GL_Budget_ID < 1) 
@@ -847,6 +1120,7 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 	/** Get Budget.
 		@return General Ledger Budget
 	  */
+	@Override
 	public int getGL_Budget_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GL_Budget_ID);
@@ -855,15 +1129,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_GL_Category getGL_Category() throws RuntimeException
-    {
-		return (I_GL_Category)MTable.get(getCtx(), I_GL_Category.Table_Name)
-			.getPO(getGL_Category_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_GL_Category getGL_Category() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_GL_Category_ID, org.compiere.model.I_GL_Category.class);
+	}
 
-	/** Set GL Category.
+	@Override
+	public void setGL_Category(org.compiere.model.I_GL_Category GL_Category)
+	{
+		set_ValueFromPO(COLUMNNAME_GL_Category_ID, org.compiere.model.I_GL_Category.class, GL_Category);
+	}
+
+	/** Set Hauptbuch - Kategorie.
 		@param GL_Category_ID 
 		General Ledger Category
 	  */
+	@Override
 	public void setGL_Category_ID (int GL_Category_ID)
 	{
 		if (GL_Category_ID < 1) 
@@ -872,9 +1154,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_GL_Category_ID, Integer.valueOf(GL_Category_ID));
 	}
 
-	/** Get GL Category.
+	/** Get Hauptbuch - Kategorie.
 		@return General Ledger Category
 	  */
+	@Override
 	public int getGL_Category_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GL_Category_ID);
@@ -883,15 +1166,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_GL_JournalBatch getGL_JournalBatch() throws RuntimeException
-    {
-		return (I_GL_JournalBatch)MTable.get(getCtx(), I_GL_JournalBatch.Table_Name)
-			.getPO(getGL_JournalBatch_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_GL_JournalBatch getGL_JournalBatch() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_GL_JournalBatch_ID, org.compiere.model.I_GL_JournalBatch.class);
+	}
 
-	/** Set Journal Batch.
+	@Override
+	public void setGL_JournalBatch(org.compiere.model.I_GL_JournalBatch GL_JournalBatch)
+	{
+		set_ValueFromPO(COLUMNNAME_GL_JournalBatch_ID, org.compiere.model.I_GL_JournalBatch.class, GL_JournalBatch);
+	}
+
+	/** Set Journal-Lauf.
 		@param GL_JournalBatch_ID 
 		General Ledger Journal Batch
 	  */
+	@Override
 	public void setGL_JournalBatch_ID (int GL_JournalBatch_ID)
 	{
 		if (GL_JournalBatch_ID < 1) 
@@ -900,9 +1191,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_GL_JournalBatch_ID, Integer.valueOf(GL_JournalBatch_ID));
 	}
 
-	/** Get Journal Batch.
+	/** Get Journal-Lauf.
 		@return General Ledger Journal Batch
 	  */
+	@Override
 	public int getGL_JournalBatch_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GL_JournalBatch_ID);
@@ -911,15 +1203,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_GL_Journal getGL_Journal() throws RuntimeException
-    {
-		return (I_GL_Journal)MTable.get(getCtx(), I_GL_Journal.Table_Name)
-			.getPO(getGL_Journal_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_GL_Journal getGL_Journal() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_GL_Journal_ID, org.compiere.model.I_GL_Journal.class);
+	}
+
+	@Override
+	public void setGL_Journal(org.compiere.model.I_GL_Journal GL_Journal)
+	{
+		set_ValueFromPO(COLUMNNAME_GL_Journal_ID, org.compiere.model.I_GL_Journal.class, GL_Journal);
+	}
 
 	/** Set Journal.
 		@param GL_Journal_ID 
 		General Ledger Journal
 	  */
+	@Override
 	public void setGL_Journal_ID (int GL_Journal_ID)
 	{
 		if (GL_Journal_ID < 1) 
@@ -931,6 +1231,7 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 	/** Get Journal.
 		@return General Ledger Journal
 	  */
+	@Override
 	public int getGL_Journal_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GL_Journal_ID);
@@ -939,15 +1240,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_GL_JournalLine getGL_JournalLine() throws RuntimeException
-    {
-		return (I_GL_JournalLine)MTable.get(getCtx(), I_GL_JournalLine.Table_Name)
-			.getPO(getGL_JournalLine_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_GL_JournalLine getGL_JournalLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_GL_JournalLine_ID, org.compiere.model.I_GL_JournalLine.class);
+	}
 
-	/** Set Journal Line.
+	@Override
+	public void setGL_JournalLine(org.compiere.model.I_GL_JournalLine GL_JournalLine)
+	{
+		set_ValueFromPO(COLUMNNAME_GL_JournalLine_ID, org.compiere.model.I_GL_JournalLine.class, GL_JournalLine);
+	}
+
+	/** Set Journal-Position.
 		@param GL_JournalLine_ID 
 		General Ledger Journal Line
 	  */
+	@Override
 	public void setGL_JournalLine_ID (int GL_JournalLine_ID)
 	{
 		if (GL_JournalLine_ID < 1) 
@@ -956,9 +1265,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_GL_JournalLine_ID, Integer.valueOf(GL_JournalLine_ID));
 	}
 
-	/** Get Journal Line.
+	/** Get Journal-Position.
 		@return General Ledger Journal Line
 	  */
+	@Override
 	public int getGL_JournalLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GL_JournalLine_ID);
@@ -967,27 +1277,30 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Import Error Message.
+	/** Set Import-Fehlermeldung.
 		@param I_ErrorMsg 
 		Messages generated from import process
 	  */
-	public void setI_ErrorMsg (String I_ErrorMsg)
+	@Override
+	public void setI_ErrorMsg (java.lang.String I_ErrorMsg)
 	{
 		set_Value (COLUMNNAME_I_ErrorMsg, I_ErrorMsg);
 	}
 
-	/** Get Import Error Message.
+	/** Get Import-Fehlermeldung.
 		@return Messages generated from import process
 	  */
-	public String getI_ErrorMsg () 
+	@Override
+	public java.lang.String getI_ErrorMsg () 
 	{
-		return (String)get_Value(COLUMNNAME_I_ErrorMsg);
+		return (java.lang.String)get_Value(COLUMNNAME_I_ErrorMsg);
 	}
 
-	/** Set Import GL Journal.
+	/** Set Import - Hauptbuchjournal.
 		@param I_GLJournal_ID 
 		Import General Ledger Journal
 	  */
+	@Override
 	public void setI_GLJournal_ID (int I_GLJournal_ID)
 	{
 		if (I_GLJournal_ID < 1) 
@@ -996,9 +1309,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_I_GLJournal_ID, Integer.valueOf(I_GLJournal_ID));
 	}
 
-	/** Get Import GL Journal.
+	/** Get Import - Hauptbuchjournal.
 		@return Import General Ledger Journal
 	  */
+	@Override
 	public int getI_GLJournal_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_I_GLJournal_ID);
@@ -1007,26 +1321,20 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), String.valueOf(getI_GLJournal_ID()));
-    }
-
-	/** Set Imported.
+	/** Set Importiert.
 		@param I_IsImported 
 		Has this import been processed
 	  */
+	@Override
 	public void setI_IsImported (boolean I_IsImported)
 	{
 		set_Value (COLUMNNAME_I_IsImported, Boolean.valueOf(I_IsImported));
 	}
 
-	/** Get Imported.
+	/** Get Importiert.
 		@return Has this import been processed
 	  */
+	@Override
 	public boolean isI_IsImported () 
 	{
 		Object oo = get_Value(COLUMNNAME_I_IsImported);
@@ -1039,18 +1347,20 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return false;
 	}
 
-	/** Set Create New Batch.
+	/** Set Neuen Lauf erstellen.
 		@param IsCreateNewBatch 
 		If selected a new batch is created
 	  */
+	@Override
 	public void setIsCreateNewBatch (boolean IsCreateNewBatch)
 	{
 		set_Value (COLUMNNAME_IsCreateNewBatch, Boolean.valueOf(IsCreateNewBatch));
 	}
 
-	/** Get Create New Batch.
+	/** Get Neuen Lauf erstellen.
 		@return If selected a new batch is created
 	  */
+	@Override
 	public boolean isCreateNewBatch () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsCreateNewBatch);
@@ -1063,18 +1373,20 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return false;
 	}
 
-	/** Set Create New Journal.
+	/** Set Neues Journal anlegen.
 		@param IsCreateNewJournal 
 		If selected a new journal within the batch is created
 	  */
+	@Override
 	public void setIsCreateNewJournal (boolean IsCreateNewJournal)
 	{
 		set_Value (COLUMNNAME_IsCreateNewJournal, Boolean.valueOf(IsCreateNewJournal));
 	}
 
-	/** Get Create New Journal.
+	/** Get Neues Journal anlegen.
 		@return If selected a new journal within the batch is created
 	  */
+	@Override
 	public boolean isCreateNewJournal () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsCreateNewJournal);
@@ -1087,52 +1399,58 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return false;
 	}
 
-	/** Set ISO Currency Code.
+	/** Set ISO Währungscode.
 		@param ISO_Code 
 		Three letter ISO 4217 Code of the Currency
 	  */
-	public void setISO_Code (String ISO_Code)
+	@Override
+	public void setISO_Code (java.lang.String ISO_Code)
 	{
 		set_Value (COLUMNNAME_ISO_Code, ISO_Code);
 	}
 
-	/** Get ISO Currency Code.
+	/** Get ISO Währungscode.
 		@return Three letter ISO 4217 Code of the Currency
 	  */
-	public String getISO_Code () 
+	@Override
+	public java.lang.String getISO_Code () 
 	{
-		return (String)get_Value(COLUMNNAME_ISO_Code);
+		return (java.lang.String)get_Value(COLUMNNAME_ISO_Code);
 	}
 
-	/** Set Journal Document No.
+	/** Set Journalbeleg-Nr..
 		@param JournalDocumentNo 
 		Document number of the Journal
 	  */
-	public void setJournalDocumentNo (String JournalDocumentNo)
+	@Override
+	public void setJournalDocumentNo (java.lang.String JournalDocumentNo)
 	{
 		set_Value (COLUMNNAME_JournalDocumentNo, JournalDocumentNo);
 	}
 
-	/** Get Journal Document No.
+	/** Get Journalbeleg-Nr..
 		@return Document number of the Journal
 	  */
-	public String getJournalDocumentNo () 
+	@Override
+	public java.lang.String getJournalDocumentNo () 
 	{
-		return (String)get_Value(COLUMNNAME_JournalDocumentNo);
+		return (java.lang.String)get_Value(COLUMNNAME_JournalDocumentNo);
 	}
 
-	/** Set Line No.
+	/** Set Zeile Nr..
 		@param Line 
 		Unique line for this document
 	  */
+	@Override
 	public void setLine (int Line)
 	{
 		set_Value (COLUMNNAME_Line, Integer.valueOf(Line));
 	}
 
-	/** Get Line No.
+	/** Get Zeile Nr..
 		@return Unique line for this document
 	  */
+	@Override
 	public int getLine () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Line);
@@ -1141,15 +1459,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
 
-	/** Set Product.
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
 		@param M_Product_ID 
-		Product, Service, Item
+		Produkt, Leistung, Artikel
 	  */
+	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -1158,9 +1484,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
 	  */
+	@Override
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
@@ -1169,41 +1496,48 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Trx Org Key.
+	/** Set Schlüssel buchende Org.
 		@param OrgTrxValue 
 		Key of the Transaction Organization
 	  */
-	public void setOrgTrxValue (String OrgTrxValue)
+	@Override
+	public void setOrgTrxValue (java.lang.String OrgTrxValue)
 	{
 		set_Value (COLUMNNAME_OrgTrxValue, OrgTrxValue);
 	}
 
-	/** Get Trx Org Key.
+	/** Get Schlüssel buchende Org.
 		@return Key of the Transaction Organization
 	  */
-	public String getOrgTrxValue () 
+	@Override
+	public java.lang.String getOrgTrxValue () 
 	{
-		return (String)get_Value(COLUMNNAME_OrgTrxValue);
+		return (java.lang.String)get_Value(COLUMNNAME_OrgTrxValue);
 	}
 
-	/** Set Org Key.
+	/** Set Organisations-Schlüssel.
 		@param OrgValue 
 		Key of the Organization
 	  */
-	public void setOrgValue (String OrgValue)
+	@Override
+	public void setOrgValue (java.lang.String OrgValue)
 	{
 		set_Value (COLUMNNAME_OrgValue, OrgValue);
 	}
 
-	/** Get Org Key.
+	/** Get Organisations-Schlüssel.
 		@return Key of the Organization
 	  */
-	public String getOrgValue () 
+	@Override
+	public java.lang.String getOrgValue () 
 	{
-		return (String)get_Value(COLUMNNAME_OrgValue);
+		return (java.lang.String)get_Value(COLUMNNAME_OrgValue);
 	}
 
-	/** PostingType AD_Reference_ID=125 */
+	/** 
+	 * PostingType AD_Reference_ID=125
+	 * Reference name: _Posting Type
+	 */
 	public static final int POSTINGTYPE_AD_Reference_ID=125;
 	/** Actual = A */
 	public static final String POSTINGTYPE_Actual = "A";
@@ -1215,36 +1549,40 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 	public static final String POSTINGTYPE_Statistical = "S";
 	/** Reservation = R */
 	public static final String POSTINGTYPE_Reservation = "R";
-	/** Set PostingType.
+	/** Set Buchungsart.
 		@param PostingType 
 		The type of posted amount for the transaction
 	  */
-	public void setPostingType (String PostingType)
+	@Override
+	public void setPostingType (java.lang.String PostingType)
 	{
 
 		set_Value (COLUMNNAME_PostingType, PostingType);
 	}
 
-	/** Get PostingType.
+	/** Get Buchungsart.
 		@return The type of posted amount for the transaction
 	  */
-	public String getPostingType () 
+	@Override
+	public java.lang.String getPostingType () 
 	{
-		return (String)get_Value(COLUMNNAME_PostingType);
+		return (java.lang.String)get_Value(COLUMNNAME_PostingType);
 	}
 
-	/** Set Processed.
+	/** Set Verarbeitet.
 		@param Processed 
-		The document has been processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public void setProcessed (boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Processed.
-		@return The document has been processed
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
@@ -1257,15 +1595,17 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return false;
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
+	/** Set Verarbeiten.
+		@param Processing Verarbeiten	  */
+	@Override
 	public void setProcessing (boolean Processing)
 	{
 		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
-	/** Get Process Now.
-		@return Process Now	  */
+	/** Get Verarbeiten.
+		@return Verarbeiten	  */
+	@Override
 	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
@@ -1278,53 +1618,59 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return false;
 	}
 
-	/** Set Product Key.
+	/** Set Produktschlüssel.
 		@param ProductValue 
 		Key of the Product
 	  */
-	public void setProductValue (String ProductValue)
+	@Override
+	public void setProductValue (java.lang.String ProductValue)
 	{
 		set_Value (COLUMNNAME_ProductValue, ProductValue);
 	}
 
-	/** Get Product Key.
+	/** Get Produktschlüssel.
 		@return Key of the Product
 	  */
-	public String getProductValue () 
+	@Override
+	public java.lang.String getProductValue () 
 	{
-		return (String)get_Value(COLUMNNAME_ProductValue);
+		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
 	}
 
-	/** Set Project Key.
+	/** Set Projekt-Schlüssel.
 		@param ProjectValue 
 		Key of the Project
 	  */
-	public void setProjectValue (String ProjectValue)
+	@Override
+	public void setProjectValue (java.lang.String ProjectValue)
 	{
 		set_Value (COLUMNNAME_ProjectValue, ProjectValue);
 	}
 
-	/** Get Project Key.
+	/** Get Projekt-Schlüssel.
 		@return Key of the Project
 	  */
-	public String getProjectValue () 
+	@Override
+	public java.lang.String getProjectValue () 
 	{
-		return (String)get_Value(COLUMNNAME_ProjectValue);
+		return (java.lang.String)get_Value(COLUMNNAME_ProjectValue);
 	}
 
-	/** Set Quantity.
+	/** Set Menge.
 		@param Qty 
 		Quantity
 	  */
-	public void setQty (BigDecimal Qty)
+	@Override
+	public void setQty (java.math.BigDecimal Qty)
 	{
 		set_Value (COLUMNNAME_Qty, Qty);
 	}
 
-	/** Get Quantity.
+	/** Get Menge.
 		@return Quantity
 	  */
-	public BigDecimal getQty () 
+	@Override
+	public java.math.BigDecimal getQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
@@ -1336,7 +1682,8 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		@param SKU 
 		Stock Keeping Unit
 	  */
-	public void setSKU (String SKU)
+	@Override
+	public void setSKU (java.lang.String SKU)
 	{
 		set_Value (COLUMNNAME_SKU, SKU);
 	}
@@ -1344,16 +1691,18 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 	/** Get SKU.
 		@return Stock Keeping Unit
 	  */
-	public String getSKU () 
+	@Override
+	public java.lang.String getSKU () 
 	{
-		return (String)get_Value(COLUMNNAME_SKU);
+		return (java.lang.String)get_Value(COLUMNNAME_SKU);
 	}
 
 	/** Set UPC/EAN.
 		@param UPC 
 		Bar Code (Universal Product Code or its superset European Article Number)
 	  */
-	public void setUPC (String UPC)
+	@Override
+	public void setUPC (java.lang.String UPC)
 	{
 		set_Value (COLUMNNAME_UPC, UPC);
 	}
@@ -1361,20 +1710,29 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 	/** Get UPC/EAN.
 		@return Bar Code (Universal Product Code or its superset European Article Number)
 	  */
-	public String getUPC () 
+	@Override
+	public java.lang.String getUPC () 
 	{
-		return (String)get_Value(COLUMNNAME_UPC);
+		return (java.lang.String)get_Value(COLUMNNAME_UPC);
 	}
 
-	public I_C_ElementValue getUser1() throws RuntimeException
-    {
-		return (I_C_ElementValue)MTable.get(getCtx(), I_C_ElementValue.Table_Name)
-			.getPO(getUser1_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_ElementValue getUser1() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
+	}
 
-	/** Set User List 1.
+	@Override
+	public void setUser1(org.compiere.model.I_C_ElementValue User1)
+	{
+		set_ValueFromPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class, User1);
+	}
+
+	/** Set Nutzer 1.
 		@param User1_ID 
 		User defined list element #1
 	  */
+	@Override
 	public void setUser1_ID (int User1_ID)
 	{
 		if (User1_ID < 1) 
@@ -1383,9 +1741,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_User1_ID, Integer.valueOf(User1_ID));
 	}
 
-	/** Get User List 1.
+	/** Get Nutzer 1.
 		@return User defined list element #1
 	  */
+	@Override
 	public int getUser1_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_User1_ID);
@@ -1394,15 +1753,23 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_ElementValue getUser2() throws RuntimeException
-    {
-		return (I_C_ElementValue)MTable.get(getCtx(), I_C_ElementValue.Table_Name)
-			.getPO(getUser2_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_ElementValue getUser2() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
+	}
 
-	/** Set User List 2.
+	@Override
+	public void setUser2(org.compiere.model.I_C_ElementValue User2)
+	{
+		set_ValueFromPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class, User2);
+	}
+
+	/** Set Nutzer 2.
 		@param User2_ID 
 		User defined list element #2
 	  */
+	@Override
 	public void setUser2_ID (int User2_ID)
 	{
 		if (User2_ID < 1) 
@@ -1411,9 +1778,10 @@ public class X_I_GLJournal extends PO implements I_I_GLJournal, I_Persistent
 			set_Value (COLUMNNAME_User2_ID, Integer.valueOf(User2_ID));
 	}
 
-	/** Get User List 2.
+	/** Get Nutzer 2.
 		@return User defined list element #2
 	  */
+	@Override
 	public int getUser2_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_User2_ID);

@@ -2,7 +2,7 @@ package de.metas.edi.esb.processor.strategy.aggregation;
 
 /*
  * #%L
- * Metas :: Components :: EDI  (SMX-4.5.1)
+ * de.metas.edi.esb
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

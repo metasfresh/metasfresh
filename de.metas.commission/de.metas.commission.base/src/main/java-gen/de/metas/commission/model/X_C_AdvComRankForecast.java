@@ -280,7 +280,7 @@ public class X_C_AdvComRankForecast extends PO implements I_C_AdvComRankForecast
 
 	/** Set fixierte VG.
 		@param IsManualRank 
-		 US1026:  Änderung Vergütungsplan (2011010610000028)  R01A06
+		US1026: Änderung Vergütungsplan (2011010610000028)  R01A06
 	  */
 	public void setIsManualRank (boolean IsManualRank)
 	{
@@ -288,7 +288,7 @@ public class X_C_AdvComRankForecast extends PO implements I_C_AdvComRankForecast
 	}
 
 	/** Get fixierte VG.
-		@return  US1026:  Änderung Vergütungsplan (2011010610000028)  R01A06
+		@return US1026: Änderung Vergütungsplan (2011010610000028)  R01A06
 	  */
 	public boolean isManualRank () 
 	{

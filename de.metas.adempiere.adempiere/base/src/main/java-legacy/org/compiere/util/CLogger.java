@@ -361,6 +361,33 @@ public class CLogger extends Logger implements Serializable
 		CLogMgt.getErrorBuffer().skipIssueReportingForLoggerName(getName());
 		return this;
 	}
+	
+	public void log(final Level level, final String msg, final Object param1, final Object param2)
+	{
+		if (!isLoggable(level))
+		{
+			return;
+		}
+		log(level, msg, new Object[] { param1, param2 });
+	}
+
+	public void log(final Level level, final String msg, final Object param1, final Object param2, final Object param3)
+	{
+		if (!isLoggable(level))
+		{
+			return;
+		}
+		log(level, msg, new Object[] { param1, param2, param3 });
+	}
+
+	public void log(final Level level, final String msg, final Object param1, final Object param2, final Object param3, final Object param4)
+	{
+		if (!isLoggable(level))
+		{
+			return;
+		}
+		log(level, msg, new Object[] { param1, param2, param3, param4 });
+	}
 
 	/**
 	 * Holds last error/exception, warning and info.

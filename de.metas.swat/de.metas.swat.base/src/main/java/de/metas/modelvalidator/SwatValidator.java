@@ -191,7 +191,7 @@ public class SwatValidator implements ModelValidator
 		// the MV has been added to AD_ModelValidator, so that it can be enabled for certain customers *if* required.
 		// engine.addModelValidator(new PurchaseModelValidator(), client);
 
-		engine.addModelValidator(new C_Order(), client); //  03409: Context menu fixes (2012101810000086)
+		engine.addModelValidator(new C_Order(), client); // 03409: Context menu fixes (2012101810000086)
 		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(Services.get(ITriggerUIBL.class).createModelValidator(), client);
 		engine.addModelValidator(new MViewModelValidator(), client);
@@ -251,7 +251,7 @@ public class SwatValidator implements ModelValidator
 
 		// task 06295: those two are implemented in de.metas.adempiere.adempiere, but we don't have such a nice central MV in there.
 		Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(new ResetSchedulerState());
-		// not registering this one for  because is might lead to problems if a swing-client is running while the server is starting up.
+		// not registering this one for because is might lead to problems if a swing-client is running while the server is starting up.
 		// Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(new ClearTemporaryTables());
 
 		//

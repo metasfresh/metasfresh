@@ -55,7 +55,7 @@ public class C_Order
 		calloutProvider.registerAnnotatedCallout(new de.metas.callout.C_Order());
 	}
 
-	//  03409: Context menu fixes (2012101810000086)
+	// 03409: Context menu fixes (2012101810000086)
 	@ModelChange(
 			timings = { ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = {

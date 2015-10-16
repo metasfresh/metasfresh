@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -526,7 +527,7 @@ public final class ImpFormat
 		// Standard Fields
 		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
 		final int AD_Org_ID;
-		if (getAD_Table_ID() == I_I_GLJournal.Table_ID)
+		if (getAD_Table_ID() == Services.get(IADTableDAO.class).retrieveTableId(I_I_GLJournal.Table_Name))
 		{
 			AD_Org_ID = 0;
 		}

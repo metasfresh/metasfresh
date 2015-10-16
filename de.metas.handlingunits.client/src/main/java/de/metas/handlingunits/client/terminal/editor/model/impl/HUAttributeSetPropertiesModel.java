@@ -109,6 +109,8 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		@Override
 		public void onAttributeStorageDisposed(final IAttributeStorage storage)
 		{
+			logger.log(Level.FINE, "Reseting the properties model because attribute storage was disposed: {0}", HUAttributeSetPropertiesModel.this);
+			
 			// Make sure it makes sense to reset current storage
 			final IAttributeStorage currentStorage = getIndexedAttributeStorage().getAttributeStorage();
 			if (currentStorage == null)
@@ -119,21 +121,22 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			{
 				final HUException ex = new HUException("Got attribute storage disposed event on a storage on which we should not listen."
 						+ "\n Expected storage: " + currentStorage
-						+ "\n Actual storage that we got: " + storage);
+						+ "\n Actual storage that we got: " + storage
+						+ "\n Properties model: " + HUAttributeSetPropertiesModel.this);
 				logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
 				return;
 			}
 
-			// Actually reset current attribute stoarge and also fire events so the UI will know that it needs to reload.
-			// TODO: atm we cannot just reset the attribute storage here because we are using this it embedded in a composite
-			// which atm does not have support for rebuilding itself.
-			// setAttributeStorage(null);
+			// Actually reset current attribute storage and also fire events so the UI will know that it needs to reload.
+			setAttributeStorage(null);
 		};
 	};
 
 	public HUAttributeSetPropertiesModel(final ITerminalContext terminalContext)
 	{
 		super(terminalContext);
+		
+		logger.log(Level.FINE, "New instance: {0}", this);
 	}
 
 	@Override
@@ -160,6 +163,9 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		{
 			final IAttributeStorage attributeStorageOld = this._indexedAttributeStorage.getAttributeStorage();
 			this._indexedAttributeStorage = IndexedAttributeStorage.of(attributeStorage);
+			
+			logger.log(Level.FINE, "Attribute storage old: {0}", attributeStorageOld);
+			logger.log(Level.FINE, "Attribute storage new: {0}", attributeStorage);
 
 			//
 			// Remove listeners from old attribute storage
@@ -372,8 +378,9 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	public void setPropertyValue(final String propertyName, final Object value)
 	{
 		// NOTE: if the model is disposed then the underlying indexedAttributeStorage would be "null", so it's safe to not check.
-
 		final IndexedAttributeStorage indexedAttributeStorage = getIndexedAttributeStorage();
+		
+		logger.log(Level.FINE, "Setting {0}={1} on {2} ({3})", propertyName, value, indexedAttributeStorage, this);
 		indexedAttributeStorage.setPropertyValue(propertyName, value);
 	}
 
@@ -630,6 +637,12 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			this.propertyName2attribute = ImmutableMap.copyOf(propertyName2attribute);
 			this.propertyName2AdditionalInputAction = ImmutableMap.copyOf(propertyName2AdditionalInputAction);
 			this.virtualHU = attributeStorage.isVirtual();
+		}
+		
+		@Override
+		public String toString()
+		{
+			return getClass().getSimpleName() + "[" + attributeStorage + "]";
 		}
 
 		/** @return attribute storage */

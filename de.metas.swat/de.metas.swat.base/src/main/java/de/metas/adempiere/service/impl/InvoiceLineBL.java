@@ -151,7 +151,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	@Override
 	public boolean isPriceLocked(I_C_InvoiceLine invoiceLine)
 	{
-		// // Introduced by  US1184, because having the same price on Order and Invoice
+		// // Introduced by US1184, because having the same price on Order and Invoice
 		// no - invoice does not generally have to have the same prive not generally
 		// // is enforced by German Law
 		// if (invoiceLine.getC_OrderLine_ID() > 0)

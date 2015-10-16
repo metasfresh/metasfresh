@@ -74,7 +74,7 @@ public interface ISponsorBL extends ISingletonService
 	Timestamp retrieveDateTo(I_C_Sponsor sponsor, I_C_AdvComSystem_Type comSystemType, Timestamp date);
 
 	/**
-	 * Implemented for  US1026:  aenderung Verguetungsplan (2011010610000028), R01A06 <br>
+	 * Implemented for US1026:  aenderung Verguetungsplan (2011010610000028), R01A06 <br>
 	 * <br>
 	 * Modified for 02527: Provisionsabrechnungbeleg Teil 2 (2012022910000062)<br>
 	 * <br>
@@ -90,7 +90,7 @@ public interface ISponsorBL extends ISingletonService
 	void onIsManualRankChange(I_C_Sponsor sponsor, final boolean saveNewRank, final int oldSalaryGroupId);
 
 	/**
-	 * Implemented for  02527. This Method processes the actual manual rank change, which means the old manual rank (If there is one) will be terminated, and the new one (if there is one) will be
+	 * Implemented for 02527. This Method processes the actual manual rank change, which means the old manual rank (If there is one) will be terminated, and the new one (if there is one) will be
 	 * created. Terminating a rank means creating a new SRF-Record for the Current date with the C_AdvCommissionSalaryGroup_ID = 0, which means that there is no manual rank for this sponsor.
 	 * 
 	 * conditions for terminating / creating:
@@ -109,7 +109,7 @@ public interface ISponsorBL extends ISingletonService
 	public void onManualRankChange(final I_C_Sponsor sponsor, final boolean isIsManualRankChanged, final int oldSalaryGroupId);
 
 	/**
-	 * Implemented for  02527. This Method will create an AttributeSetInstance and fill it with values. Will include:
+	 * Implemented for 02527. This Method will create an AttributeSetInstance and fill it with values. Will include:
 	 * <ul>
 	 * <li>current rank (At the given date)
 	 * <li>top rank of the previous 12 months (from the given date)

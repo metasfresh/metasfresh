@@ -1633,11 +1633,8 @@ public class MInOut extends X_M_InOut implements DocAction
 						log.fine("PO Matching");
 						// Ship - PO
 						final MMatchPO po = MMatchPO.create(null, sLine, getMovementDate(), qtyMoved);
-						if (!po.save(get_TrxName()))
-						{
-							m_processMsg = "Could not create PO Matching";
-							return DocAction.STATUS_Invalid;
-						}
+						InterfaceWrapperHelper.save(po, get_TrxName());
+						
 						// Update PO with ASI
 						if (oLine != null && oLine.getM_AttributeSetInstance_ID() == 0
 								&& sLine.getMovementQty().compareTo(oLine.getQtyOrdered()) == 0) // just if full match [
@@ -1657,11 +1654,8 @@ public class MInOut extends X_M_InOut implements DocAction
 							log.fine("PO(Inv) Matching");
 							// Ship - Invoice
 							MMatchPO po = MMatchPO.create(iLine, sLine, getMovementDate(), qtyMoved);
-							if (!po.save(get_TrxName()))
-							{
-								m_processMsg = "Could not create PO(Inv) Matching";
-								return DocAction.STATUS_Invalid;
-							}
+							InterfaceWrapperHelper.save(po, get_TrxName());
+							
 							// Update PO with ASI
 							oLine = new MOrderLine(getCtx(), po.getC_OrderLine_ID(), get_TrxName());
 							if (oLine != null && oLine.getM_AttributeSetInstance_ID() == 0

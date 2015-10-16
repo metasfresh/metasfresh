@@ -43,7 +43,7 @@ public class Sponsor extends CalloutEngine
 {
 
 	/**
-	 * Implemented for  US1026:  aenderung Verguetungsplan (2011010610000028), R01A06
+	 * Implemented for US1026:  aenderung Verguetungsplan (2011010610000028), R01A06
 	 * 
 	 * @param ctx
 	 * @param WindowNo

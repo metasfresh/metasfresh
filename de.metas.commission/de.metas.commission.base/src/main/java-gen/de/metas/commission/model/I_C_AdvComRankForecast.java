@@ -187,12 +187,12 @@ public interface I_C_AdvComRankForecast
     public static final String COLUMNNAME_IsManualRank = "IsManualRank";
 
 	/** Set fixierte VG.
-	  *  US1026:  Änderung Vergütungsplan (2011010610000028)  R01A06
+	  * US1026: Aenderung Vergütungsplan (2011010610000028)  R01A06
 	  */
 	public void setIsManualRank (boolean IsManualRank);
 
 	/** Get fixierte VG.
-	  *  US1026:  Änderung Vergütungsplan (2011010610000028)  R01A06
+	  * US1026: Aenderung Vergütungsplan (2011010610000028)  R01A06
 	  */
 	public boolean isManualRank();
 

@@ -26,56 +26,40 @@ package de.metas.fresh.model;
 
 public interface I_C_BPartner extends de.metas.interfaces.I_C_BPartner
 {
+	// @formatter:off
 	public static final String COLUMNNAME_IsProducerAllotment = "IsProducerAllotment";
-
 	public void setIsProducerAllotment(boolean IsProducerAllotment);
-
 	public boolean isProducerAllotment();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_IsADRCustomer = "IsADRCustomer";
+	public void setIsADRCustomer(boolean IsADRCustomer);
+	public boolean isADRCustomer();
+	// @formatter:on
 	
 	
-	public static final String COLUMNNAME_IsADRcustomer = "IsADRcustomer";
-	
-	public void setIsADRcustomer (boolean IsADRcustomer);
-	
-	public boolean isADRcustomer();
-	
-	
-	public static final String COLUMNNAME_Fresh_AdRRegion = "Fresh_AdRRegion";
-	
-	public void setFresh_AdRRegion(String Fresh_AdRRegion);
-	
-	public String getFresh_AdRRegion();
-	
-	
+	// @formatter:off
 	public static final String COLUMNNAME_IsADRVendor = "IsADRVendor";
-	
-	public void setIsADRVendor (boolean IsADRVendor);
-	
+	public void setIsADRVendor(boolean IsADRVendor);
 	public boolean isADRVendor();
+	// @formatter:on
 	
-	
+	// @formatter:off
 	public static final String COLUMNNAME_Fresh_AdRVendorRegion = "Fresh_AdRVendorRegion";
-	
 	public void setFresh_AdRVendorRegion(String Fresh_AdRVendorRegion);
-	
 	public String getFresh_AdRVendorRegion();
+	// @formatter:on
 	
-	
-	
+	// @formatter:off
 	public static final int ADRZertifizierung_L_AD_Reference_ID=540414;
-
-
 	public static final String ADRZertifizierung_L_Keine = "01";
-
 	public static final String ADRZertifizierung_L_GMAA = "02";
-
 	public static final String ADRZertifizierung_L_GMNF = "03";
-
 	public static final String ADRZertifizierung_L_GMVD = "04";
-
 	public static final String ADRZertifizierung_L_GMAA_GMNF = "05";
-
 	public static final String ADRZertifizierung_L_GMAA_GMNF_GMVD = "06";
+	// @formatter:on
 
 	// @formatter:off
 	// 07849

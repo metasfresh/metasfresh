@@ -88,7 +88,7 @@ public class X_C_Sponsor extends PO implements I_C_Sponsor, I_Persistent
 
 	/** Set Vergütungsgruppe.
 		@param C_AdvCommissionSalaryGroup_ID 
-		 US1026:  Änderung Vergütungsplan (2011010610000028) R01A06
+		US1026: Änderung Vergütungsplan (2011010610000028) R01A06
 	  */
 	public void setC_AdvCommissionSalaryGroup_ID (int C_AdvCommissionSalaryGroup_ID)
 	{
@@ -99,7 +99,7 @@ public class X_C_Sponsor extends PO implements I_C_Sponsor, I_Persistent
 	}
 
 	/** Get Vergütungsgruppe.
-		@return  US1026:  Änderung Vergütungsplan (2011010610000028) R01A06
+		@return US1026: Änderung Vergütungsplan (2011010610000028) R01A06
 	  */
 	public int getC_AdvCommissionSalaryGroup_ID () 
 	{
@@ -116,7 +116,7 @@ public class X_C_Sponsor extends PO implements I_C_Sponsor, I_Persistent
 
 	/** Set Vergütungsgruppe (System).
 		@param C_AdvComRank_System_ID 
-		 US1026:  Änderung Vergütungsplan (2011010610000028) R01A06
+		US1026: Änderung Vergütungsplan (2011010610000028) R01A06
 	  */
 	public void setC_AdvComRank_System_ID (int C_AdvComRank_System_ID)
 	{
@@ -127,7 +127,7 @@ public class X_C_Sponsor extends PO implements I_C_Sponsor, I_Persistent
 	}
 
 	/** Get Vergütungsgruppe (System).
-		@return  US1026:  Änderung Vergütungsplan (2011010610000028) R01A06
+		@return US1026: Änderung Vergütungsplan (2011010610000028) R01A06
 	  */
 	public int getC_AdvComRank_System_ID () 
 	{
@@ -232,7 +232,7 @@ public class X_C_Sponsor extends PO implements I_C_Sponsor, I_Persistent
 
 	/** Set fixierte VG.
 		@param IsManualRank 
-		 US1026:  Änderung Vergütungsplan (2011010610000028)  R01A06
+		US1026: Änderung Vergütungsplan (2011010610000028)  R01A06
 	  */
 	public void setIsManualRank (boolean IsManualRank)
 	{
@@ -240,7 +240,7 @@ public class X_C_Sponsor extends PO implements I_C_Sponsor, I_Persistent
 	}
 
 	/** Get fixierte VG.
-		@return  US1026:  Änderung Vergütungsplan (2011010610000028)  R01A06
+		@return US1026: Änderung Vergütungsplan (2011010610000028)  R01A06
 	  */
 	public boolean isManualRank () 
 	{

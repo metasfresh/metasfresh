@@ -336,7 +336,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			setPriceActual(oLine.getPriceActual());
 			setPriceLimit(oLine.getPriceLimit());
 			setPriceList(oLine.getPriceList());
-			// metas: begin:  US1184
+			// metas: begin: US1184
 			if (getPriceActual().compareTo(getPriceList()) != 0)
 				InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class).setIsManualPrice(true);
 			// metas: end
@@ -472,7 +472,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			return;
 		}
 		//
-		// metas: begin:  US1184
+		// metas: begin: US1184
 		if (!m_productPricing.calculatePrice())
 		{
 			log.info("Cannot calculate prices for " + m_productPricing + " [SKIP]");

@@ -626,7 +626,7 @@ public class GridFieldVO implements Serializable
 			MandatoryLogic = "";
 		MandatoryLogicExpr = expressionFactory.compileOrDefault(MandatoryLogic, ILogicExpression.FALSE, ILogicExpression.class); // metas: 03093
 
-		createLookupInfo(true); // metas : cg: task  02354 // tsa: always create the lookupInfo
+		createLookupInfo(true); // metas : cg: task 02354 // tsa: always create the lookupInfo
 	}   //  initFinish
 	
 	/**
@@ -635,7 +635,7 @@ public class GridFieldVO implements Serializable
 	 * @param alwaysCreate
 	 *            always create the lookup info, even if the field is not displayed
 	 */
-	// metas : cg: task  02354
+	// metas : cg: task 02354
 	private void createLookupInfo(boolean alwaysCreate)
 	{
 		// Shall we create the MLookupInfo?

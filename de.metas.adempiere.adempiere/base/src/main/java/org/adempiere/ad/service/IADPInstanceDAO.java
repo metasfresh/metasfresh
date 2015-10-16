@@ -45,7 +45,7 @@ public interface IADPInstanceDAO extends ISingletonService
 	 * Value has changed Parameters that are saved in the Database but not included in the ProcessInfo are not affected.
 	 * 
 	 * @param pi process info
-	 * @task  US1007
+	 * @task US1007
 	 */
 	void saveParameterToDB(ProcessInfo pi);
 

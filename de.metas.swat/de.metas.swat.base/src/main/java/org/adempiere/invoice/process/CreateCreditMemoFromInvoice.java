@@ -22,7 +22,6 @@ package org.adempiere.invoice.process;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Properties;
 
@@ -56,7 +55,7 @@ public class CreateCreditMemoFromInvoice extends SvrProcess
 	 */
 	private static final String PARA_IsCreditedInvoiceReinvoicable = "IsCreditedInvoiceReinvoicable";
 	private boolean creditedInvoiceReinvoicable = false;
-	
+
 	private int AD_Table_ID = 0;
 	private int Record_ID = 0;
 
@@ -68,10 +67,10 @@ public class CreateCreditMemoFromInvoice extends SvrProcess
 		final Properties ctx = getCtx();
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(ctx, getRecord_ID(), de.metas.adempiere.model.I_C_Invoice.class, get_TrxName());
 
-		final IInvoiceCreditContext creditCtx = new InvoiceCreditContext(C_DocType_ID, 
-				completeIt, 
-				referenceOriginalOrder, 
-				referenceInvoice, 
+		final IInvoiceCreditContext creditCtx = new InvoiceCreditContext(C_DocType_ID,
+				completeIt,
+				referenceOriginalOrder,
+				referenceInvoice,
 				creditedInvoiceReinvoicable);
 
 		creditMemo = Services.get(IInvoiceBL.class).creditInvoice(invoice, creditCtx);
@@ -81,13 +80,13 @@ public class CreateCreditMemoFromInvoice extends SvrProcess
 		final String msg = "@Created@: "
 				+ creditMemo.getC_DocTypeTarget().getName() + ", @DocumentNo@ "
 				+ documentNo;
-		
+
 		AD_Table_ID = InterfaceWrapperHelper.getModelTableId(creditMemo);
 		Record_ID = InterfaceWrapperHelper.getId(creditMemo);
-		
+
 		if (creditMemo.isProcessed())
 		{
-			// we won't zoom to the new credit memo, but instead shown the message  
+			// we won't zoom to the new credit memo, but instead shown the message
 			addLog(msg);
 		}
 		return msg;

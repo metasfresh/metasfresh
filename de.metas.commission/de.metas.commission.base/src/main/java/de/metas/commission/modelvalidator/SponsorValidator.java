@@ -133,7 +133,7 @@ public final class SponsorValidator implements ModelValidator
 	}
 
 	/**
-	 * Implemented for  US1026:  aenderung Verguetungsplan (2011010610000028), R01A06
+	 * Implemented for US1026:  aenderung Verguetungsplan (2011010610000028), R01A06
 	 * 
 	 * @param sponsor
 	 * @param type

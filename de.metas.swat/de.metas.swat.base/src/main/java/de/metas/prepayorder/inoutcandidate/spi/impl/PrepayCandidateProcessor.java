@@ -44,7 +44,7 @@ import de.metas.prepayorder.service.IPrepayOrderBL;
 /**
  * 
  * @author ts
- * @see "<a href='http://dewiki908/mediawiki/index.php?title=US342:_Definition_Provisionsausloeser_(2010070510001145)'> US342: Definition Provisionsausloeser (2010070510001145)</a>"
+ * @see "<a href='http://dewiki908/mediawiki/index.php?title=US342:_Definition_Provisionsausloeser_(2010070510001145)'>US342: Definition Provisionsausloeser (2010070510001145)</a>"
  */
 public class PrepayCandidateProcessor implements ICandidateProcessor
 {

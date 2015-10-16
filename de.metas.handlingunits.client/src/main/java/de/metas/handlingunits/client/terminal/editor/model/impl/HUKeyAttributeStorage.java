@@ -230,7 +230,7 @@ import de.metas.handlingunits.model.I_M_HU;
 	{
 		if (disposed)
 		{
-			final HUException ex = new HUException("Accessing an alteady dispose HUKeyAttributeStorage shall not be allowed"
+			final HUException ex = new HUException("Accessing an already disposed HUKeyAttributeStorage shall not be allowed"
 					+ "\n Storage: " + this
 					+ "\n Disposed on: " + (disposedTS > 0 ? new Date(disposedTS).toString() : "")
 					);

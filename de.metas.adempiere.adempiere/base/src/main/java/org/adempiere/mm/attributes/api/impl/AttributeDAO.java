@@ -273,7 +273,7 @@ public class AttributeDAO implements IAttributeDAO
 			// NOTE: we are caching this method only if we dont have a filter.
 			// If we have a filter:
 			// * that's mutable so it will fuck up our case
-			// * in most of the cases, when we have an validation rule filter we are dealing with a huge amount of data which needs to be filtered (see Karoten ID example from )
+			// * in most of the cases, when we have an validation rule filter we are dealing with a huge amount of data which needs to be filtered (see Karoten ID example from)
 			@CacheSkipIfNotNull final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter)
 	{
 		final IQueryBuilder<I_M_AttributeValue> queryBuilder = Services.get(IQueryBL.class)

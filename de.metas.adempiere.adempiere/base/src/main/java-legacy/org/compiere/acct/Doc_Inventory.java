@@ -37,7 +37,7 @@ import org.compiere.util.Env;
  *  
  *  metas: 
  *  <li>copied from https://adempiere.svn.sourceforge.net/svnroot/adempiere/branches/metas/mvcForms/base/src/org/compiere/acct/Doc_Inventory.java, Rev 14597
- *  <li>Changed for " US330: Geschaeftsvorfall (G113d): Summen-/ Saldenliste (2010070510000637)"
+ *  <li>Changed for "US330: Geschaeftsvorfall (G113d): Summen-/ Saldenliste (2010070510000637)"
  *  <li>Goal: Use {@link MCost#getSeedCosts(MProduct, int, MAcctSchema, int, String, int)}, if a product has no cost yet
  *  
  *  @author Jorg Janke
