@@ -57,11 +57,11 @@
 							<tr>
 								<td bgcolor="#BBED80">
 									<h2>
-										<font color="#000000">Local Install (zip)</font>
+										<font color="#000000">Portable Desktop Client</font>
 									</h2>
 								</td>
 
-								<td bgcolor="#fbf8f1"><a href="/binaries/metas-fresh-client.zip"><img src="zip.gif" alt="<%=productName%> Client zip" align="right" border="0" height="32" width="32"></a> Install a Java
+								<td bgcolor="#fbf8f1"><a href="/binaries/metas-fresh-client.zip"><img src="zip.gif" alt="<%=productName%> Client zip" align="right" border="0" height="32" width="32"></a>Runs under windows and Linux.<br>Instructions: Install a Java
 									Runtime Environment (Java 7 or later); Download and extract the desktop client <a href="/binaries/metas-fresh-client.zip" title="Download <%=productName%> Client">zip</a> file on your computer.</td>
 							</tr>
 							<!--
@@ -99,18 +99,17 @@ short story: commented out as of now because we can't incorporate fonts into an 
 									</h2>
 								</td>
 								<td bgcolor="#fbf8f1">
-									<p>
-										<a href="serverMonitor">Server Management</a>
-									</p>
+									<a href="serverMonitor">Server Management</a>
 								</td>
 							</tr>
 							<tr>
 								<td bgcolor="#BBED80" valign="top">
 									<h2>
-										<font color="#000000">Additional binaries</font>
+										<font color="#000000">Additional Binaries</font>
 									</h2>
 								</td>
 								<td bgcolor="#fbf8f1">
+									Binaries required for advanced usage scenarios 
 									<ul>
 										<li><a href="/binaries/de.metas.edi.esb.camel.jar">EDI ESB bundle</a></li>
 										<li><a href="/binaries/de.metas.document.archive.esb.camel.jar">Archive ESB bundle</a></li>
