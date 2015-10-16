@@ -220,8 +220,7 @@ public class Viewer extends CFrame
 		northPanel.add(toolBar,  BorderLayout.EAST);
 		this.getContentPane().add(centerScrollPane, BorderLayout.CENTER);
 		centerScrollPane.getViewport().add(m_viewPanel, null);
-		// pb add: set scrolling with scrollbar buttons to move by 20 pixels
-		// each press
+		// pb add: set scrolling with scrollbar buttons to move by 20 pixels each press
 		centerScrollPane.getVerticalScrollBar().setUnitIncrement(20);
 		centerScrollPane.getHorizontalScrollBar().setUnitIncrement(20);
 		// end pb

@@ -168,8 +168,9 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 		}
 
 		//
-		// ScrollBar
+		// ScrollPane/ScrollBar
 		{
+			table.putDefaults(AdempiereScrollPaneUI.getUIDefaults());
 			table.putDefaults(MetasFreshScrollBarUI.getUIDefaults());
 			table.putDefaults(new Object[] {
 					MetasFreshScrollBarUI.KEY_Thumb_Color, COLOR_LightGray

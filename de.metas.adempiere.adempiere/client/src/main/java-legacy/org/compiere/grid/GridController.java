@@ -388,9 +388,6 @@ public final class GridController extends CPanel
 					vTableScrollPane.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE); // task 09389
 					
 					vTableScrollPane.setViewportView(vTable);
-					// increase mouse-wheel scroll speed:
-					vTableScrollPane.getVerticalScrollBar().setUnitIncrement(32);
-					vTableScrollPane.getHorizontalScrollBar().setUnitIncrement(16);
 
 					//
 					// Do we have to do vertical tabs to horizontal tabs alignment?
