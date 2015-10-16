@@ -84,7 +84,10 @@
 		</resources>
 
 		<plugins>
-		<!-- 
+			<!-- 
+			Note: as of now, we still need this jar to be in the lib folder to be in the classpath of (RUN_Post_Rollout_Processes.sh). 
+			However, it's only a tiny part that we actually need..
+			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -98,8 +101,8 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<shadedArtifactAttached>true</shadedArtifactAttached> - Make the shaded artifact not the main one -
-							<shadedClassifierName>allInOne</shadedClassifierName> - set the suffix to the shaded jar -
+							<shadedArtifactAttached>true</shadedArtifactAttached> <!-- Make the shaded artifact not the main one -->
+							<shadedClassifierName>allInOne</shadedClassifierName> <!-- set the suffix to the shaded jar -->
 							<filters>
 								<filter>
 									<artifact>*:*</artifact>
@@ -114,7 +117,6 @@
 					</execution>
 				</executions>
 			</plugin>
-		 -->
 		</plugins>
 	</build>
 
