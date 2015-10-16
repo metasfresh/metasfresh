@@ -387,7 +387,7 @@ public class EDICctopInvoiceBean
 			}
 			else
 			{
-				// task 09182: we outpot the order's POReference which might be different from the POReference of the invoice header.
+				// task 09182: we output the order's POReference which might be different from the POReference of the invoice header.
 				cctopInvoice500V.setOrderPOReference(xmlCctopInvoic500V.getOrderPOReference().toString());
 				cctopInvoice500V.setOrderLine(xmlCctopInvoic500V.getOrderLine().toString());
 			}
