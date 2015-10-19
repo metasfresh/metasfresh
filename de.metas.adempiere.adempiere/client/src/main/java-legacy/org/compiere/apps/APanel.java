@@ -218,7 +218,7 @@ public class APanel extends CPanel
 			log.log(Level.SEVERE, "", e);
 		}
 		
-		createMenu();
+		createMenuAndToolbar();
 		
 		m_curGC.query (m_onlyCurrentRows, m_onlyCurrentDays, GridTabMaxRows.DEFAULT);
 		m_curTab.navigateCurrent();     //  updates counter
@@ -244,7 +244,7 @@ public class APanel extends CPanel
 		{
 			log.log(Level.SEVERE, "", e);
 		}
-		createMenu();
+		createMenuAndToolbar();
 		Services.get(IProcessEventSupport.class).addListener(this); // metas: add this instance as a listener
 	}	//	APanel
 
@@ -402,10 +402,22 @@ public class APanel extends CPanel
 	private SwitchAction aSwitchLinesDownAction, aSwitchLinesUpAction;
 
 	private WindowMenu m_WindowMenu;
+	
 	/**************************************************************************
 	 *	Create Menu and Toolbar and registers keyboard actions.
 	 *  - started from constructor
 	 */
+	private void createMenuAndToolbar()
+	{
+		createMenu();
+		createToolBar();
+		
+		if (CLogMgt.isLevelAll())
+		{
+			Util.printActionInputMap(this);
+		}
+	}
+	
 	private void createMenu()
 	{
 		final IUserRolePermissions role = Env.getUserRolePermissions();
@@ -414,7 +426,7 @@ public class APanel extends CPanel
 		 *	Menu
 		 */
 		//								File
-		JMenu mFile = AEnv.getMenu("File");
+		final JMenu mFile = AEnv.getMenu("File");
 		menuBar.add(mFile);
 		aReport = 	addAction("Report",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0),	false);
 		aPrint = 	addAction("Print",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0),	false);
@@ -428,7 +440,7 @@ public class APanel extends CPanel
 		aLogout = 	addAction("Logout", 		mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_L, Event.SHIFT_MASK+Event.ALT_MASK), false);
 		aExit =		addAction("Exit",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_X, Event.SHIFT_MASK+Event.ALT_MASK),	false);
 		//								Edit
-		JMenu mEdit = AEnv.getMenu("Edit");
+		final JMenu mEdit = AEnv.getMenu("Edit");
 		menuBar.add(mEdit);
 		aNew = 		addAction("New", 			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), false);
 		aSave = 	addAction("Save",			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0),	false);
@@ -444,7 +456,7 @@ public class APanel extends CPanel
 		if (m_isPersonalLock)			
 			aLock = addAction("Lock",			mEdit, 	null,	true);		//	toggle
 		//								View
-		JMenu mView = AEnv.getMenu("View");
+		final JMenu mView = AEnv.getMenu("View");
 		menuBar.add(mView);
 		InfoWindowMenuBuilder.newBuilder()
 				.setCtx(m_ctx)
@@ -459,7 +471,7 @@ public class APanel extends CPanel
 		mView.addSeparator();
 		aMulti =	addAction("Multi",			mView, 	KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0),	true);		//	toggle
 		//								Go
-		JMenu mGo = AEnv.getMenu("Go");
+		final JMenu mGo = AEnv.getMenu("Go");
 		menuBar.add(mGo);
 		aFirst =	addAction("First", 			mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, Event.ALT_MASK),	false);
 		aPrevious = addAction("Previous", 		mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.ALT_MASK),	false);
@@ -474,7 +486,7 @@ public class APanel extends CPanel
 		aArchive =  addAction("Archive",		mGo, 	null,	false);
 		aHome =		addAction("Home", 			mGo,	null,	false);
 		//								Tools
-		JMenu mTools = AEnv.getMenu("Tools");
+		final JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
 		
 		// metas-tsa: Drop unneeded menu items (09271)
@@ -504,7 +516,6 @@ public class APanel extends CPanel
 		menuBar.add(m_WindowMenu);
 		if (m_WindowMenu.isDisplayShowAllAction())
 		{
-			//final AppsAction aShowAllWindow = 
 			addAction(WindowMenu.ShowAllWindows_ActionName, null, WindowMenu.ShowAllWindows_KeyStroke, false);
 		}
 		
@@ -515,90 +526,105 @@ public class APanel extends CPanel
 		aOnline =	addAction("Online",			mHelp, 	null,	false);
 		aMailSupport = addAction("EMailSupport",	mHelp,	null,	false);
 		aAbout = 	addAction("About",			mHelp, 	null,	false);
-
-		//
-		//	ToolBar
-		//
-		toolBar.add(aNew.getButton());
-		toolBar.add(aSave.getButton());
-		toolBar.add(aCopy.getButton());
-		if (CopyRecordFactory.isEnabled())
+	}
+	
+	private final void createToolBar()
+	{
+		// New, Save, Copy
 		{
-			toolBar.add(aCopyDetails.getButton());							// metas: c.ghita@metas.ro
+			toolBar.add(aNew.getButton());
+			toolBar.add(aSave.getButton());
+			toolBar.add(aCopy.getButton());
+			if (CopyRecordFactory.isEnabled())
+			{
+				toolBar.add(aCopyDetails.getButton());							// metas: c.ghita@metas.ro
+			}
 		}
-
-		addToolbarSeparator();
-
-		toolBar.add(aIgnore.getButton());		// ESC
-		toolBar.add(aDelete.getButton());
-		toolBar.add(aDeleteSelection.getButton());
-
-		addToolbarSeparator();
-
-		toolBar.add(aPrintPreview.getButton());
-		toolBar.add(aPrint.getButton());
-		toolBar.add(aReport.getButton());
-
-		addToolbarSeparator();
-
-		if (m_curGC == null || !m_curGC.getMTab().isGridModeOnly()) // metas-2009_0021_AP1_CR059
+		
+		// Ignore, Delete
 		{
-			toolBar.add(aMulti.getButton());
+			addToolbarSeparator();
+			toolBar.add(aIgnore.getButton());		// ESC
+			toolBar.add(aDelete.getButton());
+			toolBar.add(aDeleteSelection.getButton());
 		}
-		if (m_curGC == null || m_curGC.getMTab().isSearchActive()) // metas: Suche ausblenden?
+		
+		// Switch single/grid, Find, History, ZoomAccross, Refresh
 		{
-			toolBar.add(aFind.getButton());
-		}
-		final boolean isMainPanel = (m_curGC == null) || (m_curGC != null && !m_curGC.isDetailGrid()); // main panel, i.e. not included tab
-		if (isMainPanel)
-		{
-			toolBar.add(aHistory.getButton());		// F9
+			addToolbarSeparator();
+			if (m_curGC == null || !m_curGC.getMTab().isGridModeOnly()) // metas-2009_0021_AP1_CR059
+			{
+				toolBar.add(aMulti.getButton());
+			}
+			if (m_curGC == null || m_curGC.getMTab().isSearchActive()) // metas: Suche ausblenden?
+			{
+				toolBar.add(aFind.getButton());
+			}
+			if (!isTabIncluded)
+			{
+				toolBar.add(aHistory.getButton());		// F9
+			}
 			toolBar.add(aZoomAcross.getButton());
+			toolBar.add(aRefresh.getButton());      // F5
 		}
-		toolBar.add(aRefresh.getButton());      // F5
-
-		addToolbarSeparator();
-
-		toolBar.add(AProcess.createAppsAction(this, isTabIncluded).getButton()); // metas: us1247
-		toolBar.add(aAttachment.getButton());
-		toolBar.add(AEMailLetter.createAppsAction(this, isTabIncluded).getButton()); // metas-2009_0017_AP1_G41
-		toolBar.add(aChat.getButton());
-
-		addToolbarSeparator();
-
-		toolBar.add(aArchive.getButton());
-		toolBar.add(aRequest.getButton());
-
-		addToolbarSeparator();
-
-		toolBar.add(aFirst.getButton());
-		toolBar.add(aPrevious.getButton());
-		toolBar.add(aNext.getButton());
-		toolBar.add(aLast.getButton());
-		if (isMainPanel)
+		
+		// Process, Attachment, EMail, Chat
 		{
-			toolBar.add(aParent.getButton());
-			toolBar.add(aDetail.getButton());
+			addToolbarSeparator();
+			toolBar.add(AProcess.createAppsAction(this, isTabIncluded).getButton()); // metas: us1247
+			toolBar.add(aAttachment.getButton());
+			toolBar.add(AEMailLetter.createAppsAction(this, isTabIncluded).getButton()); // metas-2009_0017_AP1_G41
+			toolBar.add(aChat.getButton());
 		}
 
-		addToolbarSeparator();
-
+		// Reporting and printing
 		{
-			aToggleGridColumns = AGridColumnsToggle.createAppsAction(this, isTabIncluded);
-			aToggleGridColumns.setEnabled(false);
-			toolBar.add(aToggleGridColumns.getButton());
+			addToolbarSeparator();
+			toolBar.add(aPrintPreview.getButton());
+			toolBar.add(aPrint.getButton());
+			toolBar.add(aReport.getButton());
 		}
-		toolBar.add(aHelp.getButton());			// F1
 
-		//
-		if (CLogMgt.isLevelAll())
+		// Archive / Request
 		{
-			Util.printActionInputMap(this);
+			addToolbarSeparator();
+			toolBar.add(aArchive.getButton());
+			toolBar.add(aRequest.getButton());
+		}
+		
+		// Navigation (First, Previous, Next etc)
+		{
+			addToolbarSeparator();
+			toolBar.add(aFirst.getButton());
+			toolBar.add(aPrevious.getButton());
+			toolBar.add(aNext.getButton());
+			toolBar.add(aLast.getButton());
+			if (!isTabIncluded)
+			{
+				toolBar.add(aParent.getButton());
+				toolBar.add(aDetail.getButton());
+			}
+		}
+		
+		// Customize grid columns, Help
+		{
+			addToolbarSeparator();
+			{
+				aToggleGridColumns = AGridColumnsToggle.createAppsAction(this, isTabIncluded);
+				aToggleGridColumns.setEnabled(false);
+				toolBar.add(aToggleGridColumns.getButton());
+			}
+			toolBar.add(aHelp.getButton());			// F1
 		}
 	}	//	createMenu
 
 	private final void addToolbarSeparator()
 	{
+		// Don't add the separator if this is the first component that we are adding it.
+		if (toolBar.getComponentCount() <= 0)
+		{
+			return;
+		}
 		
 		// visible line, but too narrow
 		//toolBar.add(new JSeparator(JSeparator.VERTICAL));
