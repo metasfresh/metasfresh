@@ -1226,7 +1226,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 			}
 			// end: c.ghita@metas.ro: check for warning
 
-			final boolean retValue = m_mTable.dataSave(manualCmd) == GridTable.SAVE_OK;
+			final char gridTableDataSaveResult = m_mTable.dataSave(manualCmd);
+			final boolean retValue = gridTableDataSaveResult == GridTable.SAVE_OK;
 			if (manualCmd)
 			{
 				setCurrentRow(m_currentRow, false);

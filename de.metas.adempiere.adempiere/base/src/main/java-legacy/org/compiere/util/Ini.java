@@ -1021,22 +1021,26 @@ public final class Ini implements Serializable
 	/**
 	 * Get Divider Location
 	 *
-	 * @return location
+	 * @return location or 400
 	 */
 	public static int getDividerLocation()
 	{
+		final int defaultValue = 400;
 		String key = "Divider";
 		String value = (String)s_prop.get(key);
 		if (value == null || value.length() == 0)
-			return 0;
+			return defaultValue;
+		
+		int valueInt = defaultValue;
 		try
 		{
-			return Integer.parseInt(value);
+			valueInt = Integer.parseInt(value);
 		}
 		catch (Exception e)
 		{
 		}
-		return 0;
+		
+		return valueInt <= 0 ? defaultValue : valueInt;
 	}	// getDividerLocation
 
 	/**

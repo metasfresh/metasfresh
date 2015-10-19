@@ -5,11 +5,10 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
 import javax.swing.JComponent;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.metal.MetalScrollPaneUI;
-
-import org.adempiere.plaf.AdempierePLAF;
 
 /*
  * #%L
@@ -56,8 +55,16 @@ public class AdempiereScrollPaneUI extends MetalScrollPaneUI
 		super.installDefaults(scrollpane);
 
 		// increase mouse-wheel scroll speed:
-		scrollpane.getHorizontalScrollBar().setUnitIncrement(16);
-		scrollpane.getVerticalScrollBar().setUnitIncrement(16);
+		final JScrollBar horizontalScrollBar = scrollpane.getHorizontalScrollBar();
+		if (horizontalScrollBar != null)
+		{
+			horizontalScrollBar.setUnitIncrement(16);
+		}
+		final JScrollBar verticalScrollBar = scrollpane.getVerticalScrollBar();
+		if (verticalScrollBar != null)
+		{
+			verticalScrollBar.setUnitIncrement(16);
+		}
 	}
 
 	@Override

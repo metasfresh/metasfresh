@@ -401,16 +401,9 @@ public final class AMenu extends CFrame
 			//
 			// Tab: Menu tree
 			{
-				treePanel.setBorder(BorderFactory.createEmptyBorder()); // (2, 3, 2, 3));
+				treePanel.setBorder(BorderFactory.createEmptyBorder());
 				centerPane.addTab(msgBL.getMsg(m_ctx, "Menu"), Images.getImageIcon2("Home16"), treePanel);
 				treePanel.addPropertyChangeListener(VTreePanel.NODE_SELECTION, this);
-				
-				//
-				final int dividerLocation = Ini.getDividerLocation();
-				if (dividerLocation > 0)
-					treePanel.setDividerLocation(dividerLocation);
-				else
-					treePanel.setDividerLocation(400);
 			}
 		}
 		
