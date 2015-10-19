@@ -142,12 +142,7 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 			final int rowIndexView,
 			final int columnIndexView)
 	{
-		// log.finest(m_columnName
-		// + ": Value=" + (value == null ? "null" : value.toString())
-		// + ", Row=" + row + ", Col=" + col);
-
 		final int rowIndexModel = table.convertRowIndexToModel(rowIndexView);
-		// final int columnIndexModel = table.convertColumnIndexToModel(columnIndexView);
 
 		Component c = null;
 

@@ -44,7 +44,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JSplitPane;
 import javax.swing.JViewport;
@@ -108,6 +107,7 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicate;
 
 
 /**
@@ -221,7 +221,7 @@ public final class GridController extends CPanel
 	private GridController(final Builder builder)
 	{
 		super();
-		final APanel aPanel = builder.getAPanel();
+		final APanel aPanel = builder.getAPanel(); // could be null
 		this.alignVerticalTabsWithHorizontalTabs = !builder.isIncludedTab() && aPanel != null && aPanel.isAlignVerticalTabsWithHorizontalTabs();
 		
 		try
@@ -313,16 +313,19 @@ public final class GridController extends CPanel
 	
 	private FindPanelContainer findPanel = null; // metas: teo_sarca
 	
+	private APanel _aPanel; // metas: 02553: renamed variable name to make sure is not used directly
+
 	/**
-	 * Action Listener which delegates everything to _aPanel.
+	 * Listens on {@link VEditor}s and forward the action performed event to {@link #_aPanel}.
+	 * 
 	 * We use this man-in-the-middle listener because we want to change the {@link #_aPanel} on fly
 	 */
 	// metas: 02553
-	private final ActionListener panelDelegateListener = new ActionListener()
+	private final ActionListener editor2APanelDelegateListener = new ActionListener()
 	{
 		
 		@Override
-		public void actionPerformed(ActionEvent e)
+		public void actionPerformed(final ActionEvent e)
 		{
 			if (_aPanel != null)
 			{
@@ -357,7 +360,7 @@ public final class GridController extends CPanel
 
 			// Left - the graph panel (e.g. were we will put the tree if needed)
 			{
-				splitPane.add(graphPanel, JSplitPane.LEFT);
+				splitPane.setLeftComponent(graphPanel);
 				graphPanel.setLayout(new BorderLayout());
 				graphPanel.setBorder(BorderFactory.createEmptyBorder());
 				graphPanel.setName("gc_graphPanel");
@@ -365,7 +368,7 @@ public final class GridController extends CPanel
 
 			// Right - the actual content (single/multi view panels)
 			{
-				splitPane.add(cardPanel, JSplitPane.RIGHT);
+				splitPane.setRightComponent(cardPanel);
 				cardPanel.setLayout(cardLayout);
 				cardPanel.setBorder(BorderFactory.createEmptyBorder());
 				cardPanel.setName("gc_cardPanel");
@@ -412,33 +415,43 @@ public final class GridController extends CPanel
 	{
 		log.log(Level.CONFIG, "Disposing: {0}", m_mTab);
 		
-		//  clear info
 		stopEditor(false);
-		if (m_mTab.isLoadComplete())
+		
+		//  clear info
+		if (m_mTab != null)
 		{
-			if (m_mTab.needSave(true, false))
-				m_mTab.dataIgnore();
+			if (m_mTab.isLoadComplete())
+			{
+				if (m_mTab.needSave(true, false))
+					m_mTab.dataIgnore();
+			}
+	
+			//  Listeners
+			if (m_mTab.isLoadComplete())
+			{
+				m_mTab.getTableModel().removeDataStatusListener(this);
+				m_mTab.getTableModel().removeVetoableChangeListener(this);
+			}
+			m_mTab.removePropertyChangeListener(vTable);
 		}
-		//FR [ 1757088 ] vIncludedGC = null;
-
-		//  Listeners
-		if (m_mTab.isLoadComplete())
+		if (vTable != null)
 		{
-			m_mTab.getTableModel().removeDataStatusListener(this);
-			m_mTab.getTableModel().removeVetoableChangeListener(this);
+			vTable.getSelectionModel().removeListSelectionListener(this);
 		}
-		vTable.getSelectionModel().removeListSelectionListener(this);
-		m_mTab.removePropertyChangeListener(vTable);
 
-		//  editors
-		for (final String columnName : vPanel.getEditorColumnNames())
+		//
+		// Single row layout editors
+		if (vPanel != null && m_mTab != null)
 		{
-			final VEditor vEditor = vPanel.getEditor(columnName);
-			vEditor.removeVetoableChangeListener(this);
-			final GridField mField = m_mTab.getField(columnName);
-			if (mField != null)
-				mField.removePropertyChangeListener(vEditor);
-			vEditor.dispose();
+			for (final String columnName : vPanel.getEditorColumnNames())
+			{
+				final VEditor vEditor = vPanel.getEditor(columnName);
+				vEditor.removeVetoableChangeListener(this);
+				final GridField mField = m_mTab.getField(columnName);
+				if (mField != null)
+					mField.removePropertyChangeListener(vEditor);
+				vEditor.dispose();
+			}
 		}
 		
 		// TODO Remove APanel Button listeners
@@ -496,8 +509,6 @@ public final class GridController extends CPanel
 	/** Veto Active                 */
 	private boolean     m_vetoActive = false;
 
-	private APanel _aPanel; // metas: 02553: renamed variable name to make sure is not used directly
-
 	/**
 	 * This member is set to <code>true</code> at the end of the {@link #initIfNeeded()} method.
 	 */
@@ -554,7 +565,7 @@ public final class GridController extends CPanel
 		m_mTab = mTab;
 		m_WindowNo = WindowNo;
 		m_onlyMultiRow = onlyMultiRow;
-		this._aPanel = aPanel;
+		setAPanel(aPanel);
 		setName("GC-" + mTab);
 		setTabLevel(m_mTab.getTabLevel());
 
@@ -777,7 +788,7 @@ public final class GridController extends CPanel
 				if (mField.getDisplayType() == DisplayType.Button)
 				{
 					// metas: 02553: use panel delegate to be able to change aPanel reference on fly
-					((JButton)vEditor).addActionListener (panelDelegateListener);
+					vEditor.addActionListener(editor2APanelDelegateListener);
 				}
 			}
 		}   //  for all fields
@@ -943,7 +954,7 @@ public final class GridController extends CPanel
 						//  Enable Button actions in grid
 						if (mField.getDisplayType () == DisplayType.Button)
 						{
-							ce.setActionListener(panelDelegateListener); // metas: 02553: use panel delegate
+							ce.setActionListener(editor2APanelDelegateListener); // metas: 02553: use panel delegate
 						}
 						
 //						final boolean visible = mField.getVO().isDisplayedGrid();
@@ -951,7 +962,7 @@ public final class GridController extends CPanel
 					}
 					else //  column not displayed
 					{
-						TableCellNone tcn = new TableCellNone(mField.getColumnName());
+						final TableCellNone tcn = new TableCellNone(mField.getColumnName());
 						tc.setCellRenderer (tcn);
 						tc.setCellEditor (tcn);
 						tc.setHeaderValue (null);
@@ -1208,7 +1219,10 @@ public final class GridController extends CPanel
 	 */
 	public synchronized void removeDataStatusListener(DataStatusListener l)
 	{
-		m_mTab.removeDataStatusListener(l);
+		if(m_mTab != null)
+		{
+			m_mTab.removeDataStatusListener(l);
+		}
 	}   //  removeDataStatusListener
 
 	/**
@@ -1217,6 +1231,7 @@ public final class GridController extends CPanel
 	 */
 	public synchronized void addDataStatusListener(DataStatusListener l)
 	{
+		// assume tab is not null
 		m_mTab.addDataStatusListener(l);
 	}
 
@@ -1812,22 +1827,32 @@ public final class GridController extends CPanel
 	
 	/**
 	 *  Stop Table & SR Editors and move focus to graphPanel
-	 *  @param saveValue save value
+	 *  @param saveValue true if we shall commit the editing value because stopping the editing
 	 */
-	public void stopEditor (boolean saveValue)
+	public void stopEditor (final boolean saveValue)
 	{
-		log.config("(" + m_mTab.toString() + ") TableEditing=" + vTable.isEditing());
+		final VTable vTable = getVTable();
+		if (vTable == null)
+		{
+			log.config("Nothing to be because this component is disposing/disposed");
+			return;
+		}
+		
+		if(log.isLoggable(Level.CONFIG))
+			log.config("(" + m_mTab + ") TableEditing=" + vTable.isEditing());
 
 		//  MultiRow - remove editors
 		vTable.stopEditor(saveValue);
 
 		//  SingleRow - stop editors by changing focus
-		if (m_singleRow && vPanel != null)
+		if (m_singleRow)
 		{
-			vPanel.transferFocus();
+			final VPanel vPanel = getvPanel();
+			if(vPanel != null)
+			{
+				vPanel.transferFocus();
+			}
 		}
-		
-		//	graphPanel.requestFocus();
 	}   //  stopEditors
 
 	/**
@@ -2102,10 +2127,57 @@ public final class GridController extends CPanel
 		return findPanel;
 	}
 	
-	// metas: 02553
-	void setAPanel(APanel aPanel)
+	/**
+	 * Sets the main/root {@link APanel} in which this grid controller will reside.
+	 * 
+	 * Also this call will disable the key bindings of underlying components, key bindings which are present in given {@link APanel}. We do this because we want the APanel key bindings (i.e. the
+	 * toolbar shortcuts) to take priority.
+	 * 
+	 * @param aPanel
+	 * @task 02553
+	 */
+	final void setAPanel(final APanel aPanel)
 	{
+		// Do nothing if same APanel
+		if (this._aPanel == aPanel)
+		{
+			return;
+		}
+		
 		this._aPanel = aPanel;
+
+		//
+		// For some of our components, remove the key binding which are defined on APanel level (task 09456). 
+		// AIM: APanel's toolbar shortcuts will work because they will not be intercepted by our components.
+		if (aPanel != null)
+		{
+			// Remove the key bindings of the split pane which are defined in our APanel.
+			// i.e. more precise, at the moment of writing this, the affected key bindings are:
+			// * splitPane's F6-toggleFocus which prevents toolbar's F6-Find
+			// * splitPane's F8-startResize which prevents toolbar's F8-Multi (switch single row layout/grid layout)
+			aPanel.removeAncestorKeyBindingsOf(splitPane, null);
+			
+			// Remove the key bindings of included grid layout.
+			// i.e. more precise, at the moment of writing this, the affected key bindings are:
+			// * vTable's ESCAPE-cancel which prevents toolbar's ESCAPE-Ignore => don't remove this because it's fine to have ESC working in JTable
+			// * vTable's F2-startEditing which prevents toolbar's F2-New
+			// * vTable's F8->focusHeader which prevents toolbar's F8-Multi (switch single row layout/grid layout)
+			aPanel.removeAncestorKeyBindingsOf(vTable, new Predicate<KeyStroke>()
+			{
+				@Override
+				public boolean apply(final KeyStroke key)
+				{
+					// Escape is used in JTable to cancel the current editing and is active only when needed,
+					// so it's safe to left it in place.
+					if (key.getKeyCode() == KeyEvent.VK_ESCAPE)
+					{
+						return false; // don't remove
+					}
+					
+					return true; // remove any other key binding
+				}
+			});
+		}
 	}
 	
 	public static final class Builder

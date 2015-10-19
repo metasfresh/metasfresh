@@ -19,11 +19,13 @@ package org.compiere.grid.ed;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.util.EventObject;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
@@ -34,11 +36,14 @@ import javax.swing.table.TableCellEditor;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.GridRowCtx;
+import org.adempiere.util.Services;
 import org.compiere.grid.VTable;
+import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTabLayoutMode;
 import org.compiere.model.GridTable;
 import org.compiere.util.CLogger;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 /**
@@ -74,14 +79,17 @@ public final class VCellEditor extends AbstractCellEditor
 		m_mField = mField;
 	}	//	VCellEditor
 
+	// services
+	private static final transient CLogger log = CLogger.getCLogger(VCellEditor.class);
+	private final transient ISwingEditorFactory editorFactory = Services.get(ISwingEditorFactory.class);
+
 	/** The Field               */
-	private final GridField          m_mField;
+	private final GridField m_mField;
 	/** The Table Editor        */
-	private VEditor	        m_editor = null;
+	private VEditor m_editor = null;
 	
 	/** Table                   */
-	private final JTable          m_table;
-	//private ActionListener buttonListener;
+	private final JTable m_table;
 	private ActionListener actionListener;
 	
 	// metas: current editing cell
@@ -91,16 +99,14 @@ public final class VCellEditor extends AbstractCellEditor
 
 	
 	/** ClickCount              */
-	private static final int      CLICK_TO_START = 1;
-	/**	Logger			*/
-	private static final transient CLogger log = CLogger.getCLogger(VCellEditor.class);
-
+	private static final int CLICK_TO_START = 1;
+	
 	/**
 	 *  Create Editor
 	 */
 	private void createEditor()
 	{
-		m_editor = VEditorFactory.getEditor(m_mField, true); // tableEditor=true
+		m_editor = editorFactory.getEditor(m_mField, true); // tableEditor=true
 		m_editor.addVetoableChangeListener(this);
 		m_editor.addActionListener(this);
 				
@@ -114,8 +120,39 @@ public final class VCellEditor extends AbstractCellEditor
 	 *  @return true if editable
 	 */
 	@Override
-	public boolean isCellEditable (EventObject anEvent)
+	public boolean isCellEditable (final EventObject anEvent)
 	{
+		//
+		// Avoid start editing on ESC or some ActionKey press (e.g. caps-lock)
+		// NOTE: to understand how editing is automatically triggered or key-press, see javax.swing.JTable.processKeyBinding(KeyStroke, KeyEvent, int, boolean)
+		if(anEvent instanceof KeyEvent)
+		{
+			final KeyEvent keyEvent = (KeyEvent)anEvent;
+			
+			// Don't start editing when use is pressing ESCAPE because that's contra-intuitive.
+			final int keyCode = keyEvent.getKeyCode();
+			if (keyCode == KeyEvent.VK_ESCAPE || keyCode == KeyEvent.VK_CANCEL)
+			{
+				return false;
+			}
+			
+			// Don't start editing on action key press (e.g. caps-lock, num-lock)
+			if (keyEvent.isActionKey())
+			{
+				return false;
+			}
+			
+			// Don't start editing on other key codes which are not visually representable (i.e. user is not actually typing)
+			// e.g. of keys we try to avoid this this condition are VolumeUp/Down etc 
+			final char keyChar = keyEvent.getKeyChar();
+			if (!Character.isDefined(keyChar))
+			{
+				return false;
+			}
+		}
+
+		//
+		// Extract the row index
 		final int rowIndexModel;
 		if (anEvent instanceof MouseEvent)
 		{
@@ -136,14 +173,17 @@ public final class VCellEditor extends AbstractCellEditor
 		{
 			rowIndexModel = m_mField.getGridTab().getCurrentRow();
 		}
-		
+
+		//
+		// Make sure the GridField is editable
 		final Properties rowCtx = new GridRowCtx(Env.getCtx(), m_mField.getGridTab(), rowIndexModel); // metas-2009_0021_AP1_CR053
 		if (!m_mField.isEditable (rowCtx))	//	row data is in context
 		{
 			return false;
 		}
-		log.fine(m_mField.getHeader());		//	event may be null if CellEdit
-		
+
+		//
+		// Create editor if not already created
 		if (m_editor == null)
 		{
 			createEditor();
@@ -168,10 +208,10 @@ public final class VCellEditor extends AbstractCellEditor
 	 *  @return component
 	 */
 	@Override
-	public Component getTableCellEditorComponent (JTable table, Object value, boolean isSelected,
-			int rowIndexView, int columnIndexView)
+	public Component getTableCellEditorComponent (final JTable table, final Object value, final boolean isSelected, final int rowIndexView, final int columnIndexView)
 	{
-		log.finest(m_mField.getColumnName() + ": Value=" + value + ", row(view)=" + rowIndexView + ", col(view)=" + columnIndexView);
+		if(log.isLoggable(Level.FINEST))
+			log.finest(m_mField.getColumnName() + ": Value=" + value + ", row(view)=" + rowIndexView + ", col(view)=" + columnIndexView);
 		
 		if (rowIndexView >= 0)
 			table.setRowSelectionInterval(rowIndexView, rowIndexView);     //  force moving to new row
@@ -197,14 +237,12 @@ public final class VCellEditor extends AbstractCellEditor
 		editingKeyId = ((GridTable)table.getModel()).getKeyID(rowIndexModel);
 		// metas: end
 		
-		if ( m_editor instanceof VLookup) 
+		if (m_editor instanceof VLookup) 
 		{
 			((VLookup)m_editor).setStopEditing(false);
 		}
 		
 		m_editor.setReadWrite(m_mField.isEditable (rowCtx));
-
-		//m_table = table;
 
 		//	Set Value
 		m_editor.setValue(value);
@@ -232,7 +270,7 @@ public final class VCellEditor extends AbstractCellEditor
 			m_editor.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
 		}
 		//
-		return (Component)m_editor;
+		return editorFactory.getEditorComponent(m_editor);
 	}	//	getTableCellEditorComponent
 
 	/**
@@ -241,20 +279,27 @@ public final class VCellEditor extends AbstractCellEditor
 	 *  @return true (constant)
 	 */
 	@Override
-	public boolean shouldSelectCell(EventObject e)
+	public final boolean shouldSelectCell(EventObject e)
 	{
-		log.finest(m_mField.getColumnName());
 		return true;
 	}	//	shouldSelectCell
 
 	/**
-	 *	Returns the value contained in the editor
-	 *  @return value
+	 * Returns the value contained in the editor
+	 * 
+	 * @return value
 	 */
 	@Override
 	public Object getCellEditorValue()
 	{
-		log.finest(m_mField.getColumnName() + ": " + m_editor.getValue());
+		if(m_editor == null)
+		{
+			return null;
+		}
+		
+		if(log.isLoggable(Level.FINEST))
+			log.finest(m_mField.getColumnName() + ": " + m_editor.getValue());
+		
 		return m_editor.getValue();
 	}	//	getCellEditorValue
 
@@ -265,14 +310,14 @@ public final class VCellEditor extends AbstractCellEditor
 	 *  @param e event
 	 */
 	@Override
-	public void vetoableChange(PropertyChangeEvent e)
+	public void vetoableChange(final PropertyChangeEvent e)
 	{
 		if (m_table == null)
 		{
 			return;
 		}
 		
-		log.fine(e.getPropertyName() + "=" + e.getNewValue());
+		log.log(Level.FINE, "{0}", e);
 		//
 		final GridTable gridTable = (GridTable)m_table.getModel();
 		
@@ -304,6 +349,9 @@ public final class VCellEditor extends AbstractCellEditor
 	}   //  vetoableChange
 
 	
+	/**
+	 * @return true if the editor contains a valid value which can be propagated to underlying table model
+	 */
 	public boolean isValid()
 	{
 		if (m_editor == null)
@@ -318,10 +366,11 @@ public final class VCellEditor extends AbstractCellEditor
 		}
 		return true;
 	}
+
 	/**
-	 *  Get Actual Editor.
-	 *  Called from GridController to add ActionListener to Button
-	 *  @return VEditor
+	 * Get Actual Editor.
+	 * 
+	 * @return VEditor
 	 */
 	public VEditor getEditor()
 	{
@@ -329,14 +378,41 @@ public final class VCellEditor extends AbstractCellEditor
 	}   //  getEditor
 
 	/**
-	 *  Action Editor - Stop Editor
-	 *  @param e event
+	 * {@link VEditor}'s action performed:
+	 * <ul>
+	 * <li>automatically stop editing (for some editors)
+	 * <li>call delegated {@link #actionListener}
+	 * </ul>
+	 * 
+	 * @param e event
 	 */
 	@Override
-	public void actionPerformed (ActionEvent e)
+	public void actionPerformed (final ActionEvent e)
 	{
-		log.finer(m_mField.getColumnName() + ": Value=" + m_editor.getValue());
-		if (e.getSource() == m_editor && actionListener != null)
+		if(m_editor == null)
+		{
+			return;
+		}
+		
+		if (e.getSource() != m_editor)
+		{
+			return;
+		}
+		
+		if(log.isLoggable(Level.FINER))
+			log.finer(m_mField.getColumnName() + ": Value=" + m_editor.getValue());
+		
+		//
+		// When user presses enter, automatically stop editing (for some basic text fields)
+		final int displayType = m_mField.getDisplayType();
+		if (DisplayType.isText(displayType) || DisplayType.isNumeric(displayType) || DisplayType.isDate(displayType))
+		{
+			stopCellEditing();
+		}
+
+		//
+		// Fire delegated action listener 
+		if (actionListener != null)
 		{
 			actionListener.actionPerformed(e);
 		}
@@ -347,7 +423,14 @@ public final class VCellEditor extends AbstractCellEditor
 	 */
 	public void dispose()
 	{
-		m_editor = null;
+		if (m_editor != null)
+		{
+			m_editor.dispose();
+			m_editor = null;
+		}
+		
+		actionListener = null;
+		
 //		m_mField = null;
 //		m_table = null;
 	}	//	dispose
@@ -405,7 +488,7 @@ public final class VCellEditor extends AbstractCellEditor
 		}
 	}
 
-	public void setActionListener(ActionListener listener)
+	public void setActionListener(final ActionListener listener)
 	{
 		actionListener = listener;
 	}

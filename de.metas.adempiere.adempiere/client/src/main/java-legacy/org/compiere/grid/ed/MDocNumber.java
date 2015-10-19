@@ -18,13 +18,16 @@ package org.compiere.grid.ed;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
+import java.util.logging.Level;
 
+import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
 
-import org.compiere.apps.ADialog;
+import org.adempiere.util.Check;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 
@@ -53,8 +56,7 @@ public final class MDocNumber extends PlainDocument
 	 *  @param tc
 	 *  @param title
 	 */
-	public MDocNumber(int displayType, DecimalFormat format,
-		JTextComponent tc, String title)
+	public MDocNumber(final int displayType, final DecimalFormat format, final JTextComponent tc, final String title)
 	{
 		super();
 		if (format == null || tc == null || title == null)
@@ -65,63 +67,63 @@ public final class MDocNumber extends PlainDocument
 		m_tc = tc;
 		m_title = title;
 		//
-		DecimalFormatSymbols sym = m_format.getDecimalFormatSymbols();
+		final DecimalFormatSymbols sym = m_format.getDecimalFormatSymbols();
 		m_decimalSeparator = sym.getDecimalSeparator();
 		m_groupingSeparator = sym.getGroupingSeparator();
 		m_minusSign = sym.getMinusSign();
-	//	log.finest("Decimal=" + m_decimalSeparator + "(" + (int)m_decimalSeparator
-	//		+ ") - Group=" + m_groupingSeparator + "(" + (int)m_groupingSeparator +")");
-	}	//	MDocNumber
+	}
 
 	/** DisplayType used            */
-	private int    			        m_displayType = 0;
+	private final int m_displayType;
 	/** Number Format               */
-	private DecimalFormat	        m_format = null;
+	private final DecimalFormat m_format;
 	/** The 'owning' component      */
-	private JTextComponent	        m_tc = null;
+	private final JTextComponent m_tc;
 	/** Title for calculator        */
-	private String			        m_title = null;
+	private final String m_title;
 	/** Decimal Separator			*/
-	private char					m_decimalSeparator = '.';
+	private final char m_decimalSeparator; // = '.';
 	/** Grouping Separator			*/
-	private char					m_groupingSeparator = ',';
+	private final char m_groupingSeparator; // = ',';
 	/** Minus Sign					*/
-	private char					m_minusSign = '-';
+	private final char m_minusSign; //  = '-';
 	/**	Logger	*/
-	private static CLogger 			log = CLogger.getCLogger (MDocNumber.class);
+	private static final transient CLogger log = CLogger.getCLogger (MDocNumber.class);
 	
-	/**************************************************************************
-	 *	Insert String
-	 *  @param origOffset
-	 *  @param string
-	 *  @param attr
-	 *  @throws BadLocationException
-	 */
 	@Override
-	public void insertString(int origOffset, String string, AttributeSet attr)
-		throws BadLocationException
+	public void insertString(final int origOffset, final String string, final AttributeSet attr) throws BadLocationException
 	{
-		log.finest("Offset=" + origOffset + " String=" + string + " Length=" + string.length());
+		if(log.isLoggable(Level.FINEST))
+			log.finest("Offset=" + origOffset + " String=" + string + " Length=" + string.length());
+		
 		if (origOffset < 0 || string == null)
 			throw new IllegalArgumentException("Invalid argument");
 
-		int offset = origOffset;
+		//
+		// More then one character "typed".
+		// It could be:
+		// * From DataBinder
+		// * from copy-paste
 		int length = string.length();
-		//	From DataBinder (assuming correct format)
 		if (length != 1)
 		{
-			super.insertString(offset, string, attr);
+			// Just call super to do the job
+			// NOTE: we are assuming correct format
+			super.insertString(origOffset, string, attr);
 			return;
 		}
 
-		/**
-		 *	Manual Entry
-		 */
-		String content = getText();
-		//	remove all Thousands
+		//
+		// Manual Entry (i.e. one character typed)
+		//
+
+		//
+		//	remove all Thousands (grouping) separator
+		int offset = origOffset;
+		String content = getText(); // initialize with current content
 		if (content.indexOf(m_groupingSeparator) != -1)
 		{
-			StringBuffer result = new StringBuffer();
+			final StringBuilder result = new StringBuilder();
 			for (int i = 0; i < content.length(); i++)
 			{
 				if (content.charAt(i) == m_groupingSeparator)
@@ -132,40 +134,39 @@ public final class MDocNumber extends PlainDocument
 				else
 					result.append(content.charAt(i));
 			}
+			
+			// Replace the content with our new content
 			super.remove(0, content.length());
 			super.insertString(0, result.toString(), attr);
 			//
 			m_tc.setCaretPosition(offset);
-		//	ADebug.trace(ADebug.l6_Database, "Clear Thousands (" + m_format.toPattern() + ")" + content + " -> " + result.toString());
 			content = result.toString();
 		}	//	remove Thousands
 
-		/**********************************************************************
-		 *	Check Character entered
-		 */
-		char c = string.charAt(0);
-		if (Character.isDigit(c))   // c >= '0' && c <= '9')
+		//
+		// User typed one character
+		//
+		// Digit
+		final char ch = string.charAt(0);
+		if (Character.isDigit(ch))
 		{
-		//	ADebug.trace(ADebug.l6_Database, "Digit=" + c);
 			super.insertString(offset, string, attr);
 			return;
 		}
-
-		//	Plus - remove minus sign
-		if (c == '+')
+		//
+		// Plus - remove minus sign
+		else if (ch == '+')
 		{
-		//	ADebug.trace(ADebug.l6_Database, "Plus=" + c);
 			//	only positive numbers
 			if (m_displayType == DisplayType.Integer)
 				return;
 			if (content.length() > 0 && content.charAt(0) == '-')
 				super.remove(0, 1);
 		}
-
-		//	Toggle Minus - put minus on start of string
-		else if (c == '-' || c == m_minusSign)
+		//
+		// Minus - toggle minus sign
+		else if (ch == '-' || ch == m_minusSign)
 		{
-		//	ADebug.trace(ADebug.l6_Database, "Minus=" + c);
 			//	no minus possible
 			if (m_displayType == DisplayType.Integer)
 				return;
@@ -175,26 +176,24 @@ public final class MDocNumber extends PlainDocument
 			else
 				super.insertString(0, "-", attr);
 		}
-
+		//
 		//	Decimal - remove other decimals
 		//	Thousand - treat as Decimal
-		else if (c == m_decimalSeparator || c == m_groupingSeparator || c == '.' || c == ',')
+		else if (isDecimalOrGroupingSeparator(ch))
 		{
-		//	log.info("Decimal=" + c + " (ds=" + m_decimalSeparator + "; gs=" + m_groupingSeparator + ")");
-			//  no decimals on integers
+			//  no decimal or thousands separator on integers
 			if (m_displayType == DisplayType.Integer)
 				return;
-			int pos = content.indexOf(m_decimalSeparator);
+			final int pos = content.indexOf(m_decimalSeparator);
 
 			//	put decimal in
-			String decimal = String.valueOf(m_decimalSeparator);
-			super.insertString(offset, decimal, attr);
+			super.insertString(offset, String.valueOf(m_decimalSeparator), attr);
 
 			//	remove other decimals
-			if (pos != 0)
+			if (pos >= 0)
 			{
 				content = getText();
-				StringBuffer result = new StringBuffer();
+				final StringBuilder result = new StringBuilder();
 				int correction = 0;
 				for (int i = 0; i < content.length(); i++)
 				{
@@ -210,52 +209,55 @@ public final class MDocNumber extends PlainDocument
 				}
 				super.remove(0, content.length());
 				super.insertString(0, result.toString(), attr);
-				m_tc.setCaretPosition(offset-correction+1);
+				m_tc.setCaretPosition(offset - correction + 1);
 			}	//	remove other decimals
 		}	//	decimal or thousand
-
-		//	something else
+		//
+		//	Something else - open calculator popup?
 		else if (VNumber.AUTO_POPUP)
 		{
-			log.fine("Input=" + c + " (" + (int)c + ")");
-			String result = VNumber.startCalculator(m_tc, getText(),
-				m_format, m_displayType, m_title);
+			if (log.isLoggable(Level.FINE))
+				log.fine("Input=" + ch + " (" + (int)ch + ")");
+			
+			final String result = VNumber.startCalculator(m_tc, getText(), m_format, m_displayType, m_title);
 			super.remove(0, content.length());
 			super.insertString(0, result, attr);
 		}
+		//
+		// Something else => provide error feedback
 		else
-			ADialog.beep();
+		{
+			provideErrorFeedback();
+		}
 	}	//	insertString
 
 	
-	/**************************************************************************
-	 *	Delete String
-	 *  @param origOffset Offeset
-	 *  @param length length
-	 *  @throws BadLocationException
-	 */
 	@Override
-	public void remove (int origOffset, int length)
-		throws BadLocationException
+	public void remove (final int origOffset, final int length) throws BadLocationException
 	{
-		log.finest("Offset=" + origOffset + " Length=" + length);
+		if(log.isLoggable(Level.FINEST))
+			log.finest("Offset=" + origOffset + " Length=" + length);
+		
 		if (origOffset < 0 || length < 0)
 			throw new IllegalArgumentException("MDocNumber.remove - invalid argument");
 
-		int offset = origOffset;
 		if (length != 1)
 		{
-			super.remove(offset, length);
+			super.remove(origOffset, length);
 			return;
 		}
-		/**
-		 *	Manual Entry
-		 */
+		
+		//
+		// Manual Entry
+		//
+		
+		//
+		//	remove all Thousands (grouping) separator
+		int offset = origOffset;
 		String content = getText();
-		//	remove all Thousands
 		if (content.indexOf(m_groupingSeparator) != -1)
 		{
-			StringBuffer result = new StringBuffer();
+			StringBuilder result = new StringBuilder();
 			for (int i = 0; i < content.length(); i++)
 			{
 				if (content.charAt(i) == m_groupingSeparator && i != origOffset)
@@ -272,22 +274,103 @@ public final class MDocNumber extends PlainDocument
 		}	//	remove Thousands
 		super.remove(offset, length);
 	}	//	remove
-
-	/**
-	 *	Get Full Text
-	 *  @return text
-	 */
-	private String getText()
+	
+	@Override
+	public void replace(final int offset, final int length, String text, final AttributeSet attrs) throws BadLocationException
 	{
-		Content c = getContent();
+		//
+		// Manual entry (i.e. single char typed)
+		// If the given char is not valid, do nothing but just provide an error feedback
+		if (text != null && text.length() == 1)
+		{
+			final char ch = text.charAt(0);
+			if (!isValidChar(ch))
+			{
+				provideErrorFeedback();
+				return;
+			}
+		}
+		
+		if(Check.isEmpty(text, true))
+		{
+			text = "";
+		}
+		
+		
+		// Case: completely replacing current content with an not empty text
+		// => make sure the new text is a valid number (this would prevent copy-pasting wrong things)
+		if (text.length() > 1 && offset == 0 && length == getLength())
+		{
+			try
+			{
+				m_format.parse(text);
+			}
+			catch (final ParseException e)
+			{
+				// not a valid number
+				provideErrorFeedback();
+				return;
+			}
+		}
+
+		
+		// Fallback
+		super.replace(offset, length, text, attrs);
+	}
+	
+	private final boolean isValidChar(final char ch)
+	{
+		return Character.isDigit(ch)
+				|| (ch == '-' || ch == m_minusSign)
+				|| (ch == '+')
+				|| isDecimalOrGroupingSeparator(ch);
+		
+	}
+	
+	private final boolean isDecimalOrGroupingSeparator(final char ch)
+	{
+		return ch == m_decimalSeparator || ch == m_groupingSeparator || ch == '.' || ch == ',';		
+	}
+	
+	/**
+	 * Get Full Text
+	 * 
+	 * @return text or empty string; never returns null
+	 */
+	private final String getText()
+	{
+		final Content content = getContent();
+		if (content == null)
+		{
+			return "";
+		}
+		
+		final int length = content.length();
+		if (length <= 0)
+		{
+			return "";
+		}
+		
 		String str = "";
 		try
 		{
-			str = c.getString(0, c.length()-1);		//	cr at end
+			str = content.getString(0, length - 1);		// cr at end
+		}
+		catch (BadLocationException e)
+		{
+			// ignore it, shall not happen
+			log.log(Level.FINE, "Error while getting the string content", e);
 		}
 		catch (Exception e)
-		{}
+		{
+			log.log(Level.FINE, "Error while getting the string content", e);
+		}
+		
 		return str;
 	}	//	getString
 
+	private final void provideErrorFeedback()
+	{
+		UIManager.getLookAndFeel().provideErrorFeedback(m_tc);
+	}
 }	//	MDocNumber

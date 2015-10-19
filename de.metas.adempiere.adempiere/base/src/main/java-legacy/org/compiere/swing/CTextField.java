@@ -21,6 +21,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.text.Document;
 
 import org.adempiere.plaf.AdempierePLAF;
@@ -292,6 +293,13 @@ public class CTextField extends JTextField
 	public final ICopyPasteSupportEditor getCopyPasteSupport()
 	{
 		return copyPasteSupport;
+	}
+	
+	@Override
+	public boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed)
+	{
+		// NOTE: overridden just to make it public
+		return super.processKeyBinding(ks, e, condition, pressed);
 	}
 
 }   //  CTextField

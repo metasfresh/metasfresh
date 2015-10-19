@@ -2596,14 +2596,21 @@ public class GridTable extends AbstractTableModel
 				}
 				else
 				{
-					// start: c.ghita@metas.ro
+					// Don't copy Value and ASI columns because in most of the cases those are unique.
 					if ("Value".equals(columnName) || "M_AttributeSetInstance_ID".equals(columnName))
 					{
 						rowData[i] = null;
 					}
+					// IsActive column: copy it only if the field is displayed in window/tab.
+					// Because if it's not displayed, the copied record is inactive by default and user has no way to change that.
+					else if ("IsActive".equals(columnName) && !field.isDisplayed())
+					{
+						rowData[i] = field.getDefault();
+					}
 					else
-					rowData[i] = origData[i];
-					// end: c.ghita@metas.ro
+					{
+						rowData[i] = origData[i];
+					}
 				}
 			}
 			// start: c.ghita@metas.ro

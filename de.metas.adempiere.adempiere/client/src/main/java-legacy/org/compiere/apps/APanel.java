@@ -44,6 +44,8 @@ import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -125,6 +127,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_Process;
@@ -299,6 +302,16 @@ public class APanel extends CPanel
 		{
 			toolBar.removeAll();
 			toolBar = null;
+			getInputMap(WHEN_IN_FOCUSED_WINDOW).clear();
+		}
+
+		// Current grid controller
+		// mainly, it shall be already disposed, but we do this for included tab case where tabPanels is null.
+		if (m_curGC != null)
+		{
+			m_curGC.removeDataStatusListener(this);
+			m_curGC.dispose();
+			m_curGC = null;
 		}
 		
 		//  Prepare GC
@@ -333,8 +346,9 @@ public class APanel extends CPanel
 			this.setLayout(mainLayout);
 
 			//
-			// North:
+			// North: toolbar
 			{
+				// NOTE: we are wrapping it in a container panel, to make sure all the buttons are aligned on left and they don't grow.
 				final CPanel toolbarContainer = new CPanel();
 				toolbarContainer.setLayout(new FlowLayout(FlowLayout.LEFT));
 				toolbarContainer.add(toolBar);
@@ -347,6 +361,7 @@ public class APanel extends CPanel
 			if (isNested)
 			{
 				this.add(m_curGC, BorderLayout.CENTER);
+				tabPanel = null; // make sure nobody is using this tabPanel because we are not adding it to our UI... so it would misleading to use it.
 			}
 			else
 			{
@@ -484,7 +499,7 @@ public class APanel extends CPanel
 		}
 		
 		//Window
-		AMenu aMenu = (AMenu)Env.getWindow(0);
+		final AMenu aMenu = (AMenu)Env.getWindow(Env.WINDOW_MAIN);
 		m_WindowMenu = new WindowMenu(aMenu.getWindowManager(), m_window);
 		menuBar.add(m_WindowMenu);
 		if (m_WindowMenu.isDisplayShowAllAction())
@@ -610,26 +625,37 @@ public class APanel extends CPanel
 	 *  @param toggle toggle button
 	 *  @return AppsAction
 	 */
-	private AppsAction addAction (String actionName, JMenu menu, KeyStroke accelerator, boolean toggle)
+	private AppsAction addAction (final String actionName, final JMenu menu, KeyStroke accelerator, final boolean toggle)
 	{
+		final boolean isWindowMenuAction = menu != null;
+		
+		//
+		// In case this is panel will be used for an included tab, it's better to not register the key binding
+		// because that would prevent the key bindings from the main panel to work.
+		if(isNested && isWindowMenuAction)
+		{
+			accelerator = null;
+		}
+
+		//
+		// Create the action/button.
 		final AppsAction action = new AppsAction(actionName, accelerator, toggle, isTabIncluded); // metas
+		action.setDelegate(this);
+		
+		// Add the action to menu (if any)
 		if (menu != null)
 		{
 			menu.add(action.getMenuItem());
 		}
-		action.setDelegate(this);
-	//	AbstractButton b = action.getButton();
-	//	String s = null;
-	//	if (b != null)
-	//		s = b.getToolTipText();
-		
-		//	Key Strokes
+
+		//
+		// If key binding is defined, configure the key binding at this panel level too
 		if (accelerator != null)
 		{
 			getInputMap(WHEN_IN_FOCUSED_WINDOW).put(accelerator, actionName);
 			getActionMap().put(actionName, action);
 		}
-		//
+		
 		return action;
 	}	//	addAction
 
@@ -715,8 +741,10 @@ public class APanel extends CPanel
 	 *  @param query			if not a Workbench, Zoom Query - additional SQL where clause
 	 *  @return true if Panel is initialized successfully
 	 */
-	public boolean initPanel (int AD_Workbench_ID, int AD_Window_ID, MQuery query)
+	public boolean initPanel (final int AD_Workbench_ID, final int AD_Window_ID, MQuery query)
 	{
+		Check.assume(!isNested, "Nested panels/included tabs are not allowed tobe initialized here");
+		
 		log.log(Level.INFO, "WB={0}, Win={1}, Query={2}", new Object[] { AD_Workbench_ID, AD_Window_ID, query });
 		
 		this.setName("APanel" + AD_Window_ID);
@@ -1059,9 +1087,9 @@ public class APanel extends CPanel
         return false;
 	}
 
-	private boolean doZoomToDetail(GridTab gTab, MQuery query, int tabIndex)
+	private boolean doZoomToDetail(final GridTab gTab, final MQuery query, final int tabIndex)
 	{
-		GridField[] fields = gTab.getFields();
+		final GridField[] fields = gTab.getFields();
 		for (GridField field : fields)
 		{
 			if (field.getColumnName().equalsIgnoreCase(query.getZoomColumnName()))
@@ -1871,8 +1899,9 @@ public class APanel extends CPanel
 	@Override
 	public void actionPerformed (ActionEvent e)
 	{
-		log.info(e.getActionCommand() + " - " + e.getModifiers());
-		//	+ " - " + new Timestamp(e.getWhen()) + " " + isUILocked());
+		if(log.isLoggable(Level.INFO))
+			log.info(e.getActionCommand() + " - " + e.getModifiers());
+		
 		if (m_disposing || isUILocked())
 			return;
 			
@@ -3230,29 +3259,23 @@ public class APanel extends CPanel
 	 * Removes the default KeyStroke action for the up/down keys and adds switch
 	 * line actions.
 	 */
-	private void initSwitchLineAction() {
-		aSwitchLinesDownAction = new SwitchAction("switchLinesDown", KeyStroke.getKeyStroke(
-				KeyEvent.VK_DOWN, Event.SHIFT_MASK), this);
-		aSwitchLinesUpAction = new SwitchAction("switchLinesUp", KeyStroke.getKeyStroke(
-				KeyEvent.VK_UP, Event.SHIFT_MASK), this);
+	private void initSwitchLineAction()
+	{
+		final KeyStroke keyLinesDown = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.SHIFT_MASK);
+		final KeyStroke keyLinesUp = KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.SHIFT_MASK);
+		
+		aSwitchLinesDownAction = new SwitchAction("switchLinesDown", keyLinesDown, this);
+		aSwitchLinesUpAction = new SwitchAction("switchLinesUp", keyLinesUp, this);
 
-		JTable table = m_curGC.getTable();
-		table.getInputMap(CPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.SHIFT_MASK), "none");
-		table.getInputMap(CPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.SHIFT_MASK), "none");
-		table.getInputMap(CPanel.WHEN_FOCUSED).put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.SHIFT_MASK), "none");
-		table.getInputMap(CPanel.WHEN_FOCUSED).put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.SHIFT_MASK), "none");
+		final JTable table = m_curGC.getTable();
+		table.getInputMap(CPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(keyLinesDown, "none");
+		table.getInputMap(CPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(keyLinesUp, "none");
+		table.getInputMap(CPanel.WHEN_FOCUSED).put(keyLinesDown, "none");
+		table.getInputMap(CPanel.WHEN_FOCUSED).put(keyLinesUp, "none");
 
-		getInputMap(CPanel.WHEN_IN_FOCUSED_WINDOW).put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.SHIFT_MASK),
-				aSwitchLinesDownAction.getName());
+		getInputMap(CPanel.WHEN_IN_FOCUSED_WINDOW).put(keyLinesDown, aSwitchLinesDownAction.getName());
 		getActionMap().put(aSwitchLinesDownAction.getName(), aSwitchLinesDownAction);
-		getInputMap(CPanel.WHEN_IN_FOCUSED_WINDOW).put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.SHIFT_MASK),
-				aSwitchLinesUpAction.getName());
+		getInputMap(CPanel.WHEN_IN_FOCUSED_WINDOW).put(keyLinesUp, aSwitchLinesUpAction.getName());
 		getActionMap().put(aSwitchLinesUpAction.getName(), aSwitchLinesUpAction);
 	}
 	
@@ -3378,5 +3401,54 @@ public class APanel extends CPanel
 	public final boolean isAlignVerticalTabsWithHorizontalTabs()
 	{
 		return alignVerticalTabsWithHorizontalTabs;
+	}
+	
+	/**
+	 * For a given component, it removes component's key bindings (defined in ancestor's map) that this panel also have defined.
+	 * 
+	 * The main purpose of doing this is to make sure menu/toolbar key bindings will not be intercepted by given component, so panel's key bindings will work when given component is embedded in our
+	 * panel.
+	 * 
+	 * @param comp component or <code>null</code>
+	 */
+	public final void removeAncestorKeyBindingsOf(final JComponent comp, final Predicate<KeyStroke> isRemoveKeyStrokePredicate)
+	{
+		// Skip null components (but tolerate that)
+		if(comp == null)
+		{
+			return;
+		}
+
+		// Get component's ancestors input map (the map which defines which key bindings will work when pressed in a component which is included inside this component).
+		final InputMap compInputMap = comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		// NOTE: don't check and exit if "compInputMap.size() <= 0" because it might be that this map is empty but the key bindings are defined in it's parent map. 
+
+		// Iterate all key bindings for our panel and remove those which are also present in component's ancestor map.
+		final InputMap thisInputMap = this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+		for (final KeyStroke key : thisInputMap.allKeys())
+		{
+			// Check if the component has a key binding defined for our panel key binding.
+			final Object compAction = compInputMap.get(key);
+			if (compAction == null)
+			{
+				continue;
+			}
+			
+			if (isRemoveKeyStrokePredicate != null && !isRemoveKeyStrokePredicate.apply(key))
+			{
+				continue;
+			}
+
+			// NOTE: Instead of removing it, it is much more safe to bind it to "none",
+			// to explicitly say to not consume that key event even if is defined in some parent map of this input map.
+			compInputMap.put(key, "none");
+
+			if (log.isLoggable(Level.FINE))
+			{
+				log.fine("Removed " + key + "->" + compAction + " which in this component is binded to " + thisInputMap.get(key)
+						+ "\n\tThis panel: " + this
+						+ "\n\tComponent: " + comp);
+			}
+		}
 	}
 }	//	APanel

@@ -64,18 +64,29 @@ public final class AppsAction extends AbstractAction
 	 */
 	public AppsAction (String action, KeyStroke accelerator, boolean toggle)
 	{
-		this (action, accelerator, null, toggle);
+		this(action
+				, accelerator
+				, (String)null // toolTipText
+				, toggle // toggle
+				, false // smallSize
+		);
 	}
+	
 	/**
 	 *  Application Action
 	 *
 	 *  @param   action base action command - used as AD_Message for Text and Icon name
 	 *  @param   accelerator optional keystroke for accelerator
-	 *  @param   text text, if null defered from action
+	 *  @param   toolTipText text, if null deferred from action
 	 */
-	public AppsAction (String action, KeyStroke accelerator, String text)
+	public AppsAction (String action, KeyStroke accelerator, String toolTipText)
 	{
-		this (action, accelerator, text, false);
+		this(action
+				, accelerator
+				, toolTipText
+				, false // toggle
+				, false // smallSize
+		);
 	}	//	AppsAction
 	
 	/**
@@ -83,12 +94,17 @@ public final class AppsAction extends AbstractAction
 	 *
 	 *  @param   action base action command - used as AD_Message for Text and Icon name
 	 *  @param   accelerator optional keystroke for accelerator
-	 *  @param   toolTipText text, if null defered from action
+	 *  @param   toolTipText text, if null deferred from action
 	 *  @param   toggle is toggle action (maintains state)
 	 */
 	public AppsAction (String action, KeyStroke accelerator, String toolTipText, boolean toggle)
 	{
-		this(action, accelerator, toolTipText, toggle, false); // smallSize = false
+		this(action
+				, accelerator
+				, toolTipText
+				, toggle
+				, false // smallSize
+		);
 	}
 	
 	public AppsAction(final String action, 
@@ -100,70 +116,62 @@ public final class AppsAction extends AbstractAction
 		super();
 		this._action = action;
 		this._acceleratorDefault = accelerator;
-		this.m_toggle = toggle;
+		this.toggleButton = toggle;
 
-		//	Data
-		if (toolTipText == null)
-			toolTipText = Services.get(IMsgBL.class).getMsg(Env.getCtx(), action);
-		int pos = toolTipText.indexOf('&');
-		if (pos != -1  && toolTipText.length() > pos)	//	We have a nemonic - creates ALT-_
+		//
+		// Tooltip and mnemonic
 		{
-			Character ch = new Character(toolTipText.toUpperCase().charAt(pos+1));
-			if (ch != ' ')
+			if (toolTipText == null)
+				toolTipText = Services.get(IMsgBL.class).getMsg(Env.getCtx(), action);
+			final int pos = toolTipText.indexOf('&');
+			if (pos != -1  && toolTipText.length() > pos)	//	We have a mnemonic - creates ALT-_
 			{
-				toolTipText = toolTipText.substring(0, pos) + toolTipText.substring(pos+1);
-				putValue(Action.MNEMONIC_KEY, new Integer(ch.hashCode()));
+				final Character ch = toolTipText.toUpperCase().charAt(pos+1);
+				if (ch != ' ')
+				{
+					toolTipText = toolTipText.substring(0, pos) + toolTipText.substring(pos+1);
+					putValue(Action.MNEMONIC_KEY, new Integer(ch.hashCode()));
+				}
 			}
 		}
+		
 		//
-		Icon small = getIcon(action, true);
-		Icon large = getIcon(action, false);
-		Icon largePressed = null;
-
-		if (smallSize) large = small; // metas
-		//  ToggleIcons have the pressed name with X
-		if (m_toggle)
+		// Load icons
+		final Icon iconSmall = getIcon(action, true);
+		final Icon iconLarge = getIcon(action, false);
+		Icon iconSmallPressed = null;
+		Icon iconLargePressed = null;
+		if (toggleButton)
 		{
-			m_smallPressed = getIcon(action+"X", true);
-			if (m_smallPressed == null)
-				m_smallPressed = small;
-			largePressed = getIcon(action+"X", false);
-			if (largePressed == null)
-				largePressed = large;
-			if (smallSize) largePressed = m_smallPressed; // metas
+			final String iconNamePressed = action + "X"; // NOTE: ToggleIcons have the pressed name with X
+			iconSmallPressed = getIcon(iconNamePressed, true);
+			if (iconSmallPressed == null)
+				iconSmallPressed = iconSmall;
+			
+			iconLargePressed = getIcon(iconNamePressed, false);				
+			if (iconLargePressed == null)
+				iconLargePressed = iconLarge;
 		}
+		// Set icons
+		this.iconSmallPressed = iconSmallPressed;
+		if (smallSize)
+		{
+			this.icon = iconSmall;
+			this.iconPressed = iconSmallPressed;
+		}
+		else
+		{
+			this.icon = iconLarge;
+			this.iconPressed = iconLargePressed;
+		}
+		
 
 		//	Attributes
 		putValue(Action.NAME, toolTipText);					//	Display
-		putValue(Action.SMALL_ICON, small);                 //  Icon
+		putValue(Action.SMALL_ICON, iconSmall);                 //  Icon
 		putValue(Action.SHORT_DESCRIPTION, toolTipText);	//	Tooltip
-	//	putValue(Action.MNEMONIC_KEY, new Integer(0));      //  Mnemonic
 	//	putValue(Action.DEFAULT, text);						//	Not Used
-
-		//
-		//	Create Button
-		if (toggle)
-		{
-			m_button = new CToggleButton(this);
-			m_button.setSelectedIcon(largePressed);
-		}
-		else
-			m_button = new CButton(this);
-		m_button.setName(action);
-		//	Correcting Action items
-		if (large != null)
-		{
-			m_button.setIcon(large);
-			m_button.setText(null);
-		}
-		m_button.setActionCommand(action);
-		m_button.setMargin(BUTTON_INSETS);
-		m_button.setSize(BUTTON_SIZE);
-		
-		//
-		// Action
-		putValue(Action.ACTION_COMMAND_KEY, action);      //  ActionCammand
-		m_button.getActionMap().put(action, this);
+		putValue(Action.ACTION_COMMAND_KEY, action);      //  ActionCommand
 		
 		//
 		// Accelerator
@@ -175,17 +183,23 @@ public final class AppsAction extends AbstractAction
 	/** Button Insets   			*/
 	public static final Insets		BUTTON_INSETS = new Insets(0, 0, 0, 0);
 	/** CButton or CToggelButton	*/
-	private AbstractButton 	m_button;
+	private AbstractButton 	_button;
 	/**	Menu						*/
-	private JMenuItem		m_menu;
+	private JMenuItem		_menuItem;
 
 	private final String	_action;
+	//
 	private final KeyStroke	_acceleratorDefault;
 	private KeyStroke		_accelerator = null;
-	private Icon 			m_smallPressed = null;
-	private ActionListener	m_delegate = null;
-	private final boolean 	m_toggle;
-	private boolean			m_pressed = false;
+	//
+	private final Icon icon;
+	private final Icon iconPressed;
+	private final Icon iconSmallPressed;
+	//
+	private final boolean toggleButton;
+	private boolean pressed = false;
+	//
+	private ActionListener m_delegate = null;
 
 	/**
 	 *	Get Icon with name action
@@ -193,7 +207,7 @@ public final class AppsAction extends AbstractAction
 	 *  @param small small
 	 *  @return Icon
 	 */
-	private ImageIcon getIcon(String name, boolean small)
+	private static ImageIcon getIcon(final String name, final boolean small)
 	{
 		String fullName = name + (small ? "16" : "24");
 		return Images.getImageIcon2(fullName);
@@ -209,13 +223,92 @@ public final class AppsAction extends AbstractAction
 	}	//	getName
 
 	/**
-	 *	Return Button
-	 *  @return Button
+	 * Return Button
+	 * 
+	 * @return Button
 	 */
-	public AbstractButton getButton()
+	public final AbstractButton getButton()
 	{
-		return m_button;
-	}	//	getButton
+		if(_button == null)
+		{
+			this._button = createButton();
+		}
+		return _button;
+	}
+	
+	private AbstractButton createButton()
+	{
+		final String action = getAction();
+		
+		final AbstractButton button;
+		if (toggleButton)
+		{
+			button = new CToggleButton(this);
+			button.setSelectedIcon(iconPressed);
+		}
+		else
+		{
+			button = new CButton(this);
+		}
+		button.setName(action);
+		button.setIcon(icon);
+		button.setText(null); // no text
+		
+		button.setActionCommand(action);
+		button.setMargin(BUTTON_INSETS);
+		button.setSize(BUTTON_SIZE);
+		
+		//
+		// Action
+		button.getActionMap().put(action, this);
+
+		//
+		// Update button state from this action 
+		updateButtonPressedState(button);
+		replaceAcceleratorKey(button, getAccelerator(), null);
+
+		return button;
+	}
+	
+	/** @return current created button or null */
+	private AbstractButton getButtonIfExists()
+	{
+		return _button;
+	}
+	
+	private final void replaceAcceleratorKey(final JComponent comp, final KeyStroke acceleratorNew, final KeyStroke acceleratorOld)
+	{
+		if(comp == null)
+		{
+			return;
+		}
+		
+		if (acceleratorOld != null)
+		{
+			comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).remove(acceleratorOld);
+		}
+
+		if (acceleratorNew != null)
+		{
+			comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(acceleratorNew, getAction());
+		}
+	}
+	
+	private void updateButtonPressedState(final AbstractButton button)
+	{
+		if (!toggleButton)
+		{
+			return;
+		}
+		
+		if(button == null)
+		{
+			return;
+		}
+		
+		button.setSelected(pressed);
+	}
+
 
 	/**
 	 *	Return MenuItem
@@ -223,26 +316,45 @@ public final class AppsAction extends AbstractAction
 	 */
 	public JMenuItem getMenuItem()
 	{
-		if (m_menu == null)
+		if (_menuItem == null)
 		{
-			if (m_toggle)
-			{
-				m_menu = new CCheckBoxMenuItem(this);
-				m_menu.setSelectedIcon(m_smallPressed);
-			}
-			else
-				m_menu = new CMenuItem(this);
-			m_menu.setAccelerator(getAccelerator());
-			m_menu.setActionCommand(getAction());
+			_menuItem = createMenuItem();
 		}
-		return m_menu;
-	}	//	getMenuItem
+		return _menuItem;
+	}
+	
+	private JMenuItem createMenuItem()
+	{
+		final JMenuItem menuItem;
+		if (toggleButton)
+		{
+			menuItem = new CCheckBoxMenuItem(this);
+			menuItem.setSelectedIcon(iconSmallPressed);
+		}
+		else
+		{
+			menuItem = new CMenuItem(this);
+		}
+		menuItem.setActionCommand(getAction());
+		
+		//
+		// Update menu item's state from this action 
+		updateButtonPressedState(menuItem);
+		replaceAcceleratorKey(menuItem, getAccelerator(), null);
+		
+		return menuItem;
+	}
+	
+	private final JMenuItem getMenuItemIfExists()
+	{
+		return _menuItem;
+	}
 
 	/**
 	 *	Set Delegate to receive the actionPerformed calls
 	 *  @param al listener
 	 */
-	public void setDelegate(ActionListener al)
+	public void setDelegate(final ActionListener al)
 	{
 		m_delegate = al;
 	}	//	setDelegate
@@ -251,19 +363,17 @@ public final class AppsAction extends AbstractAction
 	 *	Toggle
 	 *  @param pressed pressed
 	 */
-	public void setPressed (boolean pressed)
+	public void setPressed (final boolean pressed)
 	{
-		if (!m_toggle)
+		if (!toggleButton)
+		{
 			return;
-		m_pressed = pressed;
-
-		//	Set Button
-		if (m_button != null)
-			m_button.setSelected(pressed);
+		}
 		
-		//	Set Menu
-		if (m_menu != null)
-			m_menu.setSelected(pressed);
+		this.pressed = pressed;
+
+		updateButtonPressedState(getButtonIfExists());
+		updateButtonPressedState(getMenuItemIfExists());
 	}	//	setPressed
 
 	/**
@@ -272,7 +382,7 @@ public final class AppsAction extends AbstractAction
 	 */
 	public boolean isPressed()
 	{
-		return m_pressed;
+		return pressed;
 	}	//	isPressed
 
 	/**
@@ -287,21 +397,21 @@ public final class AppsAction extends AbstractAction
 		return null;
 	}	//	getMnemonic
 	
-	/**
-	 *	ActionListener
-	 *  @param e Event
-	 */
 	@Override
-	public void actionPerformed(ActionEvent e)
+	public final void actionPerformed(final ActionEvent e)
 	{
-	//	log.info( "AppsAction.actionPerformed", e.getActionCommand());
-		//	Toggle Items
-		if (m_toggle)
-			setPressed(!m_pressed);
-		//	Inform
+		// Toggle Items
+		if (toggleButton)
+		{
+			setPressed(!pressed);
+		}
+		
+		// Fire delegated action listener
 		if (m_delegate != null)
+		{
 			m_delegate.actionPerformed(e);
-	}	//	actionPerformed
+		}
+	}
 
 	/**
 	 *	Dispose
@@ -309,8 +419,10 @@ public final class AppsAction extends AbstractAction
 	public void dispose()
 	{
 		m_delegate = null;
-		m_button = null;
-		m_menu = null;
+		
+		// dispose generated components
+		_button = null;
+		_menuItem = null;
 	}	//	dispose
 
 	/**
@@ -320,14 +432,17 @@ public final class AppsAction extends AbstractAction
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("AppsAction[");
+		final StringBuilder sb = new StringBuilder("AppsAction[");
 		sb.append(_action);
-		Object oo = getValue(Action.ACCELERATOR_KEY);
-		if (oo != null)
-			sb.append(",Accelerator=").append(oo);
-		oo = getMnemonic();
-		if (oo != null)
-			sb.append(",MnemonicKey=").append(oo);
+		
+		final Object accelerator = getValue(Action.ACCELERATOR_KEY);
+		if (accelerator != null)
+			sb.append(",Accelerator=").append(accelerator);
+		
+		final Character mnemonic = getMnemonic();
+		if (mnemonic != null)
+			sb.append(",MnemonicKey=").append(mnemonic);
+		
 		sb.append("]");
 		return sb.toString();
 	}   //  toString
@@ -351,16 +466,11 @@ public final class AppsAction extends AbstractAction
 		final KeyStroke acceleratorOld = this._accelerator;
 		this._accelerator = accelerator;
 		
-		if (acceleratorOld != null)
-		{
-			m_button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).remove(acceleratorOld);
-		}
-
 		putValue(Action.ACCELERATOR_KEY, accelerator);      //  KeyStroke
-		if (accelerator != null)
-		{
-			m_button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(accelerator, getAction());
-		}
+
+		// Update accelerator in created components (if any)
+		replaceAcceleratorKey(getButtonIfExists(), accelerator, acceleratorOld);
+		replaceAcceleratorKey(getMenuItemIfExists(), accelerator, acceleratorOld);
 	}
 	
 	public void setDefaultAccelerator()

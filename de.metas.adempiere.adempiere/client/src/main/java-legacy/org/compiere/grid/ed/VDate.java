@@ -34,6 +34,7 @@ import java.util.logging.Level;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 
 import org.adempiere.plaf.AdempierePLAF;
@@ -58,7 +59,10 @@ import org.compiere.util.TimeUtil;
  * @version $Id: VDate.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
 public class VDate extends JComponent
-		implements VEditor, ActionListener, KeyListener, FocusListener
+		implements VEditor
+		, ActionListener
+		, KeyListener
+		, FocusListener
 		, ICopyPasteSupportEditorAware
 {
 	/**
@@ -155,6 +159,10 @@ public class VDate extends JComponent
 		
 		// Create and bind the context menu
 		new EditorContextPopupMenu(this);
+
+		//
+		// Install actions
+		actionCancelEdit.installTo(this, WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 	}	// VDate
 
 	/**
@@ -191,23 +199,36 @@ public class VDate extends JComponent
 	private GridField m_mField = null;
 	/** Logger */
 	private static final transient CLogger log = CLogger.getCLogger(VDate.class);
+	
+	private final VEditorAction actionCancelEdit = new VEditorAction("cancelEdit", KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0))
+	{
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void actionPerformed(final ActionEvent e)
+		{
+			cancelEdit();
+		}
+	};
 
 	/**
 	 * Set ReadWrite - field is always r/o for Time or DateTime
 	 * 
-	 * @param value value
+	 * @param readWrite value
 	 */
 	@Override
-	public void setReadWrite(boolean value)
+	public void setReadWrite(final boolean readWrite)
 	{
-		m_readWrite = value;
+		m_readWrite = readWrite;
 		// this.setFocusable(value);
 		// editor
 
-		m_text.setReadWrite(value);		// sets Background
+		m_text.setReadWrite(readWrite);		// sets Background
 
 		// Don't show button if not ReadWrite
-		m_button.setReadWrite(value);
+		m_button.setReadWrite(readWrite);
+		
+		actionCancelEdit.setEnabled(readWrite);
 	}	// setReadWrite
 
 	/**
@@ -222,12 +243,12 @@ public class VDate extends JComponent
 	}	// isReadWrite
 
 	/**
-	 * Set Mandatory (and back bolor)
+	 * Set Mandatory (and background color)
 	 * 
 	 * @param mandatory mandatory
 	 */
 	@Override
-	public void setMandatory(boolean mandatory)
+	public void setMandatory(final boolean mandatory)
 	{
 		m_mandatory = mandatory;
 		m_text.setMandatory(mandatory);
@@ -290,7 +311,21 @@ public class VDate extends JComponent
 	@Override
 	public void requestFocus()
 	{
+		if(m_text == null)
+		{
+			return;
+		}
 		m_text.requestFocus();
+	}
+	
+	@Override
+	public boolean requestFocusInWindow()
+	{
+		if(m_text == null)
+		{
+			return false;
+		}
+		return m_text.requestFocusInWindow();
 	}
 
 	/**
@@ -334,6 +369,8 @@ public class VDate extends JComponent
 	{
 		if (evt.getPropertyName().equals(GridField.PROPERTY))
 			setValue(evt.getNewValue());
+		if (evt.getPropertyName().equals(org.compiere.model.GridField.REQUEST_FOCUS))
+			requestFocus();
 	}   // propertyChange
 
 	/**
@@ -510,25 +547,23 @@ public class VDate extends JComponent
 	{
 	}
 
-	/**
-	 * Key Listener.
-	 * - Escape - Restore old Text
-	 * - firstChange - signal change
-	 * 
-	 * @param e event
-	 */
 	@Override
 	public void keyReleased(KeyEvent e)
 	{
-		// ESC
-		if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-		{
-			m_text.setText(m_initialText);
-		}
-
-		// cg: task: 06110 : start
 		commitEdit();
-	}	// keyReleased
+	}
+	
+	private void cancelEdit()
+	{
+		// Skip if disposed
+		if(m_text == null)
+		{
+			return;
+		}
+		
+		m_text.setText(m_initialText);
+		commitEdit();
+	}
 
 	private void commitEdit()
 	{
@@ -569,11 +604,6 @@ public class VDate extends JComponent
 	}
 
 	// cg: task: 06110 : end
-	/**
-	 * Focus Gained - Save for Escape
-	 * 
-	 * @param e event
-	 */
 	@Override
 	public void focusGained(FocusEvent e)
 	{
@@ -585,7 +615,7 @@ public class VDate extends JComponent
 	 * @param e event
 	 */
 	@Override
-	public void focusLost(FocusEvent e)
+	public void focusLost(final FocusEvent e)
 	{
 		// did not get Focus first
 		if (e.isTemporary())
@@ -718,4 +748,23 @@ public class VDate extends JComponent
 	{
 		return m_text == null ? NullCopyPasteSupportEditor.instance : m_text.getCopyPasteSupport();
 	}
+	
+	@Override
+	protected final boolean processKeyBinding(final KeyStroke ks, final KeyEvent e, final int condition, final boolean pressed)
+	{
+		// Forward all key events on this component to the text field.
+		// We have to do this for the case when we are embedding this editor in a JTable and the JTable is forwarding the key strokes to editing component.
+		// Effect of NOT doing this: when in JTable, user presses a key (e.g. a digit) to start editing but the first key he pressed gets lost here.
+		if (m_text != null && condition == WHEN_FOCUSED)
+		{
+			if (m_text.processKeyBinding(ks, e, condition, pressed))
+			{
+				return true;
+			}
+		}
+
+		//
+		// Fallback to super
+		return super.processKeyBinding(ks, e, condition, pressed);
+	}	
 }	// VDate

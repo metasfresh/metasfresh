@@ -28,6 +28,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
@@ -40,6 +41,7 @@ import java.util.logging.Level;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.text.Document;
 
@@ -70,7 +72,8 @@ import com.google.common.base.Strings;
  * 			<li>BF [ 1834393 ] VNumber.setFocusable not working
  */
 public final class VNumber extends JComponent
-	implements VEditor2, ActionListener, KeyListener, FocusListener, VManagedEditor
+	implements VEditor2
+	, VManagedEditor
 	, ICopyPasteSupportEditorAware
 {
 	/**
@@ -119,8 +122,8 @@ public final class VNumber extends JComponent
 		VEditorUtils.setupInnerTextComponentUI(m_text);
 		m_text.setName(columnName);
 		m_text.setHorizontalAlignment(JTextField.TRAILING);
-		m_text.addKeyListener(this);
-		m_text.addFocusListener(this);
+		m_text.addKeyListener(textFieldKeyListener);
+		m_text.addFocusListener(textFieldFocusListener);
 		this.add(m_text, BorderLayout.CENTER);
 		// 
 		// Swing will search for other places and other components to consume the KeyEvent 
@@ -140,7 +143,15 @@ public final class VNumber extends JComponent
 		// Button
 		{
 			m_button = VEditorUtils.createActionButton("Calculator", m_text);
-			m_button.addActionListener(this);
+			m_button.addActionListener(new ActionListener()
+			{
+				
+				@Override
+				public void actionPerformed(ActionEvent e)
+				{
+					onActionButtonPressed();
+				}
+			});
 			VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
 		}
 
@@ -159,6 +170,8 @@ public final class VNumber extends JComponent
 		//
 		// Create and bind the context menu
 		new EditorContextPopupMenu(this);
+		
+		actionCancelEdit.installTo(this, WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 	} // VNumber
 
 	/**
@@ -167,7 +180,12 @@ public final class VNumber extends JComponent
 	@Override
 	public void dispose()
 	{
-		m_text = null;
+		if (m_text != null)
+		{
+			m_text.removeFocusListener(textFieldFocusListener);
+			m_text = null;
+		}
+		
 		m_button = null;
 		m_mField = null;
 	}   //  dispose
@@ -180,6 +198,9 @@ public final class VNumber extends JComponent
 	{
 		m_text.setDocument(doc);
 	}	//	getDocument
+
+	/**	Logger			*/
+	private static final CLogger log = CLogger.getCLogger(VNumber.class);
 
 	private final String m_columnName;
 	protected int m_displayType;	//  Currency / UoM via Context
@@ -201,14 +222,79 @@ public final class VNumber extends JComponent
 	private VEditorActionButton m_button = null;
 
 	private GridField          m_mField = null;
-	/**	Logger			*/
-	private static final CLogger log = CLogger.getCLogger(VNumber.class);
+	
+	private final VEditorAction actionCancelEdit = new VEditorAction("cancelEdit", KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0))
+	{
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void actionPerformed(final ActionEvent e)
+		{
+			cancelEdit();
+		}
+	};
+
+	
+	private boolean skipNextSelectAllOnFocusGained = false;
+	/**
+	 * Listen {@link #m_text}'s focus gain/lost events and
+	 * <ul>
+	 * <li>selects all text when the text component gains focus
+	 * </ul>
+	 */
+	private FocusListener textFieldFocusListener = new FocusListener()
+	{
+		@Override
+		public void focusGained(final FocusEvent e)
+		{
+			if(e.isTemporary())
+			{
+				return;
+			}
+
+			// Select all on focus gained
+			if (!skipNextSelectAllOnFocusGained)
+			{
+				m_text.selectAll();
+			}
+			skipNextSelectAllOnFocusGained = false;
+		}
+		
+		@Override
+		public void focusLost(final FocusEvent e)
+		{
+			if(e.isTemporary())
+			{
+				return;
+			}
+			
+			commitChanges();
+		}
+	};
+	
+	private final KeyListener textFieldKeyListener = new KeyAdapter()
+	{
+		@Override
+		public void keyReleased(final KeyEvent e)
+		{
+			m_modified = true;
+
+			// cg: task: 06110 : start
+			final boolean commit = e.getKeyCode() == KeyEvent.VK_ENTER; 
+			commitEdit(commit);
+		}
+	};
 
 	/**
 	 * Select all the number text.
 	 */
 	public void selectAll()
 	{
+		if(m_text == null)
+		{
+			return;
+		}
+		
 		m_text.selectAll();
 	}
 
@@ -301,17 +387,19 @@ public final class VNumber extends JComponent
 
 	/**
 	 *	Set ReadWrite
-	 *  @param value value
+	 *  @param readWrite value
 	 */
 	@Override
-	public void setReadWrite (boolean value)
+	public void setReadWrite (final boolean readWrite)
 	{
-		if (m_text.isReadWrite() != value)
-			m_text.setReadWrite(value);
+		if (m_text.isReadWrite() != readWrite)
+			m_text.setReadWrite(readWrite);
 		
-		m_button.setReadWrite(value);
+		m_button.setReadWrite(readWrite);
 		
-		setFocusable(value == true);
+		setFocusable(readWrite == true);
+		
+		actionCancelEdit.setEnabled(readWrite);
 	}	//	setReadWrite
 
 	/**
@@ -325,7 +413,7 @@ public final class VNumber extends JComponent
 	}	//	isReadWrite
 
 	/**
-	 *	Set Mandatory (and back bolor)
+	 *	Set Mandatory (and background color)
 	 *  @param mandatory mandatory
 	 */
 	@Override
@@ -379,9 +467,10 @@ public final class VNumber extends JComponent
 	 *  @param value value
 	 */
 	@Override
-	public void setValue(Object value)
+	public void setValue(final Object value)
 	{
-		log.finest("Value=" + value);
+		log.log(Level.FINEST, "Value={0}", value);
+		
 		if (value == null)
 			m_oldText = "";
 		else
@@ -405,21 +494,35 @@ public final class VNumber extends JComponent
 	 * 	Request Focus
 	 */
 	@Override
-	public void requestFocus ()
+	public void requestFocus()
 	{
 		if (log.isLoggable(Level.FINE)) // 07068: logging when requestFocus is actually invoked
-		{
 			log.fine(this + ": Invoking requestFocus()");
+		
+		if(m_text == null)
+		{
+			return;
 		}
-		m_text.requestFocus ();
+		
+		m_text.requestFocus();
 	}	//	requestFocus
+	
+	@Override
+	public boolean requestFocusInWindow()
+	{
+		if(m_text == null)
+		{
+			return false;
+		}
+		return m_text.requestFocusInWindow();
+	}
 	
 	/**
 	 *  Property Change Listener
 	 *  @param evt event
 	 */
 	@Override
-	public void propertyChange (PropertyChangeEvent evt)
+	public void propertyChange(final PropertyChangeEvent evt)
 	{
 		if (evt.getPropertyName().equals(org.compiere.model.GridField.PROPERTY))
 			setValue(evt.getNewValue());
@@ -497,130 +600,36 @@ public final class VNumber extends JComponent
 	}	//	getTitle
 
 	/**
-	 * 	Plus - add one.
-	 * 	Also sets Value
-	 *	@return new value
+	 * Called when user presses the action button.
 	 */
-	public Object plus()
+	private void onActionButtonPressed()
 	{
-		Object value = getValue();
-		if (value == null)
+		if(m_text == null)
 		{
-			if (m_displayType == DisplayType.Integer)
-				value = new Integer(0);
-			else
-				value = Env.ZERO;
-		}
-		//	Add
-		if (value instanceof BigDecimal)
-			value = ((BigDecimal)value).add(Env.ONE);
-		else
-			value = new Integer(((Integer)value).intValue() + 1);
-		//
-		setValue(value);
-		return value;
-	}	//	plus
-	
-	/**
-	 * 	Minus - subtract one, but not below minimum.
-	 * 	Also sets Value
-	 *	@param minimum minimum
-	 *	@return new value
-	 */
-	public Object minus (int minimum)
-	{
-		Object value = getValue();
-		if (value == null)
-		{
-			if (m_displayType == DisplayType.Integer)
-				value = new Integer(minimum);
-			else
-				value = new BigDecimal(minimum);
-			setValue(value);
-			return value;
+			return; // do nothing if disposed
 		}
 		
-		//	Subtract
-		if (value instanceof BigDecimal)
+		try(final IAutoCloseable buttonDisabled = m_button.temporaryDisable())
 		{
-			BigDecimal bd = ((BigDecimal)value).subtract(Env.ONE);
-			BigDecimal min = new BigDecimal(minimum);
-			if (bd.compareTo(min) < 0)
-				value = min;
-			else
-				value = bd;
-		}
-		else
-		{
-			int i = ((Integer)value).intValue();
-			i--;
-			if (i < minimum)
-				i = minimum;
-			value = new Integer(i);
+			String str = startCalculator(this, m_text.getText(), m_format, m_displayType, m_title);
+			m_text.setText(str);
 		}
 		//
-		setValue(value);
-		return value;
-	}	//	minus
-	
-	/**************************************************************************
-	 *	Action Listener
-	 *  @param e event
-	 */
-	@Override
-	public void actionPerformed (ActionEvent e)
-	{
-		if (e.getSource() == m_button)
+		try
 		{
-			try(final IAutoCloseable buttonDisabled = m_button.temporaryDisable())
-			{
-				String str = startCalculator(this, m_text.getText(), m_format, m_displayType, m_title);
-				m_text.setText(str);
-			}
-			//
-			try
-			{
-				fireVetoableChange (m_columnName, m_oldTextObj, getValue()); // metas
-			}
-			catch (PropertyVetoException pve)	{}
-			m_text.requestFocus();
+			fireVetoableChange (m_columnName, m_oldTextObj, getValue()); // metas
 		}
+		catch (PropertyVetoException pve) {}
+		m_text.requestFocus();
 	}	//	actionPerformed
-
-	/**************************************************************************
-	 *	Key Listener Interface
-	 *  @param e event
-	 */
-	@Override
-	public void keyTyped(KeyEvent e)    {}
-	@Override
-	public void keyPressed(KeyEvent e)  {}
-
-	/**
-	 *	Key Listener.
-	 *		- Escape 		- Restore old Text
-	 *		- firstChange	- signal change
-	 *  @param e event
-	 */
-	@Override
-	public void keyReleased(KeyEvent e)
-	{
-		log.finest("Key=" + e.getKeyCode() + " - " + e.getKeyChar()
-			+ " -> " + m_text.getText());
-
-		//  ESC
-		if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-			m_text.setText(m_initialText);
-		
-		m_modified = true;
-		
-		// cg: task: 06110 : start
-		final boolean commit = e.getKeyCode() == KeyEvent.VK_ENTER; 
-		commitEdit(commit);
-
-	}	//	keyReleased
-
 	
+	private void cancelEdit()
+	{
+		m_text.setText(m_initialText);
+		m_modified = true;
+		commitEdit(false);
+	}
+
 	private void commitEdit(final boolean commit)
 	{
 		m_setting = true;
@@ -632,7 +641,7 @@ public final class VNumber extends JComponent
 				fireActionPerformed();
 			}
 			else	
-			{				
+			{
 				//	indicate change
 				fireVetoableChange (m_columnName, m_oldTextObj, null); // metas
 			}
@@ -646,39 +655,10 @@ public final class VNumber extends JComponent
 			m_setting = false;
 		}
 	}
-	// cg: task: 06110 : end
-	
-	/**
-	 *	Focus Gained
-	 *  @param e event
-	 */
-	@Override
-	public void focusGained (FocusEvent e)
-	{
-		if (m_text != null)
-			m_text.selectAll();
-	}	//	focusGained
-
-	/**
-	 *	Data Binding to MTable (via GridController.vetoableChange).
-	 *  @param e event
-	 */
-	@Override
-	public void focusLost (FocusEvent e)
-	{
-		//	APanel - Escape
-		// hengsin: bug [ 1890205 ]
-		/*
-		if (e.getOppositeComponent() instanceof AGlassPane)
-		{
-			m_text.setText(m_initialText);
-			return;
-		}*/
-		commitChanges();
-	}   //  focusLost
 
 	@Override
-	public void commitChanges() {
+	public void commitChanges()
+	{
 		Object oo = getValue();
 		if (m_rangeSet)
 		{
@@ -732,8 +712,7 @@ public final class VNumber extends JComponent
 	 *  @param title title
 	 *  @return value
 	 */
-	public static String startCalculator(Container jc, String value,
-		DecimalFormat format, int displayType, String title)
+	static String startCalculator(final Container jc, final String value, final DecimalFormat format, final int displayType, final String title)
 	{
 		log.config("Value=" + value);
 		BigDecimal startValue = new BigDecimal(0.0);
@@ -751,10 +730,9 @@ public final class VNumber extends JComponent
 		}
 		
 		//	Find frame
-		Frame frame = Env.getFrame(jc);
+		final Frame frame = Env.getFrame(jc);
 		//	Actual Call
-		Calculator calc = new Calculator(frame, title,
-			displayType, format, startValue);
+		Calculator calc = new Calculator(frame, title, displayType, format, startValue);
 		AEnv.showCenterWindow(frame, calc);
 		BigDecimal result = calc.getNumber();
 		log.config( "Result=" + result);
@@ -771,7 +749,7 @@ public final class VNumber extends JComponent
 	 *  @param mField field
 	 */
 	@Override
-	public void setField (GridField mField)
+	public void setField (final GridField mField)
 	{
 		m_mField = mField;
 
@@ -779,20 +757,20 @@ public final class VNumber extends JComponent
 	} // setField
 
 	@Override
-	public GridField getField() {
+	public GridField getField()
+	{
 		return m_mField;
 	}
-	/*
-	 * BF [ 1834393 ] VNumber.setFocusable not working
-	 */
+	
 	@Override
-	public void setFocusable(boolean value) {
-		m_text.setFocusable(value);
+	public void setFocusable(boolean value)
+	{
+		m_text.setFocusable(value); // BF [ 1834393 ] VNumber.setFocusable not working
 	}
 
 	
 	/**************************************************************************
-	 * 	Remove Action Listner
+	 * 	Remove Action Listener
 	 * 	@param l Action Listener
 	 */
 	public void removeActionListener(ActionListener l)
@@ -801,7 +779,7 @@ public final class VNumber extends JComponent
 	}	//	removeActionListener
 
 	/**
-	 * 	Add Action Listner
+	 * 	Add Action Listener
 	 * 	@param l Action Listener
 	 */
 	@Override
@@ -815,14 +793,16 @@ public final class VNumber extends JComponent
 	 */
 	protected void fireActionPerformed()
 	{
-		int modifiers = 0;
-		AWTEvent currentEvent = EventQueue.getCurrentEvent();
+		final int modifiers;
+		final AWTEvent currentEvent = EventQueue.getCurrentEvent();
 		if (currentEvent instanceof InputEvent)
 			modifiers = ((InputEvent)currentEvent).getModifiers();
 		else if (currentEvent instanceof ActionEvent)
 			modifiers = ((ActionEvent)currentEvent).getModifiers();
-		ActionEvent ae = new ActionEvent (this, ActionEvent.ACTION_PERFORMED,
-			"VNumber", EventQueue.getMostRecentEventTime(), modifiers);
+		else
+			modifiers = 0;
+		
+		final ActionEvent ae = new ActionEvent (this, ActionEvent.ACTION_PERFORMED, "VNumber", EventQueue.getMostRecentEventTime(), modifiers);
 
 		// Guaranteed to return a non-null array
 		Object[] listeners = listenerList.getListenerList();
@@ -835,15 +815,16 @@ public final class VNumber extends JComponent
 			}
 		}
 	}	//	fireActionPerformed
-	/**/
 
 	@Override
-	public boolean isDirty() {
+	public boolean isDirty()
+	{
 		return m_modified;
 	}
 
 	@Override
-	public void rollbackChanges() {
+	public void rollbackChanges()
+	{
 		m_text.setText (m_oldText);
 		m_initialText = m_oldText;
 		m_initialTextObj = m_oldTextObj;
@@ -896,4 +877,33 @@ public final class VNumber extends JComponent
 		return m_text == null ? NullCopyPasteSupportEditor.instance : m_text.getCopyPasteSupport();
 	}
 
+	@Override
+	protected final boolean processKeyBinding(final KeyStroke ks, final KeyEvent e, final int condition, final boolean pressed)
+	{
+		// Forward all key events on this component to the text field.
+		// We have to do this for the case when we are embedding this editor in a JTable and the JTable is forwarding the key strokes to editing component.
+		// Effect of NOT doing this: when in JTable, user presses a key (e.g. a digit) to start editing but the first key he pressed gets lost here.
+		if (m_text != null && condition == WHEN_FOCUSED)
+		{
+			// Usually the text component does not have focus yet but it was requested, so, considering that:
+			// * we are requesting the focus just to make sure
+			// * we select all text (once) => as an effect, on first key pressed the editor content (which is selected) will be deleted and replaced with the new typing
+			// * make sure that in the focus event which will come, the text is not selected again, else, if user is typing fast, the editor content will be only what he typed last.
+			if(!m_text.hasFocus())
+			{
+				skipNextSelectAllOnFocusGained = true;
+				m_text.requestFocus();
+				m_text.selectAll();
+			}
+			
+			if (m_text.processKeyBinding(ks, e, condition, pressed))
+			{
+				return true;
+			}
+		}
+
+		//
+		// Fallback to super
+		return super.processKeyBinding(ks, e, condition, pressed);
+	}
 } // VNumber
