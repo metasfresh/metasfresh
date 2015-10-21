@@ -117,7 +117,7 @@ public class VTreeMaintenance extends TreeMaintenance
 		treeField.addActionListener(this);
 		//
 		centerTree = new VTreePanel (m_WindowNo, false, true);
-		centerTree.addPropertyChangeListener(VTreePanel.NODE_SELECTION, this);
+		centerTree.addPropertyChangeListener(VTreePanel.PROPERTY_ExecuteNode, this);
 	}	//	preInit
 	
 	/**
@@ -243,7 +243,7 @@ public class VTreeMaintenance extends TreeMaintenance
 		}
 		log.info("Selected=" + selected);
 		if (selected != null)	//	allow add if not in tree
-			bAdd.setEnabled(!centerTree.setSelectedNode(selected.id));
+			bAdd.setEnabled(!centerTree.setTreeSelectionPath(selected.id));
 	}	//	valueChanged
 	
 	/**

@@ -814,10 +814,10 @@ public final class AEnv
 	 */
 	public static void addToWindowManager(final Window frame)
 	{
-		final JFrame top = Env.getWindow(0);
-		if (top instanceof AMenu)
+		final AMenu mainWindow = AEnv.getAMenu();
+		if (mainWindow != null)
 		{
-			((AMenu)top).getWindowManager().add(frame);
+			mainWindow.getWindowManager().add(frame);
 		}
 	}
 
@@ -829,20 +829,18 @@ public final class AEnv
 	// task 05796
 	public static AWindow findInWindowManager(final int AD_Window_ID)
 	{
-		final JFrame top = Env.getWindow(0);
-		if (top instanceof AMenu)
+		final AMenu mainWindow = AEnv.getAMenu();
+		if (mainWindow != null)
 		{
-			return ((AMenu)top).getWindowManager().find(AD_Window_ID);
+			return mainWindow.getWindowManager().find(AD_Window_ID);
 		}
 		return null;
 	}
 
 	/**
 	 * FR [ 1966328 ] get AMenu
-	 *
-	 * @param frame
 	 */
-	public static AMenu getAMenu(final JFrame frame)
+	public static AMenu getAMenu()
 	{
 		final JFrame top = Env.getWindow(Env.WINDOW_MAIN);
 		if (top instanceof AMenu)
@@ -1149,10 +1147,10 @@ public final class AEnv
 	public static void updateUI()
 	{
 		final Set<Window> updated = Env.updateUI();
-		final JFrame top = Env.getWindow(0);
-		if (top instanceof AMenu)
+		final AMenu mainWindow = AEnv.getAMenu();
+		if (mainWindow != null)
 		{
-			final Window[] frames = ((AMenu)top).getWindowManager().getWindows();
+			final Window[] frames = mainWindow.getWindowManager().getWindows();
 			for (final Window f : frames)
 			{
 				if (updated.contains(f))

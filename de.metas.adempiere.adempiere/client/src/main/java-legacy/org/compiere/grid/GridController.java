@@ -824,7 +824,7 @@ public final class GridController extends CPanel
 		Services.get(IProcessEventSupport.class).addListener(treePanel);
 		// metas end
 
-		treePanel.addPropertyChangeListener(VTreePanel.NODE_SELECTION, this);
+		treePanel.addPropertyChangeListener(VTreePanel.PROPERTY_ExecuteNode, this);
 	}
 	
 	/**
@@ -997,7 +997,7 @@ public final class GridController extends CPanel
 			{
 				final int AD_Tree_ID = getAD_Tree_ID();
 				treePanel.initTree (AD_Tree_ID);
-				treePanel.addPropertyChangeListener(VTreePanel.NODE_SELECTION, this);
+				treePanel.addPropertyChangeListener(VTreePanel.PROPERTY_ExecuteNode, this);
 			}
 		}
 		
@@ -1319,7 +1319,7 @@ public final class GridController extends CPanel
 		//	TreeNavigation - Synchronize 	-- select node in tree
 		if (treePanel != null)
 		{
-			treePanel.setSelectedNode (m_mTab.getRecord_ID());	//	ignores new (-1)
+			treePanel.setTreeSelectionPath (m_mTab.getRecord_ID());	//	ignores new (-1)
 		}
 
 	}   //  valueChanged

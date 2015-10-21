@@ -36,7 +36,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AMenuStartItem;
@@ -130,6 +129,7 @@ public class WFContentPanel extends CPanel
 	/**
 	 * 	Remove All and their listeners
 	 */
+	@Override
 	public void removeAll ()
 	{
 		m_nodes.clear();
@@ -179,7 +179,7 @@ public class WFContentPanel extends CPanel
 		log.fine("Lines #" + m_lines.size());
 		for (int i = 0; i < m_lines.size(); i++)
 		{
-			WFLine line = (WFLine)m_lines.get(i);
+			WFLine line = m_lines.get(i);
 			Rectangle from = findBounds (line.getAD_WF_Node_ID());
 			Rectangle to = findBounds (line.getAD_WF_Next_ID());
 			line.setFromTo(from, to);
@@ -197,7 +197,7 @@ public class WFContentPanel extends CPanel
 	{
 		for (int i = 0; i < m_nodes.size(); i++)
 		{
-			WFNode node = (WFNode)m_nodes.get(i);
+			WFNode node = m_nodes.get(i);
 			if (node.getAD_WF_Node_ID() == AD_WF_Node_ID)
 				return node.getBounds();
 		}
@@ -210,6 +210,7 @@ public class WFContentPanel extends CPanel
 	 *	@param p point
 	 *	@return Node (ignore lines)
 	 */
+	@Override
 	public Component getComponentAt (Point p)
 	{
 		return getComponentAt (p.x, p.y);
@@ -221,6 +222,7 @@ public class WFContentPanel extends CPanel
 	 *	@param y y
 	 *	@return Node (ignore lines)
 	 */
+	@Override
 	public Component getComponentAt (int x, int y)
 	{
 		Component comp = super.getComponentAt (x, y);
@@ -228,7 +230,7 @@ public class WFContentPanel extends CPanel
 			return comp;
 		for (int i = 0; i < m_nodes.size(); i++)
 		{
-			WFNode node = (WFNode)m_nodes.get(i);
+			WFNode node = m_nodes.get(i);
 			int xx = x - node.getX();
 			int yy = y - node.getY();
 			if (node.contains(xx, yy))
@@ -243,6 +245,7 @@ public class WFContentPanel extends CPanel
 	 * 	Pressed - Released - Clicked.
 	 *	@param e event
 	 */
+	@Override
 	public void mouseClicked (MouseEvent e)
 	{
 		if (m_readWrite && SwingUtilities.isRightMouseButton(e))
@@ -311,7 +314,7 @@ public class WFContentPanel extends CPanel
 			log.fine(selected.toString());
 			for (int i = 0; i < m_nodes.size(); i++)
 			{
-				WFNode node = (WFNode)m_nodes.get(i);
+				WFNode node = m_nodes.get(i);
 				if (selected.getAD_WF_Node_ID() == node.getAD_WF_Node_ID())
 					node.setSelected(true);
 				else
@@ -322,8 +325,7 @@ public class WFContentPanel extends CPanel
 			if (e.getClickCount() >= 2)
 			{
 				final MWFNode model = MWFNode.get(Env.getCtx(), selected.getAD_WF_Node_ID());
-				final AMenuStartItem menuStartItem = new AMenuStartItem(selected.getAD_WF_Node_ID(), false, model.getName(true), m_parent.getAMenu());
-				menuStartItem.start(); // async load
+				AMenuStartItem.startWFNode(model, m_parent.getAMenu()); // async load
 			}
 		}
 		m_dragged = false;
@@ -334,6 +336,7 @@ public class WFContentPanel extends CPanel
 	 * 	Mouse Entered
 	 *	@param e event
 	 */
+	@Override
 	public void mouseEntered (MouseEvent e)
 	{
 	}	//	mouseEntered
@@ -342,6 +345,7 @@ public class WFContentPanel extends CPanel
 	 * 	Mouse Exited
 	 *	@param e event
 	 */
+	@Override
 	public void mouseExited (MouseEvent e)
 	{
 	}	//	mouseExited
@@ -351,6 +355,7 @@ public class WFContentPanel extends CPanel
 	 * 	Initial drag
 	 *	@param e event
 	 */
+	@Override
 	public void mousePressed (MouseEvent e)
 	{
 		if (e.getSource() instanceof WFNode)
@@ -375,6 +380,7 @@ public class WFContentPanel extends CPanel
 	 * 	Mouse Dragged
 	 *	@param e event
 	 */
+	@Override
 	public void mouseDragged (MouseEvent e)
 	{
 		//	Nothing selected
@@ -420,6 +426,7 @@ public class WFContentPanel extends CPanel
 	 * 	Finals dragging
 	 *	@param e event
 	 */
+	@Override
 	public void mouseReleased (MouseEvent e)
 	{
 	//	log.fine("mouseReleased - " + m_draggedNode);
@@ -433,6 +440,7 @@ public class WFContentPanel extends CPanel
 	 * 	Mouse Moved
 	 *	@param e event
 	 */
+	@Override
 	public void mouseMoved (MouseEvent e)
 	{
 	}	//	mouseMoved
@@ -443,13 +451,14 @@ public class WFContentPanel extends CPanel
 	 * 	Paint Lines directly as not added.
 	 *	@param g graphics
 	 */
+	@Override
 	protected void paintComponent (Graphics g)
 	{
 		super.paintComponent(g);
 		//	Paint Lines
 		for (int i = 0; i < m_lines.size(); i++)
 		{
-			WFLine line = (WFLine)m_lines.get(i);
+			WFLine line = m_lines.get(i);
 			line.paint(g);
 		}
 		//	Paint Position = right next to the box
@@ -495,6 +504,7 @@ public class WFContentPanel extends CPanel
 	 * 	Action Listener
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		log.info(e.toString());

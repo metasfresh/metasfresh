@@ -16,341 +16,379 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Properties;
+import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
+import javax.swing.SwingWorker;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.ui.api.IWindowBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.apps.form.FormFrame;
+import org.compiere.model.I_AD_Menu;
+import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.MTask;
+import org.compiere.model.MTreeNode;
+import org.compiere.model.X_AD_Menu;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.compiere.util.Msg;
 
-import de.metas.adempiere.model.I_AD_Form;
-
+import de.metas.adempiere.form.IClientUI;
 
 /**
- *	Start application action ( process, workflow, window, form, task )
- *  of a menu item ( ad_menu ) or workflow node ( ad_wf_node ).
+ * Start application action ( process, workflow, window, form, task etc).
  *
- * 	@author 	Jorg Janke
- * 	@version 	$Id: AMenuStartItem.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
+ * @author Jorg Janke
  */
-public class AMenuStartItem extends Thread implements ActionListener
+public class AMenuStartItem extends SwingWorker<Void, Void>
 {
 	/**
-	 *  Start Menu Item
-	 *
-	 * 	@param ID		ID
-	 * 	@param isMenu   false if Workflow
-	 * 	@param name		Name
-	 * 	@param menu		Menu
+	 * Start menu item action asynchronously
+	 * 
+	 * @param node
+	 * @param menu
 	 */
-	public AMenuStartItem (int ID, boolean isMenu, String name, AMenu menu)
+	public static final void startMenuItem(final MTreeNode node, final AMenu menu)
 	{
+		new AMenuStartItem(node, menu).start();
+	}
+
+	/**
+	 * Start menu item action asynchronously
+	 * 
+	 * @param adMenuId
+	 * @param name
+	 * @param menu
+	 */
+	public static final void startMenuItemById(final int adMenuId, final String name, final AMenu menu)
+	{
+		final boolean isMenu = true;
+		new AMenuStartItem(adMenuId, isMenu, name, menu).start();
+	}
+	
+	public static final void startWFNode(final I_AD_WF_Node wfNode, final AMenu menu)
+	{
+		new AMenuStartItem(wfNode, menu).start();
+	}
+
+	/**
+	 * Start Menu Item
+	 *
+	 * @param ID ID
+	 * @param isMenu false if Workflow
+	 * @param name Name
+	 * @param menu Menu
+	 */
+	private AMenuStartItem(final int ID, final boolean isMenu, final String name, final AMenu menu)
+	{
+		super();
 		m_ID = ID;
 		m_isMenu = isMenu;
 		m_name = name;
-		m_menu = menu;
-		if (menu != null)
-			m_increment = (menu.progressBar.getMaximum()-menu.progressBar.getMinimum()) / 5;
-	}	//	UpdateProgress
 
-	/**	The ID				*/
-	private int			m_ID = 0;
-	private boolean		m_isMenu = false;
-	private String		m_name;
-	private AMenu		m_menu;
-	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(AMenuStartItem.class);
+		m_menu = menu == null ? AEnv.getAMenu() : menu;
+	}
 
-	//	Reset Progress Bar
-	private Runnable m_resetPB = new Runnable()
+	private AMenuStartItem(final MTreeNode node, final AMenu menu)
 	{
-		public void run()
-		{
-			m_value = 0;
-			if (m_menu != null)
-				m_menu.progressBar.setValue(0);
-		}
-	};
-	//  Progress Bar tick
-	private Runnable m_tickPB = new Runnable()
-	{
-		public void run()
-		{
-			if (m_menu == null)
-				return;
-			//  100/5 => 20 ticks - every .5 sec => 10 seconds loadtime
-			final int tick = 5;
-			if (m_menu.progressBar.getValue() < (m_menu.progressBar.getMaximum() - tick))
-				m_menu.progressBar.setValue(m_menu.progressBar.getValue() + tick);
-		}
-	};
-	//  Progress Bar max state
-	private Runnable m_updatePB = new Runnable()
-	{
-		public void run()
-		{
-			if (m_menu == null)
-				return;
-			m_value += m_increment;
-			if (m_menu.progressBar.getValue() > m_value)     //  max value
-				m_menu.progressBar.setValue(m_value);
-		}
-	};
-	/** Value */
-	int m_value = 0;
-	/** Increment */
-	int m_increment = 20;
-	/** Timer */
-	private Timer m_timer = new Timer(500, this); // every 1/2 second
+		super();
+		Check.assumeNotNull(node, "node not null");
+		m_ID = node.getNode_ID();
+		m_isMenu = true;
+		m_name = node.getName();
 
-	/**
-	 *	Start Menu Item
-	 */
-	@Override
-	public void run()
+		m_menu = menu == null ? AEnv.getAMenu() : menu;
+	}
+	
+	private AMenuStartItem(final I_AD_WF_Node wfNode, final AMenu menu)
+	{
+		super();
+		Check.assumeNotNull(wfNode, "node not null");
+		m_ID = wfNode.getAD_WF_Node_ID();
+		m_isMenu = false;
+		m_name = wfNode.getName();
+
+		m_menu = menu == null ? AEnv.getAMenu() : menu;
+
+		//
+		// Load
+		this.action = wfNode.getAction();
+		this.adWindowId = wfNode.getAD_Window_ID();
+		this.adWorkbenchId = -1;
+		this.adProcessId = wfNode.getAD_Process_ID();
+		this.adFormId = wfNode.getAD_Form_ID();
+		this.adTaskId = wfNode.getAD_Task_ID();
+		this.adWorkflowId = wfNode.getWorkflow_ID();
+		this.IsSOTrx = DisplayType.toBooleanString(true);
+		this.loaded = true;
+	}
+
+	/** Logger */
+	private static final transient CLogger logger = CLogger.getCLogger(AMenuStartItem.class);
+
+	/** The ID (AD_Menu_ID or AD_WF_Node_ID) */
+	private final int m_ID;
+	/** true if {@link #m_ID} is AD_Menu_ID, false if {@link #m_ID} is AD_WF_Node_ID */
+	private final boolean m_isMenu;
+	private final String m_name;
+	//
+	private boolean loaded = false;
+	private String action;
+	private String IsSOTrx = "Y";
+	private int adWindowId = -1;
+	private int adWorkbenchId = -1;
+	private int adProcessId = -1;
+	private int adWorkflowId = -1;
+	private int adFormId = -1;
+	private int adTaskId = -1;
+
+	private final AMenu m_menu;
+	
+	public final void start()
+	{
+		lock();
+		execute();
+	}
+
+	private final void lock()
 	{
 		if (m_menu != null)
-			m_menu.setBusy (true);
-		SwingUtilities.invokeLater(m_resetPB);
-		m_timer.start();
-		SwingUtilities.invokeLater(m_updatePB);
+		{
+			m_menu.setBusy(true);
+		}
+	}
+
+	private final void unlock()
+	{
+		if (m_menu != null)
+		{
+			m_menu.setBusy(false);
+		}
+	}
+
+	@Override
+	protected Void doInBackground() throws Exception
+	{
+		loadIfNeeded();
+
+		if (action == null)
+		{
+			// shall not happen
+			throw new AdempiereException("Unknown action");
+		}
+		if (X_AD_Menu.ACTION_Window.equals(action))
+		{
+			startWindow(0, adWindowId);
+		}
+		else if (X_AD_Menu.ACTION_Process.equals(action)
+				|| X_AD_Menu.ACTION_Report.equals(action))
+		{
+			startProcess(adProcessId, IsSOTrx);
+		}
+		else if (X_AD_Menu.ACTION_Workbench.equals(action))
+		{
+			startWindow(adWorkbenchId, 0);
+		}
+		else if (X_AD_Menu.ACTION_WorkFlow.equals(action))
+		{
+			startWorkflow(adWorkflowId);
+		}
+		else if (X_AD_Menu.ACTION_Task.equals(action))
+		{
+			startTask(adTaskId);
+		}
+		else if (X_AD_Menu.ACTION_Form.equals(action))
+		{
+			startForm(adFormId);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown action " + action + " for " + m_ID);
+		}
+
+		return null;
+	}
+
+	private final void loadIfNeeded()
+	{
+		if (loaded)
+		{
+			return;
+		}
+
+		String sql = "SELECT * FROM AD_Menu WHERE AD_Menu_ID=?";
+		if (!m_isMenu)
+		{
+			sql = "SELECT * FROM AD_WF_Node WHERE AD_WF_Node_ID=?";
+		}
+		final Object[] sqlParams = new Object[] { m_ID };
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		String errmsg = null;
 		try
 		{
-			String sql = "SELECT * FROM AD_Menu WHERE AD_Menu_ID=?";
-			if (!m_isMenu)
-				sql = "SELECT * FROM AD_WF_Node WHERE AD_WF_Node_ID=?";
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, m_ID);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
-			SwingUtilities.invokeLater(m_updatePB);
-			if (rs.next())	//	should only be one
+			if (rs.next())	// should only be one
 			{
-				String Action = rs.getString("Action");
-				String IsSOTrx = "Y";
+				action = rs.getString("Action");
 				if (m_isMenu)
-					IsSOTrx = rs.getString("IsSOTrx");
-				int cmd;
-				if (Action.equals("W"))				//	Window
 				{
-					cmd = rs.getInt("AD_Window_ID");
-					startWindow(0, cmd);
-				}
-				else if (Action.equals("P") || Action.equals("R"))	//	Process & Report
-				{
-					cmd = rs.getInt("AD_Process_ID");
-					startProcess(cmd, IsSOTrx);
-				}
-				else if (Action.equals("B"))		//	Workbench
-				{
-					cmd = rs.getInt("AD_Workbench_ID");
-					startWindow (cmd, 0);
-				}
-				else if (Action.equals("F"))		//	WorkFlow
-				{
-					if (m_isMenu)
-						cmd = rs.getInt("AD_Workflow_ID");
-					else
-						cmd = rs.getInt("Workflow_ID");
-					if (m_menu != null)
-						m_menu.startWorkFlow(cmd);
-				}
-				else if (Action.equals("T"))		//	Task
-				{
-					cmd = rs.getInt("AD_Task_ID");
-					startTask(cmd);
-				}
-				else if (Action.equals("X"))		//	Form
-				{
-					cmd = rs.getInt("AD_Form_ID");
-					startForm(cmd);
+					IsSOTrx = rs.getString(I_AD_Menu.COLUMNNAME_IsSOTrx);
 				}
 				else
-					log.log(Level.SEVERE, "No valid Action in ID=" + m_ID);
-			}	//	for all records
+				{
+					IsSOTrx = "Y";
+				}
 
-			SwingUtilities.invokeLater(m_updatePB);
+				adWindowId = rs.getInt("AD_Window_ID");
+				adProcessId = rs.getInt("AD_Process_ID");
+				adWorkbenchId = rs.getInt("AD_Workbench_ID");
+				adWorkflowId = rs.getInt(m_isMenu ? I_AD_Menu.COLUMNNAME_AD_Workflow_ID : I_AD_WF_Node.COLUMNNAME_Workflow_ID);
+				adTaskId = rs.getInt("AD_Task_ID");
+				adFormId = rs.getInt("AD_Form_ID");
+				loaded = true;
+			}
 		}
-		catch (Exception e)
+		catch (final SQLException e)
 		{
-			log.log(Level.SEVERE, "ID=" + m_ID, e);
-			errmsg = Msg.parseTranslation(Env.getCtx(), e.getMessage());
+			throw new DBException(e, sql, sqlParams);
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
+			rs = null;
+			pstmt = null;
 		}
-		// Show error if any
-		if (errmsg != null)
-			ADialog.error(0, null, "Error", errmsg);
 
-		try	{Thread.sleep(1000);}	//	1 sec
-		catch (InterruptedException ie) {}
-
-		//	ready for next
-		m_timer.stop();
-		SwingUtilities.invokeLater(m_resetPB);
-		if (m_menu != null)
+		if (!loaded)
 		{
-			//m_menu.updateInfo();
-			m_menu.setBusy(false);
+			throw new AdempiereException("@NotFound@ @" + (m_isMenu ? "AD_Menu_ID" : "AD_WF_Node_ID") + "@=" + m_ID);
 		}
-	}	//	run
+	}
 
+	@Override
+	protected final void done()
+	{
+		// Unlock
+		unlock();
+
+		//
+		// Display errors if any
+		try
+		{
+			get();
+		}
+		catch (final InterruptedException e)
+		{
+			logger.log(Level.INFO, "Interrupted", e);
+		}
+		catch (final ExecutionException e)
+		{
+			final Throwable cause = e.getCause() == null ? e : e.getCause();
+			Services.get(IClientUI.class).error(Env.WINDOW_MAIN, cause);
+		}
+	}
 
 	/**
-	 *  Actlion Listener for Timer
-	 *  @param e event
+	 * Start Window
+	 *
+	 * @param AD_Workbench_ID workbench
+	 * @param AD_Window_ID window
 	 */
-	public void actionPerformed (ActionEvent e)
+	private void startWindow(final int AD_Workbench_ID, final int AD_Window_ID)
 	{
-		SwingUtilities.invokeLater(m_tickPB);
-	}   //  actionPerformed
-
-		/**
-		 *	Start Window
-		 *
-		 * @param AD_Workbench_ID workbench
-		 * @param AD_Window_ID	window
-		 */
-		private void startWindow(int AD_Workbench_ID, int AD_Window_ID)
-		{
-			// metas-ts: task 05796: moved the code to WindowBL.openWindow() to allow it beeing called on other occasions too
-			Services.get(IWindowBL.class).openWindow(
-					m_menu.getWindowManager(), 
-					AD_Workbench_ID, 
-					AD_Window_ID, 
-					m_updatePB);
-			
-			// metas-ts: task 05796: original code
-			// @formatter:off
-//			AWindow frame = (AWindow)Env.showWindow(AD_Window_ID); 
-//			if (frame != null) {
-//				m_menu.getWindowManager().add(frame);
-//				return;
-//			}
-//			
-//			// metas: begin: US831
-//			// metas: code changed:
-//			frame = m_menu.getWindowManager().find(AD_Window_ID);
-//			if (frame != null)
-//			{
-//				boolean isOneInstanceOnly = frame.getGridWindow().getVO().isOneInstanceOnly();
-//				if (Ini.isPropertyBool(Ini.P_SINGLE_INSTANCE_PER_WINDOW) || isOneInstanceOnly)
-//				{
-//					AEnv.showWindow(frame);
-//					return;
-//				}
-//			}
-//			// metas: end: US831
-//			
-//			SwingUtilities.invokeLater(m_updatePB);			//	1
-//			frame = new AWindow();
-//			boolean OK = false;
-//			if (AD_Workbench_ID != 0)
-//				OK = frame.initWorkbench(AD_Workbench_ID);
-//			else
-//				OK = frame.initWindow(AD_Window_ID, null);	//	No Query Value
-//			if (!OK)
-//				return;
-//
-//			SwingUtilities.invokeLater(m_updatePB);			//	2
-//			if (Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED) ) 
-//			{
-//				AEnv.showMaximized(frame);
-//			}
-//			
-//			//	Center the window
-//			SwingUtilities.invokeLater(m_updatePB);			//	3
-//			if (!(Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED)) ) 
-//			{
-//				// frame.validate(); // metas: tsa: is this still necesarry?
-//				AEnv.showCenterScreen(frame);
-//			}
-//			
-//			m_menu.getWindowManager().add(frame);
-//			frame.getAPanel().requestFocusInWindow(); // metas-2009_0021_AP1_CR064: set Cursor to the first search field in the search panel
-//			
-////			if (wfPanel.isVisible())
-////				m_WF_Window = frame;            //  maintain one reference
-//			frame = null;
-			// @formatter:on
-		}	//	startWindow
-
-		/**
-		 *	Start Process.
-		 *  Start/show Process Dialog which calls ProcessCtl
-		 *  @param AD_Process_ID	process
-		 *  @param IsSOTrx	is SO trx
-		 */
-		private void startProcess (int AD_Process_ID, String IsSOTrx)
-		{
-			SwingUtilities.invokeLater(m_updatePB);			//	1
-			boolean isSO = false;
-			if (IsSOTrx != null && IsSOTrx.equals("Y"))
-				isSO = true;
-			m_timer.stop();
-			ProcessDialog pd = new ProcessDialog (AD_Process_ID, isSO);
-			if (!pd.init())
-				return;
-			m_timer.start();
-			m_menu.getWindowManager().add(pd);
-
-			SwingUtilities.invokeLater(m_updatePB);			//	2
-			// pd.getContentPane().invalidate(); // metas: tsa: is this still necesarry?
-			pd.getContentPane().validate();
-			pd.pack();
-			//	Center the window
-			SwingUtilities.invokeLater(m_updatePB);			//	3
-			AEnv.showCenterScreen(pd);
-		}	//	startProcess
+		// metas-ts: task 05796: moved the code to WindowBL.openWindow() to allow it beeing called on other occasions too
+		Services.get(IWindowBL.class).openWindow(
+				m_menu.getWindowManager(),
+				AD_Workbench_ID,
+				AD_Window_ID);
+	}	// startWindow
 
 	/**
-	 *	Start OS Task
-	 *  @param AD_Task_ID task
+	 * Start Process. Start/show Process Dialog which calls ProcessCtl
+	 *
+	 * @param AD_Process_ID process
+	 * @param IsSOTrx is SO trx
 	 */
-	private void startTask (int AD_Task_ID)
+	private void startProcess(final int AD_Process_ID, final String IsSOTrx)
 	{
-		SwingUtilities.invokeLater(m_updatePB);			//	1
-		//	Get Command
+		boolean isSO = false;
+		if (IsSOTrx != null && IsSOTrx.equals("Y"))
+		{
+			isSO = true;
+		}
+		
+		final ProcessDialog pd = new ProcessDialog(AD_Process_ID, isSO);
+		if (!pd.init())
+		{
+			return;
+		}
+		
+		m_menu.getWindowManager().add(pd);
+
+		// pd.getContentPane().invalidate(); // metas: tsa: is this still necesarry?
+		pd.getContentPane().validate();
+		pd.pack();
+		
+		// Center the window
+		AEnv.showCenterScreen(pd);
+	}	// startProcess
+
+	private final void startWorkflow(final int AD_Workflow_ID)
+	{
+		if (m_menu == null)
+		{
+			new AdempiereException("Cannot start workflow because no menu")
+					.throwOrLogWarning(false, logger);
+			return;
+		}
+		m_menu.startWorkFlow(AD_Workflow_ID);
+	}
+
+	/**
+	 * Start OS Task
+	 *
+	 * @param AD_Task_ID task
+	 */
+	private void startTask(final int AD_Task_ID)
+	{
+		// Get Command
 		MTask task = null;
 		if (AD_Task_ID > 0)
-			task = new MTask(Env.getCtx(), AD_Task_ID, null);
-		if (task.get_ID() != AD_Task_ID)
+		{
+			task = new MTask(Env.getCtx(), AD_Task_ID, ITrx.TRXNAME_None);
+		}
+		if (task.getAD_Task_ID() != AD_Task_ID)
+		{
 			task = null;
+		}
 		if (task == null)
+		{
 			return;
-		SwingUtilities.invokeLater(m_updatePB);			//	2
+		}
+		
 		m_menu.getWindowManager().add(new ATask(m_name, task));
-	//	ATask.start(m_name, task);
-	}	//	startTask
+		// ATask.start(m_name, task);
+	}	// startTask
 
 	/**
-	 *	Start Form
-	 *  @param AD_Form_ID form
+	 * Start Form
+	 *
+	 * @param AD_Form_ID form
 	 */
-	private void startForm (int AD_Form_ID)
+	private void startForm(final int AD_Form_ID)
 	{
-		m_menu.startForm(AD_Form_ID, m_updatePB);
-	}	//	startForm
-	
-}	//	StartItem
+		m_menu.startForm(AD_Form_ID);
+	}	// startForm
+
+}

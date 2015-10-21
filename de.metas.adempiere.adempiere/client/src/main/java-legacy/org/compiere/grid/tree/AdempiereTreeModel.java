@@ -35,7 +35,7 @@ import org.compiere.util.CLogger;
  *  @author 	phib  2008/07/30
  *  FR [ 2032092 ] Java 6 improvements to tree drag and drop
  */
-public class AdempiereTreeModel extends DefaultTreeModel {
+class AdempiereTreeModel extends DefaultTreeModel {
 	
 	/**
 	 * 

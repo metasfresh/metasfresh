@@ -57,7 +57,6 @@ import org.adempiere.util.AbstractDocumentSearch;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
 import org.compiere.model.MQuery;
-import org.compiere.util.CLogger;
 
 /**
  * Executes search and opens windows for defined transaction codes
@@ -67,10 +66,9 @@ import org.compiere.util.CLogger;
  */
 public class DocumentSearch extends AbstractDocumentSearch {
 
-	/** the logger */
-	static CLogger log = CLogger.getCLogger(DocumentSearch.class);
 	@Override
-	protected boolean openWindow(int windowId, MQuery query) {
+	protected boolean openWindow(int windowId, MQuery query)
+	{
 		final AWindow frame = new AWindow();
 		AEnv.addToWindowManager(frame);
 		final boolean ok = frame.initWindow(windowId, query);

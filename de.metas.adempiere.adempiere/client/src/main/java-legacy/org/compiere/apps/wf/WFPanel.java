@@ -437,8 +437,7 @@ public class WFPanel extends CPanel
 				if (isSimpleWorkflowWindow && m_activeNode != null)
 				{
 					final MWFNode model = MWFNode.get(m_ctx, m_activeNode.getAD_WF_Node_ID());
-					final AMenuStartItem menuStartItem = new AMenuStartItem(model.getAD_WF_Node_ID(), false, model.getName(true), m_menu);
-					menuStartItem.start();		// async load
+					AMenuStartItem.startWFNode(model, m_menu); // async load
 				}
 			}
 		}

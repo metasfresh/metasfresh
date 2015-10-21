@@ -23,8 +23,6 @@ package org.adempiere.ui.api.impl;
  */
 
 
-import javax.swing.SwingUtilities;
-
 import org.adempiere.ui.api.IWindowBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
@@ -37,15 +35,16 @@ public class WindowBL implements IWindowBL
 	@Override
 	public boolean openWindow(final int AD_Window_ID)
 	{
-		return openWindow(null, // windowManager
-				0, // AD_Workbench_ID
-				AD_Window_ID,
-				null); // invokeLaterForStatusBar
+		final WindowManager windowManager = null;
+		final int adWorkbenchId = 0;
+		return openWindow(windowManager, adWorkbenchId, AD_Window_ID);
 	}
 
 	@Override
-	public boolean openWindow(final WindowManager windowManager, final int AD_Workbench_ID, final int AD_Window_ID, final Runnable invokeLaterForStatusBar)
+	public boolean openWindow(final WindowManager windowManager, final int AD_Workbench_ID, final int AD_Window_ID)
 	{
+		//
+		// Show hidden window if any
 		AWindow frame = (AWindow)Env.showWindow(AD_Window_ID);
 		if (frame != null)
 		{
@@ -53,8 +52,8 @@ public class WindowBL implements IWindowBL
 			return true;
 		}
 
-		// metas: begin: US831
-		// metas: code changed:
+		//
+		// Find existing cached window and show it (if any)
 		frame = findFrame(windowManager, AD_Window_ID);
 		if (frame != null)
 		{
@@ -65,9 +64,9 @@ public class WindowBL implements IWindowBL
 				return true;
 			}
 		}
-		// metas: end: US831
 
-		invokeLaterIfNotNull(invokeLaterForStatusBar);			// 1
+		//
+		// New window
 		frame = new AWindow();
 
 		final boolean OK;
@@ -83,14 +82,12 @@ public class WindowBL implements IWindowBL
 		{
 			return false;
 		}
-		invokeLaterIfNotNull(invokeLaterForStatusBar);			// 2
 		if (Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED))
 		{
 			AEnv.showMaximized(frame);
 		}
 
 		// Center the window
-		invokeLaterIfNotNull(invokeLaterForStatusBar);			// 3
 		if (!Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED))
 		{
 			// frame.validate(); // metas: tsa: is this still necessary?
@@ -101,15 +98,6 @@ public class WindowBL implements IWindowBL
 		frame.getAPanel().requestFocusInWindow(); // metas-2009_0021_AP1_CR064: set Cursor to the first search field in the search panel
 
 		return true;
-	}
-
-	private void invokeLaterIfNotNull(final Runnable invokeLaterForStatusBar)
-	{
-		if (invokeLaterForStatusBar == null)
-		{
-			return;
-		}
-		SwingUtilities.invokeLater(invokeLaterForStatusBar);
 	}
 
 	private void addFrame(final WindowManager windowManager, final AWindow frame)

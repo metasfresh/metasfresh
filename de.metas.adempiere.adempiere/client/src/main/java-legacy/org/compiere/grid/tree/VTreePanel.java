@@ -17,8 +17,6 @@
 package org.compiere.grid.tree;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,6 +24,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeListener;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
@@ -34,8 +33,6 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.DropMode;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -43,6 +40,7 @@ import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
+import javax.swing.UIManager;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.plaf.SplitPaneUI;
@@ -50,6 +48,8 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+
+import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.plaf.AdempierePLAF;
@@ -59,19 +59,14 @@ import org.adempiere.process.event.ProcessEvent;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.apps.ADialog;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.PO;
 import org.compiere.swing.CCheckBox;
-import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
-import org.compiere.swing.CTextField;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
-
-import de.schaeffer.compiere.tools.DocumentSearch;
 
 /**
  * Tree Panel displays trees. <br>
@@ -109,27 +104,17 @@ public final class VTreePanel extends CPanel
 	{
 		VTreePanel m_adaptee;
 
-		/**
-		 * VTreePanel_mouseAdapter
-		 *
-		 * @param adaptee
-		 */
 		VTreePanel_mouseAdapter(final VTreePanel adaptee)
 		{
 			m_adaptee = adaptee;
 		}
 
-		/**
-		 * Mouse Clicked
-		 *
-		 * @param e
-		 */
 		@Override
 		public void mouseClicked(MouseEvent e)
 		{
 			m_adaptee.mouseClicked(e);
 		}
-	}   // VTreePanel_mouseAdapter
+	}
 
 	/**
 	 * Key Pressed
@@ -165,8 +150,6 @@ public final class VTreePanel extends CPanel
 	 *
 	 */
 	private static final long serialVersionUID = -6798614427038652192L;
-
-	private static final String PREFIX_DOCUMENT_SEARCH = "/";
 
 	private VTreeTransferHandler handler = new VTreeTransferHandler();
 
@@ -229,6 +212,9 @@ public final class VTreePanel extends CPanel
 		treeModel = new AdempiereTreeModel(m_root);
 		treeModel.setMTree(vTree);
 		tree.setModel(treeModel);
+		
+		// Link tree search auto-complete field
+		treeSearch.setTreeNodesFromRoot(m_root);
 
 		// Shortcut Bar
 		if (m_hasBar)
@@ -244,7 +230,14 @@ public final class VTreePanel extends CPanel
 	private final JTree tree = new JTree();
 	private AdempiereTreeModel treeModel;
 	private CCheckBox treeExpand = new CCheckBox();
-	private final CTextField treeSearch = new CTextField(10);
+	private final VTreePanelSearchSupport treeSearch = new VTreePanelSearchSupport()
+	{
+		@Override
+		protected void onTreeNodeSelected(MTreeNode node)
+		{
+			executeNode(node);
+		};
+	};
 	private JPopupMenu treePopupMenu = new JPopupMenu();
 	private CMenuItem mFrom = new CMenuItem();
 	private CMenuItem mTo = new CMenuItem();
@@ -264,12 +257,8 @@ public final class VTreePanel extends CPanel
 	/** The root node */
 	private MTreeNode m_root = null;
 
-	private String m_search = "";
-	private Enumeration<?> m_nodeEn;
-	private MTreeNode m_selectedNode;	// the selected model node
-
-	/** Property Listener NodeSelected by Left Click */
-	public static final String NODE_SELECTION = "NodeSelected";
+	/** {@link PropertyChangeListener} property fired when a node action shall be executed */
+	public static final String PROPERTY_ExecuteNode = VTreePanel.class.getName() + "#ExecuteNode";
 
 	/**
 	 * Static Component initialization.
@@ -327,7 +316,6 @@ public final class VTreePanel extends CPanel
 				}
 			};
 			tree.addTreeExpansionListener(treeExpansionListener);
-			// metas end
 		}
 
 		//
@@ -362,19 +350,13 @@ public final class VTreePanel extends CPanel
 					}
 				});
 				//
-				final CLabel treeSearchLabel = new CLabel();
-				treeSearchLabel.setText(msgBL.getMsg(Env.getCtx(), "TreeSearch") + " ");
-				treeSearchLabel.setLabelFor(treeSearch);
-				treeSearchLabel.setToolTipText(msgBL.getMsg(Env.getCtx(), "TreeSearchText"));
-				//
-				treeSearch.setBackground(AdempierePLAF.getInfoBackground());
-				treeSearch.addKeyListener(keyListener);
 
 				final CPanel treeToolbar = new CPanel();
-				treeToolbar.setLayout(new FlowLayout(FlowLayout.LEADING));
-				treeToolbar.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
-				treeToolbar.add(treeSearchLabel);
-				treeToolbar.add(treeSearch);
+				//treeToolbar.setLayout(new FlowLayout(FlowLayout.LEADING));
+				treeToolbar.setLayout(new MigLayout("fillx", "[grow 0][grow 100][grow 0]"));
+				treeToolbar.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0)); // have a top and bottom spacing
+				treeToolbar.add(treeSearch.getSearchFieldLabel());
+				treeToolbar.add(treeSearch.getSearchField(), "growx");
 				treeToolbar.add(treeExpand);
 
 				final boolean showOnTop = AdempierePLAF.getBoolean(VTreePanelUI.KEY_SearchPanelAnchorOnTop, VTreePanelUI.DEFAULT_SearchPanelAnchorOnTop);
@@ -399,8 +381,7 @@ public final class VTreePanel extends CPanel
 						final int nodeId = node.getNode_ID();
 						setTreeSelectionPath(nodeId, false);
 						// Select it
-						MTreeNode tn = (MTreeNode)tree.getSelectionPath().getLastPathComponent();
-						setSelectedNode(tn);
+						executeNode(node);
 					}
 				});
 				centerSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -455,7 +436,7 @@ public final class VTreePanel extends CPanel
 				@Override
 				public void actionPerformed(ActionEvent e)
 				{
-					final MTreeNode node = (MTreeNode)tree.getSelectionPath().getLastPathComponent();
+					final MTreeNode node = getSelectedNode();
 					favoritesBar.addItem(node);
 				}
 			});
@@ -507,77 +488,21 @@ public final class VTreePanel extends CPanel
 	 */
 	protected void keyPressed(final KeyEvent e)
 	{
-		// CHANGED - document search
-		if (e.getSource() == treeSearch && treeSearch.getText() != null
-				&& treeSearch.getText().length() > 0
-				&& treeSearch.getText().substring(0, 1).equals(PREFIX_DOCUMENT_SEARCH))
-		{
-			setBusy(true);
-			try
-			{
-				DocumentSearch search = new DocumentSearch();
-				if (search.openDocumentsByDocumentNo(treeSearch.getText().substring(1)))
-					treeSearch.setText(null);
-			}
-			finally
-			{
-				setBusy(false);
-			}
-			return;
-		}
-
 		// *** Tree ***
 		if (e.getSource() instanceof JTree
-				|| (e.getSource() == treeSearch && e.getModifiers() != 0))	// InputEvent.CTRL_MASK
+//				|| (e.getSource() == treeSearch && e.getModifiers() != 0)	// InputEvent.CTRL_MASK
+				)
 		{
-			TreePath tp = tree.getSelectionPath();
-			if (tp == null)
-				ADialog.beep();
+			MTreeNode tn = getSelectedNode();
+			if (tn == null)
+			{
+				UIManager.getLookAndFeel().provideErrorFeedback(tree);
+			}
 			else
 			{
-				MTreeNode tn = (MTreeNode)tp.getLastPathComponent();
-				setSelectedNode(tn);
+				executeNode(tn);
 			}
 		}
-
-		// *** treeSearch ***
-		else if (e.getSource() == treeSearch)
-		{
-			final String search = treeSearch.getText();
-			boolean found = false;
-
-			// at the end - try from top
-			if (m_nodeEn != null && !m_nodeEn.hasMoreElements())
-			{
-				m_search = "";
-			}
-
-			// this is the first time
-			if (!search.equals(m_search))
-			{
-				// get enumeration of all nodes
-				m_nodeEn = m_root.preorderEnumeration();
-				m_search = search;
-			}
-
-			// search the nodes
-			while (!found && m_nodeEn != null && m_nodeEn.hasMoreElements())
-			{
-				final MTreeNode nd = (MTreeNode)m_nodeEn.nextElement();
-				// compare in upper case
-				if (nd.toString().toUpperCase().indexOf(search.toUpperCase()) != -1)
-				{
-					found = true;
-					TreePath treePath = new TreePath(nd.getPath());
-					tree.setSelectionPath(treePath);
-					tree.makeVisible(treePath);			// expand it
-					tree.scrollPathToVisible(treePath);
-				}
-			}
-			if (!found)
-				ADialog.beep();
-		}   // treeSearch
-
 	}   // keyPressed
 
 	/*************************************************************************/
@@ -592,14 +517,14 @@ public final class VTreePanel extends CPanel
 		// *** JTree ***
 		if (e.getSource() instanceof JTree)
 		{
-			// Left Double Click
+			// Left Click
 			if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() > 0)
 			{
-				final int selRow = tree.getRowForLocation(e.getX(), e.getY());
-				if (selRow != -1)
+				final int row = tree.getRowForLocation(e.getX(), e.getY());
+				if (row >= 0)
 				{
 					final MTreeNode tn = (MTreeNode)tree.getPathForLocation(e.getX(), e.getY()).getLastPathComponent();
-					setSelectedNode(tn);
+					executeNode(tn);
 				}
 			}
 
@@ -607,18 +532,20 @@ public final class VTreePanel extends CPanel
 			else if ((m_editable || m_hasBar)
 					&& SwingUtilities.isRightMouseButton(e))
 			{
-				final int selRow = tree.getRowForLocation(e.getX(), e.getY());
-				if (selRow != -1)
+				// Select the row on which user right clicked
+				final int row = tree.getRowForLocation(e.getX(), e.getY());
+				if (row != -1)
 				{
-					tree.setSelectionRow(selRow);
+					tree.setSelectionRow(row);
 				}
-				if (tree.getSelectionPath() != null)         // need select first
+				
+				final MTreeNode node = getSelectedNode();
+				if (node != null)
 				{
-					final MTreeNode nd = (MTreeNode)tree.getSelectionPath().getLastPathComponent();
 					if (mFavoritesBarAdd != null)
 					{
 						// only leaves can be added to bar, which were not already added
-						mFavoritesBarAdd.setEnabled(nd.isLeaf() && !nd.isOnBar());
+						mFavoritesBarAdd.setEnabled(node.isLeaf() && !node.isOnBar());
 					}
 
 					final Rectangle r = tree.getPathBounds(tree.getSelectionPath());
@@ -633,20 +560,17 @@ public final class VTreePanel extends CPanel
 	 * 
 	 * @return MTreeNode
 	 */
-	public MTreeNode getSelectedNode()
+	private final MTreeNode getSelectedNode()
 	{
-		return m_selectedNode;
+		final TreePath path = tree.getSelectionPath();
+		if(path == null)
+		{
+			return null;
+		}
+		
+		final MTreeNode node = (MTreeNode)path.getLastPathComponent();
+		return node;
 	}   // getSelectedNode
-
-	/**
-	 * Search Field
-	 * 
-	 * @return Search Field
-	 */
-	public JComponent getSearchField()
-	{
-		return treeSearch;
-	}   // getSearchField
 
 	/**
 	 * Set Selection to Node in Event
@@ -654,9 +578,8 @@ public final class VTreePanel extends CPanel
 	 * @param nodeID Node ID
 	 * @return true if selected
 	 */
-	public boolean setSelectedNode(final int nodeID)
+	public boolean setTreeSelectionPath(final int nodeID)
 	{
-		log.config("ID=" + nodeID);
 		if (nodeID != -1)				// new is -1
 			return setTreeSelectionPath(nodeID, true);     // show selection
 		return false;
@@ -673,13 +596,12 @@ public final class VTreePanel extends CPanel
 	{
 		if (m_root == null)
 			return false;
-		log.config("NodeID=" + nodeID + ", Show=" + makeNodeVisible + ", root=" + m_root);
+		
 		// try to find the node
-		MTreeNode node = m_root.findNode(nodeID);
+		final MTreeNode node = m_root.findNode(nodeID);
 		if (node != null)
 		{
-			TreePath treePath = new TreePath(node.getPath());
-			log.config("Node=" + node + ", Path=" + treePath.toString());
+			final TreePath treePath = new TreePath(node.getPath());
 			tree.setSelectionPath(treePath);
 			if (makeNodeVisible)
 			{
@@ -688,22 +610,29 @@ public final class VTreePanel extends CPanel
 			}
 			return true;
 		}
-		log.info("Node not found; ID=" + nodeID);
-		return false;
+		
+		return false; // not found
 	}   // selectID
 
 	/**
-	 * Set the selected node & initiate all listeners
+	 * Run node
 	 * 
 	 * @param nd node
 	 */
-	private void setSelectedNode(final MTreeNode nd)
+	private void executeNode(final MTreeNode node)
 	{
-		log.config("Node = " + nd);
-		m_selectedNode = nd;
-		//
-		firePropertyChange(NODE_SELECTION, null, nd);
-	}   // setSelectedNode
+		if (node == null)
+		{
+			return;
+		}
+
+		final TreePath treePath = new TreePath(node.getPath());
+		tree.setSelectionPath(treePath);
+		tree.makeVisible(treePath); // expand it
+		tree.scrollPathToVisible(treePath);
+
+		firePropertyChange(PROPERTY_ExecuteNode, null, node);
+	}
 
 	/**************************************************************************
 	 * Node Changed - synchronize Node
@@ -811,33 +740,8 @@ public final class VTreePanel extends CPanel
 	}
 
 	/**
-	 * Indicate Busy
-	 * 
-	 * @param busy busy
+	 * Process event support to handle record creation, change and deletion by processes.
 	 */
-	private void setBusy(final boolean busy)
-	{
-		final JFrame frame = Env.getFrame(this);
-		if (frame == null)  // during init
-			return;
-
-		if (busy)
-		{
-			this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			treeSearch.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		}
-		else
-		{
-			this.setCursor(Cursor.getDefaultCursor());
-			frame.setCursor(Cursor.getDefaultCursor());
-			treeSearch.setCursor(Cursor.getDefaultCursor());
-		}
-	}	// set Busy
-
-	// metas: begin:
-	// adding process event support to handle record creation, change
-	// and deletion by processes.
 	@Override
 	public void processEvent(final ProcessEvent event)
 	{
@@ -898,7 +802,17 @@ public final class VTreePanel extends CPanel
 			setTreeSelectionPath(ids.get(0), true);
 		}
 	}
-
-	// metas end
+	
+	@Override
+	public void requestFocus()
+	{
+		treeSearch.requestFocus();
+	}
+	
+	@Override
+	public boolean requestFocusInWindow()
+	{
+		return treeSearch.requestFocusInWindow();
+	}
 
 }   // VTreePanel

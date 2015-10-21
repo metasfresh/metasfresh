@@ -21,7 +21,6 @@ import org.compiere.apps.AMenu;
 import org.compiere.apps.AMenuStartItem;
 import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.MMenu;
-import org.compiere.swing.CFrame;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
 
@@ -221,19 +220,15 @@ public final class InfoWindowMenuBuilder
 		// FR [ 1966328 ]
 		else if (actionCommand.equals("InfoMRP") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_MRP))
 		{
-			final CFrame frame = (CFrame)parentFrame;
 			final int m_menu_id = MMenu.getMenu_ID("MRP Info");
-			final AMenu menu = AEnv.getAMenu(frame);
-			final AMenuStartItem form = new AMenuStartItem(m_menu_id, true, Services.get(IMsgBL.class).translate(Env.getCtx(), "MRP Info"), menu);		// async load
-			form.start();
+			final AMenu menu = AEnv.getAMenu();
+			AMenuStartItem.startMenuItemById(m_menu_id, Services.get(IMsgBL.class).translate(Env.getCtx(), "MRP Info"), menu);		// async load
 		}
 		else if (actionCommand.equals("InfoCRP") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_CRP))
 		{
-			final CFrame frame = (CFrame)parentFrame;
 			final int m_menu_id = MMenu.getMenu_ID("CRP Info");
-			final AMenu menu = AEnv.getAMenu(frame);
-			final AMenuStartItem form = new AMenuStartItem(m_menu_id, true, Services.get(IMsgBL.class).translate(Env.getCtx(), "CRP Info"), menu);		// async load
-			form.start();
+			final AMenu menu = AEnv.getAMenu();
+			AMenuStartItem.startMenuItemById(m_menu_id, Services.get(IMsgBL.class).translate(Env.getCtx(), "CRP Info"), menu);		// async load
 		}
 		else if (actionCommand.equals("InfoOrder") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Order))
 		{

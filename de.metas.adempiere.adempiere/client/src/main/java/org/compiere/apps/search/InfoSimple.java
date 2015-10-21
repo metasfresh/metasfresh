@@ -339,7 +339,7 @@ public class InfoSimple extends Info
 			treePanel.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 
 			treePanel.initTree(adTreeId);
-			treePanel.addPropertyChangeListener(VTreePanel.NODE_SELECTION, treeNodeSelectedListener);
+			treePanel.addPropertyChangeListener(VTreePanel.PROPERTY_ExecuteNode, treeNodeSelectedListener);
 			treePanel.setPreferredSize(new Dimension(200, treePanel.getPreferredSize().height));
 
 			splitPane.add(treePanel, JSplitPane.LEFT);

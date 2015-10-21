@@ -42,9 +42,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JProgressBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -55,7 +53,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.ui.notifications.SwingEventNotifierService;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.lang.NullRunnable;
 import org.compiere.Adempiere;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.search.InfoWindowMenuBuilder;
@@ -144,8 +141,6 @@ public final class AMenu extends CFrame
 		// Translate
 		Env.setContext(m_ctx, m_WindowNo, "WindowName", msgBL.getMsg(m_ctx, "Menu"));
 		setTitle(Env.getHeader(m_ctx, m_WindowNo));
-
-		progressBar.setString(msgBL.getMsg(m_ctx, "SelectProgram"));
 
 		//
 		// Setup Update Info
@@ -237,7 +232,7 @@ public final class AMenu extends CFrame
 
 	private final int m_WindowNo;
 	private final Properties m_ctx = Env.getCtx();
-	private boolean m_startingItem = false;
+	private boolean busy = false;
 	/** The User */
 	private int m_AD_User_ID;
 	/** The Role */
@@ -340,7 +335,6 @@ public final class AMenu extends CFrame
 
 	// UI
 	private JMenuBar menuBar = new JMenuBar();
-	protected JProgressBar progressBar = new JProgressBar(0, 100);
 	private CButton bNotes = new CButton();
 	private CButton bRequests = new CButton();
 	// Tabs
@@ -403,7 +397,7 @@ public final class AMenu extends CFrame
 			{
 				treePanel.setBorder(BorderFactory.createEmptyBorder());
 				centerPane.addTab(msgBL.getMsg(m_ctx, "Menu"), Images.getImageIcon2("Home16"), treePanel);
-				treePanel.addPropertyChangeListener(VTreePanel.NODE_SELECTION, this);
+				treePanel.addPropertyChangeListener(VTreePanel.PROPERTY_ExecuteNode, this);
 			}
 		}
 		
@@ -443,14 +437,6 @@ public final class AMenu extends CFrame
 				infoPanel.add(bNotes, null);
 				infoPanel.add(bRequests, null);				
 				southPanel.add(infoPanel, BorderLayout.NORTH);
-			}
-			
-			//
-			// Progress bar
-			{
-				progressBar.setStringPainted(true);
-				progressBar.setOpaque(false);
-				southPanel.add(progressBar, BorderLayout.SOUTH);
 			}
 		}
 	} // jbInit
@@ -576,24 +562,24 @@ public final class AMenu extends CFrame
 	 * @param e event
 	 */
 	@Override
-	protected void processWindowEvent(WindowEvent e)
+	protected final void processWindowEvent(final WindowEvent e)
 	{
 		super.processWindowEvent(e);
+		
 		if (e.getID() == WindowEvent.WINDOW_OPENED)
 		{
-			treePanel.getSearchField().requestFocusInWindow();
-			// this.toFront();
+			treePanel.requestFocusInWindow();
 		}
-	}   // processWindowEvent
+	}
 
 	/**
 	 * Set Busy
 	 * 
 	 * @param value true if busy
 	 */
-	protected void setBusy(boolean value)
+	protected final void setBusy(boolean value)
 	{
-		m_startingItem = value;
+		this.busy = value;
 		if (value)
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		else
@@ -609,21 +595,26 @@ public final class AMenu extends CFrame
 	@Override
 	public void propertyChange(PropertyChangeEvent e)
 	{
-
-		MTreeNode nd = (MTreeNode)e.getNewValue();
-		log.info(nd.getNode_ID() + " - " + nd.toString());
-
-		// ignore summary items & when loading
-		if (m_startingItem || nd.isSummary())
+		final MTreeNode node = (MTreeNode)e.getNewValue();
+		// ignore if no node (shall not happen)
+		if(node == null)
+		{
 			return;
-
-		String sta = nd.toString();
-		progressBar.setString(sta);
-		int cmd = nd.getNode_ID();
-
-		(new AMenuStartItem(cmd, true, sta, this)).start();		// async load
-		// hengsin, updateInfo is call again in AMenuStartItem
-		// updateInfo();
+		}
+		
+		// ignore summary items
+		if(node.isSummary())
+		{
+			return;
+		}
+		
+		// ignore the request if already busy
+		if (busy)
+		{
+			return;
+		}
+		
+		AMenuStartItem.startMenuItem(node, this); // async load
 	}	// propertyChange
 
 	/**************************************************************************
@@ -667,13 +658,15 @@ public final class AMenu extends CFrame
 	{
 		// AD_Table_ID for AD_Note = 389 HARDCODED
 		if (m_note_Menu_ID == 0)
+		{
 			m_note_Menu_ID = DB.getSQLValue(null, "SELECT AD_Menu_ID "
 					+ "FROM AD_Menu m"
 					+ " INNER JOIN AD_TABLE t ON (t.AD_Window_ID=m.AD_Window_ID) "
 					+ "WHERE t.AD_Table_ID=?", 389);
-		if (m_note_Menu_ID == 0)
-			m_note_Menu_ID = 233;	// fallback HARDCODED
-		(new AMenuStartItem(m_note_Menu_ID, true, msgBL.translate(m_ctx, "AD_Note_ID"), this)).start();		// async load
+			if (m_note_Menu_ID == 0)
+				m_note_Menu_ID = 233;	// fallback HARDCODED
+		}
+		AMenuStartItem.startMenuItemById(m_note_Menu_ID, msgBL.translate(m_ctx, "AD_Note_ID"), this); // async load
 	}   // gotoMessage
 
 	/**
@@ -706,7 +699,7 @@ public final class AMenu extends CFrame
 		// + "WHERE t.AD_Table_ID=?", 417);
 		if (m_request_Menu_ID == 0)
 			m_request_Menu_ID = 237;	// My Requests
-		(new AMenuStartItem(m_request_Menu_ID, true, msgBL.translate(m_ctx, "R_Request_ID"), this)).start();		// async load
+		AMenuStartItem.startMenuItemById(m_request_Menu_ID, msgBL.translate(m_ctx, "R_Request_ID"), this); // async load
 	}   // gotoRequests
 
 	/**
@@ -803,12 +796,6 @@ public final class AMenu extends CFrame
 
 	public FormFrame startForm(final int AD_Form_ID)
 	{
-		final Runnable updateProgressBarRunnable = NullRunnable.instance;
-		return startForm(AD_Form_ID, updateProgressBarRunnable);
-	}
-
-	public FormFrame startForm(final int AD_Form_ID, final Runnable updateProgressBarRunnable)
-	{
 		// metas: tsa: begin:  US831: Open one window per session per user (2010101810000044)
 		final Properties ctx = Env.getCtx();
 		final I_AD_Form form = InterfaceWrapperHelper.create(ctx, AD_Form_ID, I_AD_Form.class, ITrx.TRXNAME_None);
@@ -833,7 +820,6 @@ public final class AMenu extends CFrame
 		}
 
 		final FormFrame ff = new FormFrame();
-		SwingUtilities.invokeLater(updateProgressBarRunnable);			// 1
 		final boolean ok = ff.openForm(form);  // metas: tsa: us831
 		if (!ok)
 		{
@@ -841,10 +827,8 @@ public final class AMenu extends CFrame
 			return null;
 		}
 		windowManager.add(ff);
-		SwingUtilities.invokeLater(updateProgressBarRunnable);			// 2
 
 		// Center the window
-		SwingUtilities.invokeLater(updateProgressBarRunnable);			// 3
 		ff.showFormWindow();
 
 		return ff;

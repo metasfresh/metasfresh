@@ -13,230 +13,190 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import java.awt.Color;
-import java.awt.event.MouseEvent;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.text.JTextComponent;
 
-import org.adempiere.exceptions.DBException;
-import org.compiere.model.MSysConfig;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Services;
+import org.adempiere.util.collections.IteratorUtils;
+import org.compiere.swing.autocomplete.JTextComponentAutoCompleter;
+import org.compiere.swing.autocomplete.ResultItem;
+import org.compiere.swing.autocomplete.ResultItemSource;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * 
  * @author Cristina Ghita , www.arhipac.ro
  *
  */
-public class CityAutoCompleter extends AutoCompleter 
+public class CityAutoCompleter extends JTextComponentAutoCompleter
 {
-	public static final CityVO ITEM_More = new CityVO(-1, "...", -1, "");
-	private final int m_maxRows = MSysConfig.getIntValue("LOCATION_MAX_CITY_ROWS", 7);
-	private CityVO m_city = null;
-	private final int m_windowNo;
-	private ArrayList<CityVO> list = new ArrayList<CityVO>();
-	private ArrayList<CityVO> listShow = new ArrayList<CityVO>();
+	private final CitiesSource source = new CitiesSource();
 
-	public CityAutoCompleter(JTextComponent comp, int windowNo)
-	{ 
+	public CityAutoCompleter(final JTextComponent comp)
+	{
 		super(comp);
-		this.m_windowNo = windowNo;
-		listBox.setVisibleRowCount(m_maxRows);
-		setCity(null);
-	}
-	
-	
-	@Override
-	protected void acceptedListItem(Object selected)
-	{
-		if (selected == null || selected == ITEM_More)
-		{
-			setCity(null);
-			return;
-		}
-		CityVO item = (CityVO) selected;
-		setCity(item);
-		Env.setContext(Env.getCtx(), m_windowNo, Env.TAB_INFO, "C_Region_ID", String.valueOf(item.C_Region_ID));
-		textBox.setText(item.CityName);
+
+		final int maxResults = Services.get(ISysConfigBL.class).getIntValue("LOCATION_MAX_CITY_ROWS", 7);
+		setMaxResults(maxResults);
+
+		setSource(source);
+		setCurrentItem(null);
 	}
 
 	@Override
-	protected boolean updateListData()
+	protected void onCurrentItemChanged(final ResultItem resultItem, final ResultItem resultItemOld)
 	{
-		String search = textBox.getText();
-		if (m_city != null && m_city.CityName.compareTo(search) != 0)
-		{
-			setCity(null);
-		}
-		listShow.clear();
-		boolean truncated = false;
-		search = search.toUpperCase();
-		int i = 0;
-		for (CityVO vo : list) {
-			if (vo.CityName.toUpperCase().startsWith(search)) {
-				if (i > 0 && i == m_maxRows+1)
-				{
-					listShow.add(ITEM_More);
-					truncated = true;
-					break;
-				}
-				listShow.add(vo);
-				i++;
-			}
-		}
-		this.listBox.setListData(listShow.toArray());
-		//if there is no city on the list return false, to not show the popup
-		if (listShow.isEmpty())
-		{
-			return false;
-		}
-		else
-		{
-			CityVO city = (CityVO) listShow.get(0);
-			if (city.CityName.equalsIgnoreCase(search))
-			{
-				m_city = city;
-				return true;
-			}	
-		}
-		//if the list has only one item, but that item is not equals with m_city
-		//return false to not show any popup
-		if (!truncated && listShow.size() == 1
-				&& m_city != null && listShow.get(0).equals(this.m_city))
-		{
-			log.finest("nothing to do 1");
-			return false;
-		}
-		return true;
+		// nothing
 	}
 
-	public void fillList()
-	{
-		// Carlos Ruiz - globalqss - improve to avoid going to the database on every keystroke
-		list.clear();
-		listShow.clear();
-		ArrayList<Object> params = new ArrayList<Object>();
-		final StringBuffer sql = new StringBuffer(
-				"SELECT cy.C_City_ID, cy.Name, cy.C_Region_ID, r.Name"
-				+" FROM C_City cy"
-				+" LEFT OUTER JOIN C_Region r ON (r.C_Region_ID=cy.C_Region_ID)"
-				+" WHERE cy.AD_Client_ID IN (0,?)");
-		params.add(getAD_Client_ID());
-		if (getC_Region_ID() > 0)
-		{
-			sql.append(" AND cy.C_Region_ID=?");
-			params.add(getC_Region_ID());
-		}		
-		if (getC_Country_ID() > 0)
-		{
-			sql.append(" AND cy.C_Country_ID=?");
-			params.add(getC_Country_ID());
-		}
-		sql.append(" ORDER BY cy.Name, r.Name");
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql.toString(), null);
-			DB.setParameters(pstmt, params);
-			rs = pstmt.executeQuery();
-			int i = 0;
-			while(rs.next())
-			{
-				CityVO vo = new CityVO(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4));
-				list.add(vo);
-				if (i <= m_maxRows) {
-					listShow.add(vo);
-				} else if (i == m_maxRows + 1 && i > 0) {
-					listShow.add(ITEM_More);
-				}
-				i++;
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql.toString());
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
-		}
-		//
-		this.listBox.setListData(listShow.toArray());
-	}
-
-	private void setCity(CityVO vo)
-	{
-		m_city = vo;
-		log.finest("C_City_ID="+m_city);
-		if (m_city == null) {
-			textBox.setBackground(new Color(230, 230, 255));
-		} else {
-			textBox.setBackground(Color.WHITE);
-		}
-	}
 	public int getC_City_ID()
 	{
-		return m_city != null ? m_city.C_City_ID : -1;
+		final CityVO city = (CityVO)getCurrentItem();
+		return city != null ? city.C_City_ID : -1;
 	}
-	public int getAD_Client_ID()
-	{
-		return Env.getAD_Client_ID(Env.getCtx());
-	}
-	public int getC_Country_ID()
-	{
-		return Env.getContextAsInt(Env.getCtx(), m_windowNo, Env.TAB_INFO, "C_Country_ID");
-	}
+
 	public int getC_Region_ID()
 	{
-		return Env.getContextAsInt(Env.getCtx(), m_windowNo, Env.TAB_INFO, "C_Region_ID");
-	}
-	
-	public CityVO getCity()
-	{
-		return m_city;
+		final CityVO city = (CityVO)getCurrentItem();
+		return city != null ? city.C_Region_ID : -1;
 	}
 
-	public void mouseEntered(MouseEvent e) 
+	public void setC_Country_ID(final int countryId)
 	{
-		// nothing to do
-
+		source.setC_Country_ID(countryId);
 	}
 
-	public void mouseExited(MouseEvent e) 
+	public void setC_Region_ID(final int regionId)
 	{
-		// nothing to do
-
+		source.setC_Region_ID(regionId);
 	}
 
-	public void mousePressed(MouseEvent e) 
+	/**
+	 * Source of {@link CityVO}s.
+	 * 
+	 * @author metas-dev <dev@metas-fresh.com>
+	 *
+	 */
+	private final class CitiesSource implements ResultItemSource
 	{
-		// nothing to do
+		private ArrayKey lastQueryKey = null;
+		private List<CityVO> lastResult = null;
+		private int countryId = -1;
+		private int regionId = -1;
 
-	}
-
-	public void mouseReleased(MouseEvent e) 
-	{
-		// nothing to do
-
-	}
-
-	public void mouseClicked(MouseEvent e) 
-	{
-		if(e == null || listBox.getSelectedValue().equals(ITEM_More))
+		@Override
+		public List<CityVO> query(String searchText, int limit)
 		{
-			setCity(null);
-			return;
+			final int adClientId = getAD_Client_ID();
+			final int countryId = getC_Country_ID();
+			final int regionId = getC_Region_ID();
+			final ArrayKey queryKey = Util.mkKey(adClientId, countryId, regionId);
+
+			if (lastQueryKey != null && lastQueryKey.equals(queryKey))
+			{
+				return lastResult;
+			}
+
+			final Iterator<CityVO> allCitiesIterator = retrieveAllCities(adClientId, countryId, regionId);
+			List<CityVO> result = null;
+			try
+			{
+				result = ImmutableList.copyOf(allCitiesIterator);
+			}
+			finally
+			{
+				IteratorUtils.close(allCitiesIterator);
+			}
+
+			this.lastResult = result;
+			this.lastQueryKey = queryKey;
+			return result;
 		}
 
-		CityVO item = (CityVO)listBox.getSelectedValue();
-		setCity(item);
-		Env.setContext(Env.getCtx(), m_windowNo, Env.TAB_INFO, "C_Region_ID", String.valueOf(item.C_Region_ID));
-		textBox.setText(item.CityName);
+		private Iterator<CityVO> retrieveAllCities(final int adClientId, final int countryId, final int regionId)
+		{
+			if (countryId <= 0)
+			{
+				return Collections.emptyIterator();
+			}
+
+			final List<Object> sqlParams = new ArrayList<Object>();
+			final StringBuilder sql = new StringBuilder(
+					"SELECT cy.C_City_ID, cy.Name, cy.C_Region_ID, r.Name"
+							+ " FROM C_City cy"
+							+ " LEFT OUTER JOIN C_Region r ON (r.C_Region_ID=cy.C_Region_ID)"
+							+ " WHERE cy.AD_Client_ID IN (0,?)");
+			sqlParams.add(adClientId);
+			if (regionId > 0)
+			{
+				sql.append(" AND cy.C_Region_ID=?");
+				sqlParams.add(regionId);
+			}
+			if (countryId > 0)
+			{
+				sql.append(" AND COALESCE(cy.C_Country_ID, r.C_Country_ID)=?");
+				sqlParams.add(countryId);
+			}
+			sql.append(" ORDER BY cy.Name, r.Name");
+
+			return IteratorUtils.asIterator(new AbstractPreparedStatementBlindIterator<CityVO>()
+			{
+
+				@Override
+				protected PreparedStatement createPreparedStatement() throws SQLException
+				{
+					final PreparedStatement pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
+					DB.setParameters(pstmt, sqlParams);
+					return pstmt;
+				}
+
+				@Override
+				protected CityVO fetch(ResultSet rs) throws SQLException
+				{
+					final CityVO vo = new CityVO(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4));
+					return vo;
+				}
+			});
+		}
+
+		private int getAD_Client_ID()
+		{
+			return Env.getAD_Client_ID(Env.getCtx());
+		}
+
+		private int getC_Country_ID()
+		{
+			return countryId;
+		}
+
+		public void setC_Country_ID(final int countryId)
+		{
+			this.countryId = countryId > 0 ? countryId : -1;
+		}
+
+		public int getC_Region_ID()
+		{
+			return regionId;
+		}
+
+		public void setC_Region_ID(final int regionId)
+		{
+			this.regionId = regionId > 0 ? regionId : -1;
+		}
 	}
 }

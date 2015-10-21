@@ -24,42 +24,48 @@ import java.io.IOException;
 import org.compiere.model.MTreeNode;
 
 /**
- *  TransferableTreeNode wraps an MTreeNode into a Transferable for
- *  use by drag and drop type actions.
- * 
+ * Wraps an {@link MTreeNode} into a {@link Transferable} for use by drag and drop type actions.
  *
- *  @author 	phib  2008/07/30
- *  FR [ 2032092 ] Java 6 improvements to tree drag and drop
+ *
+ * @author phib 2008/07/30 FR [ 2032092 ] Java 6 improvements to tree drag and drop
  */
-class TransferableTreeNode implements Transferable {
+class TransferableTreeNode implements Transferable
+{
 
-	  public static DataFlavor TREE_NODE_FLAVOR = new DataFlavor(MTreeNode.class,
-	      "Tree Path");
+	public static DataFlavor TREE_NODE_FLAVOR = new DataFlavor(MTreeNode.class, "Tree Path");
 
-	  DataFlavor flavors[] = { TREE_NODE_FLAVOR };
+	private final DataFlavor flavors[] = { TREE_NODE_FLAVOR };
 
-	  MTreeNode node;
+	private final MTreeNode node;
 
-	  public TransferableTreeNode(MTreeNode node) {
-	    this.node = node;
-	  }
-
-	  public synchronized DataFlavor[] getTransferDataFlavors() {
-	    return flavors;
-	  }
-
-	  public boolean isDataFlavorSupported(DataFlavor flavor) {
-	    return (flavor.getRepresentationClass() == MTreeNode.class);
-	  }
-
-	  public synchronized Object getTransferData(DataFlavor flavor)
-	      throws UnsupportedFlavorException, IOException {
-	    if (isDataFlavorSupported(flavor)) {
-	      return (Object) node;
-	    } else {
-	      throw new UnsupportedFlavorException(flavor);
-	    }
-	  }
+	public TransferableTreeNode(final MTreeNode node)
+	{
+		super();
+		this.node = node;
 	}
 
-	           
+	@Override
+	public synchronized DataFlavor[] getTransferDataFlavors()
+	{
+		return flavors;
+	}
+
+	@Override
+	public boolean isDataFlavorSupported(final DataFlavor flavor)
+	{
+		return flavor.getRepresentationClass() == MTreeNode.class;
+	}
+
+	@Override
+	public synchronized Object getTransferData(final DataFlavor flavor) throws UnsupportedFlavorException, IOException
+	{
+		if (isDataFlavorSupported(flavor))
+		{
+			return node;
+		}
+		else
+		{
+			throw new UnsupportedFlavorException(flavor);
+		}
+	}
+}

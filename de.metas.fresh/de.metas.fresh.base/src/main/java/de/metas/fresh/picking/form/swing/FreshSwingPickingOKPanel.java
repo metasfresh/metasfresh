@@ -258,10 +258,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 		 */
 		private void openDynamicWindow(final int AD_Window_ID)
 		{
-			final boolean success = Services.get(IWindowBL.class).openWindow(null, // WindowManager
-					0, // AD_Workbench_ID
-					AD_Window_ID,
-					null); // invLaterForStatusBar
+			final boolean success = Services.get(IWindowBL.class).openWindow(AD_Window_ID);
 			if (!success)
 			{
 				final int windowNo = getPickingTerminalPanel().getTerminalContext().getWindowNo();

@@ -3,6 +3,10 @@
  */
 package org.compiere.grid.ed;
 
+import org.compiere.swing.autocomplete.ResultItem;
+import org.compiere.util.EqualsBuilder;
+import org.compiere.util.HashcodeBuilder;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.client
@@ -25,18 +29,17 @@ package org.compiere.grid.ed;
  * #L%
  */
 
-
-
 /**
  * @author Teo Sarca , www.arhipac.ro
  *
  */
-public class CityVO
+public class CityVO implements ResultItem
 {
 	public final int C_City_ID;
 	public final String CityName;
 	public final int C_Region_ID;
 	public final String RegionName;
+
 	public CityVO(int city_ID, String cityName, int region_ID, String regionName)
 	{
 		super();
@@ -49,50 +52,45 @@ public class CityVO
 	@Override
 	public int hashCode()
 	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + C_City_ID;
-		result = prime * result + C_Region_ID;
-		result = prime * result + ((CityName == null) ? 0 : CityName.hashCode());
-		result = prime * result + ((RegionName == null) ? 0 : RegionName.hashCode());
-		return result;
+		return new HashcodeBuilder()
+				.append(C_City_ID)
+				.append(C_Region_ID)
+				.append(CityName)
+				.append(RegionName)
+				.toHashcode();
 	}
 
 	@Override
 	public boolean equals(Object obj)
 	{
 		if (this == obj)
+		{
 			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		CityVO other = (CityVO) obj;
-		if (C_City_ID != other.C_City_ID)
-			return false;
-		if (C_Region_ID != other.C_Region_ID)
-			return false;
-		if (CityName == null)
-		{
-			if (other.CityName != null)
-				return false;
 		}
-		else if (!CityName.equals(other.CityName))
+		
+		final CityVO other = EqualsBuilder.getOther(this, obj);
+		if (other == null)
 			return false;
-		if (RegionName == null)
-		{
-			if (other.RegionName != null)
-				return false;
-		}
-		else if (!RegionName.equals(other.RegionName))
-			return false;
-		return true;
+		
+		return new EqualsBuilder()
+				.append(C_City_ID, other.C_City_ID)
+				.append(C_Region_ID, other.C_Region_ID)
+				.append(CityName, other.CityName)
+				.append(RegionName, other.RegionName)
+				.isEqual();
 	}
 
 	@Override
+	public String getText()
+	{
+		return CityName;
+	}
+	
+	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer();
+		// needed for ListCellRenderer
+		final StringBuilder sb = new StringBuilder();
 		if (this.CityName != null)
 		{
 			sb.append(this.CityName);

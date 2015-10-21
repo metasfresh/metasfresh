@@ -36,24 +36,26 @@ import org.compiere.model.MTreeNode;
  *  @author 	phib  2008/07/30
  *  FR [ 2032092 ] Java 6 improvements to tree drag and drop
  */
-public class VTreeTransferHandler extends TransferHandler {
-
+class VTreeTransferHandler extends TransferHandler
+{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private class MoveTo
+	private static class MoveTo
 	{
 		public MTreeNode to;
 		public int indexTo;
 	}
 
+	@Override
 	public int getSourceActions(JComponent c)
 	{
 		return TransferHandler.MOVE;
 	}
 
+	@Override
 	protected Transferable createTransferable(JComponent c)
 	{
 		JTree tree = (JTree) c;
@@ -75,6 +77,7 @@ public class VTreeTransferHandler extends TransferHandler {
 		return node;
 	}
 
+	@Override
 	protected void exportDone(JComponent c, Transferable t, int action)
 	{
 		if (action == MOVE)
@@ -90,6 +93,7 @@ public class VTreeTransferHandler extends TransferHandler {
 		}
 	}
 
+	@Override
 	public boolean canImport(TransferSupport info)
 	{
 		// Check for flavor
@@ -101,6 +105,7 @@ public class VTreeTransferHandler extends TransferHandler {
 		return true;
 	}
 	
+	@Override
 	public boolean importData(TransferHandler.TransferSupport info)
 	{
 		if (!canImport(info))

@@ -39,10 +39,8 @@ public interface IWindowBL extends ISingletonService
 	 * @param windowManager maybe <code>null</code>. If <code>null</code>, then {@link org.compiere.apps.AEnv} is used to access the window manager
 	 * @param AD_Workbench_ID maybe 0
 	 * @param AD_Window_ID the ID of the window to be opened
-	 * @param invLaterForStatusBar may be <code>null</code>. If not null, then {@link javax.swing.SwingUtilities#invokeLater(Runnable)} is called with this runnable at different times (to update the
-	 *            parent window's status bar).
 	 *
 	 * @return <code>true</code> if the window could be successfully opened
 	 */
-	boolean openWindow(WindowManager windowManager, int AD_Workbench_ID, int AD_Window_ID, Runnable invLaterForStatusBar);
+	boolean openWindow(WindowManager windowManager, int AD_Workbench_ID, int AD_Window_ID);
 }

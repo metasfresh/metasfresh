@@ -92,7 +92,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	private String m_description;
 	/** Parent ID */
 	private int m_parent_ID;
-	/** Summaty */
+	/** Summary */
 	private boolean m_isSummary;
 	/** Image Indicator */
 	private String m_imageIndicator;

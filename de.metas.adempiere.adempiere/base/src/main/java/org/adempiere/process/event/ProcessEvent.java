@@ -72,6 +72,7 @@ public final class ProcessEvent {
 		return source;
 	}
 
+	@Override
 	public String toString() {
 		return "ProcessEvent; source: " + source + "; type: " + type;
 	}
