@@ -1225,7 +1225,7 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 		return enabled;
 	}
 	
-	protected int getGapBeforeFirstVerticalTab()
+	protected static int getGapBeforeFirstVerticalTab()
 	{
 		return AdempierePLAF.getInt(KEY_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab, DEFAULT_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab);
 	}
@@ -3341,15 +3341,16 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 				// Break line to show visual connection to selected tab
 				
 				// line from top until tab starts
+				final int yGap;
 				if (isAlignVerticalTabsWithHorizontalTabs(tabPane, LEFT))
 				{
-					// Put a point to close the gap between this first vertical tab and the line of horizontal tabs which are assumed to be embedded in this component
-					g.fillRect(x, selRect.y, 1, 1);
+					yGap = getGapBeforeFirstVerticalTab();
 				}
 				else
 				{
-					g.fillRect(x, y, 1, selRect.y + 1 - y);
+					yGap = 0;
 				}
+				g.fillRect(x, y + yGap, 1, selRect.y + 1 - y - yGap);
 
 				// line from tab end until bottom
 				if (selRect.y + selRect.height < y + h - 2)
