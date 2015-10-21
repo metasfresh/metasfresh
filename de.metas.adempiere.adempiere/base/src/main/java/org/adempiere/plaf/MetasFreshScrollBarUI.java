@@ -27,11 +27,11 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JScrollBar;
-import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.metal.MetalScrollBarUI;
@@ -57,7 +57,12 @@ public class MetasFreshScrollBarUI extends MetalScrollBarUI
 
 	/** The background color of scrollbar's thumb rectangle (the one which user drags) */
 	public static final String KEY_Thumb_Color = "MetasFreshScrollBarUI.Thumb.Color";
-	private static final ColorUIResource DEFAULT_Thumb_Color = new ColorUIResource(Color.GRAY);
+	private static final ColorUIResource DEFAULT_Thumb_Color = MetasFreshTheme.COLOR_LightGray;
+
+	private static final String KEY_Thumb_MouseOver_Color = "MetasFreshScrollBarUI.Thumb.MouseOver.Color";
+	private static final ColorUIResource DEFAULT_Thumb_MouseOver_Color = new ColorUIResource(149, 149, 149);
+	private static final String KEY_Thumb_Dragging_Color = "MetasFreshScrollBarUI.Thumb.Dragging.Color";
+	private static final ColorUIResource DEFAULT_Thumb_Dragging_Color = new ColorUIResource(125, 125, 125);
 
 	public static ComponentUI createUI(final JComponent c)
 	{
@@ -69,8 +74,10 @@ public class MetasFreshScrollBarUI extends MetalScrollBarUI
 		return new Object[] {
 				uiClassID, MetasFreshScrollBarUI.class.getName()
 				, KEY_Width, DEFAULT_Width
-				, KEY_Thumb_Color, DEFAULT_Thumb_Color
 				, KEY_Track_Color, DEFAULT_Track_Color
+				, KEY_Thumb_Color, DEFAULT_Thumb_Color
+				, KEY_Thumb_MouseOver_Color, DEFAULT_Thumb_MouseOver_Color
+				, KEY_Thumb_Dragging_Color, DEFAULT_Thumb_Dragging_Color
 		};
 	}
 
@@ -87,6 +94,10 @@ public class MetasFreshScrollBarUI extends MetalScrollBarUI
 	};
 
 	private Color thumbColor;
+	private Color thumbColorMouseOver;
+	private Color thumbColorDragging;
+	
+	private boolean isMouseButtonPressed = false;
 
 	MetasFreshScrollBarUI()
 	{
@@ -100,21 +111,37 @@ public class MetasFreshScrollBarUI extends MetalScrollBarUI
 	{
 		super.installDefaults();
 
-		thumbColor = getColor(KEY_Thumb_Color);
-		trackColor = getColor(KEY_Track_Color);
+		trackColor = AdempierePLAF.getColor(KEY_Track_Color);
+		
+		thumbColor = AdempierePLAF.getColor(KEY_Thumb_Color, DEFAULT_Thumb_Color);
+		thumbColorMouseOver = AdempierePLAF.getColor(KEY_Thumb_MouseOver_Color, DEFAULT_Thumb_MouseOver_Color);
+		thumbColorDragging = AdempierePLAF.getColor(KEY_Thumb_Dragging_Color, DEFAULT_Thumb_Dragging_Color);
 
 		scrollBarWidth = AdempierePLAF.getInt(KEY_Width, DEFAULT_Width);
-	}
-
-	private final Color getColor(final String name)
-	{
-		return UIManager.getColor(name);
 	}
 
 	@Override
 	protected void paintThumb(final Graphics g, final JComponent c, final Rectangle r)
 	{
-		g.setColor(thumbColor);
+		final Color color;
+		if (!scrollbar.isEnabled())
+		{
+			color = thumbColor;
+		}
+		else if (isDragging || isMouseButtonPressed)
+		{
+			color = thumbColorDragging;
+		}
+		else if (isThumbRollover())
+		{
+			color = thumbColorMouseOver;
+		}
+		else
+		{
+			color = thumbColor;
+		}
+		
+		g.setColor(color);
 		g.fillRect(r.x, r.y, r.width, r.height);
 	}
 
@@ -136,4 +163,32 @@ public class MetasFreshScrollBarUI extends MetalScrollBarUI
 	{
 		return noButton;
 	}
+	
+	@Override
+	protected TrackListener createTrackListener()
+	{
+		return new MetasTrackListener();
+	}
+	
+    private class MetasTrackListener extends TrackListener
+    {
+    	@Override
+    	public void mousePressed(MouseEvent e)
+    	{
+    		isMouseButtonPressed = true;
+    		super.mousePressed(e);
+    		
+    		scrollbar.repaint(getThumbBounds());
+    	}
+    	
+    	@Override
+    	public void mouseReleased(MouseEvent e)
+    	{
+    		isMouseButtonPressed = false;
+    		super.mouseReleased(e);
+    		
+    		scrollbar.repaint(getThumbBounds());
+    	}
+    }
+
 }
