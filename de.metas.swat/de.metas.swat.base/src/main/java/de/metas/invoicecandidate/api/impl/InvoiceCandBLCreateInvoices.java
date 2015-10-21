@@ -106,7 +106,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IInvoiceCandidateListeners invoiceCandListeners = Services.get(IInvoiceCandidateListeners.class);
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 	private final transient IProductPA productPA = Services.get(IProductPA.class);
-	// private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
 	private final transient IMsgDAO msgDAO = Services.get(IMsgDAO.class);
@@ -119,7 +118,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
-	private ILoggable loggable = NullLoggable.instance;
+	private ILoggable loggable = NullLoggable.instance; // default, so avoid an NPE
 	private IInvoicingParams _invoicingParams;
 	private IInvoiceGenerateResult _collector;
 
@@ -945,6 +944,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			final List<I_C_Invoice_Candidate> affectedCands,
 			final Throwable error)
 	{
+		Check.assumeNotNull(affectedCands, "Param 'affectedCands' is not empty");
+		Check.assumeNotNull(error, "Param 'error' is not empty");
+
 		Check.assume(!affectedCands.isEmpty(), "Given list of I_C_Invoice_Candidates is not empty");
 
 		final int USERINCHARGE_NA = -100; // placeholder for user in charge not available
@@ -957,6 +959,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		{
 			DB.getConstraints().addAllowedTrxNamePrefix("POSave");
 
+			loggable.addLog("Caught exception " + error + " with meesage: " + error.getLocalizedMessage());
+			
 			final List<I_AD_Note> result = new ArrayList<I_AD_Note>();
 
 			final Map<Integer, List<I_C_Invoice_Candidate>> userId2cands = new HashMap<Integer, List<I_C_Invoice_Candidate>>();

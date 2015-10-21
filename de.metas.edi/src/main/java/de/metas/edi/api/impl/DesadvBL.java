@@ -447,4 +447,12 @@ public class DesadvBL implements IDesadvBL
 			}
 		}
 	}
+
+	@Override
+	public void setMinimumPercentage(final I_EDI_Desadv desadv)
+	{
+		final BigDecimal minimumPercentageAccepted = Services.get(IDesadvDAO.class).retrieveMinimumSumPercentage();
+		desadv.setEDI_DESADV_MinimumSumPercentage(minimumPercentageAccepted);
+	}
+
 }

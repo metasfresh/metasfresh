@@ -34,7 +34,6 @@ import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessorListener;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
@@ -147,12 +146,13 @@ public interface IWorkPackageQueue
 	I_C_Queue_Block enqueueBlock(Properties ctx);
 
 	/**
-	 * Adds a work package to to the given block
+	 * Adds a work package to to the given block.
 	 * 
 	 * NOTE: the workpackage WILL NOT be marked as ready for processing.
 	 * 
 	 * @param block
-	 * @param priority priority ("0" to "9"). If <code>null</code> or {@link #PRIORITY_AUTO} then {@link X_C_Queue_WorkPackage#PRIORITY_Medium} will be used.
+	 * @param priority priority strategy to be used. <b>But</b> note that if the queue will also invoke {@link IWorkpackageProcessorContextFactory#getThreadInheritedPriority()} and will prefer that
+	 *            priority (if any!) over this parameter.
 	 * @return I_C_Queue_WorkPackage (created workPackage)
 	 * @deprecated Please consider using {@link #newBlock()}
 	 */

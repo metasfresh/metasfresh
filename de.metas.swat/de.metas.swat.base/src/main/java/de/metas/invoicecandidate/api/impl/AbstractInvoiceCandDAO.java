@@ -112,6 +112,7 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 		// Retrieve invoice candidates
 		return queryBuilder.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 				.iterate(queryBuilder.getModelClass());
 	}
 

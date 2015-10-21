@@ -22,7 +22,7 @@ package de.metas.async.spi.impl;
  * #L%
  */
 
-
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 
 import de.metas.async.api.IWorkPackageQueue;
@@ -45,9 +45,26 @@ public class SizeBasedWorkpackagePrio implements IWorkpackagePrioStrategy
 
 	private final ConstantWorkpackagePrio defaultPrio;
 
+	/**
+	 * can be set from the outside to change the behavior for testing.
+	 */
+	private Function<Integer, ConstantWorkpackagePrio> alternativeSize2constantPrio = null;
+
 	private SizeBasedWorkpackagePrio(final ConstantWorkpackagePrio defaultPrio)
 	{
 		this.defaultPrio = defaultPrio;
+	}
+
+	/**
+	 * Allow to inject an alternative function. Currently this is intended only for testing purposes, but that might change in future.
+	 * Note that by default this implementation uses {@link SysconfigBackedSizeBasedWorkpackagePrioConfig}.
+	 * 
+	 * @param size2constantPrio
+	 */
+	@VisibleForTesting
+	public void setAlternativeSize2constantPrio(Function<Integer, ConstantWorkpackagePrio> size2constantPrio)
+	{
+		this.alternativeSize2constantPrio = size2constantPrio;
 	}
 
 	@Override
@@ -55,13 +72,22 @@ public class SizeBasedWorkpackagePrio implements IWorkpackagePrioStrategy
 	{
 		final int packageCount = queue.getLocalPackageCount();
 
-		final Function<Integer, ConstantWorkpackagePrio> size2constantPrio =
-				new SysconfigBackedSizeBasedWorkpackagePrioConfig(
-						queue.getCtx(),
-						queue.getEnquingPackageProcessorInternalName(),
-						defaultPrio);
+		final Function<Integer, ConstantWorkpackagePrio> size2constantPrioToUse;
 
-		final ConstantWorkpackagePrio constantPrioForSize = size2constantPrio.apply(packageCount);
+		if (alternativeSize2constantPrio == null)
+		{
+			size2constantPrioToUse =
+					new SysconfigBackedSizeBasedWorkpackagePrioConfig(
+							queue.getCtx(),
+							queue.getEnquingPackageProcessorInternalName(),
+							defaultPrio);
+		}
+		else
+		{
+			size2constantPrioToUse = alternativeSize2constantPrio;
+		}
+
+		final ConstantWorkpackagePrio constantPrioForSize = size2constantPrioToUse.apply(packageCount);
 		final IWorkPackageQueue ignored = null;
 		return constantPrioForSize.getPrioriy(ignored);
 	}

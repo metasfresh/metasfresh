@@ -22,12 +22,13 @@ package de.metas.edi.api.impl;
  * #L%
  */
 
-
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.IContextAware;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
@@ -44,6 +45,13 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 public class DesadvDAO implements IDesadvDAO
 {
+
+	/**
+	 * System configuration to tell the minimum sum percentage (QtyDeliveredInUOM/QtyEntered) that is accepted for a desadv entry
+	 */
+	private static final String SYS_CONFIG_DefaultMinimumPercentage = "de.metas.esb.edi.DefaultMinimumPercentage";
+	private static final String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
+
 	@Override
 	public I_EDI_Desadv retrieveMatchingDesadvOrNull(final String poReference, final IContextAware ctxAware)
 	{
@@ -228,5 +236,21 @@ public class DesadvDAO implements IDesadvDAO
 				.addColumn(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID);
 
 		return queryBuilder.create().first(de.metas.handlingunits.model.I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public BigDecimal retrieveMinimumSumPercentage()
+	{
+		final String minimumPercentageAccepted_Value = Services.get(ISysConfigBL.class).getValue(
+				SYS_CONFIG_DefaultMinimumPercentage, SYS_CONFIG_DefaultMinimumPercentage_DEFAULT);
+		try
+		{
+			return new BigDecimal(minimumPercentageAccepted_Value);
+		}
+		catch (NumberFormatException e)
+		{
+			Check.errorIf(true, "AD_SysConfig {0} = {1} can't be parsed as a number", SYS_CONFIG_DefaultMinimumPercentage, minimumPercentageAccepted_Value);
+			return null; // shall not be reached
+		}
 	}
 }

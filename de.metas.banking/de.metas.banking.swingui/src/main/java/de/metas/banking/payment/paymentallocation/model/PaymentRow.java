@@ -22,7 +22,6 @@ package de.metas.banking.payment.paymentallocation.model;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -54,7 +53,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	private final BigDecimal payAmtConv;
 	private final BigDecimal openAmtConv;
 	private final BigDecimal multiplierAP;
-	
+
 	//
 	private boolean selected = false;
 	private BigDecimal discountAmt = BigDecimal.ZERO;
@@ -162,7 +161,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	public void setAppliedAmtAndUpdate(PaymentAllocationContext context, BigDecimal appliedAmt)
 	{
 		setAppliedAmt(appliedAmt);
-		
+
 		// NOTE: no other field needs to be updated
 	}
 
@@ -195,14 +194,14 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	{
 		return multiplierAP;
 	}
-	
+
 	@Override
 	public final boolean isCreditMemo()
 	{
 		// a payment is never a credit memo
 		return false;
 	}
-	
+
 	@Override
 	public IPaymentDocument copyAsPaymentDocument()
 	{
@@ -211,6 +210,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 				.setC_BPartner_ID(paymentRow.getC_BPartner_ID())
 				.setReference(org.compiere.model.I_C_Payment.Table_Name, paymentRow.getC_Payment_ID())
 				.setOpenAmt(paymentRow.getOpenAmtConv_APAdjusted())
+				.setIsSOTrx(paymentRow.isCustomerDocument())
 				.setAmountToAllocate(paymentRow.getAppliedAmt_APAdjusted())
 				.build();
 
@@ -225,26 +225,62 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	@Override
 	public void setDiscountAmt(BigDecimal discountAmt)
 	{
-		this.discountAmt = notNullOrZero(discountAmt);;
+		this.discountAmt = notNullOrZero(discountAmt);
+		;
 	}
-	
+
 	@Override
 	public void resetDiscountAmount()
 	{
 		setDiscountAmt(BigDecimal.ZERO);
 	}
-	
+
 	@Override
 	public void setDiscountManual(final PaymentAllocationContext context, BigDecimal discountAmt)
 	{
 		final BigDecimal openAmt = getOpenAmtConv();
 
 		// Discount amount shall not be bigger then open amount.
-		if (discountAmt.compareTo(openAmt) > 0)
+		// cusotmer documents - amounts are all the time positives
+		if (isCustomerDocument()  && (discountAmt.compareTo(openAmt) > 0))
 		{
 			discountAmt = openAmt;
 		}
-
+	
+		
+		 // vendor documents 
+		if (isVendorDocument())
+		{
+			// Regularly, open amounts shall be positives all the time and discount negatives
+			//discount shall be negative and maximum the negated open amount
+			// we allow also possible wrong case(but the result will not be wrong) in order to make possible for the user to correct payments
+			
+				// case: open amount positve and discount  pozitive and bigger then open amount
+			if ( (openAmt.signum() > 0 &&  discountAmt.signum()> 0 && (discountAmt.compareTo(openAmt) >= 0))
+					// case: open amount positive and discount negative  and bigger in absolute value then open amount
+				|| 	(openAmt.signum() > 0 &&  discountAmt.signum()< 0 && (discountAmt.abs().compareTo(openAmt) > 0))
+					// case: open amount negative and discount positive  and bigger in absolute value then open amount
+				|| 	(openAmt.signum() < 0 &&  discountAmt.signum()> 0 && (discountAmt.compareTo(openAmt.abs()) > 0))
+					// case: open amount negative and discount negative  and bigger in absolute value then open amount
+				|| (openAmt.signum() < 0 &&  discountAmt.signum()< 0 && (discountAmt.abs().compareTo(openAmt.abs()) >= 0))
+					)	
+			{
+				discountAmt = openAmt.negate();
+			}
+			
+			// case: open amount positive and discount positive  and lower in absolute value then open amount
+			if ( (openAmt.signum() > 0 &&  discountAmt.signum()> 0 && (discountAmt.compareTo(openAmt) < 0))
+					// case: open amount negative and discount negative  and lower in absolute value then open amount
+					||	(openAmt.signum() < 0 &&  discountAmt.signum()< 0 && (discountAmt.abs().compareTo(openAmt.abs()) < 0))
+				)
+			{
+				discountAmt = discountAmt.negate();
+			}
+			
+		}
+		
+		
+		
 		//
 		// Set the discount amount
 		setDiscountAmt(discountAmt);
@@ -254,15 +290,47 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		// Re-calculate the AppliedAmt as "Open amount" minus "discount amount"
 		setAppliedAmt_As_OpenAmt_Minus_DiscountAmt();
 	}
-	
+
 	private final void setAppliedAmt_As_OpenAmt_Minus_DiscountAmt()
 	{
 		final BigDecimal openAmt = getOpenAmtConv();
 		final BigDecimal discount = getDiscountAmt();
-		final BigDecimal appliedAmt = openAmt.subtract(discount);
+		final BigDecimal appliedAmt;
+
+		if (isCustomerDocument())
+		{
+			appliedAmt = openAmt.subtract(discount);
+		}
+		else
+		{
+			// discount allways should be negative, and open amount allways positive
+			// but we need to treat also other f**ked up cases
+			
+			// wrong case, with discount and open amount positive (user should not get in this case, but we treat it anyway) 
+			// => the result in this case will be that we increase open amount 
+			if (openAmt.signum() > 0 && discount.signum() > 0)
+			{
+				appliedAmt = openAmt.add(discount);
+			}
+			// regular case
+			else if (openAmt.signum() >= 0 && discount.signum() < 0)
+			{
+				appliedAmt = openAmt.subtract(discount.abs());
+			}
+			// wrong case(should not exist), with discount positive and open amount negative 
+			//=> the result in this case will be that we decrease negative open amount
+			
+			// wrong case, with discount negative and open amount negative 
+			//=> the result in this case will be that we increase negative open amount
+			else 
+			{
+				appliedAmt = openAmt.add(discount);
+			}
+
+		}
 		setAppliedAmt(appliedAmt);
 	}
-	
+
 	@Override
 	public void recalculateDiscountAmount(final PaymentAllocationContext context)
 	{
@@ -286,7 +354,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 			{
 				setDiscountAmt(BigDecimal.ZERO);
 			}
-			
+
 			setAppliedAmt_As_OpenAmt_Minus_DiscountAmt();
 		}
 	}

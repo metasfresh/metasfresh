@@ -221,15 +221,20 @@ public class M_PriceList_Create extends SvrProcess
 					DB.close(dl, Cur_DiscountLine);
 				}
 
+				// task 09458
+				// 1: don't delete *all* T_Selections! If anything, delete your own
+				// 2: don't delete *any* T_Selection, because that's a task for the generic housekeeping framework, and not for a particula business logic
+				// @formatter:off
 				//
 				// Delete Temporary Selection
 				//
-				sqldel = "DELETE FROM T_Selection ";
-				cntd = DB.executeUpdateEx(sqldel, get_TrxName());
-				if (cntd == -1)
-					raiseError(" DELETE	T_Selection ", sqldel);
-				totd += cntd;
-				log.fine("Deleted " + cntd);
+//				sqldel = "DELETE FROM T_Selection ";
+//				cntd = DB.executeUpdateEx(sqldel, get_TrxName());
+//				if (cntd == -1)
+//					raiseError(" DELETE	T_Selection ", sqldel);
+//				totd += cntd;
+//				log.fine("Deleted " + cntd);
+				// @formatter:on
 
 				//
 				// commit;

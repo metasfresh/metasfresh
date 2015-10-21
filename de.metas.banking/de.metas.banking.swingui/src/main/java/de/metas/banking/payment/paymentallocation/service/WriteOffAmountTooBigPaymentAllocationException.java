@@ -23,34 +23,21 @@ package de.metas.banking.payment.paymentallocation.service;
  */
 
 
-import java.math.BigDecimal;
 
-import org.adempiere.util.lang.ITableRecordReference;
-
-public interface IPaymentDocument
+public class WriteOffAmountTooBigPaymentAllocationException extends PaymentAllocationException
 {
-	int getC_BPartner_ID();
-
-	String getDocumentNo();
-
-	boolean isCustomerDocument();
-
-	boolean isVendorDocument();
-	
-	ITableRecordReference getReference();
-
-	BigDecimal getAmountToAllocateInitial();
-
-	BigDecimal getAmountToAllocate();
-
-	void addAllocatedAmt(BigDecimal allocatedAmtToAdd);
-
 	/**
-	 * @return true if everything that was requested to be allocated, was allocated
+	 * 
 	 */
-	boolean isFullyAllocated();
+	private static final long serialVersionUID = -5897693378851331510L;
 
-	BigDecimal calculateProjectedOverUnderAmt(final BigDecimal amountToAllocate);
+	public WriteOffAmountTooBigPaymentAllocationException(final String docNo)
+	{
+		super(buildMsg(docNo));
+	}
 
-	boolean canPay(IPayableDocument payable);
+	private static String buildMsg(final String docNo)
+	{
+		return "@PaymentAllocation.WriteOffAmountTooBig@ (" + docNo + ")";
+	}
 }

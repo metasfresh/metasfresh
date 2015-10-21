@@ -22,9 +22,10 @@ package de.metas.edi.process;
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,13 +37,14 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Queue_Block;
-import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
@@ -57,6 +59,14 @@ import de.metas.esb.edi.model.X_EDI_Desadv;
 public class EDI_Desadv_EnqueueForExport extends SvrProcess
 {
 	private static final String MSG_DESADV_PerformEnqueuing = "DESADV_PerformEnqueuing";
+	private static final String MSG_EDI_DESADV_RefuseSending = "EDI_DESADV_RefuseSending";
+
+	/**
+	 * Minimum Sum Percentage set in the sys config 'de.metas.esb.edi.DefaultMinimumPercentage'
+	 */
+	private final BigDecimal minimumSumPercentage = Services.get(IDesadvDAO.class).retrieveMinimumSumPercentage();
+
+	private final List<I_EDI_Desadv> desadvsToSkip = new ArrayList<I_EDI_Desadv>();
 
 	final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
@@ -76,7 +86,10 @@ public class EDI_Desadv_EnqueueForExport extends SvrProcess
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, EDIWorkpackageProcessor.class);
 
-		final I_C_Queue_Block block = queue.enqueueBlock(ctx);
+		// final I_C_Queue_Block block = queue.enqueueBlock(ctx);
+		final IWorkPackageBlockBuilder builder = queue.newBlock()
+				.setAD_PInstance_Creator_ID(getAD_PInstance_ID())
+				.setContext(getCtx());
 
 		// Enqueue selected desadvs as workpackages
 		final Iterator<I_EDI_Desadv> desadvs = createIterator();
@@ -90,25 +103,64 @@ public class EDI_Desadv_EnqueueForExport extends SvrProcess
 					@Override
 					public void process(final I_EDI_Desadv desadv) throws Exception
 					{
-						// note: in here, the desadv has the item processor's trxName (as of this task)
-						enqueueDesadv0(queue, block, desadv);
+						// make sure the desadvs that don't meet the sum percentage requirement won't get enqueued
+						final BigDecimal currentSumPercentage = desadv.getEDI_DESADV_SumPercentage();
+						if (currentSumPercentage.compareTo(minimumSumPercentage) < 0)
+						{
+							desadvsToSkip.add(desadv);
+						}
+						else
+						{
+							// note: in here, the desadv has the item processor's trxName (as of this task)
+							enqueueDesadv0(builder, desadv);
+						}
 					}
 				})
 				.process(desadvs);
 
-		return "OK";
+		builder.build(); // in case every single desadv was skipped, store our empty block now, just for reference and suppord.
+
+		// display the desadvs that didn't meet the sum percentage requirement
+		if (!desadvsToSkip.isEmpty())
+		{
+			logSkippedLines();
+		}
+
+		return "Success";
+	}
+
+	private void logSkippedLines()
+	{
+
+		final StringBuilder skippedDesadvsString = new StringBuilder();
+
+		for (final I_EDI_Desadv desadv : desadvsToSkip)
+		{
+			skippedDesadvsString.append("#")
+					.append(desadv.getDocumentNo())
+					.append(" - ")
+					.append(desadv.getEDI_DESADV_SumPercentage())
+					.append("\n");
+		}
+
+		// log a message that includes all the skipped lines'documentNo and percentage
+		final String logMessage = Services.get(IMsgBL.class).getMsg(getCtx(),
+				MSG_EDI_DESADV_RefuseSending,
+				new Object[] { minimumSumPercentage, skippedDesadvsString.toString() });
+
+		addLog(logMessage);
 	}
 
 	private void enqueueDesadv0(
-			final IWorkPackageQueue queue,
-			final I_C_Queue_Block block,
+			final IWorkPackageBlockBuilder builder,
 			final I_EDI_Desadv desadv)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(desadv);
 
-		final I_C_Queue_WorkPackage workpackage = queue.enqueueWorkPackage(block, IWorkPackageQueue.PRIORITY_AUTO);
-		queue.enqueueElement(workpackage, desadv);
-		queue.markReadyForProcessingAfterTrxCommit(workpackage, trxName);
+		builder.newWorkpackage()
+				.bindToTrxName(trxName)
+				.addElement(desadv)
+				.build();
 
 		desadv.setEDI_ExportStatus(X_EDI_Desadv.EDI_EXPORTSTATUS_Enqueued);
 		InterfaceWrapperHelper.save(desadv);
@@ -159,6 +211,7 @@ public class EDI_Desadv_EnqueueForExport extends SvrProcess
 		{
 			throw new ProcessCanceledException();
 		}
+
 	}
 
 	private Iterator<I_EDI_Desadv> createIterator()

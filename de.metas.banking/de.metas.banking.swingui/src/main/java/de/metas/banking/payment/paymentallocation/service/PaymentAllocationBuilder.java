@@ -269,6 +269,10 @@ public class PaymentAllocationBuilder
 			throw new NoDocumentsPaymentAllocationException();
 		}
 
+		//
+		// Make sure that we allow allocation one document per type for vendor documents
+		assertOnlyOneVendorDocType(payableDocuments, paymentDocuments);
+		
 		final List<AllocationLineCandidate> allocationCandidates = new ArrayList<>();
 
 		//
@@ -291,6 +295,63 @@ public class PaymentAllocationBuilder
 		return allocationCandidates;
 	}
 
+	/***
+	 * Do not allow to allocate more then one document type for vendor documents
+	 * 
+	 * @param payableDocuments
+	 * @param paymentDocuments
+	 */
+	private void assertOnlyOneVendorDocType(final List<IPayableDocument> payableDocuments, final List<IPaymentDocument> paymentDocuments)
+	{
+		// filter payments
+		final List<IPaymentDocument> paymentVendorDocuments = ListUtils.copyAndFilter(paymentDocuments, new Predicate<IPaymentDocument>()
+		{
+			@Override
+			public boolean apply(IPaymentDocument paymentDoc)
+			{
+				if (!paymentDoc.isVendorDocument())
+				{
+					return false;
+				}
+
+				return true;
+			}
+		});
+
+		if (paymentVendorDocuments.size() > 1)
+		{
+			throw new PaymentDocumentNotAllocatedException(paymentVendorDocuments);
+		}
+
+		//
+		// filter invoices and credit memos
+		final List<IPaymentDocument> paymentVendorDocuments_CreditMemos = new ArrayList<>();
+		final List<IPayableDocument> payableVendorDocuments_NoCreditMemos = ListUtils.copyAndFilter(payableDocuments, new Predicate<IPayableDocument>()
+		{
+			@Override
+			public boolean apply(IPayableDocument payable)
+			{
+				if (payable.isCreditMemo() && payable.isVendorDocument())
+				{
+					paymentVendorDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
+					return false;
+				}
+				
+				if (!payable.isVendorDocument())
+				{
+					return false;
+				}
+
+				return true;
+			}
+		});
+
+		if (payableVendorDocuments_NoCreditMemos.size() > 1 || paymentVendorDocuments_CreditMemos.size() > 1)
+		{
+			throw new PayableDocumentNotAllocatedException(payableDocuments);
+		}
+	}
+	
 	/**
 	 * Allocate given payments to given payable documents.
 	 * 

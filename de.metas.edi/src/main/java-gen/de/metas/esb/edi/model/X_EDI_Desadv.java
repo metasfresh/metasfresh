@@ -17,8 +17,10 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.esb.edi.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import org.compiere.util.Env;
 
 /** Generated Model for EDI_Desadv
  *  @author Adempiere (generated) 
@@ -30,7 +32,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1397352628L;
+	private static final long serialVersionUID = -2143092490L;
 
     /** Standard Constructor */
     public X_EDI_Desadv (Properties ctx, int EDI_Desadv_ID, String trxName)
@@ -267,6 +269,44 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Geliefert % Minimum.
+		@param EDI_DESADV_MinimumSumPercentage Geliefert % Minimum	  */
+	@Override
+	public void setEDI_DESADV_MinimumSumPercentage (java.math.BigDecimal EDI_DESADV_MinimumSumPercentage)
+	{
+		set_Value (COLUMNNAME_EDI_DESADV_MinimumSumPercentage, EDI_DESADV_MinimumSumPercentage);
+	}
+
+	/** Get Geliefert % Minimum.
+		@return Geliefert % Minimum	  */
+	@Override
+	public java.math.BigDecimal getEDI_DESADV_MinimumSumPercentage () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EDI_DESADV_MinimumSumPercentage);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Geliefert %.
+		@param EDI_DESADV_SumPercentage Geliefert %	  */
+	@Override
+	public void setEDI_DESADV_SumPercentage (java.math.BigDecimal EDI_DESADV_SumPercentage)
+	{
+		set_Value (COLUMNNAME_EDI_DESADV_SumPercentage, EDI_DESADV_SumPercentage);
+	}
+
+	/** Get Geliefert %.
+		@return Geliefert %	  */
+	@Override
+	public java.math.BigDecimal getEDI_DESADV_SumPercentage () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EDI_DESADV_SumPercentage);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set EDI Fehlermeldung.

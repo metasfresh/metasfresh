@@ -22,7 +22,7 @@ package de.metas.edi.api;
  * #L%
  */
 
-
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.model.IContextAware;
@@ -134,5 +134,12 @@ public interface IDesadvDAO extends ISingletonService
 	int retrieveDesadvLineSSCCsCount(I_EDI_DesadvLine desadvLine);
 
 	I_M_ShipmentSchedule retrieveM_ShipmentScheduleOrNull(I_EDI_DesadvLine desadvLine);
+
+	/**
+	 * Get the value of the minimum sum percentage from the sysconfig 'de.metas.esb.edi.DefaultMinimumPercentage'
+	 * 
+	 * @return
+	 */
+	BigDecimal retrieveMinimumSumPercentage();
 
 }

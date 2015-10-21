@@ -103,4 +103,11 @@ public interface IDesadvBL extends ISingletonService
 	 * @task 08910
 	 */
 	void printSSCC18_Labels(Properties ctx, Collection<Integer> desadvLineSSCC_IDs_ToPrint);
+
+	/**
+	 * Set the current minimum sum percentage taken from the sys config 'de.metas.esb.edi.DefaultMinimumPercentage'
+	 * 
+	 * @param desadv
+	 */
+	void setMinimumPercentage(I_EDI_Desadv desadv);
 }

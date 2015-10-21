@@ -32,7 +32,7 @@ public interface I_EDI_Desadv
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -302,6 +302,52 @@ public interface I_EDI_Desadv
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_Desadv_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDI_Desadv_ID", null);
     /** Column name EDI_Desadv_ID */
     public static final String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
+
+	/**
+	 * Set Geliefert % Minimum.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEDI_DESADV_MinimumSumPercentage (java.math.BigDecimal EDI_DESADV_MinimumSumPercentage);
+
+	/**
+	 * Get Geliefert % Minimum.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getEDI_DESADV_MinimumSumPercentage();
+
+    /** Column definition for EDI_DESADV_MinimumSumPercentage */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_DESADV_MinimumSumPercentage = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDI_DESADV_MinimumSumPercentage", null);
+    /** Column name EDI_DESADV_MinimumSumPercentage */
+    public static final String COLUMNNAME_EDI_DESADV_MinimumSumPercentage = "EDI_DESADV_MinimumSumPercentage";
+
+	/**
+	 * Set Geliefert %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEDI_DESADV_SumPercentage (java.math.BigDecimal EDI_DESADV_SumPercentage);
+
+	/**
+	 * Get Geliefert %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getEDI_DESADV_SumPercentage();
+
+    /** Column definition for EDI_DESADV_SumPercentage */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_DESADV_SumPercentage = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDI_DESADV_SumPercentage", null);
+    /** Column name EDI_DESADV_SumPercentage */
+    public static final String COLUMNNAME_EDI_DESADV_SumPercentage = "EDI_DESADV_SumPercentage";
 
 	/**
 	 * Set EDI Fehlermeldung.

@@ -244,7 +244,7 @@ public class Doc_AllocationHdr extends Doc
 				{
 					// metas: change:
 //				
-					if (line.getPaymentWriteOffAmt().signum() > 0)
+					if (line.getPaymentWriteOffAmt().signum() != 0)
 					{
 						
 						if (payment.isReceipt())
@@ -269,7 +269,7 @@ public class Doc_AllocationHdr extends Doc
 						}
 						else
 						{
-							final MAccount acct_paymentSelect = getAccount(Doc.ACCTTYPE_PaymentSelect, as);
+							final MAccount acct_paymentSelect =  getPaymentAcct(as, line.getC_Payment_ID());
 							final MAccount acct_revenue = getAccount(Doc.ACCTTYPE_DiscountRev, as);
 
 							fl = fact.createLine(line, acct_revenue, getC_Currency_ID(), null, line.getPaymentWriteOffAmt().negate());

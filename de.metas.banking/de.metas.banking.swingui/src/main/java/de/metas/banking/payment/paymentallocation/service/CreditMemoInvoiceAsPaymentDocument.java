@@ -127,4 +127,16 @@ public class CreditMemoInvoiceAsPaymentDocument implements IPaymentDocument
 
 		return true;
 	}
+
+	@Override
+	public boolean isCustomerDocument()
+	{
+		return creditMemoPayableDoc.isCustomerDocument();
+	}
+
+	@Override
+	public boolean isVendorDocument()
+	{
+		return creditMemoPayableDoc.isVendorDocument();
+	}
 }

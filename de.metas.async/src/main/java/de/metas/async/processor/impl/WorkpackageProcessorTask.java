@@ -22,7 +22,6 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-
 import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -190,10 +189,11 @@ import de.metas.lock.exceptions.LockFailedException;
 	}
 
 	/**
-	 * Method called before we actually start to process the workpackage, but after the transaction is created
+	 * Method called before we actually start to process the workpackage, but after the transaction is created.
 	 */
 	private final void beforeWorkpackageProcessing()
 	{
+		// If the current workpackage's processor creates a follow-up-workpackage, the asyncBatch and priority will be forwarded.
 		final I_C_Async_Batch asyncBatch = workPackage.getC_Async_Batch();
 		contextFactory.setThreadInheritedAsyncBatch(asyncBatch);
 

@@ -22,7 +22,6 @@ package de.metas.edi.model.validator;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -32,6 +31,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.ModelValidator;
 
+import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_EDI_Document;
@@ -111,5 +111,13 @@ public class EDI_Desadv
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final String errorMsgTrl = msgBL.parseTranslation(InterfaceWrapperHelper.getCtx(desadv), desadv.getEDIErrorMsg());
 		desadv.setEDIErrorMsg(errorMsgTrl);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void setMinimumSumPercentage(final I_EDI_Desadv desadv)
+	{
+		// set the minimum sum percentage on each new desadv.
+		// Even if the percentage will be changed via sys config, for this desadv it won't change
+		Services.get(IDesadvBL.class).setMinimumPercentage(desadv);
 	}
 }

@@ -112,6 +112,7 @@ import de.metas.banking.payment.paymentallocation.service.IPayableDocument;
 import de.metas.banking.payment.paymentallocation.service.IPaymentDocument;
 import de.metas.banking.payment.paymentallocation.service.Inbound2OutboundPaymentAllocationBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
+import de.metas.banking.payment.paymentallocation.service.WriteOffAmountTooBigPaymentAllocationException;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.model.I_C_Payment_Request;
@@ -200,6 +201,7 @@ public class PaymentAllocationForm
 	private final JButton writeOffPaymentButton = new JButton();
 	private final JXTable paymentTable = AnnotatedTableFactory.newInstance().create();
 	private final JXTable invoiceTable = AnnotatedTableFactory.newInstance().create();
+	
 	// controlPanel
 	private GridField addForeignInvoice = null;
 	private GridField addForeignPayment = null;
@@ -711,6 +713,11 @@ public class PaymentAllocationForm
 			{
 				final I_C_Payment payment = InterfaceWrapperHelper.create(getCtx(), row.getC_Payment_ID(), I_C_Payment.class, ITrx.TRXNAME_ThreadInherited);
 				final BigDecimal amtToWriteOff = row.getDiscountAmt();
+				final BigDecimal openAmt = row.getOpenAmtConv();
+				if (amtToWriteOff.abs().compareTo(openAmt.abs()) > 0)
+				{
+					throw new WriteOffAmountTooBigPaymentAllocationException(row.getDocumentNo());
+				}
 				final Date allocDateTrx = getDate();
 				paymentBL.paymentWriteOff(payment, amtToWriteOff, allocDateTrx);
 			}

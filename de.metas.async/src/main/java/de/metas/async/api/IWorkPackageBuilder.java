@@ -22,7 +22,6 @@ package de.metas.async.api;
  * #L%
  */
 
-
 import java.util.concurrent.Future;
 
 import org.adempiere.util.lang.ITableRecordReference;
@@ -36,7 +35,10 @@ import de.metas.lock.api.ILockCommand;
 public interface IWorkPackageBuilder
 {
 	/**
-	 * Creates the workpackage and marks it as ready for processing.
+	 * Creates the workpackage and marks it as ready for processing (but also see {@link #bindToTrxName(String)}).
+	 * <p>
+	 * Is this builder's parent ({@link IWorkPackageBlockBuilder}) was not yet created/stored in the DB, this method will do it on the fly.
+	 * <p>
 	 * If a locker was specified (see {@link #setElementsLocker(ILockCommand)}) all elements will be locked.
 	 */
 	I_C_Queue_WorkPackage build();

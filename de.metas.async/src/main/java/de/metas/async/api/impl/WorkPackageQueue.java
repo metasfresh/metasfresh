@@ -56,7 +56,6 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.processor.IMutableQueueProcessorStatistics;
 import de.metas.async.processor.IQueueProcessorEventDispatcher;
 import de.metas.async.processor.IQueueProcessorFactory;
@@ -414,12 +413,13 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public I_C_Queue_WorkPackage enqueueWorkPackage(final I_C_Queue_Block block, final IWorkpackagePrioStrategy priority)
+	public I_C_Queue_WorkPackage enqueueWorkPackage(final I_C_Queue_Block block,
+			final IWorkpackagePrioStrategy priority)
 	{
 		// TODO: please really consider to move this method somewhere inside de.metas.async.api.impl.WorkPackageBuilder.build()
 		
 		Check.assume(block != null, "block not null");
-		Check.assume(priority != null, "priority not null. Use {0} to indicate 'no priority'", NullWorkpackagePrio.class);
+		Check.assume(priority != null, "Param 'priority' not null. Use {0} to indicate 'no specific priority'", NullWorkpackagePrio.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(block);
 		final String trxName = InterfaceWrapperHelper.getTrxName(block);
@@ -438,13 +438,13 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		if (priority == NullWorkpackagePrio.INSTANCE)
 		{
-			// Priority - get it from context if available : task 06283
-			final String priorityDefault = getPriorityForNewWorkpackage();
+			final String priorityDefault = getPriorityForNewWorkpackage(PRIORITY_AUTO);
 			workPackage.setPriority(priorityDefault);
 		}
 		else
 		{
-			workPackage.setPriority(priority.getPrioriy(this));
+			final String priorityStr = getPriorityForNewWorkpackage(priority);
+			workPackage.setPriority(priorityStr);
 		}
 
 		//
@@ -761,11 +761,12 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	/**
-	 * Gets default priority to be used for new workpackages.
-	 * 
+	 * Gets the priority to be used for new workpackages.<br>
+	 * If there is a thread inherited priority available, then that one is returned (task 06283). Otherwise, the given <code>defaultPrio</code> is returned.
+	 *
 	 * @return default priority; never returns null
 	 */
-	private String getPriorityForNewWorkpackage()
+	private String getPriorityForNewWorkpackage(final IWorkpackagePrioStrategy defaultPrio)
 	{
 
 		//
@@ -777,8 +778,8 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 
 		//
-		// No priority set => return default priority
-		return X_C_Queue_WorkPackage.PRIORITY_Medium;
+		// No priority set => return automatic priority
+		return defaultPrio.getPrioriy(this);
 	}
 
 	@Override

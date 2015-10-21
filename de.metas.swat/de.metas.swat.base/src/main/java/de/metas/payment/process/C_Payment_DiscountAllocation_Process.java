@@ -48,6 +48,9 @@ import org.compiere.util.TrxRunnableAdapter;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 
+/**
+ * task 09373
+ */
 public class C_Payment_DiscountAllocation_Process extends SvrProcess
 {
 	public static final String MSG_AllocationCreated = "MSG_AllocationCreated";
@@ -118,6 +121,12 @@ public class C_Payment_DiscountAllocation_Process extends SvrProcess
 
 		// Skip this payment if the open amount is above given limit 
 		if (paymentOpenAmt.abs().compareTo(p_OpenAmt.abs()) > 0)
+		{
+			counterSkipped.incrementAndGet();
+			return;
+		}
+		// also skip the payment if there is nothing allocated yet! We only want to complete *partial* allocations
+		if(paymentDAO.getAllocatedAmt(payment).signum()==0)
 		{
 			counterSkipped.incrementAndGet();
 			return;

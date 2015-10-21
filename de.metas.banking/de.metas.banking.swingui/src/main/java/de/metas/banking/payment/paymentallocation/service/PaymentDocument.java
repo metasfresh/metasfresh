@@ -55,6 +55,7 @@ public class PaymentDocument implements IPaymentDocument
 	private final int bpartnerId;
 	private final String documentNo;
 	private final ITableRecordReference reference;
+	private final boolean isSOTrx;
 	private final Set<PayableDocumentType> allowedPayableDocumentType;
 	//
 	private final BigDecimal openAmtInitial;
@@ -69,6 +70,7 @@ public class PaymentDocument implements IPaymentDocument
 		bpartnerId = builder.getC_BPartner_ID();
 		documentNo = builder.getDocumentNo();
 		reference = builder.getReference();
+		isSOTrx = builder.isSOTrx;
 		allowedPayableDocumentType = builder.getAllowedPayableDocumentType();
 
 		//
@@ -148,6 +150,7 @@ public class PaymentDocument implements IPaymentDocument
 		private int bpartnerId;
 		private String documentNo;
 		private ITableRecordReference reference;
+		private boolean isSOTrx;
 
 		public static final Set<PayableDocumentType> AllowedPayableDocumentTypes_ALL = Sets.immutableEnumSet(EnumSet.allOf(PayableDocumentType.class));
 		private Set<PayableDocumentType> allowedPayableDocumentType = AllowedPayableDocumentTypes_ALL;
@@ -165,6 +168,12 @@ public class PaymentDocument implements IPaymentDocument
 			return new PaymentDocument(this);
 		}
 
+		public Builder setIsSOTrx(boolean isSOTrx)
+		{
+			this.isSOTrx = isSOTrx;
+			return this;
+		}
+		
 		public Builder setC_BPartner_ID(final int bpartnerId)
 		{
 			this.bpartnerId = bpartnerId;
@@ -261,5 +270,17 @@ public class PaymentDocument implements IPaymentDocument
 	public boolean canPay(final IPayableDocument payable)
 	{
 		return allowedPayableDocumentType.contains(payable.getType());
+	}
+
+	@Override
+	public boolean isCustomerDocument()
+	{
+		return isSOTrx;
+	}
+
+	@Override
+	public boolean isVendorDocument()
+	{
+		return !isSOTrx;
 	}
 }

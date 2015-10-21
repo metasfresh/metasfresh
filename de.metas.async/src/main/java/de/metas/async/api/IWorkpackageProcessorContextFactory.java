@@ -22,7 +22,6 @@ package de.metas.async.api;
  * #L%
  */
 
-
 import org.adempiere.util.ISingletonService;
 
 import de.metas.async.model.I_C_Async_Batch;
@@ -59,7 +58,8 @@ public interface IWorkpackageProcessorContextFactory extends ISingletonService
 	String getThreadInheritedPriority();
 
 	/**
-	 * Associate the given <code>priority</code> with the current thread
+	 * Associate the given <code>priority</code> with the current thread. Method is called before a workpackage is processed. If the WP-processor itself creawtes a follow-up workpackage, then the
+	 * framework will assign this priority to the new workpackage, so that the follow-up package inherit the original package's priority.
 	 * 
 	 * @param priority
 	 */

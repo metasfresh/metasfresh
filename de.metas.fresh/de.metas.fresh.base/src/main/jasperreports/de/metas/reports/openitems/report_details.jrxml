@@ -2,8 +2,8 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="2.662000000000016"/>
-	<property name="ireport.x" value="929"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="224"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -59,10 +59,10 @@ FROM
 		COALESCE( Round( i.GrandTotal * p.Discount / 100::numeric, 2 ), ips.DiscountAmt ) AS DiscountAmt,
 		COALESCE( ips.DueAmt, i.GrandTotal ) AS GrandTotal,
 		COALESCE(
-			InvoicePaid( i.C_Invoice_ID, i.C_Currency_ID, i.multiplierAP ),
-			COALESCE( ips.DueAmt, i.GrandTotal ) - InvoiceOpen( i.C_Invoice_ID, COALESCE ( ips.C_InvoicePaySchedule_ID, 0::numeric ) )
+			invoicepaidtodate(i.C_Invoice_ID, i.C_Currency_ID, i.multiplierAP, $P{Reference_Date}),
+			COALESCE( ips.DueAmt, i.GrandTotal ) - invoiceopentodate( i.C_Invoice_ID, COALESCE ( ips.C_InvoicePaySchedule_ID, 0::numeric ), $P{Reference_Date} )
 		) AS PaidAmt,
-		InvoiceOpen ( i.C_Invoice_ID, COALESCE ( ips.C_InvoicePaySchedule_ID, 0::numeric ) ) AS OpenAmt,
+		invoiceopentodate ( i.C_Invoice_ID, COALESCE ( ips.C_InvoicePaySchedule_ID, 0::numeric ), $P{Reference_Date} ) AS OpenAmt,
 		i.InvoiceCollectionType,
 		i.C_Currency_ID
 	FROM
@@ -70,7 +70,7 @@ FROM
 		LEFT OUTER JOIN C_PaymentTerm p ON i.C_PaymentTerm_ID = p.C_PaymentTerm_ID
 		LEFT OUTER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID AND ips.isvalid = 'Y'
 	WHERE
-		InvoiceOpen( i.C_Invoice_ID, COALESCE( ips.C_InvoicePaySchedule_ID, 0::numeric ) ) <> 0::numeric
+		invoiceopentodate( i.C_Invoice_ID, COALESCE( ips.C_InvoicePaySchedule_ID, 0::numeric ), $P{Reference_Date}  ) <> 0::numeric
 		AND i.DocStatus NOT IN ('DR','VO','RE')
 	ORDER BY
 		 i.DocumentNo
@@ -83,14 +83,14 @@ WHERE
 	oi.AD_Org_ID = (CASE WHEN $P{AD_Org_ID} IS NULL THEN oi.AD_Org_ID ELSE $P{AD_Org_ID} END)
 	AND oi.IsSOTrx = (CASE WHEN $P{IsSOTrx} IS NULL THEN oi.IsSOTrx ELSE $P{IsSOTrx} END)
 	AND oi.C_BPartner_ID = (CASE WHEN $P{C_BPartner_ID} IS NULL THEN oi.C_BPartner_ID ELSE $P{C_BPartner_ID} END)
-	AND oi.daysdue >= $P{DaysDue}
+	AND ($P{DaysDue} IS NULL OR $P{DaysDue} <= 0 OR oi.daysdue >= $P{DaysDue})
 	AND COALESCE( oi.InvoiceCollectionType, '') =
 		(CASE WHEN COALESCE($P{InvoiceCollectionType}, '') = '' THEN COALESCE( oi.InvoiceCollectionType, '' ) ELSE $P{InvoiceCollectionType} END)
 	AND (
 		oi.DateInvoiced >= ( CASE WHEN $P{StartDate}::date IS NULL THEN oi.DateInvoiced ELSE $P{StartDate}::date END )
 		AND oi.DateInvoiced <= ( CASE WHEN $P{EndDate}::date IS NULL THEN oi.DateInvoiced ELSE $P{EndDate}::date END )
 	)
-	-- TASK 08394: If Flag is not set, only display invoices that are not part of a processed PaySelection
+	-- 08394: If Flag is not set, only display invoices that are not part of a processed PaySelection
 	AND ( $P{PassForPayment} = 'Y' OR NOT oi.PassForPayment )
 ORDER BY
 	c.iso_code,
