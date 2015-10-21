@@ -375,7 +375,7 @@ SQL and jasper dependencies
 									<type>zip</type>
 									<destFileName>metas-fresh-client.zip</destFileName>
 								</artifactItem>
-								<!-- currently the exe client doesn't work well
+								<!-- currently we don't have a standalone exe distributable; the exe is within the zip file
 								<artifactItem>
 									<groupId>de.metas.endcustomer.mf15</groupId>
 									<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>

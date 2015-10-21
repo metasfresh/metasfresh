@@ -63,14 +63,14 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- the skinny war ofde.metas.report.jasper.server, only including the classes that were inside the project itself -->
+		<!-- the skinny war of de.metas.report.jasper.server, only including the classes that were inside the project itself -->
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.war</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
-		<!-- required, because dde.metas.report.jasper.server.base is a skinny war -->
+		<!-- required, because de.metas.report.jasper.server.base is a skinny war -->
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
