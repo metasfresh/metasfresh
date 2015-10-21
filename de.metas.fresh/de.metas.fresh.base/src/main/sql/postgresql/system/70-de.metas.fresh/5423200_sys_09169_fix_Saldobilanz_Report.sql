@@ -93,7 +93,7 @@ ORDER BY
 
 DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying);
 
-DROP TABLE IF EXISTS report.saldobilanz_Report;
+DROP TABLE IF EXISTS report.saldobilanz_Report CASCADE;
 
 CREATE TABLE report.saldobilanz_Report
 (
