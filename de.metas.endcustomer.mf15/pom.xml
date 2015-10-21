@@ -7,8 +7,8 @@
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
 		<version>1.0_IT-SNAPSHOT</version>
-	<relativePath>../de.metas.parent/pom.xml</relativePath>
-</parent>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
 
 	<groupId>de.metas.endcustomer.mf15</groupId>
 	<artifactId>de.metas.endcustomer.mf15</artifactId>
