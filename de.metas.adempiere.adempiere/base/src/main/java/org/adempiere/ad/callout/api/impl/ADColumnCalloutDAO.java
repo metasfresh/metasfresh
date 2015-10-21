@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -74,7 +75,8 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 
 			//
 			// If EntityType is not displayed, skip this callout
-			if (!EntityTypesCache.instance.isDisplayedInUI(callout.getEntityType()))
+			final String entityType = callout.getEntityType();
+			if (!Check.isEmpty(entityType, true) && !EntityTypesCache.instance.isDisplayedInUI(entityType))
 			{
 				continue;
 			}

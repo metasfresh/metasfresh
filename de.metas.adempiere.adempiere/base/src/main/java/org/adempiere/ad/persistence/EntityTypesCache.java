@@ -173,7 +173,7 @@ public class EntityTypesCache implements IEntityTypesCache
 
 	private EntityTypeEntry getEntityTypeEntryOrNull(final String entityType)
 	{
-		Check.assumeNotEmpty(entityType, "entityType not empty");
+		Check.assumeNotEmpty(entityType, "entityType not empty"); // fail because in most of the cases is a development error
 
 		loadIfNeeded();
 
@@ -219,12 +219,6 @@ public class EntityTypesCache implements IEntityTypesCache
 	@Override
 	public boolean isDisplayedInUI(final String entityType)
 	{
-		// guard against null (return false, don't fail)
-		if (entityType == null)
-		{
-			return false;
-		}
-
 		final EntityTypeEntry entry = getEntityTypeEntryOrNull(entityType);
 		if (entry == null)
 		{

@@ -159,7 +159,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			//
 			// If EntityType is not displayed, hide this tab
 			vo.entityType = rs.getString("EntityType");
-			if (!EntityTypesCache.instance.isDisplayedInUI(vo.entityType))
+			if (!Check.isEmpty(vo.entityType, true) && !EntityTypesCache.instance.isDisplayedInUI(vo.entityType))
 			{
 				vo.addLoadErrorMessage("EntityType not displayed");
 				return false;
