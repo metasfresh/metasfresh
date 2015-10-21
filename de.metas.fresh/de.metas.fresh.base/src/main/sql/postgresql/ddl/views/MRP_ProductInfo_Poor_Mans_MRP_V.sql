@@ -44,8 +44,8 @@ SELECT *
 FROM PP_Product_Bom_Recursive
 WHERE true 
 --	AND b_M_Product_ID=2000070 -- AB Apero Gemüse mit Sauce 350g
---	AND bl_p_M_Product_ID=2000816 -- P001678_Karotten Stäbli Halbfabrikat
---	AND bl_p_M_Product_ID=2001416 -- P000367 Karotten gross gewaschen
+--	AND bl_p_M_Product_ID=2000816 -- Stäbli Halbfabrikat
+--	AND bl_p_M_Product_ID=2001416 -- Karotten gross gewaschen
 ;
 COMMENT ON VIEW "de.metas.fresh".MRP_ProductInfo_Poor_Mans_MRP_V IS 'task 08682: first attempt to use recursive SQL. The goal is to find the raw materials for end products.
 For an endproduct (b_M_Product_ID) the view selects its raw materials, and a factor (Factor_Recursive).
