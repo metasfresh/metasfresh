@@ -66,7 +66,6 @@ public class VPackaging extends Packing implements FormPanel
 
 		try
 		{
-			super.dynInit();
 			dynInit();
 		}
 		catch (Exception ex)
