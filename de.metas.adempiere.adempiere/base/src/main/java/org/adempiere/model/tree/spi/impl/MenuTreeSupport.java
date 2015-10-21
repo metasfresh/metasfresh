@@ -25,9 +25,10 @@ package org.adempiere.model.tree.spi.impl;
  * #L%
  */
 
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.security.IRoleDAO;
@@ -51,21 +52,21 @@ import de.metas.adempiere.model.I_AD_Role;
 public class MenuTreeSupport extends DefaultPOTreeSupport
 {
 	@Override
-	public String getNodeInfoSelectSQL(final MTree tree)
+	public String getNodeInfoSelectSQL(final MTree tree, final List<Object> sqlParams)
 	{
 		final Properties ctx = tree.getCtx();
-		final boolean m_clientTree = tree.isClientTree();
-		
+
 		final StringBuilder sqlDeveloperMode = new StringBuilder();
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
-			sqlDeveloperMode.append("\n, (select min(t.TableName) from AD_Tab tt inner join AD_Table t on (t.AD_Table_ID=tt.AD_Table_ID) where tt.AD_Window_ID=AD_Menu.AD_Window_ID and tt.SeqNo=10 and tt.IsActive='Y') as AD_Window_TableName");
+			sqlDeveloperMode
+					.append("\n, (select min(t.TableName) from AD_Tab tt inner join AD_Table t on (t.AD_Table_ID=tt.AD_Table_ID) where tt.AD_Window_ID=AD_Menu.AD_Window_ID and tt.SeqNo=10 and tt.IsActive='Y') as AD_Window_TableName");
 			sqlDeveloperMode.append("\n, (select process.Classname from AD_Process process where process.AD_Process_ID=AD_Menu.AD_Process_ID) as AD_Process_ClassName");
 			sqlDeveloperMode.append("\n, (select form.Classname from AD_Form form where form.AD_Form_ID=AD_Menu.AD_Form_ID) as AD_Form_ClassName");
 			sqlDeveloperMode.append("\n");
 		}
 
-		final StringBuffer sql = new StringBuffer();
+		final StringBuilder sql = new StringBuilder();
 		final boolean base = Env.isBaseLanguage(ctx, "AD_Menu");
 		if (base)
 		{
@@ -88,42 +89,69 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		sql.append(" WHERE 1=1 ");
 		if (!base)
 		{
-			sql.append(" AND AD_Menu.AD_Menu_ID=t.AD_Menu_ID AND t.AD_Language=").append(DB.TO_STRING(Env.getAD_Language(ctx)));
+			sql.append("\n AND AD_Menu.AD_Menu_ID=t.AD_Menu_ID AND t.AD_Language=").append(DB.TO_STRING(Env.getAD_Language(ctx)));
 		}
 		if (!tree.isEditable())
 		{
-			sql.append(" AND AD_Menu.IsActive='Y' ");
+			sql.append("\n AND AD_Menu.IsActive='Y' ");
 		}
 
+		//
+		// Per element (Window, Process etc) where clauses
+		final StringBuilder windowSql = new StringBuilder("1=1");
+		final List<Object> windowSqlParams = new ArrayList<>();
+		final StringBuilder processSql = new StringBuilder("1=1");
+		final List<Object> processSqlParams = new ArrayList<>();
+		final StringBuilder workflowSql = new StringBuilder("1=1");
+		final List<Object> workflowSqlParams = new ArrayList<>();
+		final StringBuilder formSql = new StringBuilder("1=1");
+		final List<Object> formSqlParams = new ArrayList<>();
+		final StringBuilder taskSql = new StringBuilder("1=1");
+		final List<Object> taskSqlParams = new ArrayList<>();
+
+		//
 		// Do not show Beta
 		final IClientDAO clientDAO = Services.get(IClientDAO.class);
 		final I_AD_Role role = Services.get(IRoleDAO.class).retrieveRole(ctx);
-		final boolean useBetaFunctions =
-				clientDAO.retriveClient(ctx).isUseBetaFunctions() || role.isRoleAlwaysUseBetaFunctions();
+		final boolean useBetaFunctions = clientDAO.retriveClient(ctx).isUseBetaFunctions() || role.isRoleAlwaysUseBetaFunctions();
 		if (!useBetaFunctions)
 		{
-			// task 09088: the client doesn't "want" to use beta functions and the role doesn't override this,
-			// so we filter out features that are not marked as beta
-			sql.append(" AND ");
-			sql.append(" (AD_Menu.AD_Window_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Window w WHERE AD_Menu.AD_Window_ID=w.AD_Window_ID AND w.IsBetaFunctionality='N'))")
-			.append(" AND (AD_Menu.AD_Process_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Process p WHERE AD_Menu.AD_Process_ID=p.AD_Process_ID AND p.IsBetaFunctionality='N'))")
-			.append(" AND (AD_Menu.AD_Workflow_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Workflow wf WHERE AD_Menu.AD_Workflow_ID=wf.AD_Workflow_ID AND wf.IsBetaFunctionality='N'))")
-			.append(" AND (AD_Menu.AD_Form_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Form f WHERE AD_Menu.AD_Form_ID=f.AD_Form_ID AND f.IsBetaFunctionality='N'))");
+			// task 09088: the client doesn't "want" to use beta functions and the role doesn't override this, so we filter out features that are not marked as beta
+			windowSql.append("AND w.IsBetaFunctionality=?");
+			windowSqlParams.add(false);
+			processSql.append("AND p.IsBetaFunctionality=?");
+			processSqlParams.add(false);
+			workflowSql.append("AND wf.IsBetaFunctionality=?");
+			workflowSqlParams.add(false);
+			formSql.append("AND f.IsBetaFunctionality=?");
+			formSqlParams.add(false);
 		}
+
+		//
 		// In R/O Menu - Show only defined Forms
 		if (!tree.isEditable())
 		{
-			sql.append(" AND ");
-			sql.append("(AD_Menu.AD_Form_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Form f WHERE AD_Menu.AD_Form_ID=f.AD_Form_ID AND ");
-			if (m_clientTree)
-			{
-				sql.append("f.Classname");
-			}
-			else
-			{
-				sql.append("f.JSPURL");
-			}
-			sql.append(" IS NOT NULL))");
+			final boolean isSwingTree = tree.isClientTree();
+			formSql.append(" AND f.").append(isSwingTree ? "Classname" : "JSPURL").append(" IS NOT NULL");
+		}
+
+		//
+		// Apply per element filters
+		{
+			sql.append("\n AND (AD_Menu.AD_Window_ID IS NULL OR EXISTS (select 1 from AD_Window w where AD_Menu.AD_Window_ID=w.AD_Window_ID AND ").append(windowSql).append("))");
+			sqlParams.addAll(windowSqlParams);
+			//
+			sql.append("\n AND (AD_Menu.AD_Process_ID IS NULL OR EXISTS (select 1 from AD_Process p where AD_Menu.AD_Process_ID=p.AD_Process_ID AND ").append(processSql).append("))");
+			sqlParams.addAll(processSqlParams);
+			//
+			sql.append("\n AND (AD_Menu.AD_Workflow_ID IS NULL OR EXISTS (select 1 from AD_Workflow wf where AD_Menu.AD_Workflow_ID=wf.AD_Workflow_ID AND ").append(workflowSql).append("))");
+			sqlParams.addAll(workflowSqlParams);
+			//
+			sql.append("\n AND (AD_Menu.AD_Form_ID IS NULL OR EXISTS (select 1 from AD_Form f where AD_Menu.AD_Form_ID=f.AD_Form_ID AND ").append(formSql).append("))");
+			sqlParams.addAll(formSqlParams);
+			//
+			sql.append("\n AND (AD_Menu.AD_Task_ID IS NULL OR EXISTS (select 1 from AD_Task t where AD_Menu.AD_Task_ID=t.AD_Task_ID AND ").append(taskSql).append("))");
+			sqlParams.addAll(taskSqlParams);
 		}
 
 		return sql.toString();
@@ -133,11 +161,11 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 	public MTreeNode loadNodeInfo(final MTree tree, final ResultSet rs) throws SQLException
 	{
 		final MTreeNode info = super.loadNodeInfo(tree, rs);
-		
+
 		// me16: also load the menu entry's internal name
 		final String internalName = rs.getString(I_AD_Menu.COLUMNNAME_InternalName);
 		info.setInternalName(internalName);
-				
+
 		final String action = rs.getString(I_AD_Menu.COLUMNNAME_Action);
 		info.setImageIndicator(action);
 		if (info.getAllowsChildren() || action == null)
@@ -150,24 +178,24 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final int AD_Form_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Form_ID);
 		final int AD_Workflow_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Workflow_ID);
 		final int AD_Task_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Task_ID);
-		// int AD_Workbench_ID = m_nodeRowSet.getInt(I_AD_Menu.COLUMNNAME_AD_Workbench_ID);
+
 		//
 		final IUserRolePermissions role = Env.getUserRolePermissions(tree.getCtx());
 		Boolean access = null;
 		if (X_AD_Menu.ACTION_Window.equals(action))
 		{
 			access = role.checkWindowAccess(AD_Window_ID);
-			
+
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
-				final String tableName = rs.getString("AD_Window_TableName"); // table name of first window tab 
+				final String tableName = rs.getString("AD_Window_TableName"); // table name of first window tab
 				info.setName(info.getName() + " (" + tableName + ")");
 			}
 		}
 		else if (X_AD_Menu.ACTION_Process.equals(action))
 		{
 			access = role.checkProcessAccess(AD_Process_ID);
-			
+
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
 				final String classname = rs.getString("AD_Process_ClassName");
@@ -181,7 +209,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		else if (X_AD_Menu.ACTION_Form.equals(action))
 		{
 			access = role.checkFormAccess(AD_Form_ID);
-			
+
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
 				final String classname = rs.getString("AD_Form_ClassName");
@@ -195,9 +223,6 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		else if (X_AD_Menu.ACTION_Task.equals(action))
 		{
 			access = role.checkTaskAccess(AD_Task_ID);
-			// else if (X_AD_Menu.ACTION_Workbench.equals(action))
-			// access = role.getWorkbenchAccess(AD_Window_ID);
-			// log.fine("getNodeDetail - " + name + " - " + actionColor + " - " + access);
 		}
 
 		//

@@ -60,7 +60,7 @@ public class TableModelClassLoader
 	/**
 	 * EntityTypes cache
 	 */
-	private IEntityTypesCache entityTypesCache = new EntityTypesCache();
+	private IEntityTypesCache entityTypesCache = EntityTypesCache.instance;
 
 	/**
 	 * Cache: TableName to Model Class

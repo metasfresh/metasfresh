@@ -60,13 +60,15 @@ t.ad_window_id
 , c.iscalculated
 , f.SpanX
 , f.SpanY
+, f.EntityType as FieldEntityType
 FROM ad_tab t
 JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id
 JOIN ad_column c ON c.ad_table_id = t.ad_table_id
 LEFT JOIN ad_field f ON f.ad_tab_id = t.ad_tab_id AND f.ad_column_id = c.ad_column_id
 LEFT JOIN ad_fieldgroup fg ON fg.ad_fieldgroup_id = f.ad_fieldgroup_id
 LEFT JOIN ad_val_rule vr ON vr.ad_val_rule_id = COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)
-WHERE (f.ad_field_id IS NULL OR f.isactive = 'Y'::bpchar) AND c.isactive = 'Y'::bpchar;
+WHERE (f.ad_field_id IS NULL OR f.isactive = 'Y'::bpchar) AND c.isactive = 'Y'::bpchar
+;
 
 ALTER TABLE ad_field_v OWNER TO adempiere;
 

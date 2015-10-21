@@ -23,9 +23,11 @@ package org.adempiere.ad.service.impl;
  */
 
 
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.service.IADMessageDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -36,7 +38,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Message;
-import org.compiere.model.MEntityType;
 import org.compiere.model.M_Element;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Message;
@@ -245,13 +246,13 @@ public class DeveloperModeBL implements IDeveloperModeBL
 			final String packageName = classnameFQ.substring(0, idx);
 			// final String className = classnameFQ.substring(idx);
 
+			String entityType = null;
 			//
 			// Get EntityType by PackageName
-			final MEntityType[] entityTypes = MEntityType.getEntityTypes(Env.getCtx());
-			MEntityType entityType = null;
-			for (MEntityType et : entityTypes)
+			final List<String> entityTypes = EntityTypesCache.instance.getEntityTypeNames();
+			for (String et : entityTypes)
 			{
-				String modelPackage = et.getModelPackage();
+				String modelPackage = EntityTypesCache.instance.getModelPackage(et);
 				if (Check.isEmpty(modelPackage, true)
 						|| "org.compiere.model".equals(modelPackage)
 						|| "org.adempiere.model".equals(modelPackage))
@@ -271,7 +272,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 
 			if (entityType != null)
 			{
-				return entityType.getEntityType();
+				return entityType;
 			}
 
 		}

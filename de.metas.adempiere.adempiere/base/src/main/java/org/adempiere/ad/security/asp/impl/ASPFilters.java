@@ -23,6 +23,10 @@ package org.adempiere.ad.security.asp.impl;
  */
 
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
@@ -32,7 +36,9 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.SqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.security.asp.IASPFilters;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Form_Access;
 import org.compiere.model.I_AD_Process_Access;
@@ -41,8 +47,12 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Task_Access;
 import org.compiere.model.I_AD_Window_Access;
 import org.compiere.model.I_AD_Workflow_Access;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -54,13 +64,13 @@ import com.google.common.collect.ImmutableMap;
 @Immutable
 final class ASPFilters implements IASPFilters
 {
-	// private final int adClientId;
+	private final int adClientId;
 	private final ImmutableMap<String, IQueryFilter<?>> accessTableName2aspFilter;
 
 	public ASPFilters(final int adClientId)
 	{
 		super();
-		// this.adClientId = adClientId;
+		this.adClientId = adClientId;
 
 		final ImmutableMap.Builder<String, IQueryFilter<?>> aspFiltersBuilder = ImmutableMap.builder();
 
@@ -345,4 +355,92 @@ final class ASPFilters implements IASPFilters
 					+ "\n ASP Filter: " + filter);
 		}
 	}
+
+	@Override
+	public boolean isDisplayField(int adFieldId)
+	{
+		final List<Integer> fieldAccesses = fieldAccessesSupplier.get();
+		return Collections.binarySearch(fieldAccesses, adFieldId) >= 0;
+	}
+	
+	private final Supplier<List<Integer>> fieldAccessesSupplier = Suppliers.memoize(new Supplier<List<Integer>>()
+	{
+		@Override
+		public List<Integer> get()
+		{
+			final List<Integer> fieldAccess = new ArrayList<Integer>(11000);
+			final String sqlvalidate =
+				"SELECT AD_Field_ID "
+				 + "  FROM AD_Field "
+				 + " WHERE (   AD_Field_ID IN ( "
+				 // ASP subscribed fields for client
+				 + "              SELECT f.AD_Field_ID "
+				 + "                FROM ASP_Field f, ASP_Tab t, ASP_Window w, ASP_Level l, ASP_ClientLevel cl "
+				 + "               WHERE w.ASP_Level_ID = l.ASP_Level_ID "
+				 + "                 AND cl.AD_Client_ID = " + adClientId
+				 + "                 AND cl.ASP_Level_ID = l.ASP_Level_ID "
+				 + "                 AND f.ASP_Tab_ID = t.ASP_Tab_ID "
+				 + "                 AND t.ASP_Window_ID = w.ASP_Window_ID "
+				 + "                 AND f.IsActive = 'Y' "
+				 + "                 AND t.IsActive = 'Y' "
+				 + "                 AND w.IsActive = 'Y' "
+				 + "                 AND l.IsActive = 'Y' "
+				 + "                 AND cl.IsActive = 'Y' "
+				 + "                 AND f.ASP_Status = 'S') "
+				 + "        OR AD_Tab_ID IN ( "
+				 // ASP subscribed fields for client
+				 + "              SELECT t.AD_Tab_ID "
+				 + "                FROM ASP_Tab t, ASP_Window w, ASP_Level l, ASP_ClientLevel cl "
+				 + "               WHERE w.ASP_Level_ID = l.ASP_Level_ID "
+				 + "                 AND cl.AD_Client_ID = " + adClientId
+				 + "                 AND cl.ASP_Level_ID = l.ASP_Level_ID "
+				 + "                 AND t.ASP_Window_ID = w.ASP_Window_ID "
+				 + "                 AND t.IsActive = 'Y' "
+				 + "                 AND w.IsActive = 'Y' "
+				 + "                 AND l.IsActive = 'Y' "
+				 + "                 AND cl.IsActive = 'Y' "
+				 + "                 AND t.AllFields = 'Y' "
+				 + "                 AND t.ASP_Status = 'S') "
+				 + "        OR AD_Field_ID IN ( "
+				 // ASP show exceptions for client
+				 + "              SELECT AD_Field_ID "
+				 + "                FROM ASP_ClientException ce "
+				 + "               WHERE ce.AD_Client_ID = " + adClientId
+				 + "                 AND ce.IsActive = 'Y' "
+				 + "                 AND ce.AD_Field_ID IS NOT NULL "
+				 + "                 AND ce.ASP_Status = 'S') "
+				 + "       ) "
+				 + "   AND AD_Field_ID NOT IN ( "
+				 // minus ASP hide exceptions for client
+				 + "          SELECT AD_Field_ID "
+				 + "            FROM ASP_ClientException ce "
+				 + "           WHERE ce.AD_Client_ID = " + adClientId
+				 + "             AND ce.IsActive = 'Y' "
+				 + "             AND ce.AD_Field_ID IS NOT NULL "
+				 + "             AND ce.ASP_Status = 'H')" 
+				 + " ORDER BY AD_Field_ID";
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
+			{
+				pstmt = DB.prepareStatement(sqlvalidate, ITrx.TRXNAME_None);
+				rs = pstmt.executeQuery();
+				while (rs.next())
+				{
+					fieldAccess.add(rs.getInt(1));
+				}
+			}
+			catch (Exception e)
+			{
+				throw new DBException(e, sqlvalidate);
+			}
+			finally
+			{
+				DB.close(rs, pstmt);
+			}
+			
+			return ImmutableList.copyOf(fieldAccess);
+		}
+	});
+
 }

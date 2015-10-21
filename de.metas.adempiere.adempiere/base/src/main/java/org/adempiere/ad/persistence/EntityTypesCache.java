@@ -22,11 +22,9 @@ package org.adempiere.ad.persistence;
  * #L%
  */
 
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +38,10 @@ import org.compiere.model.I_AD_EntityType;
 import org.compiere.util.CCache;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Default implementation of {@link IEntityTypesCache}, which is retrieving the entity types from database.
@@ -49,23 +49,39 @@ import com.google.common.annotations.VisibleForTesting;
  * @author tsa
  * 
  */
-class EntityTypesCache implements IEntityTypesCache
+public class EntityTypesCache implements IEntityTypesCache
 {
+	/** Shared instance */
+	public static final transient EntityTypesCache instance = new EntityTypesCache();
+
 	// services
 	private final transient CLogger logger = CLogger.getCLogger(getClass());
 
+	/** Cache: EntityType to {@link EntityTypeEntry} */
 	private final CCache<String, EntityTypeEntry> cache = new CCache<>(
 			I_AD_EntityType.Table_Name + "#EntityTypeEntry" // cacheName
 			, 50 // initialCapacity
 			, 0 // NoExpire (NOTE: this is important because we don't want some of our records to get stale, because we would never load them again partially)
 	);
 
+	/**
+	 * First Not System Entity ID 10=D, 20=C, 100=U, 110=CUST, 200=A, 210=EXT, 220=XX etc
+	 */
+	private static final int MAX_SystemMaintained_AD_EntityType_ID = 1000000;
+
+	@VisibleForTesting
 	EntityTypesCache()
 	{
 		super();
 
 		// NOTE: we are lazy loading the cache because it might be that initially we don't have a database connection anyways
 		// loadIfNeeded();
+	}
+
+	@Override
+	public String toString()
+	{
+		return "EntityTypesCache [cache=" + cache + "]";
 	}
 
 	private void loadIfNeeded()
@@ -101,7 +117,7 @@ class EntityTypesCache implements IEntityTypesCache
 		final Map<String, EntityTypeEntry> entityTypeEntries = new HashMap<>(50);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		final String sql = "SELECT EntityType, ModelPackage FROM AD_EntityType WHERE IsActive=? ORDER BY AD_EntityType_ID";
+		final String sql = "SELECT * FROM AD_EntityType WHERE IsActive=? ORDER BY AD_EntityType_ID";
 		final Object[] params = new Object[] { true };
 		try
 		{
@@ -130,9 +146,21 @@ class EntityTypesCache implements IEntityTypesCache
 
 	private final EntityTypeEntry loadEntityTypeEntry(final ResultSet rs) throws SQLException
 	{
-		final String entityType = rs.getString("EntityType");
-		final String modelPackage = rs.getString("ModelPackage");
-		final EntityTypeEntry entry = new EntityTypeEntry(entityType, modelPackage);
+		final String entityType = rs.getString(I_AD_EntityType.COLUMNNAME_EntityType);
+		final String modelPackage = rs.getString(I_AD_EntityType.COLUMNNAME_ModelPackage);
+		final String webUIServletListenerClass = rs.getString(I_AD_EntityType.COLUMNNAME_WebUIServletListenerClass);
+		final boolean displayedInUI = DisplayType.toBoolean(rs.getString(I_AD_EntityType.COLUMNNAME_IsDisplayed));
+
+		final int adEntityTypeId = rs.getInt(I_AD_EntityType.COLUMNNAME_AD_EntityType_ID);
+		final boolean systemMaintained = adEntityTypeId < MAX_SystemMaintained_AD_EntityType_ID;
+
+		final EntityTypeEntry entry = EntityTypeEntry.builder()
+				.setEntityType(entityType)
+				.setModelPackage(modelPackage)
+				.setWebUIServletListenerClass(webUIServletListenerClass)
+				.setDisplayedInUI(displayedInUI)
+				.setSystemMaintained(systemMaintained)
+				.build();
 		return entry;
 	}
 
@@ -140,17 +168,22 @@ class EntityTypesCache implements IEntityTypesCache
 	public List<String> getEntityTypeNames()
 	{
 		loadIfNeeded();
-
-		return new ArrayList<>(cache.keySet());
+		return ImmutableList.copyOf(cache.keySet());
 	}
 
-	private EntityTypeEntry getEntityTypeEntry(final String entityType)
+	private EntityTypeEntry getEntityTypeEntryOrNull(final String entityType)
 	{
 		Check.assumeNotEmpty(entityType, "entityType not empty");
 
 		loadIfNeeded();
 
 		final EntityTypeEntry entry = cache.get(entityType);
+		return entry;
+	}
+
+	private EntityTypeEntry getEntityTypeEntry(final String entityType)
+	{
+		final EntityTypeEntry entry = getEntityTypeEntryOrNull(entityType);
 		if (entry == null)
 		{
 			final AdempiereException ex = new AdempiereException("No EntityType entry found for entity type: " + entityType
@@ -173,26 +206,82 @@ class EntityTypesCache implements IEntityTypesCache
 	}
 
 	@Override
-	public String toString()
+	public boolean isActive(final String entityType)
 	{
-		return "EntityTypesCache [cache=" + cache + "]";
+		final EntityTypeEntry entry = getEntityTypeEntryOrNull(entityType);
+		if (entry == null)
+		{
+			return false;
+		}
+		return true;
 	}
 
-	static class EntityTypeEntry
+	@Override
+	public boolean isDisplayedInUI(final String entityType)
 	{
-		// public static final EntityTypeEntry NULL = new EntityTypeEntry("NULL", "NULL");
+		// guard against null (return false, don't fail)
+		if (entityType == null)
+		{
+			return false;
+		}
+
+		final EntityTypeEntry entry = getEntityTypeEntryOrNull(entityType);
+		if (entry == null)
+		{
+			return false;
+		}
+		return entry.isDisplayedInUI();
+	}
+
+	public final String getDisplayedInUIEntityTypeSQLWhereClause(final String joinEntityTypeColumn)
+	{
+		return "exists (select 1 from AD_EntityType et where et.EntityType=" + joinEntityTypeColumn
+				+ " and et.IsActive='Y'" // EntityType shall be active
+				+ " and et." + I_AD_EntityType.COLUMNNAME_IsDisplayed + "='Y'" // shall be displayed in UI
+				+ ")";
+	}
+
+	public boolean isSystemMaintained(final String entityType)
+	{
+		return getEntityTypeEntry(entityType).isSystemMaintained();
+	}
+	
+	public String getWebUIServletListenerClass(final String entityType)
+	{
+		return getEntityTypeEntry(entityType).getWebUIServletListenerClass();
+	}
+
+	public static final class EntityTypeEntry
+	{
+		@VisibleForTesting
+		static final Builder builder()
+		{
+			return new Builder();
+		}
 
 		private final String entityType;
 		private final String modelPackage;
+		private final boolean displayedInUI;
+		private final boolean systemMaintained;
+		private final String webUIServletListenerClass;
 
-		public EntityTypeEntry(final String entityType, final String modelPackage)
+		private EntityTypeEntry(final Builder builder)
 		{
 			super();
 
+			this.entityType = builder.entityType;
 			Check.assumeNotEmpty(entityType, "entityType not empty");
-			this.entityType = entityType;
 
-			this.modelPackage = modelPackage;
+			this.modelPackage = builder.modelPackage;
+			this.displayedInUI = builder.displayedInUI;
+			this.systemMaintained = builder.systemMaintained;
+			this.webUIServletListenerClass = builder.webUIServletListenerClass;
+		}
+
+		@Override
+		public String toString()
+		{
+			return "EntityTypeEntry [entityType=" + entityType + ", modelPackage=" + modelPackage + "]";
 		}
 
 		public String getEntityType()
@@ -205,10 +294,73 @@ class EntityTypesCache implements IEntityTypesCache
 			return modelPackage;
 		}
 
-		@Override
-		public String toString()
+		public boolean isDisplayedInUI()
 		{
-			return "EntityTypeEntry [entityType=" + entityType + ", modelPackage=" + modelPackage + "]";
+			return displayedInUI;
+		}
+		
+		public String getWebUIServletListenerClass()
+		{
+			return webUIServletListenerClass;
+		}
+
+		/**
+		 * Is System Maintained. Any Entity Type with ID < 1000000.
+		 * 
+		 * @return true if D/C/U/CUST/A/EXT/XX (ID < 1000000)
+		 */
+		public boolean isSystemMaintained()
+		{
+			return systemMaintained;
+		}
+
+		public static final class Builder
+		{
+			private String entityType;
+			private String modelPackage;
+			private boolean displayedInUI = true; // default true
+			private boolean systemMaintained = false;
+			public String webUIServletListenerClass;
+
+			private Builder()
+			{
+				super();
+			}
+
+			public EntityTypeEntry build()
+			{
+				return new EntityTypeEntry(this);
+			}
+
+			public Builder setEntityType(String entityType)
+			{
+				this.entityType = entityType;
+				return this;
+			}
+
+			public Builder setModelPackage(String modelPackage)
+			{
+				this.modelPackage = modelPackage;
+				return this;
+			}
+
+			public Builder setDisplayedInUI(boolean displayedInUI)
+			{
+				this.displayedInUI = displayedInUI;
+				return this;
+			}
+
+			public Builder setSystemMaintained(boolean systemMaintained)
+			{
+				this.systemMaintained = systemMaintained;
+				return this;
+			}
+
+			public Builder setWebUIServletListenerClass(String webUIServletListenerClass)
+			{
+				this.webUIServletListenerClass = webUIServletListenerClass;
+				return this;
+			}
 		}
 	}
 }

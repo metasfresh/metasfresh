@@ -26,6 +26,7 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
@@ -45,6 +46,8 @@ import org.compiere.util.Evaluatee;
  */
 public class GridTabVO implements Evaluatee, Serializable
 {
+	private static final long serialVersionUID = -1425513230093430761L;
+
 	/**************************************************************************
 	 *	Create MTab VO
 	 *
@@ -55,10 +58,9 @@ public class GridTabVO implements Evaluatee, Serializable
 	 *  @param onlyCurrentRows if true query is limited to not processed records
 	 *  @return TabVO
 	 */
-	public static GridTabVO create (GridWindowVO wVO, int TabNo, ResultSet rs, 
-		boolean isRO, boolean onlyCurrentRows)
+	static GridTabVO create (GridWindowVO wVO, int TabNo, ResultSet rs, boolean isRO, boolean onlyCurrentRows)
 	{
-		CLogger.get().config("#" + TabNo);
+		logger.config("#" + TabNo);
 
 		GridTabVO vo = new GridTabVO (wVO.ctx, wVO.WindowNo, TabNo);
 		vo.AD_Window_ID = wVO.AD_Window_ID;
@@ -71,7 +73,7 @@ public class GridTabVO implements Evaluatee, Serializable
 
 		if (isRO)
 		{
-			CLogger.get().fine("Tab is ReadOnly");
+			logger.fine("Tab is ReadOnly");
 			vo.IsReadOnly = true;
 		}
 		vo.onlyCurrentRows = onlyCurrentRows;
@@ -87,7 +89,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			createFields (vo);
 			if (vo.Fields == null || vo.Fields.size() == 0)
 			{
-				CLogger.get().log(Level.SEVERE, "No Fields");
+				logger.log(Level.SEVERE, "No Fields");
 				return null;
 			}
 		}*/
@@ -101,25 +103,26 @@ public class GridTabVO implements Evaluatee, Serializable
 	 *	@param rs ResultSet from AD_Tab_v/t
 	 * 	@return true if read ok
 	 */
-	private static boolean loadTabDetails (GridTabVO vo, ResultSet rs)
+	private static boolean loadTabDetails (final GridTabVO vo, final ResultSet rs)
 	{
-		IUserRolePermissions role = Env.getUserRolePermissions(vo.ctx);
+		final IUserRolePermissions role = Env.getUserRolePermissions(vo.ctx);
 		boolean showTrl = "Y".equals(Env.getContext(vo.ctx, "#ShowTrl"));
 		boolean showAcct = "Y".equals(Env.getContext(vo.ctx, Env.CTXNAME_ShowAcct));
 		boolean showAdvanced = "Y".equals(Env.getContext(vo.ctx, "#ShowAdvanced"));
-	//	CLogger.get().warning("ShowTrl=" + showTrl + ", showAcct=" + showAcct);
+		
 		try
 		{
 			vo.AD_Tab_ID = rs.getInt("AD_Tab_ID");
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_AD_Tab_ID, String.valueOf(vo.AD_Tab_ID));
 			vo.Name = rs.getString("Name");
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_Name, vo.Name);
+			vo.entityType = rs.getString("EntityType");
 			
-			vo.AD_Table_ID = rs.getInt("AD_Table_ID"); // metas: moved from below for logging purposes 
-			vo.TableName = rs.getString("TableName"); // metas: moved from below for logging purposes
+			vo.AD_Table_ID = rs.getInt("AD_Table_ID"); 
+			vo.TableName = rs.getString("TableName");
 
 			//	Translation Tab	**
-			if (rs.getString("IsTranslationTab").equals("Y"))
+			if ("Y".equals(rs.getString("IsTranslationTab")))
 			{
 				//	Document Translation
 				//vo.TableName = rs.getString("TableName"); // metas: not necessary; is loaded above
@@ -129,27 +132,36 @@ public class GridTabVO implements Evaluatee, Serializable
 				if (!showTrl)
 				{
 					vo.addLoadErrorMessage("TrlTab Not displayed (BaseTrl=" + Env.isBaseTranslation(vo.TableName) + ", MultiLingual=" + Env.isMultiLingualDocument(vo.ctx)+")"); // metas: 01934
-					CLogger.get().config("TrlTab Not displayed - AD_Tab_ID=" 
+					logger.config("TrlTab Not displayed - AD_Tab_ID=" 
 							+ vo.AD_Tab_ID + "=" + vo.Name + ", Table=" + vo.TableName
 							+ ", BaseTrl=" + Env.isBaseTranslation(vo.TableName)
 							+ ", MultiLingual=" + Env.isMultiLingualDocument(vo.ctx));
 					return false;
 				}
 			}
+			
 			//	Advanced Tab	**
-			if (!showAdvanced && rs.getString("IsAdvancedTab").equals("Y"))
+			if (!showAdvanced && "Y".equals(rs.getString("IsAdvancedTab")))
 			{
 				vo.addLoadErrorMessage("AdvancedTab Not displayed"); // metas: 1934
-				CLogger.get().config("AdvancedTab Not displayed - AD_Tab_ID=" 
-					+ vo.AD_Tab_ID + " " + vo.Name);
+				logger.config("AdvancedTab Not displayed - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.Name);
 				return false;
 			}
+			
 			//	Accounting Info Tab	**
-			if (!showAcct && rs.getString("IsInfoTab").equals("Y"))
+			if (!showAcct && "Y".equals(rs.getString("IsInfoTab")))
 			{
 				vo.addLoadErrorMessage("AcctTab Not displayed"); // metas: 1934
-				CLogger.get().fine("AcctTab Not displayed - AD_Tab_ID=" 
-					+ vo.AD_Tab_ID + " " + vo.Name);
+				logger.fine("AcctTab Not displayed - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.Name);
+				return false;
+			}
+			
+			//
+			// If EntityType is not displayed, hide this tab
+			vo.entityType = rs.getString("EntityType");
+			if (!EntityTypesCache.instance.isDisplayedInUI(vo.entityType))
+			{
+				vo.addLoadErrorMessage("EntityType not displayed");
 				return false;
 			}
 			
@@ -163,7 +175,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (!role.canView(vo.AccessLevel))	// No Access
 			{
 				vo.addLoadErrorMessage("No Role Access - AccessLevel="+vo.AccessLevel+", UserLevel="+role.getUserLevel()); // 01934
-				CLogger.get().fine("No Role Access - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo. Name);
+				logger.fine("No Role Access - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo. Name);
 				return false;
 			}	//	Used by MField.getDefault
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_AccessLevel, vo.AccessLevel.getAccessLevelString());
@@ -174,11 +186,12 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (!role.isTableAccess(vo.AD_Table_ID, true))
 			{
 				vo.addLoadErrorMessage("No Table Access (AD_Table_ID="+vo.AD_Table_ID+")"); // 01934
-				CLogger.get().config("No Table Access - AD_Tab_ID=" 
+				logger.config("No Table Access - AD_Tab_ID=" 
 					+ vo.AD_Tab_ID + " " + vo. Name);
 				return false;
 			}
-			if (rs.getString("IsReadOnly").equals("Y"))
+			
+			if ("Y".equals(rs.getString("IsReadOnly")))
 				vo.IsReadOnly = true;
 			vo.ReadOnlyLogic = rs.getString("ReadOnlyLogic");
 			vo.ReadOnlyLogicExpr = Services.get(IExpressionFactory.class)
@@ -194,23 +207,21 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (vo.Help == null)
 				vo.Help = "";
 
-			if (rs.getString("IsSingleRow").equals("Y"))
+			if ("Y".equals(rs.getString("IsSingleRow")))
 				vo.IsSingleRow = true;
-			if (rs.getString("HasTree").equals("Y"))
+			if ("Y".equals(rs.getString("HasTree")))
 				vo.HasTree = true;
 
-			//vo.AD_Table_ID = rs.getInt("AD_Table_ID"); // metas: moved above
-			//vo.TableName = rs.getString("TableName"); // metas: moved above
-			if (rs.getString("IsView").equals("Y"))
+			if ("Y".equals(rs.getString("IsView")))
 				vo.IsView = true;
 			vo.AD_Column_ID = rs.getInt("AD_Column_ID");   //  Primary Link Column
 			vo.Parent_Column_ID = rs.getInt("Parent_Column_ID");   // Parent tab link column
 
-			if (rs.getString("IsSecurityEnabled").equals("Y"))
+			if ("Y".equals(rs.getString("IsSecurityEnabled")))
 				vo.IsSecurityEnabled = true;
-			if (rs.getString("IsDeleteable").equals("Y"))
+			if ("Y".equals(rs.getString("IsDeleteable")))
 				vo.IsDeleteable = true;
-			if (rs.getString("IsHighVolume").equals("Y"))
+			if ("Y".equals(rs.getString("IsHighVolume")))
 				vo.IsHighVolume = true;
 
 			vo.CommitWarning = rs.getString("CommitWarning");
@@ -220,8 +231,11 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (vo.WhereClause == null)
 				vo.WhereClause = "";
 			//jz col=null not good for Derby
-			if (vo.WhereClause.indexOf("=null")>0)
+			if (vo.WhereClause.indexOf("=null") > 0)
+			{
+				logger.warning("Replaced '=null' with 'IS NULL' for " + vo);
 				vo.WhereClause.replaceAll("=null", " IS NULL ");
+			}
 			// Where Clauses should be surrounded by parenthesis - teo_sarca, BF [ 1982327 ] 
 			if (vo.WhereClause.trim().length() > 0) {
 				vo.WhereClause = "("+vo.WhereClause+")";
@@ -257,8 +271,8 @@ public class GridTabVO implements Evaluatee, Serializable
 			//	Replication Type - set R/O if Reference
 			try
 			{
-				int index = rs.findColumn ("ReplicationType");
-				vo.ReplicationType = rs.getString (index);
+				final int replicationTypeIdx = rs.findColumn ("ReplicationType");
+				vo.ReplicationType = rs.getString (replicationTypeIdx);
 				if ("R".equals(vo.ReplicationType))
 					vo.IsReadOnly = true;
 			}
@@ -269,14 +283,14 @@ public class GridTabVO implements Evaluatee, Serializable
 		}
 		catch (SQLException ex)
 		{
-			CLogger.get().log(Level.SEVERE, "", ex);
+			logger.log(Level.SEVERE, "", ex);
 			return false;
 		}
 		// Apply UserDef settings - teo_sarca [ 2726889 ] Finish User Window (AD_UserDef*) functionality
 		if (!MUserDefWin.apply(vo))
 		{
 			vo.addLoadErrorMessage("Hidden by UserDef"); // 01934
-			CLogger.get().fine("Hidden by UserDef - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.Name);
+			logger.fine("Hidden by UserDef - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.Name);
 			return false;
 		}
 		
@@ -316,7 +330,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		}
 		catch (Exception e)
 		{
-			CLogger.get().log(Level.SEVERE, "", e);
+			logger.log(Level.SEVERE, "", e);
 			return false;
 		}
 		finally
@@ -335,7 +349,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	 *  @param ctx context
 	 *  @return SQL SELECT String
 	 */
-	protected static String getSQL (Properties ctx)
+	static String getSQL (final Properties ctx)
 	{
 		final String ASPFilter = Services.get(IASPFiltersFactory.class)
 				.getASPFiltersForClient(Env.getAD_Client_ID(ctx))
@@ -345,7 +359,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			+ ASPFilter + " ORDER BY SeqNo";
 		if (!Env.isBaseLanguage(ctx, "AD_Window"))
 			sql = "SELECT * FROM AD_Tab_vt WHERE AD_Window_ID=? "
-				+ " AND AD_Language='" + Env.getAD_Language(ctx) + "'"
+				+ " AND AD_Language=" + DB.TO_STRING(Env.getAD_Language(ctx))
 				+ ASPFilter + " ORDER BY SeqNo";
 		return sql;
 	}   //  getSQL
@@ -362,19 +376,19 @@ public class GridTabVO implements Evaluatee, Serializable
 		this.ctx = ctx;
 		this.WindowNo = windowNo;
 		this.TabNo = tabNo;
-	}   //  MTabVO
+	}
 
-	static final long serialVersionUID = 9160212869277319305L;
-	
+	private static final transient CLogger logger = CLogger.getCLogger(GridTabVO.class);
+
 	/** Context - replicated    */
-	private Properties      ctx;
+	private Properties ctx;
 	/** Window No - replicated  */
-	public  final int		WindowNo;
+	public final int WindowNo;
 	/** AD Window - replicated  */
-	public  int             AD_Window_ID;
+	public  int AD_Window_ID;
 
 	/** Tab No (not AD_Tab_ID) 0.. */
-	public  final int				TabNo;
+	public final int TabNo;
 
 	/**	Tab	ID			*/
 	public	int		    AD_Tab_ID;
@@ -384,6 +398,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	public	String	    Description = "";
 	/** Help			*/
 	public	String	    Help = "";
+	private String entityType = null;
 	/** Single Row		*/
 	public	boolean	    IsSingleRow = false;
 	/** Read Only		*/
@@ -499,7 +514,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	 * 	@param windowNo no
 	 *	@return MTabVO or null
 	 */
-	protected GridTabVO clone(Properties ctx, int windowNo)
+	protected GridTabVO clone(final Properties ctx, final int windowNo)
 	{
 		final GridTabVO clone = new GridTabVO(ctx, windowNo, this.TabNo);
 		clone.AD_Window_ID = AD_Window_ID;
@@ -510,6 +525,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		Env.setContext(ctx, windowNo, clone.TabNo, GridTab.CTX_Name, clone.Name);
 		clone.Description = Description;
 		clone.Help = Help;
+		clone.entityType = entityType;
 		clone.IsSingleRow = IsSingleRow;
 		clone.IsReadOnly = IsReadOnly;
 		clone.IsInsertRecord = IsInsertRecord;
@@ -683,5 +699,10 @@ public class GridTabVO implements Evaluatee, Serializable
 	public int getMaxQueryRecords()
 	{
 		return MaxQueryRecords;
+	}
+	
+	public String getEntityType()
+	{
+		return entityType;
 	}
 }   //  MTabVO

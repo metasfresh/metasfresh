@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.IADColumnCalloutDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -49,7 +50,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
 		final int AD_Org_ID = Env.getAD_Org_ID(ctx);
 
-		final List<I_AD_ColumnCallout> calloutsAll = retrieveColumnCallouts(ctx, adColumnId);
+		final List<I_AD_ColumnCallout> calloutsAll = retrieveAllColumnCallouts(ctx, adColumnId);
 		final List<I_AD_ColumnCallout> calloutsActive = new ArrayList<I_AD_ColumnCallout>(calloutsAll.size());
 
 		for (final I_AD_ColumnCallout callout : calloutsAll)
@@ -60,13 +61,20 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 			}
 
 			final int calloutClientId = callout.getAD_Client_ID();
-			if (calloutClientId != 0 && calloutClientId != AD_Client_ID)
+			if (calloutClientId != Env.CTXVALUE_AD_Client_ID_System && calloutClientId != AD_Client_ID)
 			{
 				continue;
 			}
 
 			final int calloutOrgId = callout.getAD_Org_ID();
-			if (calloutOrgId != 0 && calloutOrgId != AD_Org_ID)
+			if (calloutOrgId != Env.CTXVALUE_AD_Org_ID_System && calloutOrgId != AD_Org_ID)
+			{
+				continue;
+			}
+
+			//
+			// If EntityType is not displayed, skip this callout
+			if (!EntityTypesCache.instance.isDisplayedInUI(callout.getEntityType()))
 			{
 				continue;
 			}
@@ -79,7 +87,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 
 	@Override
 	@Cached(cacheName = I_AD_ColumnCallout.Table_Name + "#By#" + I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID)
-	public List<I_AD_ColumnCallout> retrieveColumnCallouts(
+	public List<I_AD_ColumnCallout> retrieveAllColumnCallouts(
 			@CacheCtx final Properties ctx,
 			final int adColumnId)
 	{

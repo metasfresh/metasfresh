@@ -39,6 +39,7 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelInterceptor2ModelValidatorWrapper;
 import org.adempiere.ad.modelvalidator.ModelInterceptorInitException;
+import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.security.IUserLoginListener;
 import org.adempiere.ad.service.IADTableScriptValidatorDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -179,10 +180,20 @@ public class ModelValidationEngine implements IModelValidationEngine
 					continue;
 				}
 
-				// metas: 03023: Skip model validator if entity type is not in list of allowed entity types
-				if (initEntityTypes != null && !initEntityTypes.contains(modelValidator.getEntityType()))
+
+				//
+				// Skip loading the model interceptor if entity type is not active
+				final String entityType = modelValidator.getEntityType();
+				if (!EntityTypesCache.instance.isActive(entityType))
 				{
-					log.config("Skip " + className + " (EntityType '" + modelValidator.getEntityType() + "' not in " + initEntityTypes + ")");
+					log.config("Skip " + className + " (EntityType '" + entityType + "' is not active)");
+				}
+
+				//
+				// Skip model validator if entity type is not in list of allowed entity types (task 03023)
+				if (initEntityTypes != null && !initEntityTypes.contains(entityType))
+				{
+					log.config("Skip " + className + " (EntityType '" + entityType + "' not in " + initEntityTypes + ")");
 					continue;
 				}
 

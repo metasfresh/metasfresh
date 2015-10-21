@@ -137,7 +137,8 @@ public class ProcessParameterPanelModel
 					+ "p.DefaultValue, p.DefaultValue2, p.VFormat, p.ValueMin, p.ValueMax, "
 					+ "p.SeqNo, p.AD_Reference_Value_ID, p.AD_Val_Rule_ID, p.ReadOnlyLogic, p.DisplayLogic "
 					+ ", p.IsEncrypted " // metas: tsa: US745
-					+ ", p.isAutoComplete" // 05887 
+					+ ", p.isAutoComplete" // 05887
+					+ ", p.EntityType as FieldEntityType"
 					+ " FROM AD_Process_Para p"
 					+ " WHERE p.AD_Process_ID=?"		// 1
 					+ " AND p.IsActive='Y' "
@@ -150,6 +151,7 @@ public class ProcessParameterPanelModel
 					+ "p.SeqNo, p.AD_Reference_Value_ID, p.AD_Val_Rule_ID, p.ReadOnlyLogic, p.DisplayLogic "
 					+ ", p.IsEncrypted " // metas: tsa: US745
 					+ ", p.isAutoComplete" // 05887 
+					+ ", p.EntityType as FieldEntityType"
 					+ " FROM AD_Process_Para p"
 					+ " INNER JOIN AD_Process_Para_Trl t ON (p.AD_Process_Para_ID=t.AD_Process_Para_ID)"
 					+ "WHERE p.AD_Process_ID=?"		// 1
@@ -271,7 +273,7 @@ public class ProcessParameterPanelModel
 		final GridField gridFieldTo;
 		if (gridFieldVO.isRange)
 		{
-			final GridFieldVO gridFieldToVO = GridFieldVO.createParameter(gridFieldVO);
+			final GridFieldVO gridFieldToVO = GridFieldVO.createParameterTo(gridFieldVO);
 			gridFieldTo = new GridField(gridFieldToVO);
 		}
 		else

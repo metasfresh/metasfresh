@@ -1251,14 +1251,25 @@ public final class DB
 	 * @param local local RowSet (own connection)
 	 * @return row set or null
 	 */
-	public static RowSet getRowSet(String sql)
+	public static RowSet getRowSet(final String sql, final List<Object> sqlParams)
 	{
 		// Bugfix Gunther Hoppe, 02.09.2005, vpj-cd e-evolution
-		CStatementVO info = new CStatementVO(RowSet.TYPE_SCROLL_INSENSITIVE, RowSet.CONCUR_READ_ONLY, DB.getDatabase().convertStatement(sql));
-		CPreparedStatement stmt = statementsFactory.newCPreparedStatement(info);
-		RowSet retValue = stmt.getRowSet();
-		close(stmt);
-		return retValue;
+		final CStatementVO info = new CStatementVO(RowSet.TYPE_SCROLL_INSENSITIVE, RowSet.CONCUR_READ_ONLY, DB.getDatabase().convertStatement(sql));
+		final CPreparedStatement stmt = statementsFactory.newCPreparedStatement(info);
+		try
+		{
+			setParameters(stmt, sqlParams);
+			RowSet retValue = stmt.getRowSet();
+			return retValue;
+		}
+		catch (SQLException e)
+		{
+			throw new DBException(e, sql, sqlParams);
+		}
+		finally
+		{
+			close(stmt);
+		}
 	}	// getRowSet
 
 	/**

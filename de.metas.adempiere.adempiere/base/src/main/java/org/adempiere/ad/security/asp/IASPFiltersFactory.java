@@ -23,6 +23,8 @@ package org.adempiere.ad.security.asp;
  */
 
 
+import java.util.Properties;
+
 import org.adempiere.util.ISingletonService;
 
 /**
@@ -40,5 +42,13 @@ public interface IASPFiltersFactory extends ISingletonService
 	 * @return {@link IASPFilters}; never return null
 	 */
 	IASPFilters getASPFiltersForClient(int adClientId);
+
+	/**
+	 * Retrieves the right filters to be used for context client.
+	 * 
+	 * @param ctx
+	 * @return {@link IASPFilters}; never return null
+	 */
+	IASPFilters getASPFiltersForClient(Properties ctx);
 
 }

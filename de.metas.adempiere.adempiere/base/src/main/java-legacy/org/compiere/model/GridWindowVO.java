@@ -244,14 +244,14 @@ public class GridWindowVO implements Serializable
 	{
 		mWindowVO.Tabs = new ArrayList<GridTabVO>();
 
-		String sql = GridTabVO.getSQL(mWindowVO.ctx);
+		final String sql = GridTabVO.getSQL(mWindowVO.ctx);
 		int TabNo = 0;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			//	create statement
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, mWindowVO.AD_Window_ID);
 			rs = pstmt.executeQuery();
 			boolean firstTab = true;

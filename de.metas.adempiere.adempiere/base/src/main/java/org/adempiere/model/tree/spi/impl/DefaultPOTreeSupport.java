@@ -29,6 +29,9 @@ package org.adempiere.model.tree.spi.impl;
 import java.awt.Color;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.model.tree.spi.IPOTreeSupport;
 import org.compiere.model.GridTab;
@@ -135,7 +138,7 @@ public class DefaultPOTreeSupport implements IPOTreeSupport
 	}
 
 	@Override
-	public String getNodeInfoSelectSQL(final MTree tree)
+	public String getNodeInfoSelectSQL(final MTree tree, final List<Object> sqlParams)
 	{
 		final String tableAlias = tree.getSourceTableName();
 		final String columnNameX = tree.getSourceKeyColumnName();
@@ -161,6 +164,7 @@ public class DefaultPOTreeSupport implements IPOTreeSupport
 	}
 
 	@Override
+	@OverridingMethodsMustInvokeSuper
 	public MTreeNode loadNodeInfo(final MTree tree, final ResultSet rs) throws SQLException
 	{
 		final int nodeId = rs.getInt("Node_ID");

@@ -31,13 +31,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.apache.commons.collections.keyvalue.MultiKey;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.Lookup;
-import org.compiere.model.MEntityType;
 import org.compiere.model.MField;
 import org.compiere.model.MLookup;
 import org.compiere.model.MTab;
@@ -250,8 +250,8 @@ public class AD_Window_Sync extends SvrProcess
 		boolean doDelete = true;
 		if (po.get_ColumnIndex("EntityType") >= 0)
 		{
-			String entityType = po.get_ValueAsString("EntityType");
-			doDelete = !MEntityType.get(po.getCtx(), entityType).isSystemMaintained();
+			final String entityType = po.get_ValueAsString("EntityType");
+			doDelete = !EntityTypesCache.instance.isSystemMaintained(entityType);
 		}
 		if (doDelete)
 		{

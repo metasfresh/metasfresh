@@ -56,4 +56,10 @@ final class NullASPFilters implements IASPFilters
 	{
 		return "";
 	}
+
+	@Override
+	public boolean isDisplayField(int adFieldId)
+	{
+		return true;
+	}
 }

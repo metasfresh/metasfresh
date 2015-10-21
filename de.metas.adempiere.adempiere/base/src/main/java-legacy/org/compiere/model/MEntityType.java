@@ -17,169 +17,21 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
+import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CLogger;
+import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 
 /**
- * 	Enitity Type Model
- *	
- *  @author Jorg Janke
- *  @version $Id: MEntityType.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
- * 
- * @author Teo Sarca
- * 		<li>BF [ 2827777 ] MEntityType.isSystemMaintained not working well
- * 			https://sourceforge.net/tracker/?func=detail&aid=2827777&group_id=176962&atid=879332
- * 		<li>FR [ 2827786 ] Introduce MEntityType.get(Properties ctx, String entityType)
- * 			https://sourceforge.net/tracker/?func=detail&aid=2827786&group_id=176962&atid=879335
+ * 	Entity Type Model
  */
-//metas: synched with rev 9761
+@Deprecated
 public class MEntityType extends X_AD_EntityType
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 8906219523978497906L;
+	private static final long serialVersionUID = -2183955192373166750L;
 
-	/**
-	 * 	Get Entity Types
-	 * 	@param ctx context
-	 *	@return entity type array
-	 */
-	static public MEntityType[] getEntityTypes(Properties ctx)
-	{
-		if (s_entityTypes != null)
-			return s_entityTypes;
-		// metas: catching NPE in order to allow creation of model interface
-		// instances (e.g. I_C_Order) even when we have no DB connection.
-		try {
-			List<MEntityType> list = new Query(ctx, Table_Name, null, null)
-					.setOnlyActiveRecords(true)
-					.setOrderBy(COLUMNNAME_AD_EntityType_ID)
-					.list(MEntityType.class);
-			s_entityTypes = new MEntityType[list.size()];
-			list.toArray(s_entityTypes);
-		} catch (Exception e) {
-			System.out.println("Caught " + e);
-			e.printStackTrace();
-			s_entityTypes = new MEntityType[0];
-		}
-				
-		s_log.finer("# " + s_entityTypes.length);
-		return s_entityTypes;
-	}	//	getEntityTypes
-	
-	/**
-	 * Get EntityType object by name  
-	 * @param ctx
-	 * @param entityType
-	 * @return
-	 */
-	public static MEntityType get(Properties ctx, String entityType)
-	{
-		for (MEntityType entity : getEntityTypes(ctx))
-		{
-			if (entity.getEntityType().equals(entityType))
-			{
-				return entity;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * 	Get Entity Type as String array
-	 *	@param ctx context
-	 *	@return entity type array
-	 */
-	static public String[] getEntityTypeStrings(Properties ctx)
-	{
-		MEntityType[] entityTypes = getEntityTypes(ctx);
-		ArrayList<String> list = new ArrayList<String>();	//	list capabilities
-		String[] retValue = new String[entityTypes.length];
-		for (int i = 0; i < entityTypes.length; i++)
-		{
-			String s = entityTypes[i].getEntityType().trim();
-			list.add(s);
-			retValue[i] = s;
-		}
-		s_log.finer(list.toString());
-		return retValue;
-	}	//	getEntityTypeStrings
-
-	/**
-	 * 	Get Entity Type Classpath array
-	 *	@param ctx context
-	 *	@return classpath array
-	 */
-	static public String[] getClasspaths(Properties ctx)
-	{
-		MEntityType[] entityTypes = getEntityTypes(ctx);
-		ArrayList<String> list = new ArrayList<String>();
-		for (int i = 0; i < entityTypes.length; i++)
-		{
-			String classpath = entityTypes[i].getClasspath();
-			if (classpath == null || classpath.length() == 0)
-				continue;
-			StringTokenizer st = new StringTokenizer(classpath, ";, \t\n\r\f");
-			while (st.hasMoreTokens())
-			{
-				String token = st.nextToken();
-				if (token.length() > 0)
-				{
-					if (!list.contains(token))
-						list.add(token);
-				}
-			}
-		}
-		String[] retValue = new String[list.size()];
-		list.toArray(retValue);
-		s_log.finer(list.toString());
-		return retValue;
-	}	//	getClathpaths
-
-	/**
-	 * 	Get Entity Type Model Package array
-	 *	@param ctx context
-	 *	@return entity type array
-	 */
-	static public String[] getModelPackages(Properties ctx)
-	{
-		MEntityType[] entityTypes = getEntityTypes(ctx);
-		ArrayList<String> list = new ArrayList<String>();
-		list.add("adempiere.model");		//	default
-		for (int i = 0; i < entityTypes.length; i++)
-		{
-			String modelPackage = entityTypes[i].getModelPackage();
-			if (modelPackage == null || modelPackage.length() == 0)
-				continue;
-			StringTokenizer st = new StringTokenizer(modelPackage, ";, \t\n\r\f");
-			while (st.hasMoreTokens())
-			{
-				String token = st.nextToken();
-				if (token.length() > 0)
-				{
-					if (!list.contains(token))
-						list.add(token);
-				}
-			}
-		}
-		String[] retValue = new String[list.size()];
-		list.toArray(retValue);
-		s_log.finer(list.toString());
-		return retValue;
-	}	//	getModelPackages
-	
-	/** Cached EntityTypes						*/
-	private static MEntityType[] s_entityTypes = null;
-	/**	Logger	*/
-	private static CLogger s_log = CLogger.getCLogger (MEntityType.class);
-	
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -203,15 +55,9 @@ public class MEntityType extends X_AD_EntityType
 	}	//	MEntityType
 	
 	/**
-	 * First Not System Entity ID
-	 * 10=D, 20=C,  100=U, 110=CUST,  200=A, 210=EXT, 220=XX etc
-	 */
-	private static final int s_maxAD_EntityType_ID = 1000000;
-	
-	/**
 	 * 	Set AD_EntityType_ID
 	 */
-	private void setAD_EntityType_ID()
+	private final void setAD_EntityType_ID()
 	{
 		int AD_EntityType_ID = getAD_EntityType_ID();
 		if (AD_EntityType_ID == 0)
@@ -221,17 +67,6 @@ public class MEntityType extends X_AD_EntityType
 			setAD_EntityType_ID(AD_EntityType_ID+1);
 		}
 	}	//	setAD_EntityType_ID
-	
-	/**
-	 * Is System Maintained.
-	 * Any Entity Type with ID < 1000000.
-	 * @return true if D/C/U/CUST/A/EXT/XX (ID < 1000000)
-	 */
-	public boolean isSystemMaintained()
-	{
-		int id = getAD_EntityType_ID();
-		return id < s_maxAD_EntityType_ID;
-	}	//	isSystemMaintained
 	
 	/**
 	 * 	Before Save
@@ -288,7 +123,9 @@ public class MEntityType extends X_AD_EntityType
 			*/
 			setAD_EntityType_ID();
 		}	//	new
-		s_entityTypes = null;	//	reset
+		
+		CacheMgt.get().reset(I_AD_EntityType.Table_Name);
+		
 		return true;
 	}	//	beforeSave
 	
@@ -299,11 +136,10 @@ public class MEntityType extends X_AD_EntityType
 	@Override
 	protected boolean beforeDelete ()
 	{
-		if (isSystemMaintained())	//	all pre-defined
+		if (EntityTypesCache.instance.isSystemMaintained(getEntityType()))	//	all pre-defined
 		{
 			throw new AdempiereException("You cannot delete a System maintained entity");
 		}
-		s_entityTypes = null;	//	reset
 		return true;
 	}	//	beforeDelete
 	

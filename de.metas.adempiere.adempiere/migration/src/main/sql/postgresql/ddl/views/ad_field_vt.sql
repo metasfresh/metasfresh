@@ -61,6 +61,7 @@ c_trl.ad_language
 , c.iscalculated
 , f.SpanX
 , f.SpanY
+, f.EntityType as FieldEntityType
 FROM ad_tab t
 JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id
 JOIN ad_column c ON c.ad_table_id = t.ad_table_id
@@ -70,7 +71,8 @@ LEFT JOIN ad_field_trl f_trl ON f_trl.ad_field_id = f.ad_field_id AND f_trl.ad_l
 LEFT JOIN ad_fieldgroup fg ON fg.ad_fieldgroup_id = f.ad_fieldgroup_id
 LEFT JOIN ad_fieldgroup_trl fg_trl ON fg_trl.ad_fieldgroup_id = f.ad_fieldgroup_id AND fg_trl.ad_language::text = c_trl.ad_language::text
 LEFT JOIN ad_val_rule vr ON vr.ad_val_rule_id = COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)
-WHERE (f.ad_field_id IS NULL OR f.isactive = 'Y'::bpchar) AND c.isactive = 'Y'::bpchar;
+WHERE (f.ad_field_id IS NULL OR f.isactive = 'Y'::bpchar) AND c.isactive = 'Y'::bpchar
+;
 
 ALTER TABLE ad_field_vt OWNER TO adempiere;
 

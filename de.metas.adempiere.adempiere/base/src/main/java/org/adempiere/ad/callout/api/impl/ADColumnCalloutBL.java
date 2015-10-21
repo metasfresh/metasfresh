@@ -44,7 +44,7 @@ public class ADColumnCalloutBL implements IADColumnCalloutBL
 		}
 		
 		final Properties ctx = InterfaceWrapperHelper.getCtx(targetColumn);
-		final List<I_AD_ColumnCallout> fromCallouts = Services.get(IADColumnCalloutDAO.class).retrieveColumnCallouts(ctx, fromColumn_ID);
+		final List<I_AD_ColumnCallout> fromCallouts = Services.get(IADColumnCalloutDAO.class).retrieveAllColumnCallouts(ctx, fromColumn_ID);
 		
 		for (final I_AD_ColumnCallout fromCallout : fromCallouts)
 		{

@@ -32,6 +32,8 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IRolesTreeNode;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -226,7 +228,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			throw new RolePermissionsNotFoundException("@AD_Role_ID@=" + adRoleId
 					+ ", @AD_User_ID@=" + adUserId
 					+ ", @AD_Client_ID@=" + adClientId
-					+ ", @Date@=" + date);
+					+ ", @Date@=" + date, e);
 		}
 	}
 
@@ -365,6 +367,14 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		final Properties ctx = Env.getCtx();
 		final IQueryFilter<AccessTableType> aspFilter = Services.get(IASPFiltersFactory.class).getASPFiltersForClient(adClientId).getFilter(accessTableClass);
 
+		//
+		// EntityType filter: filter out those elements where EntityType is not displayed
+		final String accessTableName = InterfaceWrapperHelper.getTableName(accessTableClass);
+		final IQueryFilter<AccessTableType> entityTypeFilter = new TypedSqlQueryFilter<>("exists (select 1 from " + elementTableName + " t"
+				+ " where t." + elementColumnName + "=" + accessTableName + "." + elementColumnName
+				+ " and (" + EntityTypesCache.instance.getDisplayedInUIEntityTypeSQLWhereClause("t.EntityType") + ")"
+				+ ")");
+
 		final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 		final String COLUMNNAME_IsReadWrite = "IsReadWrite";
 
@@ -374,6 +384,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.addEqualsFilter(COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.filter(aspFilter)
+				.filter(entityTypeFilter)
 				.create()
 				.listDistinct(elementColumnName, COLUMNNAME_IsReadWrite);
 

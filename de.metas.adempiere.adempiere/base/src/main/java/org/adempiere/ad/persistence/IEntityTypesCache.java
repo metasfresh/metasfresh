@@ -50,4 +50,11 @@ interface IEntityTypesCache
 	 *         </ul>
 	 */
 	String getModelPackage(String entityType);
+
+	/** @return true if given entity type exists and it's active */
+	boolean isActive(String entityType);
+
+	/** @return true if an entity which has given entity type shall be displayed in UI */ 
+	boolean isDisplayedInUI(String entityType);
+
 }

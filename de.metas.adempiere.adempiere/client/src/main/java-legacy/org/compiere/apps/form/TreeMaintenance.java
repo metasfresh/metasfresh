@@ -16,9 +16,11 @@ package org.compiere.apps.form;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.spi.IPOTreeSupport;
 import org.adempiere.util.Services;
@@ -60,7 +62,8 @@ public class TreeMaintenance {
 
 		final String sourceTableName = m_tree.getSourceTableName();
 		final IPOTreeSupport poTreeSupport = treeSupportFactory.get(m_tree.getSourceTableName());
-		String sql = poTreeSupport.getNodeInfoSelectSQL(m_tree);
+		final List<Object> sqlParams = new ArrayList<>();
+		String sql = poTreeSupport.getNodeInfoSelectSQL(m_tree, sqlParams);
 		sql = Env.getUserRolePermissions().addAccessSQL(sql, sourceTableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
 		sql += " ORDER BY 2";
 		log.config(sql);
@@ -69,7 +72,8 @@ public class TreeMaintenance {
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement (sql, null);
+			pstmt = DB.prepareStatement (sql, ITrx.TRXNAME_None);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery ();
 			while (rs.next ())
 			{
@@ -205,6 +209,7 @@ public class TreeMaintenance {
 		 * 	To String
 		 *	@return	String Representation
 		 */
+		@Override
 		public String toString ()
 		{
 			String retValue = name;

@@ -294,7 +294,7 @@ public class ProcessParameterPanel extends Panel
 			Hbox box = new Hbox();
 			box.appendChild(editor.getComponent());
 			//
-			GridFieldVO voF2 = GridFieldVO.createParameter(voF);
+			GridFieldVO voF2 = GridFieldVO.createParameterTo(voF);
 			GridField mField2 = new GridField(voF2);
 			m_mFields2.add(mField2);
 			// The Editor

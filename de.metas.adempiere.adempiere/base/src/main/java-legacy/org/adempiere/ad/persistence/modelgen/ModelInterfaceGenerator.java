@@ -41,11 +41,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 
+import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 import org.adempiere.util.ClassnameScanner;
-import org.compiere.model.MEntityType;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.util.CLogger;
@@ -580,15 +580,15 @@ public class ModelInterfaceGenerator
 	public static boolean isGenerateModelGetterForEntity(int AD_Table_ID, String toEntityType)
 	{
 		final String fromEntityType = DB.getSQLValueString(null, "SELECT EntityType FROM AD_Table where AD_Table_ID=?", AD_Table_ID);
-		final MEntityType fromEntity = MEntityType.get(Env.getCtx(), fromEntityType);
-		final MEntityType toEntity = MEntityType.get(Env.getCtx(), toEntityType);
+		final boolean fromEntity_SystemMaintained = EntityTypesCache.instance.isSystemMaintained(fromEntityType);
+		final boolean toEntity_SystemMaintained = EntityTypesCache.instance.isSystemMaintained(toEntityType);
 		return
 		// Same entities
 		fromEntityType.equals(toEntityType)
 				// Both are system entities
-				|| (fromEntity.isSystemMaintained() && toEntity.isSystemMaintained())
+				|| (fromEntity_SystemMaintained && toEntity_SystemMaintained)
 				// Not Sys Entity referencing a Sys Entity
-				|| (!fromEntity.isSystemMaintained() && toEntity.isSystemMaintained());
+				|| (!fromEntity_SystemMaintained && toEntity_SystemMaintained);
 	}
 
 	/**
@@ -598,19 +598,12 @@ public class ModelInterfaceGenerator
 	 * @param entityType
 	 * @return
 	 */
-	public static String getModelPackage(String entityType)
+	public static final String getModelPackage(final String entityType)
 	{
 		if ("D".equals(entityType))
 			return "org.compiere.model";
 
-		for (MEntityType entity : MEntityType.getEntityTypes(Env.getCtx()))
-		{
-			if (entity.getEntityType().equals(entityType))
-			{
-				return entity.getModelPackage();
-			}
-		}
-		return null;
+		return EntityTypesCache.instance.getModelPackage(entityType);
 	}
 
 	private static String getModelPackageForClassName(final String referenceClassName)

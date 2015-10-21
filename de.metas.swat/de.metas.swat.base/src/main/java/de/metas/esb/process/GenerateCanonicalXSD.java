@@ -44,6 +44,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -55,7 +56,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.MEXPFormat;
-import org.compiere.model.MEntityType;
 import org.compiere.model.MReplicationStrategy;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_ReplicationTable;
@@ -246,9 +246,8 @@ public class GenerateCanonicalXSD extends SvrProcess
 
 	private String getSchemaPackageDirectory()
 	{
-		final MEntityType et = MEntityType.get(getCtx(), p_EntityType);
-		final String modelPackage = et.getModelPackage();
-		Check.assume(!Check.isEmpty(modelPackage), "Entity type " + et.getName() + " has a ModelPackage set");
+		final String modelPackage = EntityTypesCache.instance.getModelPackage(p_EntityType);
+		Check.assumeNotEmpty(modelPackage, "Entity type " + p_EntityType + " has a ModelPackage set");
 
 		final int idx = modelPackage.indexOf(".model");
 		return modelPackage.substring(0, idx).replace(".", "/");

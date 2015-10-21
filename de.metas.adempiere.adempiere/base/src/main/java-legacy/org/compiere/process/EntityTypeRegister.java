@@ -16,9 +16,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.compiere.model.MEntityType;
-import org.compiere.util.AdempiereSystemError;
-import org.compiere.util.AdempiereUserError;
 
 /**
  * 	Register Entity Type
@@ -31,35 +28,15 @@ import org.compiere.util.AdempiereUserError;
 @Deprecated
 public class EntityTypeRegister extends SvrProcess
 {
-	/** Register Entity Type			*/
-	protected int	p_AD_EntityType_ID = 0;
-	
-	/**
-	 * 	Prepare
-	 */
 	@Override
 	protected void prepare ()
 	{
-		p_AD_EntityType_ID = getRecord_ID();
 	}	//	prepare
 
-	/**
-	 * 	Process
-	 *	@return summary
-	 *	@throws Exception
-	 */
 	@Override
-	protected String doIt ()
-		throws Exception
+	protected String doIt () throws Exception
 	{
-		log.info("AD_EntityType_ID=" + p_AD_EntityType_ID);
-		MEntityType et = new MEntityType(getCtx(), p_AD_EntityType_ID, get_TrxName());
-		if (et.isSystemMaintained())
-			throw new AdempiereUserError("You cannot register a System maintained entity");
-		
-		throw new AdempiereSystemError("To register an Entity Type, contact Adempiere directly");
-		
-	//	return "Not Supported Yet";
+		throw new UnsupportedOperationException();
 	}	//	doIt
 	
-}	//	EntityTypeRegister
+}

@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import javax.xml.transform.sax.TransformerHandler;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pipo.AbstractElementHandler;
 import org.adempiere.pipo.Element;
 import org.adempiere.pipo.PackOut;
@@ -56,6 +57,7 @@ public class EntityTypeElementHandler extends AbstractElementHandler
 	
 	private final List<Integer> entityTypes = new ArrayList<Integer>();
 
+	@Override
 	public void startElement(Properties ctx, Element element) throws SAXException
 	{
 		final String elementValue = element.getElementValue();
@@ -95,13 +97,13 @@ public class EntityTypeElementHandler extends AbstractElementHandler
 			{		    	
 				record_log (ctx, 1, entity.getEntityType(), TAG_Name, entity.get_ID(),
 						AD_Backup_ID, Object_Status,
-						I_AD_EntityType.Table_Name, I_AD_EntityType.Table_ID);
+						I_AD_EntityType.Table_Name, InterfaceWrapperHelper.getTableId(I_AD_EntityType.class));
 			}
 			else
 			{
 				record_log (ctx, 0, entity.getEntityType(), TAG_Name, entity.get_ID(),
 						AD_Backup_ID, Object_Status,
-						I_AD_EntityType.Table_Name, I_AD_EntityType.Table_ID);
+						I_AD_EntityType.Table_Name, InterfaceWrapperHelper.getTableId(I_AD_EntityType.class));
 				throw new POSaveFailedException("Failed to save message.");
 			}
 		}
@@ -111,10 +113,12 @@ public class EntityTypeElementHandler extends AbstractElementHandler
 		}
 	}
 
+	@Override
 	public void endElement(Properties ctx, Element element) throws SAXException
 	{
 	}
 	
+	@Override
 	public void create(Properties ctx, TransformerHandler document) throws SAXException
 	{
 		// TODO

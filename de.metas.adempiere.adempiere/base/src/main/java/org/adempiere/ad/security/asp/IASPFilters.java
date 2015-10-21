@@ -47,4 +47,6 @@ public interface IASPFilters
 	 * @return SQL where clause prefixed with "AND" or empty string.
 	 */
 	<AccessTableType> String getSQLWhereClause(Class<AccessTableType> accessTableClass);
+
+	boolean isDisplayField(int adFieldId);
 }

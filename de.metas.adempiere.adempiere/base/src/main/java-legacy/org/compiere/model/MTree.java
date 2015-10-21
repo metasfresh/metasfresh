@@ -221,7 +221,7 @@ public class MTree extends MTree_Base
 	private void loadNodes (int AD_User_ID)
 	{
 		//  SQL for TreeNodes
-		StringBuffer sql = new StringBuffer("SELECT "
+		StringBuilder sql = new StringBuilder("SELECT "
 			+ "tn.Node_ID,tn.Parent_ID,tn.SeqNo,tb.IsActive "
 			+ "FROM ").append(getNodeTableName()).append(" tn"
 			+ " LEFT OUTER JOIN AD_TreeBar tb ON (tn.AD_Tree_ID=tb.AD_Tree_ID"
@@ -417,14 +417,15 @@ public class MTree extends MTree_Base
 		final String sourceTable = getSourceTableName();
 		final IPOTreeSupport poTreeSupport = treeSupportFactory.get(sourceTable);
 		
-		String sql = poTreeSupport.getNodeInfoSelectSQL(this);
+		final List<Object> sqlParams = new ArrayList<>();
+		String sql = poTreeSupport.getNodeInfoSelectSQL(this, sqlParams);
 		if (!m_editable)	//	editable = menu/etc. window
 		{
 			sql = Env.getUserRolePermissions(getCtx()).addAccessSQL(sql, sourceTable, IUserRolePermissions.SQL_FULLYQUALIFIED, m_editable);
 		}
 		log.fine(sql);
 		
-		m_nodeRowSet = DB.getRowSet (sql);
+		m_nodeRowSet = DB.getRowSet (sql, sqlParams);
 		m_nodeIdMap = new HashMap<Integer, ArrayList<Integer>>(50);
 		try 
 		{
@@ -520,29 +521,6 @@ public class MTree extends MTree_Base
 	}   //  trimTree
 
 	/**
-	 *  Diagnostics: Print tree
-	 */
-	@SuppressWarnings("unused")
-	private void dumpTree()
-	{
-		Enumeration<?> en = m_root.preorderEnumeration();
-		int count = 0;
-		while (en.hasMoreElements())
-		{
-			StringBuffer sb = new StringBuffer();
-			MTreeNode nd = (MTreeNode)en.nextElement();
-			for (int i = 0; i < nd.getLevel(); i++)
-				sb.append(" ");
-			sb.append("ID=").append(nd.getNode_ID())
-				.append(", SeqNo=").append(nd.getSeqNo())
-				.append(" ").append(nd.getName());
-			System.out.println(sb.toString());
-			count++;
-		}
-		System.out.println("Count=" + count);
-	}   //  diagPrintTree
-
-	/**
 	 *  Get Root node
 	 *  @return root
 	 */
@@ -585,7 +563,7 @@ public class MTree extends MTree_Base
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MTree[");
+		StringBuilder sb = new StringBuilder("MTree[");
 		sb.append("AD_Tree_ID=").append(getAD_Tree_ID())
 			.append(", Name=").append(getName());
 		sb.append("]");

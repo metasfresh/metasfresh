@@ -26,7 +26,6 @@ package org.adempiere.webui.session;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
@@ -35,11 +34,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.util.Check;
-import org.compiere.model.I_AD_EntityType;
-import org.compiere.model.MEntityType;
 import org.compiere.util.CLogger;
-import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 /**
@@ -89,9 +86,7 @@ public final class WebUIServletListeners implements IWebUIServletListener
 
 			//
 			// EntityType listeners
-			final Properties ctx = Env.getCtx();
-			final MEntityType[] entityTypes = MEntityType.getEntityTypes(ctx);
-			for (final I_AD_EntityType entityType : entityTypes)
+			for (final String entityType : EntityTypesCache.instance.getEntityTypeNames())
 			{
 				final IWebUIServletListener activator = loadListener(entityType);
 				if (activator != null)
@@ -115,15 +110,19 @@ public final class WebUIServletListeners implements IWebUIServletListener
 	 * @param entityType
 	 * @return loaded {@link IWebUIServletListener} or null
 	 */
-	private IWebUIServletListener loadListener(I_AD_EntityType entityType)
+	private IWebUIServletListener loadListener(final String entityType)
 	{
 		// Don't load if entityType is not active
-		if (entityType == null || !entityType.isActive())
+		if (entityType == null)
+		{
+			return null;
+		}
+		if(!EntityTypesCache.instance.isActive(entityType))
 		{
 			return null;
 		}
 
-		final String classname = entityType.getWebUIServletListenerClass();
+		final String classname = EntityTypesCache.instance.getWebUIServletListenerClass(entityType);
 		if (Check.isEmpty(classname, true))
 		{
 			return null;
@@ -132,7 +131,7 @@ public final class WebUIServletListeners implements IWebUIServletListener
 		try
 		{
 			final IWebUIServletListener listener = Util.getInstance(IWebUIServletListener.class, classname);
-			logger.config("Loaded " + listener + " (class=" + listener.getClass() + ", entityType=" + entityType.getEntityType() + ")");
+			logger.config("Loaded " + listener + " (class=" + listener.getClass() + ", entityType=" + entityType + ")");
 			return listener;
 		}
 		catch (Exception e)

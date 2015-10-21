@@ -28,6 +28,7 @@ package org.adempiere.model.tree.spi;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.compiere.model.GridTab;
 import org.compiere.model.MTree;
@@ -72,7 +73,7 @@ public interface IPOTreeSupport
 
 	public void setParent_ID(MTree_Base tree, int nodeId, int parentId, String trxName);
 
-	public String getNodeInfoSelectSQL(MTree tree);
+	public String getNodeInfoSelectSQL(MTree tree, final List<Object> sqlParams);
 
 	/**
 	 * Where Clause for selecting records from PO table
