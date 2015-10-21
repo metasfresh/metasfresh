@@ -633,7 +633,7 @@ public final class Ini implements Serializable
 	 */
 	private static String getFileName(boolean tryUserHome)
 	{
-		// Try explicitelly configured "PropertyFile" property
+		// Try explicitly configured "PropertyFile" property
 		if (System.getProperty("PropertyFile") != null)
 		{
 			return System.getProperty("PropertyFile");
@@ -641,7 +641,9 @@ public final class Ini implements Serializable
 
 		String propertyFileName = getAdempiereHome();
 		if (!propertyFileName.endsWith(File.separator))
+		{
 			propertyFileName += File.separator;
+		}
 		propertyFileName += ADEMPIERE_PROPERTY_FILE;
 
 		return propertyFileName;
@@ -884,7 +886,7 @@ public final class Ini implements Serializable
 	/**
 	 * Get Adempiere Home from Environment
 	 * 
-	 * @return Adempiere home directory; never retuns <code>null</code>
+	 * @return Adempiere home directory; never returns <code>null</code>
 	 */
 	public static String getAdempiereHome()
 	{
@@ -903,17 +905,17 @@ public final class Ini implements Serializable
 			return env;
 		}
 
-		// If running in client mode, use "USERHOME/.adempiere" folder.
+		// If running in client mode, use "USERHOME/.metas-fresh" folder.
 		if (isClient())
 		{
 			final String userHomeDir = System.getProperty("user.home");
-			env = userHomeDir + File.separator + ".adempiere";
+			env = userHomeDir + File.separator + ".metas-fresh";
 			return env;
 		}
 
 		// Fallback
 		if (env == null)
-			env = File.separator + "Adempiere";
+			env = File.separator + "metas-fresh";
 		return env;
 	}   // getAdempiereHome
 
