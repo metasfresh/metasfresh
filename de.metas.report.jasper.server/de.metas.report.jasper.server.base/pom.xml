@@ -75,6 +75,9 @@
 		</dependency>
 
 		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
+		<!-- 
+			..but don't include them here, because the endcustomer project might require different fonts 
+			that might none the less have the same names, in order to be pluggable. 
 		<dependency>
 			<groupId>jp.osdn.ocra</groupId>
 			<artifactId>jp.osdn.ocra</artifactId>
@@ -83,7 +86,7 @@
 			<groupId>jp.osdn.ocrb</groupId>
 			<artifactId>jp.osdn.ocrb</artifactId>
 		</dependency>
-
+ 		-->
 	</dependencies>
 
 	<build>
