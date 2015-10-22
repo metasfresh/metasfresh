@@ -77,6 +77,17 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
+		<!--  required for the server-side jasper -->
+		<dependency>
+			<groupId>jp.osdn.ocra</groupId>
+			<artifactId>jp.osdn.ocra</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jp.osdn.ocrb</groupId>
+			<artifactId>jp.osdn.ocrb</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
