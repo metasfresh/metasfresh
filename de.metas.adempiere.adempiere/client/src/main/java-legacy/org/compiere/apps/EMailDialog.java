@@ -258,7 +258,7 @@ public class EMailDialog
 	private final CTextField fAttachment = new CTextField(40);
 	// private CTextArea fMessage = new CTextArea(); // metas: commented
 	private RichTextEditor fMessage; // metas
-	private final ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private final StatusBar statusBar = new StatusBar();
 
 	/**

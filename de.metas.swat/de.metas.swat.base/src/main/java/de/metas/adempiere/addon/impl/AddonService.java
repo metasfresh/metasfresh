@@ -86,10 +86,8 @@ public class AddonService implements IAddonService {
 
 	private AppsAction mkCopy(final AppsAction action) {
 
-		final KeyStroke accelerator = (KeyStroke) action
-				.getValue(Action.ACCELERATOR_KEY);
-		final String toolTipText = (String) action
-				.getValue(Action.SHORT_DESCRIPTION);
+		final KeyStroke accelerator = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
+		final String toolTipText = (String) action.getValue(Action.SHORT_DESCRIPTION);
 
 		final boolean toggle;
 		final AbstractButton button = action.getButton();
@@ -99,10 +97,13 @@ public class AddonService implements IAddonService {
 			toggle = false;
 		}
 
-		final AppsAction actionCopy = new AppsAction(action.getName(), accelerator,
-				toolTipText, toggle);
-		final AppsActionAdapter adapter = toolBarActions
-				.get(action);
+		final AppsAction actionCopy = AppsAction.builder()
+				.setAction(action.getName())
+				.setAccelerator(accelerator)
+				.setToolTipText(toolTipText)
+				.setToggleButton(toggle)
+				.build();
+		final AppsActionAdapter adapter = toolBarActions.get(action);
 		
 		final AppsActionAdapter adapterCopy = new AppsActionAdapter();
 		adapterCopy.setAppsAction(actionCopy);

@@ -71,8 +71,10 @@ public class AProcess
 
 	private void initAction(final boolean small)
 	{
-		// this.action = new AppsAction(model.getActionName(), null, false);
-		this.action = new AppsAction(model.getActionName(), null, false, small);
+		this.action = AppsAction.builder()
+				.setAction(model.getActionName())
+				.setSmallSize(small)
+				.build();
 		action.setDelegate(new ActionListener()
 		{
 			@Override

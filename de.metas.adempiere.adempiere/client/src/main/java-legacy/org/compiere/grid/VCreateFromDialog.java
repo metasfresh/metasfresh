@@ -68,7 +68,7 @@ public class VCreateFromDialog extends CDialog implements ActionListener, TableM
 	private int windowNo;
 	
 	private CPanel parameterPanel = new CPanel();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private StatusBar statusBar = new StatusBar();
 	private MiniTable dataTable = new MiniTable();
 	
@@ -84,7 +84,7 @@ public class VCreateFromDialog extends CDialog implements ActionListener, TableM
 		try
 		{
 			jbInit();
-			confirmPanel.addActionListener(this);
+			confirmPanel.setActionListener(this);
 	    	
 	    	statusBar.setStatusDB("");
 			tableChanged(null);
@@ -104,7 +104,10 @@ public class VCreateFromDialog extends CDialog implements ActionListener, TableM
 		getContentPane().add(dataPane, BorderLayout.CENTER);
     	dataPane.getViewport().add(dataTable, null);
     	
-    	AppsAction selectAllAction = new AppsAction (SELECT_ALL, KeyStroke.getKeyStroke(KeyEvent.VK_A, java.awt.event.InputEvent.ALT_MASK), null);
+    	AppsAction selectAllAction = AppsAction.builder()
+    			.setAction(SELECT_ALL)
+    			.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, java.awt.event.InputEvent.ALT_MASK))
+    			.build();
     	CButton selectAllButton = (CButton)selectAllAction.getButton();
     	selectAllButton.setMargin(new Insets (0, 10, 0, 10));
     	selectAllButton.setDefaultCapable(true);
@@ -119,6 +122,7 @@ public class VCreateFromDialog extends CDialog implements ActionListener, TableM
     	southPanel.add(statusBar, BorderLayout.SOUTH);
 	}
 	
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
@@ -127,6 +131,7 @@ public class VCreateFromDialog extends CDialog implements ActionListener, TableM
 			{
 				Trx.run(new TrxRunnable()
 				{
+					@Override
 					public void run(String trxName)
 					{
 						if (save(trxName))
@@ -172,6 +177,7 @@ public class VCreateFromDialog extends CDialog implements ActionListener, TableM
 		return createFrom.save(dataTable, trxName);
 	}
 	
+	@Override
 	public void tableChanged (TableModelEvent e)
 	{
 		int type = -1;

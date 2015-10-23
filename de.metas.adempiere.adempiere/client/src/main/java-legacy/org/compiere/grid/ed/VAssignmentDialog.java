@@ -136,7 +136,10 @@ public class VAssignmentDialog extends CDialog
 	private CLabel lDescription = new CLabel(Msg.translate(Env.getCtx(), "Description"));
 	private CTextField fName = new CTextField (30);
 	private CTextField fDescription = new CTextField(30);
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true, false, false, false, false, true, true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
+			.withCancelButton(true)
+			.withZoomButton(true)
+			.build();
 	private JButton delete = ConfirmPanel.createDeleteButton(true);
 
 
@@ -150,7 +153,7 @@ public class VAssignmentDialog extends CDialog
 		fResource.addActionListener(this);
 		delete.addActionListener(this);
 		confirmPanel.addButton(delete);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		//
 		mainPanel.setLayout(mainLayout);
 		mainPanel.add(lResource,      new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
@@ -232,6 +235,7 @@ public class VAssignmentDialog extends CDialog
 	 * 	Action Listener
 	 * 	@param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		if (m_setting)
@@ -323,7 +327,7 @@ public class VAssignmentDialog extends CDialog
 		//	Set AssignDateTo
 		Timestamp assignDateFrom = fDateFrom.getTimestamp();
 		BigDecimal qty = (BigDecimal)fQty.getValue();
-		KeyNamePair uom = (KeyNamePair)m_lookup.get(fResource.getSelectedItem());
+		KeyNamePair uom = m_lookup.get(fResource.getSelectedItem());
 		int minutes = MUOMConversion.convertToMinutes(Env.getCtx(), uom.getKey(), qty);
 		Timestamp assignDateTo = TimeUtil.addMinutess(assignDateFrom, minutes);
 		m_mAssignment.setAssignDateTo (assignDateTo);

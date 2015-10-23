@@ -106,7 +106,7 @@ public class RecordAccessDialog extends CDialog
 	private CButton bUp = AEnv.getButton("Previous");
 	private CButton bDown = AEnv.getButton("Next");
 
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	/**
 	 * 	Dynamic Init
@@ -184,7 +184,7 @@ public class RecordAccessDialog extends CDialog
 		bDown.addActionListener(this);
 		bDelete.addActionListener(this);
 		bNew.addActionListener(this);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 	}	//	jbInit
 
 	/**
@@ -220,7 +220,7 @@ public class RecordAccessDialog extends CDialog
 			else if (m_currentRow > maxIndex)
 				m_currentRow = maxIndex;
 			//
-			MRecordAccess ra = (MRecordAccess)m_recordAccesss.get(m_currentRow);
+			MRecordAccess ra = m_recordAccesss.get(m_currentRow);
 			setLine(ra);
 		}
 		//	Label
@@ -281,6 +281,7 @@ public class RecordAccessDialog extends CDialog
 	 * 	Action Listener
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		if (e.getSource() == bUp)

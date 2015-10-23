@@ -297,7 +297,7 @@ public class PackingDetailsCtrl
 			}
 		});
 
-		view.addConfirmPanelListener(new ActionListener()
+		view.setConfirmPanelListener(new ActionListener()
 		{
 			public void actionPerformed(final ActionEvent e)
 			{

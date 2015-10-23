@@ -108,7 +108,7 @@ public class RecordInfo extends CDialog
 
 	private CPanel	mainPanel	= new CPanel (new BorderLayout(0,0));
 	private VTable table = new VTable();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(false);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOK();
 
 	/** The Data		*/
 	private Vector<Vector<String>>	m_data = new Vector<Vector<String>>();

@@ -135,7 +135,7 @@ public class VProductConfigurationBOM extends CPanel
 			createMainPanel();
 			CScrollPane scroll = new CScrollPane (this);
 			m_frame.getContentPane().add(scroll, BorderLayout.CENTER);
-			confirmPanel.addActionListener(this);
+			confirmPanel.setActionListener(this);
 			//	South
 			m_frame.getContentPane().add(confirmPanel, BorderLayout.SOUTH);
 			//Tree stuff
@@ -219,7 +219,7 @@ public class VProductConfigurationBOM extends CPanel
 
 	private static final int	WINDOW_WIDTH = 600;	//	width of the window
 	//
-	private ConfirmPanel confirmPanel = new ConfirmPanel (true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private CPanel selectionPanel = new CPanel(new ALayout());
 	private CComboBox productField;
 	private VNumber productQty = new VNumber("Qty", true, false, true, DisplayType.Quantity, Msg.translate(Env.getCtx(), "Qty"));
@@ -489,7 +489,7 @@ public class VProductConfigurationBOM extends CPanel
                       log.log(Level.SEVERE, "ERROR:", s);
             }
             
-		return (MPPProductBOMLine[])col.toArray(new MPPProductBOMLine[col.size()]);
+		return col.toArray(new MPPProductBOMLine[col.size()]);
 	}
 
 	/**
@@ -572,7 +572,7 @@ public class VProductConfigurationBOM extends CPanel
 			JRadioButton b = new JRadioButton(title);
 			//String groupName = String.valueOf(parentM_Product_ID) + "_" + bomType;
 			String groupName = String.valueOf(getProductFromMPPProductBOM(PP_Product_BOM_ID).get_ID()) + "_" + bomType;
-			ButtonGroup group = (ButtonGroup)m_buttonGroups.get(groupName);
+			ButtonGroup group = m_buttonGroups.get(groupName);
 			if (group == null)
 			{
 				log.fine("ButtonGroup=" + groupName);
@@ -743,7 +743,7 @@ public class VProductConfigurationBOM extends CPanel
 			if (source == m_selectionList.get(i))
 			{
 				boolean selected = isSelectionSelected(source);
-				VNumber qty = (VNumber)m_qtyList.get(i);
+				VNumber qty = m_qtyList.get(i);
 				qty.setReadWrite(selected);
 				return;
 			}
@@ -894,7 +894,7 @@ public class VProductConfigurationBOM extends CPanel
       //Collection<MPPProductBOMLine> col = new ArrayList<MPPProductBOMLine>();
       //Collections.addAll(col, bomLines);
 
-      m_BOMLevelToLinesMap.put(new Integer(bomLevel), (ArrayList)col);
+      m_BOMLevelToLinesMap.put(new Integer(bomLevel), col);
       MPPProductBOMLine m_MPPProductBOMLine = bomLines[0];
       int PP_Product_BOM_ID = m_MPPProductBOMLine.getPP_Product_BOM_ID();
       m_ConfigBOMIDToBOMLevelToLinesMap.put(new Integer(PP_Product_BOM_ID), m_BOMLevelToLinesMap);
@@ -931,11 +931,11 @@ public class VProductConfigurationBOM extends CPanel
       {
          if (isSelectionSelected(m_selectionList.get(i)))
 		{
-		   int PP_Product_BOMLine_ID = ((Integer)m_bomLineIDList.get(i)).intValue();
+		   int PP_Product_BOMLine_ID = m_bomLineIDList.get(i).intValue();
 		   log.fine("PP_Product_BOMLine_ID: " + PP_Product_BOMLine_ID);
 		   MPPProductBOMLine m_MPPProductBOMLine = new MPPProductBOMLine(Env.getCtx(), PP_Product_BOMLine_ID, null);
 		
-			m_BOMLevelToLinesMapFromKey = (HashMap<Integer, ArrayList<MPPProductBOMLine>>)m_ConfigBOMIDToBOMLevelToLinesMapFromSelectionList.get(new Integer(m_MPPProductBOMLine.getPP_Product_BOM_ID()));
+			m_BOMLevelToLinesMapFromKey = m_ConfigBOMIDToBOMLevelToLinesMapFromSelectionList.get(new Integer(m_MPPProductBOMLine.getPP_Product_BOM_ID()));
 
 			if (m_BOMLevelToLinesMapFromKey == null)
 			{
@@ -948,7 +948,7 @@ public class VProductConfigurationBOM extends CPanel
 			}
 			else
 			{
-				ArrayList<MPPProductBOMLine> bomLines = (ArrayList<MPPProductBOMLine>)m_BOMLevelToLinesMapFromKey.get(getBomLevelBetweenPPProductBOMIDs(PP_ConfigProduct_BOM_ID, m_MPPProductBOMLine.getPP_Product_BOM_ID()));
+				ArrayList<MPPProductBOMLine> bomLines = m_BOMLevelToLinesMapFromKey.get(getBomLevelBetweenPPProductBOMIDs(PP_ConfigProduct_BOM_ID, m_MPPProductBOMLine.getPP_Product_BOM_ID()));
 				bomLines.add(m_MPPProductBOMLine);
 			}
 		}	//	line selected
@@ -970,7 +970,7 @@ public class VProductConfigurationBOM extends CPanel
          
          log.fine("Total BOM line's: " + bomLines.size());
          for(int j = 0; j < bomLines.size(); j++) {
-            MPPProductBOMLine m_MPPProductBOMLine = (MPPProductBOMLine)bomLines.get(j);
+            MPPProductBOMLine m_MPPProductBOMLine = bomLines.get(j);
             log.fine("bom line #: " + j + " product: " + m_MPPProductBOMLine.getDescription());
 
          }
@@ -1006,7 +1006,7 @@ public class VProductConfigurationBOM extends CPanel
          
             log.fine("Total bom lines: " + bomLines.size());
             for(int count = 0; count < bomLines.size(); count++) {
-              MPPProductBOMLine m_MPPProductBOMLine = (MPPProductBOMLine)bomLines.get(count);
+              MPPProductBOMLine m_MPPProductBOMLine = bomLines.get(count);
               log.fine("bom line #: " + count + " product: " + m_MPPProductBOMLine.getDescription());
 
 
@@ -1578,8 +1578,8 @@ public class VProductConfigurationBOM extends CPanel
 		{
 			if (isSelectionSelected(m_selectionList.get(i)))
 			{
-				BigDecimal qty = (BigDecimal)((VNumber)m_qtyList.get(i)).getValue();
-				int M_Product_ID = ((Integer)m_productList.get(i)).intValue();
+				BigDecimal qty = (BigDecimal)m_qtyList.get(i).getValue();
+				int M_Product_ID = m_productList.get(i).intValue();
 				//	Create Line
 				MInvoiceLine il = new MInvoiceLine (invoice);
 				il.setM_Product_ID(M_Product_ID, true);
@@ -1618,8 +1618,8 @@ public class VProductConfigurationBOM extends CPanel
 		{
 			if (isSelectionSelected(m_selectionList.get(i)))
 			{
-				BigDecimal qty = (BigDecimal)((VNumber)m_qtyList.get(i)).getValue();
-				int M_Product_ID = ((Integer)m_productList.get(i)).intValue();
+				BigDecimal qty = (BigDecimal)m_qtyList.get(i).getValue();
+				int M_Product_ID = m_productList.get(i).intValue();
 				//	Create Line
 				MProjectLine pl = new MProjectLine (project);
 				pl.setM_Product_ID(M_Product_ID);

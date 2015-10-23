@@ -665,7 +665,12 @@ public class APanel extends CPanel
 
 		//
 		// Create the action/button.
-		final AppsAction action = new AppsAction(actionName, accelerator, toggle, isTabIncluded); // metas
+		final AppsAction action = AppsAction.builder()
+				.setAction(actionName)
+				.setAccelerator(accelerator)
+				.setToggleButton(toggle)
+				.setSmallSize(isTabIncluded)
+				.build();
 		action.setDelegate(this);
 		
 		// Add the action to menu (if any)

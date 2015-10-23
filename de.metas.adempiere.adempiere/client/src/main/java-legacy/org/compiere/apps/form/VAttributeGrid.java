@@ -82,6 +82,7 @@ public class VAttributeGrid extends CPanel
 	 *	@param WindowNo
 	 *	@param frame
 	 */
+	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		m_WindowNo = WindowNo;
@@ -92,7 +93,7 @@ public class VAttributeGrid extends CPanel
 		this.add(tabbedPane, BorderLayout.CENTER);
 		this.add(confirmPanel, BorderLayout.SOUTH);
 		tabbedPane.addChangeListener(this);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		//
 		tabbedPane.add(selectPanel, Msg.getMsg(Env.getCtx(), "Selection"));
 		selectPanel.add(attributeLabel1, new ALayoutConstraint(0,0));
@@ -161,7 +162,7 @@ public class VAttributeGrid extends CPanel
 	private VComboBox 	pickPriceList = new VComboBox();
 	private CLabel 		labelWarehouse = new CLabel(Msg.getElement(Env.getCtx(), "M_Warehouse_ID"));
 	private VComboBox 	pickWarehouse = new VComboBox();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	//
 	private CPanel		gridPanel = new CPanel(new BorderLayout());
 	private CPanel		modePanel = new CPanel();
@@ -171,6 +172,7 @@ public class VAttributeGrid extends CPanel
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose ()
 	{
 		if (m_frame != null)
@@ -236,6 +238,7 @@ public class VAttributeGrid extends CPanel
 	 * 	Change Listener
 	 *	@param e event
 	 */
+	@Override
 	public void stateChanged (ChangeEvent e)
 	{
 		if (e.getSource() != tabbedPane)
@@ -248,6 +251,7 @@ public class VAttributeGrid extends CPanel
 	 * 	Action Performed
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 	//	log.fine(e.toString());

@@ -91,7 +91,7 @@ public class LetterDialog
 	private final CPanel mainPanel = new CPanel();
 	private final CPanel headerPanel = new CPanel();
 	private RichTextEditor fMessage;
-	private final ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private final StatusBar statusBar = new StatusBar();
 
 	@Override

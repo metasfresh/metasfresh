@@ -492,7 +492,10 @@ public final class AMenu extends CFrame
 		{
 			final KeyStroke ks = WindowMenu.ShowAllWindows_KeyStroke;
 			this.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ks, WindowMenu.ShowAllWindows_ActionName);
-			AppsAction action = new AppsAction(WindowMenu.ShowAllWindows_ActionName, ks, false);
+			final AppsAction action = AppsAction.builder()
+					.setAction(WindowMenu.ShowAllWindows_ActionName)
+					.setAccelerator(ks)
+					.build();
 			this.getRootPane().getActionMap().put(WindowMenu.ShowAllWindows_ActionName, action);
 			action.setDelegate(this);
 		}

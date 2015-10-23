@@ -143,7 +143,7 @@ public class CreateInvoiceCandidateDialog
 	private final JLabel discountLabel = new JLabel();
 	private final VNumber discountField;
 
-	private final ConfirmPanel confirmPanel = new ConfirmPanel(true); // withCancelButton
+	private final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	private final int partnerId;
 	private final int currencyId;

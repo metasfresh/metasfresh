@@ -130,8 +130,10 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 
 	private final CPanel centerPanel = new CPanel();
 
-	private final ConfirmPanel confirmPanel =
-			new ConfirmPanel(true, false, true, false, false, false, true);
+	private final ConfirmPanel confirmPanel = ConfirmPanel.builder()
+			.withCancelButton(true)
+			.withResetButton(true)
+			.build();
 
 	private final CardLayout detailsLayout = new CardLayout();
 
@@ -214,16 +216,19 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 		// add a tree model listener to expand newly added nodes.
 		packingTreeModel.addTreeModelListener(new TreeModelListener()
 		{
+			@Override
 			public void treeNodesChanged(TreeModelEvent e)
 			{ /* Nothing to do */
 			}
 
+			@Override
 			public void treeNodesInserted(final TreeModelEvent e)
 			{
 				// note: the invokeLate is absolutely necessary. Otherwise the
 				// tree would be corrupted.
 				SwingUtilities.invokeLater(new Runnable()
 				{
+					@Override
 					public void run()
 					{
 						showNode(e.getTreePath());
@@ -231,10 +236,12 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 				});
 			}
 
+			@Override
 			public void treeNodesRemoved(TreeModelEvent e)
 			{
 			}
 
+			@Override
 			public void treeStructureChanged(TreeModelEvent e)
 			{
 			}
@@ -256,9 +263,9 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 	 * 
 	 * @param l
 	 */
-	public void addConfirmPanelListener(final ActionListener l)
+	public void setConfirmPanelListener(final ActionListener l)
 	{
-		confirmPanel.addActionListener(l);
+		confirmPanel.setActionListener(l);
 	}
 
 	public void addPackingTreeListener(final IPackingTreeListener l)
@@ -605,6 +612,7 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 		fUsedBinsSum.setText(summary);
 	}
 
+	@Override
 	public void propertyChange(final PropertyChangeEvent evt)
 	{
 		if (PackingDetailsMd.PACK_VOLUME.equals(evt.getPropertyName()))
@@ -662,7 +670,7 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 		else if (PackingDetailsMd.PI_WEIGHT.equals(evt.getPropertyName()))
 		{
 			final BigDecimal newVal = (BigDecimal)evt.getNewValue();
-			if (!newVal.equals((BigDecimal)fIWeight.getValue()))
+			if (!newVal.equals(fIWeight.getValue()))
 			{
 				// only set the value, if there is a change..
 				fIWeight.setValue(newVal.setScale(2, BigDecimal.ROUND_HALF_UP));

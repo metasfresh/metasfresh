@@ -81,8 +81,10 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	private BorderLayout selPanelLayout = new BorderLayout();
 	
 	private FlowLayout northPanelLayout = new FlowLayout();
-	private ConfirmPanel confirmPanelSel = new ConfirmPanel(true);
-	private ConfirmPanel confirmPanelGen = new ConfirmPanel(false, true, false, false, false, false, true);
+	private ConfirmPanel confirmPanelSel = ConfirmPanel.newWithOKAndCancel();
+	private ConfirmPanel confirmPanelGen = ConfirmPanel.builder()
+			.withRefreshButton(true)
+			.build();
 	private StatusBar statusBar = new StatusBar();
 	private CPanel genPanel = new CPanel();
 	private BorderLayout genLayout = new BorderLayout();
@@ -135,7 +137,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 		selPanel.add(confirmPanelSel, BorderLayout.SOUTH);
 		selPanel.add(scrollPane, BorderLayout.CENTER);
 		scrollPane.getViewport().add(miniTable, null);
-		confirmPanelSel.addActionListener(this);
+		confirmPanelSel.setActionListener(this);
 		//
 		tabbedPane.add(genPanel, Msg.getMsg(Env.getCtx(), "Generate"));
 		genPanel.setLayout(genLayout);
@@ -144,7 +146,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 		info.setBackground(AdempierePLAF.getFieldBackground_Inactive());
 		info.setEditable(false);
 		genPanel.add(confirmPanelGen, BorderLayout.SOUTH);
-		confirmPanelGen.addActionListener(this);
+		confirmPanelGen.setActionListener(this);
 	}	//	jbInit
 	
 	/**
@@ -179,6 +181,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	 *	Action Listener
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		log.info("Cmd=" + e.getActionCommand());
@@ -203,6 +206,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	 *	Change Listener (Tab changed)
 	 *  @param e event
 	 */
+	@Override
 	public void stateChanged (ChangeEvent e)
 	{
 		int index = tabbedPane.getSelectedIndex();
@@ -213,6 +217,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	 *  Table Model Listener
 	 *  @param e event
 	 */
+	@Override
 	public void tableChanged(TableModelEvent e)
 	{
 		int rowsSelected = 0;
@@ -328,6 +333,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	 *  Called from the Worker before processing
 	 *  @param pi process info
 	 */
+	@Override
 	public void lockUI (ProcessInfo pi)
 	{
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -339,6 +345,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	 *  Called from the Worker when processing is done
 	 *  @param pi result of execute ASync call
 	 */
+	@Override
 	public void unlockUI (ProcessInfo pi)
 	{
 		setEnabled(true);
@@ -351,6 +358,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	 *  Is the UI locked (Internal method)
 	 *  @return true, if UI is locked
 	 */
+	@Override
 	public boolean isUILocked()
 	{
 		return isEnabled();
@@ -361,6 +369,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	 *  Called from the Worker
 	 *  @param pi ProcessInfo
 	 */
+	@Override
 	public void executeASync (ProcessInfo pi)
 	{
 	}   //  executeASync

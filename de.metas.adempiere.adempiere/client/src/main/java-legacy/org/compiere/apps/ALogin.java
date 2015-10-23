@@ -168,7 +168,7 @@ public final class ALogin extends CDialog
 	private StatusBar statusBar = new StatusBar();
 	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
 			.withCancelButton(true)
-			.withText(true)
+			.withoutText()
 			.build();
 
 	/** Server Connection */

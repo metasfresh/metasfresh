@@ -332,7 +332,7 @@ public abstract class Info extends Component
 			.withCustomizeButton(true)
 			.withHistoryButton(true)
 			.withZoomButton(true)
-			.withText(true)
+			.withoutText()
 			.build();
 	// Begin - [FR 1823612 ] Product Info Screen Improvements
 	protected CPanel addonPanel = new CPanel();

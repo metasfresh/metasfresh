@@ -126,6 +126,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	 * @param frame
 	 *            frame
 	 */
+	@Override
 	public void init(int WindowNo, FormFrame frame) {
 		log.info("");
 		m_WindowNo = WindowNo;
@@ -161,11 +162,14 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	private VLookup fWarehouse;
 	private VLookup fBPartner;
 
-	private ConfirmPanel confirmPanelSel = new ConfirmPanel(true, true, false,
-			false, false, false, true);
-
-	private ConfirmPanel confirmPanelGen = new ConfirmPanel(false, true, false,
-			false, false, false, true);
+	private ConfirmPanel confirmPanelSel = ConfirmPanel.builder()
+			.withCancelButton(true)
+			.withRefreshButton(true)
+			.build();
+	private ConfirmPanel confirmPanelGen = ConfirmPanel.builder()
+			.withCancelButton(false)
+			.withRefreshButton(true)
+			.build();
 	private StatusBar statusBar = new StatusBar();
 	private CPanel genPanel = new CPanel();
 	private BorderLayout genLayout = new BorderLayout();
@@ -239,6 +243,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		final JButton selectAll = new JButton(Msg.getMsg(Env.getCtx(),
 				MSG_SELECT_ALL));
 		selectAll.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				setAllSelected(true);
 			}
@@ -248,6 +253,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		final JButton unselectAll = new JButton(Msg.getMsg(Env.getCtx(),
 				MSG_UNSELECT_ALL));
 		unselectAll.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				setAllSelected(false);
 			}
@@ -427,6 +433,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	/**
 	 * Dispose
 	 */
+	@Override
 	public void dispose() {
 		if (m_frame != null)
 			m_frame.dispose();
@@ -452,6 +459,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		else if (e.getActionCommand().equals(ConfirmPanel.A_REFRESH))
 		{
 			final Runnable computeValues = new Runnable() {
+				@Override
 				public void run() {
 
 					statusBar.setStatusLine(Msg.getMsg(Env.getCtx(), MSG_COMPUTING_DATA));
@@ -496,6 +504,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	 * @param e
 	 *            event
 	 */
+	@Override
 	public void vetoableChange(PropertyChangeEvent e) {
 		log.info(e.getPropertyName() + "=" + e.getNewValue());
 
@@ -770,6 +779,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	 * @param e
 	 *            event
 	 */
+	@Override
 	public void stateChanged(ChangeEvent e) {
 		int index = tabbedPane.getSelectedIndex();
 		m_selectionActive = (index == 0);
@@ -781,6 +791,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	 * @param e
 	 *            event
 	 */
+	@Override
 	public void tableChanged(TableModelEvent e) {
 
 		int rowsSelected = 0;
@@ -1064,6 +1075,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	 * 
 	 * @return true, if UI is locked
 	 */
+	@Override
 	public boolean isUILocked()
 	{
 		return this.isEnabled();
@@ -1075,6 +1087,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	 * @param pi
 	 *            ProcessInfo
 	 */
+	@Override
 	public void executeASync(ProcessInfo pi)
 	{
 	} // executeASync

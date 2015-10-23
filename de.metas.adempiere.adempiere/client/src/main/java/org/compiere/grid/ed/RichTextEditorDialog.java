@@ -84,7 +84,7 @@ public class RichTextEditorDialog extends CDialog
 		mainPanel.add(editor, BorderLayout.CENTER);
 		editor.setPreferredSize(new Dimension(600, 600));
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		//
 		setHtmlText(htmlText);
 	} // init
@@ -95,7 +95,7 @@ public class RichTextEditorDialog extends CDialog
 	private String m_text;
 
 	private final RichTextEditor editor = new RichTextEditor();
-	private final ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private boolean m_isPressedOK = false;
 	
 	@Override

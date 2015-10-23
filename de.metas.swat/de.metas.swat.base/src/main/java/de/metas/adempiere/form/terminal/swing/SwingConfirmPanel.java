@@ -32,8 +32,10 @@ import javax.swing.AbstractButton;
 
 import net.miginfocom.swing.MigLayout;
 
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.swing.CButton;
-import org.compiere.swing.CToggleButton;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.ConfirmPanel;
 import de.metas.adempiere.form.terminal.IComponent;
@@ -92,7 +94,9 @@ public class SwingConfirmPanel extends ConfirmPanel
 
 		this.buttonSize = buttonSize;
 
-		panel = new org.compiere.apps.ConfirmPanel(withCancel);
+		panel = org.compiere.apps.ConfirmPanel.builder()
+				.withCancelButton(true)
+				.build();
 
 		final MigLayout migLayout = new MigLayout("ins 5 5 15 5", "[grow]", "[]");
 		panel.setLayout(migLayout);
@@ -120,35 +124,21 @@ public class SwingConfirmPanel extends ConfirmPanel
 	@Override
 	public ITerminalButton addButton(final String action)
 	{
-		final CButton buttonSwing = (CButton)panel.addButton(action, null, null, false);
-		buttonSwing.addActionListener(buttonsActionListener);
-		panel.add(buttonSwing, "dock west, " + buttonSize);
-
-		// Button shall be not focusable so it doesn't interfere with components which need permanent focus
-		buttonSwing.setFocusable(false);
-
-		final ITerminalButton button = new SwingTerminalButtonWrapper(getTerminalContext(), buttonSwing);
-		return button;
+		final boolean toogle = false;
+		return addButton(action, toogle);
 	}
 
 	@Override
 	public ITerminalButton addButton(final String action, final boolean toogle)
 	{
-		final AbstractButton buttonSwing;
-		if (toogle)
-		{
-			buttonSwing = (CToggleButton)panel.addButton(action, null, null, toogle);
-			buttonSwing.addActionListener(buttonsActionListener);
-			// Button shall be not focusable so it doesn't interfere with components which need permanent focus
-			buttonSwing.setFocusable(false);
-		}
-		else
-		{
-			buttonSwing = (CButton)panel.addButton(action, null, null, toogle);
-			buttonSwing.addActionListener(buttonsActionListener);
-			// Button shall be not focusable so it doesn't interfere with components which need permanent focus
-			buttonSwing.setFocusable(false);
-		}
+		final AbstractButton buttonSwing = (AbstractButton)panel.addButton(action, null, null, toogle);
+		buttonSwing.addActionListener(buttonsActionListener);
+		// Button shall be not focusable so it doesn't interfere with components which need permanent focus
+		buttonSwing.setFocusable(false);
+		
+		final String buttonText = Services.get(IMsgBL.class).translate(Env.getCtx(), action);
+		buttonSwing.setText(buttonText);
+		
 		panel.add(buttonSwing, "dock west, " + buttonSize);
 
 		final ITerminalButton button = new SwingTerminalButtonWrapper(getTerminalContext(), buttonSwing);

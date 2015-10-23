@@ -158,7 +158,7 @@ public class Editor extends CDialog
 	private CMenuItem mImport = new CMenuItem();
 	private CMenuItem mExport = new CMenuItem();
 	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
-			.withText(true)
+			.withoutText()
 			.build();
 	private StatusBar statusBar = new StatusBar(false);
 

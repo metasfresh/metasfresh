@@ -23,10 +23,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Vector;
 import java.util.logging.Level;
 
 import javax.swing.JButton;
@@ -36,22 +32,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.minigrid.MiniTable;
-import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCharge;
-import org.compiere.model.MElementValue;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
 
@@ -75,6 +63,7 @@ public class VCharge extends Charge
 	 *  @param WindowNo window
 	 *  @param frame parent frame
 	 */
+	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		log.info("");
@@ -117,7 +106,7 @@ public class VCharge extends Charge
 	private FlowLayout accountOKLayout = new FlowLayout();
 	private JScrollPane dataPane = new JScrollPane();
 	private MiniTable dataTable = new MiniTable();
-	private ConfirmPanel confirmPanel = new ConfirmPanel();
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOK();
 
 	/**
 	 *  Static Init
@@ -147,7 +136,7 @@ public class VCharge extends Charge
 		accountButton.addActionListener(this);
 		accountOKPanel.setLayout(accountOKLayout);
 		accountOKLayout.setAlignment(FlowLayout.RIGHT);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		//
 		mainPanel.add(newPanel, BorderLayout.NORTH);
 		newPanel.add(valueLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
@@ -172,6 +161,7 @@ public class VCharge extends Charge
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
@@ -183,6 +173,7 @@ public class VCharge extends Charge
 	 *	Action Listener
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		log.info(e.getActionCommand());

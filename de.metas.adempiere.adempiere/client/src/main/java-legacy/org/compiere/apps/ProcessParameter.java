@@ -95,14 +95,14 @@ public class ProcessParameter extends CDialog
 	{
 		final CPanel mainPanel = new CPanel();
 		final BorderLayout mainLayout = new BorderLayout();
-		final ConfirmPanel confirmPanel = new ConfirmPanel(true);
+		final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 		mainPanel.setLayout(mainLayout);
 //		centerPanel.setLayout(centerLayout);
 		this.getContentPane().add(mainPanel);
 		mainPanel.add(parametersPanel, BorderLayout.CENTER);
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 	}	//	jbInit
 
 	/**

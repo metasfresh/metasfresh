@@ -252,7 +252,7 @@ public class ValuePreference extends CDialog
 	private BorderLayout currentLayout = new BorderLayout();
 	private JTable table = new JTable();
 
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private JButton bDelete;
 
 	/**
@@ -359,7 +359,7 @@ public class ValuePreference extends CDialog
 		cbWindow.addActionListener(this);
 
 		//  Other
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		bDelete = confirmPanel.addButton(ConfirmPanel.createDeleteButton(true));
 		bDelete.addActionListener(this);
 		setExplanation();

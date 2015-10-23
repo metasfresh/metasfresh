@@ -178,7 +178,14 @@ public class VOrderPlanning extends CPanel
 	/** Static Layout */
 	private CPanel southPanel = new CPanel();
 	private BorderLayout southLayout = new BorderLayout();
-	ConfirmPanel confirmPanel = new ConfirmPanel(true, true, true, true, true, true, true);
+	ConfirmPanel confirmPanel = ConfirmPanel.builder()
+			.withCancelButton(true)
+			.withRefreshButton(true)
+			.withResetButton(true)
+			.withCustomizeButton(true)
+			.withHistoryButton(true)
+			.withZoomButton(true)
+			.build();
 	protected CPanel parameterPanel = new CPanel();
 	private JScrollPane scrollPane = new JScrollPane();
 	//

@@ -115,7 +115,7 @@ public class PAttributeInstance extends CDialog
 	private CPanel northPanel = new CPanel();
 	private BorderLayout northLayout = new BorderLayout();
 	private JScrollPane centerScrollPane = new JScrollPane();
-	private ConfirmPanel confirmPanel = new ConfirmPanel (true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private CCheckBox showAll = new CCheckBox (Msg.getMsg(Env.getCtx(), "ShowAll"));
 	//
 	private MiniTable 			m_table = new MiniTable();

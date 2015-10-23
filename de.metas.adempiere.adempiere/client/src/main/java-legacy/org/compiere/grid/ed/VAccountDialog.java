@@ -227,7 +227,7 @@ public final class VAccountDialog extends CDialog
 	//
 	private CPanel panel = new CPanel();
 	private BorderLayout panelLayout = new BorderLayout();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private TitledBorder titledBorder;
 	private StatusBar statusBar = new StatusBar();
 	private CPanel northPanel = new CPanel();

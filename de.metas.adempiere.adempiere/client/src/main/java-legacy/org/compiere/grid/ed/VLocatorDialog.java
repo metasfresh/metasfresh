@@ -121,7 +121,7 @@ public class VLocatorDialog extends CDialog
 	private CPanel southPanel = new CPanel();
 	private BorderLayout panelLayout = new BorderLayout();
 	private GridBagLayout gridBagLayout = new GridBagLayout();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private BorderLayout southLayout = new BorderLayout();
 	//
 	private VComboBox fLocator = new VComboBox();
@@ -269,6 +269,7 @@ public class VLocatorDialog extends CDialog
 	 *	ActionListener
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		Object source = e.getSource();
@@ -302,12 +303,14 @@ public class VLocatorDialog extends CDialog
 	 *	KeyListener - nop
 	 *  @param e event
 	 */
+	@Override
 	public void keyPressed(KeyEvent e)
 	{}
 	/**
 	 *	KeyListener
 	 *  @param e event
 	 */
+	@Override
 	public void keyReleased(KeyEvent e)
 	{
 		if (fCreateNew.isSelected())

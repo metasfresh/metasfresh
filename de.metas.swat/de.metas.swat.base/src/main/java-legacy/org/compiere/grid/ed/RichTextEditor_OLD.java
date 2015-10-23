@@ -148,7 +148,7 @@ public class RichTextEditor_OLD extends CDialog {
 	private JScrollPane editorScrollPane = new JScrollPane();
 	private JTextPane editorPane = new JTextPane();
 	//
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	// Tool Bar
 	private JToolBar toolBar = new JToolBar();
@@ -202,7 +202,7 @@ public class RichTextEditor_OLD extends CDialog {
 		editorScrollPane.setPreferredSize(new Dimension(600, 600));
 		editorScrollPane.getViewport().add(editorPane, null);
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 	} // setHTMLText
 
 	/**
@@ -241,6 +241,7 @@ public class RichTextEditor_OLD extends CDialog {
 	 * @param e
 	 *            event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		log.fine("actionPerformed - Text:" + getHtmlText());
 
@@ -299,6 +300,7 @@ public class RichTextEditor_OLD extends CDialog {
 
 		snippetSelector.addActionListener(new ActionListener() {
 
+			@Override
 			public void actionPerformed(ActionEvent e) {
 
 				final String snippetName = (String) ((JComboBox) e.getSource())

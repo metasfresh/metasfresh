@@ -95,7 +95,7 @@ public class VImageDialog extends CDialog
 	private CLabel fileLabel = new CLabel();
 	private CButton fileButton = new CButton();
 	private CLabel imageLabel = new CLabel();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	/**
 	 *  Static Init
@@ -118,7 +118,7 @@ public class VImageDialog extends CDialog
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
 		//
 		fileButton.addActionListener(this);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 	}   //  jbInit
 
 	/**

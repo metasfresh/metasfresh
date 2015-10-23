@@ -113,7 +113,7 @@ public class InfoPAttribute extends CDialog
 	private CPanel centerPanel = new CPanel();
 	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
 			.withCancelButton(true)
-			.withText(true)
+			.withoutText()
 			.build();
 	//
 	private CLabel serNoLabel = new CLabel(msgBL.translate(Env.getCtx(), "SerNo"));

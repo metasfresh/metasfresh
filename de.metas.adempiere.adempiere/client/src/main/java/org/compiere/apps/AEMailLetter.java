@@ -78,7 +78,10 @@ public class AEMailLetter implements ActionListener
 		m_menuEMail = new CMenuItem(msgBL.getMsg(ctx, "de.metas.letters.EMail"));
 		m_menuLetter = new CMenuItem(msgBL.getMsg(ctx, "de.metas.letters.Letter"));
 
-		action = new AppsAction(ACTION_Name, null, false, small);
+		action = AppsAction.builder()
+				.setAction(ACTION_Name)
+				.setSmallSize(small)
+				.build();
 		action.setDelegate(this);
 
 		m_popup.add(m_menuEMail).addActionListener(this);

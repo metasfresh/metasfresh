@@ -79,7 +79,10 @@ public class PosLogin extends CDialog implements ActionListener {
 		
 		panel.add(pin, "");
 		
-		AppsAction act = new AppsAction("Ok", KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), false);
+		AppsAction act = AppsAction.builder()
+				.setAction("Ok")
+				.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))
+				.build();
 		act.setDelegate(this);
 		bProcess = (CButton)act.getButton();
 		bProcess.setFocusable(false);

@@ -153,7 +153,7 @@ public class BeanShellEditor extends CDialog implements ActionListener
 	private JButton bCancel = ConfirmPanel.createCancelButton(true);
 	private CPanel resultPanel = new CPanel();
 	private JButton bProcess = ConfirmPanel.createProcessButton(true);
-	private JButton bValidate = ConfirmPanel.createCustomizeButton("Validate");
+	private JButton bValidate = ConfirmPanel.buildCustomizeButton().setText("Validate").buildAndGetCButton();
 	private JLabel lResult = new JLabel();
 	private JTextField fResult = new JTextField();
 	private CPanel resultVariablePanel = new CPanel();
@@ -303,6 +303,7 @@ public class BeanShellEditor extends CDialog implements ActionListener
 	 *  Action Listener
 	 *  @param e
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		if (e.getSource() == bOK)

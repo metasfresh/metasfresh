@@ -52,6 +52,7 @@ implements FormPanel, ActionListener
 	 *	@param WindowNo
 	 *	@param frame
 	 */
+	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		log.fine("");
@@ -66,7 +67,7 @@ implements FormPanel, ActionListener
 			CScrollPane scroll = new CScrollPane (this);
 			m_frame.getContentPane().add(scroll, BorderLayout.CENTER);
 			//	South
-			confirmPanel.addActionListener(this);
+			confirmPanel.setActionListener(this);
 			m_frame.getContentPane().add(confirmPanel, BorderLayout.SOUTH);
 		}
 		catch(Exception e)
@@ -91,6 +92,7 @@ implements FormPanel, ActionListener
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
@@ -106,7 +108,7 @@ implements FormPanel, ActionListener
 	/**	Logger	*/
 	private static CLogger log = CLogger.getCLogger (ViewPI.class);
 	/** Confirmation Panel			*/
-	private ConfirmPanel confirmPanel = new ConfirmPanel();
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOK();
 
 
 	/**
@@ -129,6 +131,7 @@ implements FormPanel, ActionListener
 	 * 	Action Listener for Drill Down
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))

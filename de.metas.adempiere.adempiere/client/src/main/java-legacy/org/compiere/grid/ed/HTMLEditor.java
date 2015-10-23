@@ -122,7 +122,7 @@ public class HTMLEditor extends CDialog
 	private JScrollPane editorScrollPane = new JScrollPane();
 	private JTextPane editorPane = new JTextPane();
 	//
-	private ConfirmPanel confirmPanel = new ConfirmPanel (true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	
 	//	Tool Bar
 	private JToolBar toolBar = new JToolBar();
@@ -256,7 +256,7 @@ public class HTMLEditor extends CDialog
 		editorScrollPane.setPreferredSize(new Dimension(600,600));
 		editorScrollPane.getViewport().add(editorPane, null);
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 	}	//	setHTMLText
 
 	/**
@@ -295,11 +295,11 @@ public class HTMLEditor extends CDialog
 			menuBar.add(menu);
 			
 		//	Add to Button Actions
-		Action targetAction = (Action)actions.get("font-bold");
+		Action targetAction = actions.get("font-bold");
 		bBold.addActionListener(targetAction);
-		targetAction = (Action)actions.get("font-italic");
+		targetAction = actions.get("font-italic");
 		bItalic.addActionListener(targetAction);
-		targetAction = (Action)actions.get("font-underline");
+		targetAction = actions.get("font-underline");
 		bUnderline.addActionListener(targetAction);
 		
 	}	//	createMenuBar
@@ -351,6 +351,7 @@ public class HTMLEditor extends CDialog
 	 *	Action Listener
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 	//	log.fine("actionPerformed - Text:" + getHtmlText());

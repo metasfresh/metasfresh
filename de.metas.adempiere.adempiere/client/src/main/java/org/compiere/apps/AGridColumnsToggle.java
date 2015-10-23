@@ -68,8 +68,10 @@ public class AGridColumnsToggle
 
 	private void initAction(final boolean small)
 	{
-		// this.action = new AppsAction(model.getActionName(), null, false);
-		this.action = new AppsAction(ACTION_Name, null, false, small);
+		this.action = AppsAction.builder()
+				.setAction(ACTION_Name)
+				.setSmallSize(small)
+				.build();
 		action.setDelegate(new ActionListener()
 		{
 			@Override

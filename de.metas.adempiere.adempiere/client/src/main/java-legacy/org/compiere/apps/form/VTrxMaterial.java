@@ -87,7 +87,11 @@ public class VTrxMaterial extends TrxMaterial
 	private GridBagLayout parameterLayout = new GridBagLayout();
 	private CPanel southPanel = new CPanel();
 	private BorderLayout southLayout = new BorderLayout();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true, true, false, false, false, true, true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
+			.withCancelButton(true)
+			.withRefreshButton(true)
+			.withZoomButton(true)
+			.build();
 	private StatusBar statusBar = new StatusBar();
 	
 	//
@@ -315,8 +319,8 @@ public class VTrxMaterial extends TrxMaterial
 		final Object locator = locatorField.getValue();
 		final Object product = productField.getValue();
 		final Object movementType = mtypeField.getValue();
-		final Timestamp movementDateFrom = (Timestamp)dateFField.getValue();
-		final Timestamp movementDateTo = (Timestamp)dateTField.getValue();
+		final Timestamp movementDateFrom = dateFField.getValue();
+		final Timestamp movementDateTo = dateTField.getValue();
 		final Object bpartnerId = bpartnerField.getValue();
 		
 		

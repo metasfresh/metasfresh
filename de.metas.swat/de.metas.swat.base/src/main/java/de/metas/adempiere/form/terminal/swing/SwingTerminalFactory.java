@@ -219,7 +219,10 @@ public class SwingTerminalFactory implements ITerminalFactory
 
 	public ITerminalButton createButtonAction(final String action, final KeyStroke accelerator)
 	{
-		final AppsAction act = new AppsAction(action, accelerator, false);
+		final AppsAction act = AppsAction.builder()
+				.setAction(action)
+				.setAccelerator(accelerator)
+				.build();
 
 		// TODO: addToCreatedComponents(act);
 		return createButtonAction(act);

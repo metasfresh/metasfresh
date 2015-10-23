@@ -139,7 +139,7 @@ public class InvoiceHistory
 	private final JLabel label = new JLabel();
 	private final FlowLayout northLayout = new FlowLayout();
 	//
-	private final ConfirmPanel confirmPanel = new ConfirmPanel();
+	private final ConfirmPanel confirmPanel = ConfirmPanel.newWithOK();
 	private final JTabbedPane centerTabbedPane = new JTabbedPane();
 	//
 	private final JScrollPane pricePane = new JScrollPane();
@@ -318,10 +318,11 @@ public class InvoiceHistory
 
 	private CButton createZoomButton(final String zoomAction)
 	{
-		final AppsAction aa = new AppsAction(zoomAction, null, zoomAction);
-		final CButton button = (CButton)aa.getButton();
-		button.setMargin(ConfirmPanel.s_insets);
-		return button;
+		return AppsAction.builder()
+				.setAction(zoomAction)
+				.setToolTipText(zoomAction)
+				.setButtonInsets(ConfirmPanel.s_insets)
+				.buildAndGetCButton();
 	}
 
 	/**

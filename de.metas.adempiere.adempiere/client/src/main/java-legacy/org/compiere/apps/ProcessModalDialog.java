@@ -159,7 +159,7 @@ public class ProcessModalDialog extends CDialog
 		}
 	};
 	private BorderLayout mainLayout = new BorderLayout();
-	private ConfirmPanel southPanel = new ConfirmPanel(true);
+	private ConfirmPanel southPanel = ConfirmPanel.newWithOKAndCancel();
 	private CButton bOK = null;
 	private JEditorPane message = new JEditorPane()
 	{

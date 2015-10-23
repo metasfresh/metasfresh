@@ -89,8 +89,10 @@ public abstract class MvcVGenPanel extends CPanel implements IFormView {
 	private BorderLayout selPanelLayout = new BorderLayout();
 
 	private FlowLayout northPanelLayout = new FlowLayout();
-	private ConfirmPanel confirmPanelSel = new ConfirmPanel(true);
-	private ConfirmPanel confirmPanelGen = new ConfirmPanel(false, true, false, false, false, false, true);
+	private ConfirmPanel confirmPanelSel = ConfirmPanel.newWithOKAndCancel();
+	private ConfirmPanel confirmPanelGen = ConfirmPanel.builder()
+			.withRefreshButton(true)
+			.build();
 	private StatusBar statusBar = new StatusBar();
 	private CPanel genPanel = new CPanel();
 	private BorderLayout genLayout = new BorderLayout();
@@ -168,6 +170,7 @@ public abstract class MvcVGenPanel extends CPanel implements IFormView {
 	/**
 	 * Dispose
 	 */
+	@Override
 	public void dispose() {
 		if (m_frame != null)
 			m_frame.dispose();
@@ -182,12 +185,12 @@ public abstract class MvcVGenPanel extends CPanel implements IFormView {
 		return statusBar;
 	}
 
-	public final void addConfirmPanelSelListener(final ActionListener l) {
-		confirmPanelSel.addActionListener(l);
+	public final void setConfirmPanelSelListener(final ActionListener l) {
+		confirmPanelSel.setActionListener(l);
 	}
 
-	public final void addConfirmPanelGenListener(final ActionListener l) {
-		confirmPanelGen.addActionListener(l);
+	public final void setConfirmPanelGenListener(final ActionListener l) {
+		confirmPanelGen.setActionListener(l);
 	}
 
 	public final void addTabbedPaneListener(final ChangeListener l) {
@@ -206,6 +209,7 @@ public abstract class MvcVGenPanel extends CPanel implements IFormView {
 	 * Reacts to {@link GenForm#PROP_UI_LOCKED} by locking/unlocking the view
 	 * and displaying/undisplaying a progress bar.
 	 */
+	@Override
 	public void modelPropertyChange(PropertyChangeEvent e) {
 
 		if (MvcGenForm.PROP_UI_LOCKED.equalsIgnoreCase(e.getPropertyName())) {

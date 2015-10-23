@@ -104,6 +104,7 @@ implements FormPanel, ActionListener
 	 *  @param WindowNo window
 	 *  @param frame frame
 	 */
+	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		log.info( "VCRP.init");
@@ -132,7 +133,7 @@ implements FormPanel, ActionListener
 	private CPanel northPanel = new CPanel();
 	private CPanel centerPanel = new CPanel();
 	private BorderLayout centerLayout = new BorderLayout();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private Hashtable hash = new Hashtable();
 	
     private VLookup resource = null; 
@@ -170,7 +171,7 @@ implements FormPanel, ActionListener
 			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0)); 	  
         chartPanel.setPreferredSize(new Dimension(750, 550));
 		centerPanel.add(chartPanel, BorderLayout.CENTER);		 
-        confirmPanel.addActionListener(this);
+        confirmPanel.setActionListener(this);
 	}
 	
 	/**
@@ -188,12 +189,13 @@ implements FormPanel, ActionListener
                 
 	}	//	fillPicks
 	
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
 			 
-			 Timestamp date = (Timestamp) dateFrom.getValue();
+			 Timestamp date = dateFrom.getValue();
 			 int S_Resource_ID = ((Integer)resource.getValue()).intValue();  
 			 System.out.println("ConfirmPanel.A_OK");
 			 System.out.println("date" + date + " S_Resource_ID " + S_Resource_ID);
@@ -243,6 +245,7 @@ implements FormPanel, ActionListener
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)

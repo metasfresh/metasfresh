@@ -62,13 +62,14 @@ public class VMerge extends Merge implements FormPanel, ActionListener
 	private GridLayout centerLayout = new GridLayout();
 	private CLabel mergeFromLabel = new CLabel();
 	private CLabel mergeToLabel = new CLabel();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	/**
 	 *	Initialize Panel
 	 *  @param WindowNo window
 	 *  @param frame frame
 	 */
+	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		m_WindowNo = WindowNo;
@@ -134,7 +135,7 @@ public class VMerge extends Merge implements FormPanel, ActionListener
 		mainLayout.setVgap (5);
 		//
 		panel.add (confirmPanel, BorderLayout.SOUTH);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		//
 		centerLayout.setHgap (5);
 		centerLayout.setVgap (5);
@@ -166,6 +167,7 @@ public class VMerge extends Merge implements FormPanel, ActionListener
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
@@ -177,6 +179,7 @@ public class VMerge extends Merge implements FormPanel, ActionListener
 	 *  Action Listener
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))

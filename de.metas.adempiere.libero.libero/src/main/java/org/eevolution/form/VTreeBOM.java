@@ -154,7 +154,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 	//private VDate              dateTo = new VDate ("DateTo", false, false, true, DisplayType.Date, Msg.translate(getCtx(), "DateTo"));
 	private CPanel southPanel = new CPanel();
 	private BorderLayout southLayout = new BorderLayout();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	protected StatusBar statusBar = new StatusBar();
 
 	private MiniTable tableBOM = new MiniTable();
@@ -174,6 +174,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 	 *  @param WindowNo window
 	 *  @param frame frame
 	 */
+	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		m_WindowNo = WindowNo;
@@ -207,6 +208,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 				" M_Product.IsSummary = 'N'");
 		fieldProduct = new VLookup ("M_Product_ID", false, false, true,  m_fieldProduct) {
 			private static final long serialVersionUID = 1L;
+			@Override
 			public void setValue(Object value) {
 				super.setValue(value);
 				action_loadBOM();
@@ -347,7 +349,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 
 		this.add(southPanel, BorderLayout.SOUTH);
 		southPanel.setLayout(southLayout);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		southPanel.add(confirmPanel, BorderLayout.SOUTH);
 		//southPanel.add(statusBar, BorderLayout.SOUTH);
 		this.add (splitPane, BorderLayout.CENTER);
@@ -363,6 +365,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
@@ -370,6 +373,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 		m_frame = null;
 	}	//	dispose
 
+	@Override
 	public void vetoableChange (PropertyChangeEvent e)
 	{
 		String name = e.getPropertyName();
@@ -390,6 +394,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 	 * 	Action Listener
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		if (e.getSource() == implosion) 
@@ -473,22 +478,22 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 		line.add( new Boolean(false));  //  0 Select
 		line.add( new Boolean(true));   //  1 IsActive
 		line.add( new Integer(bomline.getLine())); // 2 Line                
-		line.add( (Timestamp) bomline.getValidFrom()); //  3 ValidDrom
-		line.add( (Timestamp) bomline.getValidTo()); //  4 ValidTo
+		line.add( bomline.getValidFrom()); //  3 ValidDrom
+		line.add( bomline.getValidTo()); //  4 ValidTo
 		KeyNamePair pp = new KeyNamePair(M_Product.getM_Product_ID(),M_Product.getName());
 		line.add(pp); //  5 M_Product_ID
 		KeyNamePair uom = new KeyNamePair(bomline.getC_UOM_ID(),"");
 		line.add(uom); //  6 C_UOM_ID
 		line.add(new Boolean(bomline.isQtyPercentage())); //  7 IsQtyPorcentage
-		line.add((BigDecimal) bomline.getQtyBatch());  //  8 BatchPercent
-		line.add((BigDecimal) ((bomline.getQtyBOM()!=null) ? bomline.getQtyBOM() : new BigDecimal(0)));  //  9 QtyBOM
+		line.add(bomline.getQtyBatch());  //  8 BatchPercent
+		line.add((bomline.getQtyBOM()!=null) ? bomline.getQtyBOM() : new BigDecimal(0));  //  9 QtyBOM
 		line.add(new Boolean(bomline.isCritical())); //  10 IsCritical                  
-		line.add( (Integer) bomline.getLeadTimeOffset()); // 11 LTOffSet
-		line.add( (BigDecimal) bomline.getAssay()); // 12 Assay
-		line.add( (BigDecimal) (bomline.getScrap())); // 13 Scrap
-		line.add( (String) bomline.getIssueMethod()); // 14 IssueMethod
-		line.add( (String) bomline.getBackflushGroup());  // 15 BackflushGroup
-		line.add( (BigDecimal) bomline.getForecast()); // 16 Forecast
+		line.add( bomline.getLeadTimeOffset()); // 11 LTOffSet
+		line.add( bomline.getAssay()); // 12 Assay
+		line.add( (bomline.getScrap())); // 13 Scrap
+		line.add( bomline.getIssueMethod()); // 14 IssueMethod
+		line.add( bomline.getBackflushGroup());  // 15 BackflushGroup
+		line.add( bomline.getForecast()); // 16 Forecast
 		dataBOM.add(line);
 
 		for (MPPProductBOM bom : getBOMs(bomproduct.getM_Product_ID(), false))
@@ -517,22 +522,22 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 			line.add( new Boolean(false));  //  0 Select
 			line.add( new Boolean(true));   //  1 IsActive
 			line.add( new Integer(bomline.getLine())); // 2 Line                
-			line.add( (Timestamp) bomline.getValidFrom()); //  3 ValidDrom
-			line.add( (Timestamp) bomline.getValidTo()); //  4 ValidTo
+			line.add( bomline.getValidFrom()); //  3 ValidDrom
+			line.add( bomline.getValidTo()); //  4 ValidTo
 			KeyNamePair pp = new KeyNamePair(component.getM_Product_ID(),component.getName());
 			line.add(pp); //  5 M_Product_ID
 			KeyNamePair uom = new KeyNamePair(bomline.getC_UOM_ID(),"");
 			line.add(uom); //  6 C_UOM_ID
 			line.add(new Boolean(bomline.isQtyPercentage())); //  7 IsQtyPercentage
-			line.add((BigDecimal) bomline.getQtyBatch());  //  8 BatchPercent
-			line.add((BigDecimal) bomline.getQtyBOM());  //  9 QtyBom
+			line.add(bomline.getQtyBatch());  //  8 BatchPercent
+			line.add(bomline.getQtyBOM());  //  9 QtyBom
 			line.add(new Boolean(bomline.isCritical())); //  10 IsCritical       
-			line.add( (Integer) bomline.getLeadTimeOffset()); // 11 LTOffSet
-			line.add( (BigDecimal) bomline.getAssay()); // 12 Assay
-			line.add( (BigDecimal) (bomline.getScrap())); // 13 Scrap
-			line.add( (String) bomline.getIssueMethod()); // 14 IssueMethod
-			line.add( (String) bomline.getBackflushGroup());  // 15 BackflushGroup
-			line.add( (BigDecimal) bomline.getForecast()); // 16 Forecast
+			line.add( bomline.getLeadTimeOffset()); // 11 LTOffSet
+			line.add( bomline.getAssay()); // 12 Assay
+			line.add( (bomline.getScrap())); // 13 Scrap
+			line.add( bomline.getIssueMethod()); // 14 IssueMethod
+			line.add( bomline.getBackflushGroup());  // 15 BackflushGroup
+			line.add( bomline.getForecast()); // 16 Forecast
 			//line.add(this.);
 			dataBOM.add(line);
 			parent.add(component(component));
@@ -564,6 +569,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 	}
 
 
+	@Override
 	public void valueChanged(TreeSelectionEvent event) 
 	{
 		//currentSelectionField.setText("Current Selection: " +  tree.getLastSelectedPathComponent().toString());
@@ -573,6 +579,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 	 * 	List Selection Listener
 	 *	@param e event
 	 */
+	@Override
 	public void valueChanged (ListSelectionEvent e)
 	{
 		if (e.getValueIsAdjusting())
@@ -583,6 +590,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 	 * 	VTreePanel Changed
 	 *	@param e event
 	 */
+	@Override
 	public void propertyChange (PropertyChangeEvent e)
 	{
 		//MTreeNode tn = (MTreeNode)e.getNewValue();
@@ -704,6 +712,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 		}*/
 	}
 
+	@Override
 	public void tableChanged(TableModelEvent e) {
 	}        
 
@@ -734,6 +743,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 		 * 	To String
 		 *	@return	String Representation
 		 */
+		@Override
 		public String toString ()
 		{
 			String retValue = name;

@@ -77,6 +77,7 @@ public class VBOMDrop extends CPanel
 	 *  @param WindowNo window
 	 *  @param frame parent frame
 	 */
+	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		log.info("");
@@ -91,7 +92,7 @@ public class VBOMDrop extends CPanel
 			createMainPanel();
 			CScrollPane scroll = new CScrollPane (this);
 			m_frame.getContentPane().add(scroll, BorderLayout.CENTER);
-			confirmPanel.addActionListener(this);
+			confirmPanel.setActionListener(this);
 			//	South
 			m_frame.getContentPane().add(confirmPanel, BorderLayout.SOUTH);
 		}
@@ -117,6 +118,7 @@ public class VBOMDrop extends CPanel
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
@@ -164,7 +166,7 @@ public class VBOMDrop extends CPanel
 
 	private static final int	WINDOW_WIDTH = 600;	//	width of the window
 	//
-	private ConfirmPanel confirmPanel = new ConfirmPanel (true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private CPanel selectionPanel = new CPanel(new ALayout());
 	private CComboBox productField;
 	private VNumber productQty = new VNumber("Qty", true, false, true, DisplayType.Quantity, Msg.translate(Env.getCtx(), "Qty"));
@@ -397,7 +399,7 @@ public class VBOMDrop extends CPanel
 			String title = Msg.getMsg(Env.getCtx(), "Alternative") + " " + bomType;
 			JRadioButton b = new JRadioButton(title);
 			String groupName = String.valueOf(parentM_Product_ID) + "_" + bomType;
-			ButtonGroup group = (ButtonGroup)m_buttonGroups.get(groupName);
+			ButtonGroup group = m_buttonGroups.get(groupName);
 			if (group == null)
 			{
 				log.fine("ButtonGroup=" + groupName);
@@ -433,6 +435,7 @@ public class VBOMDrop extends CPanel
 	 * 	Get Preferred Size
 	 *	@return size
 	 */
+	@Override
 	public Dimension getPreferredSize ()
 	{
 		Dimension size = super.getPreferredSize ();
@@ -446,6 +449,7 @@ public class VBOMDrop extends CPanel
 	 *	Action Listener
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		log.config(e.getActionCommand());
@@ -563,7 +567,7 @@ public class VBOMDrop extends CPanel
 			if (source == m_selectionList.get(i))
 			{
 				boolean selected = isSelectionSelected(source);
-				VNumber qty = (VNumber)m_qtyList.get(i);
+				VNumber qty = m_qtyList.get(i);
 				qty.setReadWrite(selected);
 				return;
 			}
@@ -632,8 +636,8 @@ public class VBOMDrop extends CPanel
 		{
 			if (isSelectionSelected(m_selectionList.get(i)))
 			{
-				BigDecimal qty = (BigDecimal)((VNumber)m_qtyList.get(i)).getValue();
-				int M_Product_ID = ((Integer)m_productList.get(i)).intValue();
+				BigDecimal qty = (BigDecimal)m_qtyList.get(i).getValue();
+				int M_Product_ID = m_productList.get(i).intValue();
 				//	Create Line
 				MOrderLine ol = new MOrderLine (order);
 				ol.setM_Product_ID(M_Product_ID, true);
@@ -672,8 +676,8 @@ public class VBOMDrop extends CPanel
 		{
 			if (isSelectionSelected(m_selectionList.get(i)))
 			{
-				BigDecimal qty = (BigDecimal)((VNumber)m_qtyList.get(i)).getValue();
-				int M_Product_ID = ((Integer)m_productList.get(i)).intValue();
+				BigDecimal qty = (BigDecimal)m_qtyList.get(i).getValue();
+				int M_Product_ID = m_productList.get(i).intValue();
 				//	Create Line
 				MInvoiceLine il = new MInvoiceLine (invoice);
 				il.setM_Product_ID(M_Product_ID, true);
@@ -712,8 +716,8 @@ public class VBOMDrop extends CPanel
 		{
 			if (isSelectionSelected(m_selectionList.get(i)))
 			{
-				BigDecimal qty = (BigDecimal)((VNumber)m_qtyList.get(i)).getValue();
-				int M_Product_ID = ((Integer)m_productList.get(i)).intValue();
+				BigDecimal qty = (BigDecimal)m_qtyList.get(i).getValue();
+				int M_Product_ID = m_productList.get(i).intValue();
 				//	Create Line
 				MProjectLine pl = new MProjectLine (project);
 				pl.setM_Product_ID(M_Product_ID);

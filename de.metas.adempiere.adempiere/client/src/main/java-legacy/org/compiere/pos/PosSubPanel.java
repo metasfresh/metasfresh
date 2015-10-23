@@ -15,8 +15,6 @@
 package org.compiere.pos;
 
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Properties;
@@ -90,7 +88,10 @@ public abstract class PosSubPanel extends CPanel
 	 */
 	protected CButton createButtonAction (String action, KeyStroke accelerator)
 	{
-		AppsAction act = new AppsAction(action, accelerator, false);
+		AppsAction act = AppsAction.builder()
+				.setAction(action)
+				.setAccelerator(accelerator)
+				.build();
 		act.setDelegate(this);
 		CButton button = (CButton)act.getButton();
 		button.setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -122,6 +123,7 @@ public abstract class PosSubPanel extends CPanel
 	 * 	Action Listener
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 	}	//	actionPerformed

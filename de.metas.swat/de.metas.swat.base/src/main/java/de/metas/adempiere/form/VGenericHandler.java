@@ -66,12 +66,12 @@ public class VGenericHandler {
 		this.model = model;
 		this.parent = parent;
 
-		view.addConfirmPanelSelListener(new ActionListener() {
+		view.setConfirmPanelSelListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleConfirmPanelSelChange(e);
 			}
 		});
-		view.addConfirmPanelGenListener(new ActionListener() {
+		view.setConfirmPanelGenListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleConfirmPanelGenChange(e);
 			}

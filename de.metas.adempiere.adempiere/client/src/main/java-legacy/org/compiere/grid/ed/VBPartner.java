@@ -122,7 +122,7 @@ public final class VBPartner extends CDialog implements ActionListener
 	private CPanel centerPanel = new CPanel();
 	private CPanel southPanel = new CPanel();
 	private GridBagLayout centerLayout = new GridBagLayout();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private BorderLayout southLayout = new BorderLayout();
 
 	
@@ -141,7 +141,7 @@ public final class VBPartner extends CDialog implements ActionListener
 		mainPanel.add(southPanel, BorderLayout.SOUTH);
 		southPanel.add(confirmPanel, BorderLayout.CENTER);
 		//
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 	}	//	jbInit
 
 	/**
@@ -347,6 +347,7 @@ public final class VBPartner extends CDialog implements ActionListener
 	 *	Action Listener
 	 * 	@param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		if (m_readOnly)

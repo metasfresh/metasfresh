@@ -104,7 +104,7 @@ public class VSetup extends CPanel
 	
 	//
 	private JScrollPane centerPane = new JScrollPane();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private CPanel centerPanel = new CPanel();
 	private GridBagLayout centerLayout = new GridBagLayout();
 	private JLabel lClientName = new JLabel();
@@ -325,7 +325,7 @@ public class VSetup extends CPanel
 		}
 
 		//  General Listeners
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		buttonLoadAcct.addActionListener(this);
 		confirmPanel.getOKButton().setEnabled(false);
 	}	//	dynInit

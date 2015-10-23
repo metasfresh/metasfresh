@@ -123,7 +123,7 @@ public class VDocAction extends CDialog
 	private JScrollPane centerPane = new JScrollPane();
 	private JTextArea message = new JTextArea();
 	private FlowLayout northLayout = new FlowLayout();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private JButton batchButton = ConfirmPanel.createProcessButton(
 			Msg.getMsg(Env.getCtx(), "StartBackground"));
 
@@ -152,7 +152,7 @@ public class VDocAction extends CDialog
 		//
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
 		confirmPanel.addButton(batchButton);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		batchButton.addActionListener(this);
 	}	//	jbInit
 
@@ -363,9 +363,9 @@ public class VDocAction extends CDialog
 		s_description = new String[size];
 		for (int i = 0; i < size; i++)
 		{
-			s_value[i] = (String)v_value.get(i);
-			s_name[i] = (String)v_name.get(i);
-			s_description[i] = (String)v_description.get(i);
+			s_value[i] = v_value.get(i);
+			s_name[i] = v_name.get(i);
+			s_description[i] = v_description.get(i);
 		}
 	}	//	readReference
 

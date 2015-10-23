@@ -41,7 +41,7 @@ import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ConfirmPanel;
-import org.compiere.apps.ConfirmPanel.ConfirmPanelListener;
+import org.compiere.apps.ConfirmPanelListener;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.grid.VPanel;
@@ -157,7 +157,6 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 		ConfirmPanel confirmPanel = ConfirmPanel.builder()
 				.withCancelButton(false)
 				.withRefreshButton(true)
-				.withText(true)
 				.build();
 		confirmPanel.getOKButton().setVisible(false);
 		confirmPanel.setConfirmPanelListener(new ConfirmPanelListener()

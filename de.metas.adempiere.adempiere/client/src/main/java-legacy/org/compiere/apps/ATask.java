@@ -55,6 +55,7 @@ public class ATask extends CFrame
 	{
 		new Thread()
 		{
+			@Override
 			public void run()
 			{
 				new ATask(title, task);
@@ -96,7 +97,7 @@ public class ATask extends CFrame
 	/**	Logger			*/
 	private static CLogger log = CLogger.getCLogger(ATask.class);
 
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private JScrollPane infoScrollPane = new JScrollPane();
 	private JTextArea info = new JTextArea();
 
@@ -113,7 +114,7 @@ public class ATask extends CFrame
 		this.getContentPane().add(infoScrollPane, BorderLayout.CENTER);
 		this.getContentPane().add(confirmPanel,  BorderLayout.SOUTH);
 		//
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		confirmPanel.getOKButton().setEnabled(false);
 	}   //  jbInit
 
@@ -122,6 +123,7 @@ public class ATask extends CFrame
 	 *  Action Listener
 	 *  @param e
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		if (m_task != null && m_task.isAlive())

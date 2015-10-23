@@ -34,8 +34,6 @@ import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
-import javax.swing.KeyStroke;
-
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -288,7 +286,10 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 					{
 						final String buttonText = commonPrefix + deviceName.charAt(commonPrefix.length());
 						// TODO 04966: polish..e.g. see to it that there is a nice icon etc (but consider that maybe this is not the right place).
-						return new AppsAction(buttonText, (KeyStroke)null, buttonText);
+						return AppsAction.builder()
+								.setAction(buttonText)
+								.setToolTipText(buttonText)
+								.build();
 					}
 
 					@Override

@@ -61,10 +61,9 @@ public class AWindowSaveState
 		Check.assumeNotNull(parent, "parent not null");
 		this.parent = parent;
 
-		this.action = new AppsAction(model.getActionName(),
-				null, // accelerator
-				false // toggle
-		);
+		this.action = AppsAction.builder()
+				.setAction(model.getActionName())
+				.build();
 
 		action.setDelegate(new ActionListener()
 		{

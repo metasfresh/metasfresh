@@ -136,7 +136,7 @@ public class VPAttributeSerNoDialog extends CDialog
 	private BorderLayout mainLayout = new BorderLayout();
 	private CPanel centerPanel = new CPanel();
 	private ALayout centerLayout = new ALayout(5,5, true);
-	private ConfirmPanel confirmPanel = new ConfirmPanel (true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	// metas
 	private IProductPA productService = new ProductPA();
@@ -152,7 +152,7 @@ public class VPAttributeSerNoDialog extends CDialog
 		this.getContentPane().add(confirmPanel, BorderLayout.SOUTH);
 		centerPanel.setLayout(centerLayout);
 		//
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 	}	//	jbInit
 
 	/**

@@ -255,6 +255,7 @@ public class PosPayment extends CDialog implements PosKeyListener, VetoableChang
 		tenderTypePick.setRenderer(new ListCellRenderer() {
 			protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
 
+			@Override
 			public Component getListCellRendererComponent(JList list, Object value,
 					int index, boolean isSelected, boolean cellHasFocus) {
 				
@@ -325,6 +326,7 @@ public class PosPayment extends CDialog implements PosKeyListener, VetoableChang
 		fCCardType.setRenderer(new ListCellRenderer() {
 			protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
 
+			@Override
 			public Component getListCellRendererComponent(JList list, Object value,
 					int index, boolean isSelected, boolean cellHasFocus) {
 				
@@ -372,13 +374,19 @@ public class PosPayment extends CDialog implements PosKeyListener, VetoableChang
 		fCCardVC.setFont(font);
 		fCCardVC.setHorizontalAlignment(JTextField.TRAILING);
 		
-		AppsAction actCancel = new AppsAction("Cancel", KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), false);
+		AppsAction actCancel = AppsAction.builder()
+				.setAction("Cancel")
+				.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0))
+				.build();
 		actCancel.setDelegate(this);
 		f_bCancel = (CButton)actCancel.getButton();
 		f_bCancel.setFocusable(false);
 		mainPanel.add (f_bCancel, "h 50!, w 50!, skip, split 2, trailing");
 		
-		AppsAction act = new AppsAction("Ok", KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), false);
+		AppsAction act = AppsAction.builder()
+				.setAction("Ok")
+				.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))
+				.build();
 		act.setDelegate(this);
 		f_bProcess = (CButton)act.getButton();
 		f_bProcess.setFocusable(false);
@@ -441,6 +449,7 @@ public class PosPayment extends CDialog implements PosKeyListener, VetoableChang
 			fPayAmt.requestFocusInWindow();
 			SwingUtilities.invokeLater(new Runnable() {
 
+				@Override
 				public void run() {
 					fPayAmt.selectAll();
 				}
@@ -454,6 +463,7 @@ public class PosPayment extends CDialog implements PosKeyListener, VetoableChang
 		pack();
 	}
 
+	@Override
 	public void keyReturned(I_C_POSKey key) {
 		
 		String text = key.getText();
@@ -495,6 +505,7 @@ public class PosPayment extends CDialog implements PosKeyListener, VetoableChang
 		return paid ;
 	}
 
+	@Override
 	public void vetoableChange(PropertyChangeEvent arg0)
 			throws PropertyVetoException {
 		// TODO Auto-generated method stub

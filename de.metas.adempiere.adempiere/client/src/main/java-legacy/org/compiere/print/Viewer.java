@@ -65,6 +65,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.images.Images;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AMenu;
@@ -94,7 +95,6 @@ import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Language;
-import org.compiere.util.Msg;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 
@@ -118,6 +118,9 @@ import de.metas.adempiere.form.IClientUI;
 public class Viewer extends CFrame
 	implements ActionListener, ChangeListener, WindowStateListener
 {
+	private static final long serialVersionUID = 5629054363187020694L;
+
+
 	/**
 	 *	Viewer Constructor
 	 *	@param re report engine
@@ -152,6 +155,9 @@ public class Viewer extends CFrame
 			this.dispose();
 		}
 	}	//	Viewer
+
+	// services
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/** Window No					*/
 	private final int m_WindowNo;
@@ -196,13 +202,13 @@ public class Viewer extends CFrame
 	private CButton bEnd = new CButton();
 	private CButton bFind = new CButton();
 	private CButton bExport = new CButton();
-	private CComboBox comboReport = new CComboBox();
+	private CComboBox<KeyNamePair> comboReport = new CComboBox<>();
 	private CButton bPrevious = new CButton();
 	private CButton bNext = new CButton();
 	private SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1,1,100,1);
 	private JSpinner spinner = new JSpinner(spinnerModel);
 	private CLabel labelDrill = new CLabel();
-	private CComboBox comboDrill = new CComboBox();
+	private CComboBox<NamePair> comboDrill = new CComboBox<>();
 //	private CComboBox comboZoom = new CComboBox(View.ZOOM_OPTIONS);
 
 
@@ -231,43 +237,43 @@ public class Viewer extends CFrame
 		//	Page Control
 		toolBar.add(bPrevious);
 		toolBar.add(spinner);
-		spinner.setToolTipText(Msg.getMsg(m_ctx, "GoToPage"));
+		spinner.setToolTipText(msgBL.getMsg(m_ctx, "GoToPage"));
 		toolBar.add(bNext);
 		//	Zoom Level
 		toolBar.addSeparator();
 //		toolBar.add(comboZoom, null);
-//		comboZoom.setToolTipText(Msg.getMsg(m_ctx, "Zoom"));
+//		comboZoom.setToolTipText(msgBL.getMsg(m_ctx, "Zoom"));
 		//	Drill
 		toolBar.addSeparator();
-		labelDrill.setText(Msg.getMsg(m_ctx, "Drill") + ": ");
+		labelDrill.setText(msgBL.getMsg(m_ctx, "Drill") + ": ");
 		toolBar.add(labelDrill);
 		toolBar.add(comboDrill);
-		comboDrill.setToolTipText(Msg.getMsg(m_ctx, "Drill"));
+		comboDrill.setToolTipText(msgBL.getMsg(m_ctx, "Drill"));
 		//	Format, Customize, Find
 		toolBar.addSeparator();
 		toolBar.add(comboReport);
-		comboReport.setToolTipText(Msg.translate(m_ctx, "AD_PrintFormat_ID"));
+		comboReport.setToolTipText(msgBL.translate(m_ctx, "AD_PrintFormat_ID"));
 		toolBar.add(bCustomize);
-		bCustomize.setToolTipText(Msg.getMsg(m_ctx, "PrintCustomize"));
+		bCustomize.setToolTipText(msgBL.getMsg(m_ctx, "PrintCustomize"));
 		toolBar.add(bFind);
-		bFind.setToolTipText(Msg.getMsg(m_ctx, "Find"));
+		bFind.setToolTipText(msgBL.getMsg(m_ctx, "Find"));
 		toolBar.addSeparator();
 		//	Print/Export
 		toolBar.add(bPrint);
 		toolBar.addSeparator();
 		toolBar.add(bPageSetup);
-		bPageSetup.setToolTipText(Msg.getMsg(m_ctx, "PageSetup"));
+		bPageSetup.setToolTipText(msgBL.getMsg(m_ctx, "PageSetup"));
 		toolBar.add(bSendMail);
 		toolBar.add(bArchive);
 		if (m_isCanExport)
 		{
-			bExport.setToolTipText(Msg.getMsg(m_ctx, "Export"));
+			bExport.setToolTipText(msgBL.getMsg(m_ctx, "Export"));
 			toolBar.add(bExport);
 		}
 		// 	End
 		toolBar.addSeparator();
 		toolBar.add(bEnd, null);
-		bEnd.setToolTipText(Msg.getMsg(m_ctx, "End"));
+		bEnd.setToolTipText(msgBL.getMsg(m_ctx, "End"));
 	}	//	jbInit
 
 	/**
@@ -397,7 +403,7 @@ public class Viewer extends CFrame
 		{
 			log.log(Level.SEVERE, sql, e);
 		}
-		StringBuffer sb = new StringBuffer("** ").append(Msg.getMsg(m_ctx, "NewReport")).append(" **");
+		StringBuffer sb = new StringBuffer("** ").append(msgBL.getMsg(m_ctx, "NewReport")).append(" **");
 		KeyNamePair pp = new KeyNamePair(-1, sb.toString());
 		comboReport.addItem(pp);
 		if (selectValue != null)
@@ -421,12 +427,12 @@ public class Viewer extends CFrame
 			m_viewPanel.getPaperHeight()+2*View.MARGIN));
 
 		//	Report Info
-		setTitle(Msg.getMsg(m_ctx, "Report") + ": " + m_reportEngine.getName() + "  " + Env.getHeader(m_ctx, 0));
+		setTitle(msgBL.getMsg(m_ctx, "Report") + ": " + m_reportEngine.getName() + "  " + Env.getHeader(m_ctx, 0));
 		StringBuffer sb = new StringBuffer ();
 		sb.append(m_viewPanel.getPaper().toString(m_ctx))
-			.append(" - ").append(Msg.getMsg(m_ctx, "DataCols")).append("=")
+			.append(" - ").append(msgBL.getMsg(m_ctx, "DataCols")).append("=")
 			.append(m_reportEngine.getColumnCount())
-			.append(", ").append(Msg.getMsg(m_ctx, "DataRows")).append("=")
+			.append(", ").append(msgBL.getMsg(m_ctx, "DataRows")).append("=")
 			.append(m_reportEngine.getRowCount());
 		statusBar.setStatusLine(sb.toString());
 		//
@@ -528,15 +534,15 @@ public class Viewer extends CFrame
 	 *	Set Button
 	 *  @param button button
 	 *  @param cmd command
-	 *  @param file fine mame
+	 *  @param iconName icon name (without size and without extension)
 	 */
-	private void setButton (AbstractButton button, String cmd, String file)
+	private void setButton (AbstractButton button, String cmd, String iconName)
 	{
-		String text = Msg.getMsg(m_ctx, cmd);
+		String text = msgBL.getMsg(m_ctx, cmd);
 		button.setToolTipText(text);
 		button.setActionCommand(cmd);
 		//
-		ImageIcon ii24 = Images.getImageIcon2(file + "24");
+		final ImageIcon ii24 = Images.getImageIcon2(iconName + "24");
 		if (ii24 != null)
 			button.setIcon(ii24);
 		button.setMargin(AppsAction.BUTTON_INSETS);
@@ -672,9 +678,9 @@ public class Viewer extends CFrame
 		
 	
 		
-		StringBuffer sb = new StringBuffer (Msg.getMsg(m_ctx, "Page"))
+		StringBuffer sb = new StringBuffer (msgBL.getMsg(m_ctx, "Page"))
 			.append(" ").append(pageInfo)
-			.append(" ").append(Msg.getMsg(m_ctx, "slash")).append(" ")
+			.append(" ").append(msgBL.getMsg(m_ctx, "slash")).append(" ")
 			.append(m_viewPanel.getPageInfoMax());
 		statusBar.setStatusDB(sb.toString());
 		m_setting = false;
@@ -747,7 +753,7 @@ public class Viewer extends CFrame
 			MQuery query  = m_viewPanel.getDrillAcross(point);
 			if (query != null)
 			{
-				NamePair pp = (NamePair)comboDrill.getSelectedItem();
+				NamePair pp = comboDrill.getSelectedItem();
 				query.setTableName(pp.getID());
 				log.info("Drill Accross: " + query.getWhereClause(true));
 				executeDrill(query);
@@ -817,8 +823,9 @@ public class Viewer extends CFrame
 			log.log(Level.SEVERE, "", e);
 		}
 
-		EMailDialog emd = new EMailDialog (this,
-			Msg.getMsg(Env.getCtx(), "SendMail"),
+		//EMailDialog emd = 
+		new EMailDialog (this,
+			msgBL.getMsg(Env.getCtx(), "SendMail"),
 			from, to, subject, message, attachment);
 		
 	}	//	cmd_sendMail
@@ -879,16 +886,16 @@ public class Viewer extends CFrame
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogType(JFileChooser.SAVE_DIALOG);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		chooser.setDialogTitle(Msg.getMsg(m_ctx, "Export") + ": " + getTitle());
+		chooser.setDialogTitle(msgBL.getMsg(m_ctx, "Export") + ": " + getTitle());
 		//
-		chooser.addChoosableFileFilter(new ExtensionFileFilter("ps", Msg.getMsg(m_ctx, "FilePS")));
-		chooser.addChoosableFileFilter(new ExtensionFileFilter("xml", Msg.getMsg(m_ctx, "FileXML")));
-		chooser.addChoosableFileFilter(new ExtensionFileFilter("pdf", Msg.getMsg(m_ctx, "FilePDF")));
-		chooser.addChoosableFileFilter(new ExtensionFileFilter("html", Msg.getMsg(m_ctx, "FileHTML")));
-		chooser.addChoosableFileFilter(new ExtensionFileFilter("txt", Msg.getMsg(m_ctx, "FileTXT")));
-		chooser.addChoosableFileFilter(new ExtensionFileFilter("ssv", Msg.getMsg(m_ctx, "FileSSV")));
-		chooser.addChoosableFileFilter(new ExtensionFileFilter("csv", Msg.getMsg(m_ctx, "FileCSV")));
-		chooser.addChoosableFileFilter(new ExtensionFileFilter("xls", Msg.getMsg(m_ctx, "FileXLS")));
+		chooser.addChoosableFileFilter(new ExtensionFileFilter("ps", msgBL.getMsg(m_ctx, "FilePS")));
+		chooser.addChoosableFileFilter(new ExtensionFileFilter("xml", msgBL.getMsg(m_ctx, "FileXML")));
+		chooser.addChoosableFileFilter(new ExtensionFileFilter("pdf", msgBL.getMsg(m_ctx, "FilePDF")));
+		chooser.addChoosableFileFilter(new ExtensionFileFilter("html", msgBL.getMsg(m_ctx, "FileHTML")));
+		chooser.addChoosableFileFilter(new ExtensionFileFilter("txt", msgBL.getMsg(m_ctx, "FileTXT")));
+		chooser.addChoosableFileFilter(new ExtensionFileFilter("ssv", msgBL.getMsg(m_ctx, "FileSSV")));
+		chooser.addChoosableFileFilter(new ExtensionFileFilter("csv", msgBL.getMsg(m_ctx, "FileCSV")));
+		chooser.addChoosableFileFilter(new ExtensionFileFilter("xls", msgBL.getMsg(m_ctx, "FileXLS")));
 		//
 		if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
 			return;
@@ -951,7 +958,7 @@ public class Viewer extends CFrame
 	 */
 	private void cmd_report()
 	{
-		KeyNamePair pp = (KeyNamePair)comboReport.getSelectedItem();
+		KeyNamePair pp = comboReport.getSelectedItem();
 		if (pp == null)
 			return;
 		//
@@ -1166,8 +1173,8 @@ public class Viewer extends CFrame
 		}
 
 		//	Dialog
-		String title = Msg.getMsg(Env.getCtx(), "PrintFormatTrl", true);
-		String message = Msg.getMsg(Env.getCtx(), "PrintFormatTrl", false);
+		String title = msgBL.getMsg(Env.getCtx(), "PrintFormatTrl", true);
+		String message = msgBL.getMsg(Env.getCtx(), "PrintFormatTrl", false);
 		int choice = JOptionPane.showOptionDialog
 			(this, message, title,
 			JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE, null,

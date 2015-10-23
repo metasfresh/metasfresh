@@ -130,7 +130,7 @@ public final class Attachment extends CDialog
 	private CPanel northPanel = new CPanel();
 	private CButton bLoad = new CButton();
 	private BorderLayout northLayout = new BorderLayout();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private CPanel toolBar = new CPanel(new FlowLayout(FlowLayout.LEADING, 5,5));
 	private CButton bDelete = new CButton();
 	private CButton bDeleteAll = null;
@@ -211,7 +211,7 @@ public final class Attachment extends CDialog
 		text.setPreferredSize(new Dimension(200, 200));
 		//
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		bDeleteAll = ConfirmPanel.createDeleteButton(true);
 		if (!MSysConfig.getBooleanValue(Constants.SYSCONFIG_Attachment_HideDeleteAll, false, Env.getAD_Client_ID(Env.getCtx()))) // metas: tsa: 01819
 			confirmPanel.addButton(bDeleteAll);

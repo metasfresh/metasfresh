@@ -302,7 +302,14 @@ public class VMRPDetailed
 	/** Static Layout */
 	private final CPanel southPanel = new CPanel();
 	private final BorderLayout southLayout = new BorderLayout();
-	private final ConfirmPanel confirmPanel = new ConfirmPanel(true, true, true, true, true, true, true);
+	private final ConfirmPanel confirmPanel = ConfirmPanel.builder()
+			.withCancelButton(true)
+			.withRefreshButton(true)
+			.withResetButton(true)
+			.withCustomizeButton(true)
+			.withHistoryButton(true)
+			.withZoomButton(true)
+			.build();
 	protected CPanel parameterPanel = new CPanel();
 	private final JScrollPane scrollPane = new JScrollPane();
 	//

@@ -87,6 +87,7 @@ public abstract class TerminalSubPanel
 	/**
 	 * Dispose - Free Resources
 	 */
+	@Override
 	public void dispose()
 	{
 	}
@@ -110,7 +111,10 @@ public abstract class TerminalSubPanel
 	 */
 	protected ITerminalButton createButtonAction(String action, KeyStroke accelerator, float fontSize)
 	{
-		AppsAction act = new AppsAction(action, accelerator, false);
+		AppsAction act = AppsAction.builder()
+				.setAction(action)
+				.setAccelerator(accelerator)
+				.build();
 		act.setDelegate(this);
 		CButton button = (CButton)act.getButton();
 		if (fontSize > 0f)

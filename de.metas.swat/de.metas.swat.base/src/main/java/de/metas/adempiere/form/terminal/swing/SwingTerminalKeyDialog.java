@@ -37,7 +37,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 
 import org.compiere.apps.ConfirmPanel;
-import org.compiere.apps.ConfirmPanel.ConfirmPanelListener;
+import org.compiere.apps.ConfirmPanelListener;
 import org.compiere.swing.CDialog;
 
 import de.metas.adempiere.form.terminal.IContainer;
@@ -144,7 +144,10 @@ import de.metas.adempiere.form.terminal.ITerminalTextField;
 		//
 		// Add confirmation panel (bottom)
 		{
-			final ConfirmPanel confirm = new ConfirmPanel(true, false, true, false, false, false, false);
+			final ConfirmPanel confirm = ConfirmPanel.builder()
+					.withCancelButton(true)
+					.withResetButton(true)
+					.build();
 			confirm.setConfirmPanelListener(new TermListenerConfirmPanelListener());
 			final Dimension buttonDim = new Dimension(50, 50);
 

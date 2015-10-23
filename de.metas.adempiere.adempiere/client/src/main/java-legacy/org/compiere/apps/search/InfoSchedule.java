@@ -136,7 +136,7 @@ public class InfoSchedule extends CDialog
 	private VSchedule weekSchedule = new VSchedule(this, VSchedule.TYPE_WEEK);
 	private VSchedule monthSchedule = new VSchedule(this, VSchedule.TYPE_MONTH);
 	private StatusBar statusBar = new StatusBar();
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	/**
 	 * 	Static Layout
@@ -211,7 +211,7 @@ public class InfoSchedule extends CDialog
 		weekSchedule.setCreateNew(createNew);
 		monthSchedule.setCreateNew(createNew);
 		//
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		displayCalendar();
 	}	//	dynInit
 
@@ -335,6 +335,7 @@ public class InfoSchedule extends CDialog
 	/**************************************************************************
 	 * 	Dispose.
 	 */
+	@Override
 	public void dispose()
 	{
 		daySchedule.dispose();
@@ -348,6 +349,7 @@ public class InfoSchedule extends CDialog
 	 * 	Action Listener
 	 * 	@param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		if (m_loading)
@@ -380,6 +382,7 @@ public class InfoSchedule extends CDialog
 	 * 	Change Listener (Tab Pane)
 	 * 	@param e event
 	 */
+	@Override
 	public void stateChanged (ChangeEvent e)
 	{
 		displayCalendar();

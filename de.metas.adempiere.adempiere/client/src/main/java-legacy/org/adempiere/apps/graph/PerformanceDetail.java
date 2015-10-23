@@ -58,7 +58,7 @@ public class PerformanceDetail extends CFrame
 	}	//	PerformanceDetail
 
 	Graph barPanel = null;
-	ConfirmPanel confirmPanel = new ConfirmPanel();
+	ConfirmPanel confirmPanel = ConfirmPanel.newWithOK();
 
 	/**
 	 * 	Static init
@@ -67,13 +67,14 @@ public class PerformanceDetail extends CFrame
 	{
 		getContentPane().add(barPanel, BorderLayout.CENTER);
 		getContentPane().add(confirmPanel, BorderLayout.SOUTH);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 	}	//	init
 	
 	/**
 	 * 	Action Listener
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))

@@ -66,7 +66,9 @@ public class Banking_SwingUI extends AbstractModuleInterceptor
 	
 	private final void registerAddOns(final IAddonService addonService)
 	{
-		final AppsAction appsAction = new AppsAction("Payment", null, false);
+		final AppsAction appsAction = AppsAction.builder()
+				.setAction("Payment")
+				.build();
 
 		final AppsActionListener appsActionListener = new AppsActionListener()
 		{

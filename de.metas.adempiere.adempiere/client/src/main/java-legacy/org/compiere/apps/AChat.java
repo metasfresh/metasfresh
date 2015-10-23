@@ -107,7 +107,7 @@ public class AChat extends CDialog
 	private CPanel 			mainPanel = new CPanel(new BorderLayout(5,5));
 	private CTextPane		historyText = new CTextPane();
 	private CTextArea		newText = new CTextArea();
-	private ConfirmPanel	confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel	confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	
 	/**
 	 * 	Static Init.
@@ -131,7 +131,7 @@ public class AChat extends CDialog
 		
 		//	South
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 	}	//	staticInit
 	
 	/**
@@ -148,6 +148,7 @@ public class AChat extends CDialog
 	 * 	Action Performed
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))

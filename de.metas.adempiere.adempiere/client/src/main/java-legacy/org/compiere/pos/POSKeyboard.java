@@ -106,7 +106,10 @@ public class POSKeyboard extends CDialog implements ActionListener, PosKeyListen
 		final PosKeyPanel keys = new PosKeyPanel(POSKeyLayout_ID, this);
 		panel.add(keys, "center, growx, growy");
 
-		final ConfirmPanel confirm = new ConfirmPanel(true, false, true, false, false, false, false);
+		final ConfirmPanel confirm = ConfirmPanel.builder()
+				.withCancelButton(true)
+				.withResetButton(true)
+				.build();
 		confirm.setActionListener(this);
 
 		final Dimension buttonDim = new Dimension(50, 50);

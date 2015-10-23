@@ -89,6 +89,7 @@ public class VInOutInvoiceGen extends CPanel
 	 *  @param WindowNo window
 	 *  @param frame frame
 	 */
+	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		log.info("");
@@ -129,8 +130,8 @@ public class VInOutInvoiceGen extends CPanel
 	private CLabel lBPartner = new CLabel();
 	private VLookup fBPartner;
 	private FlowLayout northPanelLayout = new FlowLayout();
-	private ConfirmPanel confirmPanelSel = new ConfirmPanel(true);
-	private ConfirmPanel confirmPanelGen = new ConfirmPanel(false, true, false, false, false, false, true);
+	private ConfirmPanel confirmPanelSel = ConfirmPanel.newWithOKAndCancel();
+	private ConfirmPanel confirmPanelGen = ConfirmPanel.builder().withRefreshButton(true).build();
 	private StatusBar statusBar = new StatusBar();
 	private CPanel genPanel = new CPanel();
 	private BorderLayout genLayout = new BorderLayout();
@@ -177,7 +178,7 @@ public class VInOutInvoiceGen extends CPanel
 		selPanel.add(confirmPanelSel, BorderLayout.SOUTH);
 		selPanel.add(scrollPane, BorderLayout.CENTER);
 		scrollPane.getViewport().add(miniTable, null);
-		confirmPanelSel.addActionListener(this);
+		confirmPanelSel.setActionListener(this);
 		//
 		tabbedPane.add(genPanel, Msg.getMsg(Env.getCtx(), "Generate"));
 		genPanel.setLayout(genLayout);
@@ -186,7 +187,7 @@ public class VInOutInvoiceGen extends CPanel
 		info.setBackground(AdempierePLAF.getFieldBackground_Inactive());
 		info.setEditable(false);
 		genPanel.add(confirmPanelGen, BorderLayout.SOUTH);
-		confirmPanelGen.addActionListener(this);
+		confirmPanelGen.setActionListener(this);
 		
 		lDocType.setLabelFor(cmbDocType);
 		selNorthPanel.add(lDocType, null);
@@ -393,6 +394,7 @@ public class VInOutInvoiceGen extends CPanel
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
@@ -404,6 +406,7 @@ public class VInOutInvoiceGen extends CPanel
 	 *	Action Listener
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		log.info("Cmd=" + e.getActionCommand());
@@ -436,6 +439,7 @@ public class VInOutInvoiceGen extends CPanel
 	 *	Vetoable Change Listener - requery
 	 *  @param e event
 	 */
+	@Override
 	public void vetoableChange(PropertyChangeEvent e)
 	{
 		log.info(e.getPropertyName() + "=" + e.getNewValue());
@@ -453,6 +457,7 @@ public class VInOutInvoiceGen extends CPanel
 	 *	Change Listener (Tab changed)
 	 *  @param e event
 	 */
+	@Override
 	public void stateChanged (ChangeEvent e)
 	{
 		int index = tabbedPane.getSelectedIndex();
@@ -463,6 +468,7 @@ public class VInOutInvoiceGen extends CPanel
 	 *  Table Model Listener
 	 *  @param e event
 	 */
+	@Override
 	public void tableChanged(TableModelEvent e)
 	{
 		int rowsSelected = 0;
@@ -844,6 +850,7 @@ public class VInOutInvoiceGen extends CPanel
 	 *  Called from the Worker before processing
 	 *  @param pi process info
 	 */
+	@Override
 	public void lockUI (ProcessInfo pi)
 	{
 		this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -855,6 +862,7 @@ public class VInOutInvoiceGen extends CPanel
 	 *  Called from the Worker when processing is done
 	 *  @param pi result of execute ASync call
 	 */
+	@Override
 	public void unlockUI (ProcessInfo pi)
 	{
 		//
@@ -876,6 +884,7 @@ public class VInOutInvoiceGen extends CPanel
 	 *  Is the UI locked (Internal method)
 	 *  @return true, if UI is locked
 	 */
+	@Override
 	public boolean isUILocked()
 	{
 		return this.isEnabled();
@@ -886,6 +895,7 @@ public class VInOutInvoiceGen extends CPanel
 	 *  Called from the Worker
 	 *  @param pi ProcessInfo
 	 */
+	@Override
 	public void executeASync (ProcessInfo pi)
 	{
 	}   //  executeASync

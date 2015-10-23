@@ -347,7 +347,7 @@ class ReadPaymentDocumentPanel
 
 		//
 		// Init confirmPanel
-		final ConfirmPanel confirmPanel = new ConfirmPanel(true); // withCancelButton
+		final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
 		confirmPanel.setActionListener(this);
 	}

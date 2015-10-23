@@ -150,7 +150,7 @@ public class Help extends CDialog
 	private BorderLayout mainLayout = new BorderLayout();
 	private OnlineHelp info = new OnlineHelp();
 	private JScrollPane infoPane = new JScrollPane();
-	private ConfirmPanel confirmPanel = new ConfirmPanel();
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOK();
 
 	/**
 	 *	Static Init
@@ -168,7 +168,7 @@ public class Help extends CDialog
 		mainPanel.add(infoPane, BorderLayout.CENTER);
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
 		infoPane.getViewport().add(info, null);
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 	}	//	jbInit
 
 	
@@ -190,6 +190,7 @@ public class Help extends CDialog
 	 *	Action Listener
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))

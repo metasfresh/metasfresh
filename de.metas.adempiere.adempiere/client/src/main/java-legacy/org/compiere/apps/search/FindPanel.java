@@ -269,7 +269,7 @@ public final class FindPanel extends CPanel implements ActionListener
 					.withCancelButton(!embedded)
 					.withNewButton(withNewButton)
 					.withResetButton(true)
-					.withText(true)
+					.withoutText()
 					.withSmallButtons(drawSmallButtons)
 					.build();
 			confirmPanel.getOKButton().setToolTipText(msgBL.getMsg(ctx, "QueryEnter"));

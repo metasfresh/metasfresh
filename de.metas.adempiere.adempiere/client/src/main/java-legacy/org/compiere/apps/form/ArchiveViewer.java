@@ -156,7 +156,7 @@ public class ArchiveViewer extends Archive
 	private CLabel helpLabel = new CLabel(Msg.translate(Env.getCtx(), "Help"));
 	private VText helpField = new VText("Help", false, false, true, 20, 2000);
 	private CButton updateArchive = ConfirmPanel.createOKButton(Msg.getMsg(Env.getCtx(), "Update"));
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	/**
 	 * Dynamic Init

@@ -163,7 +163,7 @@ public class VLocationDialog extends CDialog
 	private final CPanel southPanel = new CPanel();
 	private final BorderLayout panelLayout = new BorderLayout();
 	private final GridBagLayout gridBagLayout = new GridBagLayout();
-	private final ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private final BorderLayout southLayout = new BorderLayout();
 	//
 	private final CLabel lAddress1 = new CLabel(Msg.getElement(Env.getCtx(), "Address1"));
@@ -220,7 +220,7 @@ public class VLocationDialog extends CDialog
 		panel.add(southPanel, BorderLayout.SOUTH);
 		southPanel.add(confirmPanel, BorderLayout.NORTH);
 		//
-		confirmPanel.addActionListener(this);
+		confirmPanel.setActionListener(this);
 		//
 		fCityAutoCompleter = new CityAutoCompleter(fCity);
 		

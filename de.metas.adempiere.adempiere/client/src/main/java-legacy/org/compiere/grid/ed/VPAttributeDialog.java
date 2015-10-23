@@ -263,7 +263,7 @@ public class VPAttributeDialog extends CDialog
 	private BorderLayout mainLayout = new BorderLayout();
 	private CPanel centerPanel = new CPanel();
 	private ALayout centerLayout = new ALayout(5, 5, true);
-	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	/**
 	 * Layout

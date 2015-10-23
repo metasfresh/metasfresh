@@ -139,6 +139,7 @@ public class CCRP extends CAbstractForm {
 
 	class TreeHandler extends MouseInputAdapter implements TreeSelectionListener {
 
+		@Override
 		public void mouseClicked(MouseEvent e) {
 
 			if(model.getTree().getPathForLocation(e.getX(), e.getY()) == null) {
@@ -151,6 +152,7 @@ public class CCRP extends CAbstractForm {
 			final MouseEvent evt = e;
 			worker = new SingleWorker() {
 
+				@Override
 				protected Object doIt() {
 
 					handleTreeEvent(evt);
@@ -161,17 +163,20 @@ public class CCRP extends CAbstractForm {
 			worker.start();
 		}
 
+		@Override
 		public void mouseMoved(MouseEvent e) {
 
 			//m_tree.setToolTipText(msg.getToolTipText(e));
 		}
 
+		@Override
 		public void valueChanged(TreeSelectionEvent event) {
 		}
 	}	
 
 	class FrameHandler extends WindowAdapter {
 
+		@Override
 		public void windowClosing(WindowEvent e) {
 
 			dispose();
@@ -204,6 +209,7 @@ public class CCRP extends CAbstractForm {
 		super();
 	}
 
+	@Override
 	public void init (int WindowNo, FormFrame frame) {
 
 		super.init(WindowNo, frame);
@@ -248,8 +254,8 @@ public class CCRP extends CAbstractForm {
 				new GridBagConstraints(5, 1, 1, 1, 0.0, 0.0,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0)
 		); 	  
 
-		ConfirmPanel confirmPanel = new ConfirmPanel(true);
-		confirmPanel.addActionListener(new ActionHandler());
+		ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
+		confirmPanel.setActionListener(new ActionHandler());
 
 		contentPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		contentPanel.setPreferredSize(new Dimension(800, 600));
@@ -347,7 +353,7 @@ public class CCRP extends CAbstractForm {
 
 		if(dateFrom.getValue() != null) {
 
-			t = (Timestamp)dateFrom.getValue();
+			t = dateFrom.getValue();
 		}
 
 		return t;
@@ -359,7 +365,7 @@ public class CCRP extends CAbstractForm {
 
 		if(dateTo.getValue() != null) {
 
-			t = (Timestamp)dateTo.getValue();
+			t = dateTo.getValue();
 		}
 
 		return t;
@@ -431,6 +437,7 @@ public class CCRP extends CAbstractForm {
 		return chart;
 	}
 
+	@Override
 	public void dispose() {
 
 		super.dispose();

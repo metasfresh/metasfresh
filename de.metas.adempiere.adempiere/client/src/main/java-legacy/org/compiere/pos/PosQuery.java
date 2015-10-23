@@ -27,7 +27,6 @@ import javax.swing.event.ListSelectionListener;
 
 import org.compiere.apps.AppsAction;
 import org.compiere.apps.ConfirmPanel;
-import org.compiere.minigrid.MiniTable;
 import org.compiere.model.MPOS;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
@@ -61,8 +60,10 @@ public abstract class PosQuery extends CDialog implements MouseListener, ListSel
 
 	public abstract void reset();
 
+	@Override
 	public abstract void actionPerformed(ActionEvent e);
 
+	@Override
 	public void dispose() {
 		removeAll();
 		northPanel = null;
@@ -93,6 +94,7 @@ public abstract class PosQuery extends CDialog implements MouseListener, ListSel
 	 *  Mouse Clicked
 	 *  @param e event
 	 */
+	@Override
 	public void mouseClicked(MouseEvent e)
 	{
 		//  Single click with selected row => exit
@@ -103,15 +105,20 @@ public abstract class PosQuery extends CDialog implements MouseListener, ListSel
 		}
 	}   //  mouseClicked
 
+	@Override
 	public void mouseEntered (MouseEvent e) {}
+	@Override
 	public void mouseExited (MouseEvent e) {}
+	@Override
 	public void mousePressed (MouseEvent e) {}
+	@Override
 	public void mouseReleased (MouseEvent e) {}
 	
 	/**
 	 * 	Table selection changed
 	 *	@param e event
 	 */
+	@Override
 	public void valueChanged (ListSelectionEvent e)
 	{
 		if (e.getValueIsAdjusting())
@@ -125,7 +132,10 @@ public abstract class PosQuery extends CDialog implements MouseListener, ListSel
 	 *	@return button
 	 */
 	protected CButton createButtonAction(String action, KeyStroke accelerator) {
-		AppsAction act = new AppsAction(action, accelerator, false);
+		AppsAction act = AppsAction.builder()
+				.setAction(action)
+				.setAccelerator(accelerator)
+				.build();
 		act.setDelegate(this);
 		CButton button = (CButton)act.getButton();
 		button.setPreferredSize(new Dimension(WIDTH, HEIGHT));
