@@ -43,12 +43,14 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.MPriceList;
 import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.banking.service.IBPBankAccountDAO;
 import de.metas.interfaces.I_C_BP_BankAccount;
@@ -232,6 +234,14 @@ class AD_Client_Setup_Runnable
 		//
 		// ESR
 		ESRConstants.setEnabled(getCtx(), false);
+		
+		//
+		// Price Lists
+		{
+			final I_M_PriceList priceList_None = InterfaceWrapperHelper.create(getCtx(), MPriceList.M_PriceList_ID_None, I_M_PriceList.class, ITrx.TRXNAME_ThreadInherited);
+			priceList_None.setC_Currency_ID(getC_Currency_ID());
+			InterfaceWrapperHelper.save(priceList_None);
+		}
 	}
 
 	private final void assertNotExecuted()
