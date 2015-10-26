@@ -1,4 +1,6 @@
-
+--
+-- endcustomer projects can contain an overriding version of this view
+--
 DROP VIEW IF EXISTS X_MRP_ProductInfo_V;
 CREATE OR REPLACE VIEW X_MRP_ProductInfo_V AS
 SELECT 
@@ -9,8 +11,6 @@ SELECT
 	SUM(v.qtyordered_ondate) AS qtyordered_ondate, 
 	SUM(v.qtymaterialentnahme) AS qtymaterialentnahme, 
 	SUM(v.fresh_qtyonhand_ondate) AS fresh_qtyonhand_ondate, 
-	SUM(v."fresh_qtyonhand_ondate_stö2") AS "fresh_qtyonhand_ondate_stö2", 
-	SUM(v.fresh_qtyonhand_ondate_ind9) AS fresh_qtyonhand_ondate_ind9, 
 	SUM(v.fresh_qtypromised) AS fresh_qtypromised, 
 	SUM(v.fresh_qtymrp) AS fresh_qtymrp
 FROM
