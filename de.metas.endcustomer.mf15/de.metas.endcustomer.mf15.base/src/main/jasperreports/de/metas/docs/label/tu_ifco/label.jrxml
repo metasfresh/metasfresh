@@ -2,9 +2,9 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="124" pageHeight="453" columnWidth="124" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="4.831530000000009"/>
+	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="1119"/>
+	<property name="ireport.y" value="18"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -29,11 +29,15 @@
 			INNER JOIN c_bpartner org_bp ON org_bpl.C_Bpartner_ID = org_bp.C_BPartner_ID
 
 			-- LINKING
-			INNER JOIN  C_OrderLine ol ON ol.AD_Org_ID = org.AD_Org_ID
-			INNER JOIN M_ReceiptSchedule rs ON ol.C_OrderLine_ID = rs.Record_ID
-			INNER JOIN M_HU_Trx_Line hutl ON rs.M_ReceiptSchedule_ID = hutl.Record_ID
+			LEFT OUTER JOIN M_HU_Assignment huas ON tu.M_HU_ID = huas.M_HU_ID AND huas.AD_Table_ID IN (Get_Table_ID('M_ReceiptSchedule'), Get_Table_ID('PP_Order'), Get_Table_ID('PP_Order_BOMLine'),Get_Table_ID('M_InOutLine'))
+			LEFT OUTER JOIN M_ReceiptSchedule rs ON huas.AD_Table_ID = Get_Table_ID('M_ReceiptSchedule') and rs.M_ReceiptSchedule_ID = huas.Record_ID and rs.AD_Org_ID = org.AD_Org_ID
+			LEFT OUTER JOIN PP_Order ppo ON huas.AD_Table_ID = Get_Table_ID('PP_Order') and ppo.PP_Order_ID = huas.Record_ID AND ppo.AD_Org_ID = org.AD_Org_ID
+			LEFT OUTER JOIN PP_Order_BOMLine ppl on huas.AD_Table_ID = Get_Table_ID('PP_Order_BOMLine') and ppl.PP_Order_BOMLine_ID = huas.Record_ID AND ppl.AD_Org_ID = org.AD_Org_ID
+			LEFT OUTER JOIN M_InOutLine iol on huas.AD_Table_ID = Get_Table_ID('M_InOutLine') and iol.M_InOutLine_ID = huas.Record_ID AND iol.AD_Org_ID = org.AD_Org_ID
 
-			WHERE hutl.M_HU_ID =tu.M_HU_ID
+
+			WHERE CASE WHEN huas.M_HU_ID IS NOT NULL THEN huas.M_HU_ID =tu.M_HU_ID ELSE tu.AD_Org_ID = org.AD_Org_ID END
+			limit 1
 	) as org_address,
 	p.name || ' / ' || pt.name as name,
 	tua_anb.name as anbau,

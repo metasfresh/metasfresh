@@ -5,8 +5,7 @@ SELECT
 	/*
 	 * NOTE to developer: please keep in sync with fresh_EDI_DesadvLine_SSCC_Label_Report
 	 */
-	 
-	( 
+	 ( 
 		SELECT  COALESCE(org_bp.name, '') || ', ' || COALESCE(org_l.Postal, '')|| ' '  || COALESCE(org_l.city, '')
 			FROM AD_Org org
 
@@ -89,7 +88,6 @@ FROM
 		AND lua_lot.M_Attribute_ID = (SELECT M_Attribute_ID FROM M_Attribute WHERE name ILIKE 'Lot-Nummer')
 -- WHERE
 -- 	lu.M_HU_ID = $P{M_HU_ID}
-
 ;
 
 ALTER VIEW report.fresh_HU_SSCC_Label_Report OWNER TO adempiere;
