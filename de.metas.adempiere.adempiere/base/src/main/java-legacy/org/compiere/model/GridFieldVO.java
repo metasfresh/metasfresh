@@ -27,8 +27,8 @@ import java.util.logging.Level;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
+import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -643,7 +643,7 @@ public class GridFieldVO implements Serializable
 		
 		//
 		// If EntityType is not displayed, hide this field
-		if (!Check.isEmpty(fieldEntityType, true) && !EntityTypesCache.instance.isDisplayedInUI(fieldEntityType))
+		if (!Check.isEmpty(fieldEntityType, true) && !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(fieldEntityType))
 		{
 			this.IsDisplayed = false;
 			this.isDisplayedGrid = false;

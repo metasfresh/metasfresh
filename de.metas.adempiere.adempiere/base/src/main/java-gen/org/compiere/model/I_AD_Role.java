@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -1043,6 +1027,31 @@ public interface I_AD_Role
     public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsShowAcct = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsShowAcct", null);
     /** Column name IsShowAcct */
     public static final String COLUMNNAME_IsShowAcct = "IsShowAcct";
+
+	/**
+	 * Set Show all entity types.
+	 * Show all entity types, even if some of them were marked to not be shown.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsShowAllEntityTypes (boolean IsShowAllEntityTypes);
+
+	/**
+	 * Get Show all entity types.
+	 * Show all entity types, even if some of them were marked to not be shown.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isShowAllEntityTypes();
+
+    /** Column definition for IsShowAllEntityTypes */
+    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsShowAllEntityTypes = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsShowAllEntityTypes", null);
+    /** Column name IsShowAllEntityTypes */
+    public static final String COLUMNNAME_IsShowAllEntityTypes = "IsShowAllEntityTypes";
 
 	/**
 	 * Set Nutzerbezogener Organisationszugriff.

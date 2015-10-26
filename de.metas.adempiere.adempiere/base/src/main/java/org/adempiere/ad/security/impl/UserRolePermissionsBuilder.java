@@ -43,6 +43,7 @@ import org.adempiere.ad.security.permissions.StartupWindowConstraint;
 import org.adempiere.ad.security.permissions.TableColumnPermissions;
 import org.adempiere.ad.security.permissions.TablePermissions;
 import org.adempiere.ad.security.permissions.TableRecordPermissions;
+import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
 import org.adempiere.util.Check;
@@ -257,6 +258,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		constraints.addConstraintIfNotEquals(StartupWindowConstraint.ofAD_Form_ID(role.getAD_Form_ID()), StartupWindowConstraint.NULL);
 		constraints.addConstraint(DocumentApprovalConstraint.of(role.isCanApproveOwnDoc(), role.getAmtApproval(), role.getC_Currency_ID()));
 		constraints.addConstraint(LoginOrgConstraint.of(role.getLogin_Org_ID(), role.isOrgLoginMandatory()));
+		constraints.addConstraint(UIDisplayedEntityTypes.of(role.isShowAllEntityTypes()));
 
 		return constraints.build();
 	}

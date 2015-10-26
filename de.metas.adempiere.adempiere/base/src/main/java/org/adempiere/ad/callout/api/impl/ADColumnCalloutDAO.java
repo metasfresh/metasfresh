@@ -30,7 +30,7 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.IADColumnCalloutDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.persistence.EntityTypesCache;
+import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -76,7 +76,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 			//
 			// If EntityType is not displayed, skip this callout
 			final String entityType = callout.getEntityType();
-			if (!Check.isEmpty(entityType, true) && !EntityTypesCache.instance.isDisplayedInUI(entityType))
+			if (!Check.isEmpty(entityType, true) && !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(entityType))
 			{
 				continue;
 			}

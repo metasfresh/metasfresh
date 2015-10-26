@@ -26,10 +26,10 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
+import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -159,7 +159,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			//
 			// If EntityType is not displayed, hide this tab
 			vo.entityType = rs.getString("EntityType");
-			if (!Check.isEmpty(vo.entityType, true) && !EntityTypesCache.instance.isDisplayedInUI(vo.entityType))
+			if (!Check.isEmpty(vo.entityType, true) && !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(vo.entityType))
 			{
 				vo.addLoadErrorMessage("EntityType not displayed");
 				return false;

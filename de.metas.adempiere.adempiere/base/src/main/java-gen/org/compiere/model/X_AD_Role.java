@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -32,7 +16,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 402475016L;
+	private static final long serialVersionUID = 1974153980L;
 
     /** Standard Constructor */
     public X_AD_Role (Properties ctx, int AD_Role_ID, String trxName)
@@ -95,6 +79,8 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 // N
 			setIsShowAcct (false);
 // N
+			setIsShowAllEntityTypes (false);
+// N
 			setIsUseUserOrgAccess (false);
 // N
 			setMaxQueryRecords (0);
@@ -122,14 +108,6 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_AD_Role[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -655,7 +633,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	public static final int CONNECTIONPROFILE_AD_Reference_ID=364;
 	/** LAN = L */
 	public static final String CONNECTIONPROFILE_LAN = "L";
-	/** Terminal Server = T */
+	/** TerminalServer = T */
 	public static final String CONNECTIONPROFILE_TerminalServer = "T";
 	/** VPN = V */
 	public static final String CONNECTIONPROFILE_VPN = "V";
@@ -1066,6 +1044,32 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	public boolean isShowAcct () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsShowAcct);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Show all entity types.
+		@param IsShowAllEntityTypes 
+		Show all entity types, even if some of them were marked to not be shown.
+	  */
+	@Override
+	public void setIsShowAllEntityTypes (boolean IsShowAllEntityTypes)
+	{
+		set_Value (COLUMNNAME_IsShowAllEntityTypes, Boolean.valueOf(IsShowAllEntityTypes));
+	}
+
+	/** Get Show all entity types.
+		@return Show all entity types, even if some of them were marked to not be shown.
+	  */
+	@Override
+	public boolean isShowAllEntityTypes () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsShowAllEntityTypes);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
