@@ -51,28 +51,28 @@ public class Fresh_QtyOnHand_Tab_Callout extends TabCalloutAdapter
 	@Override
 	public void onNew(final GridTab gridTab)
 	{
-		final I_Fresh_QtyOnHand freshqtyOnHand = InterfaceWrapperHelper.create(gridTab, I_Fresh_QtyOnHand.class);
-		final Timestamp dateDoc = freshqtyOnHand.getDateDoc();
+		final I_Fresh_QtyOnHand freshQtyOnHand = InterfaceWrapperHelper.create(gridTab, I_Fresh_QtyOnHand.class);
+		final Timestamp dateDoc = freshQtyOnHand.getDateDoc();
 
 		Timestamp dateDocToUse = dateDoc == null ? SystemTime.asTimestamp() : dateDoc;
 
-		boolean dateAlreadyUsed = isDateDocAlreadyUsed(freshqtyOnHand, dateDocToUse);
+		boolean dateAlreadyUsed = isDateDocAlreadyUsed(freshQtyOnHand, dateDocToUse);
 
 		while (dateAlreadyUsed)
 		{
 			dateDocToUse = new Timestamp(DateUtils.addDays(dateDocToUse, 1).getTime());
-			dateAlreadyUsed = isDateDocAlreadyUsed(freshqtyOnHand, dateDocToUse);
+			dateAlreadyUsed = isDateDocAlreadyUsed(freshQtyOnHand, dateDocToUse);
 		}
 
-		freshqtyOnHand.setDateDoc(dateDocToUse);
-		freshqtyOnHand.setDescription(null);
+		freshQtyOnHand.setDateDoc(dateDocToUse);
+		freshQtyOnHand.setDescription(null);
 	}
 
-	private boolean isDateDocAlreadyUsed(final I_Fresh_QtyOnHand freshqtyOnHand, final Timestamp dateDocToUse)
+	private boolean isDateDocAlreadyUsed(final I_Fresh_QtyOnHand freshQtyOnHand, final Timestamp dateDocToUse)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fresh_QtyOnHand.class)
-				.setContext(freshqtyOnHand)
+				.setContext(freshQtyOnHand)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_Fresh_QtyOnHand.COLUMN_DateDoc, dateDocToUse)
 				.create()

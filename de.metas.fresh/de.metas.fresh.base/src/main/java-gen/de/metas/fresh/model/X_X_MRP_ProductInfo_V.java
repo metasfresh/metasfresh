@@ -449,44 +449,6 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 		return bd;
 	}
 
-	/** Set Ind9.
-		@param Fresh_QtyOnHand_OnDate_Ind9 Ind9	  */
-	@Override
-	public void setFresh_QtyOnHand_OnDate_Ind9 (java.math.BigDecimal Fresh_QtyOnHand_OnDate_Ind9)
-	{
-		set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_OnDate_Ind9, Fresh_QtyOnHand_OnDate_Ind9);
-	}
-
-	/** Get Ind9.
-		@return Ind9	  */
-	@Override
-	public java.math.BigDecimal getFresh_QtyOnHand_OnDate_Ind9 () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyOnHand_OnDate_Ind9);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Stö2.
-		@param Fresh_QtyOnHand_OnDate_Stö2 Stö2	  */
-	@Override
-	public void setFresh_QtyOnHand_OnDate_Stö2 (java.math.BigDecimal Fresh_QtyOnHand_OnDate_Stö2)
-	{
-		set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_OnDate_Stö2, Fresh_QtyOnHand_OnDate_Stö2);
-	}
-
-	/** Get Stö2.
-		@return Stö2	  */
-	@Override
-	public java.math.BigDecimal getFresh_QtyOnHand_OnDate_Stö2 () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyOnHand_OnDate_Stö2);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
 	/** Set Zusagbar Zählbestand.
 		@param Fresh_QtyPromised Zusagbar Zählbestand	  */
 	@Override

@@ -22,8 +22,8 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner_Location;
@@ -40,7 +40,7 @@ import de.metas.interfaces.I_C_BPartner;
  * @author ts
  * 
  */
-//TODO 06178: clean up the method names (both ID and Object getters are fine, but the names should be alligned)
+// TODO 06178: clean up the method names (both ID and Object getters are fine, but the names should be alligned)
 public interface IShipmentScheduleEffectiveBL extends ISingletonService
 {
 	I_M_Warehouse getWarehouse(I_M_ShipmentSchedule sched);
@@ -70,10 +70,26 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	I_AD_User getAD_User(I_M_ShipmentSchedule sched);
 
 	int getAD_User_ID(I_M_ShipmentSchedule sched);
-	
+
 	/**
 	 * @param sched
 	 * @return QtyOrdered_Override if set, QtyOrdered_Calculated otherwise
 	 */
 	BigDecimal getQtyOrdered(I_M_ShipmentSchedule sched);
+
+	/**
+	 * Get the delivery date effective based on DeliveryDate and DeliveryDate_Override
+	 * 
+	 * @param sched
+	 * @return
+	 */
+	Timestamp getDeliveryDate(I_M_ShipmentSchedule sched);
+
+	/**
+	 * Get the preparation date effective based on PreparationDate and PreparationDate_Override
+	 * 
+	 * @param sched
+	 * @return
+	 */
+	Timestamp getPreparationDate(I_M_ShipmentSchedule sched);
 }

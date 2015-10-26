@@ -64,6 +64,12 @@ public class OLCandASIAwareFactory implements IAttributeSetInstanceAwareFactory
 			{
 				return Services.get(IOLCandEffectiveValuesBL.class).getM_Product_Effective(olCand);
 			}
+			
+			@Override
+			public int getM_Product_ID()
+			{
+				return Services.get(IOLCandEffectiveValuesBL.class).getM_Product_Effective_ID(olCand);
+			}
 
 			@Override
 			public I_M_AttributeSetInstance getM_AttributeSetInstance()

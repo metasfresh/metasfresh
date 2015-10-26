@@ -53,7 +53,7 @@ public class Fresh_QtyOnHand
 	 * @param qtyOnHandHeader
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE
-			, ifColumnsChanged = { I_Fresh_QtyOnHand_Line.COLUMNNAME_DateDoc })
+			, ifColumnsChanged = { I_Fresh_QtyOnHand.COLUMNNAME_DateDoc })
 	public void updateLines(final I_Fresh_QtyOnHand qtyOnHandHeader)
 	{
 		final Timestamp dateDoc = qtyOnHandHeader.getDateDoc();

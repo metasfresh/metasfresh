@@ -32,7 +32,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IDeliveryDayBL;
@@ -101,7 +101,7 @@ public class ShipmentScheduleDeliveryDayBL implements IShipmentScheduleDeliveryD
 	{
 		//
 		// If DeliveryDate was set, return it
-		final Timestamp deliveryDate = Services.get(IShipmentScheduleBL.class).getDeliveryDateEffective(sched);
+		final Timestamp deliveryDate = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(sched);
 
 		if (deliveryDate != null)
 		{

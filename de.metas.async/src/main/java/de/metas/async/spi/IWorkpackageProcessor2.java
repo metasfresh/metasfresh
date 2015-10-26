@@ -67,7 +67,7 @@ public interface IWorkpackageProcessor2 extends IWorkpackageProcessor
 	boolean isRunInTransaction();
 
 	@Override
-	Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName);
+	Result processWorkPackage(I_C_Queue_WorkPackage workPackage, String localTrxName);
 
 	/**
 	 * Gets existing lock used to lock workpackage's elements.

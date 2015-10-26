@@ -113,7 +113,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 * Extracts the model to be enqueued to internal {@link IWorkPackageBuilder}.
 	 * 
 	 * @param item
-	 * @return model to be enqueued or <code>null</code> if not model shall be enqueued.
+	 * @return model to be enqueued or <code>null</code> if no model shall be enqueued.
 	 */
 	protected abstract Object extractModelToEnqueueFromItem(final ItemType item);
 

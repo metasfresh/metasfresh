@@ -134,6 +134,7 @@ um den "Geliefert % Minimum"-Wert dieses Datensatzes herunter zu setzen.
 UPDATE AD_Message_Trl SET IsTranslated='N' WHERE AD_Message_ID=543657
 ;
 
+
 -- 13.10.2015 11:28:28
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy) VALUES (0,552776,556362,0,540662,88,TO_TIMESTAMP('2015-10-13 11:28:27','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.esb.edi',0,'Y','Y','Y','Y','N','N','N','N','Y','Geliefert %',85,95,TO_TIMESTAMP('2015-10-13 11:28:27','YYYY-MM-DD HH24:MI:SS'),100)

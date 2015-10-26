@@ -380,7 +380,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			if (sched.getDeliveryDate_Override() != null && sched.getPreparationDate_Override() == null)
 			{
-				final Timestamp deliveryDate = getDeliveryDateEffective(sched);
+				final Timestamp deliveryDate = shipmentScheduleEffectiveBL.getDeliveryDate(sched);
 
 				final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 				final IContextAware contextAwareSched = InterfaceWrapperHelper.getContextAware(sched);
@@ -1202,29 +1202,5 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		sched.setProcessed(newProcessed);
 
 		return newProcessed;
-	}
-
-	@Override
-	public Timestamp getDeliveryDateEffective(final I_M_ShipmentSchedule sched)
-	{
-		final Timestamp deliveryDateOverride = sched.getDeliveryDate_Override();
-		if (deliveryDateOverride != null)
-		{
-			return deliveryDateOverride;
-		}
-
-		return sched.getDeliveryDate();
-	}
-
-	@Override
-	public Timestamp getPreparationDateEffective(I_M_ShipmentSchedule sched)
-	{
-		final Timestamp preparationDateOverride = sched.getPreparationDate_Override();
-		if (preparationDateOverride != null)
-		{
-			return preparationDateOverride;
-		}
-
-		return sched.getPreparationDate();
 	}
 }

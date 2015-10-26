@@ -22,7 +22,7 @@ package de.metas.async.spi;
  * #L%
  */
 
-
+import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkpackageSkipRequest;
 
@@ -47,7 +47,7 @@ public interface IWorkpackageProcessor
 	}
 
 	/**
-	 * Actual WorkPackage processing.
+	 * Actual WorkPackage processing. Hint: Most implementors will probably start by calling {@link IQueueDAO#retrieveItems(I_C_Queue_WorkPackage, Class, String)}.
 	 * 
 	 * NOTE: never call this method directly, it will be called by API.
 	 * 

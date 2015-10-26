@@ -1,7 +1,10 @@
-DROP TRIGGER IF EXISTS fresh_QtyOnHand_Line_OnUpdate_Trigger ON fresh_QtyOnHand_Line;
-DROP FUNCTION IF EXISTS "de.metas.fresh".fresh_QtyOnHand_Line_OnUpdate();
 
-CREATE OR REPLACE FUNCTION "de.metas.fresh".fresh_QtyOnHand_Line_OnUpdate()
+
+
+DROP TRIGGER IF EXISTS Fresh_QtyOnHand_Line_OnUpdate_Trigger ON Fresh_QtyOnHand_Line;
+DROP FUNCTION IF EXISTS "de.metas.fresh".Fresh_QtyOnHand_Line_OnUpdate();
+
+CREATE OR REPLACE FUNCTION "de.metas.fresh".Fresh_QtyOnHand_Line_OnUpdate()
   RETURNS trigger AS
 $BODY$
 DECLARE
@@ -13,11 +16,10 @@ BEGIN
 	if (NEW.DateDoc IS NULL) then
 		select h.DateDoc
 			into NEW.DateDoc
-			from fresh_QtyOnHand h where h.fresh_QtyOnHand_ID=NEW.fresh_QtyOnHand_ID;
+			from Fresh_QtyOnHand h where h.Fresh_QtyOnHand_ID=NEW.Fresh_QtyOnHand_ID;
 		--
 		NEW.DateDoc := v_DateDoc;
 	end if;
-	
 	--
 	-- Update ASIKey
 	if (NEW.M_AttributeSetInstance_ID is not null)
@@ -32,12 +34,11 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION "de.metas.fresh".fresh_QtyOnHand_Line_OnUpdate() OWNER TO adempiere;
+ALTER FUNCTION "de.metas.fresh".Fresh_QtyOnHand_Line_OnUpdate() OWNER TO adempiere;
 
-
-CREATE TRIGGER fresh_QtyOnHand_Line_OnUpdate_Trigger
+CREATE TRIGGER Fresh_QtyOnHand_Line_OnUpdate_Trigger
 	BEFORE INSERT OR UPDATE
-	ON fresh_QtyOnHand_Line
+	ON Fresh_QtyOnHand_Line
 	FOR EACH ROW
-	EXECUTE PROCEDURE "de.metas.fresh".fresh_QtyOnHand_Line_OnUpdate();
+	EXECUTE PROCEDURE "de.metas.fresh".Fresh_QtyOnHand_Line_OnUpdate();
 

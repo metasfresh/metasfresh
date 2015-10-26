@@ -156,21 +156,4 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @task 08255
 	 */
 	BigDecimal updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
-
-	/**
-	 * Get the delivery date effective based on DeliveryDate and DeliveryDate_Override
-	 * 
-	 * @param sched
-	 * @return
-	 */
-	Timestamp getDeliveryDateEffective(I_M_ShipmentSchedule sched);
-	
-	
-	/**
-	 * Get the preparation date effective based on PreparationDate and PreparationDate_Override
-	 * 
-	 * @param sched
-	 * @return
-	 */
-	Timestamp getPreparationDateEffective(I_M_ShipmentSchedule sched);
 }

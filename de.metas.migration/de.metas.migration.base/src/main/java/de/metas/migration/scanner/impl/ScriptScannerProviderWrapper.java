@@ -22,7 +22,6 @@ package de.metas.migration.scanner.impl;
  * #L%
  */
 
-
 import java.util.Iterator;
 
 import de.metas.migration.IScript;
@@ -55,4 +54,9 @@ public class ScriptScannerProviderWrapper implements IScriptsProvider
 		return it;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "ScriptScannerProviderWrapper [scriptScanner=" + scriptScanner + "]";
+	}
 }

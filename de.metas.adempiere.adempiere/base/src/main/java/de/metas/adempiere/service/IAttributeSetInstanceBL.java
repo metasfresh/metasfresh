@@ -22,7 +22,6 @@ package de.metas.adempiere.service;
  * #L%
  */
 
-
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.product.service.IProductBL;
@@ -32,6 +31,12 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 
+/**
+ * Service to create and update AttributeInstances and AttributeSetInstances.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public interface IAttributeSetInstanceBL extends ISingletonService
 {
 	/**
@@ -90,7 +95,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, I_M_AttributeValue attributeValue);
 
 	/**
-	 * If both the given <code>to</code> and <code>from</code> can be converted to {@link IAttributeSetInstanceAware}s and if <code>from</code>'s ASI-aware has an M_AttributeSetInstance, 
+	 * If both the given <code>to</code> and <code>from</code> can be converted to {@link IAttributeSetInstanceAware}s and if <code>from</code>'s ASI-aware has an M_AttributeSetInstance,
 	 * then that ASI is copied/cloned to the given <code>to</code> and saved.
 	 * <p>
 	 * Note that <code>to</code> itself is not saved. Also note that any existing ASI which might already be referenced by <code>to</code> is discarded/ignored.

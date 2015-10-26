@@ -57,6 +57,12 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 	}
 
 	@Override
+	public int getM_Product_ID()
+	{
+		return rs.getM_Product_ID();
+	}
+
+	@Override
 	public I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return Services.get(IReceiptScheduleBL.class).getM_AttributeSetInstance_Effective(rs);
@@ -73,5 +79,4 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 	{
 		Services.get(IReceiptScheduleBL.class).setM_AttributeSetInstance_Effective(rs, asi);
 	}
-
 }

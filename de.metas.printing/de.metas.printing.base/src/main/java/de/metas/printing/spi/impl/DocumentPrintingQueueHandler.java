@@ -44,6 +44,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
@@ -170,7 +171,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 	private Timestamp computeMaxDeliveryDateFromScheds(final List<I_M_ShipmentSchedule> schedules)
 	{
 		// Services
-		final IShipmentScheduleBL schedBL = Services.get(IShipmentScheduleBL.class);
+		final IShipmentScheduleEffectiveBL schedEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		if (schedules.isEmpty())
 		{
 			// nothing to do
@@ -178,10 +179,10 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		}
 
 		// iterate all scheds and return the maximum
-		Timestamp maxDeliveryDate = schedBL.getDeliveryDateEffective(schedules.get(0));
+		Timestamp maxDeliveryDate = schedEffectiveBL.getDeliveryDate(schedules.get(0));
 		for (int i = 1; i < schedules.size(); i++)
 		{
-			final Timestamp currentDate = schedBL.getDeliveryDateEffective(schedules.get(i));
+			final Timestamp currentDate = schedEffectiveBL.getDeliveryDate(schedules.get(i));
 			if (currentDate.after(maxDeliveryDate))
 			{
 				maxDeliveryDate = currentDate;

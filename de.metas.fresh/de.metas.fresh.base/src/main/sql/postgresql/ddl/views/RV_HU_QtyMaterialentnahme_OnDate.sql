@@ -1,3 +1,4 @@
+DROP VIEW IF EXISTS "de.metas.fresh".RV_HU_QtyMaterialentnahme_OnDate;
 CREATE OR REPLACE VIEW "de.metas.fresh".RV_HU_QtyMaterialentnahme_OnDate AS
 SELECT 
 	COALESCE(SUM(t.MovementQty), 0) AS QtyMaterialentnahme,

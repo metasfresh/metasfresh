@@ -37,15 +37,16 @@ import org.compiere.model.I_M_Product;
  */
 public interface IAttributeSetInstanceAware
 {
+	// @formatter:off
 	String COLUMNNAME_M_Product_ID = I_M_Product.COLUMNNAME_M_Product_ID;
-
 	I_M_Product getM_Product();
-
+	int getM_Product_ID();
+	// @formatter:on
+	
+	// @formatter:off
 	String COLUMNNAME_M_AttributeSetInstance_ID = I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID;
-
 	I_M_AttributeSetInstance getM_AttributeSetInstance();
-
 	int getM_AttributeSetInstance_ID();
-
 	void setM_AttributeSetInstance(final I_M_AttributeSetInstance asi);
+	// @formatter:on
 }

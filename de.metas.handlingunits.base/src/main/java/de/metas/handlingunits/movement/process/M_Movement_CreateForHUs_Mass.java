@@ -22,10 +22,8 @@ package de.metas.handlingunits.movement.process;
  * #L%
  */
 
-
-import java.util.Collections;
+import java.sql.Timestamp;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Level;
 
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
@@ -35,14 +33,16 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.interfaces.I_M_Movement;
 
 /**
@@ -58,29 +58,19 @@ public class M_Movement_CreateForHUs_Mass extends SvrProcess
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	// parameters
-	private int p_M_Warehouse_ID = -1;
+	private int p_M_Warehouse_ID = -1; // the source warehouse
 	private String p_huWhereClause = null;
-
+	private Timestamp p_MovementDate = null;
+	private String p_Description = null;
+	
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter param : getParameter())
-		{
-			final String parameterName = param.getParameterName();
-
-			if (param.getParameter() == null)
-			{
-				continue;
-			}
-			else if ("M_Warehouse_ID".equals(parameterName))
-			{
-				p_M_Warehouse_ID = param.getParameterAsInt();
-			}
-			else if ("WhereClause".equals(parameterName))
-			{
-				p_huWhereClause = param.getParameterAsString();
-			}
-		}
+		final IRangeAwareParams parameterAsIParams = getParameterAsIParams();
+		p_M_Warehouse_ID = parameterAsIParams.getParameterAsInt("M_Warehouse_ID");
+		p_huWhereClause = parameterAsIParams.getParameterAsString("WhereClause");
+		p_MovementDate = parameterAsIParams.getParameterAsTimestamp("MovementDate");
+		p_Description =  parameterAsIParams.getParameterAsString("Description");
 	}
 
 	@Override
@@ -136,7 +126,11 @@ public class M_Movement_CreateForHUs_Mass extends SvrProcess
 		}
 
 		// Fetch the HUs iterator
-		return huQueryBuilder.createQuery().iterate(I_M_HU.class);
+		return huQueryBuilder
+				.createQuery()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // because we might change the hu's locator
+				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
+				.iterate(I_M_HU.class);
 	}
 
 	/**
@@ -152,14 +146,21 @@ public class M_Movement_CreateForHUs_Mass extends SvrProcess
 		try
 		{
 			final IContextAware context = PlainContextAware.createUsingOutOfTransaction(getCtx());
-			final List<I_M_Movement> movement = huMovementBL.generateMovementsToWarehouse(targetWarehouse, Collections.singleton(hu), context);
-			Check.assume(movement.size() <= 1, "We added one hu, so there shall be max 1 movement");
-			if (movement.isEmpty())
+			final HUMovementBuilder movementBuilder = new HUMovementBuilder()
+					.setContextInitial(context)
+					.setWarehouseFrom(hu.getM_Locator().getM_Warehouse())
+					.setWarehouseTo(targetWarehouse)
+					.setMovementDate(p_MovementDate)
+					.setDescription(p_Description)
+					.addHU(hu);
+
+			final I_M_Movement movement = movementBuilder.createMovement();
+			if (movement == null)
 			{
 				throw new AdempiereException("No Movement created");
 			}
 
-			addLog("@Created@ @M_Movement_ID@: " + movement.get(0).getDocumentNo());
+			addLog("@Created@ @M_Movement_ID@: " + movement.getDocumentNo());
 		}
 		catch (final Exception e)
 		{

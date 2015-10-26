@@ -52,6 +52,7 @@ import de.metas.migration.scanner.IScriptFactory;
 import de.metas.migration.scanner.IScriptScanner;
 import de.metas.migration.scanner.IScriptScannerFactory;
 import de.metas.migration.scanner.impl.FileRef;
+import de.metas.migration.scanner.impl.GloballyOrderedScannerDecorator;
 
 public final class RolloutMigrate
 {
@@ -390,7 +391,8 @@ public final class RolloutMigrate
 				
 				final IFileRef fileRef = new FileRef(new File(fileName));
 				final IScriptScanner scriptScanner = scriptScannerFactory.createScriptScanner(fileRef);
-				return scriptScanner;
+
+				return new GloballyOrderedScannerDecorator(scriptScanner);
 			}
 
 			@Override

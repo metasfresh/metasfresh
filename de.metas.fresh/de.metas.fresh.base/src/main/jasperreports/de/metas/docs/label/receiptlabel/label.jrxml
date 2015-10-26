@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/receiptlabel/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.3310000000000064"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="301"/>
+	<property name="ireport.y" value="115"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -60,7 +60,15 @@
 	lua_idn.lot AS tracking,
 	lua_mhd.value AS mhd,
 	lu.value AS receiptdocno,
-	piip.name AS PackingInstruction
+	piip.name AS PackingInstruction,
+	(
+		SELECT DISTINCT io.movementdate
+		FROM M_HU_Assignment huas
+			INNER JOIN M_InOutLine iol ON huas.Record_ID = iol.M_InoutLine_ID AND huas.AD_Table_ID = Get_Table_ID('M_InOutLine')
+			INNER JOIN M_InOut io on iol.M_InOut_ID = io.M_InOut_ID
+		WHERE	huas.M_HU_ID = lu.M_HU_ID AND io.DocStatus in ('CO','CL')
+		LIMIT 1
+	) AS deliverydate
 FROM
 	M_HU lu
 	INNER JOIN M_HU_Storage lus ON lu.M_HU_ID = lus.M_HU_ID
@@ -165,6 +173,7 @@ WHERE
 	<field name="mhd" class="java.lang.String"/>
 	<field name="receiptdocno" class="java.lang.String"/>
 	<field name="packinginstruction" class="java.lang.String"/>
+	<field name="deliverydate" class="java.sql.Timestamp"/>
 	<detail>
 		<band height="842" splitType="Stretch">
 			<image>
@@ -253,13 +262,13 @@ WHERE
 				</textElement>
 				<text><![CDATA[Karotten-ID]]></text>
 			</staticText>
-			<staticText>
-				<reportElement uuid="80f93f93-93c5-4d00-99a6-5376c6f65028" x="97" y="430" width="194" height="16"/>
-				<textElement>
+			<textField>
+				<reportElement uuid="e49e07ca-139c-456b-a1ae-e94859e0255c" x="97" y="430" width="194" height="16"/>
+				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
-				<text><![CDATA[Artikelbezeichnung]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$R{org}+ " Artikelbezeichnung"]]></textFieldExpression>
+			</textField>
 			<textField>
 				<reportElement uuid="0b495f32-ff01-43c8-9278-a7f7ff3c1a3a" x="97" y="442" width="400" height="58"/>
 				<textElement markup="none">
@@ -347,7 +356,9 @@ WHERE
 				<text><![CDATA[Eingangsdatum: ]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yy" isBlankWhenNull="true">
-				<reportElement uuid="0e3c222c-2aa1-42b7-9329-591c4561a831" x="228" y="544" width="269" height="27"/>
+				<reportElement uuid="0e3c222c-2aa1-42b7-9329-591c4561a831" x="228" y="544" width="269" height="27">
+					<printWhenExpression><![CDATA[new Boolean($F{deliverydate}==null)]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font size="20" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -462,6 +473,13 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{mhd}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yy" isBlankWhenNull="true">
+				<reportElement uuid="027ed372-3ff8-480d-8773-e73d83259037" x="228" y="544" width="269" height="27"/>
+				<textElement textAlignment="Right">
+					<font size="20" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{deliverydate}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

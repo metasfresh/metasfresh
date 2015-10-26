@@ -25,7 +25,7 @@ package de.metas.fresh.model.validator;
 
 import java.text.DateFormat;
 
-import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListenerService;
 import org.adempiere.mm.attributes.countryattribute.impl.InOutCountryModelAttributeSetInstanceListener;
@@ -54,15 +54,15 @@ import org.compiere.util.Language;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.ordercheckup.printing.spi.impl.OrderCheckupPrintingQueueHandler;
-import de.metas.fresh.picking.form.swing.FreshSwingPickingTerminalPanel;
-import de.metas.picking.terminal.form.swing.PickingTerminal;
 import de.metas.printing.api.IPrintingQueueBL;
 
-public class Main extends AbstractModelInterceptor
+public class Main extends AbstractModuleInterceptor
 {
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
+		super.onInit(engine, client);
+
 		// Services
 		final IModelAttributeSetInstanceListenerService modelAttributeSetInstanceListenerService = Services.get(IModelAttributeSetInstanceListenerService.class);
 
@@ -105,6 +105,13 @@ public class Main extends AbstractModelInterceptor
 		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance); // task 09028
 
 		//
+		// Apply misc workarounds for GOLIVE
+		apply_Fresh_GOLIVE_Workarounds();
+	}
+
+	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	{
+		//
 		// add model validators
 		engine.addModelValidator(new C_OLCand(), client);
 		engine.addModelValidator(new C_Order(), client);
@@ -114,9 +121,10 @@ public class Main extends AbstractModelInterceptor
 		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order.instance, client); // task 09028
 		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order_MFGWarehouse_ReportLine.instance, client); // task 09028
 
-		//
-		// Apply misc workarounds for GOLIVE
-		apply_Fresh_GOLIVE_Workarounds();
+		// task 09421
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.C_Order.INSTANCE, client); 
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.Fresh_QtyOnHand.INSTANCE, client);
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Transaction.INSTANCE, client);
 	}
 
 	private void apply_Fresh_GOLIVE_Workarounds()

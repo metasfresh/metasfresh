@@ -62,7 +62,7 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends SvrProcess
 	private static final int SEQNO_SPACING = 10;
 
 	private static final String MSG_AD_USER_SORT_PREF_DEFAULT_FOR_MRP_PRODUCT_INFO_NOT_FOUND = "AD_User_SortPref_Default_For_MRP_Product_Info_Not_Found";
-	private static final String MSG_AD_USER_SORT_PREF_AUTO_GEN_BY_Fresh_QTY_ON_HAND = "AD_User_SortPref_AutoGen_By_Fresh_QtyOnHand";
+	private static final String MSG_AD_USER_SORT_PREF_AUTO_GEN_BY_FRESH_QTY_ON_HAND = "AD_User_SortPref_AutoGen_By_Fresh_QtyOnHand";
 
 	//
 	// services
@@ -161,7 +161,7 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends SvrProcess
 		}
 		userSortPrefDAO.clearSortPreferenceLines(mrpProductInfoSortPrefs);
 
-		mrpProductInfoSortPrefs.setDescription(msgBL.getMsg(getCtx(), MSG_AD_USER_SORT_PREF_AUTO_GEN_BY_Fresh_QTY_ON_HAND, new Object[] { dateDoc }));
+		mrpProductInfoSortPrefs.setDescription(msgBL.getMsg(getCtx(), MSG_AD_USER_SORT_PREF_AUTO_GEN_BY_FRESH_QTY_ON_HAND, new Object[] { dateDoc }));
 		InterfaceWrapperHelper.save(mrpProductInfoSortPrefs);
 
 		newLine = InterfaceWrapperHelper.newInstance(I_AD_User_SortPref_Line.class, contextProviderForNewRecords);

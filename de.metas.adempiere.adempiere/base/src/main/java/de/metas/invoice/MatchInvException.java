@@ -39,7 +39,7 @@ public class MatchInvException extends AdempiereException
 	 */
 	private static final long serialVersionUID = -4245536283728230979L;
 
-	public MatchInvException(String message)
+	public MatchInvException(final String message)
 	{
 		super(message);
 	}

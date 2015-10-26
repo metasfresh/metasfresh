@@ -1,3 +1,4 @@
+DROP VIEW IF EXISTS "de.metas.fresh".RV_C_OrderLine_QtyOrderedReservedPromised_OnDate_V;
 CREATE OR REPLACE VIEW "de.metas.fresh".RV_C_OrderLine_QtyOrderedReservedPromised_OnDate_V AS
 SELECT 
 	M_Product_ID, 

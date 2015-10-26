@@ -24,6 +24,7 @@ package de.metas.inoutcandidate.api.impl;
 
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
@@ -165,5 +166,29 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 			return shipmentSchedule.getQtyOrdered_Calculated();
 		}
 		return shipmentSchedule.getQtyOrdered_Override();
+	}
+	
+	@Override
+	public Timestamp getDeliveryDate(final I_M_ShipmentSchedule sched)
+	{
+		final Timestamp deliveryDateOverride = sched.getDeliveryDate_Override();
+		if (deliveryDateOverride != null)
+		{
+			return deliveryDateOverride;
+		}
+
+		return sched.getDeliveryDate();
+	}
+
+	@Override
+	public Timestamp getPreparationDate(final I_M_ShipmentSchedule sched)
+	{
+		final Timestamp preparationDateOverride = sched.getPreparationDate_Override();
+		if (preparationDateOverride != null)
+		{
+			return preparationDateOverride;
+		}
+
+		return sched.getPreparationDate();
 	}
 }

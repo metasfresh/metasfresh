@@ -104,7 +104,7 @@ import de.metas.invoice.MatchInvException;
 		// Make sure M_Product_ID matches
 		if (invoiceLine.getM_Product_ID() != inoutLine.getM_Product_ID())
 		{
-			throw new MatchInvException("@Invalid @M_Product_ID@"
+			throw new MatchInvException("@Invalid@ @M_Product_ID@"
 					+ "\n @C_InvoiceLine_ID@: " + invoiceLine + ", @M_Product_ID@=" + invoiceLine.getM_Product()
 					+ "\n @M_InOutLine_ID@: " + inoutLine + ", @M_Product_ID@=" + inoutLine.getM_Product());
 		}
