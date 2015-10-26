@@ -15,8 +15,6 @@ SELECT DISTINCT
 	0.0,
 	0.0, /* MaterialEntnahme */
 	0.0, /* Zählbestand */
-	0.0, /* Zählbestand Stöckenteilen */
-	0.0, /* Zählbestand Industriestrasse */
 	0.0, /* Zusagbar Zählbestand */
 	0.0, /* MRP Menge */
 	p_DateGeneral::Date

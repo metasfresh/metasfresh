@@ -1,5 +1,7 @@
 
-
+--
+-- endcustomer projects can contain an overriding version of this view
+--
 CREATE OR REPLACE FUNCTION X_MRP_ProductInfo_Detail_V(IN DateFrom date, IN DateTo date) RETURNS SETOF X_mrp_productinfo_detail_mv AS
 $BODY$
 SELECT
@@ -12,8 +14,6 @@ SELECT
 	,CEIL(SUM(COALESCE(ol_d.QtyOrdered_Sale, 0))) AS QtyOrdered_Sale_OnDate
 	,CEIL(SUM(COALESCE(hu_me_d.qtymaterialentnahme, 0))) AS QtyMaterialentnahme  --T1-OK
 	,CEIL(SUM(COALESCE(qoh_d.qty, 0)) + sum(COALESCE(qohl.QtyCountSum, 0)) - SUM(COALESCE(hu_me_d.qtymaterialentnahme, 0))) AS fresh_qtyonhand_ondate
-	,CEIL(SUM(COALESCE(qohl_s.QtyCountSum, 0))) AS "fresh_qtyonhand_ondate_stö2" --T1-OK
-	,CEIL(SUM(COALESCE(qohl_i.QtyCountSum, 0))) AS fresh_qtyonhand_ondate_ind9   --T1-OK
 	,CEIL(SUM(COALESCE(qoh_d.qty, 0)) + SUM(COALESCE(qohl.QtyCountSum, 0)) - SUM(COALESCE(hu_me_d.qtymaterialentnahme, 0)) + SUM(COALESCE(ol_d.qtypromised, 0))) AS fresh_qtypromised
 	,0::numeric AS fresh_qtymrp --fresh_qtymrp will be updated with the help of "de.metas.fresh".MRP_ProductInfo_Poor_Mans_MRP_V mrp viewe in the next step
 	,'N'::character(1) as IsFallback
@@ -45,26 +45,6 @@ FROM
 			GROUP BY qoh.datedoc::date, qohl.M_Product_ID, qohl.M_AttributesetInstance_ID 
 	) qohl ON qohl.datedoc = currentDate::date AND qohl.m_product_id = p.M_Product_ID AND COALESCE(qohl.M_AttributesetInstance_ID,-1)=COALESCE(p.M_AttributesetInstance_ID,-1)
 
-	LEFT JOIN (	
-		SELECT SUM(qohl.QtyCount) AS QtyCountSum, qoh.datedoc::date, qohl.M_Product_ID, qohl.M_AttributesetInstance_ID
-		FROM fresh_qtyonhand qoh
-			LEFT JOIN fresh_qtyonhand_line qohl ON qoh.fresh_qtyonhand_id = qohl.fresh_qtyonhand_id
-		WHERE true
-			AND qoh.Processed='Y'
-			AND qohl.PP_Plant_ID=1000001
-		GROUP BY qoh.datedoc::date, qohl.M_Product_ID, qohl.M_AttributesetInstance_ID 
-	) qohl_s ON qohl_s.datedoc = currentDate::date AND qohl_s.m_product_id = p.M_Product_ID AND COALESCE(qohl_s.M_AttributesetInstance_ID,-1)=COALESCE(p.M_AttributesetInstance_ID,-1)
-
-	LEFT JOIN (	
-		SELECT SUM(qohl.QtyCount) AS QtyCountSum, qoh.datedoc::date, qohl.M_Product_ID, qohl.M_AttributesetInstance_ID
-		FROM fresh_qtyonhand qoh
-			LEFT JOIN fresh_qtyonhand_line qohl ON qoh.fresh_qtyonhand_id = qohl.fresh_qtyonhand_id
-		WHERE true
-			AND qoh.Processed='Y'
-			AND qohl.PP_Plant_ID=1000002
-		GROUP BY qoh.datedoc::date, qohl.M_Product_ID, qohl.M_AttributesetInstance_ID 
-	) qohl_i ON qohl_i.datedoc = currentDate::date AND qohl_i.m_product_id = p.M_Product_ID AND COALESCE(qohl_i.M_AttributesetInstance_ID,-1)=COALESCE(p.M_AttributesetInstance_ID,-1)
-		
 	/*
 	LEFT JOIN pp_mrp mrp ON mrp.isactive = 'Y'::bpchar 
    		AND mrp.typemrp = 'D'::bpchar 

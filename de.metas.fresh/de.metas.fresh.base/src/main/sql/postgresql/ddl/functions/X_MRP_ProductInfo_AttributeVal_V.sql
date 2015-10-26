@@ -1,4 +1,6 @@
-
+--
+-- endcustomer projects can contain an overriding version of this view
+--
 DROP FUNCTION X_MRP_ProductInfo_AttributeVal_V(IN DateAt date) ;
 CREATE OR REPLACE FUNCTION X_MRP_ProductInfo_AttributeVal_V(IN DateAt date) 
 RETURNS TABLE(
@@ -10,8 +12,6 @@ RETURNS TABLE(
 	qtyordered_ondate numeric, 
 	qtymaterialentnahme numeric, 
 	fresh_qtyonhand_ondate numeric, 
-	"fresh_qtyonhand_ondate_stö2" numeric, 
-	fresh_qtyonhand_ondate_ind9 numeric, 
 	fresh_qtypromised numeric, 
 	fresh_qtymrp numeric
 ) AS
@@ -25,8 +25,6 @@ SELECT
 	SUM(qtyordered_ondate) AS qtyordered_ondate, 
 	SUM(qtymaterialentnahme) AS qtymaterialentnahme, 
 	SUM(fresh_qtyonhand_ondate) AS fresh_qtyonhand_ondate, 
-	SUM("fresh_qtyonhand_ondate_stö2") AS "fresh_qtyonhand_ondate_stö2", 
-	SUM(fresh_qtyonhand_ondate_ind9) AS fresh_qtyonhand_ondate_ind9, 
 	SUM(fresh_qtypromised) AS fresh_qtypromised, 
 	SUM(fresh_qtymrp) AS fresh_qtymrp
 FROM (
@@ -39,8 +37,6 @@ FROM (
 		p.value, p.ispurchased, p.issold, p.m_product_category_id, p.isactive,
 		$1::date,
 		dim.GroupName,
-		0::numeric,
-		0::numeric,
 		0::numeric,
 		0::numeric,
 		0::numeric,

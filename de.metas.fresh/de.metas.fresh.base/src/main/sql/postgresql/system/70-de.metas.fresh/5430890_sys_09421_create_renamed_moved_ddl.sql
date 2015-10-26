@@ -20,7 +20,7 @@ COMMENT ON VIEW "de.metas.fresh".OrderBy_ProductGroup_V IS 'see task 08924'
 --------------------------------
 --table might even not yet exist with this name
 --DROP TRIGGER IF EXISTS Fresh_QtyOnHand_Line_OnUpdate_Trigger ON Fresh_QtyOnHand_Line;
-DROP FUNCTION IF EXISTS "de.metas.fresh".Fresh_QtyOnHand_Line_OnUpdate();
+DROP FUNCTION IF EXISTS "de.metas.fresh".Fresh_QtyOnHand_Line_OnUpdate() CASCADE;
 
 CREATE OR REPLACE FUNCTION "de.metas.fresh".Fresh_QtyOnHand_Line_OnUpdate()
   RETURNS trigger AS
