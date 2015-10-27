@@ -7,6 +7,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
@@ -40,7 +41,9 @@ import de.metas.migration.scanner.IScriptScannerFactory;
 /**
  * Returns all the scripts found by the internal scanner.<br>
  * They are ordered by the sequence number each of our migration scripts starts with.<br>
- * More specific: files are ordered by the prefix until the '_' char. If there is no '_' in the filename, then the whole file name is compared against.
+ * More specific: files are ordered by the prefix until the '_' char. <br>
+ * If there is no '_' in the filename or the prefix is empty (i.e. filename starting with '_'), then the whole file name is compared
+ * against.
  * 
  * 
  * @author metas-dev <dev@metas-fresh.com>
@@ -80,11 +83,25 @@ public class GloballyOrderedScannerDecorator implements IScriptScanner
 		}
 	});
 
-	private String extractSequenceNumber(final String fileName)
+	/**
+	 * Examples:
+	 * <ul>
+	 * <li>"1234_sys_test.sql" => "1234"
+	 * <li>"1234-sys-test.sql" => "1234-sys-test.sql"
+	 * <li>"" => ""
+	 * <li>"_sys_test.sql" => "_sys_test.sql"
+	 * </ul>
+	 * 
+	 * @param fileName
+	 * @return
+	 */
+	@VisibleForTesting
+	/* package */static String extractSequenceNumber(final String fileName)
 	{
 		final int indexOf = fileName.indexOf("_");
-		if (indexOf > -1)
+		if (indexOf <= 0)
 		{
+			// no '_' or empty prefix => return full name
 			return fileName;
 		}
 		return fileName.substring(0, indexOf);
