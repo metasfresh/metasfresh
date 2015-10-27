@@ -495,6 +495,22 @@ SQL and jasper dependencies
 					</execution>
 
 					<execution>
+						<id>copy-sources</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<type>jar</type>
+							<classifier>sources</classifier>
+							<excludeTransitive>false</excludeTransitive>
+							<stripVersion>true</stripVersion>
+							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+							<outputDirectory>${project.build.directory}/dist/sources</outputDirectory>
+						</configuration>
+					</execution>
+
+					<execution>
 						<id>write-dependency-tree</id>
 						<phase>prepare-package</phase>
 						<goals>
