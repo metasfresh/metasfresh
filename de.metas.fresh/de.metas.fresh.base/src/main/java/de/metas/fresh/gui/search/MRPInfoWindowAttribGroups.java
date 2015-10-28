@@ -101,22 +101,20 @@ public class MRPInfoWindowAttribGroups
 		final Properties ctx = Env.getCtx();
 
 		final ColumnInfo[] s_layoutAttribValues = new ColumnInfo[] {
-				new ColumnInfo(" ", "M_Product_ID", IDColumn.class).setColumnName("M_Product_ID"),
+				new ColumnInfo(msgBL.translate(ctx, " "), "M_Product_ID", IDColumn.class).setColumnName("M_Product_ID"),
 				// new ColumnInfo(msgBL.translate(ctx, "ProductValue"), "(select p.Value from M_Product p where p.M_Product_ID=" + TABLE_NAME + ".M_Product_ID)", String.class),
 				new ColumnInfo(msgBL.translate(ctx, "ValueAggregateName"), "GroupName", String.class).setColumnName("GroupName"),
 				new ColumnInfo(msgBL.translate(ctx, "qtyreserved_ondate"), "qtyreserved_ondate", Double.class),
 				new ColumnInfo(msgBL.translate(ctx, "qtyordered_ondate"), "qtyordered_ondate", Double.class),
 				new ColumnInfo(msgBL.translate(ctx, "qtymaterialentnahme"), "qtymaterialentnahme", Double.class),
 				new ColumnInfo(msgBL.translate(ctx, "fresh_qtyonhand_ondate"), "fresh_qtyonhand_ondate", Double.class),
-				new ColumnInfo(msgBL.translate(ctx, "fresh_qtyonhand_ondate_stö2"), "fresh_qtyonhand_ondate_stö2", Double.class),
-				new ColumnInfo(msgBL.translate(ctx, "fresh_qtyonhand_ondate_ind9"), "fresh_qtyonhand_ondate_ind9", Double.class),
 				new ColumnInfo(msgBL.translate(ctx, "fresh_qtypromised"), "fresh_qtypromised", Double.class),
 				new ColumnInfo(msgBL.translate(ctx, "fresh_qtymrp"), "fresh_qtymrp", Double.class)
 		};
 		/** From Clause */
-		final String s_sqlFrom = FUNCTION_NAME + "('@DateGeneral@'::DATE)";
+		final String s_sqlFrom = FUNCTION_NAME + "('@DateGeneral@'::DATE, ?)";
 		/** Where Clause */
-		final String s_sqlWhere = "M_Product_ID = ?";
+		final String s_sqlWhere = "1 = 1";
 		
 		final boolean multiSelection = false; 
 		final boolean addAccessSQL = false; // doesn't work with a function
