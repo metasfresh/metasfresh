@@ -31,9 +31,5 @@
 			<version>4.2.3.GA</version>
 		</dependency>
 	</dependencies>
-	
-	<build>
-		<sourceDirectory>./src</sourceDirectory>
-	</build>
-	
+
 </project>
