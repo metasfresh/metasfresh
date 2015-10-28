@@ -37,11 +37,19 @@ public class FreshQtyOnHandDAO implements IFreshQtyOnHandDAO
 	@Override
 	public List<I_Fresh_QtyOnHand_Line> retrieveLines(final I_Fresh_QtyOnHand qtyOnHandHeader)
 	{
-		return Services.get(IQueryBL.class)
+		final List<I_Fresh_QtyOnHand_Line> result = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fresh_QtyOnHand_Line.class)
 				.setContext(qtyOnHandHeader)
 				.addEqualsFilter(I_Fresh_QtyOnHand_Line.COLUMN_Fresh_QtyOnHand_ID, qtyOnHandHeader.getFresh_QtyOnHand_ID())
 				.create()
 				.list();
+
+		// Optimization: set parent
+		for (final I_Fresh_QtyOnHand_Line line : result)
+		{
+			line.setFresh_QtyOnHand(qtyOnHandHeader);
+		}
+
+		return result;
 	}
 }

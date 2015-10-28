@@ -53,7 +53,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.util.Language;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
-import de.metas.fresh.ordercheckup.printing.spi.impl.OrderCheckupPrintingQueueHandler;
 import de.metas.fresh.picking.form.swing.FreshSwingPickingTerminalPanel;
 import de.metas.picking.terminal.form.swing.PickingTerminal;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -104,8 +103,6 @@ public class Main extends AbstractModuleInterceptor
 		// Setup Time Format (see 06148)
 		Language.setDefaultTimeStyle(DateFormat.SHORT);
 
-		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance); // task 09028
-
 		//
 		// Apply misc workarounds for GOLIVE
 		apply_Fresh_GOLIVE_Workarounds();
@@ -127,7 +124,8 @@ public class Main extends AbstractModuleInterceptor
 		// task 09421
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.C_Order.INSTANCE, client); 
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.Fresh_QtyOnHand.INSTANCE, client);
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Transaction.INSTANCE, client);
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_InOut.INSTANCE, client);
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Movement.INSTANCE, client);
 	}
 
 	private void apply_Fresh_GOLIVE_Workarounds()

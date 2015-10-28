@@ -43,7 +43,6 @@ import com.google.common.base.Optional;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.printing.model.I_C_Printing_Queue;
@@ -221,5 +220,14 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 	private DocumentPrintingQueueHandler()
 	{
 		super();
+	}
+
+	/**
+	 * Allays returns <code>true</code>.
+	 */
+	@Override
+	public boolean isApplyHandler(I_C_Printing_Queue queue_IGNORED, I_AD_Archive printout_IGNORED)
+	{
+		return true;
 	}
 }

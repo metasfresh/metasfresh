@@ -508,6 +508,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 				.setIsSOTrx(invoiceRow.isCustomerDocument())
 				.setReference(type, reference)
 				.setCreditMemo(creditMemo)
+				.setDocumentNo(invoiceRow.getDocumentNo())
 				//
 				.setOpenAmt(invoiceRow.getOpenAmtConv_APAdjusted())
 				.setAmountToAllocate(invoiceRow.getAppliedAmt_APAdjusted())

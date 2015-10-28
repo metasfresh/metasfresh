@@ -22,7 +22,6 @@ package org.adempiere.util.lang;
  * #L%
  */
 
-
 import org.adempiere.util.Check;
 import org.adempiere.util.text.ExtendedReflectionToStringBuilder;
 import org.adempiere.util.text.RecursiveIndentedMultilineToStringStyle;
@@ -45,8 +44,16 @@ public final class ObjectUtils
 	 */
 	public static final String toString(final Object obj)
 	{
-		return new ExtendedReflectionToStringBuilder(obj, RecursiveIndentedMultilineToStringStyle.instance)
-				.toString();
+		try
+		{
+			return new ExtendedReflectionToStringBuilder(obj, RecursiveIndentedMultilineToStringStyle.instance)
+					.toString();
+		}
+		catch (final Exception e)
+		{
+			// task 09493: catching possible errors
+			return obj.toString() + " (WARNING: ExtendedReflectionToStringBuilder threw " + e + ")";
+		}
 	}
 
 	/**

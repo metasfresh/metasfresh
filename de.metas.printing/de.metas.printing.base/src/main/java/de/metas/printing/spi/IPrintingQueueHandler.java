@@ -22,12 +22,12 @@ package de.metas.printing.spi;
  * #L%
  */
 
-
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.printing.model.I_C_Printing_Queue;
 
 /**
  * To implement this, I recommend to extend {@link PrintingQueueHandlerAdapter}.
+ * 
  * @author ts
  *
  */
@@ -50,4 +50,14 @@ public interface IPrintingQueueHandler
 	 * @param printOut
 	 */
 	void afterEnqueueAfterSave(I_C_Printing_Queue queueItem, I_AD_Archive printOut);
+
+	/**
+	 * Specifies if a given handler shall be invoked for a particular queueItem and printOut.<br>
+	 * Note: not implemented by the adapter, so each concrete handler has to implement this method.
+	 * 
+	 * @param queueItem
+	 * @param printOut
+	 * @return
+	 */
+	boolean isApplyHandler(I_C_Printing_Queue queueItem, I_AD_Archive printOut);
 }

@@ -12,8 +12,9 @@ import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Transaction;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
@@ -56,19 +57,29 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			return null;
 		}
 
-		if (InterfaceWrapperHelper.isInstanceOf(model, I_M_Transaction.class))
-		{
-			final I_M_Transaction transaction = InterfaceWrapperHelper.create(model, I_M_Transaction.class);
-			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
-			return new MRPProdcutInfoSelector(asiAware, transaction.getMovementDate(), model);
-		}
-		else if (InterfaceWrapperHelper.isInstanceOf(model, I_C_OrderLine.class))
+		if (InterfaceWrapperHelper.isInstanceOf(model, I_C_OrderLine.class))
 		{
 			// note: we are interested in any DocStatus, because e.g. the order might have been reactivated
 			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
 
 			final Timestamp date = getDateForOrderLine(orderLine);
+			return new MRPProdcutInfoSelector(asiAware, date, model);
+		}
+		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_MovementLine.class))
+		{
+			final I_M_MovementLine movementLine = InterfaceWrapperHelper.create(model, I_M_MovementLine.class);
+			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
+			
+			final Timestamp date = movementLine.getM_Movement().getMovementDate();
+			return new MRPProdcutInfoSelector(asiAware, date, model);
+		}
+		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_InOutLine.class))
+		{
+			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
+			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
+			
+			final Timestamp date = inOutLine.getM_InOut().getMovementDate();
 			return new MRPProdcutInfoSelector(asiAware, date, model);
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_Fresh_QtyOnHand_Line.class))
@@ -79,7 +90,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 				return null;
 			}
 			final I_Fresh_QtyOnHand qtyOnHand = onHandLine.getFresh_QtyOnHand();
-			if (!(qtyOnHand.isActive() && qtyOnHand.isProcessed()))
+			if (!qtyOnHand.isActive())
 			{
 				return null;
 			}
@@ -94,24 +105,27 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 
 	private Timestamp getDateForOrderLine(final I_C_OrderLine orderLine)
 	{
-		final Timestamp date;
 		final I_M_ShipmentSchedule shipmentSched = Services.get(IShipmentSchedulePA.class).retrieveForOrderLine(orderLine);
 		if (shipmentSched != null)
 		{
-			date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(shipmentSched);
+			final Timestamp date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(shipmentSched);
+			if (date != null) // don't blindly assume that the sched is already initialized
+			{
+				return date;
+			}
+		}
+
+		final Timestamp date;
+		final I_C_Order order = orderLine.getC_Order();
+		if (order.getPreparationDate() != null)
+		{
+			date = order.getPreparationDate();
 		}
 		else
 		{
-			final I_C_Order order = orderLine.getC_Order();
-			if (order.getPreparationDate() != null)
-			{
-				date = order.getPreparationDate();
-			}
-			else
-			{
-				date = order.getDatePromised();
-			}
+			date = order.getDatePromised();
 		}
+		Check.errorIf(date == null, "Unable to obtain a date for order line {0}", orderLine);
 		return date;
 	}
 

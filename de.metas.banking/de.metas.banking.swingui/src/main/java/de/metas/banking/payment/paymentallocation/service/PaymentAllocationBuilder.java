@@ -318,11 +318,6 @@ public class PaymentAllocationBuilder
 			}
 		});
 
-		if (paymentVendorDocuments.size() > 1)
-		{
-			throw new PaymentDocumentNotAllocatedException(paymentVendorDocuments);
-		}
-
 		//
 		// filter invoices and credit memos
 		final List<IPaymentDocument> paymentVendorDocuments_CreditMemos = new ArrayList<>();
@@ -346,9 +341,13 @@ public class PaymentAllocationBuilder
 			}
 		});
 
-		if (payableVendorDocuments_NoCreditMemos.size() > 1 || paymentVendorDocuments_CreditMemos.size() > 1)
+		if (paymentVendorDocuments.size() > 1 || payableVendorDocuments_NoCreditMemos.size() > 1 || paymentVendorDocuments_CreditMemos.size() > 1)
 		{
-			throw new PayableDocumentNotAllocatedException(payableDocuments);
+			final List<IPaymentDocument> paymentVendorDocs = new ArrayList<>();
+			paymentVendorDocs.addAll(paymentVendorDocuments);
+			paymentVendorDocs.addAll(paymentVendorDocuments_CreditMemos);
+			
+			throw new MultipleVendorDocumentsException(paymentVendorDocs, payableVendorDocuments_NoCreditMemos);
 		}
 	}
 	

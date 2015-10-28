@@ -29,12 +29,12 @@ import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,30 +48,33 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 			UpdateMRPProductInfoTableWorkPackageProcessor.class)
 	{
 		@Override
-		protected Properties extractCtxFromItem(IMRPProdcutInfoSelector item)
+		protected Properties extractCtxFromItem(final IMRPProdcutInfoSelector item)
 		{
 			return InterfaceWrapperHelper.getCtx(item.getModel());
 		}
 
 		@Override
-		protected String extractTrxNameFromItem(IMRPProdcutInfoSelector item)
+		protected String extractTrxNameFromItem(final IMRPProdcutInfoSelector item)
 		{
 			return InterfaceWrapperHelper.getTrxName(item.getModel());
 		}
 
 		@Override
-		protected Object extractModelToEnqueueFromItem(IMRPProdcutInfoSelector item)
+		protected Object extractModelToEnqueueFromItem(final IMRPProdcutInfoSelector item)
 		{
 			return item.getModel();
 		}
 	};
 
-	public static void schedule(Object item)
+	public static void schedule(final Object item)
 	{
 		final IMRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = Services.get(IMRPProductInfoSelectorFactory.class);
 
-		// will be discarded by SCHEDULER if null
 		final IMRPProdcutInfoSelector itemToEnqueue = mrpProductInfoSelectorFactory.createOrNull(item);
+		if (itemToEnqueue == null)
+		{
+			return; // nothing to do
+		}
 		SCHEDULER.schedule(itemToEnqueue);
 	}
 

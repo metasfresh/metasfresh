@@ -22,7 +22,6 @@ package de.metas.printing.spi.impl;
  * #L%
  */
 
-
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import de.metas.document.archive.model.I_AD_Archive;
@@ -48,16 +47,31 @@ public final class CompositePrintingQueueHandler implements IPrintingQueueHandle
 	{
 		for (final IPrintingQueueHandler handler : handlers)
 		{
-			handler.afterEnqueueBeforeSave(queueItem, printOut);
+			if (handler.isApplyHandler(queueItem, printOut))
+			{
+				handler.afterEnqueueBeforeSave(queueItem, printOut);
+			}
 		}
 	}
-	
+
 	@Override
 	public void afterEnqueueAfterSave(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
 	{
 		for (final IPrintingQueueHandler handler : handlers)
 		{
-			handler.afterEnqueueAfterSave(queueItem, printOut);
+			if (handler.isApplyHandler(queueItem, printOut))
+			{
+				handler.afterEnqueueAfterSave(queueItem, printOut);
+			}
 		}
+	}
+
+	/**
+	 * Returns <code>true</code>, but note that handlers which are contained in this instance have their {@link #isApplyHandler(I_C_Printing_Queue, I_AD_Archive)} method invoked individually.
+	 */
+	@Override
+	public boolean isApplyHandler(I_C_Printing_Queue queueItem, I_AD_Archive printOut)
+	{
+		return true;
 	}
 }

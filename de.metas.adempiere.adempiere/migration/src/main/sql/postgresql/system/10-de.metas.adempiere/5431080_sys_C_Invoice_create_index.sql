@@ -1,4 +1,6 @@
 
+DROP INDEX IF EXISTS c_invoice_created;
+
 CREATE INDEX c_invoice_created
    ON c_invoice (created);
 COMMENT ON INDEX c_invoice_created

@@ -49,6 +49,7 @@ import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.fresh.ordercheckup.model.I_C_BPartner;
 import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.printing.model.I_C_Printing_Queue;
 
 /**
  *
@@ -61,6 +62,8 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 	private static final String SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE = "de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete";
 
+	private static final String SYSCONFIG_ORDERCHECKUP_COPIES = "de.metas.fresh.ordercheckup.Copies";
+		
 	@Override
 	public void generateReportsIfEligible(final I_C_Order order)
 	{
@@ -246,5 +249,12 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			report.setIsActive(false);
 			InterfaceWrapperHelper.save(report);
 		}
+	}
+
+	@Override
+	public int getNumberOfCopies(final I_C_Printing_Queue queueItem)
+	{
+		final int copies = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+		return copies;
 	}
 }

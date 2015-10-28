@@ -22,7 +22,6 @@ package de.metas.fresh.ordercheckup.printing.spi.impl;
  * #L%
  */
 
-
 import java.util.logging.Level;
 
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -35,6 +34,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
@@ -56,6 +56,20 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 
 	private static final transient CLogger logger = CLogger.getCLogger(OrderCheckupPrintingQueueHandler.class);
 
+	/**
+	 * Set the number of copies to the configured value.
+	 * Note that this handler is invokes after the "standard" handler, because the main validator of de.metas.fresh 
+	 * has a higher SeqNo and is inititalized later.
+	 *
+	 * @task http://dewiki908/mediawiki/index.php/09467_Bestellkontrolle_2x_ausdrucken_%28103975976435%29
+	 */
+	@Override
+	public void afterEnqueueBeforeSave(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
+	{
+		final int copies = Services.get(IOrderCheckupBL.class).getNumberOfCopies(queueItem);
+		queueItem.setCopies(copies);
+	}
+
 	@Override
 	public void afterEnqueueAfterSave(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
 	{
@@ -70,20 +84,29 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 		setUserToPrint(queueItem, report);
 	}
 
+	/**
+	 * Returns <code>true</code> if the given archive's <code>AD_Table_ID</code> is the ID of the <code>C_Order_MFGWarehouse_Report</code> table.
+	 */
+	@Override
+	public boolean isApplyHandler(final I_C_Printing_Queue queueItem_IGNOED, final I_AD_Archive printOut)
+	{
+		return Services.get(IADTableDAO.class).isTableId(I_C_Order_MFGWarehouse_Report.Table_Name, printOut.getAD_Table_ID());
+	}
+
 	private final I_C_Order_MFGWarehouse_Report getReportOrNull(final I_AD_Archive printOut)
 	{
 		if (!Services.get(IADTableDAO.class).isTableId(I_C_Order_MFGWarehouse_Report.Table_Name, printOut.getAD_Table_ID()))
 		{
 			return null;
 		}
-		
+
 		final I_C_Order_MFGWarehouse_Report report = Services.get(IArchiveDAO.class).retrieveReferencedModel(printOut, I_C_Order_MFGWarehouse_Report.class);
 		if (report == null)
 		{
 			new AdempiereException("No report was found for " + printOut)
 					.throwOrLogWarningIfDeveloperMode(logger);
 		}
-		
+
 		return report;
 	}
 

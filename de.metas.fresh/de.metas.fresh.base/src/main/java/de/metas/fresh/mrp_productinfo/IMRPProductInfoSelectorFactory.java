@@ -29,12 +29,15 @@ public interface IMRPProductInfoSelectorFactory extends ISingletonService
 	/**
 	 * Supports the following models:
 	 * <ul>
-	 * <li>M_Transaction
+	 * <li>M_InOutLine
+	 * <li>M_MovementLine
 	 * <li>C_OrderLine
 	 * <li>Fresh_QtyOnHand
 	 * </ul>
 	 * <p>
 	 * Notes: In case another table is added to the view <code>"de.metas.sq80".M_Product_ID_M_AttributeSetInstance_ID_V</code>, then also this factory needs to be extended.<br>
+	 * M_InOutLine and M_MovementLine are actually about particular M_Transactions, but we can't work with M_Transtactions directly as they are a bit elusive (they are deleted on reactivate and then
+	 * we can't async-process them anymore).<br>
 	 * Also, please keeps the date related code in sync.
 	 * 
 	 * @param model

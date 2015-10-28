@@ -1,17 +1,5 @@
---drop table if exists "de.metas.fresh".X_Fresh_QtyOnHand_OnDate;
 
-create table "de.metas.fresh".X_Fresh_QtyOnHand_OnDate (
-	MovementDate	date NOT NULL,
-	M_Product_ID NUMERIC(10) NOT NULL,
-	M_AttributeSetInstance_ID NUMERIC(10) NOT NULL,
-	Qty NUMERIC NOT NULL DEFAULT 0,
-);
-CREATE INDEX x_fresh_qtyonhand_ondate_tuple
-   ON "de.metas.fresh".x_fresh_qtyonhand_ondate (movementdate ASC NULLS LAST, m_product_id ASC NULLS LAST, m_attributesetinstance_id ASC NULLS LAST);
-
-
-DROP FUNCTION IF EXISTS "de.metas.fresh".M_Transaction_update_X_Fresh_QtyOnHand_OnDate();
-
+--fix: returning v_Recordx
 CREATE OR REPLACE FUNCTION "de.metas.fresh".m_transaction_update_x_Fresh_qtyonhand_ondate()
   RETURNS trigger AS
 $BODY$
@@ -50,19 +38,3 @@ $BODY$
 ALTER FUNCTION "de.metas.fresh".m_transaction_update_x_Fresh_qtyonhand_ondate()
   OWNER TO adempiere;
 COMMENT ON FUNCTION "de.metas.fresh".m_transaction_update_x_Fresh_qtyonhand_ondate() IS 'the function is VOLATILE because it is called from a trigger function and to avoid the error "ERROR: INSERT is not allowed in a non-volatile function';
-
-DROP TRIGGER IF EXISTS M_Transaction_update_X_Fresh_QtyOnHand_OnDate_INSERT_trigger ON M_Transaction;
-CREATE TRIGGER M_Transaction_update_X_Fresh_QtyOnHand_OnDate_INSERT_trigger
-	AFTER INSERT
-	ON M_Transaction
-	FOR EACH ROW
-	WHEN (NEW.MovementType IN ('C-', 'C+', 'V-', 'V+'))
-	EXECUTE PROCEDURE "de.metas.fresh".M_Transaction_update_X_Fresh_QtyOnHand_OnDate();
---
-DROP TRIGGER IF EXISTS M_Transaction_update_X_Fresh_QtyOnHand_OnDate_DELETE_trigger ON M_Transaction;
-CREATE TRIGGER M_Transaction_update_X_Fresh_QtyOnHand_OnDate_DELETE_trigger
-	AFTER DELETE
-	ON M_Transaction
-	FOR EACH ROW
-	WHEN (OLD.MovementType IN ('C-', 'C+', 'V-', 'V+'))
-	EXECUTE PROCEDURE "de.metas.fresh".M_Transaction_update_X_Fresh_QtyOnHand_OnDate();

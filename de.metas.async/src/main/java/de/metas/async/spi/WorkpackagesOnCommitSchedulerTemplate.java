@@ -70,12 +70,12 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 */
 	public final void schedule(final ItemType item)
 	{
+		Check.assumeNotNull(item, "Param 'item' is not null");
 		// Avoid collecting the item if is not eligible
 		if (!isEligibleForScheduling(item))
 		{
 			return;
 		}
-
 		scheduleFactory.collect(item);
 	}
 

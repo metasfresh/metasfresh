@@ -211,6 +211,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 				.setReference(org.compiere.model.I_C_Payment.Table_Name, paymentRow.getC_Payment_ID())
 				.setOpenAmt(paymentRow.getOpenAmtConv_APAdjusted())
 				.setIsSOTrx(paymentRow.isCustomerDocument())
+				.setDocumentNo(paymentRow.getDocumentNo())
 				.setAmountToAllocate(paymentRow.getAppliedAmt_APAdjusted())
 				.build();
 

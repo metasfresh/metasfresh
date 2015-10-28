@@ -1,5 +1,5 @@
 --
--- endcustomer projects can contain an overriding version of this view
+-- might be overridden in an endcustomer project
 --
 DROP VIEW IF EXISTS "de.metas.fresh".X_MRP_ProductInfo_AttributeVal_Raw_V;
 
@@ -14,7 +14,14 @@ SELECT
 	SUM(v.qtymaterialentnahme) AS qtymaterialentnahme, 
 	SUM(v.fresh_qtyonhand_ondate) AS fresh_qtyonhand_ondate, 
 	SUM(v.fresh_qtypromised) AS fresh_qtypromised, 
-	SUM(v.fresh_qtymrp) AS fresh_qtymrp
+	(
+		SELECT SUM(Fresh_QtyMRP)
+		FROM "de.metas.fresh".X_MRP_ProductInfo_Detail_Poor_Mans_MRP mrp
+		WHERE mrp.DateGeneral = v.DateGeneral 
+			AND mrp.M_Product_MRP_ID = p.M_Product_ID 
+			AND dim.GroupName = ANY("de.metas.dimension".DIM_Get_GroupName('MRP_Product_Info_ASI_Values', mrp.ASIKey_MRP))
+		GROUP BY DateGeneral, M_Product_MRP_ID
+	) AS Fresh_QtyMRP
 FROM
 	(select distinct GroupName from "de.metas.dimension".DIM_Dimension_Spec_Attribute_AllValues where InternalName='MRP_Product_Info_ASI_Values') as dim
 	JOIN M_Product p ON true 

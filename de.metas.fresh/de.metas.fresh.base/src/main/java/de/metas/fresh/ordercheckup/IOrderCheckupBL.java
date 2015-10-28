@@ -27,6 +27,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import de.metas.printing.model.I_C_Printing_Queue;
 
 public interface IOrderCheckupBL extends ISingletonService
 {
@@ -57,4 +58,12 @@ public interface IOrderCheckupBL extends ISingletonService
 
 	/** Void all generated {@link I_C_Order_MFGWarehouse_Report}s for given order */
 	void voidReports(I_C_Order order);
+
+	/**
+	 * Return the number of copies (2 will result in two printouts in sum) that shall be set to the given <code>C_Printing_Queue</code>.
+	 * 
+	 * @param queueItem
+	 * @return
+	 */
+	int getNumberOfCopies(I_C_Printing_Queue queueItem);
 }

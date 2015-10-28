@@ -5,11 +5,16 @@ CREATE OR REPLACE VIEW "de.metas.fresh".PP_Product_Bom_And_Component AS
 SELECT 
 	-- bom (header) stuff
 	b.PP_Product_Bom_ID, 
+	
+	-- the BOM-product, i.e. the "end-result"
 	b.M_Product_ID AS b_M_Product_ID, b_p.Value as b_p_Value, b_p.Name as b_p_Name,
-	b.M_AttributeSetInstance_ID AS b_M_AttributeSetInstance_ID,  
+	
+	--  the "end-result's" ASI; don't return null but 0 if there is no ASI, because we'll want to use '=' with it
+	COALESCE(b.M_AttributeSetInstance_ID, 0)::numeric(10,0) AS b_M_AttributeSetInstance_ID,
+	
 	"de.metas.dimension".DIM_Get_GroupName('MRP_Product_Info_ASI_Values', GenerateHUStorageASIKey(b.M_AttributeSetInstance_ID)) AS b_M_AttributeSetGroupNames,
 	
-	-- bomline stuff
+	-- bomline stuff, i.e. the components or packing material
 	bl_p.M_Product_ID AS bl_M_Product_ID, bl_p.Value as bl_p_Value, bl_p.Name as bl_p_Name,
 	bl.M_AttributeSetInstance_ID AS bl_M_AttributeSetInstance_ID,
 	bl.QtyBatch, bl.QtyBom,
@@ -44,7 +49,8 @@ FROM PP_Product_Bom b
 		AND conv_bl_p.C_UOM_To_ID=bl_p.C_UOM_ID
 WHERE true
 	AND b.IsActive='Y' AND bl.IsActive='Y' AND bl_p.IsActive='Y'
-	AND bl.ComponentType IN ('CO','PK')
+	AND bl.ComponentType IN ('CO','PK') -- only components and packing materials
+
 --	AND b_p.Value='P000787'-- "AB Alicesalat 250g";"Alicesalat, endproduct", Stk
 --	AND bl_p.Value='P000328' --Frisee, purchased, raw matrerial, kg
 ;
