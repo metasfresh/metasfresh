@@ -72,16 +72,7 @@ public final class AppsAction extends AbstractAction
 		final String displayName = Services.get(IMsgBL.class).getMsg(Env.getCtx(), _actionCommand);
 
 		//
-		// Button
-		if (builder.isUseTextFromActionName())
-		{
-			buttonText = displayName;
-		}
-		else
-		{
-			buttonText = builder.getText();
-		}
-		//
+		// Button insets
 		if (builder.getButtonInsets() != null)
 		{
 			buttonInsets = builder.getButtonInsets();
@@ -146,6 +137,27 @@ public final class AppsAction extends AbstractAction
 			icon = iconLarge;
 			iconPressed = iconLargePressed;
 		}
+
+		//
+		// Button text
+		String buttonText;
+		if (builder.isUseTextFromActionName())
+		{
+			buttonText = displayName;
+		}
+		else
+		{
+			buttonText = builder.getText();
+		}
+		// If there is no icon and no button text, then use the text from action,
+		// because else we will get an empty button.
+		// NOTE: we are checking the text without stripping the spaces because we want to handle the case when,
+		// the developer programatically sets " " as text.
+		if (icon == null && Check.isEmpty(buttonText, false))
+		{
+			buttonText = displayName;
+		}
+		this.buttonText = buttonText;
 
 		// Attributes
 		putValue(Action.NAME, displayName);						// Display
