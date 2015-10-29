@@ -34,6 +34,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.border.Border;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.adempiere.util.Check;
 
@@ -65,6 +66,13 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	private IContainer panel;
 	private CardLayout cardLayout;
 
+	/**
+	 * Key Button border color.
+	 * 
+	 * NOTE: this is not the selected button border color. It's the border color of all our keys. 
+	 */
+	private final Color keyBorderColor = MetalLookAndFeel.getCurrentTheme().getControlDisabled();
+	
 	/**
 	 * Key Button border to be used when it's not selected
 	 */
@@ -283,7 +291,10 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	{
 		if (keyBorderUnselected == null)
 		{
-			keyBorderUnselected = BorderFactory.createEmptyBorder(4, 4, 4, 4);
+			keyBorderUnselected = BorderFactory.createCompoundBorder(
+					BorderFactory.createLineBorder(keyBorderColor, 1) // outsideBorder,
+					, BorderFactory.createEmptyBorder(3, 3, 3, 3) // inside border
+			);
 		}
 		return keyBorderUnselected;
 	}
