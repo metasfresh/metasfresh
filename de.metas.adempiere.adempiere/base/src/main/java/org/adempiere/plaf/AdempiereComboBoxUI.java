@@ -224,5 +224,14 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 
 			return super.getPopupHeightForRowCount(1) * rows;
 		}
+		
+		@Override
+		protected void configureScroller()
+		{
+			super.configureScroller();
+			
+			// In case user scrolls inside a combobox popup, we want to prevent closing the popup no matter if it could be scrolled or not.
+			scroller.putClientProperty(AdempiereScrollPaneUI.PROPERTY_DisableWheelEventForwardToParent, true);
+		}
 	}
 }

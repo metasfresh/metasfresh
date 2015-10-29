@@ -3,12 +3,16 @@ package org.adempiere.plaf;
 import java.awt.Component;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.metal.MetalScrollPaneUI;
+
+import org.compiere.util.DisplayType;
 
 /*
  * #%L
@@ -37,6 +41,11 @@ public class AdempiereScrollPaneUI extends MetalScrollPaneUI
 	/** the UI Class ID to bind this UI to */
 	public static final String uiClassID = AdempierePLAF.getUIClassID(JScrollPane.class, "ScrollPaneUI");
 
+	/**
+	 * Property used to disable forwarding the mouse wheel events when this scroll pane cannot handle them.
+	 */
+	public static final String PROPERTY_DisableWheelEventForwardToParent = AdempiereScrollPaneUI.class.getName() + ".DisableWheelEventForwardToParent";
+
 	public static ComponentUI createUI(final JComponent b)
 	{
 		return new AdempiereScrollPaneUI();
@@ -48,6 +57,11 @@ public class AdempiereScrollPaneUI extends MetalScrollPaneUI
 				uiClassID, AdempiereScrollPaneUI.class.getName()
 		};
 	}
+
+	/**
+	 * @see #PROPERTY_DisableWheelEventForwardToParent
+	 */
+	private boolean disableWheelEventForwardToParent = false;
 
 	@Override
 	protected void installDefaults(final JScrollPane scrollpane)
@@ -68,9 +82,40 @@ public class AdempiereScrollPaneUI extends MetalScrollPaneUI
 	}
 
 	@Override
+	protected PropertyChangeListener createPropertyChangeListener()
+	{
+		return new ScrollPanePropertyChangeListener(super.createPropertyChangeListener());
+	}
+
+	@Override
 	protected MouseWheelListener createMouseWheelListener()
 	{
 		return new ScrollPaneMouseWheelListener(super.createMouseWheelListener());
+	}
+
+	private class ScrollPanePropertyChangeListener implements PropertyChangeListener
+	{
+		private final PropertyChangeListener delegate;
+
+		private ScrollPanePropertyChangeListener(PropertyChangeListener delegate)
+		{
+			super();
+			this.delegate = delegate;
+		}
+
+		@Override
+		public void propertyChange(PropertyChangeEvent evt)
+		{
+			final Object source = evt.getSource();
+			final String propertyName = evt.getPropertyName();
+
+			if (source == scrollpane && PROPERTY_DisableWheelEventForwardToParent.equals(propertyName))
+			{
+				AdempiereScrollPaneUI.this.disableWheelEventForwardToParent = DisplayType.toBoolean(evt.getNewValue());
+			}
+
+			delegate.propertyChange(evt);
+		}
 	}
 
 	/**
@@ -105,16 +150,31 @@ public class AdempiereScrollPaneUI extends MetalScrollPaneUI
 			}
 
 			delegate.mouseWheelMoved(e);
+
+			// If forwarding events to parent is disabled, make sure we are consuming the event here,
+			// to avoid any other component to use it.
+			// NOTE: the ComboBox's popup depends on this feature, because in case user scrolls inside a combobox popup,
+			// we want to prevent closing the popup no matter if it could be scrolled or not.
+			if (disableWheelEventForwardToParent)
+			{
+				e.consume();
+			}
 		}
 
 		private boolean isEligibleForWheelScrolling(final MouseWheelEvent e)
 		{
+			// If forwarding events to parent is disabled, we must consider this scroll pane
+			if (disableWheelEventForwardToParent)
+			{
+				return true;
+			}
+
 			final JScrollBar horizontalScrollBar = scrollpane.getHorizontalScrollBar();
 			if (horizontalScrollBar != null && horizontalScrollBar.isVisible())
 			{
 				return true;
 			}
-			
+
 			final JScrollBar verticalScrollBar = scrollpane.getVerticalScrollBar();
 			if (verticalScrollBar != null && verticalScrollBar.isVisible())
 			{
