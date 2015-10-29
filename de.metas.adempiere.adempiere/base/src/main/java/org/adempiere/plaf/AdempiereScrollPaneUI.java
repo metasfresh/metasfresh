@@ -109,13 +109,19 @@ public class AdempiereScrollPaneUI extends MetalScrollPaneUI
 
 		private boolean isEligibleForWheelScrolling(final MouseWheelEvent e)
 		{
-			if (!scrollpane.getHorizontalScrollBar().isVisible()
-					&& !scrollpane.getVerticalScrollBar().isVisible())
+			final JScrollBar horizontalScrollBar = scrollpane.getHorizontalScrollBar();
+			if (horizontalScrollBar != null && horizontalScrollBar.isVisible())
 			{
-				return false;
+				return true;
+			}
+			
+			final JScrollBar verticalScrollBar = scrollpane.getVerticalScrollBar();
+			if (verticalScrollBar != null && verticalScrollBar.isVisible())
+			{
+				return true;
 			}
 
-			return true;
+			return false;
 		}
 
 		/**
