@@ -100,6 +100,7 @@ public class MLookupInfo implements Serializable, Cloneable
 			final String tableName, final String keyColumn,
 			final int zoomWindow, final int zoomWindowPO, final MQuery zoomQuery)
 	{
+		super();
 		if (sqlQuery == null)
 			throw new IllegalArgumentException("SqlQuery is null");
 		Query = sqlQuery;
@@ -117,7 +118,7 @@ public class MLookupInfo implements Serializable, Cloneable
 	static final long serialVersionUID = -7958664359250070233L;
 
 	/** SQL Query */
-	public String Query = null;
+	public String Query;
 	/** Table Name */
 	public final String TableName;
 	/** Key Column */
@@ -165,6 +166,7 @@ public class MLookupInfo implements Serializable, Cloneable
 	private boolean IsCreadedUpdatedBy = false;
 	public String InfoFactoryClass = null;
 	private boolean autoComplete = false;
+	private boolean queryHasEntityType = false;
 
 	/**
 	 * String representation
@@ -209,6 +211,11 @@ public class MLookupInfo implements Serializable, Cloneable
 	{
 		Check.assumeNotNull(ctxNew, "ctxNew not null");
 		this.ctx = ctxNew;
+	}
+	
+	public String getSqlQuery()
+	{
+		return Query;
 	}
 
 	// metas
@@ -393,6 +400,16 @@ public class MLookupInfo implements Serializable, Cloneable
 	public boolean isAutoComplete()
 	{
 		return this.autoComplete;
+	}
+
+	void setQueryHasEntityType(boolean queryHasEntityType)
+	{
+		this.queryHasEntityType = queryHasEntityType;
+	}
+	
+	public final boolean isQueryHasEntityType()
+	{
+		return queryHasEntityType;
 	}
 
 }   // MLookupInfo

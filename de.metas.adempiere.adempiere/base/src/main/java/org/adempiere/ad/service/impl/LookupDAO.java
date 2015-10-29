@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -54,6 +55,7 @@ import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.EqualsBuilder;
 import org.compiere.util.HashcodeBuilder;
@@ -713,14 +715,16 @@ public class LookupDAO implements ILookupDAO
 	{
 		private final String sql;
 		private final boolean numericKey;
+		private final int entityTypeColumnIndex;
 
 		private boolean lastItemActive = false;
 
-		public SQLNamePairIterator(final String sql, final boolean numericKey)
+		public SQLNamePairIterator(final String sql, final boolean numericKey, final int entityTypeColumnIndex)
 		{
 			super();
 			this.sql = sql;
 			this.numericKey = numericKey;
+			this.entityTypeColumnIndex = entityTypeColumnIndex;
 		}
 
 		@Override
@@ -732,13 +736,8 @@ public class LookupDAO implements ILookupDAO
 		@Override
 		protected NamePair fetch(final ResultSet rs) throws SQLException
 		{
-			String name = rs.getString(MLookupFactory.COLUMNINDEX_DisplayName);
-			final boolean isActive = "Y".equals(rs.getString(MLookupFactory.COLUMNINDEX_IsActive));
-			if (!isActive)
-			{
-				name = MLookup.INACTIVE_S + name + MLookup.INACTIVE_E;
-				// m_hasInactive = true;
-			}
+			final boolean isActive = isActive(rs) && isDisplayedInUI(rs);
+			final String name = getDisplayName(rs, isActive);
 
 			final NamePair item;
 			if (numericKey)
@@ -755,6 +754,39 @@ public class LookupDAO implements ILookupDAO
 			this.lastItemActive = isActive;
 
 			return item;
+		}
+		
+		private final boolean isActive(final ResultSet rs) throws SQLException
+		{
+			final boolean isActive = DisplayType.toBoolean(rs.getString(MLookupFactory.COLUMNINDEX_IsActive));
+			return isActive;
+		}
+		
+		private final boolean isDisplayedInUI(final ResultSet rs) throws SQLException
+		{
+			if (entityTypeColumnIndex <= 0)
+			{
+				return true;
+			}
+			
+			final String entityType = rs.getString(entityTypeColumnIndex);
+			if(Check.isEmpty(entityType, true))
+			{
+				return true;
+			}
+			
+			final boolean displayed = UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(entityType);
+			return displayed;
+		}
+		
+		private final String getDisplayName(final ResultSet rs, final boolean isActive) throws SQLException
+		{
+			String name = rs.getString(MLookupFactory.COLUMNINDEX_DisplayName);
+			if (!isActive)
+			{
+				name = MLookup.INACTIVE_S + name + MLookup.INACTIVE_E;
+			}
+			return name;
 		}
 
 		@Override
@@ -794,6 +826,7 @@ public class LookupDAO implements ILookupDAO
 	{
 		final String sql = getSQL(validationCtx, lookupInfo);
 		final boolean numericKey = lookupInfo.isNumericKey();
+		final int entityTypeColumnIndex = lookupInfo.isQueryHasEntityType() ? MLookupFactory.COLUMNINDEX_EntityType : -1;
 
 		if (logger.isLoggable(Level.FINER))
 		{
@@ -801,7 +834,7 @@ public class LookupDAO implements ILookupDAO
 			logger.fine(lookupInfo.getKeyColumnFQ() + ": " + sql);
 		}
 
-		return new SQLNamePairIterator(sql, numericKey);
+		return new SQLNamePairIterator(sql, numericKey, entityTypeColumnIndex);
 	}	// run
 
 	@Override
@@ -830,7 +863,7 @@ public class LookupDAO implements ILookupDAO
 			return null;
 		}
 
-		final String sql = injectWhereClause(lookupInfo.Query, validation);
+		final String sql = injectWhereClause(lookupInfo.getSqlQuery(), validation);
 		return sql;
 	}
 

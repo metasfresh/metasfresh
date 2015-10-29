@@ -63,6 +63,7 @@ public class MLookupFactory
 	public static final int COLUMNINDEX_Value = 2;
 	public static final int COLUMNINDEX_DisplayName = 3;
 	public static final int COLUMNINDEX_IsActive = 4;
+	public static final int COLUMNINDEX_EntityType = 5;
 	
 	/**	Logging								*/
 	private static CLogger		s_log = CLogger.getCLogger(MLookupFactory.class);
@@ -309,6 +310,7 @@ public class MLookupFactory
 				.append(", AD_Ref_List.Value") // Value
 				.append(",").append(displayColumnSQL) // DisplayName
 				.append(",AD_Ref_List.IsActive") // IsActive
+				.append(",AD_Ref_List.EntityType") // EntityType
 				.append(" FROM ").append(sqlFrom);
 		
 		// SQL WHERE
@@ -346,6 +348,7 @@ public class MLookupFactory
 		lookupInfo.setWhereClauseSqlPart(sqlWhereClause.toString());
 		lookupInfo.setOrderBySqlPart(sqlOrderBy);
 		lookupInfo.setSecurityDisabled(true);
+		lookupInfo.setQueryHasEntityType(true);
 		
 		return lookupInfo;
 	}	//	getLookup_List
