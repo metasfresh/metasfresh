@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -140,6 +141,9 @@ public abstract class Info extends Component
 	/** Window Width */
 	// metas: changed from protected to public
 	public static final int INFO_WIDTH = 800;
+	
+	/** Default icon name to be used for Info windows */
+	public static final String DEFAULT_IconName = "Info16";
 
 	private Window _window = null;
 
@@ -352,7 +356,13 @@ public abstract class Info extends Component
 	protected void jbInit() throws Exception
 	{
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		getWindow().setIconImage(org.compiere.Adempiere.getProductIconSmall());
+		
+		// Set window icon if any
+		final Image icon = Images.getImage2(DEFAULT_IconName);
+		if(icon != null)
+		{
+			getWindow().setIconImage(icon);
+		}
 
 		southPanel.setLayout(new BorderLayout());
 		// Begin - [FR 1823612 ] Product Info Screen Improvements

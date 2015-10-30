@@ -456,21 +456,24 @@ public final class AEnv
 	 * Create Menu Item.
 	 *
 	 * @param actionName action command
-	 * @param iconName optional name of the icon, defaults to action if null
+	 * @param defaultIconName optional icon name (without size, without file extension), to be used when no icon was found for <code>actionName</code>
 	 * @param ks optional key stroke
-	 * @param menu menu to add menu item to
+	 * @param menu optional menu to add menu item to
 	 * @param al action listener to register
-	 * @return MenuItem
+	 * @return menu item
 	 */
-	public static JMenuItem addMenuItem(final String actionName, String iconName, final KeyStroke ks,
-			final JMenu menu, final ActionListener al)
+	public static JMenuItem addMenuItem(final String actionName, String defaultIconName, final KeyStroke ks, final JMenu menu, final ActionListener al)
 	{
-		if (iconName == null)
+		// Get the icon
+		ImageIcon icon = Images.getImageIcon2(actionName + "16");
+		// Fallback to default icon name
+		if (icon == null && !Check.isEmpty(defaultIconName, true))
 		{
-			iconName = actionName;
+			icon = Images.getImageIcon2(defaultIconName + "16");
 		}
+		
 		final String text = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionName);
-		final ImageIcon icon = Images.getImageIcon2(iconName + "16");
+		
 		final CMenuItem mi = new CMenuItem(text, icon);
 		mi.setActionCommand(actionName);
 		if (ks != null)

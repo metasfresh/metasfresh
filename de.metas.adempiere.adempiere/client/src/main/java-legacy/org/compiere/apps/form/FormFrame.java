@@ -18,6 +18,7 @@ package org.compiere.apps.form;
 
 import java.awt.Cursor;
 import java.awt.Event;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -31,6 +32,7 @@ import javax.swing.KeyStroke;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -41,6 +43,7 @@ import org.compiere.apps.Help;
 import org.compiere.apps.WindowMenu;
 import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.model.I_AD_Form;
+import org.compiere.model.MTreeNode;
 import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CFrame;
 import org.compiere.util.CLogger;
@@ -129,7 +132,13 @@ public class FormFrame extends CFrame
 	 */
 	private void jbInit() throws Exception
 	{
-		this.setIconImage(org.compiere.Adempiere.getProductIconSmall());
+		final String iconName = MTreeNode.getIconName(MTreeNode.TYPE_WINDOW);
+		final Image icon = Images.getImage2(iconName);
+		if (icon != null)
+		{
+			this.setIconImage(icon);
+		}
+		
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.setJMenuBar(menuBar);
 	}	//	jbInit
@@ -142,8 +151,6 @@ public class FormFrame extends CFrame
 		//      File
 		JMenu mFile = AEnv.getMenu("File");
 		menuBar.add(mFile);
-		AEnv.addMenuItem("PrintScreen", null, KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, 0), mFile, this);
-		AEnv.addMenuItem("ScreenShot", null, KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, Event.SHIFT_MASK), mFile, this);
 		AEnv.addMenuItem("Report", null, KeyStroke.getKeyStroke(KeyEvent.VK_P, Event.ALT_MASK), mFile, this);
 		mFile.addSeparator();
 		AEnv.addMenuItem("End", null, KeyStroke.getKeyStroke(KeyEvent.VK_X, Event.ALT_MASK), mFile, this);
@@ -193,7 +200,7 @@ public class FormFrame extends CFrame
 		//      Help
 		JMenu mHelp = AEnv.getMenu("Help");
 		menuBar.add(mHelp);
-		AEnv.addMenuItem("Help", "Help", KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),	mHelp, this);
+		AEnv.addMenuItem("Help", null, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),	mHelp, this);
 		AEnv.addMenuItem("Online", null, null, mHelp, this);
 		AEnv.addMenuItem("EMailSupport", null, null, mHelp, this);
 		AEnv.addMenuItem("About", null, null, mHelp, this);

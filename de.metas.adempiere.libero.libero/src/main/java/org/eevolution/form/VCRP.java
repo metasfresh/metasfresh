@@ -55,12 +55,14 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMBL;
 import org.adempiere.util.Services;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
+import org.compiere.apps.search.InfoBuilder;
 import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.I_C_UOM;
@@ -150,6 +152,10 @@ implements FormPanel, ActionListener
 	
 	private void jbInit() throws Exception
 	{
+		if(m_frame != null)
+		{
+			m_frame.setIconImage(Images.getImage2(InfoBuilder.ACTION_InfoCRP + "16"));
+		}
 		
 		northPanel.setLayout(new java.awt.GridBagLayout());
 		

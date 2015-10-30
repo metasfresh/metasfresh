@@ -23,6 +23,7 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -182,6 +183,12 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 	 */
 	private void jbInit() throws Exception
 	{
+		final Image icon = Images.getImage2("Calendar16");
+		if (icon != null)
+		{
+			setIconImage(icon);
+		}
+		
 		final int componentHeight = VEditorUI.getVEditorHeight();
 
 		this.setResizable(false);

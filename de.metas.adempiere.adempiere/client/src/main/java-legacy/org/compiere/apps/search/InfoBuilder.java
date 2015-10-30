@@ -1,6 +1,7 @@
 package org.compiere.apps.search;
 
 import java.awt.Frame;
+import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -11,6 +12,7 @@ import javax.swing.JFrame;
 import org.adempiere.ad.service.IADInfoWindowBL;
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.images.Images;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
@@ -26,6 +28,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_ResourceAssignment;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableMap;
+
 /**
  * Info window (see {@link Info}) builder.
  * 
@@ -34,6 +38,40 @@ import org.compiere.util.Env;
  */
 public class InfoBuilder
 {
+	//
+	// Actions for standard/hardcoded Info windows
+	// NOTE: this action name will be also used for finding the window icon.
+	public static final String ACTION_InfoBPartner = "InfoBPartner";
+	public static final String ACTION_InfoProduct = "InfoProduct";
+	public static final String ACTION_InfoAsset = "InfoAsset";
+	public static final String ACTION_InfoAccount = "InfoAccount";
+	public static final String ACTION_InfoSchedule = "InfoSchedule";
+	public static final String ACTION_InfoMRP = "InfoMRP";
+	public static final String ACTION_InfoCRP = "InfoCRP";
+	public static final String ACTION_InfoOrder = "InfoOrder";
+	public static final String ACTION_InfoInvoice = "InfoInvoice";
+	public static final String ACTION_InfoInOut = "InfoInOut";
+	public static final String ACTION_InfoPayment = "InfoPayment";
+	public static final String ACTION_InfoCashLine = "InfoCashLine";
+	public static final String ACTION_InfoAssignment = "InfoAssignment";
+
+	/** Map of TableName to IconName to be used */
+	public static final ImmutableMap<String, String> tableName2iconName = ImmutableMap.<String, String> builder()
+			.put(I_C_BPartner.Table_Name, ACTION_InfoBPartner)
+			.put(I_M_Product.Table_Name, ACTION_InfoProduct)
+			.put(I_A_Asset.Table_Name, ACTION_InfoAsset)
+			// .put(I_.Table_Name, ACTION_InfoAccount)
+			// .put(I_.Table_Name, ACTION_InfoSchedule)
+			// .put(I_.Table_Name, ACTION_InfoMRP)
+			// .put(I_.Table_Name, ACTION_InfoCRP)
+			.put(I_C_Order.Table_Name, ACTION_InfoOrder)
+			.put(I_C_Invoice.Table_Name, ACTION_InfoInvoice)
+			.put(I_M_InOut.Table_Name, ACTION_InfoInOut)
+			.put(I_C_Payment.Table_Name, ACTION_InfoPayment)
+			.put(I_C_CashLine.Table_Name, ACTION_InfoCashLine)
+			.put(I_S_ResourceAssignment.Table_Name, ACTION_InfoAssignment)
+			.build();
+
 	public static InfoBuilder newBuilder()
 	{
 		return new InfoBuilder();
@@ -264,6 +302,7 @@ public class InfoBuilder
 	//
 
 	private Frame _parentFrame;
+	private Image _iconImage;
 	private Boolean _modal;
 	private Integer _windowNo;
 	private String _tableName;
@@ -334,6 +373,14 @@ public class InfoBuilder
 				}
 			}
 			infoSimple.init(modal, getWindowNo(), infoWindow, getKeyColumn(), getSearchValue(), isMultiSelection(), getWhereClause());
+
+			// Set the window icon if any
+			final Image icon = getIconImage();
+			if (icon != null)
+			{
+				infoSimple.getWindow().setIconImage(icon);
+			}
+
 			return infoSimple;
 		}
 		catch (final Exception e)
@@ -403,6 +450,16 @@ public class InfoBuilder
 					tableName, keyColumn,
 					multiSelection, whereClause);
 		}
+		//
+		Check.assumeNotNull(info, "info not null");
+
+		//
+		// Set icon if any
+		final Image icon = getIconImage();
+		if (icon != null)
+		{
+			info.getWindow().setIconImage(icon);
+		}
 
 		return info;
 	}
@@ -412,9 +469,25 @@ public class InfoBuilder
 		return Env.getCtx();
 	}
 
+	/**
+	 * Sets the table name. It is also calling the {@link #setIconName(String)}.
+	 * 
+	 * @param tableName
+	 */
 	public InfoBuilder setTableName(final String tableName)
 	{
 		_tableName = tableName;
+
+		//
+		// Also set the icon name if available
+		if (_tableName != null)
+		{
+			final String iconName = tableName2iconName.get(_tableName);
+			if (iconName != null)
+			{
+				setIconName(iconName);
+			}
+		}
 		return this;
 	}
 
@@ -560,6 +633,33 @@ public class InfoBuilder
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param iconName icon name (without size and without file extension).
+	 */
+	public InfoBuilder setIconName(final String iconName)
+	{
+		if (Check.isEmpty(iconName, true))
+		{
+			return setIcon((Image)null);
+		}
+		else
+		{
+			final Image icon = Images.getImage2(iconName + "16");
+			return setIcon(icon);
+		}
+	}
+
+	public InfoBuilder setIcon(final Image icon)
+	{
+		this._iconImage = icon;
+		return this;
+	}
+
+	private final Image getIconImage()
+	{
+		return _iconImage;
 	}
 
 }

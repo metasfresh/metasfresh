@@ -34,9 +34,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 import javax.swing.Box;
-import javax.swing.JCheckBoxMenuItem;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -49,8 +50,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXImageView;
 import org.jdesktop.swingx.JXPanel;
@@ -107,7 +109,7 @@ public class WindowMenu extends JMenu {
     
     private static void setEnvText(JMenu menu, String msg)
     {
-    	String text = Msg.getMsg(Env.getCtx(), msg);
+    	String text = Services.get(IMsgBL.class).getMsg(Env.getCtx(), msg);
 		int pos = text.indexOf('&');
 		if (pos != -1 && text.length() > pos)	//	We have a nemonic
 		{
@@ -123,7 +125,7 @@ public class WindowMenu extends JMenu {
     
     private static void setEnvText(JMenuItem menu, String msg)
     {
-    	String text = Msg.getMsg(Env.getCtx(), msg);
+    	String text = Services.get(IMsgBL.class).getMsg(Env.getCtx(), msg);
 		int pos = text.indexOf('&');
 		if (pos != -1 && text.length() > pos)	//	We have a nemonic
 		{
@@ -300,9 +302,7 @@ public class WindowMenu extends JMenu {
     private void buildChildMenus()
     {
     	this.removeAll();
-        int i;
-        ChildMenuItem menu;
-        Window[] windows = windowManager.getWindows();
+        final Window[] windows = windowManager.getWindows();
 
         if(displayShowAllAction)
         {
@@ -345,52 +345,59 @@ public class WindowMenu extends JMenu {
         	
         if ( !(frame instanceof AMenu) )
         {
-        	JFrame frame = Env.getWindow(0);
-        	if (frame != null && frame instanceof AMenu) {
-        		menu = new ChildMenuItem(frame);
-                menu.setState(false);
-                menu.addActionListener(new ActionListener() {
-                    @Override
-					public void actionPerformed(ActionEvent ae) {
-                    	Window frame = ((ChildMenuItem)ae.getSource()).getWindow();
-                        AEnv.showWindow(frame);
-                    }
-                });
+        	final JFrame frame = Env.getWindow(Env.WINDOW_MAIN);
+        	if (frame != null && frame instanceof AMenu)
+        	{
+        		final WindowMenuItem menu = new WindowMenuItem(frame);
         		add(menu);
         		addSeparator();
         	}
         }
         
-        for (i = 0; i < windows.length; i++) {
-            menu = new ChildMenuItem(windows[i]);
-            menu.setState(windows[i].equals(frame));
-            menu.addActionListener(new ActionListener() {
-                @Override
-				public void actionPerformed(ActionEvent ae) {
-                	Window frame = ((ChildMenuItem)ae.getSource()).getWindow();
-                    AEnv.showWindow(frame);
-                }
-            });
-            //menu.setIcon(array[i].getIconImage());
+        for (final Window window : windows)
+        {
+            final WindowMenuItem menu = new WindowMenuItem(window);
+            
+            // Disable if is current window.
+            if (window.equals(frame))
+            {
+            	menu.setEnabled(false);
+            }
             add(menu);
         }
     }
 
-    /* This JCheckBoxMenuItem descendant is used to track the child frame that corresponds
-       to a give menu. */
-    class ChildMenuItem extends JCheckBoxMenuItem {
-        /**
-		 * 
-		 */
-		private static final long serialVersionUID = 2258141282389818588L;
-		private Window window;
+    private static class WindowMenuItem extends JMenuItem
+    {
+		private static final long serialVersionUID = 5564119982489951394L;
 
-        public ChildMenuItem(Window window) {
+		private final Window window;
+		
+		private static final ActionListener ACTION_LISTENER = new ActionListener() {
+            @Override
+			public void actionPerformed(ActionEvent ae) {
+            	final Window frame = ((WindowMenuItem)ae.getSource()).getWindow();
+                AEnv.showWindow(frame);
+            }
+        };
+
+        public WindowMenuItem(final Window window)
+        {
             super(getTitle(window));
-            this.window=window;
+            
+			this.window = window;
+
+			// Use window's icon for our menu item icon.
+            final List<Image> windowIcons = window.getIconImages();
+            final Image windowIcon = windowIcons.isEmpty() ? null : windowIcons.get(0);
+            final ImageIcon windowImageIcon = windowIcon == null ? null : new ImageIcon(windowIcon);
+			setIcon(windowImageIcon);
+			
+			addActionListener(ACTION_LISTENER);
         }
 
-        public Window getWindow() {
+        private Window getWindow()
+        {
             return window;
         }
     }

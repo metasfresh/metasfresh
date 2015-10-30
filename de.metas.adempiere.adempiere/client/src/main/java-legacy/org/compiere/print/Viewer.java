@@ -448,8 +448,6 @@ public class Viewer extends CFrame
 		//      File
 		JMenu mFile = AEnv.getMenu("File");
 		menuBar.add(mFile);
-		AEnv.addMenuItem("PrintScreen", null, KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, 0), mFile, this);
-		AEnv.addMenuItem("ScreenShot", null, KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, Event.SHIFT_MASK), mFile, this);
 		AEnv.addMenuItem("Report", null, KeyStroke.getKeyStroke(KeyEvent.VK_P, Event.ALT_MASK), mFile, this);
 		mFile.addSeparator();
 		AEnv.addMenuItem("PrintCustomize", "Preference", null, mFile, this);

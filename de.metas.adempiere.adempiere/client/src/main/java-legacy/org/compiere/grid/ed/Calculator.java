@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,6 +47,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
+import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ADialog;
 import org.compiere.model.MConversionRate;
@@ -85,6 +87,13 @@ public final class Calculator extends CDialog
 	{
 		super(frame, title, true);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		
+		final Image icon = Images.getImage2("Calculator16");
+		if(icon != null)
+		{
+			setIconImage(icon);
+		}
+		
 		//  Get WindowNo for Currency
 		m_WindowNo = Env.getWindowNo(frame);
 		//
@@ -350,6 +359,7 @@ public final class Calculator extends CDialog
 	 *	Action Listener
 	 * 	@param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		//	Handle Button input
@@ -672,6 +682,7 @@ public final class Calculator extends CDialog
 	 *  KeyPressed Listener
 	 * 	@param e event
 	 */
+	@Override
 	public void keyPressed(KeyEvent e)
 	{
 		//  sequence:	pressed - typed(no KeyCode) - released
@@ -701,11 +712,13 @@ public final class Calculator extends CDialog
 	 *  KeyTyped Listener (nop)
 	 * 	@param e event
 	 */
+	@Override
 	public void keyTyped(KeyEvent e) {}
 	/**
 	 *  KeyReleased Listener (nop)
 	 * 	@param e event
 	 */
+	@Override
 	public void keyReleased(KeyEvent e) {}
 
 }	//	Calculator

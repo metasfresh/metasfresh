@@ -95,66 +95,66 @@ public final class InfoWindowMenuBuilder
 
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Product))
 		{
-			AEnv.addMenuItem("InfoProduct", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK), menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoProduct, null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK), menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_BPartner))
 		{
-			AEnv.addMenuItem("InfoBPartner", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.SHIFT_MASK + Event.ALT_MASK), menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoBPartner, null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.SHIFT_MASK + Event.ALT_MASK), menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_ShowAcct) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Account))
 		{
-			AEnv.addMenuItem("InfoAccount", null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK + Event.CTRL_MASK), menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoAccount, null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK + Event.CTRL_MASK), menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Schedule))
 		{
-			AEnv.addMenuItem("InfoSchedule", null, null, menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoSchedule, null, null, menu, standardInfoWindowLauncher);
 		}
 		// FR [ 1966328 ]
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_MRP))
 		{
-			AEnv.addMenuItem("InfoMRP", "Info", null, menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoMRP, "Info", null, menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_CRP))
 		{
-			AEnv.addMenuItem("InfoCRP", "Info", null, menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoCRP, "Info", null, menu, standardInfoWindowLauncher);
 		}
 
 		menu.addSeparator();
 
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Order))
 		{
-			AEnv.addMenuItem("InfoOrder", "Info", null, menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoOrder, "Info", null, menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Invoice))
 		{
-			AEnv.addMenuItem("InfoInvoice", "Info", null, menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoInvoice, "Info", null, menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_InOut))
 		{
-			AEnv.addMenuItem("InfoInOut", "Info", null, menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoInOut, "Info", null, menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Payment))
 		{
-			AEnv.addMenuItem("InfoPayment", "Info", null, menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoPayment, "Info", null, menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_CashJournal))
 		{
-			AEnv.addMenuItem("InfoCashLine", "Info", null, menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoCashLine, "Info", null, menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Resource))
 		{
-			AEnv.addMenuItem("InfoAssignment", "Info", null, menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoAssignment, "Info", null, menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Asset))
 		{
-			AEnv.addMenuItem("InfoAsset", "Info", null, menu, standardInfoWindowLauncher);
+			AEnv.addMenuItem(InfoBuilder.ACTION_InfoAsset, "Info", null, menu, standardInfoWindowLauncher);
 		}
 
 		//
 		// Add all custom windows to menu
 		for (final I_AD_InfoWindow infoWindow : Services.get(IADInfoWindowDAO.class).retrieveInfoWindowsInMenu(ctx))
 		{
-			final CMenuItem mi = new CMenuItem(infoWindow.getName(), Images.getImageIcon2("Info16"));
+			final CMenuItem mi = new CMenuItem(infoWindow.getName(), Images.getImageIcon2(Info.DEFAULT_IconName));
 			mi.setToolTipText(infoWindow.getDescription());
 			menu.add(mi);
 			mi.addActionListener(new ActionListener()
@@ -189,68 +189,70 @@ public final class InfoWindowMenuBuilder
 	/** Open standard/hardcoded info window */
 	private final void openStandardInfoWindow(final ActionEvent e)
 	{
-		final IUserRolePermissions role = getUserRolePermissions();
-		final JFrame parentFrame = getParentFrame();
 		final String actionCommand = e.getActionCommand();
-		final int windowNo = getParentWindowNo();
 		if (Check.isEmpty(actionCommand, true))
 		{
 			return;
 		}
-		else if (actionCommand.equals("InfoProduct") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Product))
+		
+		final IUserRolePermissions role = getUserRolePermissions();
+		final JFrame parentFrame = getParentFrame();
+		final int windowNo = getParentWindowNo();
+		
+		if (actionCommand.equals(InfoBuilder.ACTION_InfoProduct) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Product))
 		{
 			InfoBuilder.showProduct(parentFrame, windowNo);
 		}
-		else if (actionCommand.equals("InfoBPartner") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_BPartner))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoBPartner) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_BPartner))
 		{
 			InfoBuilder.showBPartner(parentFrame, windowNo);
 		}
-		else if (actionCommand.equals("InfoAsset") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Asset))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoAsset) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Asset))
 		{
 			InfoBuilder.showAsset(parentFrame, windowNo);
 		}
-		else if (actionCommand.equals("InfoAccount") && role.hasPermission(IUserRolePermissions.PERMISSION_ShowAcct))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoAccount) && role.hasPermission(IUserRolePermissions.PERMISSION_ShowAcct))
 		{
 			new org.compiere.acct.AcctViewer();
 		}
-		else if (actionCommand.equals("InfoSchedule") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Schedule))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoSchedule) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Schedule))
 		{
 			new org.compiere.apps.search.InfoSchedule(parentFrame, null, false);
 		}
 		// FR [ 1966328 ]
-		else if (actionCommand.equals("InfoMRP") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_MRP))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoMRP) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_MRP))
 		{
 			final int m_menu_id = MMenu.getMenu_ID("MRP Info");
 			final AMenu menu = AEnv.getAMenu();
 			AMenuStartItem.startMenuItemById(m_menu_id, Services.get(IMsgBL.class).translate(Env.getCtx(), "MRP Info"), menu);		// async load
 		}
-		else if (actionCommand.equals("InfoCRP") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_CRP))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoCRP) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_CRP))
 		{
 			final int m_menu_id = MMenu.getMenu_ID("CRP Info");
 			final AMenu menu = AEnv.getAMenu();
 			AMenuStartItem.startMenuItemById(m_menu_id, Services.get(IMsgBL.class).translate(Env.getCtx(), "CRP Info"), menu);		// async load
 		}
-		else if (actionCommand.equals("InfoOrder") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Order))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoOrder) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Order))
 		{
 			InfoBuilder.showOrder(parentFrame, windowNo, "");
 		}
-		else if (actionCommand.equals("InfoInvoice") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Invoice))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoInvoice) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Invoice))
 		{
 			InfoBuilder.showInvoice(parentFrame, windowNo, "");
 		}
-		else if (actionCommand.equals("InfoInOut") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_InOut))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoInOut) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_InOut))
 		{
 			InfoBuilder.showInOut(parentFrame, windowNo, "");
 		}
-		else if (actionCommand.equals("InfoPayment") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Payment))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoPayment) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Payment))
 		{
 			InfoBuilder.showPayment(parentFrame, windowNo, "");
 		}
-		else if (actionCommand.equals("InfoCashLine") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_CashJournal))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoCashLine) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_CashJournal))
 		{
 			InfoBuilder.showCashLine(parentFrame, windowNo, "");
 		}
-		else if (actionCommand.equals("InfoAssignment") && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Resource))
+		else if (actionCommand.equals(InfoBuilder.ACTION_InfoAssignment) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Resource))
 		{
 			InfoBuilder.showAssignment(parentFrame, windowNo, "");
 		}

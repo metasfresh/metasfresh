@@ -62,8 +62,10 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.adempiere.images.Images;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.FormFrame;
+import org.compiere.apps.search.InfoBuilder;
 import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.MColumn;
@@ -210,17 +212,22 @@ public class CCRP extends CAbstractForm {
 	}
 
 	@Override
-	public void init (int WindowNo, FormFrame frame) {
-
+	public void init (int WindowNo, FormFrame frame)
+	{
 		super.init(WindowNo, frame);
 
 		fillPicks();
 		jbInit();
+		
+		if(frame != null)
+		{
+			frame.setIconImage(Images.getImage2(InfoBuilder.ACTION_InfoCRP + "16"));
+		}
 	}
 
 
-	private void jbInit() {
-
+	private void jbInit()
+	{
 		dateFrom = new VDate("DateFrom", true, false, true, DisplayType.Date, "DateFrom");
 		dateTo = new VDate("DateTo", true, false, true, DisplayType.Date, "DateTo");
 

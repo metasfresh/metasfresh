@@ -277,8 +277,11 @@ public class AcctViewer extends CFrame
 	 */
 	private void jbInit() throws Exception
 	{
-		final ImageIcon ii = Images.getImageIcon2("InfoAccount16");
-		setIconImage(ii.getImage());
+		final ImageIcon icon = Images.getImageIcon2(InfoBuilder.ACTION_InfoAccount);
+		if(icon != null)
+		{
+			setIconImage(icon.getImage());
+		}
 
 		mainLayout.setHgap(5);
 		mainLayout.setVgap(5);

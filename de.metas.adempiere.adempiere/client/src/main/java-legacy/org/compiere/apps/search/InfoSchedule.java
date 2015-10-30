@@ -41,6 +41,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.images.Images;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.StatusBar;
@@ -144,6 +145,7 @@ public class InfoSchedule extends CDialog
 	 */
 	private void jbInit() throws Exception
 	{
+		setIconImage(Images.getImage2(InfoBuilder.ACTION_InfoSchedule + "16"));
 		mainPanel.setLayout(mainLayout);
 		parameterPanel.setLayout(parameterLayout);
 		labelResourceType.setHorizontalTextPosition(SwingConstants.LEADING);

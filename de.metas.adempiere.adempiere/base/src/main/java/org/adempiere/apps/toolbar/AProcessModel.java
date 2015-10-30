@@ -32,16 +32,20 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import javax.swing.Icon;
+
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
+import org.compiere.model.MTreeNode;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
@@ -121,6 +125,29 @@ public class AProcessModel
 		}
 
 		return name;
+	}
+	
+	public Icon getIcon(final I_AD_Process process)
+	{
+		final String iconName;
+		if (process.getAD_Form_ID() > 0)
+		{
+			iconName = MTreeNode.getIconName(MTreeNode.TYPE_WINDOW);
+		}
+		else if (process.getAD_Workflow_ID() > 0)
+		{
+			iconName = MTreeNode.getIconName(MTreeNode.TYPE_WORKFLOW);
+		}
+		else if (process.isReport())
+		{
+			iconName = MTreeNode.getIconName(MTreeNode.TYPE_REPORT);
+		}
+		else
+		{
+			iconName = MTreeNode.getIconName(MTreeNode.TYPE_PROCESS);
+		}
+		
+		return Images.getImageIcon2(iconName);
 	}
 
 	/**

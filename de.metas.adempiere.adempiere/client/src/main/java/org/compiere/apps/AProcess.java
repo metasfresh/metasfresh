@@ -116,6 +116,7 @@ public class AProcess
 	private CMenuItem createProcessMenuItem(final I_AD_Process process)
 	{
 		final CMenuItem mi = new CMenuItem(model.getDisplayName(process));
+		mi.setIcon(model.getIcon(process));
 		mi.setToolTipText(model.getDescription(process));
 		mi.addActionListener(new ActionListener()
 		{

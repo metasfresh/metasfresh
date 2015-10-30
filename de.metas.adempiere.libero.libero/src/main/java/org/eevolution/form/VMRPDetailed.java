@@ -96,6 +96,7 @@ import org.compiere.apps.StatusBar;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel2;
 import org.compiere.apps.search.FindHelper;
+import org.compiere.apps.search.InfoBuilder;
 import org.compiere.apps.search.PAttributeInstance;
 import org.compiere.grid.ed.VCheckBox;
 import org.compiere.grid.ed.VDate;
@@ -963,6 +964,11 @@ public class VMRPDetailed
 	 */
 	protected final void jbInit() throws Exception
 	{
+		if(m_frame != null)
+		{
+			m_frame.setIconImage(Images.getImage2(InfoBuilder.ACTION_InfoMRP + "16"));
+		}
+		
 		final Properties ctx = getCtx();
 
 		mainPanel.setLayout(new java.awt.BorderLayout());
