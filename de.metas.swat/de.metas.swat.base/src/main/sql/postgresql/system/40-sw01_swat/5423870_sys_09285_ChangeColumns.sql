@@ -66,7 +66,7 @@ UPDATE AD_Column SET ColumnSQL='( CASE  	WHEN C_Order.QtyOrdered = C_Order.QtyMo
 ;
 
 
-ALTER TABLE C_Order DROP column DeliveryStatus;
+--ALTER TABLE C_Order DROP column DeliveryStatus;
 
 
 
@@ -78,5 +78,5 @@ WHERE AD_Column_ID=552695
 
 
 
-ALTER TABLE C_Order DROP column InvoiceStatus;
+-- ALTER TABLE C_Order DROP column InvoiceStatus;
 
