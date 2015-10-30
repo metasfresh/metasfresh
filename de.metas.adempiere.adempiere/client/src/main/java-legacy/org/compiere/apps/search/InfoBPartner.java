@@ -48,7 +48,10 @@ import de.metas.adempiere.util.Permutation;
  * 
  * @author Jorg Janke
  * @version $Id: InfoBPartner.java,v 1.3 2006/07/30 00:51:27 jjanke Exp $
+ * 
+ * @deprecated Consider dropping this class because we have a standard Info window defined for BPartner and this one is no longer used
  */
+@Deprecated
 public class InfoBPartner extends Info
 {
 	/**

@@ -39,6 +39,7 @@ package de.metas.adempiere.gui.search;
  */
 
 
+import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -109,7 +110,8 @@ public final class InfoProduct extends InfoSimple implements ActionListener
 		//
 		// add taskpane
 		panelDetails = new InfoProductDetails(this);
-		addonPanel.add(panelDetails.getComponent());
+		addonPanel.setLayout(new BorderLayout());
+		addonPanel.add(panelDetails.getComponent(), BorderLayout.CENTER);
 	}
 
 	@Override

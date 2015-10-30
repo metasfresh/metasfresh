@@ -23,13 +23,11 @@ package de.metas.adempiere.gui.search;
  */
 
 
-import java.awt.Dimension;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.logging.Level;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.compiere.apps.search.Info;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
@@ -69,7 +67,7 @@ public class InfoProductStock implements IInfoProductDetail
 		fieldDescription = new CTextArea();
 		fieldDescription.setBackground(AdempierePLAF.getInfoBackground());
 		fieldDescription.setEditable(false);
-		fieldDescription.setPreferredSize(new Dimension(Info.INFO_WIDTH - 100, 100));
+		fieldDescription.setPreferredSize(null); // just to make sure it has no predefined size
 	}
 
 	private void init()

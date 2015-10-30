@@ -338,11 +338,10 @@ public abstract class Info extends Component
 			.withZoomButton(true)
 			.withoutText()
 			.build();
-	// Begin - [FR 1823612 ] Product Info Screen Improvements
-	protected CPanel addonPanel = new CPanel();
-	// End - [FR 1823612 ] Product Info Screen Improvements
-	protected StatusBar statusBar = new StatusBar();
-	protected CPanel parameterPanel = new CPanel();
+	protected final CPanel addonPanel = new CPanel();
+	protected final StatusBar statusBar = new StatusBar();
+	protected final CPanel parameterPanel = new CPanel();
+	/** {@link #p_table}'s scroll pane container */
 	private final JScrollPane scrollPane = new JScrollPane();
 	//
 	private final JPopupMenu popup = new JPopupMenu();
@@ -365,9 +364,7 @@ public abstract class Info extends Component
 		}
 
 		southPanel.setLayout(new BorderLayout());
-		// Begin - [FR 1823612 ] Product Info Screen Improvements
 		southPanel.add(addonPanel, BorderLayout.NORTH);
-		// End - [FR 1823612 ] Product Info Screen Improvements
 		southPanel.add(confirmPanel, BorderLayout.CENTER);
 		southPanel.add(statusBar, BorderLayout.SOUTH);
 
@@ -375,8 +372,12 @@ public abstract class Info extends Component
 		contentPane.add(southPanel, BorderLayout.SOUTH);
 		contentPane.add(parameterPanel, BorderLayout.NORTH);
 		contentPane.add(scrollPane, BorderLayout.CENTER);
-		initTreeUI(); // metas: modified layout to allow optional tree on the left window side
-		scrollPane.getViewport().add(p_table, null);
+		scrollPane.setViewportView(p_table);
+		// have some left/right space for better visibility
+		scrollPane.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createEmptyBorder(0, 2, 0, 2) // outsideBorder
+				, scrollPane.getBorder() // insideBorder
+				));
 		//
 		confirmPanel.setActionListener(this);
 		confirmPanel.getResetButton().setVisible(hasReset());
@@ -2094,35 +2095,65 @@ public abstract class Info extends Component
 	// metas: begin
 	// metas: loaded layout to allow optional tree on the left window side
 	// (-> product category tree in product info)
-	protected JSplitPane splitPane;
+	private JSplitPane splitPane;
 
-	private void initTreeUI()
+	/**
+	 * Injects the tree panel component in Info window layout.
+	 * 
+	 * Under the hood, this method will create a split pane, will add the grid table in it's right component and it will add the tree panel in it's left component. We are creating the split pane only
+	 * when we know that we have to display something in it's left side (i.e. the tree panel) because else it will draw some borders which are not looking nice.
+	 * 
+	 * @param treePanel tree panel component to be set in the left side of the split pane.
+	 * @param dividerLocation split pane's divider location
+	 */
+	protected final void setTreePanel(final Component treePanel, final int dividerLocation)
 	{
-		final Container contentPane = getContentPane();
-		contentPane.add(parameterPanel, BorderLayout.PAGE_START);
+		if (treePanel == null)
+		{
+			return;
+		}
+		
+		//
+		// Create the split pane if not already created.
+		// This will involve layout changes.
+		if (splitPane == null)
+		{
+			final Container contentPane = getContentPane();
+			contentPane.add(parameterPanel, BorderLayout.PAGE_START);
+	
+			final JPanel centerAndSouth = new JPanel();
+			centerAndSouth.setLayout(new GridBagLayout());
+	
+			final GridBagConstraints c = new GridBagConstraints();
+			c.gridx = 0;
+			c.gridy = 0;
+			c.fill = GridBagConstraints.BOTH;
+			c.weightx = 1;
+			c.weighty = 1;
+			centerAndSouth.add(scrollPane, c);
+	
+			c.gridx = 0;
+			c.gridy = 1;
+			c.fill = GridBagConstraints.BOTH;
+			c.weightx = 0;
+			c.weighty = 0;
+			centerAndSouth.add(southPanel, c);
+			centerAndSouth.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
+	
+			splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+			splitPane.setBorder(BorderFactory.createEmptyBorder());
+			splitPane.add(centerAndSouth, JSplitPane.RIGHT);
+			contentPane.add(splitPane, BorderLayout.CENTER);
+		}
 
-		final JPanel centerAndSouth = new JPanel();
-		centerAndSouth.setLayout(new GridBagLayout());
-
-		final GridBagConstraints c = new GridBagConstraints();
-		c.gridx = 0;
-		c.gridy = 0;
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.weighty = 1;
-		centerAndSouth.add(scrollPane, c);
-
-		c.gridx = 0;
-		c.gridy = 1;
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 0;
-		c.weighty = 0;
-		centerAndSouth.add(southPanel, c);
-		centerAndSouth.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
-
-		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		splitPane.add(centerAndSouth, JSplitPane.RIGHT);
-		contentPane.add(splitPane, BorderLayout.CENTER);
+		// Set the tree panel in split pane's left side.
+		splitPane.add(treePanel, JSplitPane.LEFT);
+		
+		// Set the split pane's divider location.
+		if (dividerLocation >= 0)
+		{
+			splitPane.setDividerLocation(dividerLocation);
+		}
 	}
 
 	private Container getContentPane()

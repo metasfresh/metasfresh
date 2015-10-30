@@ -45,7 +45,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
-import javax.swing.JSplitPane;
 import javax.swing.table.TableModel;
 
 import net.miginfocom.swing.MigLayout;
@@ -190,7 +189,6 @@ public class InfoSimple extends Info
 	private final EvaluableCtx ctx = new EvaluableCtx(Env.getCtx());
 
 	// metas: product category tree
-	private VTreePanel treePanel;
 	private MTreeNode treeSelectedNode = null;
 	private final PropertyChangeListener treeNodeSelectedListener = new PropertyChangeListener()
 	{
@@ -333,18 +331,19 @@ public class InfoSimple extends Info
 	private void initTreeUI()
 	{
 		final int adTreeId = adInfoWindowBL.getAD_Tree_ID(infoWindow);
-		if (adTreeId > 0)
+		if (adTreeId <= 0)
 		{
-			treePanel = new VTreePanel(Env.getWindowNo(this), false, false);
-			treePanel.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
-
-			treePanel.initTree(adTreeId);
-			treePanel.addPropertyChangeListener(VTreePanel.PROPERTY_ExecuteNode, treeNodeSelectedListener);
-			treePanel.setPreferredSize(new Dimension(200, treePanel.getPreferredSize().height));
-
-			splitPane.add(treePanel, JSplitPane.LEFT);
-			splitPane.setDividerLocation(200);
+			return;
 		}
+		
+		final VTreePanel treePanel = new VTreePanel(Env.getWindowNo(this), false, false);
+		treePanel.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
+
+		treePanel.initTree(adTreeId);
+		treePanel.addPropertyChangeListener(VTreePanel.PROPERTY_ExecuteNode, treeNodeSelectedListener);
+		treePanel.setPreferredSize(new Dimension(200, treePanel.getPreferredSize().height));
+
+		setTreePanel(treePanel, 200);
 	}
 
 	private void initParametersUI()

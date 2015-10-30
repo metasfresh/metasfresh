@@ -24,22 +24,25 @@ package de.metas.adempiere.gui.search;
 
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.search.IInfoSimple;
-import org.compiere.apps.search.Info;
-import org.compiere.swing.CPanel;
+import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -55,33 +58,21 @@ public class InfoProductDetails
 
 	// UI
 	private CTabbedPane tabbedPane;
-	JXTaskPane warehouseStockPanel = null;
-	CPanel tablePanel = null;
+	private JXTaskPane warehouseStockPanel = null;
 
 	public InfoProductDetails(IInfoSimple parent)
 	{
+		super();
 		this.parent = parent;
 		initUI();
 	}
 
 	private void initUI()
 	{
-		warehouseStockPanel = new JXTaskPane();
-		tablePanel = new CPanel();
-
-		warehouseStockPanel.setTitle(Services.get(IMsgBL.class).translate(Env.getCtx(), "WarehouseStock"));
-		// see org.adempiere.plaf.AdempiereLookAndFeel.
-		// warehouseStockPanel.setUI(new AdempiereTaskPaneUI());
-		// warehouseStockPanel.getContentPane().setBackground(new ColorUIResource(251, 248, 241));
-		// warehouseStockPanel.getContentPane().setForeground(new ColorUIResource(251, 0, 0));
-
 		panelWarehouse = new InfoProductStock();
-		InfoProductSubstitute panelSubstitute = new InfoProductSubstitute();
-		InfoProductRelated panelRelated = new InfoProductRelated();
-		InfoProductATP panelATP = new InfoProductATP();
-
-		tabbedPane = new CTabbedPane();
-		tabbedPane.setPreferredSize(new Dimension(Info.INFO_WIDTH, 105));
+		final InfoProductSubstitute panelSubstitute = new InfoProductSubstitute();
+		final InfoProductRelated panelRelated = new InfoProductRelated();
+		final InfoProductATP panelATP = new InfoProductATP();
 
 		detailTabs = Arrays.asList(
 				new InfoProductDetailTab("Warehouse", panelWarehouse, panelWarehouse.getComponent(InfoProductStock.PANELTYPE_Stock)),
@@ -91,11 +82,11 @@ public class InfoProductDetails
 				new InfoProductDetailTab("ATP", panelATP, panelATP.getComponent())
 				);
 
+		tabbedPane = new CTabbedPane();
 		for (final InfoProductDetailTab detailTab : detailTabs)
 		{
 			tabbedPane.addTab(detailTab.getTitleTrl(), detailTab.getComponent());
 		}
-
 		tabbedPane.addChangeListener(new ChangeListener()
 		{
 			@Override
@@ -111,11 +102,14 @@ public class InfoProductDetails
 			}
 		});
 
-		tablePanel.setPreferredSize(new Dimension(Info.INFO_WIDTH, 110));
-		tablePanel.add(tabbedPane);
-
+		warehouseStockPanel = new JXTaskPane();
+		warehouseStockPanel.setTitle(Services.get(IMsgBL.class).translate(Env.getCtx(), "WarehouseStock"));
 		warehouseStockPanel.setCollapsed(true);
-		warehouseStockPanel.add(tablePanel);
+		warehouseStockPanel.setLayout(new MigLayout(new LC().fill()));
+		warehouseStockPanel.add(tabbedPane, new CC()
+				.width("100%")
+				.minHeight("110px")
+				.maxHeight("150px"));
 	}
 
 	private InfoProductDetailTab getSelectedTab()
@@ -216,7 +210,17 @@ public class InfoProductDetails
 			super();
 			this.titleTrl = Services.get(IMsgBL.class).translate(Env.getCtx(), title);
 			this.detail = detail;
-			this.component = component;
+			
+			if(component instanceof JTable)
+			{
+				// Wrap the JTable in a scroll pane, else the table header won't be visible
+				// see http://stackoverflow.com/questions/2320812/jtable-wont-show-column-headers
+				this.component = new CScrollPane(component);
+			}
+			else
+			{
+				this.component = component;
+			}
 		}
 
 		public String getTitleTrl()
@@ -257,7 +261,7 @@ public class InfoProductDetails
 
 		private void refresh(boolean onlyIfStale, int M_Product_ID, int M_Warehouse_ID, int M_AttributeSetInstance_ID, int M_PriceList_Version_ID)
 		{
-			final ArrayKey refreshKey = Util.mkKey((Object)M_Product_ID, M_Warehouse_ID, M_AttributeSetInstance_ID, M_PriceList_Version_ID);
+			final ArrayKey refreshKey = Util.mkKey(M_Product_ID, M_Warehouse_ID, M_AttributeSetInstance_ID, M_PriceList_Version_ID);
 
 			if (!onlyIfStale || !isStale(refreshKey))
 			{
