@@ -240,6 +240,10 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 		//
 		// Color date+time picker
 		table.putDefaults(CalendarUI.getUIDefaults());
+		
+		//
+		// Print Viewer
+		table.putDefaults(PrintViewerUI.getUIDefaults());
 
 		//
 		// Load UIDefaults from sysconfigs database

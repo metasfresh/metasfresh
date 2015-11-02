@@ -706,4 +706,14 @@ public final class AdempierePLAF
 			return defaultUIClassID;
 		}
 	}
+	
+	public static final String getString(final String key, final String defaultValue)
+	{
+		final Object value = UIManager.getDefaults().get(key);
+		if(value == null)
+		{
+			return defaultValue;
+		}
+		return value.toString();
+	}
 }   //  AdempierePLAF

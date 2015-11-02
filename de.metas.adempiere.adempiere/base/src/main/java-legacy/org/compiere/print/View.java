@@ -22,13 +22,21 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 
+import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.plaf.PrintViewerUI;
+import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
 import org.compiere.print.layout.LayoutEngine;
 import org.compiere.print.layout.Page;
 import org.compiere.swing.CPanel;
 import org.compiere.util.CLogger;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
  *	View Panel
@@ -51,9 +59,16 @@ public class View extends CPanel
 	 *	Print Preview
 	 *  @param layout Layout
 	 */
-	public View (LayoutEngine layout)
+	public View (final LayoutEngine layout)
 	{
+		super();
 		m_layout = layout;
+		
+		final String zoomLevelStr = AdempierePLAF.getString(PrintViewerUI.KEY_ZoomLevel, PrintViewerUI.DEFAULT_ZoomLevel);
+		if (!Check.isEmpty(zoomLevelStr, true))
+		{
+			setZoomLevel(zoomLevelStr);
+		}
 	}	//	View
 
 	/**	Layout to be Printed		*/
@@ -61,17 +76,16 @@ public class View extends CPanel
 
 
 	/**	Zoom Level						*/
-	private int						m_zoomLevel = 2;
+	private int						m_zoomLevel = 1; // default: 150%
 	/** Zoom Options					*/
-	public static final String[]	ZOOM_OPTIONS = new String[] {"200%", "150%", "100%", "75%", "50%"};
-	private static HashMap<String, Double> ZOOM_ScaleValues = new HashMap<String, Double>();
-	static {
-		ZOOM_ScaleValues.put("200%",	2.00);
-		ZOOM_ScaleValues.put("150%",	1.50);
-		ZOOM_ScaleValues.put("100%",	1.00);
-		ZOOM_ScaleValues.put("75%",		0.75);
-		ZOOM_ScaleValues.put("50%",		0.50);
-	}
+	private static final List<String> ZOOM_OPTIONS = ImmutableList.of("200%", "150%", "100%", "75%", "50%");
+	private static final Map<String, Double> ZOOM_ScaleValues = ImmutableMap.<String, Double>builder()
+			.put("200%",	2.00)
+			.put("150%",	1.50)
+			.put("100%",	1.00)
+			.put("75%",		0.75)
+			.put("50%",		0.50)
+			.build();
 	
 	/**	Margin around paper				*/
 	public static int				MARGIN = 5;
@@ -93,6 +107,7 @@ public class View extends CPanel
 	 * 	Minimum Size
 	 * 	@return Max Page Size
 	 */
+	@Override
 	public Dimension getMinimumSize()
 	{
 		return getMaximumSize();
@@ -102,6 +117,7 @@ public class View extends CPanel
 	 * 	Minimum Size
 	 * 	@return Max Page Size
 	 */
+	@Override
 	public Dimension getMaximumSize()
 	{
 		return new Dimension (getPaperWidth()+(2*getMarginSize(true)),
@@ -112,6 +128,7 @@ public class View extends CPanel
 	 * 	Preferred Size
 	 * 	@return Max Page Size
 	 */
+	@Override
 	public Dimension getPreferredSize()
 	{
 		return getMaximumSize();
@@ -130,6 +147,7 @@ public class View extends CPanel
 	 * 	Paint Component
 	 * 	@param g Graphics
 	 */
+	@Override
 	public void paintComponent (Graphics g)
 	{
 	//	log.fine( "View.paintComponent", g.getClip());
@@ -146,7 +164,7 @@ public class View extends CPanel
 			Rectangle pageRectangle = getRectangleOfPage(page+1, false);
 			if (bounds.intersects(pageRectangle))
 			{
-				Page p = (Page)m_layout.getPages().get(page);
+				Page p = m_layout.getPages().get(page);
 				p.paint (g2D, pageRectangle, true, false);		//	sets context
 				m_layout.getHeaderFooter().paint(g2D, pageRectangle, true);
 			}	//	paint page
@@ -167,15 +185,16 @@ public class View extends CPanel
 	 * 	Set Zoom Level
 	 * 	@param levelString zoom level string
 	 */
-	public void setZoomLevel(String levelString)
+	public void setZoomLevel(final String levelString)
 	{
-		for (int i = 0; i < ZOOM_OPTIONS.length; i++)
+		final int index = ZOOM_OPTIONS.indexOf(levelString);
+		if (index >= 0)
 		{
-			if (ZOOM_OPTIONS[i].equals(levelString))
-			{
-				setZoomLevel(i);
-				break;
-			}
+			setZoomLevel(index);
+		}
+		else
+		{
+			log.log(Level.WARNING, "No zoom index found for {0}", levelString);
 		}
 	}	//	setZoomLevel
 
@@ -190,7 +209,12 @@ public class View extends CPanel
 	
 	private double getScale()
 	{
-		Double scale = ZOOM_ScaleValues.get(ZOOM_OPTIONS[m_zoomLevel]);
+		if (m_zoomLevel < 0 || m_zoomLevel >= ZOOM_OPTIONS.size())
+		{
+			return 1.00;
+		}
+		final String levelString = ZOOM_OPTIONS.get(m_zoomLevel);
+		final Double scale = ZOOM_ScaleValues.get(levelString);
 		if (scale != null)
 			return scale.doubleValue();
 		else
@@ -211,7 +235,7 @@ public class View extends CPanel
 
 	public Rectangle getRectangleOfPage(int pageNo, boolean doScale)
 	{
-		int y = (int)(getMarginSize(doScale) + ((pageNo-1) * (getPaperHeight(doScale) + getMarginSize(doScale))));
+		int y = getMarginSize(doScale) + ((pageNo-1) * (getPaperHeight(doScale) + getMarginSize(doScale)));
 		return new Rectangle (getMarginSize(doScale), y, getPaperWidth(doScale), getPaperHeight(doScale));
 	}	//	getRectangleOfPage
 
@@ -320,7 +344,7 @@ public class View extends CPanel
 				(int)(absolutePoint.x/getScale()-pageRectangle.x),
 				(int)(absolutePoint.y/getScale()-pageRectangle.y)
 		);
-		Page page = (Page)m_layout.getPages().get(pageNo-1);
+		Page page = m_layout.getPages().get(pageNo-1);
 		//
 		log.config("Relative=" + relativePoint + ", " + page);
 	//	log.config("AbsolutePoint=" + absolutePoint + ", PageNo=" + pageNo + ", pageRectangle=" + pageRectangle);
@@ -343,7 +367,7 @@ public class View extends CPanel
 				(int)(absolutePoint.x/getScale()-pageRectangle.x),
 				(int)(absolutePoint.y/getScale()-pageRectangle.y)
 		);
-		Page page = (Page)m_layout.getPages().get(pageNo-1);
+		Page page = m_layout.getPages().get(pageNo-1);
 		//
 		log.config("Relative=" + relativePoint + ", " + page);
 	//	log.config("AbsolutePoint=" + absolutePoint + ", PageNo=" + pageNo + ", pageRectangle=" + pageRectangle);
