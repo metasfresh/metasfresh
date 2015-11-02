@@ -20,6 +20,7 @@ package org.compiere.print;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Event;
@@ -27,6 +28,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -38,28 +41,37 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
 import javax.swing.AbstractButton;
+import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import net.miginfocom.layout.AC;
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
+
+import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
@@ -80,15 +92,17 @@ import org.compiere.apps.search.Find;
 import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_AD_Language;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.MQuery;
+import org.compiere.model.MTreeNode;
 import org.compiere.model.MUser;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
-import org.compiere.swing.CPanel;
+import org.compiere.swing.CTextField;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
@@ -117,7 +131,7 @@ import de.metas.adempiere.form.IClientUI;
  * 				<li>FR [ 1894640 ] Report Engine: Excel Export support
  */
 public class Viewer extends CFrame
-	implements ActionListener, ChangeListener, WindowStateListener
+	implements ActionListener, WindowStateListener
 {
 	private static final long serialVersionUID = 5629054363187020694L;
 
@@ -191,7 +205,6 @@ public class Viewer extends CFrame
 	private static CLogger log = CLogger.getCLogger(Viewer.class);
 
 	//
-	private CPanel northPanel = new CPanel();
 	private JScrollPane centerScrollPane = new JScrollPane();
 	private StatusBar statusBar = new StatusBar(false);
 	private JMenuBar menuBar = new JMenuBar();
@@ -200,15 +213,14 @@ public class Viewer extends CFrame
 	private CButton bSendMail = new CButton();
 	private CButton bPageSetup = new CButton();
 	private CButton bArchive = new CButton();
-	private BorderLayout northLayout = new BorderLayout();
 	private CButton bCustomize = new CButton();
 	private CButton bFind = new CButton();
 	private CButton bExport = new CButton();
 	private CComboBox<KeyNamePair> comboReport = new CComboBox<>();
-//	private CButton bPrevious = new CButton();
-//	private CButton bNext = new CButton();
-	private SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1,1,100,1);
-	private JSpinner spinner = new JSpinner(spinnerModel);
+	private CButton bPrevious = new CButton();
+	private CButton bNext = new CButton();
+	private final CTextField fPageNo = new CTextField(3);
+	private final JLabel fPerLastPageNo = new JLabel();
 	private CLabel labelDrill = new CLabel();
 	private CComboBox<NamePair> comboDrill = new CComboBox<>();
 //	private CComboBox comboZoom = new CComboBox(View.ZOOM_OPTIONS);
@@ -220,30 +232,37 @@ public class Viewer extends CFrame
 	 */
 	private void jbInit() throws Exception
 	{
-		this.setIconImage(Images.getImage2("mReport"));
+		final String iconName = MTreeNode.getIconName(MTreeNode.TYPE_REPORT);
+		this.setIconImage(Images.getImage2(iconName));
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		this.setJMenuBar(menuBar);
+
 		//
-		northPanel.setLayout(northLayout);
-		this.getContentPane().add(northPanel, BorderLayout.NORTH);
-		northPanel.add(toolBar,  BorderLayout.WEST);
-		this.getContentPane().add(centerScrollPane, BorderLayout.CENTER);
-		centerScrollPane.getViewport().add(m_viewPanel, null);
-		// pb add: set scrolling with scrollbar buttons to move by 20 pixels each press
-		centerScrollPane.getVerticalScrollBar().setUnitIncrement(20);
-		centerScrollPane.getHorizontalScrollBar().setUnitIncrement(20);
-		// end pb
-		this.getContentPane().add(statusBar, BorderLayout.SOUTH);
+		final Container contentPane = this.getContentPane();
+		contentPane.add(toolBar, BorderLayout.NORTH);
+		contentPane.add(centerScrollPane, BorderLayout.CENTER);
+		contentPane.add(statusBar, BorderLayout.SOUTH);
+		
+		centerScrollPane.setViewportView(m_viewPanel);
 
 		//	ToolBar
 		{
-			this.setJMenuBar(menuBar);
+			toolBar.setLayout(new MigLayout(
+					// Layout constraints:
+					new LC().noGrid().fill().insets("0px", "0px", "0px", "0px")
+					// Column constraints:
+					, new AC().gap("0px")
+					// Row constraints
+					, new AC().gap("0px")
+					));
+			toolBar.setFloatable(false);
 			
 			//
 			//	Page Control
-//			toolBar.add(bPrevious);
-			toolBar.add(spinner);
-			spinner.setToolTipText(msgBL.getMsg(m_ctx, "GoToPage"));
-//			toolBar.add(bNext);
+			toolBar.add(bPrevious);
+			toolBar.add(bNext);
+			toolBar.add(fPageNo);
+			toolBar.add(fPerLastPageNo);
 			
 			//
 			// Zoom Level
@@ -286,6 +305,8 @@ public class Viewer extends CFrame
 				bExport.setToolTipText(msgBL.getMsg(m_ctx, "Export"));
 				toolBar.add(bExport);
 			}
+			
+			toolBar.add(Box.createHorizontalGlue(), new CC().growX());
 		}
 	}	//	jbInit
 
@@ -298,12 +319,44 @@ public class Viewer extends CFrame
 //		comboZoom.addActionListener(this);
 		
 		//	Change Listener to set Page no
-		centerScrollPane.getViewport().addChangeListener(this);
+		centerScrollPane.getViewport().addChangeListener(new ChangeListener()
+		{
+			@Override
+			public void stateChanged(final ChangeEvent e)
+			{
+				onScrolling(e);
+			}
+		});
 
 		//	Max Page
 		m_pageMax = m_viewPanel.getPageCount();
-		spinnerModel.setMaximum(m_pageMax);
-		spinner.addChangeListener(this);
+		fPageNo.addFocusListener(new FocusAdapter()
+		{
+			@Override
+			public void focusGained(FocusEvent e)
+			{
+				fPageNo.selectAll();
+			}
+			
+			@Override
+			public void focusLost(FocusEvent e)
+			{
+				if(e.isTemporary())
+				{
+					return;
+				}
+				setPageNoFromUI();
+			}
+		});
+		fPageNo.addActionListener(new ActionListener()
+		{
+			
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setPageNoFromUI();
+			}
+		});
 
 		fillComboReport(m_reportEngine.getPrintFormat().get_ID());
 
@@ -342,13 +395,15 @@ public class Viewer extends CFrame
 				+ "WHERE c.AD_Table_ID=? AND c.IsKey='Y'"
 				+ " AND et.AD_Language=? "
 				+ "ORDER BY 3";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try
 		{
-			PreparedStatement pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, m_reportEngine.getPrintFormat().getAD_Table_ID());
 			if (trl)
 				pstmt.setString(2, Env.getAD_Language(Env.getCtx()));
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
 				String tableName = rs.getString(2);
@@ -358,12 +413,15 @@ public class Viewer extends CFrame
 					name += "/" + poName;
 				comboDrill.addItem(new ValueNamePair (tableName, name));
 			}
-			rs.close();
-			pstmt.close();
 		}
 		catch (SQLException e)
 		{
 			log.log(Level.SEVERE, sql, e);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
 		}
 		if (comboDrill.getItemCount() == 1)
 		{
@@ -429,12 +487,11 @@ public class Viewer extends CFrame
 	}	//	fillComboReport
 
 	/**
-	 * 	Revalidate settings after change of environment
+	 * 	Re-validate settings after change of environment
 	 */
 	private void revalidateViewer()
 	{
 		m_pageMax = m_viewPanel.getPageCount();
-		spinnerModel.setMaximum(m_pageMax);
 
 		//	scroll area (page size dependent)
 		centerScrollPane.setPreferredSize(new Dimension
@@ -529,18 +586,22 @@ public class Viewer extends CFrame
 
 		//	---- ToolBar ----
 		//
-		setButton(bPrint, "Print", "Print");
-		setButton(bSendMail, "SendMail", "EMailLetter");
-		setButton(bPageSetup, "PageSetup", "PageSetup");
-		setButton(bArchive, "Archive", "Archive");
-		if (m_isCanExport)
-			setButton(bExport, "Export", "Export");
-		//
-//		setButton(bNext, "NextPage", "Next");
-//		setButton(bPrevious, "PreviousPage", "Previous");
-		//
-		setButton(bFind, "Find", "Find");
-		setButton(bCustomize, "PrintCustomize", "Preference");
+		{
+			setButton(bNext, "NextPage", "Next");
+			setButton(bPrevious, "PreviousPage", "Previous");
+			fPageNo.setHorizontalAlignment(JTextField.TRAILING);
+			fPageNo.setToolTipText(msgBL.getMsg(m_ctx, "GoToPage"));
+
+			setButton(bPrint, "Print", "Print");
+			setButton(bSendMail, "SendMail", "EMailLetter");
+			setButton(bPageSetup, "PageSetup", "PageSetup");
+			setButton(bArchive, "Archive", "Archive");
+			if (m_isCanExport)
+				setButton(bExport, "Export", "Export");
+			
+			setButton(bFind, "Find", "Find");
+			setButton(bCustomize, "PrintCustomize", "Preference");
+		}
 	}   //  createMenu
 
 	/**
@@ -636,24 +697,18 @@ public class Viewer extends CFrame
 	}	//	actionPerformed
 
 	/**
-	 * 	Change Listener (spinner, viewpoint)
+	 * 	Called when user is scrolling the document
 	 * 	@param e event
 	 */
-	@Override
-	public void stateChanged (final ChangeEvent e)
+	private final void onScrolling(final ChangeEvent e)
 	{
 		if (m_pageNoSetting)
 			return;
 		m_pageNoSetting = true;
 		try
 		{
-			if (e.getSource() == spinner)
-			{
-				final int page = ((Integer)spinnerModel.getValue()).intValue();
-				setPage(page);
-			}
 			// Viewpoint
-			else if (e.getSource() == centerScrollPane.getViewport())
+			if (e.getSource() == centerScrollPane.getViewport())
 			{
 				m_scrolling = true;
 				try
@@ -673,7 +728,35 @@ public class Viewer extends CFrame
 			m_pageNoSetting = false;
 		}
 	}	//	stateChanged
-
+	
+	private void setPageNoFromUI()
+	{
+		final Object pageNoObj = fPageNo.getValue();
+		int pageNo;
+		if (pageNoObj == null)
+		{
+			pageNo = 1;
+		}
+		else if (pageNoObj instanceof Number)
+		{
+			pageNo = ((Number)pageNoObj).intValue();
+		}
+		else
+		{
+			try
+			{
+				pageNo = Integer.parseInt(pageNoObj.toString());
+			}
+			catch (NumberFormatException e)
+			{
+				UIManager.getLookAndFeel().provideErrorFeedback(fPageNo);
+				log.log(Level.INFO, "Invalid page number", e);
+				pageNo = m_pageNo;
+			}
+		}
+		
+		setPage(pageNo);
+	}
 
 	/**
 	 * 	Set Page No
@@ -695,8 +778,8 @@ public class Viewer extends CFrame
 			
 			//
 			// Update bPrevious/bNext buttons
-//			bPrevious.setEnabled (m_pageNo != 1);
-//			bNext.setEnabled (m_pageNo != m_pageMax);
+			bPrevious.setEnabled (m_pageNo != 1);
+			bNext.setEnabled (m_pageNo != m_pageMax);
 			
 			//
 			// Scroll to page (if user is not currently scrolling)
@@ -708,8 +791,9 @@ public class Viewer extends CFrame
 				centerScrollPane.getViewport().setViewPosition(pageRectangle.getLocation());
 			}
 	
-			//	Set Page (in spinner box)
-			spinnerModel.setValue(m_pageNo);
+			//	Update Page text field
+			fPageNo.setValue(m_pageNo);
+			fPerLastPageNo.setText(" / " + m_pageMax);
 			
 			//
 			// Status bar
@@ -728,7 +812,7 @@ public class Viewer extends CFrame
 
 	
 	/**************************************************************************
-	 * 	(Re)Set Drill Accross Cursor
+	 * 	(Re)Set Drill Across Cursor
 	 */
 	private void cmd_drill()
 	{
@@ -1190,23 +1274,14 @@ public class Viewer extends CFrame
 	 */
 	private void cmd_translate()
 	{
-		ArrayList<ValueNamePair> list = new ArrayList<ValueNamePair>();
-		ValueNamePair pp = null;
-		String sql = "SELECT Name, AD_Language FROM AD_Language WHERE IsSystemLanguage='Y' ORDER BY 1";
-		try
+		final List<ValueNamePair> availableLanguageNames = new ArrayList<>();
+		final List<I_AD_Language> availableLanguages = Services.get(ILanguageBL.class).getAvailableLanguages(m_ctx);
+		for (final I_AD_Language language : availableLanguages)
 		{
-			PreparedStatement pstmt = DB.prepareStatement(sql, null);
-			ResultSet rs = pstmt.executeQuery();
-			while (rs.next())
-				list.add(new ValueNamePair (rs.getString(2), rs.getString(1)));
-			rs.close();
-			pstmt.close();
+			final ValueNamePair languageVNP = new ValueNamePair(language.getAD_Language(), language.getName());
+			availableLanguageNames.add(languageVNP);
 		}
-		catch (SQLException e)
-		{
-			log.log(Level.SEVERE, sql, e);
-		}
-		if (list.size() == 0)
+		if (availableLanguageNames.isEmpty())
 		{
 			ADialog.warn(m_WindowNo, this, "NoTranslation");
 			return;
@@ -1218,12 +1293,12 @@ public class Viewer extends CFrame
 		int choice = JOptionPane.showOptionDialog
 			(this, message, title,
 			JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-			list.toArray(), null);
+			availableLanguageNames.toArray(), null);
 		if (choice == JOptionPane.CLOSED_OPTION)
 			return;
 		//
-		pp = list.get(choice);
-		String AD_Language = pp.getValue();
+		final ValueNamePair selectedLanguageVNP = availableLanguageNames.get(choice);
+		String AD_Language = selectedLanguageVNP.getValue();
 		int AD_PrintFormat_ID = m_reportEngine.getPrintFormat().get_ID();
 		log.config(AD_Language + " - AD_PrintFormat_ID=" + AD_PrintFormat_ID);
 		StringBuilder sb = new StringBuilder();
@@ -1254,7 +1329,7 @@ public class Viewer extends CFrame
 				+ " WHERE e.AD_Language=").append(AD_Language).append(
 				  " AND e.AD_Element_ID=c.AD_Element_ID AND c.AD_Column_ID=pfi.AD_Column_ID)");
 		}
-		int count = DB.executeUpdate(sb.toString(), null);
+		final int count = DB.executeUpdate(sb.toString(), ITrx.TRXNAME_None);
 		log.config("Count=" + count);
 		//
 		m_reportEngine.setPrintFormat(MPrintFormat.get (Env.getCtx(), AD_PrintFormat_ID, true));
