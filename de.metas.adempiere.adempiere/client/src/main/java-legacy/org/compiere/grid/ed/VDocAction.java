@@ -106,6 +106,7 @@ public class VDocAction extends CDialog
 	private int					m_WindowNo = 0;
 	private int					m_AD_Table_ID;
 	private boolean				m_OKpressed = false;
+	private final boolean		batchProcessingEnabled = false; // metas-tsa: we disabled it because it's buggy
 	private boolean				m_batch = false;
 	private GridTab         		m_mTab;
 	//
@@ -118,14 +119,13 @@ public class VDocAction extends CDialog
 	private CPanel mainPanel = new CPanel();
 	private BorderLayout mainLayout = new BorderLayout();
 	private CPanel northPanel = new CPanel();
-	private CComboBox actionCombo = new CComboBox();
+	private CComboBox<String> actionCombo = new CComboBox<>();
 	private JLabel actionLabel = new JLabel();
 	private JScrollPane centerPane = new JScrollPane();
 	private JTextArea message = new JTextArea();
 	private FlowLayout northLayout = new FlowLayout();
 	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
-	private JButton batchButton = ConfirmPanel.createProcessButton(
-			Msg.getMsg(Env.getCtx(), "StartBackground"));
+	private JButton batchButton = ConfirmPanel.createProcessButton(Msg.getMsg(Env.getCtx(), "StartBackground"));
 
 	/**
 	 *	Static Init
@@ -151,9 +151,13 @@ public class VDocAction extends CDialog
 		centerPane.getViewport().add(message, null);
 		//
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
-		confirmPanel.addButton(batchButton);
 		confirmPanel.setActionListener(this);
-		batchButton.addActionListener(this);
+
+		if(batchProcessingEnabled)
+		{
+			confirmPanel.addButton(batchButton);
+			batchButton.addActionListener(this);
+		}
 	}	//	jbInit
 
 	/**
@@ -417,7 +421,7 @@ public class VDocAction extends CDialog
 		int index = -1;
 
 		//	get Selection
-		String sel = (String)actionCombo.getSelectedItem();
+		String sel = actionCombo.getSelectedItem();
 		if (sel == null)
 			return index;
 
