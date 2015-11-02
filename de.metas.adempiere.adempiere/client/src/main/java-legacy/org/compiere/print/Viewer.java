@@ -55,6 +55,7 @@ import javax.swing.JSpinner;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -170,7 +171,9 @@ public class Viewer extends CFrame
 	/** View Pane					*/
 	private View 				m_viewPanel;
 	/**	Setting Values				*/
-	private boolean				m_setting = false;
+	private boolean m_pageNoSetting = false;
+	/** true if user is currently scrolling */
+	private boolean	m_scrolling = false;
 	/**	Report Engine				*/
 	private ReportEngine 		m_reportEngine;
 	/** Drill Down/Across			*/
@@ -199,12 +202,11 @@ public class Viewer extends CFrame
 	private CButton bArchive = new CButton();
 	private BorderLayout northLayout = new BorderLayout();
 	private CButton bCustomize = new CButton();
-	private CButton bEnd = new CButton();
 	private CButton bFind = new CButton();
 	private CButton bExport = new CButton();
 	private CComboBox<KeyNamePair> comboReport = new CComboBox<>();
-	private CButton bPrevious = new CButton();
-	private CButton bNext = new CButton();
+//	private CButton bPrevious = new CButton();
+//	private CButton bNext = new CButton();
 	private SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1,1,100,1);
 	private JSpinner spinner = new JSpinner(spinnerModel);
 	private CLabel labelDrill = new CLabel();
@@ -223,7 +225,7 @@ public class Viewer extends CFrame
 		//
 		northPanel.setLayout(northLayout);
 		this.getContentPane().add(northPanel, BorderLayout.NORTH);
-		northPanel.add(toolBar,  BorderLayout.EAST);
+		northPanel.add(toolBar,  BorderLayout.WEST);
 		this.getContentPane().add(centerScrollPane, BorderLayout.CENTER);
 		centerScrollPane.getViewport().add(m_viewPanel, null);
 		// pb add: set scrolling with scrollbar buttons to move by 20 pixels each press
@@ -233,47 +235,58 @@ public class Viewer extends CFrame
 		this.getContentPane().add(statusBar, BorderLayout.SOUTH);
 
 		//	ToolBar
-		this.setJMenuBar(menuBar);
-		//	Page Control
-		toolBar.add(bPrevious);
-		toolBar.add(spinner);
-		spinner.setToolTipText(msgBL.getMsg(m_ctx, "GoToPage"));
-		toolBar.add(bNext);
-		//	Zoom Level
-		toolBar.addSeparator();
-//		toolBar.add(comboZoom, null);
-//		comboZoom.setToolTipText(msgBL.getMsg(m_ctx, "Zoom"));
-		//	Drill
-		toolBar.addSeparator();
-		labelDrill.setText(msgBL.getMsg(m_ctx, "Drill") + ": ");
-		toolBar.add(labelDrill);
-		toolBar.add(comboDrill);
-		comboDrill.setToolTipText(msgBL.getMsg(m_ctx, "Drill"));
-		//	Format, Customize, Find
-		toolBar.addSeparator();
-		toolBar.add(comboReport);
-		comboReport.setToolTipText(msgBL.translate(m_ctx, "AD_PrintFormat_ID"));
-		toolBar.add(bCustomize);
-		bCustomize.setToolTipText(msgBL.getMsg(m_ctx, "PrintCustomize"));
-		toolBar.add(bFind);
-		bFind.setToolTipText(msgBL.getMsg(m_ctx, "Find"));
-		toolBar.addSeparator();
-		//	Print/Export
-		toolBar.add(bPrint);
-		toolBar.addSeparator();
-		toolBar.add(bPageSetup);
-		bPageSetup.setToolTipText(msgBL.getMsg(m_ctx, "PageSetup"));
-		toolBar.add(bSendMail);
-		toolBar.add(bArchive);
-		if (m_isCanExport)
 		{
-			bExport.setToolTipText(msgBL.getMsg(m_ctx, "Export"));
-			toolBar.add(bExport);
+			this.setJMenuBar(menuBar);
+			
+			//
+			//	Page Control
+//			toolBar.add(bPrevious);
+			toolBar.add(spinner);
+			spinner.setToolTipText(msgBL.getMsg(m_ctx, "GoToPage"));
+//			toolBar.add(bNext);
+			
+			//
+			// Zoom Level
+			// toolBar.addSeparator();
+			// toolBar.add(comboZoom, null);
+			// comboZoom.setToolTipText(msgBL.getMsg(m_ctx, "Zoom"));
+			
+			//
+			//	Drill
+			toolBar.addSeparator();
+			labelDrill.setText(msgBL.getMsg(m_ctx, "Drill") + ": ");
+			labelDrill.setVerticalAlignment(SwingConstants.CENTER);
+			toolBar.add(labelDrill);
+			toolBar.add(comboDrill);
+			comboDrill.setMaximumSize(null); // make sure we are not using the VEditorUI's enforced height
+			comboDrill.setToolTipText(msgBL.getMsg(m_ctx, "Drill"));
+			
+			//
+			//	Format, Customize, Find
+			toolBar.addSeparator();
+			toolBar.add(comboReport);
+			comboReport.setMaximumSize(null); // make sure we are not using the VEditorUI's enforced height
+			comboReport.setToolTipText(msgBL.translate(m_ctx, "AD_PrintFormat_ID"));
+			toolBar.add(bCustomize);
+			bCustomize.setToolTipText(msgBL.getMsg(m_ctx, "PrintCustomize"));
+			toolBar.add(bFind);
+			bFind.setToolTipText(msgBL.getMsg(m_ctx, "Find"));
+			toolBar.addSeparator();
+			
+			//
+			//	Print/Export
+			toolBar.add(bPrint);
+			toolBar.addSeparator();
+			toolBar.add(bPageSetup);
+			bPageSetup.setToolTipText(msgBL.getMsg(m_ctx, "PageSetup"));
+			toolBar.add(bSendMail);
+			toolBar.add(bArchive);
+			if (m_isCanExport)
+			{
+				bExport.setToolTipText(msgBL.getMsg(m_ctx, "Export"));
+				toolBar.add(bExport);
+			}
 		}
-		// 	End
-		toolBar.addSeparator();
-		toolBar.add(bEnd, null);
-		bEnd.setToolTipText(msgBL.getMsg(m_ctx, "End"));
 	}	//	jbInit
 
 	/**
@@ -283,14 +296,13 @@ public class Viewer extends CFrame
 	{
 		createMenu();
 //		comboZoom.addActionListener(this);
+		
 		//	Change Listener to set Page no
-		//pb comment this out so that scrolling works normally
-		//centerScrollPane.getViewport().addChangeListener(this);
-		// end pb
+		centerScrollPane.getViewport().addChangeListener(this);
 
 		//	Max Page
 		m_pageMax = m_viewPanel.getPageCount();
-		spinnerModel.setMaximum(new Integer(m_pageMax));
+		spinnerModel.setMaximum(m_pageMax);
 		spinner.addChangeListener(this);
 
 		fillComboReport(m_reportEngine.getPrintFormat().get_ID());
@@ -383,27 +395,32 @@ public class Viewer extends CFrame
 				//End of Added Lines
 				+ "ORDER BY Name",
 			"AD_PrintFormat", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
-		int AD_Table_ID = m_reportEngine.getPrintFormat().getAD_Table_ID();
+		final int AD_Table_ID = m_reportEngine.getPrintFormat().getAD_Table_ID();
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try
 		{
-			PreparedStatement pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, AD_Table_ID);
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				KeyNamePair pp = new KeyNamePair(rs.getInt(1), rs.getString(2));
+				final KeyNamePair pp = new KeyNamePair(rs.getInt(1), rs.getString(2));
 				comboReport.addItem(pp);
 				if (rs.getInt(1) == AD_PrintFormat_ID)
 					selectValue = pp;
 			}
-			rs.close();
-			pstmt.close();
 		}
 		catch (SQLException e)
 		{
 			log.log(Level.SEVERE, sql, e);
 		}
-		StringBuffer sb = new StringBuffer("** ").append(msgBL.getMsg(m_ctx, "NewReport")).append(" **");
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+		
+		StringBuilder sb = new StringBuilder("** ").append(msgBL.getMsg(m_ctx, "NewReport")).append(" **");
 		KeyNamePair pp = new KeyNamePair(-1, sb.toString());
 		comboReport.addItem(pp);
 		if (selectValue != null)
@@ -417,7 +434,7 @@ public class Viewer extends CFrame
 	private void revalidateViewer()
 	{
 		m_pageMax = m_viewPanel.getPageCount();
-		spinnerModel.setMaximum(new Integer(m_pageMax));
+		spinnerModel.setMaximum(m_pageMax);
 
 		//	scroll area (page size dependent)
 		centerScrollPane.setPreferredSize(new Dimension
@@ -428,7 +445,7 @@ public class Viewer extends CFrame
 
 		//	Report Info
 		setTitle(msgBL.getMsg(m_ctx, "Report") + ": " + m_reportEngine.getName() + "  " + Env.getHeader(m_ctx, 0));
-		StringBuffer sb = new StringBuffer ();
+		StringBuilder sb = new StringBuilder ();
 		sb.append(m_viewPanel.getPaper().toString(m_ctx))
 			.append(" - ").append(msgBL.getMsg(m_ctx, "DataCols")).append("=")
 			.append(m_reportEngine.getColumnCount())
@@ -513,19 +530,17 @@ public class Viewer extends CFrame
 		//	---- ToolBar ----
 		//
 		setButton(bPrint, "Print", "Print");
-		setButton(bSendMail, "SendMail", "SendMail");
+		setButton(bSendMail, "SendMail", "EMailLetter");
 		setButton(bPageSetup, "PageSetup", "PageSetup");
 		setButton(bArchive, "Archive", "Archive");
 		if (m_isCanExport)
 			setButton(bExport, "Export", "Export");
 		//
-		setButton(bNext, "NextPage", "Next");
-		setButton(bPrevious, "PreviousPage", "Previous");
+//		setButton(bNext, "NextPage", "Next");
+//		setButton(bPrevious, "PreviousPage", "Previous");
 		//
 		setButton(bFind, "Find", "Find");
 		setButton(bCustomize, "PrintCustomize", "Preference");
-		//
-		setButton(bEnd, "End", "End");
 	}   //  createMenu
 
 	/**
@@ -569,7 +584,7 @@ public class Viewer extends CFrame
 	@Override
 	public void actionPerformed (ActionEvent e)
 	{
-		if (m_setting)
+		if (m_pageNoSetting)
 			return;
 		String cmd = e.getActionCommand();
 		log.config(cmd);
@@ -625,26 +640,38 @@ public class Viewer extends CFrame
 	 * 	@param e event
 	 */
 	@Override
-	public void stateChanged (ChangeEvent e)
+	public void stateChanged (final ChangeEvent e)
 	{
-		if (m_setting)
+		if (m_pageNoSetting)
 			return;
-	//	log.config( "Viewer.stateChanged", e);
-		m_setting = true;
-		int newPage = 0;
-		if (e.getSource() == spinner)
+		m_pageNoSetting = true;
+		try
 		{
-			newPage = ((Integer)spinnerModel.getValue()).intValue();
+			if (e.getSource() == spinner)
+			{
+				final int page = ((Integer)spinnerModel.getValue()).intValue();
+				setPage(page);
+			}
+			// Viewpoint
+			else if (e.getSource() == centerScrollPane.getViewport())
+			{
+				m_scrolling = true;
+				try
+				{
+					final Point p = centerScrollPane.getViewport().getViewPosition();
+					final int page = Math.round(m_viewPanel.getPageNoAt(p));
+					setPage(page);
+				}
+				finally
+				{
+					m_scrolling = false;
+				}
+			}
 		}
-		// pb with the viewport change listener disabled the following is
-		// superfluous and should be removed
-		else	//	Viewpoint
+		finally
 		{
-			Point p = centerScrollPane.getViewport().getViewPosition();
-			newPage = Math.round(m_viewPanel.getPageNoAt(p));
+			m_pageNoSetting = false;
 		}
-		setPage(newPage);
-		m_setting = false;
 	}	//	stateChanged
 
 
@@ -652,36 +679,51 @@ public class Viewer extends CFrame
 	 * 	Set Page No
 	 * 	@param page page no
 	 */
-	private void setPage (int page)
+	private void setPage (final int page)
 	{
-		m_setting = true;
-		m_pageNo = page;
-		if (m_pageNo < 1)
-			m_pageNo = 1;
-		if (page > m_pageMax)
-			m_pageNo = m_pageMax;
-		bPrevious.setEnabled (m_pageNo != 1);
-		bNext.setEnabled (m_pageNo != m_pageMax);
-		//
-		Rectangle pageRectangle = m_viewPanel.getRectangleOfPage(m_pageNo);
-		pageRectangle.x -= View.MARGIN;
-		pageRectangle.y -= View.MARGIN;
-		centerScrollPane.getViewport().setViewPosition(pageRectangle.getLocation());
-	//	System.out.println("scrollTo " + pageRectangle);
-
-		//	Set Page
-		spinnerModel.setValue(new Integer(m_pageNo));
-		
-		final String pageInfo = m_viewPanel.updatePageInfo(m_pageNo);
-		
+		final boolean settingOld = m_pageNoSetting;
+		m_pageNoSetting = true;
+		try
+		{
+			//
+			// Set page
+			m_pageNo = page;
+			if (m_pageNo < 1)
+				m_pageNo = 1;
+			if (page > m_pageMax)
+				m_pageNo = m_pageMax;
+			
+			//
+			// Update bPrevious/bNext buttons
+//			bPrevious.setEnabled (m_pageNo != 1);
+//			bNext.setEnabled (m_pageNo != m_pageMax);
+			
+			//
+			// Scroll to page (if user is not currently scrolling)
+			if(!m_scrolling)
+			{
+				Rectangle pageRectangle = m_viewPanel.getRectangleOfPage(m_pageNo);
+				pageRectangle.x -= View.MARGIN;
+				pageRectangle.y -= View.MARGIN;
+				centerScrollPane.getViewport().setViewPosition(pageRectangle.getLocation());
+			}
 	
-		
-		StringBuffer sb = new StringBuffer (msgBL.getMsg(m_ctx, "Page"))
-			.append(" ").append(pageInfo)
-			.append(" ").append(msgBL.getMsg(m_ctx, "slash")).append(" ")
-			.append(m_viewPanel.getPageInfoMax());
-		statusBar.setStatusDB(sb.toString());
-		m_setting = false;
+			//	Set Page (in spinner box)
+			spinnerModel.setValue(m_pageNo);
+			
+			//
+			// Status bar
+			final String pageInfo = m_viewPanel.updatePageInfo(m_pageNo);			
+			StringBuilder sb = new StringBuilder (msgBL.getMsg(m_ctx, "Page"))
+				.append(" ").append(pageInfo)
+				.append(" ").append(msgBL.getMsg(m_ctx, "slash")).append(" ")
+				.append(m_viewPanel.getPageInfoMax());
+			statusBar.setStatusDB(sb.toString());
+		}
+		finally
+		{
+			m_pageNoSetting = settingOld;
+		}
 	}	//	setPage
 
 	
@@ -1184,7 +1226,7 @@ public class Viewer extends CFrame
 		String AD_Language = pp.getValue();
 		int AD_PrintFormat_ID = m_reportEngine.getPrintFormat().get_ID();
 		log.config(AD_Language + " - AD_PrintFormat_ID=" + AD_PrintFormat_ID);
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		//	English
 		if (Language.isBaseLanguage (AD_Language))
 		{
