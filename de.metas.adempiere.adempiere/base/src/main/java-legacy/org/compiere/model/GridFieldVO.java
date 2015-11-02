@@ -395,6 +395,7 @@ public class GridFieldVO implements Serializable
 		voTo.AD_Reference_Value_ID = vo.AD_Reference_Value_ID;
 		voTo.autocomplete = vo.autocomplete;
 		voTo.fieldEntityType = vo.fieldEntityType;
+		voTo.isHiddenFromUI = vo.isHiddenFromUI;
 		
 		voTo.initFinish();
 		return voTo;
@@ -507,6 +508,11 @@ public class GridFieldVO implements Serializable
 	private boolean      IsDisplayed = false;
 	/**	Displayed (grid mode) */
 	private boolean      isDisplayedGrid = false;
+	/**
+	 * Indicates that the field is hidden from UI
+	 * @task 09504
+	 */
+	private boolean isHiddenFromUI = false;
 	/**	Dislay Logic	*/
 	private String       DisplayLogic = "";
 	private ILogicExpression DisplayLogicExpr; // metas: 03093
@@ -645,6 +651,7 @@ public class GridFieldVO implements Serializable
 		// If EntityType is not displayed, hide this field
 		if (!Check.isEmpty(fieldEntityType, true) && !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(fieldEntityType))
 		{
+			this.isHiddenFromUI = true;
 			this.IsDisplayed = false;
 			this.isDisplayedGrid = false;
 		}
@@ -777,6 +784,7 @@ public class GridFieldVO implements Serializable
 		clone.IsCalculated = IsCalculated; // metas: us215
 		
 		clone.fieldEntityType = fieldEntityType;
+		clone.isHiddenFromUI = isHiddenFromUI;
 
 		return clone;
 	}	//	clone
@@ -1023,4 +1031,13 @@ public class GridFieldVO implements Serializable
 	{
 		return fieldEntityType;
 	}
-}   //  MFieldVO
+	
+	/**
+	 * @return true if this field shall be hidden from UI; in this case {@link #isDisplayed()} and {@link #isDisplayedGrid()} will also return false.
+	 * @task 09504
+	 */
+	public boolean isHiddenFromUI()
+	{
+		return this.isHiddenFromUI;
+	}
+}

@@ -49,6 +49,13 @@ final class FindPanelSearchField
 			{
 				continue;
 			}
+			
+			// skip fields which were hidden in UI (task 09504)
+			// NOTE: we don't check for isDisplayable() because there are some fields which are not displayable but we want to search by them (e.g. CreatedBy).
+			if (gridField.getVO().isHiddenFromUI())
+			{
+				continue;
+			}
 
 			// skip true buttons... nothing to search by
 			if (gridField.getDisplayType() == DisplayType.Button && gridField.getAD_Reference_Value_ID() <= 0)
