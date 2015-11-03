@@ -22,12 +22,12 @@ package de.metas.handlingunits.ddorder.api;
  * #L%
  */
 
-
 import java.util.Collection;
 
 import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_DD_OrderLine;
 
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 
 public interface IHUDDOrderBL extends ISingletonService
@@ -58,4 +58,19 @@ public interface IHUDDOrderBL extends ISingletonService
 	 * @see #createMovements(I_DD_OrderLine)
 	 */
 	void createMovements(Collection<I_DD_OrderLine> ddOrderLine, Collection<IHUProductStorage> huProductStorages);
+
+	/**
+	 * Close given distribution order line.
+	 * 
+	 * @param ddOrderLine
+	 */
+	void closeLine(I_DD_OrderLine ddOrderLine);
+
+	/**
+	 * Unassigns given HUs from given DD order line.
+	 * 
+	 * @param ddOrderLine
+	 * @param hus HUs to unassign
+	 */
+	void unassignHUs(I_DD_OrderLine ddOrderLine, Collection<I_M_HU> hus);
 }

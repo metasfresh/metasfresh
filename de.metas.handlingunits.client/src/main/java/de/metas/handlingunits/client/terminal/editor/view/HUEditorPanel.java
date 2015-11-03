@@ -35,6 +35,7 @@ import java.util.Set;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -72,6 +73,7 @@ import de.metas.handlingunits.client.terminal.mmovement.view.impl.HUJoinPanel;
 import de.metas.handlingunits.client.terminal.mmovement.view.impl.HUSplitPanel;
 import de.metas.handlingunits.client.terminal.report.model.HUReportModel;
 import de.metas.handlingunits.client.terminal.report.view.HUReportPanel;
+import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 
 public class HUEditorPanel
@@ -169,8 +171,23 @@ public class HUEditorPanel
 	private final ITerminalButton bPrintLabel;
 	private static final String ACTION_PrintLabel = "PrintLabel";
 
+	/**
+	 * Barcode search field
+	 */
 	private ITerminalTextField barcodeField;
 	private ITerminalLabel barcodeLabel;
+	
+	/**
+	 * Button used to mark selected HUs as scheduled for Quality Inspection.
+	 * @task 08639
+	 */
+	private ITerminalButton bMarkAsQualityInspection;
+	private boolean markAsQualityInspectionButtonDisplayed = false; // default: false - will be enabled only in some particular HU Editors
+	public static final String ACTION_MarkAsQualityInspection = "de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel.MarkAsQualityInspection";
+	public static final String ACTION_UnMarkAsQualityInspection = "de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel.UnMarkAsQualityInspection";
+	/** Flag used to completely hide/disable the Quality Inspection button */
+	private static final String SYSCONFIG_QualityInspectionButtonDisabled = "de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel.MarkAsQualityInspection.Disabled";
+
 
 	public HUEditorPanel(final HUEditorModel model)
 	{
@@ -327,6 +344,23 @@ public class HUEditorPanel
 					}
 				});
 			}
+			
+			//
+			// Button: Mark as scheduled for Quality Inspection (task 08639)
+			{
+				this.bMarkAsQualityInspection = factory.createButton(ACTION_MarkAsQualityInspection);
+				this.bMarkAsQualityInspection.setTextAndTranslate(ACTION_MarkAsQualityInspection);
+				bMarkAsQualityInspection.setEnabled(false);
+				bMarkAsQualityInspection.setVisible(false);
+				bMarkAsQualityInspection.addListener(new UIPropertyChangeListener(factory, bMarkAsQualityInspection)
+				{
+					@Override
+					public void propertyChangeEx(final PropertyChangeEvent evt)
+					{
+						doMarkOrUnMarkAsQualityInspection();
+					}
+				});
+			}
 		}
 
 		modelListener = new PropertyChangeListener()
@@ -393,7 +427,9 @@ public class HUEditorPanel
 		// South: Buttons panel
 		{
 			final IContainer buttonsPanel = getTerminalFactory().createContainer(
-					"nogrid" // layoutConstraints: we will use flow horizontally layout
+					// layoutConstraints:
+					"nogrid" // we will use flow horizontally layout
+							+ ", hidemode 3" // 3 - Invisible components will not participate in the layout at all and it will for instance not take up a grid cell.
 			);
 			panel.add(buttonsPanel, "dock south,"
 					+ layoutConstants.getProperty(IHUPOSLayoutConstants.PROPERTY_HUEditor_ButtonsPanel, ""));
@@ -412,6 +448,8 @@ public class HUEditorPanel
 				buttonsPanel.add(barcodeField, "wmin 150px");
 			}
 
+			buttonsPanel.add(bMarkAsQualityInspection, "");
+
 			createAndAddActionButtons(buttonsPanel);
 		}
 
@@ -427,7 +465,9 @@ public class HUEditorPanel
 	}
 
 	/**
-	 * Create and add more action buttons on buttons panel
+	 * Create and add more action buttons on buttons panel.
+	 * 
+	 * If you want to also control the created buttons status (e.g. enable/disable them in some circumstances), please also implement {@link #updateActionButtonsStatus()}.
 	 *
 	 * @param buttonsPanel
 	 */
@@ -435,11 +475,23 @@ public class HUEditorPanel
 	{
 		// nothing on this level
 	}
+	
+	/**
+	 * Called when editor status changed (i.e. user selected/deselected something, current key changed etc).
+	 * 
+	 * The intention is to allow the extending classes to update their custom action buttons status.
+	 * 
+	 * @see #createAndAddActionButtons(IContainer)
+	 */
+	protected void updateActionButtonsStatus()
+	{
+		// nothing on this level
+	}
 
 	/**
 	 * Load from model
 	 */
-	private void load()
+	private final void load()
 	{
 		// Model status
 		final boolean allowSelectingReadonlyKeys = model.isAllowSelectingReadonlyKeys();
@@ -508,6 +560,10 @@ public class HUEditorPanel
 
 		bSplit.setEnabled(!currentHUKeyReadonly);
 		bJoin.setEnabled(!currentHUKeyReadonly);
+		
+		updateMarkAsQualityInspectionButton();
+		
+		updateActionButtonsStatus();
 	}
 
 	private void doAssignTULU()
@@ -961,5 +1017,130 @@ public class HUEditorPanel
 		{
 			barcodeField.requestFocus();
 		}
+	}
+
+	/**
+	 * Enabled {@link #bMarkAsQualityInspection} button if not disabled from sysconfig.
+	 */
+	public void enableMarkAsQualityInspectionButton()
+	{
+		// Make sure we are allowed to enable it
+		final boolean disabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_QualityInspectionButtonDisabled, false);
+		if(disabled)
+		{
+			setMarkAsQualityInspectionButtonDisplayed(false);
+			return;
+		}
+
+		// Enable it
+		setMarkAsQualityInspectionButtonDisplayed(true);
+	}
+	
+	/**
+	 * Sets if {@link #bMarkAsQualityInspection} button shall be displayed.
+	 * 
+	 * @param markAsQualityInspectionButtonDisplayed
+	 * @task 08639
+	 */
+	private void setMarkAsQualityInspectionButtonDisplayed(boolean markAsQualityInspectionButtonDisplayed)
+	{
+		if (this.markAsQualityInspectionButtonDisplayed == markAsQualityInspectionButtonDisplayed)
+		{
+			return;
+		}
+		this.markAsQualityInspectionButtonDisplayed = markAsQualityInspectionButtonDisplayed;
+		updateMarkAsQualityInspectionButton();
+	}
+
+	/**
+	 * Updates {@link #bMarkAsQualityInspection} button status, text and action based on current selected HUs.
+	 * @task 08639
+	 */
+	private final void updateMarkAsQualityInspectionButton()
+	{
+		// Functionality is not enabled
+		// => hide the button, stop here
+		if (!markAsQualityInspectionButtonDisplayed)
+		{
+			bMarkAsQualityInspection.setVisible(false);
+			bMarkAsQualityInspection.setEnabled(false);
+			bMarkAsQualityInspection.setAction(null);
+			return;
+		}
+		
+		boolean haveHUsWithoutSupport = false;
+		boolean haveHUsMarked = false;
+		boolean haveHUsNotMarked = false;
+		for (final HUKey huKey : model.getSelectedHUKeys())
+		{
+			final IQualityInspectionSchedulable qualityInspectionAware = huKey.asQualityInspectionSchedulable().orNull();
+			if (qualityInspectionAware == null)
+			{
+				haveHUsWithoutSupport = true;
+			}
+			else if (qualityInspectionAware.isQualityInspection())
+			{
+				haveHUsMarked = true;
+			}
+			else
+			{
+				haveHUsNotMarked = true;
+			}
+		}
+		
+		// Case:
+		// * we have no HUs with quality inspection support
+		// * or we have some HUs which are marked and some HUs which are not marked
+		// * or we have some HUs WITHOUT quality inspection support 
+		if (haveHUsMarked == haveHUsNotMarked || haveHUsWithoutSupport)
+		{
+			bMarkAsQualityInspection.setVisible(false);
+			bMarkAsQualityInspection.setEnabled(false);
+			bMarkAsQualityInspection.setAction(null);
+		}
+		// Case: our HUs are marked as quality inspection
+		else if (haveHUsMarked)
+		{
+			bMarkAsQualityInspection.setVisible(true);
+			bMarkAsQualityInspection.setEnabled(true);
+			bMarkAsQualityInspection.setAction(ACTION_UnMarkAsQualityInspection);
+			bMarkAsQualityInspection.setTextAndTranslate(ACTION_UnMarkAsQualityInspection);
+		}
+		// Case: our HUs are NOT marked as quality inspection
+		else if (haveHUsNotMarked)
+		{
+			bMarkAsQualityInspection.setVisible(true);
+			bMarkAsQualityInspection.setEnabled(true);
+			bMarkAsQualityInspection.setAction(ACTION_MarkAsQualityInspection);
+			bMarkAsQualityInspection.setTextAndTranslate(ACTION_MarkAsQualityInspection);
+		}
+		else
+		{
+			// shall no happen
+		}
+	}
+	
+	/**
+	 * Mark/UnMark selected HUs as scheduled for Quality Inspection.
+	 * 
+	 * @task 08639
+	 */
+	private final void doMarkOrUnMarkAsQualityInspection()
+	{
+		final String action = bMarkAsQualityInspection.getAction();
+		if (ACTION_MarkAsQualityInspection.equals(action))
+		{
+			getHUEditorModel().setQualityInspectionFlagForSelectedHUs(true);
+		}
+		else if (ACTION_UnMarkAsQualityInspection.equals(action))
+		{
+			getHUEditorModel().setQualityInspectionFlagForSelectedHUs(false);
+		}
+		else
+		{
+			// no action => nothing to do
+		}
+		
+		updateMarkAsQualityInspectionButton();
 	}
 }

@@ -26,6 +26,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.text.ExtendedReflectionToStringBuilder;
 import org.adempiere.util.text.RecursiveIndentedMultilineToStringStyle;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Common operations on {@link Object}.
  * 
@@ -41,9 +43,16 @@ public final class ObjectUtils
 	 * 
 	 * @param obj
 	 * @return
+	 * @deprecated might arbitrarily throw exceptions. Please use e.g. {@link com.google.common.base.MoreObjects#toStringHelper(Object)} instead.
+	 * 
 	 */
+	@Deprecated
 	public static final String toString(final Object obj)
 	{
+		if (obj == null)
+		{
+			return "<NULL>";
+		}
 		try
 		{
 			return new ExtendedReflectionToStringBuilder(obj, RecursiveIndentedMultilineToStringStyle.instance)
@@ -52,8 +61,27 @@ public final class ObjectUtils
 		catch (final Exception e)
 		{
 			// task 09493: catching possible errors
-			return obj.toString() + " (WARNING: ExtendedReflectionToStringBuilder threw " + e + ")";
+
+			// this doesn't work! still invokes the "high-level" toString() method
+			// return ((Object)obj).toString() + " (WARNING: ExtendedReflectionToStringBuilder threw " + e + ")";
+			return createFallBackMessage(obj, e);
 		}
+	}
+
+	/**
+	 * 
+	 * @param obj
+	 * @param e
+	 * @return
+	 * @task http://dewiki908/mediawiki/index.php/09493_Error_Processing_Document_bei_Warenannahme_%28100785561740%29
+	 */
+	@VisibleForTesting
+	/* package */static String createFallBackMessage(final Object obj, final Exception e)
+	{
+		return "!!! toString() for "
+				+ obj.getClass().getName() + "@" + Integer.toHexString(obj.hashCode())
+				+ ", (IdentityHashCode=" + System.identityHashCode(obj) + ") using ExtendedReflectionToStringBuilder threw " + e
+				+ ") !!!";
 	}
 
 	/**

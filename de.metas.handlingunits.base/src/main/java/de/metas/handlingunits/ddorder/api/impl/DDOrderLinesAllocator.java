@@ -48,9 +48,10 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 
-import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
 
 /**
@@ -64,7 +65,8 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 	// Services
 	private static final transient CLogger logger = CLogger.getCLogger(DDOrderLinesAllocator.class);
 	private final transient IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
-	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final transient IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
+	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 
 	// Parameters
 	private final Date movementDate = SystemTime.asDayTimestamp();
@@ -162,7 +164,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 
 		//
 		// Make sure given HUs are no longer assigned to this DD Order Line
-		huAssignmentBL.unassignHUs(ddOrderLine, hus);
+		huDDOrderBL.unassignHUs(ddOrderLine, hus);
 
 		//
 		// Generate movement (shipment)
@@ -201,7 +203,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 			{
 				isTransferPackingMaterials = false;
 			}
-			huAssignmentBL.assignHU(movementLine, hu, isTransferPackingMaterials, trxName);
+			huMovementBL.assignHU(movementLine, hu, isTransferPackingMaterials, trxName);
 		}
 	}
 

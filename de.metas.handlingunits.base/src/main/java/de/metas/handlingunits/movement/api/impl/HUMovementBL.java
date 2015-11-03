@@ -53,6 +53,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
+import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
@@ -309,4 +310,12 @@ public class HUMovementBL implements IHUMovementBL
 		Services.get(IHUMovementBL.class).setPackingMaterialCActivity(movementLine);
 		return movementLine;
 	}
+
+	@Override
+	public void assignHU(final org.compiere.model.I_M_MovementLine movementLine, final I_M_HU hu, final boolean isTransferPackingMaterials, final String trxName)
+	{
+		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+		huAssignmentBL.assignHU(movementLine, hu, isTransferPackingMaterials, trxName);
+	}
+
 }

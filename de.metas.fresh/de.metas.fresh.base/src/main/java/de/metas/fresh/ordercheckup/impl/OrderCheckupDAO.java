@@ -22,7 +22,6 @@ package de.metas.fresh.ordercheckup.impl;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -61,13 +60,13 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 
 		return productPlanning;
 	}
-	
+
 	@Override
 	public I_M_Warehouse retrieveManufacturingWarehouseOrNull(final I_C_OrderLine orderLine)
 	{
 		final I_PP_Product_Planning productPlanning = retrieveManufacturingProductPlanningOrNull(orderLine);
-
-		if (productPlanning == null || productPlanning.getM_Warehouse_ID() < 0)
+		if (productPlanning == null
+				|| productPlanning.getM_Warehouse_ID() < 0)
 		{
 			return null; // no warehouse available
 		}
@@ -89,7 +88,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 				.create()
 				.list(I_C_Order_MFGWarehouse_Report.class);
 	}
-	
+
 	@Override
 	public List<I_C_Order_MFGWarehouse_ReportLine> retrieveAllReportLines(final I_C_Order_MFGWarehouse_Report report)
 	{

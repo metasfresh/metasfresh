@@ -57,6 +57,8 @@ public interface ITerminalButton extends IFocusableComponent, IExecuteBeforePain
 
 	void setAction(String action);
 
+	String getAction();
+
 	/** @return text which is displayed on this button. */
 	String getText();
 

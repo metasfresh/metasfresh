@@ -166,6 +166,12 @@ public class ZKTerminalButtonWrapper
 	{
 		actionCommand = action;
 	}
+	
+	@Override
+	public String getAction()
+	{
+		return actionCommand;
+	}
 
 	@Override
 	public void setText(final String text)

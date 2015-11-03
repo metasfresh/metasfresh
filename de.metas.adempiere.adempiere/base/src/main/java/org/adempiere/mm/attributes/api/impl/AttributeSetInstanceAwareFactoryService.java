@@ -60,6 +60,12 @@ public class AttributeSetInstanceAwareFactoryService implements IAttributeSetIns
 	@Override
 	public IAttributeSetInstanceAware createOrNull(final Object referencedObj)
 	{
+		// If already an ASI aware, return it
+		if(referencedObj instanceof IAttributeSetInstanceAware)
+		{
+			return (IAttributeSetInstanceAware)referencedObj;
+		}
+		
 		final String tableName = InterfaceWrapperHelper.getModelTableNameOrNull(referencedObj);
 		if (tableName == null)
 		{

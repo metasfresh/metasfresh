@@ -22,18 +22,14 @@ package de.metas.dunning.process;
  * #L%
  */
 
-
 import java.sql.Timestamp;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.util.Services;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
+import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningCandidateProducer;
@@ -56,6 +52,8 @@ public class C_Dunning_Candidate_Create extends SvrProcess
 
 	private static final String PARAM_IsFullUpdate = "IsFullUpdate";
 	private boolean p_IsFullUpdate = false;
+	
+	final private ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
 	protected void prepare()
@@ -106,16 +104,23 @@ public class C_Dunning_Candidate_Create extends SvrProcess
 	{
 		final IDunningBL dunningBL = Services.get(IDunningBL.class);
 
-		// create a special config for this process
-		final ITrxRunConfig trxRunnerConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.NESTED, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
+		trxManager.run(new TrxRunnableAdapter()
+		{
 
-		final IDunningContext context = dunningBL.createDunningContext(getCtx(), dunningLevel, p_DunningDate, trxRunnerConfig, get_TrxName());
-		context.setProperty(IDunningCandidateProducer.CONTEXT_FullUpdate, p_IsFullUpdate);
+			@Override
+			public void run(String localTrxName) throws Exception
+			{
+				final IDunningContext context = dunningBL.createDunningContext(getCtx(), dunningLevel, p_DunningDate, get_TrxName());
+				context.setProperty(IDunningCandidateProducer.CONTEXT_FullUpdate, p_IsFullUpdate);
 
-		final int countDelete =  Services.get(IDunningDAO.class).deleteNotProcessedCandidates(context, dunningLevel);
-		addLog("@C_DunningLevel@ " + dunningLevel.getName() + ": " + countDelete + " record(s) deleted");
+				final int countDelete = Services.get(IDunningDAO.class).deleteNotProcessedCandidates(context, dunningLevel);
+				addLog("@C_DunningLevel@ " + dunningLevel.getName() + ": " + countDelete + " record(s) deleted");
 
-		final int countCreateUpdate = dunningBL.createDunningCandidates(context);
-		addLog("@C_DunningLevel@ " + dunningLevel.getName() + ": " + countCreateUpdate + " record(s) created/updated");
+				final int countCreateUpdate = dunningBL.createDunningCandidates(context);
+				addLog("@C_DunningLevel@ " + dunningLevel.getName() + ": " + countCreateUpdate + " record(s) created/updated");
+
+			}
+		});
+
 	}
 }

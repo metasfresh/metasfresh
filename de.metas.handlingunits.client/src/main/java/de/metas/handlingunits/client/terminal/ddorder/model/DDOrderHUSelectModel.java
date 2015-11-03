@@ -25,7 +25,6 @@ package de.metas.handlingunits.client.terminal.ddorder.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -35,7 +34,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_DD_Order;
@@ -240,39 +238,6 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 		}
 	}
 
-	/**
-	 * Gets source warehouses from given <code>rows</code>
-	 *
-	 * @return set of source M_Warehouse_IDs
-	 */
-	private Set<Integer> getSourceWarehouseIds(final Collection<IPOSTableRow> rows)
-	{
-		final Set<Integer> seenLocatorIds = new HashSet<Integer>();
-		final Set<Integer> sourceWarehouseIds = new HashSet<Integer>();
-
-		final Set<IDDOrderTableRow> ddOrderRows = castRows(rows);
-		for (final IDDOrderTableRow ddOrderRow : ddOrderRows)
-		{
-			final I_M_Locator locatorFrom = ddOrderRow.getM_Locator_From();
-			if (locatorFrom == null)
-			{
-				continue;
-			}
-
-			final int locatorFromId = locatorFrom.getM_Locator_ID();
-			if (!seenLocatorIds.add(locatorFromId))
-			{
-				// already added
-				continue;
-			}
-
-			final int fromWarehouseId = locatorFrom.getM_Warehouse_ID();
-			sourceWarehouseIds.add(fromWarehouseId);
-		}
-
-		return sourceWarehouseIds;
-	}
-
 	@Override
 	protected HUEditorModel createHUEditorModel(final Collection<IPOSTableRow> rows, final IHUEditorCallback<HUEditorModel> editorCallback_NOTUSED)
 	{
@@ -300,30 +265,41 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 
 	private final IHUQueryBuilder createHUQueryBuilder(final Collection<IPOSTableRow> rows)
 	{
+		final DDOrderFiltering service = getService();
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
+		
 		//
 		// Fetch source Warehouse IDs from selected rows
-		final Set<Integer> sourceWarehouseIds = getSourceWarehouseIds(rows);
+		final Set<Integer> sourceWarehouseIds = service.getSourceWarehouseIds(rows);
 		if (sourceWarehouseIds.isEmpty())
 		{
 			// no lines selected => no warehouses => nothing to do
 			return null;
 		}
-
+		
 		//
 		// Fetch product IDs
-		final Set<Integer> productIds = getProductIdsFromRows(rows);
+		final Set<Integer> productIds = service.getProductIdsFromRows(rows);
 
+		//
+		// Create the HU query builder
 		final ITerminalContext terminalContext = getTerminalContext();
-		return handlingUnitsDAO.createHUQueryBuilder()
+		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
 				.setContext(terminalContext)
 				.setErrorIfNoHUs(MSG_ErrorNoHandlingUnitFoundForSelection)
 				.setOnlyTopLevelHUs()
 				.addOnlyInWarehouseIds(sourceWarehouseIds)
-				.addOnlyWithProductIds(productIds)
+				.addOnlyWithProductIds(productIds);
+
 		//
-		;
+		// If our rows have some HUs assigned to be moved, then present to user ONLY those HUs (task 08639)
+		final List<Integer> huIdsScheduledToMove = service.getHUIdsScheduledToMove(getCtx(), rows);
+		if (!huIdsScheduledToMove.isEmpty())
+		{
+			huQueryBuilder.addOnlyHUIds(huIdsScheduledToMove);
+		}
+		
+		return huQueryBuilder;
 	}
 
 	@Override
@@ -358,24 +334,6 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 		}
 
 		service.processDDOrderLines(ddOrderLines, huProductStorages);
-	}
-
-	/**
-	 * Gets M_Product_IDs from selected row(s).
-	 *
-	 * @param rows
-	 * @return M_Product_IDs
-	 */
-	private Set<Integer> getProductIdsFromRows(final Collection<IPOSTableRow> rows)
-	{
-		final Set<Integer> productIds = new HashSet<Integer>();
-		for (final IPOSTableRow row : rows)
-		{
-			final Set<Integer> rowProductIds = row.getM_Product_IDs();
-			productIds.addAll(rowProductIds);
-		}
-
-		return productIds;
 	}
 
 	/**

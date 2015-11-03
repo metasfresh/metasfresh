@@ -259,6 +259,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 	 *	@return product or null
 	 * @deprecated please use {@link #getM_Product()}
 	 */
+	@Deprecated
 	public MProduct getProduct()
 	{
 		return LegacyAdapters.convertToPO(getM_Product());
@@ -560,10 +561,10 @@ public class MDDOrderLine extends X_DD_OrderLine
 			setQtyOrdered(getQtyOrdered());
 		
 		//	Qty on instance ASI for SO
-		if (getM_AttributeSetInstance_ID() != 0
-			&& (newRecord || is_ValueChanged("M_Product_ID")
-				|| is_ValueChanged("M_AttributeSetInstance_ID")
-				|| is_ValueChanged("M_Warehouse_ID"))
+		if (getM_AttributeSetInstance_ID() > 0
+			&& (newRecord || is_ValueChanged(COLUMNNAME_M_Product_ID)
+				|| is_ValueChanged(COLUMNNAME_M_AttributeSetInstance_ID)
+				|| is_ValueChanged(COLUMNNAME_M_Locator_ID))
 			&& getDD_Order().isSOTrx())
 		{
 			final I_M_Product product = getM_Product();

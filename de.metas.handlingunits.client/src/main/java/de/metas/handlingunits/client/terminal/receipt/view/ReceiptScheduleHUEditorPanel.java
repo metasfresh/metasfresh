@@ -22,7 +22,6 @@ package de.metas.handlingunits.client.terminal.receipt.view;
  * #L%
  */
 
-
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.adempiere.form.terminal.ITerminalDialog;
@@ -48,6 +47,7 @@ public class ReceiptScheduleHUEditorPanel extends HUEditorPanel
 		//
 		// Configure
 		setAskUserWhenCancelingChanges(true); // 07729
+		enableMarkAsQualityInspectionButton(); // task 08639
 	}
 
 	@Override

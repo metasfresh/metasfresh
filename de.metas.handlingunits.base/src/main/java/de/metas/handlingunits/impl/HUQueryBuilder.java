@@ -39,7 +39,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -116,6 +118,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	private final Map<Integer, HUAttributeQueryFilterVO> onlyAttributeId2values = new HashMap<>();
 	private final Set<String> _huStatusesToInclude = new HashSet<>();
 	private final Set<String> _huStatusesToExclude = new HashSet<>();
+	private final Set<Integer> _onlyHUIds = new HashSet<>();
 	private final Set<Integer> _huIdsToExclude = new HashSet<>();
 	private final Set<Integer> _huPIVersionIdsToInclude = new HashSet<>();
 	private boolean _excludeHUsOnPickingSlot = false;
@@ -167,6 +170,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		}
 		copy._huStatusesToInclude.addAll(_huStatusesToInclude);
 		copy._huStatusesToExclude.addAll(_huStatusesToExclude);
+		copy._onlyHUIds.addAll(_onlyHUIds);
 		copy._huIdsToExclude.addAll(_huIdsToExclude);
 		copy._huPIVersionIdsToInclude.addAll(_huPIVersionIdsToInclude);
 		copy._excludeHUsOnPickingSlot = _excludeHUsOnPickingSlot;
@@ -201,6 +205,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 				.append(onlyAttributeId2values)
 				.append(_huStatusesToInclude)
 				.append(_huStatusesToExclude)
+				.append(_onlyHUIds)
 				.append(_huIdsToExclude)
 				.append(_huPIVersionIdsToInclude)
 				.append(_excludeHUsOnPickingSlot)
@@ -241,6 +246,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 				.append(onlyAttributeId2values, other.onlyAttributeId2values)
 				.append(_huStatusesToInclude, other._huStatusesToInclude)
 				.append(_huStatusesToExclude, other._huStatusesToExclude)
+				.append(_onlyHUIds, other._onlyHUIds)
 				.append(_huIdsToExclude, other._huIdsToExclude)
 				.append(_huPIVersionIdsToInclude, other._huPIVersionIdsToInclude)
 				.append(_excludeHUsOnPickingSlot, other._excludeHUsOnPickingSlot)
@@ -486,6 +492,14 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		{
 			filters.addEqualsFilter(I_M_HU.COLUMN_Value, barcode.trim());
 		}
+		
+		//
+		// Include only specific HUs
+		if (_onlyHUIds != null && !_onlyHUIds.isEmpty())
+		{
+			filters.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, _onlyHUIds);
+		}
+		
 
 		//
 		// Exclude specified HUs
@@ -630,6 +644,11 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	{
 		Check.assumeNotNull(_contextProvider, "contextProvider not null");
 		return _contextProvider;
+	}
+	
+	private final Properties getCtx()
+	{
+		return InterfaceWrapperHelper.getCtx(getContextProvider());
 	}
 
 	@Override
@@ -863,6 +882,14 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 		return this;
 	}
+	
+	@Override
+	public IHUQueryBuilder addOnlyWithAttribute(final String attributeName, final Object value)
+	{
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		return addOnlyWithAttribute(attribute, value);
+	}
+
 
 	@Override
 	public IHUQueryBuilder addOnlyWithAttributeInList(final I_M_Attribute attribute, final String attributeValueType, final List<? extends Object> values)
@@ -989,6 +1016,19 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		}
 
 		throw new HUException(message);
+	}
+	
+	@Override
+	public HUQueryBuilder addOnlyHUIds(final Collection<Integer> onlyHUIds)
+	{
+		if (onlyHUIds == null || onlyHUIds.isEmpty())
+		{
+			return this;
+		}
+
+		_onlyHUIds.addAll(onlyHUIds);
+
+		return this;
 	}
 
 	@Override

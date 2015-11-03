@@ -22,7 +22,6 @@ package de.metas.fresh.ordercheckup;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
@@ -37,13 +36,13 @@ import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 public interface IOrderCheckupDAO extends ISingletonService
 {
 	/**
-	 * For the given order line, return the {@link I_PP_Product_Planning} which defines how the order line's product shall be manufactured.
+	 * For the given order line, return a {@link I_PP_Product_Planning} which defines how the order line's product shall be manufactured.
 	 * 
 	 * @param orderLine
 	 * @return product data planning or <code>null</code>.
 	 */
 	I_PP_Product_Planning retrieveManufacturingProductPlanningOrNull(I_C_OrderLine orderLine);
-	
+
 	/**
 	 * For the given order line, return those warehouses that are referenced by a manufacturing_<code>PP_Product_Planning</code> record that also references the order line.
 	 * 

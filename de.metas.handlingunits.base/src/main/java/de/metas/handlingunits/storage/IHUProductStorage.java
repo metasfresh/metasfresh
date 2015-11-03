@@ -23,6 +23,8 @@ package de.metas.handlingunits.storage;
  */
 
 
+import java.math.BigDecimal;
+
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.model.I_M_HU;
 
@@ -30,4 +32,9 @@ public interface IHUProductStorage extends IProductStorage, IHUAware
 {
 	@Override
 	public I_M_HU getM_HU();
+
+	/**
+	 * @return quantity in product's stocking UOM
+	 */
+	BigDecimal getQtyInStockingUOM();
 }

@@ -32,6 +32,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
@@ -99,4 +100,17 @@ public interface IHUMovementBL extends ISingletonService
 	 * @return {@link I_M_Warehouse} for direct movements or <code>null</code>.
 	 */
 	I_M_Warehouse getDirectMove_Warehouse(Properties ctx, boolean throwEx);
+
+	/**
+	 * Assigns given HU to given movement line
+	 * 
+	 * @param movementLine
+	 * @param hu
+	 * @param isTransferPackingMaterials
+	 * @param trxName
+	 * @see IHUAssignmentBL#assignHU(Object, I_M_HU, boolean, String)
+	 */
+	void assignHU(org.compiere.model.I_M_MovementLine movementLine, I_M_HU hu, boolean isTransferPackingMaterials, String trxName);
+	
+	
 }

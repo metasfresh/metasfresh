@@ -22,7 +22,6 @@ package de.metas.handlingunits.client.terminal.ddorder.api.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,7 +35,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -53,6 +51,7 @@ import de.metas.handlingunits.client.terminal.ddorder.model.IDDOrderTableRow;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
 import de.metas.handlingunits.client.terminal.select.api.impl.AbstractFiltering;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 
@@ -171,28 +170,26 @@ public class DDOrderFiltering extends AbstractFiltering
 			return Collections.emptyList();
 		}
 
-		final Set<Integer> seenDDOrderIds = new HashSet<Integer>();
-		final List<I_DD_Order> result = new ArrayList<I_DD_Order>();
+		final Set<Integer> seenDDOrderIds = new HashSet<>();
+		final List<I_DD_Order> result = new ArrayList<>();
 		for (final IPOSTableRow row : rows)
 		{
 			final IDDOrderTableRow ddOrderRow = getDDOrderTableRow(row);
 
-			I_DD_Order ddOrder = null;
 			for (final I_DD_OrderLine ddOrderLine : ddOrderRow.getDD_OrderLines())
 			{
-				ddOrder = ddOrderLine.getDD_Order();
-				final int ddOrderId = ddOrder.getDD_Order_ID();
-				if (!seenDDOrderIds.add(ddOrderId))
+				// Make sure the DD_Order was not already considered
+				if (!seenDDOrderIds.add(ddOrderLine.getDD_Order_ID()))
 				{
-					// already added
-					ddOrder = null;
 					continue;
 				}
-			}
 
-			if (ddOrder != null)
-			{
-				result.add(ddOrder);
+				// Add the DD_Order to the result
+				final I_DD_Order ddOrder = ddOrderLine.getDD_Order();
+				if (ddOrder != null)
+				{
+					result.add(ddOrder);
+				}
 			}
 		}
 
@@ -210,6 +207,100 @@ public class DDOrderFiltering extends AbstractFiltering
 		final List<I_DD_OrderLine> ddOrderLines = ddOrderRow.getDD_OrderLines();
 		return ddOrderLines;
 	}
+
+	/**
+	 * Gets all DD_OrderLine_IDs from given rows.
+	 * 
+	 * @param rows
+	 * @return DD_OrderLine_IDs
+	 */
+	public Set<Integer> getDDOrderLineIds(final Collection<? extends IPOSTableRow> rows)
+	{
+		if (rows == null || rows.isEmpty())
+		{
+			return Collections.emptySet();
+		}
+
+		final Set<Integer> ddOrderLineIds = new HashSet<>();
+		for (final IPOSTableRow row : rows)
+		{
+			final IDDOrderTableRow ddOrderRow = getDDOrderTableRow(row);
+			for (final I_DD_OrderLine ddOrderLine : ddOrderRow.getDD_OrderLines())
+			{
+				final int ddOrderLineId = ddOrderLine.getDD_OrderLine_ID();
+				if (ddOrderLineId <= 0)
+				{
+					continue;
+				}
+				ddOrderLineIds.add(ddOrderLineId);
+			}
+		}
+
+		return ddOrderLineIds;
+	}
+
+	/**
+	 * Gets M_Product_IDs from selected row(s).
+	 *
+	 * @param rows
+	 * @return M_Product_IDs
+	 */
+	public Set<Integer> getProductIdsFromRows(final Collection<? extends IPOSTableRow> rows)
+	{
+		final Set<Integer> productIds = new HashSet<Integer>();
+		for (final IPOSTableRow row : rows)
+		{
+			final Set<Integer> rowProductIds = row.getM_Product_IDs();
+			productIds.addAll(rowProductIds);
+		}
+
+		return productIds;
+	}
+	
+	/**
+	 * Gets source warehouses from given <code>rows</code>
+	 *
+	 * @return set of source M_Warehouse_IDs
+	 */
+	public Set<Integer> getSourceWarehouseIds(final Collection<? extends IPOSTableRow> rows)
+	{
+		final Set<Integer> seenLocatorIds = new HashSet<Integer>();
+		final Set<Integer> sourceWarehouseIds = new HashSet<Integer>();
+
+		for (final IPOSTableRow row : rows)
+		{
+			final IDDOrderTableRow ddOrderRow = getDDOrderTableRow(row);
+			final I_M_Locator locatorFrom = ddOrderRow.getM_Locator_From();
+			if (locatorFrom == null)
+			{
+				continue;
+			}
+
+			final int locatorFromId = locatorFrom.getM_Locator_ID();
+			if (!seenLocatorIds.add(locatorFromId))
+			{
+				// already added
+				continue;
+			}
+
+			final int fromWarehouseId = locatorFrom.getM_Warehouse_ID();
+			sourceWarehouseIds.add(fromWarehouseId);
+		}
+
+		return sourceWarehouseIds;
+	}
+	
+	public List<Integer> getHUIdsScheduledToMove(final Properties ctx, final Collection<? extends IPOSTableRow> rows)
+	{
+		final Set<Integer> ddOrderLineIds = getDDOrderLineIds(rows);
+		if (ddOrderLineIds.isEmpty())
+		{
+			return Collections.emptyList();
+		}
+		
+		return Services.get(IHUDDOrderDAO.class).retrieveHUIdsScheduledToMove(ctx, ddOrderLineIds);
+	}
+
 
 	@Override
 	public Object getReferencedObject(final IPOSTableRow row)
@@ -230,6 +321,8 @@ public class DDOrderFiltering extends AbstractFiltering
 			return;
 		}
 
+		final IHUDDOrderBL ddOrderBL = Services.get(IHUDDOrderBL.class);
+
 		//
 		// Iterate rows and close them one by one
 		for (final IPOSTableRow row : rows)
@@ -237,8 +330,7 @@ public class DDOrderFiltering extends AbstractFiltering
 			final List<I_DD_OrderLine> ddOrderLines = getDDOrderLines(row);
 			for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 			{
-				ddOrderLine.setIsDelivered_Override(X_DD_OrderLine.ISDELIVERED_OVERRIDE_Yes);
-				InterfaceWrapperHelper.save(ddOrderLine);
+				ddOrderBL.closeLine(ddOrderLine);
 			}
 		}
 	}

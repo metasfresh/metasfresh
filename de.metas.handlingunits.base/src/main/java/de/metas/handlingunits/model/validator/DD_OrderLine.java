@@ -38,6 +38,7 @@ import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
+import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 
 /**
  * @author al
@@ -158,5 +159,11 @@ public class DD_OrderLine
 		}
 
 		return true;
+	}
+	
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void clearHUsScheduledToMoveList(final I_DD_OrderLine ddOrderline)
+	{
+		Services.get(IHUDDOrderDAO.class).clearHUsScheduledToMoveList(ddOrderline);
 	}
 }

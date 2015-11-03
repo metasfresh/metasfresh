@@ -8,7 +8,10 @@ $BODY$
 	WHERE true
 		AND DateGeneral::date = $1
 		AND M_Product_Root_ID = $2
-		AND M_AttributesetInstance_ID = $3
+		-- deleting by ASIKey, not just by asi-ID, because further down in the where and also 
+		-- *inside* MRP_ProductInfo_Poor_Mans_MRP_V(numeric, numeric) we are using the ASI-Key 
+		--		AND M_AttributesetInstance_ID = $3
+		AND GenerateHUStorageASIKey(M_AttributesetInstance_ID)=GenerateHUStorageASIKey($3,'')
 	;
 	
 	INSERT INTO "de.metas.fresh".X_MRP_ProductInfo_Detail_Poor_Mans_MRP

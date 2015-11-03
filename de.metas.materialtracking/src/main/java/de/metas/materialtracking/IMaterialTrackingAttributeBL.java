@@ -86,4 +86,7 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 	 * @return <code>true</code> if the given asi's attribute set contains the <code>M_Attribute</code> with <code>value=M_Material_Tracking_ID.</code>
 	 */
 	boolean hasMaterialTrackingAttribute(I_M_AttributeSetInstance asi);
+
+	/** @return true if material tracking attribute exists and it's set */
+	boolean isMaterialTrackingSet(IContextAware context, IAttributeSet attributeSet);
 }

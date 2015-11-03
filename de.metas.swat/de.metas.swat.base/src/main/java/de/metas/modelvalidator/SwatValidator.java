@@ -85,6 +85,7 @@ import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.report.impl.JasperService;
 import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.CLogger;
+import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -114,6 +115,8 @@ import de.metas.invoice.model.validator.C_Invoice;
 import de.metas.invoice.model.validator.C_InvoiceLine;
 import de.metas.invoice.model.validator.M_MatchInv;
 import de.metas.order.modelvalidator.C_Order;
+import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
+import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute_Line;
 import de.metas.pricing.attributebased.spi.impl.AttributePlvCreationListener;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
 
@@ -166,7 +169,7 @@ public class SwatValidator implements ModelValidator
 		setupTableCacheConfig();
 
 		configDatabase();
-		
+
 		//
 		// Services
 		Services.registerService(IBPartnerTotalOpenBalanceUpdater.class, new AsyncBPartnerTotalOpenBalanceUpdater());
@@ -182,7 +185,7 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new OrderLine(), client);
 		engine.addModelValidator(new C_Invoice(), client); // 03771
 		engine.addModelValidator(new M_InOut(), client); // 03771
-		engine.addModelValidator(M_InOutLine.INSTANCE, client); 
+		engine.addModelValidator(M_InOutLine.INSTANCE, client);
 		engine.addModelValidator(new OrgInfo(), client);
 		engine.addModelValidator(new Payment(), client);
 		engine.addModelValidator(new ProcessValidator(), client);
@@ -269,9 +272,9 @@ public class SwatValidator implements ModelValidator
 		{
 			engine.addModelValidator(new M_MatchInv(), client);
 		}
-		
+
 		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_C_InvoiceLine.Table_Name, C_InvoiceLine_TabCallout.class);
-		
+
 		// register the default copy handler
 		// task 07286: required because we need to introduce copy handlers that replace some former jboss-aop aspects in de.metas.commission. We do that be adding copy handlers there and to allow
 		// this, we had to extend the API and register the default handlers whose invocation used to be hardcoded in the IInvoiceBL impl.
@@ -326,7 +329,7 @@ public class SwatValidator implements ModelValidator
 				jasperServiceRegistry.registerJasperService(ServiceType.MASS_PRINT_FRAMEWORK, new JasperService());
 			}
 		}
-		
+
 		// task 09232
 		{
 			Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_C_Order.Table_Name, C_OrderFastInputTabCallout.class);
@@ -354,6 +357,12 @@ public class SwatValidator implements ModelValidator
 				.setInitialCapacity(50)
 				.setMaxCapacity(50)
 				.register();
+
+		final CacheMgt cacheMgt = CacheMgt.get();
+
+		// task 09509: changes in the pricing data shall also be propagated to other hosts
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_ProductPrice_Attribute.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_ProductPrice_Attribute_Line.Table_Name);
 	}
 
 	@Override

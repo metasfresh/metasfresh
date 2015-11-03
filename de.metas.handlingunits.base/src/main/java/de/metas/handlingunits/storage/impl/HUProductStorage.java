@@ -124,6 +124,14 @@ import de.metas.handlingunits.storage.IHUStorage;
 	}
 
 	@Override
+	public final BigDecimal getQtyInStockingUOM()
+	{
+		final I_M_Product product = getM_Product();
+		final I_C_UOM uom = product.getC_UOM();
+		return getQty(uom);
+	}
+
+	@Override
 	public BigDecimal getQtyCapacity()
 	{
 		return capacityTotal.getCapacity();

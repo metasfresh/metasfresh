@@ -22,7 +22,6 @@ package org.adempiere.model.validator;
  * #L%
  */
 
-
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
@@ -43,10 +42,19 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_AttributeSet;
+import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_DiscountSchemaLine;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
 import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.CacheMgt;
 
+import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
 import de.metas.adempiere.model.I_M_Product;
 
 /**
@@ -64,7 +72,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		{
 			engine.addModelValidator(org.adempiere.ad.security.model.validator.SecurityMainInterceptor.instance, client);
 		}
-		
+
 		// Event bus
 		engine.addModelValidator(EventBusAdempiereInterceptor.instance, client);
 
@@ -131,7 +139,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 				.setCacheMapType(CacheMapType.HashMap)
 				.setTrxLevel(TrxLevel.OutOfTransactionOnly)
 				.register();
-		
+
 		// AD_Process
 		// (copied settings from org.compiere.model.MProcess.s_cache: new CCache<Integer,MProcess>(Table_Name, 20))
 		cachingService.createTableCacheConfigBuilder(I_AD_Process.class)
@@ -141,7 +149,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 				.setCacheMapType(CacheMapType.HashMap)
 				.setTrxLevel(TrxLevel.OutOfTransactionOnly)
 				.register();
-		
+
 		// C_Location
 		// NOTE: we use the setting that we had in MLocation.s_cache
 		cachingService.createTableCacheConfigBuilder(I_C_Location.Table_Name)
@@ -156,15 +164,15 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// AD_Column
 		// task 08880: need to cache because (even if for no other reason) there is method in FindPanel called by repaint() and it needs to get a column by its ID
 		cachingService.createTableCacheConfigBuilder(I_AD_Column.class)
-			.setEnabled(true)
-			.setInitialCapacity(1000)
-			.setMaxCapacity(1000)
-			.setExpireMinutes(ITableCacheConfig.EXPIREMINUTES_Never)
-			.setCacheMapType(CacheMapType.LRU)
-			.setTrxLevel(TrxLevel.OutOfTransactionOnly)
-			.register();
-		
-		// task 09304: now that we can, let's also invalidate the cached UOM conversions. 
+				.setEnabled(true)
+				.setInitialCapacity(1000)
+				.setMaxCapacity(1000)
+				.setExpireMinutes(ITableCacheConfig.EXPIREMINUTES_Never)
+				.setCacheMapType(CacheMapType.LRU)
+				.setTrxLevel(TrxLevel.OutOfTransactionOnly)
+				.register();
+
+		// task 09304: now that we can, let's also invalidate the cached UOM conversions.
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_UOM.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_UOM_Conversion.Table_Name);
@@ -178,5 +186,18 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Image.Table_Name); // mainly for logos
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_SysConfig.Table_Name); // also broadcast sysconfig changes
+
+		// task 09509: changes in the pricing data shall also be propagated to other hosts
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_DiscountSchema.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_DiscountSchemaBreak.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_DiscountSchemaLine.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_PricingSystem.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_PriceList.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_PriceList_Version.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_ProductPrice.Table_Name);
+		
+		// task 09508: make sure that masterdata-fixes in warehouse and resource/plant make is to other clients
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Warehouse.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_S_Resource.Table_Name);
 	}
 }

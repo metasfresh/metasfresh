@@ -20,10 +20,10 @@
 	wh.name AS WH_Name,
 	p.name AS P_Name,
 	p.value AS P_Value,
-	qty,
-	qty * CostPrice AS linesum,
+	SUM(qty) as qty,
+	SUM(qty) * avg(CostPrice) AS linesum,
 	uom.UOMSymbol,
-	CostPrice
+	avg(CostPrice) as CostPrice
 FROM
 	(
 	SELECT
@@ -89,9 +89,19 @@ FROM
 	LEFT OUTER JOIN C_ValidCombination vc ON dat.C_ValidCombination_ID = vc.C_ValidCombination_ID
 	LEFT OUTER JOIN C_UOM uom ON dat.C_UOM_ID = uom.C_UOM_ID
 WHERE
-	qty != 0
+	qty!=0
+
 	AND CASE WHEN $P{M_Product_ID} IS NULL THEN p.M_Product_ID ELSE $P{M_Product_ID} END = p.M_Product_ID
 	AND CASE WHEN $P{M_Warehouse_ID} IS NULL THEN wh.M_Warehouse_ID ELSE $P{M_Warehouse_ID} END = wh.M_Warehouse_ID
+GROUP BY
+	vc.combination,
+	vc.description,
+	a.name,
+	wh.name,
+	p.name,
+	p.value,
+	uom.UOMSymbol
+Having SUM(qty)!= 0
 ORDER BY
 	vc.combination,
 	vc.description,
@@ -148,14 +158,14 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{combination} + " " + $F{description}]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement uuid="b89509ae-607c-42ed-ac7c-58ddf9ccc421" key="textField-106" x="0" y="0" width="50" height="15"/>
 					<textElement markup="none">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<text><![CDATA[Konto:]]></text>
 				</staticText>
@@ -168,7 +178,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Account_LineSum}]]></textFieldExpression>
 				</textField>
@@ -191,14 +201,14 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{activity} != null ? $F{activity} : "Keine"]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement uuid="e4994f46-1caa-4672-91a3-de36bd597f5c" key="textField-106" x="50" y="0" width="75" height="15"/>
 					<textElement markup="none">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<text><![CDATA[Kostenstelle:]]></text>
 				</staticText>
@@ -211,7 +221,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Activity_LineSum}]]></textFieldExpression>
 				</textField>
@@ -234,7 +244,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold" />
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{wh_name}]]></textFieldExpression>
 				</textField>
@@ -247,7 +257,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold" />
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Warehouse_LineSum}]]></textFieldExpression>
 				</textField>
@@ -426,7 +436,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="8" isBold="true" isItalic="true" pdfFontName="Helvetica-Bold" />
+					<font fontName="SansSerif" size="8" isBold="true" isItalic="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{carry}]]></textFieldExpression>
 			</textField>
@@ -522,7 +532,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" isItalic="true" pdfFontName="Helvetica-Bold" />
+					<font size="8" isBold="true" isItalic="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{subtotal}]]></textFieldExpression>
 			</textField>

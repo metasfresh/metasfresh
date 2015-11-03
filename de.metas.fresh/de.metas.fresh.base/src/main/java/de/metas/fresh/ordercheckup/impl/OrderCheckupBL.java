@@ -26,14 +26,13 @@ package de.metas.fresh.ordercheckup.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 
-import org.adempiere.ad.model.util.ModelByIdComparator;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_S_Resource;
@@ -63,7 +62,11 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	private static final String SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE = "de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete";
 
 	private static final String SYSCONFIG_ORDERCHECKUP_COPIES = "de.metas.fresh.ordercheckup.Copies";
-		
+
+	private static final String SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant";
+
+	private static final String MSG_ORDER_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.OrderWarehouseHasNoPlant";
+
 	@Override
 	public void generateReportsIfEligible(final I_C_Order order)
 	{
@@ -83,7 +86,6 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 		//
 		// Iterate all order lines and those lines to corresponding "per Warehouse" reports.
-		final Set<I_S_Resource> plants = new TreeSet<>(ModelByIdComparator.getInstance());
 		final Map<ArrayKey, OrderCheckupBuilder> reportBuilders = new HashMap<>();
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine orderLine : orderLines)
@@ -124,33 +126,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 							.setReponsibleUser(mfgWarehouse.getAD_User());
 					reportBuilders.put(reportBuilderKey, reportBuilder);
 				}
-
 				reportBuilder.addOrderLine(orderLine);
-			}
-
-			//
-			// Add order line to per Plant report
-			if (plant != null)
-			{
-				plants.add(plant);
-
-				// NOTE: instead of creating a plant report only with the products for that plant,
-				// we will create a report will all order lines, for each plant (per Torby via Mark requirements).
-				// final String documentType = X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant;
-				// final ArrayKey reportBuilderKey = Util.mkKey(order.getC_Order_ID(), documentType, plant.getS_Resource_ID());
-				// OrderCheckupBuilder reportBuilder = reportBuilders.get(reportBuilderKey);
-				// if (reportBuilder == null)
-				// {
-				// reportBuilder = OrderCheckupBuilder.newBuilder()
-				// .setC_Order(order)
-				// .setDocumentType(documentType)
-				// .setM_Warehouse(null) // no warehouse because we are aggregating on plant level
-				// .setPP_Plant(plant)
-				// .setReponsibleUser(plant.getAD_User());
-				// reportBuilders.put(reportBuilderKey, reportBuilder);
-				// }
-				//
-				// reportBuilder.addOrderLine(orderLine);
 			}
 		}
 		//
@@ -161,29 +137,49 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		}
 
 		//
-		// Create the reports for plant managers
-		for (final I_S_Resource plant : plants)
+		// Create the reports for transportation (and plant manager)
+		// task 09508: we actually want it on the report for transportation, no matter if there is manufactoring PP_Product_Planning record.
 		{
-			final OrderCheckupBuilder reportBuilder = OrderCheckupBuilder.newBuilder()
-					.setC_Order(order)
-					.setDocumentType(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant)
-					.setM_Warehouse(null) // no warehouse because we are aggregating on plant level
-					.setPP_Plant(plant)
-					.setReponsibleUser(plant.getAD_User());
-			for (final I_C_OrderLine orderLine : orderLines)
+			// make sure the user knows if the master data is not OK, but also give them a chance to disable the error-exception in urgent cases.
+			final org.compiere.model.I_M_Warehouse warehouse = order.getM_Warehouse();
+			final I_S_Resource plant = warehouse.getPP_Plant();
+
+			if (plant == null || plant.getS_Resource_ID() <= 0)
 			{
-				// Don't add the packing materials
-				if (orderLine.isPackagingMaterial())
-				{
-					continue;
-				}
+				final IMsgBL msgBL = Services.get(IMsgBL.class);
+				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-				reportBuilder.addOrderLine(orderLine);
+				final boolean throwIt = sysConfigBL.getBooleanValue(SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT, true);
+
+				new AdempiereException(
+						msgBL.getMsg(
+								InterfaceWrapperHelper.getCtx(order),
+								MSG_ORDER_WAREHOUSE_HAS_NO_PLANT,
+								new Object[] {
+										warehouse.getValue() + " - " + warehouse.getName(),
+										SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT }))
+						.throwOrLogWarning(throwIt, logger);
 			}
-
-			reportBuilder.build();
+			else
+			{
+				final OrderCheckupBuilder reportBuilder = OrderCheckupBuilder.newBuilder()
+						.setC_Order(order)
+						.setDocumentType(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant)
+						.setM_Warehouse(null) // no warehouse because we are aggregating on plant level
+						.setPP_Plant(plant)
+						.setReponsibleUser(plant.getAD_User());
+				for (final I_C_OrderLine orderLine : orderLines)
+				{
+					// Don't add the packing materials
+					if (orderLine.isPackagingMaterial())
+					{
+						continue;
+					}
+					reportBuilder.addOrderLine(orderLine);
+				}
+				reportBuilder.build();
+			}
 		}
-
 	}
 
 	@Override
@@ -208,7 +204,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		{
 			return false; // nothing to do; log messages were already created in isEligibleForReporting
 		}
-		
+
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final boolean sysConfigValueIsTrue = sysConfigBL.getBooleanValue(
 				SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE,

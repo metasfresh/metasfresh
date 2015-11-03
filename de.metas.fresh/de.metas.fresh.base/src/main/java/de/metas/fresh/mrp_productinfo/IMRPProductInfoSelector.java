@@ -26,7 +26,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
  * #L%
  */
 
-public interface IMRPProdcutInfoSelector extends IAttributeSetInstanceAware, Comparable<IMRPProdcutInfoSelector>
+public interface IMRPProductInfoSelector extends IAttributeSetInstanceAware, Comparable<IMRPProductInfoSelector>
 {
 	Timestamp getDate();
 
@@ -36,4 +36,14 @@ public interface IMRPProdcutInfoSelector extends IAttributeSetInstanceAware, Com
 	 * @return
 	 */
 	Object getModel();
+
+	/**
+	 * Returns a string that looks like this:
+	 * <pre>
+	 * TableName[Date=(Timestamp),M_Product_ID=(int),M_AttributeSetInstance_ID=(int)]
+	 * </pre>
+	 * 
+	 * @return
+	 */
+	String toStringForRegularLogging();
 }

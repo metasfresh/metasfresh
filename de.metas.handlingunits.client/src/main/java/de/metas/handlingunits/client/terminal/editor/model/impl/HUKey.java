@@ -22,7 +22,6 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,15 +40,20 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import com.google.common.base.Optional;
+
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyNameBuilder;
 import de.metas.handlingunits.client.terminal.editor.model.ISplittableHUKey;
 import de.metas.handlingunits.document.IHUDocumentLine;
+import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
+import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -296,8 +300,8 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 
 			final IHUKey parentOld = getParent();
 			removeFromParent();
-			
-			// Make sure we are refreshing the OLD parent because it could happend to be also destroyed 
+
+			// Make sure we are refreshing the OLD parent because it could happend to be also destroyed
 			if (parentOld != null)
 			{
 				parentOld.refresh();
@@ -428,4 +432,13 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		return handlingUnitsBL.isDestroyed(getM_HU());
 	}
 
+	/**
+	 * @return {@link IQualityInspectionSchedulable} if the underlying HU supports it.
+	 * @task 08639
+	 */
+	public final Optional<IQualityInspectionSchedulable> asQualityInspectionSchedulable()
+	{
+		final IAttributeStorage attributes = getAttributeSet();
+		return Services.get(IHUMaterialTrackingBL.class).asQualityInspectionSchedulable(getTerminalContext(), attributes);
+	}
 }

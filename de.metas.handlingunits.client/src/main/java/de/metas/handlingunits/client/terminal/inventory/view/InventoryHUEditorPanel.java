@@ -50,6 +50,8 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 	public InventoryHUEditorPanel(final HUEditorModel model)
 	{
 		super(model);
+		
+		enableMarkAsQualityInspectionButton(); // task 08639
 	}
 
 	@Override

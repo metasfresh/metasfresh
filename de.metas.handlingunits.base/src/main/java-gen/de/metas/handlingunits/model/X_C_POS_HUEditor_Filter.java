@@ -1,3 +1,19 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.handlingunits.model;
 
@@ -14,7 +30,7 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 669095719L;
+	private static final long serialVersionUID = 1988308195L;
 
     /** Standard Constructor */
     public X_C_POS_HUEditor_Filter (Properties ctx, int C_POS_HUEditor_Filter_ID, String trxName)
@@ -24,8 +40,8 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
         {
 			setAD_JavaClass_ID (0);
 			setAD_Reference_ID (0);
-			setC_POS_HUEditor_Filter_ID (0);
 			setColumnName (null);
+			setC_POS_HUEditor_Filter_ID (0);
         } */
     }
 
@@ -127,7 +143,7 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
 		set_ValueFromPO(COLUMNNAME_AD_Reference_Value_ID, org.compiere.model.I_AD_Reference.class, AD_Reference_Value);
 	}
 
-	/** Set Referenzschlüssel.
+	/** Set ReferenzschlÃ¼ssel.
 		@param AD_Reference_Value_ID 
 		Muss definiert werden, wenn die Validierungsart Tabelle oder Liste ist.
 	  */
@@ -140,35 +156,13 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
 			set_Value (COLUMNNAME_AD_Reference_Value_ID, Integer.valueOf(AD_Reference_Value_ID));
 	}
 
-	/** Get Referenzschlüssel.
+	/** Get ReferenzschlÃ¼ssel.
 		@return Muss definiert werden, wenn die Validierungsart Tabelle oder Liste ist.
 	  */
 	@Override
 	public int getAD_Reference_Value_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_Value_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set POS HU Editor Filter.
-		@param C_POS_HUEditor_Filter_ID POS HU Editor Filter	  */
-	@Override
-	public void setC_POS_HUEditor_Filter_ID (int C_POS_HUEditor_Filter_ID)
-	{
-		if (C_POS_HUEditor_Filter_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_POS_HUEditor_Filter_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_POS_HUEditor_Filter_ID, Integer.valueOf(C_POS_HUEditor_Filter_ID));
-	}
-
-	/** Get POS HU Editor Filter.
-		@return POS HU Editor Filter	  */
-	@Override
-	public int getC_POS_HUEditor_Filter_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_POS_HUEditor_Filter_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -191,5 +185,27 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
 	public java.lang.String getColumnName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ColumnName);
+	}
+
+	/** Set POS HU Editor Filter.
+		@param C_POS_HUEditor_Filter_ID POS HU Editor Filter	  */
+	@Override
+	public void setC_POS_HUEditor_Filter_ID (int C_POS_HUEditor_Filter_ID)
+	{
+		if (C_POS_HUEditor_Filter_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_POS_HUEditor_Filter_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_POS_HUEditor_Filter_ID, Integer.valueOf(C_POS_HUEditor_Filter_ID));
+	}
+
+	/** Get POS HU Editor Filter.
+		@return POS HU Editor Filter	  */
+	@Override
+	public int getC_POS_HUEditor_Filter_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_POS_HUEditor_Filter_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }

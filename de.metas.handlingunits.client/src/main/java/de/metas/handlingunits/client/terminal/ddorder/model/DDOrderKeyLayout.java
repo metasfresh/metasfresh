@@ -67,12 +67,16 @@ public class DDOrderKeyLayout extends DefaultKeyLayout
 
 		//
 		// Create Keys
-		final List<ITerminalKey> keys = new ArrayList<ITerminalKey>();
+		final List<DDOrderKey> keys = new ArrayList<>();
 		for (final I_DD_Order ddOrder : ddOrders)
 		{
 			final DDOrderKey key = new DDOrderKey(getTerminalContext(), ddOrder);
 			keys.add(key);
 		}
+		
+		//
+		// Sort the keys
+		Collections.sort(keys, ITerminalKey.COMPARATOR_ByName);
 
 		// Set new Keys list
 		setKeys(keys);

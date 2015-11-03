@@ -43,5 +43,5 @@ public interface IMRPProductInfoSelectorFactory extends ISingletonService
 	 * @param model
 	 * @return
 	 */
-	IMRPProdcutInfoSelector createOrNull(Object model);
+	IMRPProductInfoSelector createOrNull(Object model);
 }

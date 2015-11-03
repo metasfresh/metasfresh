@@ -42,6 +42,8 @@ import de.metas.handlingunits.model.I_M_Locator;
 
 /**
  * Developer friendly Query Builder which is oriented on Handling Units concerns.
+ * 
+ * To create a new instance, please use {@link IHandlingUnitsDAO#createHUQueryBuilder()}.
  *
  * Defaults:
  * <ul>
@@ -312,6 +314,15 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addOnlyWithAttribute(I_M_Attribute attribute, Object value);
 
 	/**
+	 * Filter only those HUs which have attribute with given <code>value</code>.
+	 *
+	 * @param attributeName (i.e. M_Attribute.Value)
+	 * @param value
+	 * @see #addOnlyWithAttribute(I_M_Attribute, Object)
+	 */
+	IHUQueryBuilder addOnlyWithAttribute(String attributeName, Object value);
+
+	/**
 	 * Filter only those HUs which have <code>attribute</code> with any of the given <code>values</code>.
 	 *
 	 * <p>
@@ -319,7 +330,7 @@ public interface IHUQueryBuilder
 	 * opposed to any) of the specified attributes and values will match the query.
 	 *
 	 * @param attribute
-	 * @param attributeValueType
+	 * @param attributeValueType see X_M_Attribute.ATTRIBUTEVALUETYPE_*
 	 * @param values list of accepted values
 	 * @return this
 	 */
@@ -390,6 +401,15 @@ public interface IHUQueryBuilder
 	 * @see #setErrorIfNoHUs(String)
 	 */
 	boolean isErrorIfNoItems();
+
+	/**
+	 * Adds HUs which shall be selected. No other HUs, beside those ones will be considered.
+	 * 
+	 * If the given list is empty, this method will do nothing.
+	 * 
+	 * @param onlyHUIds
+	 */
+	IHUQueryBuilder addOnlyHUIds(Collection<Integer> onlyHUIds);
 
 	/**
 	 * Adds HUs which needs to be excluded when we retrieve them.

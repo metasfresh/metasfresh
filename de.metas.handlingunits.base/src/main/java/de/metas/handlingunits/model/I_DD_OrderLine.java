@@ -36,7 +36,7 @@ public interface I_DD_OrderLine extends org.eevolution.model.I_DD_OrderLine
 {
 	// @formatter:off
 	public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
-	public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
+	// public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
 	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
 	public int getM_HU_PI_Item_Product_ID();
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException;

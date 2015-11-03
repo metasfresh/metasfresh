@@ -18,7 +18,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
-import de.metas.fresh.mrp_productinfo.IMRPProdcutInfoSelector;
+import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelector;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -50,7 +50,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 {
 
 	@Override
-	public IMRPProdcutInfoSelector createOrNull(final Object model)
+	public IMRPProductInfoSelector createOrNull(final Object model)
 	{
 		if (model == null)
 		{
@@ -70,7 +70,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		{
 			final I_M_MovementLine movementLine = InterfaceWrapperHelper.create(model, I_M_MovementLine.class);
 			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
-			
+
 			final Timestamp date = movementLine.getM_Movement().getMovementDate();
 			return new MRPProdcutInfoSelector(asiAware, date, model);
 		}
@@ -78,7 +78,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		{
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
 			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
-			
+
 			final Timestamp date = inOutLine.getM_InOut().getMovementDate();
 			return new MRPProdcutInfoSelector(asiAware, date, model);
 		}
@@ -129,7 +129,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		return date;
 	}
 
-	static class MRPProdcutInfoSelector implements IMRPProdcutInfoSelector
+	static class MRPProdcutInfoSelector implements IMRPProductInfoSelector
 	{
 		private final IAttributeSetInstanceAware asiAware;
 		private final Timestamp date;
@@ -191,7 +191,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		}
 
 		@Override
-		public int compareTo(final IMRPProdcutInfoSelector o)
+		public int compareTo(final IMRPProductInfoSelector o)
 		{
 			final CompareToBuilder append =
 					new CompareToBuilder()
@@ -204,7 +204,22 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		@Override
 		public String toString()
 		{
+			return toStringForDebugging();
+		}
+
+		private String toStringForDebugging()
+		{
 			return ObjectUtils.toString(this);
+		}
+		
+		@Override
+		public String toStringForRegularLogging()
+		{
+			return InterfaceWrapperHelper.getModelTableName(getModel())
+					+ "[Date=" + getDate()
+					+ ",M_Product_ID=" + getM_Product_ID()
+					+ ",M_AttributeSetInstance_ID=" + getM_AttributeSetInstance_ID() 
+					+ "]";
 		}
 
 	}

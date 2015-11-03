@@ -1,13 +1,9 @@
 
-CREATE OR REPLACE FUNCTION X_MRP_ProductInfo_Detail_MV_Refresh(IN DateFrom date, 
+CREATE OR REPLACE FUNCTION "de.metas.fresh".X_MRP_ProductInfo_Detail_MV_Refresh(IN DateAt date, 
 	IN M_Product_ID numeric, 
 	IN M_AttributesetInstance_ID numeric)
   RETURNS void AS
 $BODY$
-	
-    -- Update "de.metas.fresh".x_mrp_productinfo_detail_poor_mans_mrp. 
-    -- It will be joined to X_MRP_ProductInfo_Detail_MV
-    SELECT "de.metas.fresh".X_MRP_ProductInfo_Detail_Update_Poor_Mans_MRP($1, $2, $3);
 
     -- Delete existing records from X_MRP_ProductInfo_Detail_MV. 
     -- They will be recreated if there is anything to be recreated
@@ -47,7 +43,7 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE
   COST 100;
-ALTER FUNCTION X_MRP_ProductInfo_Detail_MV_Refresh()
+ALTER FUNCTION X_MRP_ProductInfo_Detail_MV_Refresh(date, numeric, numeric)
   OWNER TO adempiere;
 COMMENT ON FUNCTION X_MRP_ProductInfo_Detail_MV_Refresh(date, numeric, numeric) IS 'tasks 08681 and 08682: refreshes the table X_MRP_ProductInfo_Detail_MV.
 1. deleting existing records

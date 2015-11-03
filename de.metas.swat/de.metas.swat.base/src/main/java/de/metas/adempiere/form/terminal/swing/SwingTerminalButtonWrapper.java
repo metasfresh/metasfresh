@@ -181,6 +181,12 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	}
 
 	@Override
+	public String getAction()
+	{
+		return getComponent().getActionCommand();
+	}
+
+	@Override
 	public void setText(final String text)
 	{
 		getComponent().setText(text);

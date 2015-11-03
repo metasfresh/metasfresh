@@ -73,6 +73,7 @@ import de.metas.handlingunits.client.terminal.mmovement.model.assign.impl.HUAssi
 import de.metas.handlingunits.client.terminal.mmovement.model.distribute.impl.HUDistributeCUTUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.HUJoinModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.split.impl.HUSplitModel;
+import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 
@@ -1205,4 +1206,28 @@ public class HUEditorModel implements IDisposable
 		// Clear (attribute) cache before opening editor
 		keyFactory.clearCache();
 	}
+	
+	
+	/**
+	 * Sets Quality Inspection flag for currently selected HUs
+	 * @task 08639
+	 */
+	public final void setQualityInspectionFlagForSelectedHUs(final boolean qualityInspectionFlag)
+	{
+		for (final HUKey huKey : getSelectedHUKeys())
+		{
+			final IQualityInspectionSchedulable qualityInspectionAware = huKey.asQualityInspectionSchedulable().orNull();
+			if(qualityInspectionAware == null)
+			{
+				// skip because it's not supported
+				continue;
+			}
+			
+			qualityInspectionAware.setQualityInspection(qualityInspectionFlag);
+		}
+		
+		clearSelectedKeyIds();
+		setCurrentHUKey(getRootHUKey());
+	}
+
 }

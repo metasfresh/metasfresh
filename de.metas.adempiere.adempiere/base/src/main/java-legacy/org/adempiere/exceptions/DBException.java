@@ -55,7 +55,7 @@ public class DBException extends AdempiereException
 
 		if (throwable instanceof DBException)
 		{
-			return (DBException)throwable;
+			return (DBException)throwable; // no wrapping required
 		}
 
 		if (DBException.isDeadLockDetected(throwable))

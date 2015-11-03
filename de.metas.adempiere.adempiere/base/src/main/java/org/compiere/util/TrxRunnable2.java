@@ -32,6 +32,11 @@ package org.compiere.util;
  */
 public interface TrxRunnable2 extends TrxRunnable
 {
+	/** Value to be returned by {@link #doCatch(Throwable)} */
+	boolean ROLLBACK = true;
+	/** Value to be returned by {@link #doCatch(Throwable)} */
+	boolean DONT_ROLLBACK = false;
+	
 	@Override
 	public void run(String localTrxName) throws Exception;
 

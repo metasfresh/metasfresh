@@ -291,6 +291,13 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		return materialTracking;
 	}
 
+	@Override
+	public boolean isMaterialTrackingSet(final IContextAware context, final IAttributeSet attributeSet)
+	{
+		final int materialTrackingId = getMaterialTrackingId(context, attributeSet);
+		return materialTrackingId > 0;
+	}
+
 	private final int getMaterialTrackingId(final IContextAware context, final IAttributeSet attributeSet)
 	{
 		final Properties ctx = context.getCtx();
