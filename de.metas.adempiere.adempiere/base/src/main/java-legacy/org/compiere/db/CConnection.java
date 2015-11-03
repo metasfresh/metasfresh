@@ -278,8 +278,21 @@ public final class CConnection implements Serializable, Cloneable
 		
 		attrs.setAppsHost(apps_host);
 		setName();
+		
+		resetAppsServer();
+	}
+	
+	private final void resetAppsServer()
+	{
 		m_okApps = false;
 		m_queryAppsServer = false;
+		m_appsException = null;
+		m_version = null;
+		
+		// Reset EJB context
+		m_env = null;
+		m_iContext = null;
+		m_server = null;
 	}
 
 	/**
@@ -306,6 +319,8 @@ public final class CConnection implements Serializable, Cloneable
 		attrs.setAppsPort(apps_port);
 		m_okApps = false;
 		m_queryAppsServer = false;
+		
+		resetAppsServer();
 	}
 
 	/**
