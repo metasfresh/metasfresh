@@ -129,11 +129,13 @@ This is also how the instrumented jars in the de.metas.endcustomer.mf15.aopc zip
 							<artifactId>de.metas.adempiere.adempiere.serverRoot.ejb</artifactId>
 						</ejbModule>
 
+						<!-- Disable WebUI (see task 09516)
 						<webModule>
 							<groupId>de.metas.endcustomer.mf15</groupId>
 							<artifactId>de.metas.endcustomer.mf15.zkwebui</artifactId>
 							<contextRoot>/webui</contextRoot>
 						</webModule>
+						-->
 
 						<webModule>
 							<groupId>de.metas.endcustomer.mf15</groupId>
