@@ -70,6 +70,10 @@ public class GloballyOrderedScannerDecorator implements IScriptScanner
 					return new CompareToBuilder()
 							.append(o1SeqNo, o2SeqNo)
 							.append(o1.getModuleName(), o2.getModuleName())
+							.append(o1.getFileName(), o2.getFileName())
+							
+							// make damn sure that two different scripts are both added
+							.append(System.identityHashCode(o1), System.identityHashCode(o2))
 							.toComparison();
 				}
 			});
