@@ -206,7 +206,7 @@
 							<dontWrapJar>true</dontWrapJar>
 							<jar>lib/de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar</jar>
 							<errTitle>metas Fresh</errTitle>
-							<icon>src/main/resources/misc/favicon_32.ico</icon>
+							<icon>src/main/resources/misc/favicon_64.ico</icon>
 							<classPath>
 								<mainClass>org.compiere.Adempiere</mainClass>
 								<addDependencies>false</addDependencies>
