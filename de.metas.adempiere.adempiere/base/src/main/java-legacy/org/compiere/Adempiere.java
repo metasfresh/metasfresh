@@ -62,6 +62,9 @@ import org.compiere.util.SecureInterface;
 import org.compiere.util.Splash;
 import org.compiere.util.Util;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+
 import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
@@ -832,4 +835,36 @@ public final class Adempiere
 
 	private static boolean unitTestMode = false;
 
+	/** @return if running on server side and the ZK webui server is enabled */
+	public static boolean isZkWebUIServerEnabled()
+	{
+		final Boolean enabled = zkWebUIServerEnabledSupplier.get();
+		return enabled != null && enabled.booleanValue();
+	}
+	
+	private static final Supplier<Boolean> zkWebUIServerEnabledSupplier = Suppliers.memoize(new Supplier<Boolean>()
+	{
+		@Override
+		public Boolean get()
+		{
+			if(Ini.isClient())
+			{
+				return false;
+			}
+			
+			try
+			{
+				Thread.currentThread().getContextClassLoader()
+						.loadClass("org.adempiere.webui.AdempiereWebUI");
+				return true;
+			}
+			catch (Throwable e)
+			{
+				// ignore any exception
+			}
+			
+			return false;
+		}
+	});
+	
 }	// Adempiere

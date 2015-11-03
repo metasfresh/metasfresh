@@ -1,4 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
 	String productName = org.compiere.Adempiere.getName();
 	if (productName == null || productName.isEmpty())
@@ -10,6 +11,8 @@
 	{
 		productURL = "http://www.metas-fresh.com";
 	}
+	
+	boolean isZkWebUIServerEnabled = org.compiere.Adempiere.isZkWebUIServerEnabled();	
 %>
 <html>
 <head>
@@ -82,6 +85,8 @@ short story: commented out as of now because we can't incorporate fonts into an 
 									Client.</td>
 							</tr>
 -->
+							<c:choose>
+							<c:when test="${isZkWebUIServerEnabled}">
 							<tr>
 								<td bgcolor="#BBED80" valign="top">
 									<h2>
@@ -91,6 +96,8 @@ short story: commented out as of now because we can't incorporate fonts into an 
 								<td bgcolor="#fbf8f1"><a href="/webui">webUI</a> - contributed by Posterita</td>
 
 							</tr>
+							</c:when>
+							</c:choose>
 
 							<tr>
 								<td bgcolor="#BBED80" valign="top">
