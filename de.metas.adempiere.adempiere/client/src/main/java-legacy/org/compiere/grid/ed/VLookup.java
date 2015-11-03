@@ -57,6 +57,8 @@ import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
+import org.adempiere.ui.editor.ICopyPasteSupportEditor;
+import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.IRefreshableEditor;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -119,6 +121,7 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 public class VLookup extends JComponent
 	implements VEditor, ActionListener, FocusListener
 	, IRefreshableEditor // metas
+	, ICopyPasteSupportEditorAware
 {
 	/**
 	 * 
@@ -291,6 +294,7 @@ public class VLookup extends JComponent
 		final Dimension size = m_text.getPreferredSize();
 		m_combo.setPreferredSize(new Dimension(size));
 
+		copyPasteSupport = new VLookupCopyPasteSupportEditor(m_combo, m_text);
 		setUI (true);
 
 		
@@ -411,6 +415,8 @@ public class VLookup extends JComponent
 	/**	Logger			*/
 	private static CLogger log = CLogger.getCLogger(VLookup.class);
 
+	private final VLookupCopyPasteSupportEditor copyPasteSupport;
+
 	/**
 	 * Set Content and Size of Components
 	 * 
@@ -430,12 +436,14 @@ public class VLookup extends JComponent
 			m_text.setReadWrite(false);
 			m_combo.setReadWrite(false);
 			m_comboActive = false;
+			copyPasteSupport.activateTextField();
 		}
 		else if (isComboBox())	    //	show combo if not Search
 		{
 			this.setBorder(null); // no border, because we are showing the combobox, which already has a border
 			this.add(m_combo, BorderLayout.CENTER);
 			m_comboActive = true;
+			copyPasteSupport.activateCombo();
 		}
 		else 												//	Search or unstable - show text & button
 		{
@@ -444,6 +452,7 @@ public class VLookup extends JComponent
 			VEditorDialogButtonAlign.addVEditorButtonUsingBorderLayout(getClass(), this, m_button);
 			m_text.setReadWrite (true);
 			m_comboActive = false;
+			copyPasteSupport.activateTextField();
 		}
 	}   //  setUI
 	
@@ -2066,4 +2075,10 @@ public class VLookup extends JComponent
     		m_button.setVisible(enabled);
     	}
     }
+
+	@Override
+	public ICopyPasteSupportEditor getCopyPasteSupport()
+	{
+		return copyPasteSupport;
+	}
 }	//	VLookup

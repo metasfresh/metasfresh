@@ -23,6 +23,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.net.URL;
@@ -365,6 +366,12 @@ public class VURL extends JComponent
 	{
 		m_text.addActionListener(listener);
 	}	//	addActionListener
+	
+	@Override
+	public void addMouseListener(MouseListener l)
+	{
+		m_text.addMouseListener(l);
+	}
 	
 	/**
 	 *	Data Binding to MTable (via GridController)	-	Enter pressed

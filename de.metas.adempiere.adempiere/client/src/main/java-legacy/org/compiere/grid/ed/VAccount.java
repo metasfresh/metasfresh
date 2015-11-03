@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.sql.PreparedStatement;
@@ -36,6 +37,9 @@ import javax.swing.LookAndFeel;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
+import org.adempiere.ui.editor.ICopyPasteSupportEditor;
+import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
+import org.adempiere.ui.editor.NullCopyPasteSupportEditor;
 import org.compiere.apps.APanel;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
@@ -55,6 +59,7 @@ import org.compiere.util.Env;
  */
 public final class VAccount extends JComponent
 		implements VEditor, ActionListener, FocusListener
+		, ICopyPasteSupportEditorAware
 {
 	/**
 	 * 
@@ -439,6 +444,12 @@ public final class VAccount extends JComponent
 	{
 		m_text.addActionListener(listener);
 	}   // addActionListener
+	
+	@Override
+	public void addMouseListener(final MouseListener l)
+	{
+		m_text.addMouseListener(l);
+	}
 
 	/**
 	 * Sets the field for this VEditor. If {@link GridField#isAutocomplete()} returns <code>true</code>, then auto completion is enabled.
@@ -565,5 +576,11 @@ public final class VAccount extends JComponent
 	public boolean isAutoCommit()
 	{
 		return true;
+	}
+
+	@Override
+	public ICopyPasteSupportEditor getCopyPasteSupport()
+	{
+		return m_text == null ? NullCopyPasteSupportEditor.instance : m_text.getCopyPasteSupport();
 	}
 }	// VAccount

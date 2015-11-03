@@ -20,17 +20,20 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 
 import javax.swing.JComponent;
-import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
 
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
+import org.adempiere.ui.editor.ICopyPasteSupportEditor;
+import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
+import org.adempiere.ui.editor.NullCopyPasteSupportEditor;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
@@ -39,6 +42,7 @@ import org.compiere.model.GridTab;
 import org.compiere.model.MLocation;
 import org.compiere.model.MLocationLookup;
 import org.compiere.swing.CMenuItem;
+import org.compiere.swing.CTextField;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
@@ -50,6 +54,7 @@ import org.compiere.util.Env;
  */
 public class VLocation extends JComponent
 	implements VEditor, ActionListener
+	, ICopyPasteSupportEditorAware
 {
 	/**
 	 * 
@@ -140,7 +145,7 @@ public class VLocation extends JComponent
 	}   //  dispose
 
 	/** The Text Field                  */
-	private JTextField			m_text = new JTextField(VLookup.DISPLAY_LENGTH);
+	private CTextField			m_text = new CTextField(VLookup.DISPLAY_LENGTH);
 	/** The Button                      */
 	private VEditorActionButton m_button = null;
 
@@ -381,6 +386,12 @@ public class VLocation extends JComponent
 	{
 		m_text.addActionListener(listener);
 	}   //  addActionListener
+	
+	@Override
+	public synchronized void addMouseListener(MouseListener l)
+	{
+		m_text.addMouseListener(l);
+	}
 
 	/**
 	 *  Set Field/WindowNo for ValuePreference (NOP)
@@ -405,6 +416,12 @@ public class VLocation extends JComponent
 	public boolean isAutoCommit()
 	{
 		return true;
+	}
+
+	@Override
+	public ICopyPasteSupportEditor getCopyPasteSupport()
+	{
+		return m_text == null ? NullCopyPasteSupportEditor.instance : m_text.getCopyPasteSupport();
 	}
 
 }	//	VLocation

@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.sql.PreparedStatement;
@@ -29,14 +30,16 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 
 import javax.swing.JComponent;
-import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
+import org.adempiere.ui.editor.ICopyPasteSupportEditor;
+import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.IRefreshableEditor;
 import org.adempiere.ui.editor.IZoomableEditor;
+import org.adempiere.ui.editor.NullCopyPasteSupportEditor;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
@@ -48,6 +51,7 @@ import org.compiere.model.MLocatorLookup;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.MWarehouse;
+import org.compiere.swing.CTextField;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -60,6 +64,7 @@ import org.compiere.util.Env;
  */
 public class VLocator extends JComponent
 	implements VEditor, ActionListener, IRefreshableEditor, IZoomableEditor
+	, ICopyPasteSupportEditorAware
 {
 	/**
 	 * 
@@ -142,7 +147,7 @@ public class VLocator extends JComponent
 		m_mLocator = null;
 	}   //  dispose
 
-	private JTextField			m_text = new JTextField (VLookup.DISPLAY_LENGTH);
+	private CTextField			m_text = new CTextField (VLookup.DISPLAY_LENGTH);
 	private VEditorActionButton m_button = null;
 	private MLocatorLookup		m_mLocator;
 	private Object				m_value;
@@ -481,6 +486,12 @@ public class VLocator extends JComponent
 		m_text.addActionListener(listener);
 	}   //  addActionListener
 
+	
+	@Override
+	public void addMouseListener(final MouseListener l)
+	{
+		m_text.addMouseListener(l);
+	}
 
 	/**
 	 *	Action - Zoom
@@ -598,6 +609,12 @@ public class VLocator extends JComponent
 	public boolean isAutoCommit()
 	{
 		return true;
+	}
+
+	@Override
+	public ICopyPasteSupportEditor getCopyPasteSupport()
+	{
+		return m_text == null ? NullCopyPasteSupportEditor.instance : m_text.getCopyPasteSupport();
 	}
 }	//	VLocator
 

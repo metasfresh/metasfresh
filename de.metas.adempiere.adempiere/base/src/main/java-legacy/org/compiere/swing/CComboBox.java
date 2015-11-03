@@ -30,6 +30,9 @@ import javax.swing.plaf.ComboBoxUI;
 import org.adempiere.plaf.AdempiereComboBoxUI;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorUI;
+import org.adempiere.ui.editor.ICopyPasteSupportEditor;
+import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
+import org.adempiere.ui.editor.JComboBoxCopyPasteSupportEditor;
 import org.adempiere.util.Check;
 import org.compiere.util.NamePair;
 import org.compiere.util.Trace;
@@ -42,6 +45,7 @@ import org.compiere.util.Trace;
  */
 public class CComboBox<E> extends JComboBox<E>
 	implements CEditor
+	, ICopyPasteSupportEditorAware
 {
 	/**
 	 * 
@@ -354,5 +358,11 @@ public class CComboBox<E> extends JComboBox<E>
 	public final ComboBoxAutoCompletion<E> enableAutoCompletion()
 	{
 		return ComboBoxAutoCompletion.enable(this);
+	}
+
+	@Override
+	public ICopyPasteSupportEditor getCopyPasteSupport()
+	{
+		return JComboBoxCopyPasteSupportEditor.ofComponent(this);
 	}
 }   //  CComboBox
