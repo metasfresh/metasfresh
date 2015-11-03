@@ -123,6 +123,7 @@ public class AdempiereLookAndFeel extends com.jgoodies.looks.plastic.Plastic3DLo
 		putDefault(table, AdempiereLabelUI.uiClassID, AdempiereLabelUI.class);
 		table.putDefaults(AdempiereTabbedPaneUI.getUIDefaults());
 		putDefault(table, AdempiereEditorPaneUI.uiClassID, AdempiereEditorPaneUI.class);
+		table.putDefaults(AdempiereSplitPaneUI.getUIDefaults());
 		
 		//
 		// Task Pane UI:

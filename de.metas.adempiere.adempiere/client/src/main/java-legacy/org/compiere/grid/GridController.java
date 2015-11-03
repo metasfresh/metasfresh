@@ -59,6 +59,7 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.spi.IPOTreeSupport;
+import org.adempiere.plaf.AdempiereTabbedPaneUI;
 import org.adempiere.process.event.IProcessEventSupport;
 import org.adempiere.ui.sideactions.swing.SideActionsGroupsListPanel;
 import org.adempiere.util.Check;
@@ -287,7 +288,7 @@ public final class GridController extends CPanel
 	 */
 	private JSplitPane splitPane = new JSplitPane();
 	
-	/** i.e. displays the tree if any */
+	/** {@link #splitPane}'s left component (i.e. displays the tree if any) */
 	private CPanel graphPanel = new CPanel();
 	/** Tree Panel (optional)       */
 	private VTreePanel  treePanel;
@@ -651,6 +652,8 @@ public final class GridController extends CPanel
 		}
 		if (treePanel != null)
 		{
+			AdempiereTabbedPaneUI.applyTabbedPaneTopGapToLeftComponent(splitPane);
+			
 			graphPanel.add(treePanel, BorderLayout.CENTER);
 			splitPane.setDividerLocation(250);
 		//	splitPane.resetToPreferredSizes();

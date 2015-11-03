@@ -76,10 +76,12 @@ import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JViewport;
 import javax.swing.SwingConstants;
@@ -160,6 +162,37 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 				//
 				, KEY_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab, DEFAULT_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab
 		};
+	}
+	
+	/**
+	 * Helper method to apply apply the top gap used by the Tabbed pane to a included {@link JSplitPane} component.
+	 * 
+	 * @param splitPane
+	 */
+	public static final void applyTabbedPaneTopGapToLeftComponent(final JSplitPane splitPane)
+	{
+		//
+		// Get split pane's left component
+		final JComponent splitPaneLeftComp = (JComponent)splitPane.getLeftComponent();
+		if (splitPaneLeftComp == null)
+		{
+			return;
+		}
+		
+		//
+		// Create a border around the left component which:
+		// * will introduce a top gap to align with outer Tabbed pane
+		// * will draw a line on top to "connect" with outer tabbed pane's Tab. 
+		splitPaneLeftComp.setBorder(BorderFactory.createCompoundBorder(
+				// outsideBorder:
+				BorderFactory.createEmptyBorder(AdempiereTabbedPaneUI.getGapBeforeFirstVerticalTab() - 2, 0, 0, 0)
+				// insideBorder:
+				, BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("TabbedPane.darkShadow"))
+				));
+		splitPane.putClientProperty(AdempiereSplitPaneUI.CLIENT_PROPERTY_ApplyTabbedPaneTopGap, true);
+		
+		// NOTE: setting the divider size to 2 because in case of 1, the divider won't be drawn while dragging
+		splitPane.setDividerSize(2);
 	}
 
 	// State ******************************************************************
@@ -1225,7 +1258,7 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 		return enabled;
 	}
 	
-	protected static int getGapBeforeFirstVerticalTab()
+	public static int getGapBeforeFirstVerticalTab()
 	{
 		return AdempierePLAF.getInt(KEY_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab, DEFAULT_AlignVerticalTabsWithHorizontalTabs_GapBeforeFirstTab);
 	}
