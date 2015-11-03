@@ -25,6 +25,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.compiere.util.Language;
 
 /**
  * Any exception that occurs inside the Adempiere core
@@ -51,9 +52,9 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		{
 			return null;
 		}
-		
+
 		final Throwable cause = extractCause(throwable);
-		
+
 		if (cause instanceof AdempiereException)
 		{
 			return (AdempiereException)cause;
@@ -63,7 +64,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		{
 			return DBException.wrapIfNeeded(cause);
 		}
-		
+
 		if (cause != throwable)
 		{
 			return wrapIfNeeded(cause);
@@ -179,7 +180,19 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 		if (parseTranslation)
 		{
-			msg = Services.get(IMsgBL.class).parseTranslation(getCtx(), msg);
+			if (Language.isBaseLanguageSet())
+			{
+				try
+				{
+					msg = Services.get(IMsgBL.class).parseTranslation(getCtx(), msg);
+				}
+				catch (Throwable e)
+				{
+					// don't fail while building the actual exception
+					addSuppressed(e);
+					// e.printStackTrace();
+				}
+			}
 		}
 
 		return msg;

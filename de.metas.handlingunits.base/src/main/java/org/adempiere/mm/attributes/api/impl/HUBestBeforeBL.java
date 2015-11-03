@@ -37,7 +37,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUTrxBL;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.Constants;
@@ -55,20 +57,22 @@ public class HUBestBeforeBL implements IHUBestBeforeBL
 	}
 	
 	@Override
-	public void setBestBeforeDate(final IHUContext huContext, final Collection<I_M_HU> vhus, final Date dateReceipt)
+	public void setBestBeforeDate(final Properties ctx, final Collection<I_M_HU> hus, final Date dateReceipt)
 	{
-		// Do nothing if there are no VHUs
-		if (vhus.isEmpty())
+		// Do nothing if there are no HUs
+		if (hus.isEmpty())
 		{
 			return;
 		}
+		
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(ctx);
 
 		//
 		// Get the Best-Before attribute
 		final I_M_Attribute attr_BestBefore = getBestBeforeDateAttribute();
 
 		//
-		// Iterate all VHUs, calculate and set their Best-Before date
+		// Iterate all HUs, calculate and set their Best-Before date
 		Services.get(IHUTrxBL.class).createHUContextProcessorExecutor(huContext)
 				.run(new IHUContextProcessor()
 				{
@@ -76,22 +80,22 @@ public class HUBestBeforeBL implements IHUBestBeforeBL
 					@Override
 					public IMutableAllocationResult process(final IHUContext huContext)
 					{
-						for (final I_M_HU vhu : vhus)
+						for (final I_M_HU hu : hus)
 						{
-							final IAttributeStorage vhuAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(vhu);
-							if (!vhuAttributes.hasAttribute(attr_BestBefore))
+							final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+							if (!huAttributes.hasAttribute(attr_BestBefore))
 							{
 								continue;
 							}
 
-							final Date bestBeforeDate = calculateBestBeforeDate(huContext, vhu, dateReceipt);
+							final Date bestBeforeDate = calculateBestBeforeDate(huContext, hu, dateReceipt);
 							if (bestBeforeDate == null)
 							{
 								// Best-Before date is not available
 								continue;
 							}
 
-							vhuAttributes.setValue(attr_BestBefore, bestBeforeDate);
+							huAttributes.setValue(attr_BestBefore, bestBeforeDate);
 						}
 
 						return NULL_RESULT;
@@ -99,13 +103,13 @@ public class HUBestBeforeBL implements IHUBestBeforeBL
 				});
 	}
 
-	private Date calculateBestBeforeDate(final IHUContext huContext, final I_M_HU vhu, final Date dateReceipt)
+	private Date calculateBestBeforeDate(final IHUContext huContext, final I_M_HU hu, final Date dateReceipt)
 	{
 		Check.assumeNotNull(dateReceipt, "dateReceipt not null");
 
 		//
 		// Get HU's vendor bpartner
-		final int vendorBPartnerId = vhu.getC_BPartner_ID();
+		final int vendorBPartnerId = hu.getC_BPartner_ID();
 		if (vendorBPartnerId <= 0)
 		{
 			// no vendor found
@@ -115,8 +119,8 @@ public class HUBestBeforeBL implements IHUBestBeforeBL
 
 		//
 		// Get HU's single product
-		final IHUStorage vhuStorage = huContext.getHUStorageFactory().getStorage(vhu);
-		final I_M_Product product = vhuStorage.getSingleProductOrNull();
+		final IHUStorage huStorage = huContext.getHUStorageFactory().getStorage(hu);
+		final I_M_Product product = huStorage.getSingleProductOrNull();
 		if (product == null)
 		{
 			// storage is empty or there are more products

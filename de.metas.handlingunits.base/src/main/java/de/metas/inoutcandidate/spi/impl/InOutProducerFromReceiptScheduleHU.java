@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,7 +36,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.mm.attributes.api.IHUBestBeforeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -92,7 +90,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IHUBestBeforeBL bestBeforeBL = Services.get(IHUBestBeforeBL.class);
 
 	//
 	// Params
@@ -611,13 +608,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			final I_M_HU luHU = huToAssign.getM_LU_HU();
 			final I_M_HU tuHU = huToAssign.getM_TU_HU();
 			huAssignmentBL.createTradingUnitDerivedAssignment(huContext.getCtx(), receiptLine, topLevelHU, luHU, tuHU, huContext.getTrxName());
-		}
-		
-		//
-		// Update Best-Before date on VHUs (task #09363)
-		{
-			final Date dateReceipt = receiptLine.getM_InOut().getMovementDate();
-			bestBeforeBL.setBestBeforeDate(huContext, vhus, dateReceipt);
 		}
 	}
 

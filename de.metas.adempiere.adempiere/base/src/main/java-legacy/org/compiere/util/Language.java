@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 
 import javax.print.attribute.standard.MediaSize;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
 /**
@@ -330,8 +331,10 @@ public class Language implements Serializable
 	}   //  isBaseLanguage
 
 	/**
-	 *  Get Base Language
-	 *  @return Base Language
+	 * Get Base Language
+	 * 
+	 * @return Base Language
+	 * @throws AdempiereException if the base language was not already configured
 	 */
 	public static Language getBaseLanguage()
 	{
@@ -355,10 +358,21 @@ public class Language implements Serializable
 	{
 		s_baseLanguage = language;
 	}
+	
+	/**
+	 * @return true if the base language configured
+	 * @see #setBaseLanguage(Language)
+	 */
+	public static final boolean isBaseLanguageSet()
+	{
+		return s_baseLanguage != null;
+	}
 
 	/**
-	 *  Get Base Language code. (e.g. en-US)
-	 *  @return Base Language
+	 * Get Base Language code. (e.g. de_DE)
+	 * 
+	 * @return Base Language
+	 * @throws AdempiereException if the base language was not already configured
 	 */
 	public static String getBaseAD_Language()
 	{

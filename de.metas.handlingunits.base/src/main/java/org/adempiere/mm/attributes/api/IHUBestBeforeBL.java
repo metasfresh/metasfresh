@@ -25,11 +25,11 @@ package org.adempiere.mm.attributes.api;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Properties;
 
 import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.util.ISingletonService;
 
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 
 /**
@@ -49,9 +49,9 @@ public interface IHUBestBeforeBL extends ISingletonService
 	/**
 	 * Calculates and set the Best-Before date to given {@link I_M_HU}s.
 	 * 
-	 * @param huContext
-	 * @param vhus VHUs to be updated
+	 * @param ctx
+	 * @param hus HUs to be updated
 	 * @param dateReceipt date when the HUs were received.
 	 */
-	void setBestBeforeDate(IHUContext huContext, Collection<I_M_HU> vhus, Date dateReceipt);
+	void setBestBeforeDate(Properties ctx, Collection<I_M_HU> hus, Date dateReceipt);
 }

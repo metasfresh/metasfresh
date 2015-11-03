@@ -30,12 +30,14 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerBL;
+import org.adempiere.mm.attributes.api.IHUBestBeforeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
@@ -43,6 +45,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Converter;
 import org.adempiere.util.collections.Predicate;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.apps.ProcessCtl;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
@@ -400,6 +403,15 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 			documentLine = null;
 			// Attributes shall be editable ONLY for VHUs (08270)
 			attributesEditableOnlyIfVHU = true;
+		}
+		
+		//
+		// Calculate and set the best before date (task #09363).
+		// Later, user will be able to change them if he/she wants.
+		{
+			final IHUBestBeforeBL bestBeforeBL = Services.get(IHUBestBeforeBL.class);
+			final Date dateReceipt = SystemTime.asDayTimestamp();
+			bestBeforeBL.setBestBeforeDate(getCtx(), hus, dateReceipt);
 		}
 
 		//
