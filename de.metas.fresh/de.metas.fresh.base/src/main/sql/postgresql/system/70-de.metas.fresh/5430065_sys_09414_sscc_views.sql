@@ -1,4 +1,4 @@
-DROP VIEW IF EXISTS report.SP80_HU_SSCC_Label_Report;
+
 DROP VIEW IF EXISTS report.fresh_HU_SSCC_Label_Report;
 
 CREATE OR REPLACE VIEW report.fresh_HU_SSCC_Label_Report as
@@ -105,8 +105,6 @@ ALTER VIEW report.fresh_HU_SSCC_Label_Report OWNER TO adempiere;
 
 
 
-
-drop view if exists report.SP80_EDI_DesadvLine_SSCC_Label_Report;
 drop view if exists report.fresh_EDI_DesadvLine_SSCC_Label_Report;
 create or replace view report.fresh_EDI_DesadvLine_SSCC_Label_Report
 as

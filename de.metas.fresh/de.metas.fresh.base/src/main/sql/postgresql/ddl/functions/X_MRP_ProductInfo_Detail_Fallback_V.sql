@@ -27,8 +27,6 @@ FROM
 		,0::numeric AS QtyOrdered_Sale_OnDate
 		,0::numeric AS QtyMaterialentnahme 
 		,0::numeric AS fresh_qtyonhand_ondate
-		,0::numeric AS "sp80_qtyonhand_ondate_stö2"
-		,0::numeric AS sp80_qtyonhand_ondate_ind9
 		,0::numeric AS fresh_qtypromised
 		,'Y'::character(1) as IsFallback
 		,"de.metas.dimension".DIM_Get_GroupName('MRP_Product_Info_ASI_Values', null) AS GroupNames

@@ -3,8 +3,6 @@
 -- doing only inserts an no updates also implies that we now do aggregation where beforehand we could just select onle record.
 -- this is already done as of task 09421 (in the X_MRP_ProductInfo_Detail_V functions)
 --
-ALTER TABLE "de.metas.fresh".x_fresh_qtyonhand_ondate DROP CONSTRAINT IF EXISTS x_sp80_qtyonhand_ondate_pkey;
-
 DROP INDEX IF EXISTS "de.metas.fresh".x_fresh_qtyonhand_ondate_tuple;
 CREATE INDEX x_fresh_qtyonhand_ondate_tuple
    ON "de.metas.fresh".x_fresh_qtyonhand_ondate (movementdate ASC NULLS LAST, m_product_id ASC NULLS LAST, m_attributesetinstance_id ASC NULLS LAST);
