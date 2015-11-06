@@ -41,4 +41,3 @@ LEFT OUTER JOIN C_BPartner_Location bpl ON (bpl.C_BPartner_Location_ID = dh.C_BP
 LEFT OUTER JOIN M_Product_Trl pt ON (p.M_Product_ID = pt.M_Product_ID AND bp.AD_Language = pt.AD_Language)
 ;
 
-ALTER VIEW report.Fresh_EDI_DesadvLine_SSCC_Label_Report OWNER TO adempiere;

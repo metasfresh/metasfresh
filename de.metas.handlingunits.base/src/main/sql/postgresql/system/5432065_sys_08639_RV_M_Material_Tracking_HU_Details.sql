@@ -38,4 +38,3 @@ WHERE
 	AND hu.M_HU_Item_Parent_ID IS NULL
 ;
 
-ALTER TABLE RV_M_Material_Tracking_HU_Details OWNER TO adempiere;

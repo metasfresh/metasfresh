@@ -43,5 +43,3 @@ GROUP BY
 ;
 $$ 
 LANGUAGE sql STABLE;
-
-ALTER FUNCTION report.Docs_Sales_Dunning_Report_details_sum ( IN Record_ID numeric)  OWNER TO adempiere;

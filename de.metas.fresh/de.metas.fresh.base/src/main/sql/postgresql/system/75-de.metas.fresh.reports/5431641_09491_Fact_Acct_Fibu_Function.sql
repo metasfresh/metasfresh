@@ -55,5 +55,3 @@ GROUP BY LineNo,dateAccount,ReferenceNumber,BPartnerValue,BPartnerName,DocumentN
 ORDER BY dateAccount, DocumentNumber, LineNo;
 $$ 
 LANGUAGE sql STABLE;
-
-ALTER FUNCTION report.Fresh_Fact_Acct_Fibo_Report ( IN DateFrom date, IN DateTo date, IN AccountID numeric) OWNER TO adempiere;

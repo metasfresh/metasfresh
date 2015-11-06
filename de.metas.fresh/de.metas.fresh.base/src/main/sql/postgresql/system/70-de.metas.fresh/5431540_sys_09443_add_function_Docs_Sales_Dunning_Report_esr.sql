@@ -79,5 +79,3 @@ FROM
 ;
 $$ 
 LANGUAGE sql STABLE;
-
-ALTER FUNCTION report.Docs_Sales_Dunning_Report_esr ( IN Record_ID numeric, IN AD_Language Character Varying (6))  OWNER TO adempiere;
