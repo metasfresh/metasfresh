@@ -13,7 +13,7 @@
 	</parameter>
 	<parameter name="M_HU_ID" class="java.math.BigDecimal"/>
 	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["http://sp80adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["http://mf15adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT
@@ -139,7 +139,7 @@ WHERE
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<imageExpression><![CDATA["de/metas/docs/label/generics/spavetti_logo.png"]]></imageExpression>
+				<imageExpression><![CDATA["de/metas/docs/label/generics/logo.png"]]></imageExpression>
 			</image>
 			<staticText>
 				<reportElement uuid="e8db4a31-69d7-41df-8a88-5e4b91eb872b" x="52" y="119" width="11" height="114"/>

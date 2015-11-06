@@ -22,19 +22,27 @@
 	<parameter name="M_Warehouse_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT
-	r.AD_Org_ID,
-	r.DocStatus,
-	r.PrintName,
-	r.C_BPartner_Location_ID,
-	r.C_Order_ID
-FROM report.RV_C_Order_MFGWarehouse_Report_Header r
-WHERE true
-AND
+	o.AD_Org_ID,
+	o.DocStatus,
+	dt.PrintName,
+	bpl.C_BPartner_Location_ID
+FROM
+	C_Order o
+	INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID
+	-- Get BPartner Location
+	LEFT OUTER JOIN C_BPartner_Location bpl ON bpl.C_BPartner_Location_ID =
+	(
+		SELECT First_Agg (C_BPartner_Location_ID::Text ORDER BY IsBillToDefault DESC, IsBillTo DESC)
+		FROM C_BPartner_Location sub_bpl WHERE sub_bpl.C_BPartner_ID = o.C_BPartner_ID
+	)::Numeric
+
+WHERE
+
 CASE
 		WHEN $P{RECORD_ID} IS NOT NULL
-			THEN r.C_Order_MFGWarehouse_Report_ID = $P{RECORD_ID}
+			THEN o.C_Order_ID = $P{RECORD_ID}
 		WHEN $P{C_BPartner_ID} IS NOT NULL AND $P{DatePromised}::date IS NOT NULL
-			THEN r.C_BPartner_ID = $P{C_BPartner_ID} AND r.DatePromised::date = $P{DatePromised}::date AND r.ReportDocumentType='WH'
+			THEN o.C_BPartner_ID = $P{C_BPartner_ID} AND o.DatePromised::date = $P{DatePromised}::date
 
 		ELSE false -- shall never nappen
 	END
@@ -45,7 +53,6 @@ LIMIT 1
 	<field name="docstatus" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
 	<field name="c_bpartner_location_id" class="java.math.BigDecimal"/>
-	<field name="c_order_id" class="java.lang.Integer"/>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="true">
@@ -93,7 +100,7 @@ LIMIT 1
 					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/report_description.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/legacy/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
 				<reportElement uuid="9fdef315-bd26-44e1-9643-da46f47a98b0" key="subreport-6" x="286" y="175" width="309" height="41"/>
@@ -104,7 +111,7 @@ LIMIT 1
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$F{c_order_id}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="doctype">
 					<subreportParameterExpression><![CDATA[($P{RECORD_ID} != null ? new String("o") : null)]]></subreportParameterExpression>
@@ -143,14 +150,14 @@ LIMIT 1
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="RECORD_ID">
+				<subreportParameter name="c_order_id">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="C_BPartner_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/report_details.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/legacy/report_details.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="14">
@@ -162,11 +169,11 @@ LIMIT 1
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="RECORD_ID">
+				<subreportParameter name="c_order_id">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/report_details_hu.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/legacy/report_details_hu.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

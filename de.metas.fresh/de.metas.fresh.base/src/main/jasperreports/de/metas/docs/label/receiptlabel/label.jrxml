@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/receiptlabel/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.3310000000000064"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="115"/>
+	<property name="ireport.y" value="96"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -267,7 +267,7 @@ WHERE
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{org}+ " Artikelbezeichnung"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($R{org}!= null ? $R{org} : "") +  "Artikelbezeichnung"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="0b495f32-ff01-43c8-9278-a7f7ff3c1a3a" x="97" y="442" width="400" height="58"/>

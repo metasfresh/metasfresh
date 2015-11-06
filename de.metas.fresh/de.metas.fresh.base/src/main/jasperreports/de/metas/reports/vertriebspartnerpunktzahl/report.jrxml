@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="06f3a29e-cfe1-49d5-9950-0061354408e7">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<queryString>
+		<![CDATA[SELECT
+	count(foo.commissionpoints),
+	sum(foo.commissionpoints)as sum,
+	foo.VP,
+	foo_bp.name
+
+FROM
+	(
+	--Ebene 1
+	SELECT
+		ol.c_orderline_id,
+		ol.ad_org_id,
+		ol.commissionpoints,
+		vt_bp.c_bpartner_id AS VP,
+		'Ebene 1' AS tag
+	FROM
+		c_orderline ol
+		JOIN c_bpartner bp ON ol.c_bpartner_id = bp.c_bpartner_id
+		JOIN c_sponsor sp ON bp.c_sponsor_parent_id = sp.c_sponsor_id
+		JOIN c_bpartner vt_bp ON CASE WHEN bp.issalesrep = 'Y' THEN bp.c_bpartner_id ELSE sp.c_bpartner_id END = vt_bp.c_bpartner_id
+	UNION
+	--Ebene 2
+	SELECT
+		ol.c_orderline_id,
+		ol.ad_org_id,
+		ol.commissionpoints,
+		vt_bp2.c_bpartner_id AS VP,
+		'Ebene 2' AS tag
+	FROM
+		c_orderline ol
+		JOIN c_bpartner bp ON ol.c_bpartner_id = bp.c_bpartner_id
+		--ebene 1
+		JOIN c_sponsor sp1 ON bp.c_sponsor_parent_id = sp1.c_sponsor_id
+		JOIN c_bpartner vt_bp1 ON CASE WHEN bp.issalesrep = 'Y' THEN bp.c_bpartner_id ELSE sp1.c_bpartner_id END = vt_bp1.c_bpartner_id
+		--ebene 2
+		JOIN c_sponsor sp2 ON vt_bp1.c_sponsor_parent_id = sp2.c_sponsor_id
+		JOIN c_bpartner vt_bp2 ON sp2.c_bpartner_id = vt_bp2.c_bpartner_id
+	UNION
+	--Ebene 3
+	SELECT
+		ol.c_orderline_id,
+		ol.ad_org_id,
+		ol.commissionpoints,
+		vt_bp3.c_bpartner_id AS VP,
+		'Ebene 3' AS tag
+	FROM
+		c_orderline ol
+		JOIN c_bpartner bp ON ol.c_bpartner_id = bp.c_bpartner_id
+		--ebene 1
+		JOIN c_sponsor sp1 ON bp.c_sponsor_parent_id = sp1.c_sponsor_id
+		JOIN c_bpartner vt_bp1 ON CASE WHEN bp.issalesrep = 'Y' THEN bp.c_bpartner_id ELSE sp1.c_bpartner_id END = vt_bp1.c_bpartner_id
+		--ebene 2
+		JOIN c_sponsor sp2 ON vt_bp1.c_sponsor_parent_id = sp2.c_sponsor_id
+		JOIN c_bpartner vt_bp2 ON sp2.c_bpartner_id = vt_bp2.c_bpartner_id
+		--ebene 3
+		JOIN c_sponsor sp3 ON vt_bp2.c_sponsor_parent_id = sp3.c_sponsor_id
+		JOIN c_bpartner vt_bp3 ON sp3.c_bpartner_id = vt_bp3.c_bpartner_id
+	UNION
+	--Ebene 4
+	SELECT
+		ol.c_orderline_id,
+		ol.ad_org_id,
+		ol.commissionpoints,
+		vt_bp4.c_bpartner_id AS VP,
+		'Ebene 4' AS tag
+	FROM
+		c_orderline ol
+		JOIN c_bpartner bp ON ol.c_bpartner_id = bp.c_bpartner_id
+		--ebene 1
+		JOIN c_sponsor sp1 ON bp.c_sponsor_parent_id = sp1.c_sponsor_id
+		JOIN c_bpartner vt_bp1 ON CASE WHEN bp.issalesrep = 'Y' THEN bp.c_bpartner_id ELSE sp1.c_bpartner_id END = vt_bp1.c_bpartner_id
+		--ebene 2
+		JOIN c_sponsor sp2 ON vt_bp1.c_sponsor_parent_id = sp2.c_sponsor_id
+		JOIN c_bpartner vt_bp2 ON sp2.c_bpartner_id = vt_bp2.c_bpartner_id
+		--ebene 3
+		JOIN c_sponsor sp3 ON vt_bp2.c_sponsor_parent_id = sp3.c_sponsor_id
+		JOIN c_bpartner vt_bp3 ON sp3.c_bpartner_id = vt_bp3.c_bpartner_id
+		--ebene 4
+		JOIN c_sponsor sp4 ON vt_bp3.c_sponsor_parent_id = sp4.c_sponsor_id
+		JOIN c_bpartner vt_bp4 ON sp4.c_bpartner_id = vt_bp4.c_bpartner_id
+	UNION
+	--Ebene 5
+	SELECT
+		ol.c_orderline_id,
+		ol.ad_org_id,
+		ol.commissionpoints,
+		vt_bp5.c_bpartner_id AS VP,
+		'Ebene 5' AS tag
+	FROM
+		c_orderline ol
+		JOIN c_bpartner bp ON ol.c_bpartner_id = bp.c_bpartner_id
+		--ebene 1
+		JOIN c_sponsor sp1 ON bp.c_sponsor_parent_id = sp1.c_sponsor_id
+		JOIN c_bpartner vt_bp1 ON CASE WHEN bp.issalesrep = 'Y' THEN bp.c_bpartner_id ELSE sp1.c_bpartner_id END = vt_bp1.c_bpartner_id
+		--ebene 2
+		JOIN c_sponsor sp2 ON vt_bp1.c_sponsor_parent_id = sp2.c_sponsor_id
+		JOIN c_bpartner vt_bp2 ON sp2.c_bpartner_id = vt_bp2.c_bpartner_id
+		--ebene 3
+		JOIN c_sponsor sp3 ON vt_bp2.c_sponsor_parent_id = sp3.c_sponsor_id
+		JOIN c_bpartner vt_bp3 ON sp3.c_bpartner_id = vt_bp3.c_bpartner_id
+		--ebene 4
+		JOIN c_sponsor sp4 ON vt_bp3.c_sponsor_parent_id = sp4.c_sponsor_id
+		JOIN c_bpartner vt_bp4 ON sp4.c_bpartner_id = vt_bp4.c_bpartner_id
+		--ebene 5
+		JOIN c_sponsor sp5 ON vt_bp4.c_sponsor_parent_id = sp5.c_sponsor_id
+		JOIN c_bpartner vt_bp5 ON sp5.c_bpartner_id = vt_bp5.c_bpartner_id
+	UNION
+	--Ebene 6
+	SELECT
+		ol.c_orderline_id,
+		ol.ad_org_id,
+		ol.commissionpoints,
+		vt_bp6.c_bpartner_id AS VP,
+		'Ebene 6' AS tag
+	FROM
+		c_orderline ol
+		JOIN c_bpartner bp ON ol.c_bpartner_id = bp.c_bpartner_id
+		--ebene 1
+		JOIN c_sponsor sp1 ON bp.c_sponsor_parent_id = sp1.c_sponsor_id
+		JOIN c_bpartner vt_bp1 ON CASE WHEN bp.issalesrep = 'Y' THEN bp.c_bpartner_id ELSE sp1.c_bpartner_id END = vt_bp1.c_bpartner_id
+		--ebene 2
+		JOIN c_sponsor sp2 ON vt_bp1.c_sponsor_parent_id = sp2.c_sponsor_id
+		JOIN c_bpartner vt_bp2 ON sp2.c_bpartner_id = vt_bp2.c_bpartner_id
+		--ebene 3
+		JOIN c_sponsor sp3 ON vt_bp2.c_sponsor_parent_id = sp3.c_sponsor_id
+		JOIN c_bpartner vt_bp3 ON sp3.c_bpartner_id = vt_bp3.c_bpartner_id
+		--ebene 4
+		JOIN c_sponsor sp4 ON vt_bp3.c_sponsor_parent_id = sp4.c_sponsor_id
+		JOIN c_bpartner vt_bp4 ON sp4.c_bpartner_id = vt_bp4.c_bpartner_id
+		--ebene 5
+		JOIN c_sponsor sp5 ON vt_bp4.c_sponsor_parent_id = sp5.c_sponsor_id
+		JOIN c_bpartner vt_bp5 ON sp5.c_bpartner_id = vt_bp5.c_bpartner_id
+		--ebene 6
+		JOIN c_sponsor sp6 ON vt_bp5.c_sponsor_parent_id = sp6.c_sponsor_id
+		JOIN c_bpartner vt_bp6 ON sp6.c_bpartner_id = vt_bp6.c_bpartner_id
+	) foo
+	JOIN c_bpartner foo_bp ON foo.VP = foo_bp.c_bpartner_id
+WHERE
+	commissionpoints > 0
+	AND foo.ad_org_id = 1000001
+GROUP BY
+	foo.VP,
+	foo_bp.name
+ORDER BY
+	foo_bp.name
+;]]>
+	</queryString>
+	<field name="count" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="sum" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="vp" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="Zeile" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{vp}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="34" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="e59f2295-35f1-40d9-b03b-887a89d7c804" x="176" y="15" width="203" height="16"/>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Vertriebspartnerpunktzahl]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="15" splitType="Stretch">
+			<rectangle>
+				<reportElement uuid="a37de00c-808d-4cb7-9fbb-d10157240eb5" key="rectangle-2" x="0" y="1" width="555" height="14" backcolor="#808080"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="de53eadb-5b53-49ef-a573-0a6703b6b4e6" x="315" y="1" width="83" height="14" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right" markup="none"/>
+				<text><![CDATA[Punktzahl]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="9cdeaba3-824b-46a0-9663-9cd37582b6cc" x="3" y="1" width="313" height="14" forecolor="#FFFFFF"/>
+				<textElement markup="none"/>
+				<text><![CDATA[Vertriebspartner]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="14" splitType="Stretch">
+			<rectangle>
+				<reportElement uuid="85c70ade-9124-4691-ab0f-7aa05e2d54c8" key="rectangle-2" x="0" y="0" width="555" height="14" backcolor="#FFFFCC">
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile}.intValue()%2)==0)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField pattern="###0.00">
+				<reportElement uuid="310c5b30-5d40-4467-aaff-98664c260f1b" x="315" y="0" width="83" height="14"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{sum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="1d02cc91-c82b-4c5a-9e79-4de14c6fab9d" x="3" y="0" width="313" height="14"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

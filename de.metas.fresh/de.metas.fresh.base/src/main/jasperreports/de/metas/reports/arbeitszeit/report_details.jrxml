@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_detail_vorlage" language="groovy" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="von" class="java.util.Date"/>
+	<parameter name="bis" class="java.util.Date"/>
+	<parameter name="details" class="java.lang.String"/>
+	<parameter name="c_bpartner_id" class="java.math.BigDecimal"/>
+	<parameter name="AD_ORG_ID" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select
+
+	bp.name as partnername,
+	s.remote_host,
+	s.created::date as datum,
+	s.created::time	as zeit,
+	c.oldvalue as alterwert,
+	c.newvalue as neuerwert,
+	p.name as prozessname,
+	pilog.p_msg
+
+from
+	c_bpartner bp
+
+left join ad_user u on
+				bp.c_bpartner_id = u.c_bpartner_id
+
+left join ad_session s on
+				bp.ad_client_id = s.ad_client_id
+
+left join ad_changelog c on
+				s.ad_session_id = c.ad_session_id
+
+left join ad_pinstance pi on
+				pi.ad_user_id = u.ad_user_id
+
+left join ad_process p on
+				p.ad_process_id = pi.ad_process_id
+
+left join ad_pinstance_log pilog on
+				pi.ad_pinstance_id = pilog.ad_pinstance_id
+
+
+where
+
+	bp.isemployee = 'Y'
+and
+     s.created between $P{von} and $P{bis}
+
+and
+	$P{c_bpartner_id} = bp.c_bpartner_id
+and
+	bp.ad_org_id = $P{AD_ORG_ID}
+
+group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_msg]]>
+	</queryString>
+	<field name="partnername" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="remote_host" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="datum" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="zeit" class="java.sql.Time">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="alterwert" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="neuerwert" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="prozessname" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="p_msg" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="login" class="java.lang.String" resetType="None" calculation="Lowest">
+		<variableExpression><![CDATA[$F{zeit}]]></variableExpression>
+	</variable>
+	<variable name="logout" class="java.lang.String" resetType="None" calculation="Highest">
+		<variableExpression><![CDATA[$F{zeit}]]></variableExpression>
+	</variable>
+	<variable name="Zeile" class="java.lang.Integer" resetType="Group" resetGroup="datum" calculation="Count">
+		<variableExpression><![CDATA[$V{Zeile_COUNT}]]></variableExpression>
+	</variable>
+	<group name="Zeile">
+		<groupHeader>
+			<band splitType="Stretch"/>
+		</groupHeader>
+		<groupFooter>
+			<band height="28">
+				<rectangle>
+					<reportElement key="rectangle-3" x="0" y="14" width="782" height="14" backcolor="#808080"/>
+					<graphicElement>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</graphicElement>
+				</rectangle>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="datum">
+		<groupExpression><![CDATA[$F{datum}]]></groupExpression>
+		<groupHeader>
+			<band height="24">
+				<rectangle>
+					<reportElement mode="Transparent" x="1" y="0" width="780" height="24"/>
+				</rectangle>
+				<textField pattern="dd.MM.yyyy">
+					<reportElement x="79" y="1" width="85" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.util.Date"><![CDATA[$F{datum}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="6" y="1" width="68" height="12"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{partnername}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="251" y="0" width="56" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{remote_host}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="185" y="1" width="45" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$V{login}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="datum">
+					<reportElement x="185" y="12" width="45" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$V{logout}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="549" y="0" width="100" height="20" forecolor="#FFFFFF"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{Zeile_COUNT}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="datum">
+					<reportElement x="308" y="1" width="94" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{Zeile}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="32" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="0" width="782" height="32" backcolor="#808080"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="6" y="0" width="68" height="16" forecolor="#FFFFFF"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Mitarbeiter]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="185" y="0" width="45" height="16" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Login]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="251" y="0" width="56" height="16" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Remote Host]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="424" y="0" width="125" height="16" forecolor="#FFFFFF">
+					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Prozessname]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="559" y="0" width="151" height="16" forecolor="#FFFFFF">
+					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Prozessbeschreibung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="66" y="16" width="100" height="16" forecolor="#FFFFFF">
+					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Sitzungszeit(detailliert)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="81" y="0" width="85" height="16" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Datum]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="308" y="16" width="94" height="16" forecolor="#FFFFFF">
+					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Neuer Wert]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="251" y="16" width="56" height="16" forecolor="#FFFFFF">
+					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Alter Wert]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="185" y="16" width="45" height="16" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Logout]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="308" y="0" width="94" height="16" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Anzahl Prozesse]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="11" splitType="Stretch">
+			<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="rectangle-2" x="0" y="0" width="782" height="11" backcolor="#FFFFCC">
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile_COUNT}.intValue()%2)==0)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement x="424" y="0" width="135" height="11">
+					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{prozessname}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="559" y="0" width="151" height="11">
+					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{p_msg}]]></textFieldExpression>
+			</textField>
+			<textField pattern="HH:mm" isBlankWhenNull="true">
+				<reportElement x="64" y="0" width="100" height="11">
+					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Time"><![CDATA[$F{zeit}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="257" y="0" width="51" height="11">
+					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{alterwert}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="308" y="0" width="93" height="11">
+					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{neuerwert}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="13" splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="9"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

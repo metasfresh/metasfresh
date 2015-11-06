@@ -103,7 +103,7 @@ WHERE
 		oi.DateInvoiced >= ( CASE WHEN $P{StartDate}::date IS NULL THEN oi.DateInvoiced ELSE $P{StartDate}::date END )
 		AND oi.DateInvoiced <= ( CASE WHEN $P{EndDate}::date IS NULL THEN oi.DateInvoiced ELSE $P{EndDate}::date END )
 	)
-	-- Sp80_08394: If Flag is not set, only display invoices that are not part of a processed PaySelection
+	-- 08394: If Flag is not set, only display invoices that are not part of a processed PaySelection
 	AND ( $P{PassForPayment} = 'Y' OR NOT oi.PassForPayment )
 ORDER BY
 	c.iso_code,

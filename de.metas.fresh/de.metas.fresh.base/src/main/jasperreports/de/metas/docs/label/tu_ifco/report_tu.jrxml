@@ -13,7 +13,7 @@
 	</parameter>
 	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
 	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["http://sp80adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["http://mf15adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT	T_Selection_ID as TU_ID

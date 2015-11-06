@@ -3,13 +3,13 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.1204880918624296"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="444"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="c_order_id" class="java.lang.Integer">
-		<defaultValueExpression><![CDATA[$P{c_order_id}]]></defaultValueExpression>
+	<parameter name="RECORD_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[$P{RECORD_ID}]]></defaultValueExpression>
 	</parameter>
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
@@ -23,85 +23,50 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT
-	ol.line,
-	att.Attributes as displaytext,
-	COALESCE(bpp.ProductNo, p.value) AS Value,
-	COALESCE(bpp.ProductName, p.Name) AS Name,
-	COALESCE(bpp.UPC, p.UPC) AS EAN,
-	-- Rounding these columns is important to have them in one group
-	-- Jasper groups by comparing the BigDecimals. In that logic, 1.00 is not the same as 1
-	round(ol.pricelist, 3) AS pricelist,
-	round(ip.qty, 3) AS capacity,
-	round(ol.Priceactual, 3) AS PriceActual,
-	ol.qtyenteredtu,
-	ol.qtyentered,
-	pm.name as container,
-	uom.UOMSymbol AS UOMSymbol
-FROM
-	C_Order o
-	LEFT OUTER JOIN C_OrderLine ol ON o.C_Order_ID = ol.C_Order_ID
-	LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID =  bp.C_BPartner_ID
-	LEFT OUTER JOIN M_HU_PI_Item_Product ip ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID
-	LEFT OUTER JOIN M_HU_PI_Item pii ON ip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID
-	LEFT OUTER JOIN M_HU_PI_Item pmi ON pmi.M_HU_PI_Version_ID = pii.M_HU_PI_Version_ID
-		AND pmi.ItemType= 'PM'
-	LEFT OUTER JOIN M_HU_PackingMaterial pm ON pmi.M_HU_PackingMaterial_ID = pm.M_HU_PackingMaterial_ID
-	-- Product and its translation
-	LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID
-
-	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
-		AND p.M_Product_ID = bpp.M_Product_ID
-	LEFT OUTER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
-	-- Unit of measurement and its translation
-	LEFT OUTER JOIN C_UOM uom ON ol.C_UOM_ID = uom.C_UOM_ID
-	-- ADR Attribute
-	LEFT OUTER JOIN	(
-		SELECT 	String_agg ( ai_value, ', ' ) AS Attributes, M_AttributeSetInstance_ID
-		FROM 	Report.fresh_Attributes
-		WHERE	at_Value IN ( '1000015', '1000001' ) -- Marke (ADR), task 08891: also Herkunft
-		GROUP BY	M_AttributeSetInstance_ID
-	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
-		AND ol.M_AttributeSetInstance_ID != 0
+	Line,
+	Attributes as displaytext,
+	ProductValue AS Value,
+	ProductName AS Name,
+	EAN,
+	PriceList,
+	Capacity,
+	PriceActual,
+	qtyenteredtu,
+	qtyentered,
+	container,
+	UOMSymbol
+FROM report.RV_C_Order_MFGWarehouse_Report_Details r
 WHERE
-	1=1 AND
-	CASE
-		WHEN $P{M_Warehouse_ID} IS NOT NULL
-			THEN EXISTS (
-					SELECT 1
-					FROM PP_Product_Planning pp
-						JOIN M_Warehouse pp_wh ON pp_wh.M_Warehouse_ID=pp.M_Warehouse_ID
-					WHERE p.M_Product_ID = pp.M_Product_ID
-						AND pp.IsActive = 'Y' AND pp.IsManufactured='Y'
-						AND pp.M_Warehouse_ID = $P{M_Warehouse_ID}
-						AND pp_wh.AD_User_ID > 0
-				)
-		ELSE true
-		END
+	1=1
+	--
 	AND
 	CASE
-		WHEN $P{c_order_id} IS NOT NULL
-			THEN ol.C_Order_ID = $P{c_order_id}
+		WHEN $P{M_Warehouse_ID} IS NOT NULL
+			THEN r.M_Warehouse_ID=$P{M_Warehouse_ID} and r.ReportDocumentType='WH'
+		ELSE true
+		END
+	--
+	AND
+	CASE
+		WHEN $P{RECORD_ID} IS NOT NULL
+			THEN r.C_Order_MFGWarehouse_Report_ID = $P{RECORD_ID}
 
 		WHEN $P{C_BPartner_ID} IS NOT NULL AND $P{Date}::date IS NOT NULL
-			THEN o.C_BPartner_ID = $P{C_BPartner_ID} AND o.DatePromised::date = $P{Date}::date
+			THEN r.C_BPartner_ID = $P{C_BPartner_ID} AND r.DatePromised::date = $P{Date}::date AND r.ReportDocumentType='WH'
 
 		ELSE false -- not important. shall never happen
 	END
 
-	AND pc.M_Product_Category_ID !=
-		(SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
-	AND o.IsSOTrx != 'N'
-	AND o.DocStatus = 'CO'
 ORDER BY
-	CASE WHEN $P{c_order_id} IS NOT NULL THEN ol.line ELSE 0 END,
+	CASE WHEN $P{RECORD_ID} IS NOT NULL THEN r.Line ELSE 0 END,
 	-- When no order document is given, sort to aggregate
-	p.name,
-	att.Attributes,
-	uom.UOMSymbol,
-	ol.Pricelist,
-	ol.PriceActual,
-	pm.name,
-	ip.qty
+	ProductName,
+	Attributes,
+	UOMSymbol,
+	Pricelist,
+	PriceActual,
+	Container,
+	Capacity
 ;]]>
 	</queryString>
 	<field name="line" class="java.math.BigDecimal"/>
@@ -136,7 +101,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 		<groupFooter>
 			<band height="34">
 				<printWhenExpression><![CDATA[new Boolean ( $P{C_BPartner_ID} != null && $P{Date} != null )]]></printWhenExpression>
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="470" y="12" width="70" height="13" forecolor="#000000"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -175,7 +140,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="470" y="0" width="70" height="13" forecolor="#000000"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -380,7 +345,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 	</pageHeader>
 	<detail>
 		<band height="34" splitType="Stretch">
-			<printWhenExpression><![CDATA[new Boolean ( $P{c_order_id} != null )]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean ( $P{RECORD_ID} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01" key="textField-13" x="217" y="0" width="150" height="13" forecolor="#000000"/>
 				<box rightPadding="5">
@@ -500,7 +465,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{capacity}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="470" y="0" width="70" height="13" forecolor="#000000"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -526,7 +491,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyentered}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="470" y="12" width="70" height="13" forecolor="#000000"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

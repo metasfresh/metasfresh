@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="535" pageHeight="842" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/versand/report">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="von" class="java.util.Date"/>
+	<parameter name="bis" class="java.util.Date"/>
+	<parameter name="AD_Org_ID" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT
+
+	p.documentno as package,
+	ad_u.name as packer,
+	p.created,
+	p.created::date as datum,
+	p.created::time as zeit,
+	cou.c_country_id,
+	cou.name as land,
+	cou.countrycode as landcode,
+	per.name,
+	case when per.name like '%Jan%' then 'Januar'
+             when per.name like '%Feb%' then 'Februar'
+             when per.name like '%Mar%' then 'März'
+             when per.name like '%Apr%' then 'April'
+             when per.name like '%May%' then 'Mai'
+             when per.name like '%Jun%' then 'Juni'
+             when per.name like '%Jul%' then 'Juli'
+             when per.name like '%Aug%' then 'August'
+             when per.name like '%Sep%' then 'September'
+	     when per.name like '%Oct%' then 'Oktober'
+	     when per.name like '%Nov%' then 'November'
+	     when per.name like '%Dec%' then 'Dezember'
+	else null end as monat,
+	per.c_period_id as periode,
+	bp.name as kunde,
+	bp.name2 as kunde2,
+	ad_u.firstname,
+	ad_u.lastname
+
+
+
+FROM
+	m_package p
+
+	LEFT JOIN m_inout io 			ON p.m_inout_id = io.m_inout_id
+	JOIN c_bpartner bp 			ON bp.c_bpartner_id = io.c_bpartner_id
+	JOIN c_bpartner_location bp_loc 	ON bp.c_bpartner_id = bp_loc.c_bpartner_id
+	JOIN c_location loc 			ON bp_loc.c_location_id = loc.c_location_id
+	JOIN c_country cou 			ON cou.c_country_id = loc.c_country_id
+	LEFT JOIN fact_acct acct		On acct.datetrx = p.shipdate
+	LEFT JOIN c_period per			ON per.c_period_id = acct.c_period_id
+	LEFT JOIN ad_user ad_u			ON ad_u.ad_user_id = p.createdby
+
+where
+p.created >= $P{von} and p.created <= $P{bis}
+and p.ad_org_id = $P{AD_Org_ID}
+
+
+group by
+
+	cou.c_country_id,
+	p.documentno,
+	p.created::date,
+	p.created,
+	ad_u.name,
+	cou.name,
+	cou.countrycode,
+	per.name,
+	per.c_period_id,
+	bp.name,
+	bp.name2,
+	ad_u.firstname,
+	ad_u.lastname]]>
+	</queryString>
+	<field name="package" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="packer" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="created" class="java.sql.Timestamp">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="datum" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="zeit" class="java.sql.Time">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="c_country_id" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="land" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="landcode" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="monat" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="periode" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="kunde" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="kunde2" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="firstname" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="lastname" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="sum_per" class="java.lang.Integer" resetType="Group" resetGroup="periode" incrementType="Group" incrementGroup="periode" calculation="Sum">
+		<variableExpression><![CDATA[$V{date_COUNT}]]></variableExpression>
+	</variable>
+	<group name="Zeile">
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<group name="land" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{c_country_id}]]></groupExpression>
+		<groupHeader>
+			<band height="16">
+				<textField>
+					<reportElement x="11" y="0" width="89" height="16"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{landcode}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="100" y="0" width="273" height="16"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{land}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="15" width="535" height="1" forecolor="#5F8D92"/>
+				</line>
+				<textField evaluationTime="Group" evaluationGroup="land">
+					<reportElement x="503" y="0" width="21" height="15"/>
+					<textElement textAlignment="Right">
+						<font isItalic="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{land_COUNT}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="373" y="0" width="131" height="15"/>
+					<textElement>
+						<font isItalic="true"/>
+					</textElement>
+					<text><![CDATA[versendete Pakete pro Land:]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="periode">
+		<groupExpression><![CDATA[$F{periode}]]></groupExpression>
+		<groupHeader>
+			<band height="14">
+				<line>
+					<reportElement x="40" y="13" width="463" height="1" forecolor="#5F8D92"/>
+				</line>
+				<textField isBlankWhenNull="true">
+					<reportElement x="40" y="0" width="60" height="14"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{monat}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="100" y="1" width="130" height="13"/>
+					<textElement>
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[versendete Pakete pro Monat:]]></text>
+				</staticText>
+				<textField evaluationTime="Group" evaluationGroup="periode">
+					<reportElement x="229" y="1" width="12" height="13"/>
+					<textElement textAlignment="Right">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{periode_COUNT}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="date">
+		<groupExpression><![CDATA[$F{datum}]]></groupExpression>
+		<groupHeader>
+			<band height="11">
+				<line>
+					<reportElement x="55" y="10" width="448" height="1" forecolor="#5F8D92"/>
+				</line>
+				<textField evaluationTime="Group" evaluationGroup="date">
+					<reportElement x="498" y="0" width="6" height="11"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{date_COUNT}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="398" y="0" width="100" height="11"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[versendete Pakete pro Tag:]]></text>
+				</staticText>
+				<textField pattern="dd.MM.yyyy">
+					<reportElement x="55" y="0" width="45" height="11"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.util.Date"><![CDATA[$F{datum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="16" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="0" width="535" height="16" backcolor="#5F8D92"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="11" y="0" width="89" height="16" forecolor="#FFFFFF"/>
+				<textElement/>
+				<text><![CDATA[Landescode]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="0" width="100" height="16" forecolor="#FFFFFF"/>
+				<textElement/>
+				<text><![CDATA[Landesname]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="0" width="70" height="16" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Paketnummer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="291" y="0" width="107" height="16" forecolor="#FFFFFF"/>
+				<textElement/>
+				<text><![CDATA[Paketpacker]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="11" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-2" x="55" y="0" width="448" height="11" backcolor="#FFFFCC">
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile_COUNT}.intValue()%2)==0)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField pattern="HH:mm">
+				<reportElement x="47" y="0" width="53" height="11"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{created}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="291" y="0" width="107" height="11"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{packer}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="214" y="0" width="56" height="11"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{package}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="13" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-3" x="0" y="0" width="535" height="13" backcolor="#808080"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="9"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

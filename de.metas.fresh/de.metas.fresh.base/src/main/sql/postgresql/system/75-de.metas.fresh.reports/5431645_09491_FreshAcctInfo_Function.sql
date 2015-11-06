@@ -1,4 +1,11 @@
 
+
+-- made the script to make sure the correct versions of the functions are present in the db
+
+
+
+
+
 DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0));
 DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments character varying  );
 
