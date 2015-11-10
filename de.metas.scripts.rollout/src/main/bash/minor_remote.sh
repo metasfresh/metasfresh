@@ -34,6 +34,8 @@ fi
 #Note: ROLLOUT_DIR can be overridden from cmdline using -d
 ROLLOUT_DIR=$LOCAL_DIR/..
 
+SOURCES_DIR=$LOCAL_DIR/../sources
+
 HOSTNAME=$(hostname)
 
 RELEASE_TIME=$(date "+%Y%m%d_%H%M%S")
@@ -112,6 +114,14 @@ install_adempiere()
 	cd $ADEMPIERE_HOME/utils
 	./RUN_Post_Rollout_Processes.sh
 	
+        if [[ -d ${ADEMPIERE_HOME}/src ]]; then
+          trace install_adempiere "Adding source files to app-dir ( ${ADEMPIERE_HOME}/src/sources.tar.gz )"
+          tar czf ${ADEMPIERE_HOME}/src/sources.tar.gz ${SOURCES_DIR}/*
+          trace install_adempiere "Done adding source files to app-dir"
+        else
+          trace install_adempiere "No source-folder present in app-dir. Skipping adding sourcefiles."
+        fi
+ 
 	start_adempiere
 	
 	trace install_adempiere END
