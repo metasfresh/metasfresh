@@ -56,6 +56,8 @@ if [ "$LOCAL_DIR" == "." ]; then
 	LOCAL_DIR=$(pwd)
 fi
 
+SOURCES=${LOCAL_DIR}/../sources
+
 TOOLS=${LOCAL_DIR}/tools.sh
 if [ -f $TOOLS ] && [ -r $TOOLS ]; then
 	source $TOOLS
@@ -195,8 +197,20 @@ rollout_database()
 	ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "${REMOTE_EXEC_DIR}/sql_remote.sh -d ${REMOTE_EXEC_DIR}/.." 
 	trace rollout_database "=========================================================="
 	trace rollout_database "Done with remote script sql_remote.sh"
-	
+
 	trace rollout_database END
+}
+
+rollout_sources()
+{
+ trace rollout_sources BEGIN
+ if [[ -d "/opt/metasfresh/src" ]]; then
+   trace rollout_sources "Adding source-files to app folder (/opt/metasfresh/src/metasfresh_src.tar.gz)"
+   ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "tar czf /opt/metasfresh/src/metasfresh_src.tar.gz ${SOURCES}/*"
+ else
+   trace rollout_sources "Skipping adding source-files to app folder."
+ fi
+ trace rollout_sources END
 }
 
 clean_rollout_appserver()
@@ -254,6 +268,7 @@ if [ "$DATABASE" == "true" ]; then
 fi
 if [ "$MINOR" == "true" ]; then
 	rollout_minor
+	rollout_sources
 fi
 
 clean_rollout_appserver
