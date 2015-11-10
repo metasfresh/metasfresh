@@ -56,8 +56,6 @@ if [ "$LOCAL_DIR" == "." ]; then
 	LOCAL_DIR=$(pwd)
 fi
 
-SOURCES=${LOCAL_DIR}/../sources
-
 TOOLS=${LOCAL_DIR}/tools.sh
 if [ -f $TOOLS ] && [ -r $TOOLS ]; then
 	source $TOOLS
@@ -203,10 +201,13 @@ rollout_database()
 
 rollout_sources()
 {
+ SOURCES_DIR=${ROLLOUT_DIR}/sources
  trace rollout_sources BEGIN
+ trace rollout_sources "SOURCES_DIR=$SOURCES_DIR"
+
  if ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "test -d '/opt/metasfresh/src'"; then
    trace rollout_sources "Adding source-files to app folder (/opt/metasfresh/src/metasfresh_src.tar.gz)"
-   ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "tar czf /opt/metasfresh/src/metasfresh_src.tar.gz ${SOURCES}/*"
+   ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "tar czf /opt/metasfresh/src/metasfresh_src.tar.gz ${SOURCES_DIR}/*"
  else
    trace rollout_sources "Skipping adding source-files to app folder."
  fi
