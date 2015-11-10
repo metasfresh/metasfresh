@@ -40,6 +40,7 @@ import org.compiere.Adempiere.RunMode;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 /**
@@ -700,12 +701,12 @@ public class MSequence extends X_AD_Sequence
 	
 	/**
 	 * 
-	 * @param TableName
+	 * @param TableName table name or null
 	 * @param AD_Client_ID
 	 * @return true if we need to query Centralized Dictionary ID Server
 	 */
 	// metas: 01558
-	public static boolean isQueryCentralizedIDServer(String TableName, int AD_Client_ID)
+	public static boolean isQueryCentralizedIDServer(final String TableName, final int AD_Client_ID)
 	{
 		if (!isAdempiereSys(AD_Client_ID))
 		{
@@ -723,7 +724,7 @@ public class MSequence extends X_AD_Sequence
 			return false;
 		}
 		// Check if is an exception
-		if (isExceptionCentralized(TableName))
+		if (TableName != null && isExceptionCentralized(TableName))
 		{
 			s_log.log(Level.FINE, "Returning 'false' because TableName {0} is excluded from getting centralized IDs", TableName);
 			return false;
@@ -734,12 +735,12 @@ public class MSequence extends X_AD_Sequence
 
 	/**
 	 * 
-	 * @param TableName
+	 * @param TableName table name or null
 	 * @param AD_Client_ID
 	 * @return true if we need to query Project ID Server
 	 */
 	// metas: 01558
-	public static boolean isQueryProjectIDServer(String TableName, int AD_Client_ID)
+	public static boolean isQueryProjectIDServer(final String TableName, final int AD_Client_ID)
 	{
 		if (isAdempiereSys(AD_Client_ID))
 		{
@@ -757,7 +758,7 @@ public class MSequence extends X_AD_Sequence
 			return false;
 		}
 		// Check if is an exception
-		if (isExceptionCentralized(TableName))
+		if (TableName != null && isExceptionCentralized(TableName))
 		{
 			s_log.log(Level.FINE, "Returning 'false' because TableName {0} is excluded from getting centralized IDs", TableName);
 			return false;
@@ -780,15 +781,25 @@ public class MSequence extends X_AD_Sequence
 	
 	/**
 	 * 
-	 * @param TableName 
+	 * @param TableName table name or null 
 	 * @param AD_Client_ID 
 	 * @return true if we use an external ID system (e.g. centralized ID server, project ID server)
 	 */
 	// metas: 01558
-	public static boolean isUseExternalIDSystem(String TableName, int AD_Client_ID)
+	public static boolean isUseExternalIDSystem(final String TableName, final int AD_Client_ID)
 	{
 		return isQueryCentralizedIDServer(TableName, AD_Client_ID)
 		|| isQueryProjectIDServer(TableName, AD_Client_ID);
+	}
+
+	/**
+	 * @return true if we use an external ID system (e.g. centralized ID server, project ID server)
+	 */
+	public static boolean isUseExternalIDSystem()
+	{
+		final String tableName = null;
+		final int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
+		return isUseExternalIDSystem(tableName, AD_Client_ID);
 	}
 
 }	//	MSequence

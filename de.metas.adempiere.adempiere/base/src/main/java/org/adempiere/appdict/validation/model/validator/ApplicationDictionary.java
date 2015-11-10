@@ -29,6 +29,7 @@ package org.adempiere.appdict.validation.model.validator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Column;
@@ -37,6 +38,7 @@ import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
+import org.compiere.model.MSequence;
 import org.compiere.model.MTable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -76,8 +78,8 @@ public class ApplicationDictionary implements ModelValidator
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
 		//
-		// Log Migration Scripts, if we log in with SysAdm role
-		if (AD_Role_ID == 0)
+		// Log Migration Scripts, if we log in with SysAdm role and the ID server is configured
+		if (AD_Role_ID == IUserRolePermissions.SYSTEM_ROLE_ID && MSequence.isUseExternalIDSystem())
 		{
 			Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
 		}

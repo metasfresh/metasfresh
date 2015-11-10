@@ -60,6 +60,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.grid.ed.VDate;
 import org.compiere.minigrid.MiniTable;
+import org.compiere.model.MSequence;
 import org.compiere.model.MUser;
 import org.compiere.print.CPrinter;
 import org.compiere.swing.CButton;
@@ -531,6 +532,8 @@ public final class Preference extends CDialog
 		// AutoCommit
 		autoCommit.setSelected(Env.isAutoCommit(Env.getCtx()));
 		autoNew.setSelected(Env.isAutoNew(Env.getCtx()));
+		
+		//
 		// AdempiereSys
 		adempiereSys.setSelected(Ini.isPropertyBool(Ini.P_ADEMPIERESYS));
 		// LogMigrationScript
@@ -546,6 +549,16 @@ public final class Preference extends CDialog
 				logMigrationScript.setEnabled(false);
 			}
 		}
+		
+		// If the ID server is not enabled, don't show the log migration scripts flags because can cause huge problems (see task 09544)
+		if (!MSequence.isUseExternalIDSystem())
+		{
+			adempiereSys.setSelected(false);
+			adempiereSys.setVisible(false);
+			logMigrationScript.setSelected(false);
+			logMigrationScript.setVisible(false);
+		}
+		
 		// AutoLogin
 		autoLogin.setSelected(Ini.isPropertyBool(Ini.P_A_LOGIN));
 		// Save Password
@@ -830,5 +843,4 @@ public final class Preference extends CDialog
 			log.log(Level.SEVERE, "", e);
 		}
 	}	// cmd_errorSave
-
 }	// Preference
