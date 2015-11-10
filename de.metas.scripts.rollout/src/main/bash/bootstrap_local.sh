@@ -199,21 +199,6 @@ rollout_database()
 	trace rollout_database END
 }
 
-rollout_sources()
-{
- SOURCES_DIR=${ROLLOUT_DIR}/sources
- trace rollout_sources BEGIN
- trace rollout_sources "SOURCES_DIR=$SOURCES_DIR"
-
- if ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "test -d '/opt/metasfresh/src'"; then
-   trace rollout_sources "Adding source-files to app folder (/opt/metasfresh/src/metasfresh_src.tar.gz)"
-   ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "tar czf /opt/metasfresh/src/metasfresh_src.tar.gz ${SOURCES_DIR}/*"
- else
-   trace rollout_sources "Skipping adding source-files to app folder."
- fi
- trace rollout_sources END
-}
-
 clean_rollout_appserver()
 {
 	trace clean_rollout_appserver BEGIN
@@ -269,7 +254,6 @@ if [ "$DATABASE" == "true" ]; then
 fi
 if [ "$MINOR" == "true" ]; then
 	rollout_minor
-	rollout_sources
 fi
 
 clean_rollout_appserver
