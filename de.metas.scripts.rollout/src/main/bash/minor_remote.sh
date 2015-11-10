@@ -116,7 +116,7 @@ install_adempiere()
 	
         if [[ -d ${ADEMPIERE_HOME}/src ]]; then
           trace install_adempiere "Adding source files to app-dir ( ${ADEMPIERE_HOME}/src/sources.tar.gz )"
-          tar czf ${ADEMPIERE_HOME}/src/sources.tar.gz ${SOURCES_DIR}/*
+          tar czf ${ADEMPIERE_HOME}/sources/sources.tar.gz ${SOURCES_DIR}/*
           trace install_adempiere "Done adding source files to app-dir"
         else
           trace install_adempiere "No source-folder present in app-dir. Skipping adding sourcefiles."
