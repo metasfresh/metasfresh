@@ -89,7 +89,6 @@ install_adempiere()
 	   JBOSS_APP_FOLDER=metasfresh
 	fi
 
-	echo "DEBUG: SOURCES_DIR=$SOURCES_DIR"
         if [[ -d ${ADEMPIERE_HOME}/src ]]; then
           trace install_adempiere "Adding source files to app-dir ( ${ADEMPIERE_HOME}/src/sources.tar.gz )"
           tar czf ${ADEMPIERE_HOME}/src/sources.tar.gz ${SOURCES_DIR}/*
