@@ -34,7 +34,7 @@ fi
 #Note: ROLLOUT_DIR can be overridden from cmdline using -d
 ROLLOUT_DIR=$LOCAL_DIR/..
 
-SOURCES_DIR=$LOCAL_DIR/../sources
+SOURCES_DIR=$ROLLOUT_DIR/sources
 
 HOSTNAME=$(hostname)
 
@@ -89,6 +89,15 @@ install_adempiere()
 	   JBOSS_APP_FOLDER=metasfresh
 	fi
 
+	echo "DEBUG: SOURCES_DIR=$SOURCES_DIR"
+        if [[ -d ${ADEMPIERE_HOME}/src ]]; then
+          trace install_adempiere "Adding source files to app-dir ( ${ADEMPIERE_HOME}/src/sources.tar.gz )"
+          tar czf ${ADEMPIERE_HOME}/src/sources.tar.gz ${SOURCES_DIR}/*
+          trace install_adempiere "Done adding source files to app-dir"
+        else
+          trace install_adempiere "No source-folder present in app-dir. Skipping adding sourcefiles."
+        fi
+
 	#This is only required until we also modernized the server-rollout
 	trace install_adempiere "Deleting the legacy adempiere.ear if it exists"
 	if [ -d "${ADEMPIERE_HOME}/jboss/server/$JBOSS_APP_FOLDER/deploy/adempiere.ear" ]; then
@@ -114,14 +123,6 @@ install_adempiere()
 	cd $ADEMPIERE_HOME/utils
 	./RUN_Post_Rollout_Processes.sh
 	
-        if [[ -d ${ADEMPIERE_HOME}/src ]]; then
-          trace install_adempiere "Adding source files to app-dir ( ${ADEMPIERE_HOME}/src/sources.tar.gz )"
-          tar czf ${ADEMPIERE_HOME}/sources/sources.tar.gz ${SOURCES_DIR}/*
-          trace install_adempiere "Done adding source files to app-dir"
-        else
-          trace install_adempiere "No source-folder present in app-dir. Skipping adding sourcefiles."
-        fi
- 
 	start_adempiere
 	
 	trace install_adempiere END
