@@ -286,9 +286,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	@Override
 	public String getSchema()
 	{
-		// begin vpj-cd e-evolution 03/04/2005
-		return "adempiere";
-		// end vpj-cd e-evolution 03/04/2005
+		return null;
 	}	// getSchema
 
 	/**
@@ -597,39 +595,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		}
 		return result.toString();
 	}	// TO_NUMBER
-
-	/**
-	 * Get SQL Commands
-	 *
-	 * @param cmdType CMD_*
-	 * @return array of commands to be executed
-	 */
-	@Override
-	public String[] getCommands(int cmdType)
-	{
-		if (CMD_CREATE_USER == cmdType)
-			return new String[]
-			{
-					"CREATE USER adempiere;",
-			};
-		//
-		if (CMD_CREATE_DATABASE == cmdType)
-			return new String[]
-			{
-					"CREATE DATABASE adempiere OWNER adempiere;",
-					"GRANT ALL PRIVILEGES ON adempiere TO adempiere;",
-					"CREATE SCHEMA adempiere;",
-					"SET search_path TO adempiere;"
-			};
-		//
-		if (CMD_DROP_DATABASE == cmdType)
-			return new String[]
-			{
-					"DROP DATABASE adempiere;"
-			};
-		//
-		return null;
-	}	// getCommands
 
 	/**
 	 * Get Cached Connection

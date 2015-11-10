@@ -331,8 +331,8 @@ public class ConfigurationData
 			}
 			setDatabaseSystemPassword("");
 			setDatabaseServer(hostName);
-			setDatabaseUser("adempiere");
-			setDatabasePassword("adempiere");
+			setDatabaseUser("metasfresh");
+			setDatabasePassword("metas");
 			//	Mail Server
 			if (p_panel != null)
 			{
@@ -816,8 +816,7 @@ public class ConfigurationData
 			log.warning("Open Socket " + host + ":" + port + " - " + pingSocket);
 		
 		log.fine(host + ":" + port + " - " + pingSocket);
-		if (pingSocket == null)
-			return false;
+		
 		//	success
 		try
 		{
@@ -1083,7 +1082,7 @@ public class ConfigurationData
 	public String getJavaType ()
 	{
 		if( p_panel != null )
-			return (String)p_panel.fJavaType.getSelectedItem();
+			return p_panel.fJavaType.getSelectedItem();
 		else
 			return (String)p_properties.get(JAVA_TYPE);
 	}
@@ -1425,7 +1424,7 @@ public class ConfigurationData
 			if (p_panel != null) 
 			{
 				String[] databases = m_databaseConfig[index].discoverDatabases(selected);
-				DefaultComboBoxModel model = new DefaultComboBoxModel(databases);
+				DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(databases);
 				p_panel.fDatabaseDiscovered.setModel(model); 
 				p_panel.fDatabaseDiscovered.setEnabled(databases.length != 0);
 				if (databases.length > 0)
@@ -1493,7 +1492,7 @@ public class ConfigurationData
 	 */
 	public String getDatabaseDiscovered ()
 	{
-		return (String)p_panel.fDatabaseDiscovered.getSelectedItem();
+		return p_panel.fDatabaseDiscovered.getSelectedItem();
 	}
 	/**
 	 * @param databaseDiscovered The database Discovered to set.

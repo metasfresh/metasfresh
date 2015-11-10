@@ -57,7 +57,7 @@ public class DB_PostgreSQL_ConnectionCustomizer extends AbstractConnectionCustom
 		log.log(Level.INFO, "Attempting to set client_min_messages=WARNING for pooled connection: {0} ", c);
 		c.prepareStatement("SET client_min_messages=WARNING").execute();
 		
-		c.setClientInfo(CLIENTINFO_ApplicationName, "adempiere");
+		c.setClientInfo(CLIENTINFO_ApplicationName, "metasfresh");
 	}
 	
 	@Override

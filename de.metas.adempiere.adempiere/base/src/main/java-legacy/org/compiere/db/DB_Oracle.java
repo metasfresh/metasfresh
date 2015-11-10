@@ -525,39 +525,6 @@ public class DB_Oracle implements AdempiereDatabase
         return result.toString();
     }   //  TO_NUMBER
 
-
-    /**
-     *  Get SQL Commands.
-     *  The following variables are resolved:
-     *  @SystemPassword@, @AdempiereUser@, @AdempierePassword@
-     *  @SystemPassword@, @DatabaseName@, @DatabaseDevice@
-     *  @param cmdType CMD_*
-     *  @return array of commands to be executed
-     */
-    @Override
-    public String[] getCommands (int cmdType)
-    {
-        if (CMD_CREATE_USER == cmdType)
-            return new String[]
-            {
-
-            };
-        //
-        if (CMD_CREATE_DATABASE == cmdType)
-            return new String[]
-            {
-
-            };
-        //
-        if (CMD_DROP_DATABASE == cmdType)
-            return new String[]
-            {
-
-            };
-        //
-        return null;
-    }   //  getCommands
-
     /**
      *  Create DataSource
      *  @param connection connection

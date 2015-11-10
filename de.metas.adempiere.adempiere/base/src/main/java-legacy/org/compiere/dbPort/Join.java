@@ -26,7 +26,7 @@ import org.compiere.util.Util;
  *  @author     Jorg Janke
  *  @version    $Id: Join.java,v 1.2 2006/07/30 00:55:04 jjanke Exp $
  */
-public class Join
+class Join
 {
 	/**
 	 *  Constructor
@@ -196,6 +196,7 @@ public class Join
 	 *  String representation
 	 *  @return info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer ("Join[");

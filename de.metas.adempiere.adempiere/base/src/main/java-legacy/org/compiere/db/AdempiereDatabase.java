@@ -29,8 +29,6 @@ import javax.sql.DataSource;
 import org.adempiere.exceptions.DBException;
 import org.compiere.dbPort.Convert;
 
-//import org.compiere.util.CPreparedStatement;
-
 /**
  * Interface for Adempiere Databases
  *
@@ -236,24 +234,6 @@ public interface AdempiereDatabase
 	 * @return true if sequence was created or updated
 	 */
 	public boolean createSequence(String name, int increment, int minvalue, int maxvalue, int start, String trxName);
-
-	/** Create User commands */
-	public static final int CMD_CREATE_USER = 0;
-	/** Create Database/Schema Commands */
-	public static final int CMD_CREATE_DATABASE = 1;
-	/** Drop Database/Schema Commands */
-	public static final int CMD_DROP_DATABASE = 2;
-
-	/**
-	 * Get SQL Commands. <code>
-	 * 	The following variables are resolved:
-	 * 
-	 * @SystemPassword@, @AdempiereUser@, @AdempierePassword@
-	 * @SystemPassword@, @DatabaseName@, @DatabaseDevice@ </code>
-	 * @param cmdType CMD_*
-	 * @return array of commands to be executed
-	 */
-	public String[] getCommands(int cmdType);
 
 	/**
 	 * Get Cached Connection on Server

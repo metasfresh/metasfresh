@@ -89,8 +89,6 @@ public class ConfigurationPanel extends CPanel implements ActionListener
 	/** Translation */
 	static ResourceBundle res = ResourceBundle.getBundle("org.compiere.install.SetupRes");
 
-	/** Setup Frame */
-	private Setup m_setup = null;
 	/** Status Bar */
 	private JLabel m_statusBar;
 	/** Configuration Data */
@@ -109,7 +107,7 @@ public class ConfigurationPanel extends CPanel implements ActionListener
 	CCheckBox okJavaHome = new CCheckBox();
 	private CButton bJavaHome = new CButton(iOpen);
 	private CLabel lJavaType = new CLabel();
-	CComboBox fJavaType = new CComboBox(ConfigurationData.JAVATYPE);
+	CComboBox<String> fJavaType = new CComboBox<>(ConfigurationData.JAVATYPE);
 	// Adempiere - KeyStore
 	private CLabel lAdempiereHome = new CLabel();
 	CTextField fAdempiereHome = new CTextField(FIELDLENGTH);
@@ -132,7 +130,7 @@ public class ConfigurationPanel extends CPanel implements ActionListener
 	CTextField fAppsServer = new CTextField(FIELDLENGTH);
 	CCheckBox okAppsServer = new CCheckBox();
 	private CLabel lAppsType = new CLabel();
-	CComboBox fAppsType = new CComboBox(ConfigurationData.APPSTYPE);
+	CComboBox<String> fAppsType = new CComboBox<>(ConfigurationData.APPSTYPE);
 	// Deployment Directory - JNP
 	private CLabel lDeployDir = new CLabel();
 	CTextField fDeployDir = new CTextField(FIELDLENGTH);
@@ -150,14 +148,14 @@ public class ConfigurationPanel extends CPanel implements ActionListener
 	CCheckBox okSSLPort = new CCheckBox();
 	// Database
 	private CLabel lDatabaseType = new CLabel();
-	CComboBox fDatabaseType = new CComboBox(ConfigurationData.DBTYPE);
+	CComboBox<String> fDatabaseType = new CComboBox<>(ConfigurationData.DBTYPE);
 	//
 	CLabel lDatabaseServer = new CLabel();
 	CTextField fDatabaseServer = new CTextField(FIELDLENGTH);
 	private CLabel lDatabaseName = new CLabel();
 	CTextField fDatabaseName = new CTextField(FIELDLENGTH);
 	private CLabel lDatabaseDiscovered = new CLabel();
-	CComboBox fDatabaseDiscovered = new CComboBox();
+	CComboBox<String> fDatabaseDiscovered = new CComboBox<>();
 	private CLabel lDatabasePort = new CLabel();
 	CTextField fDatabasePort = new CTextField(FIELDLENGTH);
 	private CLabel lSystemPassword = new CLabel();
@@ -248,7 +246,7 @@ public class ConfigurationPanel extends CPanel implements ActionListener
 		fKeyPass.setText("");
 		okKeyStore.setEnabled(false);
 
-		sectionLabel = new JLabel("Adempiere");
+		sectionLabel = new JLabel(Adempiere.getName());
 		sectionLabel.setForeground(titledBorder.getTitleColor());
 		separator = new JSeparator();
 		this.add(sectionLabel, new GridBagConstraints(0, 3, 7, 1, 0.0, 0.0
@@ -536,6 +534,7 @@ public class ConfigurationPanel extends CPanel implements ActionListener
 	 * 
 	 * @param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		if (m_testing)
@@ -543,7 +542,7 @@ public class ConfigurationPanel extends CPanel implements ActionListener
 		// TNS Name Changed
 		if (e.getSource() == fDatabaseDiscovered)
 		{
-			String dbName = (String)fDatabaseDiscovered.getSelectedItem();
+			String dbName = fDatabaseDiscovered.getSelectedItem();
 			if (dbName != null && dbName.length() > 0)
 				fDatabaseName.setText(m_data.resolveDatabaseName(dbName));
 		}
@@ -596,6 +595,7 @@ public class ConfigurationPanel extends CPanel implements ActionListener
 		org.compiere.apps.SwingWorker worker = new org.compiere.apps.SwingWorker()
 		{
 			// Start it
+			@Override
 			public Object construct()
 			{
 				m_testing = true;
@@ -622,6 +622,7 @@ public class ConfigurationPanel extends CPanel implements ActionListener
 			}
 
 			// Finish it
+			@Override
 			public void finished()
 			{
 				if (m_errorString != null)
