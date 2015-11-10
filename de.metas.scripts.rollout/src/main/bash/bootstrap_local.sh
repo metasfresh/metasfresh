@@ -204,7 +204,7 @@ rollout_database()
 rollout_sources()
 {
  trace rollout_sources BEGIN
- if [[ -d "/opt/metasfresh/src" ]]; then
+ if ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "test -d '/opt/metasfresh/src'"; then
    trace rollout_sources "Adding source-files to app folder (/opt/metasfresh/src/metasfresh_src.tar.gz)"
    ssh -p ${SSH_PORT} ${TARGET_USER}@${TARGET_HOST} "tar czf /opt/metasfresh/src/metasfresh_src.tar.gz ${SOURCES}/*"
  else
