@@ -52,7 +52,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IBPartnerOrgBL;
-import de.metas.banking.service.IBPBankAccountDAO;
+import de.metas.banking.service.IBankingBPBankAccountDAO;
 import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.esr.ESRConstants;
 
@@ -71,7 +71,7 @@ class AD_Client_Setup_Runnable
 	private final transient IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final transient IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final transient IBankingBPBankAccountDAO bankAccountDAO = Services.get(IBankingBPBankAccountDAO.class);
 
 	// Parameters
 	private boolean _executed = false;

@@ -270,7 +270,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 			final I_M_HU_PI paletPI = retrieveDefaultManualLU(ctx);
 			if (paletPI != null)
 			{
-				packingMaterialsCollector.addM_HU_PI(paletPI, 1);
+				packingMaterialsCollector.addM_HU_PI(paletPI, 1, shipmentLine);
 			}
 			
 			_manualLUCollected = true;
@@ -312,10 +312,10 @@ public class HUShipmentPackingMaterialLinesBuilder
 				.firstOnly(I_M_HU_PI.class);
 	}
 
-	private de.metas.inout.model.I_M_InOutLine createPackingMaterialLine(final HUPackingMaterialDocumentLineCandidate pmCandidate)
+	private I_M_InOutLine createPackingMaterialLine(final HUPackingMaterialDocumentLineCandidate pmCandidate)
 	{
 		final I_M_InOut inout = getM_InOut();
-		final de.metas.inout.model.I_M_InOutLine pmInOutLine = inOutBL.newInOutLine(inout, de.metas.inout.model.I_M_InOutLine.class);
+		final I_M_InOutLine pmInOutLine = inOutBL.newInOutLine(inout, I_M_InOutLine.class);
 		huInOutBL.updatePackingMaterialInOutLine(pmInOutLine, pmCandidate);
 		InterfaceWrapperHelper.save(pmInOutLine);
 
