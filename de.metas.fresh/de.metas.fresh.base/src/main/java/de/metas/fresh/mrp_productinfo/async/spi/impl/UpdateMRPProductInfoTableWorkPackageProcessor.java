@@ -1,13 +1,10 @@
 package de.metas.fresh.mrp_productinfo.async.spi.impl;
 
-import java.sql.CallableStatement;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
@@ -141,19 +138,10 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 	private void doDBFunctionCall(final String functionCall,
 			final IMRPProductInfoSelector selector)
 	{
-		final CallableStatement callableStmt = DB.prepareCall("select " + functionCall + "(?,?,?)");
-		try
-		{
-			// we could also identify the parameter by their names, but the names might be "beautified" by a dev.
-			callableStmt.setTimestamp(1, selector.getDate());
-			callableStmt.setInt(2, selector.getM_Product_ID());
-			callableStmt.setInt(3, selector.getM_AttributeSetInstance_ID());
-
-			callableStmt.execute();
-		}
-		catch (SQLException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
+		DB.executeFunctionCallEx("select " + functionCall + "(?,?,?)",
+				new Object[] {
+						selector.getDate(),
+						selector.getM_Product_ID(),
+						selector.getM_AttributeSetInstance_ID() });
 	}
 }

@@ -91,9 +91,8 @@ public class FinReportJasper extends FinReport
 	    if (proc.getProcedureName() != null && proc.getProcedureName().length() > 0) {
 			//  execute on this thread/connection
 			String sql = "{call " + proc.getProcedureName() + "(?)}";
-			try
+			try(final CallableStatement cstmt = DB.prepareCall(sql)) //	ro??
 			{
-				CallableStatement cstmt = DB.prepareCall(sql);	//	ro??
 				cstmt.setInt(1, getAD_PInstance_ID());
 				cstmt.executeUpdate();
 				cstmt.close();

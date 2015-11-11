@@ -22,7 +22,6 @@ package de.metas.allocation.api;
  * #L%
  */
 
-
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
@@ -78,4 +77,11 @@ public interface IAllocationBL extends ISingletonService
 	I_C_AllocationHdr autoAllocateSpecificPayment(org.compiere.model.I_C_Invoice invoice,
 			I_C_Payment payment,
 			boolean ignoreIsAutoAllocateAvailableAmt);
+
+	/**
+	 * 
+	 * @param allocationHdr
+	 * @return <code>true</code> if the given allocationHdr is the reversal of another allocationHdr.
+	 */
+	boolean isReversal(I_C_AllocationHdr allocationHdr);
 }

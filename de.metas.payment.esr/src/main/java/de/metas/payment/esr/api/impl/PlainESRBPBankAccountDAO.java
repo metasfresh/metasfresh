@@ -37,9 +37,9 @@ import org.compiere.util.CLogger;
 
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 
-public class PlainBPBankAccountDAO extends AbstractBPBankAccountDAO
+public class PlainESRBPBankAccountDAO extends AbstractBPBankAccountDAO
 {	
-	private static final transient CLogger logger = CLogger.getCLogger(PlainBPBankAccountDAO.class);
+	private static final transient CLogger logger = CLogger.getCLogger(PlainESRBPBankAccountDAO.class);
 	
 	private final POJOLookupMap db = POJOLookupMap.get();
 

@@ -22,7 +22,6 @@ package de.metas.materialtracking.model.validator;
  * #L%
  */
 
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.Services;
@@ -42,20 +41,22 @@ public class M_InOutLine
 	 * 
 	 * @param iol
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_M_InOutLine.COLUMNNAME_M_AttributeSetInstance_ID })
 	public void updateMaterialTrackingIDfromASI(final I_M_InOutLine iol)
 	{
 		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
 
 		final I_M_AttributeSetInstance asi = iol.getM_AttributeSetInstance();
-		
-		if(!materialTrackingAttributeBL.hasMaterialTrackingAttribute(asi))
+
+		if (!materialTrackingAttributeBL.hasMaterialTrackingAttribute(asi))
 		{
 			return; // nothing to sync, the line's asi has no M_Material_Tracking attrib
 		}
-		
-		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTracking(asi);
-		
+
+		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTrackingOrNull(asi);
+
 		final int m_Material_Tracking_ID = materialTracking == null ? 0 : materialTracking.getM_Material_Tracking_ID();
 		if (iol.getM_Material_Tracking_ID() != m_Material_Tracking_ID)
 		{

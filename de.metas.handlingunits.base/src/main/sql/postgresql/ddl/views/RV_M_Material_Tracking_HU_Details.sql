@@ -25,12 +25,9 @@ SELECT
 	, hu.CreatedBy
 	, hu.Updated
 	, hu.UpdatedBy
-	, hu.IsActive
 	, hu.AD_Client_ID
 	, hu.AD_Org_ID
 	, hu.IsActive
-	, hu.AD_Client_ID
-	, hu.AD_Org_ID
 	, po_issue.PP_Order_ID AS pp_order_issue_id
 	, po_issue.C_DocType_ID AS pp_order_issue_doctype_id
 	, po_issue.DocStatus AS pp_order_issue_docstatus
@@ -48,8 +45,6 @@ SELECT
 --	,pobl.*
 FROM 
 	M_Material_Tracking mt 
-	JOIN M_Attribute a ON a.Value='M_Material_Tracking_ID'
-FROM  M_Material_Tracking mt 
         INNER JOIN M_Attribute a ON (a.Value='M_Material_Tracking_ID')
 		JOIN M_HU_Attribute hu_at ON hu_at.M_Attribute_ID=a.M_Attribute_ID AND hu_at.Value=mt.M_Material_Tracking_ID::text
 			JOIN M_HU hu ON hu_at.M_HU_ID=hu.M_HU_ID
@@ -95,3 +90,4 @@ WHERE
 --	AND hu.M_HU_ID=10100810 --has 2 rows..2 iol-ID
 ;
 ALTER TABLE RV_M_Material_Tracking_HU_Details OWNER TO adempiere;
+

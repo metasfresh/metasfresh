@@ -22,6 +22,7 @@ package de.metas.materialtracking.model.validator;
  * #L%
  */
 
+import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -29,7 +30,9 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
 
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
@@ -52,6 +55,12 @@ public class PP_Cost_Collector
 	{
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
+		// don't link reversals, because their original CC will also be unlinked
+		if (ppCostCollectorBL.isReversal(ppCostCollector))
+		{
+			return;
+		}
+
 		// Applies only on issue collectors
 		if (!ppCostCollectorBL.isMaterialIssue(ppCostCollector, false))
 		{
@@ -70,8 +79,11 @@ public class PP_Cost_Collector
 
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID })
-	public void unlinkToMaterialTracking(final I_PP_Cost_Collector ppCostCollector)
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID,
+			ModelValidator.TIMING_AFTER_REACTIVATE,
+			ModelValidator.TIMING_AFTER_REVERSEACCRUAL,
+			ModelValidator.TIMING_AFTER_REVERSECORRECT })
+	public void unlinkFromMaterialTracking(final I_PP_Cost_Collector ppCostCollector)
 	{
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
@@ -92,11 +104,31 @@ public class PP_Cost_Collector
 		// unlink
 		materialTrackingBL.unlinkModelFromMaterialTracking(ppCostCollector);
 
+		// also unlink the ppOrder, if this was the last costCollector
+		final I_PP_Order ppOrder = ppCostCollector.getPP_Order();
+		boolean anyCCLeft = false;
+		final List<I_PP_Cost_Collector> costCollectors = Services.get(IPPCostCollectorDAO.class).retrieveNotReversedForOrder(ppOrder);
+
+		for (final I_PP_Cost_Collector cc : costCollectors)
+		{
+			if (cc.getPP_Cost_Collector_ID() == ppCostCollector.getPP_Cost_Collector_ID())
+			{
+				continue;
+			}
+			if (ppCostCollectorBL.isMaterialIssue(cc, false))
+			{
+				anyCCLeft = true;
+				break;
+			}
+		}
+		if (!anyCCLeft)
+		{
+			materialTrackingBL.unlinkModelFromMaterialTracking(ppOrder);
+		}
 	}
 
 	private void linkCostCollector(final I_PP_Cost_Collector ppCostCollector, final I_M_Material_Tracking materialTracking)
 	{
-
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()

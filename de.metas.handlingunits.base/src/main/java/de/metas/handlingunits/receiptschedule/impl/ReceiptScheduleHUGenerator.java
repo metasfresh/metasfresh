@@ -575,7 +575,7 @@ public class ReceiptScheduleHUGenerator
 
 		//
 		// Make sure LU/TU configuration is adjusted to CUs/TUs to order quantity
-		// to not produce more HUs then needed.
+		// to not produce more HUs than needed.
 		createInitialLUTUConfiguration(schedule);
 
 		final BigDecimal qtyToOrderCUs = schedule.getQtyOrdered(); // whole receipt schedule ordered Qty

@@ -22,9 +22,9 @@ package de.metas.handlingunits.attribute;
  * #L%
  */
 
-
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.model.I_M_HU;
 
@@ -51,4 +51,16 @@ public interface IHUAttributesBL extends ISingletonService
 	 * @return underlying HU or <code>null</code> if given <code>attributeSet</code> does not support HUs.
 	 */
 	I_M_HU getM_HU_OrNull(IAttributeSet attributeSet);
+
+	/**
+	 * Iterates the HU-tree of the given HU and sets the given attribute to the given attributeValue.
+	 * 
+	 * @param hu
+	 * @param attribute
+	 * @param attributeValue
+	 * @param onlyHUStatus may be <code>null</code> or empty. Otherwise, only HUs with the given status are updated. However, all HUs are iterated.
+	 */
+	void updateHUAttributeRecursive(I_M_HU hu, I_M_Attribute attribute,
+			Object attributeValue,
+			String onlyHUStatus);
 }

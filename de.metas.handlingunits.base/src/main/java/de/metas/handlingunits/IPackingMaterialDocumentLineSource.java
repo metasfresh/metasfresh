@@ -22,7 +22,6 @@ package de.metas.handlingunits;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -34,7 +33,6 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
  * Based on these (regular) lines, the {@link IPackingMaterialDocumentLine} will be created
  *
  * @author tsa
- *
  */
 public interface IPackingMaterialDocumentLineSource
 {

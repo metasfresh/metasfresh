@@ -22,7 +22,6 @@ package de.metas.materialtracking.model.validator;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -33,6 +32,7 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_AttributeSetInstance;
 
+import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
@@ -57,6 +57,13 @@ public class C_AllocationHdr extends MaterialTrackableDocumentByASIInterceptor<I
 	{
 		// NOTE: at this point we don't know if is eligible or not, so we consider everything as eligible
 		// and we will decide it later, on Allocation Line
+
+		if (Services.get(IAllocationBL.class).isReversal(document))
+		{
+			// .. at any rate, we don't link reversals, because the original allocation is also unlinked.
+			return false;
+		}
+
 		return true;
 	}
 

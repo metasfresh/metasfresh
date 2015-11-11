@@ -17,13 +17,7 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 
 /**
  *  BP Bank Account Model
@@ -45,21 +39,21 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 	 *	@param C_BPartner_ID bpartner
 	 *	@return
 	 */
-	public static MBPBankAccount[] getOfBPartner(final Properties ctx, final int C_BPartner_ID)
-	{
-		final List<I_C_BP_BankAccount> bpBankAccounts = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BP_BankAccount.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_BPartner_ID, C_BPartner_ID)
-				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumn(I_C_BP_BankAccount.COLUMN_C_BP_BankAccount_ID)
-				.endOrderBy()
-				.create()
-				.list();
-		
-		return LegacyAdapters.convertToPOArray(bpBankAccounts, MBPBankAccount.class);
-	}	//	getOfBPartner
+//	public static MBPBankAccount[] getOfBPartner(final Properties ctx, final int C_BPartner_ID)
+//	{
+//		final List<I_C_BP_BankAccount> bpBankAccounts = Services.get(IQueryBL.class)
+//				.createQueryBuilder(I_C_BP_BankAccount.class)
+//				.setContext(ctx, ITrx.TRXNAME_None)
+//				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_BPartner_ID, C_BPartner_ID)
+//				.addOnlyActiveRecordsFilter()
+//				.orderBy()
+//				.addColumn(I_C_BP_BankAccount.COLUMN_C_BP_BankAccount_ID)
+//				.endOrderBy()
+//				.create()
+//				.list();
+//		
+//		return LegacyAdapters.convertToPOArray(bpBankAccounts, MBPBankAccount.class);
+//	}	//	getOfBPartner
 	
 	/**************************************************************************
 	 * 	Constructor

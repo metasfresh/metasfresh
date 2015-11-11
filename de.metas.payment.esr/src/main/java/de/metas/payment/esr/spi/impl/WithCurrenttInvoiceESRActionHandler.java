@@ -54,7 +54,9 @@ public class WithCurrenttInvoiceESRActionHandler implements IESRActionHandler
 		if (null != payment && null != invoice)
 		{
 			Services.get(IESRImportBL.class).linkInvoiceToPayment(line);
-			Services.get(IInvoiceBL.class).testAllocation(invoice);
+
+			final boolean ignoreProcessed = false;
+			Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
 		}
 		else
 		{

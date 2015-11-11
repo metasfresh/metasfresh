@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -38,6 +38,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -290,12 +291,25 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLine(final I_M_InOutLine inOutLine)
 	{
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(inOutLine)
-				.filter(new EqualsQueryFilter<I_C_Invoice_Candidate>(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, inOutLine.getC_OrderLine_ID()))
-				.filter(ActiveRecordQueryFilter.getInstance(I_C_Invoice_Candidate.class));
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		return queryBuilder.create()
+		final ICompositeQueryFilter<I_C_Invoice_Candidate> iolreferenceFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, Services.get(IADTableDAO.class).retrieveTableId(I_M_InOutLine.Table_Name))
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, inOutLine.getM_InOutLine_ID());
+
+		final ICompositeQueryFilter<I_C_Invoice_Candidate> olReferenceFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, inOutLine.getC_OrderLine_ID());
+
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.setContext(inOutLine)
+				.setJoinOr()
+				.filter(iolreferenceFilter)
+				.filter(olReferenceFilter);
+
+		return queryBuilder
+				.create()
 				.list(I_C_Invoice_Candidate.class);
 	}
 

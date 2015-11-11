@@ -67,7 +67,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		@Override
 		public String toString()
 		{
-			return getClass().getName();
+			return getClass().getName() + "_NO_MODEL";
 		}
 	};
 

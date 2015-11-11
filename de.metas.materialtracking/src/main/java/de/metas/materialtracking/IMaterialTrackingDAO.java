@@ -22,7 +22,6 @@ package de.metas.materialtracking;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
@@ -72,9 +71,12 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefForType(I_M_Material_Tracking materialTracking, Class<?> modelClass);
 
 	/**
-	 *
+	 * If the given model has a <code>M_Material_Tracking_ID</code> column, then return that referenced material tracking.
+	 * Otherwise, if the given model is referenced by a {@link I_M_Material_Tracking_Ref}, then return that reference's material tracking.
+	 * Otherwise, return <code>null</code>.
+	 * 
 	 * @param model
-	 * @return material tracking or null
+	 * @return material tracking or <code>null</code>
 	 */
 	I_M_Material_Tracking retrieveMaterialTrackingForModel(Object model);
 

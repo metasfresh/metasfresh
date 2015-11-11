@@ -33,7 +33,7 @@ import org.compiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
-import de.metas.banking.service.IBPBankAccountDAO;
+import de.metas.banking.service.IBankingBPBankAccountDAO;
 import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.model.I_C_Payment_Request;
 
@@ -80,6 +80,20 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		{
 			return false;
 		}
+		
+		final org.compiere.model.I_C_BP_BankAccount payRequestBPBankAcct = paymentRequest.getC_BP_BankAccount();
+		final org.compiere.model.I_C_BP_BankAccount paySelBPBankAcct =  paySelectionLine.getC_PaySelection().getC_BP_BankAccount();
+	
+		// 09500: In case we area dealing with 2 bank accounts we have to make sure they are of the same currency
+		if(payRequestBPBankAcct != null && paySelBPBankAcct != null)
+		{
+
+			// do not update the line from the request if they don't match
+			if(payRequestBPBankAcct.getC_Currency_ID() != paySelBPBankAcct.getC_Currency_ID())
+			{
+				return false;
+			}
+		}
 
 		//
 		// Primarily, try to use the pay amount from the payment request
@@ -113,7 +127,7 @@ public class PaymentRequestBL implements IPaymentRequestBL
 
 			//
 			// Find a default partner account
-			final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+			final IBankingBPBankAccountDAO bpBankAccountDAO = Services.get(IBankingBPBankAccountDAO.class);
 			final I_C_BP_BankAccount bpBankAccount = bpBankAccountDAO.retrieveDefaultBankAccount(invoice.getC_BPartner());
 			requestForInvoice.setC_BP_BankAccount(bpBankAccount);
 

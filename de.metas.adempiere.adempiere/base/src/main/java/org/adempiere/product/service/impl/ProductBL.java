@@ -22,7 +22,6 @@ package org.adempiere.product.service.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Properties;
@@ -70,7 +69,7 @@ public final class ProductBL implements IProductBL
 		String policy = pc.getMMPolicy();
 		if (policy == null || policy.length() == 0)
 		{
-			policy =Services.get(IClientDAO.class).retriveClient(Env.getCtx()).getMMPolicy();
+			policy = Services.get(IClientDAO.class).retriveClient(Env.getCtx()).getMMPolicy();
 		}
 		return policy;
 	}
@@ -90,7 +89,7 @@ public final class ProductBL implements IProductBL
 	public I_C_UOM getWeightUOM(final I_M_Product product)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		
+
 		// FIXME: we hardcoded the UOM for M_Product.Weight to Kilogram
 		return Services.get(IUOMDAO.class).retrieveByX12DE355(ctx, IUOMDAO.X12DE355_Kilogram);
 	}
@@ -172,6 +171,10 @@ public final class ProductBL implements IProductBL
 		if (attributeSet_ID > 0)
 		{
 			return attributeSet_ID;
+		}
+		if (product.getM_Product_Category_ID() <= 0) // guard against NPE which might happen in unit tests
+		{
+			return IAttributeDAO.M_AttributeSet_ID_None;
 		}
 
 		attributeSet_ID = product.getM_Product_Category().getM_AttributeSet_ID();

@@ -857,7 +857,8 @@ public class ESRImportBL implements IESRImportBL
 					Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {0}", importLine);
 
 					Services.get(IDocActionBL.class).processEx(payment, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
-					Services.get(IInvoiceBL.class).testAllocation(invoice);
+					final boolean ignoreProcessed = false;
+					Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
 					InterfaceWrapperHelper.save(invoice);
 
 					importLine.setC_Payment(payment);

@@ -25,17 +25,18 @@ package de.metas.adempiere.callout;
  * #L%
  */
 
-
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.GridTabWrapper;
+import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.MBPBankAccount;
 import org.compiere.model.X_C_BP_BankAccount;
 
+import de.metas.adempiere.banking.api.IBPBankAccountDAO;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 
 /**
@@ -67,12 +68,18 @@ public class CalloutPaySelection extends CalloutEngine
 		{
 			return "";
 		}
-		psl.setC_BPartner_ID(psl.getC_Invoice().getC_BPartner_ID());
+		final int partnerID = psl.getC_Invoice().getC_BPartner_ID();
+		psl.setC_BPartner_ID(partnerID);
+		
 		//
-		final int C_BPartner_ID = psl.getC_BPartner_ID();
 		final String paymentRule = psl.getPaymentRule();
-		final MBPBankAccount[] bankAccts = MBPBankAccount.getOfBPartner(ctx, C_BPartner_ID);
-		if (bankAccts != null && bankAccts.length > 0)
+
+		// task 09500 get the currency from the account of the selection header
+		// this is safe because the columns are mandatory
+		final int currencyID = psl.getC_PaySelection().getC_BP_BankAccount().getC_Currency_ID();
+		final List<I_C_BP_BankAccount> bankAccts = Services.get(IBPBankAccountDAO.class).retrieveBankAccountsForPartnerAndCurrency(ctx, partnerID, currencyID);
+		// final MBPBankAccount[] bankAccts = MBPBankAccount.getOfBPartner(ctx, C_BPartner_ID);
+		if (!bankAccts.isEmpty())
 		{
 			int primaryAcct = 0;
 			int secondaryAcct = 0;

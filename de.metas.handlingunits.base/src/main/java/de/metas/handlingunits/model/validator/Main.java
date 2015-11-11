@@ -58,8 +58,8 @@ import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.invoicecandidate.facet.C_Invoice_Candidate_HUPackingMaterials_FacetCollector;
 import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUC_Invoice_Candidate_GridTabSummaryInfoProvider;
+import de.metas.handlingunits.materialtracking.spi.impl.HUDocumentLineLineMaterialTrackingListener;
 import de.metas.handlingunits.materialtracking.spi.impl.HUHandlingUnitsInfoFactory;
-import de.metas.handlingunits.materialtracking.spi.impl.HUOrderLineMaterialTrackingListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -151,10 +151,12 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_PickingSlot_HU(), client);
 		engine.addModelValidator(new C_InvoiceLine(), client);
 
-		//
 		// 06833: M_ReceiptSchedule destruction shall automatically destroy HUs
-		engine.addModelValidator(new M_ReceiptSchedule(), client);
+		engine.addModelValidator(new de.metas.handlingunits.receiptschedule.model.validator.M_ReceiptSchedule(), client);
 
+		// 09502: sync material tracking changes with already created planning-HUs
+		engine.addModelValidator(new de.metas.handlingunits.materialtracking.model.validator.M_ReceiptSchedule(), client);
+		
 		//
 		// 08743: M_ShipperTransportation
 		engine.addModelValidator(new M_ShipperTransportation(), client);
@@ -329,8 +331,8 @@ public final class Main extends AbstractModuleInterceptor
 		
 		//
 		// Material tracking
-		Services.get(IMaterialTrackingBL.class).addModelTrackingListener(I_C_OrderLine.Table_Name, HUOrderLineMaterialTrackingListener.INSTANCE); // task 09106
-		Services.get(IMaterialTrackingBL.class).addModelTrackingListener(I_M_InOutLine.Table_Name, HUOrderLineMaterialTrackingListener.INSTANCE); // task 09106
+		Services.get(IMaterialTrackingBL.class).addModelTrackingListener(I_C_OrderLine.Table_Name, HUDocumentLineLineMaterialTrackingListener.INSTANCE); // task 09106
+		Services.get(IMaterialTrackingBL.class).addModelTrackingListener(I_M_InOutLine.Table_Name, HUDocumentLineLineMaterialTrackingListener.INSTANCE); // task 09106
 	}
 
 	private void registerServices()

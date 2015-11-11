@@ -41,12 +41,12 @@ public final class ObjectUtils
 	/**
 	 * To be used in {@link Object#toString()} implementations.
 	 * 
+	 * Might arbitrarily throw exceptions. Therefore, Please consider to reimplement this, or to use e.g. {@link com.google.common.base.MoreObjects#toStringHelper(Object)}.
+	 * 
 	 * @param obj
 	 * @return
-	 * @deprecated might arbitrarily throw exceptions. Please use e.g. {@link com.google.common.base.MoreObjects#toStringHelper(Object)} instead.
 	 * 
 	 */
-	@Deprecated
 	public static final String toString(final Object obj)
 	{
 		if (obj == null)

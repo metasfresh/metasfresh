@@ -28,8 +28,6 @@ import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 /**
  * Implementations of this interface are able to produce packing material document lines.
  *
- * @author tsa
- *
  */
 public interface IPackingMaterialDocumentLinesBuilder
 {

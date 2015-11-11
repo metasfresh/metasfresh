@@ -22,7 +22,6 @@ package de.metas.handlingunits;
  * #L%
  */
 
-
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -32,14 +31,19 @@ import org.adempiere.ad.dao.IQueryBuilder;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 
 /**
  * The implementation iterates HUs (and their children) and collect the packing material products from those HUs.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
  *
+ * @param <T> type of the optional "source" (inoutLine, oderLine or other) the respective HU belongs to.
+ *            In the case of M_InOutLine, this allows the implementation to later on set the <code>M_PackingMaterial_InOutLine_ID</code> of the source-iol.
  */
-public interface IHUPackingMaterialsCollector
+public interface IHUPackingMaterialsCollector<T>
 {
 
 	/**
@@ -48,8 +52,10 @@ public interface IHUPackingMaterialsCollector
 	 * NOTE: this method makes sure that an HU is considered only once, so it's safe to call it as many times as you want.
 	 *
 	 * @param hu
+	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 */
-	void addHURecursively(I_M_HU hu);
+	void addHURecursively(I_M_HU hu,
+			T source);
 
 	/**
 	 * Recursivelly adds all the HUs from given collection.
@@ -57,9 +63,12 @@ public interface IHUPackingMaterialsCollector
 	 * NOTE: this method makes sure that an HU is considered only once, so it's safe to call it as many times as you want.
 	 *
 	 * @param hus
+	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
+	 * 
 	 * @see #addHURecursively(I_M_HU)
 	 */
-	void addHURecursively(Collection<I_M_HU> hus);
+	void addHURecursively(Collection<I_M_HU> hus,
+			T source);
 
 	/**
 	 * Retrieves suitable HUs from given {@link I_M_HU_Assignment}s query and add them recursively (see {@link #addHURecursively(Collection)}).
@@ -85,8 +94,10 @@ public interface IHUPackingMaterialsCollector
 	 * Compared with {@link #addHURecursively(I_M_HU)} this method will <b>NOT</b> iterate included HUs.
 	 *
 	 * @param hu
+	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 */
-	void addHU(I_M_HU hu);
+	void addHU(I_M_HU hu,
+			T source);
 
 	List<HUPackingMaterialDocumentLineCandidate> getAndClearCandidates();
 
@@ -103,8 +114,10 @@ public interface IHUPackingMaterialsCollector
 	 * Add a trading unit packing materials
 	 *
 	 * @param tuHU
+	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 */
-	void addTU(I_M_HU tuHU);
+	void addTU(I_M_HU tuHU,
+			T source);
 
 	/**
 	 * Collect (extract) trading unit packing materials
@@ -117,8 +130,10 @@ public interface IHUPackingMaterialsCollector
 	 * Add a loading unit packing materials
 	 *
 	 * @param luHU
+	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 */
-	void addLU(I_M_HU luHU);
+	void addLU(I_M_HU luHU,
+			T source);
 
 	/**
 	 * Collect (extract) loading unit packing materials
@@ -151,6 +166,6 @@ public interface IHUPackingMaterialsCollector
 	 *
 	 * @param productIdsSortComparator
 	 */
-	IHUPackingMaterialsCollector setProductIdSortComparator(Comparator<Integer> productIdsSortComparator);
+	IHUPackingMaterialsCollector<T> setProductIdSortComparator(Comparator<Integer> productIdsSortComparator);
 
 }

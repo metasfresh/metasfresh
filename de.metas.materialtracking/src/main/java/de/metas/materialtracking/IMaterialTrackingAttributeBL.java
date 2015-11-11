@@ -22,7 +22,6 @@ package de.metas.materialtracking;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -53,19 +52,33 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 	/**
 	 * Called by API when {@link I_M_Material_Tracking} record is changed.
 	 *
-	 * This method will update coresponding {@link I_M_AttributeValue} record.
+	 * This method will update the corresponding {@link I_M_AttributeValue} record.
+	 * 
+	 * When changing the implementation, please make sure that the model interceptors' <code>ifColumnsChanged</code> are in sync.
 	 *
 	 * @param materialTracking
 	 */
 	void createOrUpdateMaterialTrackingAttributeValue(I_M_Material_Tracking materialTracking);
 
 	/**
-	 * Sets given material tracking to given ASI.
+	 * Sets the given material tracking to the given ASI.
 	 *
-	 * @param asi
-	 * @param materialTracking
+	 * @param asi may be <code>null</code> <b>IF</b> also the given <code>materialTracking</code> is <code>null</code>. In that case, the method does nothing.
+	 * @param materialTracking can be <code>null</code> if the material tracking shall be un-set from the given ASI.
 	 */
 	void setM_Material_Tracking(I_M_AttributeSetInstance asi, I_M_Material_Tracking materialTracking);
+
+	/**
+	 * Creates a new ASI with a <code>M_Material_Tracking</code> attribute instance and sets its value to the given <code>materialTracking</code>.
+	 * If the given documentLine already has an ASI, that asi is copied. Otherwise a new ASI is created using the given documentLine's <code>M_Product</code>.
+	 * <p>
+	 * <b>IMPORTANT:</b> the method does <b>not save</b> the given <code>documentLine</code> after having changed its ASI-ID.
+	 * 
+	 * @param documentLine must be not <code>null</code> and convertible to {@link org.adempiere.mm.attributes.api.IAttributeSetInstanceAware IAttributeSetInstanceAware} via
+	 *            {@link org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService IAttributeSetInstanceAwareFactoryService}
+	 * @param materialTracking may be <code>null</code>, but even then, the new ASI will have an (empty) <code>M_Material_Tracking_ID</code> attribute.
+	 */
+	void createOrUpdateMaterialTrackingASI(Object documentLine, I_M_Material_Tracking materialTracking);
 
 	/**
 	 * Gets material tracking from given ASI
@@ -73,7 +86,7 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 	 * @param asi
 	 * @return
 	 */
-	I_M_Material_Tracking getMaterialTracking(I_M_AttributeSetInstance asi);
+	I_M_Material_Tracking getMaterialTrackingOrNull(I_M_AttributeSetInstance asi);
 
 	I_M_Material_Tracking getMaterialTracking(IContextAware context, IAttributeSet attributeSet);
 
@@ -89,4 +102,5 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 
 	/** @return true if material tracking attribute exists and it's set */
 	boolean isMaterialTrackingSet(IContextAware context, IAttributeSet attributeSet);
+
 }

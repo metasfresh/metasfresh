@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Properties;
 

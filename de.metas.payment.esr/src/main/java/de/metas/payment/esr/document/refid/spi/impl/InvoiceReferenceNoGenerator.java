@@ -39,7 +39,7 @@ import org.compiere.util.Util;
 import de.metas.document.refid.spi.IReferenceNoGenerator;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IBPBankAccountBL;
-import de.metas.payment.esr.api.IBPBankAccountDAO;
+import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRBL;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
@@ -90,7 +90,7 @@ public class InvoiceReferenceNoGenerator implements IReferenceNoGenerator
 
 		final I_C_BPartner bPartner = invoice.getC_BPartner();
 
-		final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+		final IESRBPBankAccountDAO bpBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
 		final List<I_C_BP_BankAccount> bankAccounts = bpBankAccountDAO.fetchOrgEsrAccounts(org);
 		
 		Check.assume(!bankAccounts.isEmpty(), "No ESR bank account found.");

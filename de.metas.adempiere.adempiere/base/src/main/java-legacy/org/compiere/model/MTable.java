@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
+import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.service.ISequenceDAO;
@@ -345,11 +346,12 @@ public class MTable extends X_AD_Table
 	}	//	getKeyColumns
 	
 	/**************************************************************************
-	 * 	Get PO Class Instance
-	 *	@param Record_ID record
-	 *	@param trxName
-	 *	@return PO for Record or null
-	 * @deprecated Please consider using {@link TableModelLoader#getPO(Properties, String, int, String)}.
+	 * Get PO Class Instance
+	 *
+	 * @param Record_ID record
+	 * @param trxName
+	 * @return PO for Record or null
+	 * @deprecated Please consider using {@link TableModelLoader#getPO(Properties, String, int, String)} or {@link TableRecordCacheLocal#getReferencedValue(Object, Class)}.
 	 */
 	@Deprecated
 	public PO getPO (final int Record_ID, final String trxName)

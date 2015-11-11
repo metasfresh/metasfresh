@@ -124,7 +124,8 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
-	public boolean isMaterialIssue(final I_PP_Cost_Collector cc, final boolean considerCoProductsAsIssue)
+	public boolean isMaterialIssue(final I_PP_Cost_Collector cc, 
+			final boolean considerCoProductsAsIssue)
 	{
 		Check.assumeNotNull(cc, LiberoException.class, "cc not null");
 		final String costCollectorType = cc.getCostCollectorType();

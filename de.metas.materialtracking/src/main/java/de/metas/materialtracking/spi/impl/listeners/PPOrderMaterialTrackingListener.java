@@ -45,7 +45,8 @@ public final class PPOrderMaterialTrackingListener extends MaterialTrackingListe
 	 * Set {@link I_M_Material_Tracking_Ref#COLUMN_IsQualityInspectionDoc}.
 	 */
 	@Override
-	public void beforeModelLinked(final MTLinkRequest request, final I_M_Material_Tracking_Ref materialTrackingRef)
+	public void beforeModelLinked(final MTLinkRequest request, 
+			final I_M_Material_Tracking_Ref materialTrackingRef)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(request.getModel(), I_PP_Order.class);
 		setIsQualityInspectionDoc(materialTrackingRef, ppOrder);

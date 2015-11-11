@@ -44,13 +44,14 @@ public class C_Order extends MaterialTrackableDocumentByASIInterceptor<I_C_Order
 		{
 			return false;
 		}
-
+		
 		return true;
 	}
 
 	@Override
 	protected List<I_C_OrderLine> retrieveDocumentLines(final I_C_Order document)
 	{
+		// note: we don't have C_Order reversals to check for
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final List<I_C_OrderLine> documentLines = orderDAO.retrieveOrderLines(document, I_C_OrderLine.class);
 		return documentLines;

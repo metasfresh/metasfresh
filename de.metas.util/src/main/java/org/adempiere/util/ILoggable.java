@@ -34,6 +34,7 @@ package org.adempiere.util;
  */
 public interface ILoggable
 {
+	/** The null loggable which can be used without NPE, but doesn't do anything */
 	public static ILoggable NULL = NullLoggable.instance;
 	
 	/** Holds the {@link ILoggable} instance of current thread */

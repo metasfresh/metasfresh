@@ -1,4 +1,4 @@
-package de.metas.handlingunits.model.validator;
+package de.metas.handlingunits.receiptschedule.model.validator;
 
 /*
  * #%L

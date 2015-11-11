@@ -30,13 +30,4 @@ public interface I_M_InOutLine extends de.metas.inout.model.I_M_InOutLine
 	public void setIsInvoiceCandidate(boolean IsInvoiceCandidate);
 	public boolean isInvoiceCandidate();
 	// @formatter:on
-
-	// @formatter:off
-	// public static final String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
-	@Override
-	public void setIsPackagingMaterial(boolean IsPackagingMaterial);
-	@Override
-	public boolean isPackagingMaterial();
-	// @formatter:on
-
 }

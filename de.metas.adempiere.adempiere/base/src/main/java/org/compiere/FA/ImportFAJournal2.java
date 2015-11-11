@@ -124,8 +124,6 @@ public class ImportFAJournal2 extends SvrProcess
 		}
 	}	//	prepare
 
-        CallableStatement cs;
-
 	/**
 	 *  Perform process.
 	 *  @return Message
@@ -901,52 +899,54 @@ public class ImportFAJournal2 extends SvrProcess
 
                     if(impgetIsDepreciated.equals("Y"))
                     {
-                    	cs = DB.prepareCall("{call AD_Sequence_Next(?,?,?)}");
-	                    cs.setString(1, "A_Asset_Change");
-	                    cs.setInt(2,imp.getAD_Client_ID());
-	                    cs.registerOutParameter(3, java.sql.Types.INTEGER);
-	                    cs.execute();
-	
-	
-	                    MAssetChange assetChange = new MAssetChange (getCtx(), 0, get_TrxName());
-	                    assetChange.setA_Asset_Change_ID(cs.getInt(3));
-	                    assetChange.set_ValueOfColumn("AD_CLIENT_ID", imp.getAD_Client_ID());
-	                    assetChange.setAD_Org_ID(imp.getAD_OrgDoc_ID());
-	                    assetChange.set_ValueOfColumn("CREATEDBY", getAD_User_ID());
-	                    assetChange.set_ValueOfColumn("UPDATEDBY", getAD_User_ID());
-	                    assetChange.setChangeType("DEP");
-	                    assetChange.setChangeAmt(imp.getAmtAcctTotal());
-	                    assetChange.setA_Asset_ID(imp.getA_Asset_ID());
-	                    assetChange.setTextDetails(imp.getDescription());
-	                    assetChange.setC_ValidCombination_ID(imp.getC_ValidCombination_ID());
-	                    assetChange.setDateAcct(imp.getDateAcct());
-	                    assetChange.setPostingType(imp.getPostingType());
-	                    assetChange.saveEx();
+						try (final CallableStatement cs = DB.prepareCall("{call AD_Sequence_Next(?,?,?)}"))
+						{
+							cs.setString(1, "A_Asset_Change");
+							cs.setInt(2, imp.getAD_Client_ID());
+							cs.registerOutParameter(3, java.sql.Types.INTEGER);
+							cs.execute();
+
+							MAssetChange assetChange = new MAssetChange(getCtx(), 0, get_TrxName());
+							assetChange.setA_Asset_Change_ID(cs.getInt(3));
+							assetChange.set_ValueOfColumn("AD_CLIENT_ID", imp.getAD_Client_ID());
+							assetChange.setAD_Org_ID(imp.getAD_OrgDoc_ID());
+							assetChange.set_ValueOfColumn("CREATEDBY", getAD_User_ID());
+							assetChange.set_ValueOfColumn("UPDATEDBY", getAD_User_ID());
+							assetChange.setChangeType("DEP");
+							assetChange.setChangeAmt(imp.getAmtAcctTotal());
+							assetChange.setA_Asset_ID(imp.getA_Asset_ID());
+							assetChange.setTextDetails(imp.getDescription());
+							assetChange.setC_ValidCombination_ID(imp.getC_ValidCombination_ID());
+							assetChange.setDateAcct(imp.getDateAcct());
+							assetChange.setPostingType(imp.getPostingType());
+							assetChange.saveEx();
+						}
 	                      
                     }
 	                else if(impgetIsDepreciated.equals("B"))
 	                {
-	                	cs = DB.prepareCall("{call AD_Sequence_Next(?,?,?)}");
-	                    cs.setString(1, "A_Asset_Change");
-	                    cs.setInt(2,imp.getAD_Client_ID());
-	                    cs.registerOutParameter(3, java.sql.Types.INTEGER);
-	                    cs.execute();
-	
-	                    MAssetChange assetChange = new MAssetChange (getCtx(), 0, get_TrxName());
-	                    assetChange.setA_Asset_Change_ID(cs.getInt(3));
-	                    assetChange.set_ValueOfColumn("AD_CLIENT_ID", imp.getAD_Client_ID());
-	                    assetChange.setAD_Org_ID(imp.getAD_OrgDoc_ID());
-	                    assetChange.set_ValueOfColumn("CREATEDBY", getAD_User_ID());
-	                    assetChange.set_ValueOfColumn("UPDATEDBY", getAD_User_ID());
-	                    assetChange.setChangeType("BUD");
-	                    assetChange.setChangeAmt(imp.getAmtAcctTotal());
-	                    assetChange.setA_Asset_ID(imp.getA_Asset_ID());
-	                    assetChange.setTextDetails(imp.getDescription());
-	                    assetChange.setC_ValidCombination_ID(imp.getC_ValidCombination_ID());
-	                    assetChange.setDateAcct(imp.getDateAcct());
-	                    assetChange.setPostingType(imp.getPostingType());
-	                    assetChange.saveEx();
-	                      
+						try (final CallableStatement cs = DB.prepareCall("{call AD_Sequence_Next(?,?,?)}"))
+						{
+							cs.setString(1, "A_Asset_Change");
+							cs.setInt(2, imp.getAD_Client_ID());
+							cs.registerOutParameter(3, java.sql.Types.INTEGER);
+							cs.execute();
+
+							MAssetChange assetChange = new MAssetChange(getCtx(), 0, get_TrxName());
+							assetChange.setA_Asset_Change_ID(cs.getInt(3));
+							assetChange.set_ValueOfColumn("AD_CLIENT_ID", imp.getAD_Client_ID());
+							assetChange.setAD_Org_ID(imp.getAD_OrgDoc_ID());
+							assetChange.set_ValueOfColumn("CREATEDBY", getAD_User_ID());
+							assetChange.set_ValueOfColumn("UPDATEDBY", getAD_User_ID());
+							assetChange.setChangeType("BUD");
+							assetChange.setChangeAmt(imp.getAmtAcctTotal());
+							assetChange.setA_Asset_ID(imp.getA_Asset_ID());
+							assetChange.setTextDetails(imp.getDescription());
+							assetChange.setC_ValidCombination_ID(imp.getC_ValidCombination_ID());
+							assetChange.setDateAcct(imp.getDateAcct());
+							assetChange.setPostingType(imp.getPostingType());
+							assetChange.saveEx();
+						}
 	                }
 
 

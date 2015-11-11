@@ -43,6 +43,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 
@@ -62,7 +63,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 	private CompositeHUTrxListener _trxListeners = null;
 
 	final IHUContext huCtx = null; // task 07734: we don't want to track M_MaterialTrackings, so we don't need to provide a HU context.
-	private IHUPackingMaterialsCollector _destroyedHUPackingMaterialsCollector = new HUPackingMaterialsCollector(null);
+	private IHUPackingMaterialsCollector<I_M_InOutLine> _destroyedHUPackingMaterialsCollector = new HUPackingMaterialsCollector(null);
 
 	public MutableHUContext(final Object contextProvider)
 	{
@@ -260,7 +261,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 	}
 
 	@Override
-	public IHUPackingMaterialsCollector getDestroyedHUPackingMaterialsCollector()
+	public IHUPackingMaterialsCollector<?> getDestroyedHUPackingMaterialsCollector()
 	{
 
 		return _destroyedHUPackingMaterialsCollector;

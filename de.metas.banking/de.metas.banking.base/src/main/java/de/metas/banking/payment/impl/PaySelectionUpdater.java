@@ -22,7 +22,6 @@ package de.metas.banking.payment.impl;
  * #L%
  */
 
-
 import static org.compiere.model.X_C_Invoice.PAYMENTRULE_DirectDebit;
 import static org.compiere.model.X_C_Invoice.PAYMENTRULE_DirectDeposit;
 import static org.compiere.model.X_C_Invoice.PAYMENTRULE_OnCredit;
@@ -52,6 +51,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.POInfo;
@@ -638,7 +638,22 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final int bpBankAccountId = candidate.getC_BP_BankAccount_ID();
 		if (bpBankAccountId > 0)
 		{
-			paySelectionLine.setC_BP_BankAccount_ID(bpBankAccountId);
+			// task 09500: only set the account if it has the same currency as the one of the header
+			// note that this checking is just for extra precaution. the candidate shall already have that currency
+
+			final int paySelectionCurrencyID = paySelection.getC_BP_BankAccount().getC_Currency_ID();
+
+			final Properties ctx = InterfaceWrapperHelper.getCtx(paySelectionLine);
+			final String trxName = InterfaceWrapperHelper.getTrxName(paySelectionLine);
+
+			final I_C_BP_BankAccount candidateAccount = InterfaceWrapperHelper.create(ctx, bpBankAccountId, I_C_BP_BankAccount.class, trxName);
+
+			final int candidateCurrencyID = candidateAccount.getC_Currency_ID();
+
+			if (paySelectionCurrencyID == candidateCurrencyID)
+			{
+				paySelectionLine.setC_BP_BankAccount_ID(bpBankAccountId);
+			}
 		}
 
 		// Set line no (if not already set)

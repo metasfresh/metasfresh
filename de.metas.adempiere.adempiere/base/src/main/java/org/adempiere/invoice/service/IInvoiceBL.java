@@ -22,7 +22,6 @@ package org.adempiere.invoice.service;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -130,6 +129,13 @@ public interface IInvoiceBL extends ISingletonService
 	boolean isCreditMemo(String docBaseType);
 
 	/**
+	 * 
+	 * @param invoice
+	 * @return <code>true</code> if the given invoice is the reversal of another invoice.
+	 */
+	boolean isReversal(I_C_Invoice invoice);
+
+	/**
 	 * @param invoice
 	 * @return true if the given invoice is a AR CreditMemo (ARC)
 	 */
@@ -142,7 +148,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
 	 * @param description
 	 */
-	void writeOffInvoice(org.compiere.model.I_C_Invoice invoice, BigDecimal openAmt, String description);
+	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
 	/**
 	 * Create a credit memo for the given invoice.
@@ -166,11 +172,8 @@ public interface IInvoiceBL extends ISingletonService
 	 * 
 	 * @throws AdempiereException if
 	 *             <ul>
-	 *             <li>the given invoice is <code>null</code> or</li>
-	 *             <li>the given C_Charge_ID doesn't have a valid C_Charge or</li>
-	 *             <li>the given invoice is a credit memo or</li>
-	 *             <li>the given invoice is already fully paid or</li>
-	 *             <li>the credit memo line's C_Tax is not tax exempt (due to the charge's tax category and/or the invoice BPartner's location)</li>
+	 *             <li>the given invoice is <code>null</code> or</li> <li>the given C_Charge_ID doesn't have a valid C_Charge or</li> <li>the given invoice is a credit memo or</li> <li>the given
+	 *             invoice is already fully paid or</li> <li>the credit memo line's C_Tax is not tax exempt (due to the charge's tax category and/or the invoice BPartner's location)</li>
 	 *             </ul>
 	 */
 	de.metas.adempiere.model.I_C_Invoice creditInvoice(de.metas.adempiere.model.I_C_Invoice invoice, IInvoiceCreditContext creditCtx);
@@ -186,9 +189,11 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Test Allocation (and set paid flag)
 	 * 
-	 * @return true if updated
+	 * @param invoice the invoice to be checked
+	 * @param ignoreProcessed if true, then the change will be done even if the given <code>invoice</code> currently still have <code>Processed='N'</code>.
+	 * @return true if the isPaid value was changed
 	 */
-	boolean testAllocation(I_C_Invoice invoice);
+	boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
 
 	/**
 	 * 
@@ -288,7 +293,8 @@ public interface IInvoiceBL extends ISingletonService
 	 * IF (and only if!, as of now) the the document subtype is {@code DOC_SUBTYPE_ARC_CS}, then the order line shall be editable.
 	 * 
 	 * @param invoice may not be null
-	 * @param invoiceLines optional, the lines to update; if <code>null</code> or empty, then all invoice lines are updated <b>and saved</b>. Otherwise, the given lines are only updated, but not saved.
+	 * @param invoiceLines optional, the lines to update; if <code>null</code> or empty, then all invoice lines are updated <b>and saved</b>. Otherwise, the given lines are only updated, but not
+	 *            saved.
 	 */
 	void updateInvoiceLineIsReadOnlyFlags(de.metas.adempiere.model.I_C_Invoice invoice, I_C_InvoiceLine... invoiceLines);
 

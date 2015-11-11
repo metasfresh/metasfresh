@@ -22,7 +22,6 @@ package org.adempiere.invoice.service.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -347,11 +346,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final boolean testAllocation(final org.compiere.model.I_C_Invoice invoice)
+	public final boolean testAllocation(final org.compiere.model.I_C_Invoice invoice, boolean ignoreProcessed)
 	{
 		boolean change = false;
 
-		if (invoice.isProcessed())
+		if (invoice.isProcessed() || ignoreProcessed)
 		{
 			BigDecimal alloc = Services.get(IAllocationDAO.class).retrieveAllocatedAmt(invoice); // absolute
 			final boolean hasAllocations = alloc != null; // metas: tsa: 01955
@@ -1058,6 +1057,21 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		return true;
+	}
+
+	@Override
+	public boolean isReversal(org.compiere.model.I_C_Invoice invoice)
+	{
+		if (invoice == null)
+		{
+			return false;
+		}
+		if (invoice.getReversal_ID() <= 0)
+		{
+			return false;
+		}
+		// the reversal is always younger than the original document
+		return invoice.getC_Invoice_ID() > invoice.getReversal_ID();
 	}
 
 	@Override

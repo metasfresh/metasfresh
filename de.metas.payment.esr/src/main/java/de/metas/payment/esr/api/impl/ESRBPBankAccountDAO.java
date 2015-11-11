@@ -39,7 +39,7 @@ import org.compiere.model.Query;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 
-public class BPBankAccountDAO extends AbstractBPBankAccountDAO
+public class ESRBPBankAccountDAO extends AbstractBPBankAccountDAO
 {
 	private static String MSG_NOT_ESR_ACCOUNT_FOR_ORG = "NoESRAccountForOrganiazation";
 

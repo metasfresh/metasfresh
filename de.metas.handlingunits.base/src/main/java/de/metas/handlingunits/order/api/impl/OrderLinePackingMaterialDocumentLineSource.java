@@ -31,6 +31,7 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
@@ -89,7 +90,8 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 	@Override
 	public BigDecimal getQty()
 	{
-		// TODO: why not using getQtyEnteredTU?
+		// TODO: why not using getQtyEnteredTU? 
+		// yes, why not indeed?
 
 		final BigDecimal qtyItemCapacity = orderLine.getQtyItemCapacity();
 		if (qtyItemCapacity.signum() == 0)
@@ -101,5 +103,11 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 
 		final BigDecimal qty = qtyOrdered.divide(qtyItemCapacity, 0, RoundingMode.UP);
 		return qty;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
 	}
 }

@@ -22,18 +22,19 @@ package de.metas.materialtracking.model.validator;
  * #L%
  */
 
-
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.inout.service.IInOutBL;
 import org.adempiere.inout.service.IInOutDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -61,15 +62,30 @@ public class M_InOut extends MaterialTrackableDocumentByASIInterceptor<I_M_InOut
 			return false;
 		}
 
+		// reversals are not eligible either, because there counterpart is also unlinked
+		if (Services.get(IInOutBL.class).isReversal(receipt))
+		{
+			return false;
+		}
+
 		return true;
 	}
 
+	/**
+	 * Returns all active inout lines, including packaging lines.<br>
+	 * We do include packaging lines, because we need them to have a <code>M_Material_Trackinf_Ref</code>. That's because we need to pass on the inout lines M_Material_Tracking_Id to its invoice
+	 * candidate. and we want to do so in a uniform way.<br>
+	 * Also note that the qtys from HUs with different M_Material_Trackings will never be aggregated into one packaging line.
+	 */
 	@Override
 	protected List<I_M_InOutLine> retrieveDocumentLines(final I_M_InOut document)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-
-		final List<I_M_InOutLine> documentLines = inoutDAO.retrieveLines(document);
+		final List<I_M_InOutLine> documentLines = new ArrayList<I_M_InOutLine>();
+		for (final I_M_InOutLine iol : inoutDAO.retrieveLines(document, I_M_InOutLine.class))
+		{
+			documentLines.add(iol);
+		}
 		return documentLines;
 	}
 
@@ -86,7 +102,7 @@ public class M_InOut extends MaterialTrackableDocumentByASIInterceptor<I_M_InOut
 		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
 
 		final I_M_AttributeSetInstance asi = iolExt.getM_AttributeSetInstance();
-		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTracking(asi);
+		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTrackingOrNull(asi);
 		return materialTracking;
 	}
 

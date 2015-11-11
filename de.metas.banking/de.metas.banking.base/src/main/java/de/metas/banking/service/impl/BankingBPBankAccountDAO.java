@@ -29,13 +29,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 
-import de.metas.banking.service.IBPBankAccountDAO;
+import de.metas.banking.service.IBankingBPBankAccountDAO;
 import de.metas.interfaces.I_C_BP_BankAccount;
 
 /**
  * @author al
  */
-public class BPBankAccountDAO implements IBPBankAccountDAO
+public class BankingBPBankAccountDAO implements IBankingBPBankAccountDAO
 {
 	@Override
 	public I_C_BP_BankAccount retrieveDefaultBankAccount(final I_C_BPartner partner)

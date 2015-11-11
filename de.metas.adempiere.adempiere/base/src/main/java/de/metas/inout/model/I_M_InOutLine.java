@@ -25,7 +25,6 @@ package de.metas.inout.model;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_BPartner;
@@ -95,4 +94,13 @@ public interface I_M_InOutLine extends org.compiere.model.I_M_InOutLine
 	public void setIsPackagingMaterial(boolean IsPackagingMaterial);
 	public boolean isPackagingMaterial();
 	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_M_PackingMaterial_InOutLine_ID = "M_PackingMaterial_InOutLine_ID";
+	public void setM_PackingMaterial_InOutLine_ID(int C_OrderLineSource_ID);
+	public void setM_PackingMaterial_InOutLine(final I_M_InOutLine iol);
+	public int getM_PackingMaterial_InOutLine_ID();
+	public I_M_InOutLine getM_PackingMaterial_InOutLine();
+	// @formatter:on
+
 }

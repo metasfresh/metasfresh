@@ -209,6 +209,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				// update the Discount value of 'ic'. We will need it for the priceActual further down
 				set_Discount(ctx, ic);
 
+				// 06502: add entry in C_InvoiceCandidate_InOutLine to link InvoiceCandidate with inoutLines
+				// Note: the code originally related to task 06502 has partially been moved to de.metas.invoicecandidate.modelvalidator.M_InoutLine
+				// we'll need those icIols to be up to date to date in order to have QtyWithIssues (updateQtyWithIssues() et al. further down),
+				// and we need them (depending on which handler) for setDeliveredData()
+				populateC_InvoiceCandidate_InOutLine(ic, ic.getC_OrderLine());
+				
 				// updating qty delivered
 				// 07814-IT2 only from now on we have the correct QtyDelivered
 				// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
@@ -255,11 +261,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				// If is turns out that the fulfillment is now sufficient,
 				// reset both 'QtyToInvoice_Override' and 'QtyToInvoice_OverrideFulfilled'
 				set_QtyToInvoiceOverrideFulfilled(ic, oldQtyInvoiced, factor);
-
-				// 06502: add entry in C_InvoiceCandidate_InOutLine to link InvoiceCandidate with inoutLines
-				// Note: the code originally related to task 06502 has partially been moved to de.metas.invoicecandidate.modelvalidator.M_InoutLine
-				// we'll need those icIols to be up to date to date in order to have QtyWithIssues
-				populateC_InvoiceCandidate_InOutLine(ic, ic.getC_OrderLine());
 
 				// calculate the fields from 06502: qualityDiscountPercent, qtyWithIssues and IsInDispute.
 				// we'll need QtyWithIssues to be up to date to date in order to have QtyWithIssues_Effective

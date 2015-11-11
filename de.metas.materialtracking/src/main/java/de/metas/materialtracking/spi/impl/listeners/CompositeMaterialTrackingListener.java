@@ -75,7 +75,8 @@ public final class CompositeMaterialTrackingListener implements IMaterialTrackin
 	}
 
 	@Override
-	public void beforeModelLinked(final MTLinkRequest request, final I_M_Material_Tracking_Ref materialTrackingRef)
+	public void beforeModelLinked(final MTLinkRequest request, 
+			final I_M_Material_Tracking_Ref materialTrackingRef)
 	{
 		for (final IMaterialTrackingListener listener : getListenersForTable(request.getModel()))
 		{
@@ -93,7 +94,8 @@ public final class CompositeMaterialTrackingListener implements IMaterialTrackin
 	}
 
 	@Override
-	public void afterModelUnlinked(final Object model, final I_M_Material_Tracking materialTrackingOld)
+	public void afterModelUnlinked(final Object model, 
+			final I_M_Material_Tracking materialTrackingOld)
 	{
 		for (final IMaterialTrackingListener listener : getListenersForTable(model))
 		{

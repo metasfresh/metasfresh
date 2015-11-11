@@ -22,12 +22,24 @@ package de.metas.handlingunits.attribute.impl;
  * #L%
  */
 
-
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_M_Attribute;
 
+import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
@@ -55,5 +67,45 @@ public class HUAttributesBL implements IHUAttributesBL
 		}
 
 		return hu;
+	}
+
+	@Override
+	public void updateHUAttributeRecursive(final I_M_HU hu,
+			final I_M_Attribute attribute,
+			final Object attributeValue,
+			final String onlyHUStatus)
+	{
+		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggableOr(ILoggable.NULL);
+
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+		huAttributeStorageFactory.setHUStorageFactory(storageFactory);
+
+		final HUIterator iterator = new HUIterator();
+		// I'm not 100% sure which time to pick, but i think for the iterator itself it makes no difference, and i also don't need it in the beforeHU implementation.
+		iterator.setDate(SystemTime.asTimestamp());
+		iterator.setListener(new HUIteratorListenerAdapter()
+		{
+			@Override
+			public Result beforeHU(final IMutable<I_M_HU> currentHUMutable)
+			{
+				final I_M_HU currentHU = currentHUMutable.getValue();
+				if (Check.isEmpty(onlyHUStatus) || onlyHUStatus.equals(currentHU.getHUStatus()))
+				{
+					final IAttributeStorage attributeStorage = huAttributeStorageFactory.getAttributeStorage(currentHU);
+
+					attributeStorage.setValueNoPropagate(attribute, attributeValue);
+					attributeStorage.saveChangesIfNeeded();
+					final String msg = "Updated IAttributeStorage " + attributeStorage + " of M_HU " + currentHU;
+					loggable.addLog(msg);
+				}
+
+				return Result.CONTINUE;
+			}
+		});
+		iterator.iterate(hu);
 	}
 }

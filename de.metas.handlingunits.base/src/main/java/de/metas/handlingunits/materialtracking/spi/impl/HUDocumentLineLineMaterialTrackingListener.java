@@ -22,47 +22,41 @@ package de.metas.handlingunits.materialtracking.spi.impl;
  * #L%
  */
 
-
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.util.CLogger;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
-import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.MaterialTrackingListenerAdapter;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /**
- * 
- * @author ts
+ * For link requests whose <code>model</code> has an {@link I_M_HU_Assignment} this listener updates the <code>M_Material_Tracking</code> HU-attributes of the assigned HUs.
+ * <p>
+ * <b>Important:</b> this listener does nothing, unless the given request's {@link MTLinkRequest#getParams()} has {@link HUConstants#PARAM_CHANGE_HU_MAterial_Tracking_ID} <code>=true</code>.
+ *
+ * @author metas-dev <dev@metas-fresh.com>
  * @task http://dewiki908/mediawiki/index.php/09106_Material-Vorgangs-ID_nachtr%C3%A4glich_erfassen_%28101556035702%29
  */
-public class HUOrderLineMaterialTrackingListener extends MaterialTrackingListenerAdapter
+public class HUDocumentLineLineMaterialTrackingListener extends MaterialTrackingListenerAdapter
 {
-	private static final transient CLogger logger = CLogger.getCLogger(HUOrderLineMaterialTrackingListener.class);
+	private static final transient CLogger logger = CLogger.getCLogger(HUDocumentLineLineMaterialTrackingListener.class);
 
-	public static HUOrderLineMaterialTrackingListener INSTANCE = new HUOrderLineMaterialTrackingListener();
+	public static HUDocumentLineLineMaterialTrackingListener INSTANCE = new HUDocumentLineLineMaterialTrackingListener();
 
-	private HUOrderLineMaterialTrackingListener()
+	private HUDocumentLineLineMaterialTrackingListener()
 	{
 		// nothing
 	}
@@ -87,18 +81,6 @@ public class HUOrderLineMaterialTrackingListener extends MaterialTrackingListene
 			{
 				processLinkRequestForHU(huAssignment.getM_HU(), request);
 			}
-			if (huAssignment.getM_LU_HU_ID() > 0)
-			{
-				processLinkRequestForHU(huAssignment.getM_LU_HU(), request);
-			}
-			if (huAssignment.getM_TU_HU_ID() > 0)
-			{
-				processLinkRequestForHU(huAssignment.getM_TU_HU(), request);
-			}
-			if (huAssignment.getVHU_ID() > 0)
-			{
-				processLinkRequestForHU(huAssignment.getVHU(), request);
-			}
 		}
 	}
 
@@ -115,39 +97,19 @@ public class HUOrderLineMaterialTrackingListener extends MaterialTrackingListene
 	private void processLinkRequestForHU(final I_M_HU hu, final MTLinkRequest request)
 	{
 		final I_M_Material_Tracking materialTracking = request.getMaterialTracking();
-		final ILoggable loggable = request.getLoggable();
 
 		//
 		// update the HU itself
 		{
-			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-			final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-
-			final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-
-			final I_M_Attribute materialTrackingAttribute = attributeDAO.retrieveAttributeByValue(
-					ctx,
-					I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID,
-					I_M_Attribute.class);
-
-			final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-			final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
-			huAttributeStorageFactory.setHUStorageFactory(storageFactory);
-
-			final IAttributeStorage attributeStorage = huAttributeStorageFactory.getAttributeStorage(hu);
-
-			attributeStorage.setValueNoPropagate(materialTrackingAttribute, materialTracking.getM_Material_Tracking_ID());
-			attributeStorage.saveChangesIfNeeded();
-
-			final String msg = "Updated IAttributeStorage " + attributeStorage + " of M_HU " + hu;
-			logger.log(Level.FINE, msg);
-			loggable.addLog(msg);
+			final IHUMaterialTrackingBL huMaterialTrackingBL = Services.get(IHUMaterialTrackingBL.class);
+			huMaterialTrackingBL.updateHUAttributeRecursive(hu, materialTracking, null); // update all HUs, no matter which state
 		}
 
 		//
 		// check if the HU is assigned to a PP_Order and also update that PP_Order's material tracking reference
 		{
+			final ILoggable loggable = ILoggable.THREADLOCAL.getLoggableOr(ILoggable.NULL);
+
 			final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 			final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 
@@ -161,10 +123,10 @@ public class HUOrderLineMaterialTrackingListener extends MaterialTrackingListene
 
 				final I_PP_Order ppOrder = costCollector.getPP_Order();
 
-				materialTrackingBL.unlinkModelFromMaterialTracking(ppOrder);
 				materialTrackingBL.linkModelToMaterialTracking(
 						MTLinkRequest.builder(request)
 								.setModel(ppOrder)
+								.setAssumeNotAlreadyAssigned(false) // unlink if necessary
 								.build());
 
 				final String msg = "Updated M_Material_Tracking_Ref for PP_Order " + ppOrder + " of M_HU " + hu;

@@ -27,10 +27,8 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.process.SvrProcess;
 
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 
@@ -48,20 +46,17 @@ public class MTLinkRequest
 	private final IParams params;
 	private final I_M_Material_Tracking materialTracking;
 	private final boolean assumeNotAlreadyAssigned;
-	/** transient because we don't want it in the toString output..e.g. if it is a {@link SvrProcess}, it might not work well with {@link ObjectUtils#toString(Object)}. */
-	private final transient ILoggable loggable;
 
 	private MTLinkRequest(final Object model,
 			final I_M_Material_Tracking materialTracking,
 			final IParams params,
-			final boolean assumeNotAlreadyAssigned,
-			final ILoggable loggable)
+			final boolean assumeNotAlreadyAssigned)
 	{
 		this.model = model;
 		this.materialTracking = materialTracking;
 		this.params = params;
 		this.assumeNotAlreadyAssigned = assumeNotAlreadyAssigned;
-		this.loggable = loggable;
+
 	}
 
 	public static MaterialTrackingRequestBuilder builder()
@@ -79,7 +74,6 @@ public class MTLinkRequest
 	{
 		return new MaterialTrackingRequestBuilder()
 				.setAssumeNotAlreadyAssigned(template.isAssumeNotAlreadyAssigned())
-				.setLoggable(template.getLoggable())
 				.setMaterialTracking(template.getMaterialTracking())
 				.setModel(template.getModel())
 				.setParams(template.getParams());
@@ -126,15 +120,6 @@ public class MTLinkRequest
 		return assumeNotAlreadyAssigned;
 	}
 
-	/**
-	 * 
-	 * @return never returns <code>null</code>.
-	 */
-	public ILoggable getLoggable()
-	{
-		return loggable;
-	}
-
 	public String toString()
 	{
 		return ObjectUtils.toString(this);
@@ -146,7 +131,6 @@ public class MTLinkRequest
 		private IParams params = IParams.NULL; // default = null
 		private I_M_Material_Tracking materialTracking;
 		private boolean assumeNotAlreadyAssigned = false; // default = false
-		private ILoggable loggable = ILoggable.NULL; // default = null
 
 		private MaterialTrackingRequestBuilder()
 		{
@@ -201,24 +185,12 @@ public class MTLinkRequest
 			return this;
 		}
 
-		/**
-		 * Optional. Use this is you want to give the business logic a change to report something.
-		 * 
-		 * @param loggable
-		 * @return
-		 */
-		public MaterialTrackingRequestBuilder setLoggable(final ILoggable loggable)
-		{
-			this.loggable = loggable;
-			return this;
-		}
-
 		public MTLinkRequest build()
 		{
 			Check.assumeNotNull(model, "model is not null in MaterialTrackingEventBuilder {0}", this);
 			Check.assumeNotNull(materialTracking, "materialTracking is not null in MaterialTrackingEventBuilder {0}", this);
 
-			return new MTLinkRequest(model, materialTracking, params, assumeNotAlreadyAssigned, loggable);
+			return new MTLinkRequest(model, materialTracking, params, assumeNotAlreadyAssigned);
 		}
 
 		@Override

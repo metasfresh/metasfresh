@@ -22,9 +22,10 @@ package de.metas.inoutcandidate.spi.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -34,11 +35,13 @@ import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.comparator.NullComparator;
+import org.apache.commons.collections4.list.UnmodifiableList;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /**
@@ -79,6 +82,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 	private BigDecimal qty = BigDecimal.ZERO;
 	private final I_M_Locator locator;
 	private final I_M_Material_Tracking materialTracking;
+	private final List<I_M_InOutLine> sources = new ArrayList<I_M_InOutLine>();
 
 	/**
 	 *
@@ -246,5 +250,18 @@ public final class HUPackingMaterialDocumentLineCandidate
 		}
 
 		qty = qty.add(candidateToAdd.qty);
+	}
+
+	public void addSourceIfNotNull(final I_M_InOutLine iol)
+	{
+		if (iol != null)
+		{
+			sources.add(iol);
+		}
+	}
+
+	public List<I_M_InOutLine> getSources()
+	{
+		return new UnmodifiableList<I_M_InOutLine>(sources);
 	}
 }

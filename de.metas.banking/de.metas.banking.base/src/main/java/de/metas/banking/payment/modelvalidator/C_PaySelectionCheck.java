@@ -23,18 +23,23 @@ package de.metas.banking.payment.modelvalidator;
  */
 
 
+import java.util.List;
+import java.util.Properties;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_PaySelectionCheck;
-import org.compiere.model.MBPBankAccount;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.CLogger;
+
+import de.metas.adempiere.banking.api.IBPBankAccountDAO;
 
 /**
  * This is mainly a copy and paste of the former jboss-aop aspect <code>de.metas.banking.aop.PaySelectionCheckAsp</code>. The purpuse of that aspect was:
@@ -89,8 +94,14 @@ public class C_PaySelectionCheck
 		I_C_BP_BankAccount baRemittance = null;
 		I_C_BP_BankAccount baAll = null;
 
-		for (final I_C_BP_BankAccount ba : MBPBankAccount.getOfBPartner(
-				InterfaceWrapperHelper.getCtx(paySelectionCheck), paySelectionCheck.getC_BPartner_ID()))
+		final Properties ctx = InterfaceWrapperHelper.getCtx(paySelectionCheck);
+		final int partnerID = paySelectionCheck.getC_BPartner_ID();
+		
+		final I_C_BP_BankAccount bankAccount = paySelectionCheck.getC_BP_BankAccount();
+		final int currencyID = bankAccount != null ? bankAccount.getC_Currency_ID() : -1;
+		
+		final List<I_C_BP_BankAccount> accounts = Services.get(IBPBankAccountDAO.class).retrieveBankAccountsForPartnerAndCurrency(ctx, partnerID, currencyID);
+		for (final I_C_BP_BankAccount ba : accounts)
 		{
 			if ("P".equals(ba.getBPBankAcctUse()))
 			{

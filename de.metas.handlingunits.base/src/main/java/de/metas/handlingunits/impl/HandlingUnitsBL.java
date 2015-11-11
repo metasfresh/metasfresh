@@ -22,7 +22,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -866,7 +865,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public void setHUStatus(final IHUContext huContext, final I_M_HU hu, final String huStatus, final boolean forceFetchPackingMaterial)
+	public void setHUStatus(final IHUContext huContext,
+			final I_M_HU hu,
+			final String huStatus,
+			final boolean forceFetchPackingMaterial)
 	{
 		// keep this so we can compare it with the new one and make sure the moving to/from
 		// gebindelager is done only when needed
@@ -898,12 +900,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			if (isPhysicalHU(initialHUStatus))
 			{
 				// collect the "destroyed" HUs in case they were already physical (active)
-				huContext.getDestroyedHUPackingMaterialsCollector().addHURecursively(hu);
+				huContext
+						.getDestroyedHUPackingMaterialsCollector()
+						.addHURecursively(hu, null);
 			}
 			else
 			{
 				// remove the HUs from the destroying collector (decrement qty) just in case of new HU
-				huContext.getDestroyedHUPackingMaterialsCollector().removeHURecursively(hu);
+				huContext
+						.getDestroyedHUPackingMaterialsCollector()
+						.removeHURecursively(hu);
 			}
 		}
 		else if (!isExchangeGebindelagerWhenEmpty)
@@ -917,12 +923,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			// remove the HUs from the destroying collector (decrement qty) just in case of new HU (no initial status)
 			if (initialHUStatus == null)
 			{
-				huContext.getDestroyedHUPackingMaterialsCollector().removeHURecursively(hu);
+				huContext
+						.getDestroyedHUPackingMaterialsCollector()
+						.removeHURecursively(hu);
 			}
 			// only collect the destroyed HUs in case they were already physical (active)
 			else if (isPhysicalHU(initialHUStatus))
 			{
-				huContext.getDestroyedHUPackingMaterialsCollector().addHURecursively(hu);
+				huContext
+						.getDestroyedHUPackingMaterialsCollector()
+						.addHURecursively(hu, null);
 			}
 			else
 			{

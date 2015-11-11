@@ -30,7 +30,7 @@ import org.compiere.model.I_AD_Org;
 
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 
-public interface IBPBankAccountDAO extends ISingletonService
+public interface IESRBPBankAccountDAO extends ISingletonService
 {
 	/**
 	 * Search for the ESR bank account(s) of the given org's linked partner.

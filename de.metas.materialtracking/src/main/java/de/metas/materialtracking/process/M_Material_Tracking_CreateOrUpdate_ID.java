@@ -22,32 +22,29 @@ package de.metas.materialtracking.process;
  * #L%
  */
 
-
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.service.IInOutDAO;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.process.SvrProcess;
 
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
 import de.metas.adempiere.service.IOrderDAO;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingListener;
 import de.metas.materialtracking.MTLinkRequest;
@@ -70,13 +67,14 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 		implements ISvrProcessPrecondition
 {
 	// Services
-	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
+	private final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
 
 	private static final String PARA_C_Order_ID = I_C_OrderLine.COLUMNNAME_C_Order_ID;
 	private static final String PARA_Line = I_C_OrderLine.COLUMNNAME_Line;
@@ -115,7 +113,6 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 				p_Line = params.getParameterAsInt(PARA_Line);
 			}
 			else
-
 			{
 				p_C_Order_ID = params.getParameterAsInt(PARA_C_Order_ID);
 				p_Line = params.getParameterAsInt(PARA_Line);
@@ -131,6 +128,15 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 	@Override
 	protected String doIt() throws Exception
 	{
+		try (final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(this))
+		{
+			doIt0();
+		}
+		return MSG_OK;
+	}
+
+	private void doIt0()
+	{
 		final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.create(getCtx(), p_Material_Tracking_ID, I_M_Material_Tracking.class, getTrxName());
 		if (materialTracking.getM_Product_ID() != orderLine.getM_Product_ID())
 		{
@@ -145,7 +151,6 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 		// order line
 		{
 			createUpdateASIAndLink(orderLine, materialTracking);
-			InterfaceWrapperHelper.save(orderLine);
 			addLog(msgBL.parseTranslation(getCtx(), "@Processed@: @C_OrderLine_ID@ @Line@ " + p_Line));
 
 			final List<I_C_Invoice_Candidate> icsToDelete = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLine(orderLine);
@@ -155,69 +160,80 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 				InterfaceWrapperHelper.delete(icToDelete);
 			}
 		}
+		//
+		// receipt schedules
+		{
+			final I_M_ReceiptSchedule receiptSchedule = Services.get(IReceiptScheduleDAO.class).retrieveForRecord(orderLine);
+			materialTrackingAttributeBL.createOrUpdateMaterialTrackingASI(receiptSchedule, materialTracking);
+			InterfaceWrapperHelper.save(receiptSchedule); // note that we have a M_ReceiptSchedule model interceptor in the HU module, which takes care of the hu-attributes
+		}
 
 		//
-		// inout lines
+		// inout lines.
+		// note that we also want to update the respective package lines, but those don't reference 'orderLine'
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLinesForOrderLine(orderLine, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
 		{
-			// first update the material tracking ID, else the "old" link would be reestablished by some MV
-			inOutLine.setM_Material_Tracking(materialTracking);
-			InterfaceWrapperHelper.save(inOutLine);
-
-			createUpdateASIAndLink(inOutLine, materialTracking);
-
-			addLog(msgBL.parseTranslation(getCtx(), "@Processed@: @M_InOut_ID@ " + inOutLine.getM_InOut().getDocumentNo() + " @Line@ " + inOutLine.getLine()));
-
-			final List<I_C_Invoice_Candidate> icsToDelete = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(inOutLine);
-			for (final I_C_Invoice_Candidate icToDelete : icsToDelete)
+			// update the packaging line
+			if (inOutLine.getM_PackingMaterial_InOutLine_ID() > 0)
 			{
-				addLog(msgBL.parseTranslation(getCtx(), "@Deleted@: @C_Invoice_Candidate_ID@ " + icToDelete));
-				InterfaceWrapperHelper.delete(icToDelete);
+				updateInOutLine(inOutLine.getM_PackingMaterial_InOutLine(), materialTracking);
 			}
+			 else
+			{
+				// fallback: if we don't have an explicitly referenced package line, 
+				// then iterate all package lines and change those which have same tracking ID as the current inOut line.
+				// note: i don't think there can be more than one such line, but if there is, it shall not be this processe's problem.
+				final List<I_M_InOutLine> packageInOutLines = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
+						.setContext(orderLine)
+						.addOnlyActiveRecordsFilter()
+						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOutLine.getM_InOut_ID())
+						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Material_Tracking_ID, inOutLine.getM_Material_Tracking_ID())
+						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_IsPackagingMaterial, true)
+						.create()
+						.list();
+				for (final I_M_InOutLine packageInOutLine : packageInOutLines)
+				{
+					updateInOutLine(packageInOutLine, materialTracking);
+				}
+			}
+			
+			// update the actual inout line
+			updateInOutLine(inOutLine, materialTracking);
 		}
-
-		// PP_Orders
-		
-		
-//		"PP_Cost_Collector"
-		
-		return MSG_OK;
 	}
 
-	private void createUpdateASIAndLink(final Object model, final I_M_Material_Tracking materialTracking)
+	private void updateInOutLine(final org.compiere.model.I_M_InOutLine inOutLine, final I_M_Material_Tracking materialTracking)
 	{
-		final I_M_AttributeSetInstance modelASI;
-		final IAttributeSetInstanceAware modelASIAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
-		Check.assumeNotNull(modelASIAware, "IAttributeSetInstanceAwareFactoryService.createOrNull() does not return null for {0}", model);
+		createUpdateASIAndLink(inOutLine, materialTracking);
 
-		if (modelASIAware.getM_AttributeSetInstance_ID() > 0)
+		addLog(msgBL.parseTranslation(getCtx(), "@Processed@: @M_InOut_ID@ " + inOutLine.getM_InOut().getDocumentNo() + " @Line@ " + inOutLine.getLine()));
+
+		final List<I_C_Invoice_Candidate> icsToDelete = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(inOutLine);
+		for (final I_C_Invoice_Candidate icToDelete : icsToDelete)
 		{
-			modelASI = modelASIAware.getM_AttributeSetInstance();
+			addLog(msgBL.parseTranslation(getCtx(), "@Deleted@: @C_Invoice_Candidate_ID@ " + icToDelete));
+			InterfaceWrapperHelper.delete(icToDelete);
 		}
-		else
-		{
-			modelASI = attributeSetInstanceBL.createASI(modelASIAware.getM_Product());
-			modelASIAware.setM_AttributeSetInstance(modelASI);
-		}
+	}
 
-		final I_M_Attribute materialTrackingAttribute = attributeDAO.retrieveAttributeByValue(getCtx(), PARA_M_Material_Tracking_ID, I_M_Attribute.class);
-		final I_M_AttributeInstance modelAI = attributeSetInstanceBL.getCreateAttributeInstance(modelASI, materialTrackingAttribute.getM_Attribute_ID());
-		modelAI.setValue(Integer.toString(materialTracking.getM_Material_Tracking_ID()));
-		InterfaceWrapperHelper.save(modelAI);
+	private void createUpdateASIAndLink(final Object documentLine,
+			final I_M_Material_Tracking materialTracking)
+	{
+		materialTrackingAttributeBL.createOrUpdateMaterialTrackingASI(documentLine, materialTracking);
+		InterfaceWrapperHelper.save(documentLine);
 
-		// unlink from old material tracking (if any).
-		materialTrackingBL.unlinkModelFromMaterialTracking(model);
-
-		// link to new material tracking
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()
-						.setModel(model)
+						.setModel(documentLine)
 						.setMaterialTracking(materialTracking)
-						.setParams(getParameterAsIParams()) // pass the parameters on. They contain HU specific infos which this class and module doesn't know or care about, but which are required to
-															// happen when this process runs. Search for references to this process class name in the HU module to find out specifics.
-						.setAssumeNotAlreadyAssigned(false) // there might already be an existing assignment, which we would want to override
-						.setLoggable(this)
+
+						// pass the process parameters on. They contain HU specific infos which this class and module doesn't know or care about, but which are required to
+						// happen when this process runs. Search for references to this process class name in the HU module to find out specifics.
+						.setParams(getParameterAsIParams())
+
+						// unlink from another material tracking if necessary
+						.setAssumeNotAlreadyAssigned(false)
 						.build());
 	}
 

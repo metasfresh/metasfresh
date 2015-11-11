@@ -22,7 +22,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -34,12 +33,14 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocuments;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
@@ -115,17 +116,21 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		// Processing context
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(ppOrder);
 
+		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggableOr(ILoggable.NULL);
+
 		//
 		// Check if given manufacturing order is eligible
 		if (!qualityInspectionHandlerDAO.isInvoiceable(ppOrder))
 		{
-			logger.log(Level.INFO, "Skip invoice candidates creation because manufacturing order is not invoiceable: {0}", ppOrder);
+			final String msg = "Skip invoice candidates creation because PP_Order " + ppOrder + " is not invoiceable:";
+			logger.log(Level.INFO, msg);
+			loggable.addLog(msg);
 			return Collections.emptyList(); // nothing to do here
 		}
 
 		//
 		// Validate manufacturing order
-		Check.assume(Env.getAD_Client_ID(context.getCtx()) == ppOrder.getAD_Client_ID(), "AD_Client_ID of {0} and of its Ctx are the same", ppOrder);
+		Check.assume(Env.getAD_Client_ID(context.getCtx()) == ppOrder.getAD_Client_ID(), "AD_Client_ID of PP_Order {0} and of its Ctx are the same", ppOrder);
 
 		//
 		// Load material tracking documents and get our Quality Inspection Order
@@ -133,32 +138,43 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		if (materialTrackingDocuments == null)
 		{
 			// Case: ppOrder was not assigned to a material tracking (for some reason)
-			logger.log(Level.WARNING, "Skip invoice candidates creation because manufacturing order {0} was not assigned to a material tracking", ppOrder);
+			final String msg = "Skip invoice candidates creation because PP_Order " + ppOrder + " is not assigned to a material tracking";
+			loggable.addLog(msg);
+			logger.log(Level.WARNING, msg);
 			return Collections.emptyList();
 		}
+
 		final IQualityInspectionOrder qiOrder = materialTrackingDocuments.getQualityInspectionOrder(ppOrder);
 
+		final I_M_Material_Tracking materialTracking = materialTrackingDocuments.getM_Material_Tracking();
 		//
 		// Make sure all original invoice candidates are valid.
 		// If not, we shall postpone this computation because makes no sense. We will wait for better times (i.e. when original invoice candidates are valid)
-		final List<I_C_Invoice_Candidate> originalInvoiceCandidates = qualityInspectionHandlerDAO.retrieveOriginalInvoiceCandidates(materialTrackingDocuments.getM_Material_Tracking(),
-				I_C_Invoice_Candidate.class);
+		final List<I_C_Invoice_Candidate> originalInvoiceCandidates = qualityInspectionHandlerDAO.retrieveOriginalInvoiceCandidates(materialTracking, I_C_Invoice_Candidate.class);
 		if (originalInvoiceCandidates.isEmpty())
 		{
+			final String msg = "Postponing invoice candidates creation for PP_Order " + ppOrder + " because there are no original C_Invoice_Candidates for M_Material_Tracking " + materialTracking;
+			logger.log(Level.INFO, msg);
+			loggable.addLog(msg);
 			return Collections.emptyList();
 		}
 		for (final I_C_Invoice_Candidate originalIC : originalInvoiceCandidates)
 		{
 			if (originalIC.isToRecompute())
 			{
-				logger.log(Level.INFO, "Postponing invoice candidates creation because original C_Invoice_Candidate is not yet valid: {0}", originalIC);
+				final String msg = "Postponing invoice candidates creation for PP_Order " + ppOrder + " because original C_Invoice_Candidate " + originalIC + " is not (yet?) valid";
+				logger.log(Level.INFO, msg);
+				loggable.addLog(msg);
+
 				return Collections.emptyList();
 			}
 
 			if (!originalIC.isToClear())
 			{
 				// this can happen if the user created a tracking with a product & partner that have/has no contract. This shouldn't kill the whole IC-process.
-				logger.log(Level.INFO, "Postponing invoice candidates creation because original C_Invoice_Candidate has IsToClear='N'", originalIC);
+				final String msg = "Postponing invoice candidates creation for PP_Order " + ppOrder + " because original C_Invoice_Candidate " + originalIC + " has IsToClear='N'";
+				logger.log(Level.INFO, msg);
+				loggable.addLog(msg);
 				return Collections.emptyList();
 			}
 		}

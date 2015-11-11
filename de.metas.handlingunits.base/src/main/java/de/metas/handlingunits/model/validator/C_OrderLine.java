@@ -25,7 +25,6 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -100,19 +99,26 @@ public class C_OrderLine
 			})
 	public void add_M_HU_PI_Item_Product(final I_C_OrderLine olPO)
 	{
+		// 09445: do not recompute price if also the price entered is changed
+		if (!InterfaceWrapperHelper.isNew(olPO)
+				&& InterfaceWrapperHelper.isValueChanged(olPO, I_C_OrderLine.COLUMNNAME_PriceEntered))
+		{
+			InterfaceWrapperHelper.setDynAttribute(olPO, OrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.TRUE);
+			return;
+		}
 
 		// avoid price recalculation in some specific cases (e.g. on reactivation)
 		final Boolean doNotRecalculatePrices = InterfaceWrapperHelper.getDynAttribute(olPO, OrderLineBL.DYNATTR_DoNotRecalculatePrices);
-
 		if (doNotRecalculatePrices != null && doNotRecalculatePrices)
 		{
 			return;
 		}
-
+		
 		// We call with null because we get the changed values from the object.
 		Services.get(IHUOrderBL.class).updateOrderLine(olPO, null);
 
-		final IHUDocumentHandler handler = Services.get(IHUDocumentHandlerFactory.class).createHandler(org.compiere.model.I_C_OrderLine.Table_Name);
+		final IHUDocumentHandler handler = Services.get(IHUDocumentHandlerFactory.class)
+				.createHandler(org.compiere.model.I_C_OrderLine.Table_Name);
 		if (null != handler)
 		{
 			final de.metas.handlingunits.model.I_C_OrderLine olEx = InterfaceWrapperHelper.create(olPO, de.metas.handlingunits.model.I_C_OrderLine.class);

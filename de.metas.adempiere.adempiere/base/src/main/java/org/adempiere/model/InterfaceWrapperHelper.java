@@ -22,7 +22,6 @@ package org.adempiere.model;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -1815,5 +1814,41 @@ public class InterfaceWrapperHelper
 			throw new AdempiereException("Model wrapping is not supported for " + model
 					+ "\n Class: " + (model == null ? null : model.getClass()));
 		}
+	}
+
+	/**
+	 * If the given <code>model</code> is not null and has all the columns which are defined inside the given <code>clazz</code>'s {@link IModelClassInfo},<br>
+	 * then return an instance using {@link #create(Object, Class)}.<br>
+	 * Otherwise, return <code>null</code> .
+	 * 
+	 * @param model
+	 * @param clazz
+	 * @return
+	 */
+	public static <T> T asColumnReferenceAwareOrNull(final Object model,
+			final Class<T> clazz)
+	{
+		if (model == null)
+		{
+			return null;
+		}
+		if (clazz.isAssignableFrom(model.getClass()))
+		{
+			return clazz.cast(model);
+		}
+
+		final IModelClassInfo clazzInfo = ModelClassIntrospector
+				.getInstance()
+				.getModelClassInfo(clazz);
+		for (final String columnName : clazzInfo.getDefinedColumnNames())
+		{
+			if (!hasModelColumnName(model, columnName))
+			{
+				// not all columns of clazz are also in model => we can't do it.
+				return null;
+			}
+		}
+
+		return InterfaceWrapperHelper.create(model, clazz);
 	}
 }

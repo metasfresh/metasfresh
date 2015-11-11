@@ -1,8 +1,10 @@
-package de.metas.banking.service;
+package org.adempiere.bpartner.service;
+
+import org.compiere.model.I_C_BPartner;
 
 /*
  * #%L
- * de.metas.banking.base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -22,22 +24,15 @@ package de.metas.banking.service;
  * #L%
  */
 
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_C_BPartner;
-
-import de.metas.interfaces.I_C_BP_BankAccount;
-
 /**
- * Provides data retrieval methods for partner bank accounts
+ * {@link org.adempiere.model.InterfaceWrapperHelper#asColumnReferenceAwareOrNull(Object, Class)} to obtain an instance.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
  *
- * @author al
  */
-public interface IBPBankAccountDAO extends ISingletonService
+public interface IBPartnerAware
 {
-	/**
-	 * @param partner
-	 * @return default bank account for given partner
-	 */
-	I_C_BP_BankAccount retrieveDefaultBankAccount(I_C_BPartner partner);
+	int getC_BPartner_ID();
+
+	I_C_BPartner getC_BPartner();
 }

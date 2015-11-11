@@ -26,6 +26,7 @@ package de.metas.materialtracking.model.validator;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
@@ -41,6 +42,11 @@ public class C_Invoice extends MaterialTrackableDocumentByASIInterceptor<I_C_Inv
 	@Override
 	protected boolean isEligibleForMaterialTracking(final I_C_Invoice document)
 	{
+		// Reversals are not eligible, because their original-invoice counterpart is also unlinked.
+		if(Services.get(IInvoiceBL.class).isReversal(document))
+		{
+			return false;
+		}
 		// Sales Invoices are not eligible
 		if (document.isSOTrx())
 		{

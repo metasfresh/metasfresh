@@ -22,7 +22,6 @@ package de.metas.payment.esr.spi.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -67,7 +66,9 @@ public class AbstractESRActionHandler implements IESRActionHandler
 
 				InterfaceWrapperHelper.save(payment);
 				Services.get(IESRImportBL.class).linkInvoiceToPayment(line);
-				Services.get(IInvoiceBL.class).testAllocation(invoice);
+
+				final boolean ignoreProcessed = false;
+				Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
 			}
 		}
 		return true;

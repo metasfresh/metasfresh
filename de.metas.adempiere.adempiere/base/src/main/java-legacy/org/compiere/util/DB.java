@@ -48,6 +48,7 @@ import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -437,7 +438,7 @@ public final class DB
 
 		// direct connection
 		Connection conn = null;
-		try(final IAutoCloseable c = CLogMgt.getErrorBuffer().temporaryDisableIssueReporting())
+		try (final IAutoCloseable c = CLogMgt.getErrorBuffer().temporaryDisableIssueReporting())
 		{
 			conn = getConnectionRW();   // try to get a connection
 			return conn != null;
@@ -1172,6 +1173,26 @@ public final class DB
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
 		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
 	}	// executeUpdateEx
+
+	/**
+	 * Prepares and executes a callable statement and makes sure that its closed at the end.
+	 * 
+	 * @param function something like <code>"select " + function + "(?,?,?)"</code>
+	 * @param params
+	 */
+	public static void executeFunctionCallEx(final String functionCall,
+			final Object[] params)
+	{
+		try (final CallableStatement callableStmt = DB.prepareCall(functionCall))
+		{
+			setParameters(callableStmt, params);
+			callableStmt.execute();
+		}
+		catch (SQLException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
 
 	/**
 	 * Commit - commit on RW connection. Is not required as RW connection is AutoCommit (exception: with transaction)
@@ -2365,7 +2386,7 @@ public final class DB
 	 * @param paramsOut
 	 * @return SQL list
 	 * @see #buildSqlList(Collection, List)
-	 * @deprecated <b>pls use {@link #buildSqlList(Collection)} instead!</b> When we used this method with Integer paramters, we got stuff which caused syntax errors! Example:
+	 * @deprecated <b>pls use {@link #buildSqlList(Collection, List)} instead!</b> When we used this method with Integer paramters, we got stuff which caused syntax errors! Example:
 	 * 
 	 *             <pre>
 	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..

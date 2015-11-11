@@ -22,12 +22,13 @@ package de.metas.materialtracking.impl;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -39,6 +40,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 
+import de.metas.adempiere.service.IAttributeSetInstanceBL;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -51,13 +53,20 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 	public I_M_Attribute getMaterialTrackingAttribute(final Properties ctx)
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		
+
 		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(ctx, M_Attribute_Value_MaterialTracking, I_M_Attribute.class);
 		Check.assumeNotNull(attribute, "attribute shall exist for {0}", M_Attribute_Value_MaterialTracking);
 
 		return attribute;
 	}
 
+	/*
+	 * When changing the implementation, please make that the model interceptors' <code>ifColumnsChanged</code> are in sync.
+	 * 
+	 * (non-Javadoc)
+	 * 
+	 * @see de.metas.materialtracking.IMaterialTrackingAttributeBL#createOrUpdateMaterialTrackingAttributeValue(de.metas.materialtracking.model.I_M_Material_Tracking)
+	 */
 	@Override
 	public void createOrUpdateMaterialTrackingAttributeValue(final I_M_Material_Tracking materialTracking)
 	{
@@ -221,6 +230,31 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 	}
 
 	@Override
+	public void createOrUpdateMaterialTrackingASI(final Object documentLine,
+			final I_M_Material_Tracking materialTracking)
+	{
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+		final I_M_AttributeSetInstance documentLineASI;
+		final IAttributeSetInstanceAware documentLineASIAware = attributeSetInstanceAwareFactoryService.createOrNull(documentLine);
+		Check.assumeNotNull(documentLineASIAware, "IAttributeSetInstanceAwareFactoryService.createOrNull() does not return null for {0}", documentLine);
+
+		if (documentLineASIAware.getM_AttributeSetInstance_ID() > 0)
+		{
+			documentLineASI = attributeDAO.copy(documentLineASIAware.getM_AttributeSetInstance());
+		}
+		else
+		{
+			documentLineASI = attributeSetInstanceBL.createASI(documentLineASIAware.getM_Product());
+		}
+
+		setM_Material_Tracking(documentLineASI, materialTracking); // update the new ASI
+		documentLineASIAware.setM_AttributeSetInstance(documentLineASI); // for inOutLines, this also causes M_InOutLine.M_Material_Tracking_ID to be updated
+	}
+
+	@Override
 	public void setM_Material_Tracking(final I_M_AttributeSetInstance asi, final I_M_Material_Tracking materialTracking)
 	{
 		if (asi == null || asi.getM_AttributeSetInstance_ID() <= 0)
@@ -244,7 +278,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		}
 
 		//
-		// Get coresponding material tracking attribute value
+		// Get corresponding material tracking attribute value
 		final I_M_AttributeValue materialTrackingAttributeValue = getMaterialTrackingAttributeValue(materialTracking);
 
 		//
@@ -256,7 +290,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 	}
 
 	@Override
-	public I_M_Material_Tracking getMaterialTracking(final I_M_AttributeSetInstance asi)
+	public I_M_Material_Tracking getMaterialTrackingOrNull(final I_M_AttributeSetInstance asi)
 	{
 		if (asi == null || asi.getM_AttributeSetInstance_ID() <= 0)
 		{

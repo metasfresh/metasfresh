@@ -64,5 +64,4 @@ public final class PlainPackingMaterialDocumentLineSource implements IPackingMat
 	{
 		return qty;
 	}
-
 }

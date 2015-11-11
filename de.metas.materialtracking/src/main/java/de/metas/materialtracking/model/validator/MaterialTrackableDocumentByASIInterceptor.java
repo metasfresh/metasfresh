@@ -22,7 +22,6 @@ package de.metas.materialtracking.model.validator;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -52,7 +51,12 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, DocumentLineType>
 {
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public final void linkToMaterialTracking(final DocumentType document)
+	public final void linkToMaterialTrackingOnComplete(final DocumentType document)
+	{
+		linkToMaterialTracking(document);
+	}
+
+	private void linkToMaterialTracking(final DocumentType document)
 	{
 		if (!isEligibleForMaterialTracking(document))
 		{
@@ -67,6 +71,7 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 			final I_M_Material_Tracking materialTracking = getMaterialTrackingFromDocumentLineASI(documentLine);
 			if (materialTracking == null)
 			{
+				// the line has no materialtracking-ASI, so make sure that it is not linked to any material tracking
 				materialTrackingBL.unlinkModelFromMaterialTracking(documentLine);
 			}
 			else
@@ -75,6 +80,7 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 						MTLinkRequest.builder()
 								.setModel(documentLine)
 								.setMaterialTracking(materialTracking)
+								.setAssumeNotAlreadyAssigned(false) // unlink from another material tracking if neccesary
 								.build());
 			}
 		}
@@ -116,7 +122,7 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
 
 		final I_M_AttributeSetInstance asi = getM_AttributeSetInstance(documentLine);
-		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTracking(asi);
+		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTrackingOrNull(asi);
 		return materialTracking;
 	}
 
@@ -125,7 +131,7 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 	 * @param document
 	 * @return true if given document is eligible for material tracking
 	 */
-	protected abstract boolean isEligibleForMaterialTracking(final DocumentType document);
+	protected abstract boolean isEligibleForMaterialTracking(DocumentType document);
 
 	/**
 	 *

@@ -242,4 +242,19 @@ public class AllocationBL implements IAllocationBL
 		}
 		return allocBuilder.create(true);
 	}
+
+	@Override
+	public boolean isReversal(final I_C_AllocationHdr allocationHdr)
+	{
+		if (allocationHdr == null)
+		{
+			return false;
+		}
+		if (allocationHdr.getReversal_ID() <= 0)
+		{
+			return false;
+		}
+		// the reversal is always younger than the original document
+		return allocationHdr.getC_AllocationHdr_ID() > allocationHdr.getReversal_ID();
+	}
 }

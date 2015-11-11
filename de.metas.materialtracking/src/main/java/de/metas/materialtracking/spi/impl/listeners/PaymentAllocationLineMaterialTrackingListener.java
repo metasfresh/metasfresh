@@ -79,7 +79,7 @@ public final class PaymentAllocationLineMaterialTrackingListener extends Materia
 		}
 
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
-		materialTrackingBL.unlinkModelFromMaterialTracking(model, materialTrackingOld);
+		materialTrackingBL.unlinkModelFromMaterialTracking(payment, materialTrackingOld);
 	}
 
 }

@@ -22,12 +22,14 @@ package de.metas.materialtracking.impl;
  * #L%
  */
 
-
 import java.util.logging.Level;
 
+import org.adempiere.ad.persistence.IModelClassInfo;
+import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
 
@@ -35,6 +37,7 @@ import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingListener;
 import de.metas.materialtracking.MTLinkRequest;
+import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.spi.impl.listeners.CompositeMaterialTrackingListener;
@@ -91,7 +94,7 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 			if (materialTracking.getM_Material_Tracking_ID() == refExisting.getM_Material_Tracking_ID())
 			{
 				// Case: material tracking was not changed => do nothing
-				final String msg = ": material tracking was not changed; nothing to do";
+				final String msg = ": M_Material_Tracking_ID=" + materialTracking.getM_Material_Tracking_ID() + " of existing M_Material_Tracking_Ref is still valid; nothing to do";
 				logRequest(request, msg);
 				return;
 			}
@@ -121,7 +124,7 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final I_M_Material_Tracking_Ref refNew = materialTrackingDAO.createMaterialTrackingRefNoSave(request.getMaterialTracking(), request.getModel());
 
-		final String msg = ": Linking model with material tracking";
+		final String msg = ": Linking model with M_Material_Tracking_ID=" + refNew.getM_Material_Tracking_ID();
 		logRequest(request, msg);
 
 		listeners.beforeModelLinked(request, refNew);
@@ -136,24 +139,27 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 	private void logRequest(final MTLinkRequest request, final String msgSuffix)
 	{
 		logger.log(Level.FINE, request + msgSuffix); // log the request
-		request.getLoggable().addLog(request.getModel() + msgSuffix); // don't be too verbose in the user/admin output; keep it readable.
+		ILoggable.THREADLOCAL
+				.getLoggableOr(ILoggable.NULL)
+				.addLog(request.getModel() + msgSuffix); // don't be too verbose in the user/admin output; keep it readable.
 	}
 
 	@Override
-	public void unlinkModelFromMaterialTracking(final Object model)
+	public boolean unlinkModelFromMaterialTracking(final Object model)
 	{
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final I_M_Material_Tracking_Ref refExisting = materialTrackingDAO.retrieveMaterialTrackingRefForModel(model);
 		if (refExisting == null)
 		{
-			return;
+			return false;
 		}
 
 		unlinkModelFromMaterialTracking(model, refExisting);
+		return true;
 	}
 
 	@Override
-	public void unlinkModelFromMaterialTracking(final Object model, final I_M_Material_Tracking materialTracking)
+	public boolean unlinkModelFromMaterialTracking(final Object model, final I_M_Material_Tracking materialTracking)
 	{
 		Check.assumeNotNull(materialTracking, "materialTracking not null");
 
@@ -161,15 +167,16 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 		final I_M_Material_Tracking_Ref refExisting = materialTrackingDAO.retrieveMaterialTrackingRefForModel(model);
 		if (refExisting == null)
 		{
-			return;
+			return false;
 		}
 
 		if (refExisting.getM_Material_Tracking_ID() != materialTracking.getM_Material_Tracking_ID())
 		{
-			return;
+			return false;
 		}
 
 		unlinkModelFromMaterialTracking(model, refExisting);
+		return true;
 	}
 
 	private final void unlinkModelFromMaterialTracking(final Object model, final I_M_Material_Tracking_Ref ref)

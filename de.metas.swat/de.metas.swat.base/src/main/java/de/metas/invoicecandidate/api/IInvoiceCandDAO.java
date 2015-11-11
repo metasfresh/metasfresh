@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -266,6 +265,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInOutLineInclInactive(I_M_InOutLine inOutLine);
 
+	/**
+	 * Retrieves those invoice candidates that belong to the given <code>inOutLine</code> by either referencing it directly via <code>(AD_Table_ID, Record_ID)</code> or by referencing the inOutLine's
+	 * order line record.
+	 * 
+	 * @param inOutLine
+	 * @return
+	 */
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLine(I_M_InOutLine inOutLine);
 
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLine(I_C_OrderLine orderLine);

@@ -22,7 +22,6 @@ package de.metas.inoutcandidate.spi.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -310,12 +309,20 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		final List<I_M_InOutLine> receiptLines = new ArrayList<I_M_InOutLine>();
 		for (final HUPackingMaterialDocumentLineCandidate candidate : candidates)
 		{
-			final I_M_InOutLine receiptLine = createPackingMaterialReceiptLine(candidate);
-			if (receiptLine == null)
+			final I_M_InOutLine packagingReceiptLine = createPackingMaterialReceiptLine(candidate);
+			if (packagingReceiptLine == null)
 			{
 				continue;
 			}
-			receiptLines.add(receiptLine);
+
+			// task 09502: set the reference from line to packing-line
+			for (final I_M_InOutLine sourceReceiptLine : candidate.getSources())
+			{
+				sourceReceiptLine.setM_PackingMaterial_InOutLine(packagingReceiptLine);
+				InterfaceWrapperHelper.save(sourceReceiptLine);
+			}
+
+			receiptLines.add(packagingReceiptLine);
 			// 07734 note: we don't need to explicitly link the new receipt line here. It will be done by MaterialTrackableDocumentByASIInterceptor (its M_InOut subclass).
 			// having set the M_Material_Tracking_ID in IHUInOutBL.updatePackingMaterialInOutLine(receiptLine, candidate); was enough
 		}
@@ -492,7 +499,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	{
 		//
 		// Gebinde Lager packing materials collector; will be used when the HU's owner is "us"
-		final IHUPackingMaterialsCollector destroyedHUPackingMaterialsCollector = huContext.getDestroyedHUPackingMaterialsCollector();
+		final IHUPackingMaterialsCollector<?> destroyedHUPackingMaterialsCollector = huContext.getDestroyedHUPackingMaterialsCollector();
 
 		//
 		// We only collect top level HUs for transfer.
@@ -530,7 +537,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			// 08162: Only collect them if the owner is not us. Otherwise, take them from the Gebinde Lager
 			if (!tuHU.isHUPlanningReceiptOwnerPM())
 			{
-				packingMaterialsCollector.addTU(tuHU);
+				packingMaterialsCollector.addTU(tuHU, receiptLine);
 			}
 			else
 			{
@@ -542,7 +549,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				final I_M_HU luHU = rsa.getM_LU_HU();
 				if (!luHU.isHUPlanningReceiptOwnerPM())
 				{
-					packingMaterialsCollector.addLU(luHU);
+					packingMaterialsCollector.addLU(luHU, receiptLine);
 				}
 				else
 				{

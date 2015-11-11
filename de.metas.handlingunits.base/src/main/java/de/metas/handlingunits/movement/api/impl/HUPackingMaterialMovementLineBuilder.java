@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 
@@ -42,7 +43,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 /* package */class HUPackingMaterialMovementLineBuilder
 {
 	// task 07734: we don't want to track M_MaterialTrackings, so we don't need to provide a HU context.
-	private final IHUPackingMaterialsCollector packingMaterialsCollector = new HUPackingMaterialsCollector(null);
+	private final IHUPackingMaterialsCollector<I_M_InOutLine> packingMaterialsCollector = new HUPackingMaterialsCollector(null);
 	private final int locatorFromId;
 	private final int locatorToId;
 

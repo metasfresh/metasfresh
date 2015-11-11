@@ -22,19 +22,21 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.IdentityHashSet;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
@@ -43,7 +45,29 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 {
 
-	private Map<Integer, I_C_Invoice_Candidate> allCands = new HashMap<Integer, I_C_Invoice_Candidate>();
+	private Map<Integer, I_C_Invoice_Candidate> candIDs2Cands = new HashMap<Integer, I_C_Invoice_Candidate>();
+
+	private static final Comparator<I_C_Invoice_Candidate> invoiceCandComparator = 
+			new Comparator<I_C_Invoice_Candidate>()
+	{
+		@Override
+		public int compare(final I_C_Invoice_Candidate ic1, final I_C_Invoice_Candidate ic2)
+		{
+			final int ic1EffectiveLine = ic1.getLine() == 0 ? Integer.MAX_VALUE : ic1.getLine();
+			final int ic2EffectiveLine = ic2.getLine() == 0 ? Integer.MAX_VALUE : ic2.getLine();
+
+			return new CompareToBuilder()
+					.append(ic1EffectiveLine, ic2EffectiveLine)
+					.append(ic1.getC_Invoice_Candidate_ID(), ic2.getC_Invoice_Candidate_ID())
+					.build();
+		}
+	};
+	
+	/**
+	 * Sorted set of all candidates that are added to this aggregation. They are ordered by <code>Line</code> and, if the line is identical, by <code>C_Invoice_Candidate_ID</code>.
+	 * If the line is 0, then they shall be ordered to the end.
+	 */
+	private Set<I_C_Invoice_Candidate> allCands = new TreeSet<I_C_Invoice_Candidate>(invoiceCandComparator);
 
 	private Set<IInvoiceLineRW> allLines = new IdentityHashSet<IInvoiceLineRW>();
 
@@ -53,10 +77,13 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 
 	private Map<Integer, Map<IInvoiceLineRW, BigDecimal>> candIdAndLine2AllocatedQty = new HashMap<Integer, Map<IInvoiceLineRW, BigDecimal>>();
 
+	/**
+	 * Returns all candidates that were added, ordered by line (1, 2, ... 10, 20, ... , 0), i.e. null/not-set last.
+	 */
 	@Override
 	public Collection<I_C_Invoice_Candidate> getAllCands()
 	{
-		return allCands.values();
+		return allCands;
 	}
 
 	@Override
@@ -65,7 +92,7 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 		final List<I_C_Invoice_Candidate> result = new ArrayList<I_C_Invoice_Candidate>();
 		for (final int candId : getCandIdsFor(il))
 		{
-			result.add(allCands.get(candId));
+			result.add(candIDs2Cands.get(candId));
 		}
 		return result;
 	}
@@ -131,7 +158,7 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 	{
 		addAssociation(ic, ic.getC_Invoice_Candidate_ID(), il, il.getQtyToInvoice());
 	}
-	
+
 	@Override
 	public final boolean addAssociationIfNotExists(final I_C_Invoice_Candidate ic, final IInvoiceLineRW il)
 	{
@@ -140,12 +167,11 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 		{
 			return false;
 		}
-		
+
 		// Add association
 		addAssociation(ic, il);
 		return true;
 	}
-
 
 	/**
 	 * This method does the actual work for {@link #addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW)}.
@@ -178,7 +204,8 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 		}
 		candidateIds.add(icId);
 
-		allCands.put(icId, ic);
+		candIDs2Cands.put(icId, ic);
+		allCands.add(ic);
 
 		List<IInvoiceLineRW> invoiceLines = candidateId2lines.get(icId);
 		if (invoiceLines == null)
@@ -215,10 +242,10 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 
 		final Map<IInvoiceLineRW, BigDecimal> il2Qty = candIdAndLine2AllocatedQty.get(icId);
 		Check.assumeNotNull(il2Qty, "{0} has no associations to invoice lines yet", ic);
-		
+
 		final BigDecimal qtyAllocatedOld = il2Qty.get(il);
 		Check.assumeNotNull(qtyAllocatedOld, "{0} has no associations to {1}", il, ic);
-		
+
 		final BigDecimal qtyAllocatedNew = qtyAllocatedOld.add(qtyAllocatedToAdd);
 		il2Qty.put(il, qtyAllocatedNew);
 	}

@@ -1,5 +1,3 @@
-/* NOTE: commented out because it takes TOO much time. We will run it manually, after rollout.
-
 --
 -- Materialize M_HU_PI_Attribute_Actual_v to speed things up a bit
 -- Duration: ~53ms
@@ -107,4 +105,3 @@ select
 	, updatedby
 	, isactive
 from TMP_M_HU_Attribute_ToInsert;
-*/

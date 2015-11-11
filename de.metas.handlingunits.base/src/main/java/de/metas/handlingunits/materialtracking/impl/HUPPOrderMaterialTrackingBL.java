@@ -22,7 +22,6 @@ package de.metas.handlingunits.materialtracking.impl;
  * #L%
  */
 
-
 import org.adempiere.util.Services;
 import org.eevolution.model.I_PP_Order;
 
@@ -37,6 +36,13 @@ import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 
+/**
+ * Links a PP_Order to the <code>M_Material_Tracking</code> of the <code>PP_Order_BOMLine</code>'s HU.<br>
+ * Intended to be called when a HU is issued to a PP_Order.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 {
 	@Override
@@ -54,7 +60,7 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 		{
 			return;
 		}
-	
+
 		// Services
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
@@ -72,8 +78,8 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 			// HU's Attributes does not contain material tracking
 			return;
 		}
-		
-		if(ppOrderBOMLine.getM_Product_ID() != materialTracking.getM_Product_ID())
+
+		if (ppOrderBOMLine.getM_Product_ID() != materialTracking.getM_Product_ID())
 		{
 			// the M_Material_Tracking HU-Attribute was inherited from the original raw material, but this PP_Order is about a different product
 			return;

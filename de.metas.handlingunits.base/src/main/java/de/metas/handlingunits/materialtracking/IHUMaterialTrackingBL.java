@@ -6,6 +6,8 @@ import org.adempiere.util.ISingletonService;
 import com.google.common.base.Optional;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /*
  * #%L
@@ -44,4 +46,15 @@ public interface IHUMaterialTrackingBL extends ISingletonService
 	 * @return optional {@link IQualityInspectionSchedulable}.
 	 */
 	Optional<IQualityInspectionSchedulable> asQualityInspectionSchedulable(IContextAware context, IAttributeStorage attributeStorage);
+
+	/**
+	 * Iterates the HU-tree of the given HU and sets <code>M_HU_MAterial_Tracking_ID</code> attribute to the given value.
+	 * 
+	 * @param hu
+	 * @param materialTracking
+	 * @param onlyHUStatus may be <code>null</code> or empty. Otherwise, only HUs with the given status are updated. However, all HUs are iterated.
+	 */
+	void updateHUAttributeRecursive(I_M_HU hu,
+			I_M_Material_Tracking materialTracking,
+			String onlyHUStatus);
 }

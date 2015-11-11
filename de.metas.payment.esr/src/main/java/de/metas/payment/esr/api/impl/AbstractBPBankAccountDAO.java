@@ -32,10 +32,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
-import de.metas.payment.esr.api.IBPBankAccountDAO;
+import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 
-public abstract class AbstractBPBankAccountDAO implements IBPBankAccountDAO
+public abstract class AbstractBPBankAccountDAO implements IESRBPBankAccountDAO
 {
 	@Override
 	public I_C_BP_BankAccount retrieveESRBPBankAccountOrNull(final String postAccountNo, final String innerAccountNo)

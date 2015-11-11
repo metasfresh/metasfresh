@@ -74,10 +74,9 @@ public final class ProcessUtil {
 	public static boolean startDatabaseProcedure (ProcessInfo processInfo, String ProcedureName, ITrx trx) {
 		String sql = "{call " + ProcedureName + "(?)}";
 		String trxName = trx != null ? trx.getTrxName() : null;
-		try
+		try(final CallableStatement cstmt = DB.prepareCall(sql, ResultSet.CONCUR_UPDATABLE, trxName))
 		{
 			//hengsin, add trx support, updateable support.
-			CallableStatement cstmt = DB.prepareCall(sql, ResultSet.CONCUR_UPDATABLE, trxName);	
 			cstmt.setInt(1, processInfo.getAD_PInstance_ID());
 			cstmt.executeUpdate();
 			cstmt.close();

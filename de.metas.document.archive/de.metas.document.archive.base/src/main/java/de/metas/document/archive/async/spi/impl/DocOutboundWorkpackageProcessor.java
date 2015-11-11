@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,6 +43,7 @@ import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.CLogger;
+import org.compiere.util.Language;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
@@ -153,16 +155,26 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 			// we are dealing with document reporting
 			reportEngine = ReportEngine.get(ctx, reportEngineDocumentType, recordId, printFormatId, trxName);
 		}
+
+		// 09527 get the most suitable language from the po's C_BPartner, if it exists.
+		Language language = Services.get(IBPartnerBL.class).getLanguageForModel(po);
+		
 		if (reportEngine == null)
 		{
 			final MQuery query = createMQuery(po);
 			final PrintInfo printInfo = createPrintInfo(po);
 
 			final boolean readFromDisk = false; // we can go with the cached version, because there is code making sure that we only get a cached version which has an equal ctx!
+			
 			final MPrintFormat printFormat = MPrintFormat.get(ctx, config.getAD_PrintFormat_ID(), readFromDisk);
 			// 04454 and 04430: we need to set the printformat's language;
 			// using the client language is what would also be done by ReportEngine.get() if it can't be determined via a reportEngineDocumentType
-			printFormat.setLanguage(MClient.get(ctx, po.getAD_Client_ID()).getLanguage());
+			// 09527: Exception: When the partner has a language set. In this case, the partner's language must be set
+			if(language == null)
+			{
+				language = MClient.get(ctx, po.getAD_Client_ID()).getLanguage();
+			}
+			printFormat.setLanguage(language);
 
 			reportEngine = new ReportEngine(ctx, printFormat, query, printInfo, trxName);
 		}

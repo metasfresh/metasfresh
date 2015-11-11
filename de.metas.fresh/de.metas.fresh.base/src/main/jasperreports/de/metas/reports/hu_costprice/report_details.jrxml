@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.6528925619834718"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="380"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -20,10 +20,10 @@
 	wh.name AS WH_Name,
 	p.name AS P_Name,
 	p.value AS P_Value,
-	SUM(qty) as qty,
-	SUM(qty) * avg(CostPrice) AS linesum,
+	qty,
+	qty * CostPrice AS linesum,
 	uom.UOMSymbol,
-	avg(CostPrice) as CostPrice
+	CostPrice
 FROM
 	(
 	SELECT
@@ -38,7 +38,8 @@ FROM
 		M_Warehouse wh
 		LEFT OUTER JOIN M_Locator l ON wh.M_Warehouse_ID = l.M_Warehouse_ID
 		LEFT OUTER JOIN M_HU_Trx_line hutl ON l.M_Locator_ID = hutl.M_locator_ID
-		LEFT OUTER JOIN M_HU hu ON hutl.M_HU_ID = hu.M_HU_ID
+		LEFT OUTER JOIN M_HU_Item item ON hutl.VHU_Item_ID = item.M_HU_Item_ID
+		LEFT OUTER JOIN M_HU hu ON item.M_HU_ID = hu.M_HU_ID
 		LEFT OUTER JOIN M_HU_Storage hus ON hu.M_HU_ID = hus.M_HU_ID
 		LEFT OUTER JOIN M_HU_Attribute hua ON hu.M_HU_ID = hua.M_HU_ID
 			AND hua.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE Value='HU_CostPrice'))
@@ -89,19 +90,9 @@ FROM
 	LEFT OUTER JOIN C_ValidCombination vc ON dat.C_ValidCombination_ID = vc.C_ValidCombination_ID
 	LEFT OUTER JOIN C_UOM uom ON dat.C_UOM_ID = uom.C_UOM_ID
 WHERE
-	qty!=0
-
+	qty != 0
 	AND CASE WHEN $P{M_Product_ID} IS NULL THEN p.M_Product_ID ELSE $P{M_Product_ID} END = p.M_Product_ID
 	AND CASE WHEN $P{M_Warehouse_ID} IS NULL THEN wh.M_Warehouse_ID ELSE $P{M_Warehouse_ID} END = wh.M_Warehouse_ID
-GROUP BY
-	vc.combination,
-	vc.description,
-	a.name,
-	wh.name,
-	p.name,
-	p.value,
-	uom.UOMSymbol
-Having SUM(qty)!= 0
 ORDER BY
 	vc.combination,
 	vc.description,
@@ -123,11 +114,14 @@ ORDER BY
 	<variable name="Product_LineSum" class="java.math.BigDecimal" resetType="Group" resetGroup="Product" calculation="Sum">
 		<variableExpression><![CDATA[$F{linesum}]]></variableExpression>
 	</variable>
+	<variable name="Product_qtycost" class="java.math.BigDecimal" resetType="Group" resetGroup="Product" calculation="Sum">
+		<variableExpression><![CDATA[$F{costprice}.multiply($F{qty})]]></variableExpression>
+	</variable>
 	<variable name="Product_qty" class="java.math.BigDecimal" resetType="Group" resetGroup="Product" calculation="Sum">
 		<variableExpression><![CDATA[$F{qty}]]></variableExpression>
 	</variable>
-	<variable name="Product_avg" class="java.math.BigDecimal" resetType="Group" resetGroup="Product" calculation="Average">
-		<variableExpression><![CDATA[$F{costprice}]]></variableExpression>
+	<variable name="Product_avg" class="java.math.BigDecimal" resetType="Group" resetGroup="Product">
+		<variableExpression><![CDATA[$V{Product_qtycost}.divide($V{Product_qty}, 2, RoundingMode.HALF_UP)]]></variableExpression>
 	</variable>
 	<variable name="Warehouse_qty" class="java.math.BigDecimal" resetType="Group" resetGroup="Warehouse" calculation="Sum">
 		<variableExpression><![CDATA[$F{qty}]]></variableExpression>

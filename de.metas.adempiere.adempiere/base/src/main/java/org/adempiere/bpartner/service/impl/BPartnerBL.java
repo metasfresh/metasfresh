@@ -22,10 +22,10 @@ package org.adempiere.bpartner.service.impl;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.bpartner.service.IBPartnerAware;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -211,6 +211,30 @@ public class BPartnerBL implements IBPartnerBL
 			return null;
 		}
 		return null;
-
 	}
+
+	@Override
+	public Language getLanguageForModel(final Object model)
+	{
+		// 09527 get the most suitable language:
+		final IBPartnerAware bpartnerAware = InterfaceWrapperHelper
+				.asColumnReferenceAwareOrNull(model, IBPartnerAware.class);
+		if (bpartnerAware == null)
+		{
+			return null;
+		}
+		if (bpartnerAware.getC_BPartner_ID() <= 0)
+		{
+			return null;
+		}
+		final String lang = bpartnerAware.getC_BPartner().getAD_Language();
+		if (Check.isEmpty(lang, true))
+		{
+			return null;
+		}
+
+		return Language.getLanguage(lang);
+	}
+
+	
 }

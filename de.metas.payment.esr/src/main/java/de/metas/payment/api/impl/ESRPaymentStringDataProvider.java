@@ -32,7 +32,7 @@ import org.compiere.model.MCurrency;
 
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.impl.AbstractPaymentStringDataProvider;
-import de.metas.payment.esr.api.IBPBankAccountDAO;
+import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 
 /**
@@ -53,7 +53,7 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 		final String postAccountNo = paymentString.getPostAccountNo();
 		final String innerAccountNo = paymentString.getInnerAccountNo();
 
-		final I_C_BP_BankAccount bankAccount = Services.get(IBPBankAccountDAO.class).retrieveESRBPBankAccountOrNull(postAccountNo, innerAccountNo);
+		final I_C_BP_BankAccount bankAccount = Services.get(IESRBPBankAccountDAO.class).retrieveESRBPBankAccountOrNull(postAccountNo, innerAccountNo);
 		return bankAccount;
 	}
 

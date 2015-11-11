@@ -22,7 +22,6 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
@@ -49,13 +48,15 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 public class HUInOutBL implements IHUInOutBL
 {
 	private static final transient CLogger logger = CLogger.getCLogger(HUInOutBL.class);
 
 	@Override
-	public void updatePackingMaterialInOutLine(final org.compiere.model.I_M_InOutLine inoutLine,
+	public void updatePackingMaterialInOutLine(final de.metas.inout.model.I_M_InOutLine inoutLine,
 			final HUPackingMaterialDocumentLineCandidate candidate)
 	{
 		Check.assumeNotNull(inoutLine, "inoutLine not null");
@@ -68,13 +69,18 @@ public class HUInOutBL implements IHUInOutBL
 		final I_C_UOM uom = candidate.getC_UOM();
 		final BigDecimal qtyEntered = candidate.getQty();
 		final BigDecimal qty = candidate.getQtyInStockingUOM();
+		final I_M_Material_Tracking materialTracking = candidate.getM_MaterialTracking();
 
-		inoutLineHU.setM_Material_Tracking(candidate.getM_MaterialTracking()); // task 07734
+		inoutLineHU.setM_Material_Tracking(materialTracking); // task 07734
 		inoutLineHU.setM_Product_ID(productId);
 		inoutLineHU.setC_UOM_ID(uom.getC_UOM_ID());
 		inoutLineHU.setQtyEntered(qtyEntered);
 		inoutLineHU.setMovementQty(qty);
 		inoutLineHU.setIsPackagingMaterial(true);
+
+		// task 09502: we set the M_Material_Tracking_ID, so let's also update the ASI, to have it all consistent.
+		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
+		materialTrackingAttributeBL.createOrUpdateMaterialTrackingASI(inoutLineHU, materialTracking);
 
 		// NOTE: packing material lines shall have no order line set (07969). This will prevent generating ICs.
 		inoutLineHU.setC_OrderLine(null);

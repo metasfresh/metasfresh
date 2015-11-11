@@ -147,7 +147,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 	 * Gets a list of {@link I_C_Invoice_Candidate}s of original purchase order.
 	 */
 	@Override
-	public <T extends I_C_Invoice_Candidate> List<T> retrieveOriginalInvoiceCandidates(final I_M_Material_Tracking materialTracking, Class<T> clazz)
+	public <T extends I_C_Invoice_Candidate> List<T> retrieveOriginalInvoiceCandidates(final I_M_Material_Tracking materialTracking, final Class<T> clazz)
 	{
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);

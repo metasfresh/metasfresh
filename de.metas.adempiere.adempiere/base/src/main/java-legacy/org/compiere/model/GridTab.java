@@ -29,6 +29,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -77,6 +78,7 @@ import org.compiere.util.ValueNamePair;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.form.IClientUI;
 
@@ -161,6 +163,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		super();
 		m_window = w;
 		m_vo = vo;
+		this.attachmentsMap = new AttachmentsMap(vo.AD_Table_ID);
+		
+		//
 		// Create MTable
 		m_mTable = new GridTable(m_vo.getCtx(), m_vo.AD_Table_ID, m_vo.TableName, m_vo.WindowNo, m_vo.TabNo, true, virtual);
 		m_mTable.setReadOnly(m_vo.IsReadOnly || m_vo.IsView);
@@ -187,7 +192,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	private String m_parentColumnName = "";
 	private String m_extendedWhere;
 	/** Attachments */
-	private HashMap<Integer, Integer> m_Attachments = null;
+	private final AttachmentsMap attachmentsMap; 
 	/** Chats */
 	private HashMap<Integer, Integer> m_Chats = null;
 	/** Locks */
@@ -383,11 +388,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		//
 		m_depOnField.clear();
 		m_depOnField = null;
-		if (m_Attachments != null)
+		
+		if (attachmentsMap != null)
 		{
-			m_Attachments.clear();
+			attachmentsMap.reset();
 		}
-		m_Attachments = null;
+		
 		if (m_Chats != null)
 		{
 			m_Chats.clear();
@@ -1023,29 +1029,37 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		}
 
 		// Find Reference Column e.g. BillTo_ID -> C_BPartner_Location_ID
-		String sql = "SELECT cc.ColumnName "
-				+ "FROM AD_Column c"
-				+ " INNER JOIN AD_Ref_Table r ON (c.AD_Reference_Value_ID=r.AD_Reference_ID)"
-				+ " INNER JOIN AD_Column cc ON (r.AD_Key=cc.AD_Column_ID) "
-				+ "WHERE c.AD_Reference_ID IN (18,30)" 	// Table/Search
-				+ " AND c.ColumnName=?";
-		try
 		{
-			final PreparedStatement pstmt = DB.prepareStatement(sql, null);
-			pstmt.setString(1, colName);
-			final ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
+			final String sql = "SELECT cc.ColumnName "
+					+ "FROM AD_Column c"
+					+ " INNER JOIN AD_Ref_Table r ON (c.AD_Reference_Value_ID=r.AD_Reference_ID)"
+					+ " INNER JOIN AD_Column cc ON (r.AD_Key=cc.AD_Column_ID) "
+					+ "WHERE c.AD_Reference_ID IN (18,30)" 	// Table/Search
+					+ " AND c.ColumnName=?";
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
 			{
-				refColName = rs.getString(1);
+				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+				pstmt.setString(1, colName);
+				rs = pstmt.executeQuery();
+				if (rs.next())
+				{
+					refColName = rs.getString(1);
+				}
 			}
-			rs.close();
-			pstmt.close();
+			catch (final SQLException e)
+			{
+				log.log(Level.SEVERE, "(ref) - Column=" + colName, e);
+				return query.getWhereClause();
+			}
+			finally
+			{
+				DB.close(rs, pstmt);
+				rs = null; pstmt = null;
+			}
 		}
-		catch (final SQLException e)
-		{
-			log.log(Level.SEVERE, "(ref) - Column=" + colName, e);
-			return query.getWhereClause();
-		}
+		
 		// Reference Column found
 		if (refColName != null)
 		{
@@ -1062,37 +1076,44 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		String tableName = null;
 		final String tabKeyColumn = getKeyColumnName();
 		// Column=SalesRep_ID, Key=AD_User_ID, Query=SalesRep_ID=101
-
-		sql = "SELECT t.TableName "
-				+ "FROM AD_Column c"
-				+ " INNER JOIN AD_Table t ON (c.AD_Table_ID=t.AD_Table_ID) "
-				+ "WHERE c.ColumnName=? AND IsKey='Y'"		// #1 Link Column
-				+ " AND EXISTS (SELECT * FROM AD_Column cc"
-				+ " WHERE cc.AD_Table_ID=t.AD_Table_ID AND cc.ColumnName=?)";	// #2 Tab Key Column
-		try
+		
 		{
-			final PreparedStatement pstmt = DB.prepareStatement(sql, null);
-			pstmt.setString(1, colName);
-			pstmt.setString(2, tabKeyColumn);
-			final ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
+			final String sql = "SELECT t.TableName "
+					+ "FROM AD_Column c"
+					+ " INNER JOIN AD_Table t ON (c.AD_Table_ID=t.AD_Table_ID) "
+					+ "WHERE c.ColumnName=? AND IsKey='Y'"		// #1 Link Column
+					+ " AND EXISTS (SELECT * FROM AD_Column cc"
+					+ " WHERE cc.AD_Table_ID=t.AD_Table_ID AND cc.ColumnName=?)";	// #2 Tab Key Column
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
 			{
-				tableName = rs.getString(1);
+				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+				pstmt.setString(1, colName);
+				pstmt.setString(2, tabKeyColumn);
+				rs = pstmt.executeQuery();
+				if (rs.next())
+				{
+					tableName = rs.getString(1);
+				}
 			}
-			rs.close();
-			pstmt.close();
-		}
-		catch (final SQLException e)
-		{
-			log.log(Level.SEVERE, "Column=" + colName + ", Key=" + tabKeyColumn, e);
-			return null;
+			catch (final SQLException e)
+			{
+				log.log(Level.SEVERE, "Column=" + colName + ", Key=" + tabKeyColumn, e);
+				return null;
+			}
+			finally
+			{
+				DB.close(rs, pstmt);
+				rs = null; pstmt = null;
+			}
 		}
 
 		// Special Reference Handling
 		if (tabKeyColumn.equals("AD_Reference_ID"))
 		{
 			// Column=AccessLevel, Key=AD_Reference_ID, Query=AccessLevel='6'
-			sql = "SELECT AD_Reference_ID FROM AD_Column WHERE ColumnName=?";
+			final String sql = "SELECT AD_Reference_ID FROM AD_Column WHERE ColumnName=?";
 			final int AD_Reference_ID = DB.getSQLValue(null, sql, colName);
 			return "AD_Reference_ID=" + AD_Reference_ID;
 		}
@@ -1575,7 +1596,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 *
 	 * @return MTable
 	 */
-	public GridTable getMTable()
+	public final GridTable getMTable()
 	{
 		return m_mTable;
 	}	// getMTable
@@ -1599,7 +1620,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	{
 		m_keyColumnName = keyColumnName;
 		final Properties ctx = getCtx();
-		Env.setContext(ctx, m_vo.WindowNo, m_vo.TabNo, CTX_KeyColumnName, m_keyColumnName);
+		Env.setContext(ctx, m_vo.WindowNo, m_vo.TabNo, CTX_KeyColumnName, keyColumnName);
+		
+		attachmentsMap.setKeyColumnName(keyColumnName);
 	}
 
 	/**
@@ -2336,41 +2359,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 */
 	public void loadAttachments()
 	{
-		log.fine("#" + m_vo.TabNo);
-		if (!canHaveAttachment())
-		{
-			return;
-		}
-
-		final String SQL = "SELECT AD_Attachment_ID, Record_ID FROM AD_Attachment "
-				+ "WHERE AD_Table_ID=?";
-		try
-		{
-			if (m_Attachments == null)
-			{
-				m_Attachments = new HashMap<Integer, Integer>();
-			}
-			else
-			{
-				m_Attachments.clear();
-			}
-			final PreparedStatement pstmt = DB.prepareStatement(SQL, null);
-			pstmt.setInt(1, m_vo.AD_Table_ID);
-			final ResultSet rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				final Integer key = new Integer(rs.getInt(2));
-				final Integer value = new Integer(rs.getInt(1));
-				m_Attachments.put(key, value);
-			}
-			rs.close();
-			pstmt.close();
-		}
-		catch (final SQLException e)
-		{
-			log.log(Level.SEVERE, "loadAttachments", e);
-		}
-		log.config("#" + m_Attachments.size());
+		final int recordId = getRecord_ID();
+		attachmentsMap.reset(recordId);
 	}	// loadAttachment
 
 	/**
@@ -2382,11 +2372,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 */
 	public boolean canHaveAttachment()
 	{
-		if (getKeyColumnName().endsWith("_ID"))
-		{
-			return true;
-		}
-		return false;
+		return attachmentsMap.canHaveAttachment();
 	}   // canHaveAttachment
 
 	/**
@@ -2396,17 +2382,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 */
 	public boolean hasAttachment()
 	{
-		if (m_Attachments == null)
-		{
-			loadAttachments();
-		}
-		if (m_Attachments == null || m_Attachments.isEmpty())
-		{
-			return false;
-		}
-		//
-		final Integer key = new Integer(m_mTable.getKeyID(m_currentRow));
-		return m_Attachments.containsKey(key);
+		final int recordId = getRecord_ID();
+		return attachmentsMap.hasAttachment(recordId);
 	}	// hasAttachment
 
 	/**
@@ -2416,25 +2393,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 */
 	public int getAD_AttachmentID()
 	{
-		if (m_Attachments == null)
-		{
-			loadAttachments();
-		}
-		if (m_Attachments.isEmpty())
-		{
-			return 0;
-		}
-		//
-		final Integer key = new Integer(m_mTable.getKeyID(m_currentRow));
-		final Integer value = m_Attachments.get(key);
-		if (value == null)
-		{
-			return 0;
-		}
-		else
-		{
-			return value.intValue();
-		}
+		final int recordId = getRecord_ID();
+		return attachmentsMap.getAD_Attachment_ID(recordId);
 	}	// getAttachmentID
 
 	/**************************************************************************
@@ -2448,8 +2408,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 			return;
 		}
 
-		final String sql = "SELECT CM_Chat_ID, Record_ID FROM CM_Chat "
-				+ "WHERE AD_Table_ID=?";
+		final String sql = "SELECT CM_Chat_ID, Record_ID FROM CM_Chat WHERE AD_Table_ID=?";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try
 		{
 			if (m_Chats == null)
@@ -2460,21 +2421,23 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 			{
 				m_Chats.clear();
 			}
-			final PreparedStatement pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, m_vo.AD_Table_ID);
-			final ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				final Integer key = new Integer(rs.getInt(2));	// Record_ID
-				final Integer value = new Integer(rs.getInt(1));	// CM_Chat_ID
-				m_Chats.put(key, value);
+				final Integer recordId = rs.getInt(2);	// Record_ID
+				final Integer chatId = rs.getInt(1);	// CM_Chat_ID
+				m_Chats.put(recordId, chatId);
 			}
-			rs.close();
-			pstmt.close();
 		}
 		catch (final SQLException e)
 		{
 			log.log(Level.SEVERE, sql, e);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
 		}
 		log.config("#" + m_Chats.size());
 	}	// loadChats
@@ -2543,6 +2506,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 				+ "FROM AD_Private_Access "
 				+ "WHERE AD_User_ID=? AND AD_Table_ID=? AND IsActive='Y' "
 				+ "ORDER BY Record_ID";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try
 		{
 			if (m_Lock == null)
@@ -2553,21 +2518,23 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 			{
 				m_Lock.clear();
 			}
-			final PreparedStatement pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, AD_User_ID);
 			pstmt.setInt(2, m_vo.AD_Table_ID);
-			final ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
 				final Integer key = new Integer(rs.getInt(1));
 				m_Lock.add(key);
 			}
-			rs.close();
-			pstmt.close();
 		}
 		catch (final SQLException e)
 		{
 			log.log(Level.SEVERE, sql, e);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
 		}
 		log.fine("#" + m_Lock.size());
 	}	// loadLooks
@@ -2696,18 +2663,19 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 
 	private void updateDataStatusEventProperties(final DataStatusEvent e)
 	{
+		final String keyColumnName = getKeyColumnName();
+		
 		e.Created = (Timestamp)getValue("Created");
 		e.CreatedBy = (Integer)getValue("CreatedBy");
 		e.Updated = (Timestamp)getValue("Updated");
 		e.UpdatedBy = (Integer)getValue("UpdatedBy");
-		e.Record_ID = getValue(m_keyColumnName);
+		e.Record_ID = getValue(keyColumnName);
 		// Info
-		final StringBuffer info = new StringBuffer(getTableName());
+		final StringBuilder info = new StringBuilder(getTableName());
 		// We have a key column
-		if (m_keyColumnName != null && m_keyColumnName.length() > 0)
+		if (keyColumnName != null && keyColumnName.length() > 0)
 		{
-			info.append(" - ")
-					.append(m_keyColumnName).append("=").append(e.Record_ID);
+			info.append(" - ").append(keyColumnName).append("=").append(e.Record_ID);
 		}
 		else
 		// we have multiple parents
@@ -2715,8 +2683,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 			for (int i = 0; i < m_parents.size(); i++)
 			{
 				final String keyCol = m_parents.get(i);
-				info.append(" - ")
-						.append(keyCol).append("=").append(getValue(keyCol));
+				info.append(" - ").append(keyCol).append("=").append(getValue(keyCol));
 			}
 		}
 		e.Info = info.toString();
@@ -2778,7 +2745,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	 */
 	public int getRecord_ID()
 	{
-		return m_mTable.getKeyID(m_currentRow);
+		final GridTable gridTable = getMTable();
+		if (gridTable == null)
+		{
+			return -1;
+		}
+		return gridTable.getKeyID(m_currentRow);
 	}   // getRecord_ID
 
 	/**
@@ -4159,4 +4131,165 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 		return gridTabFilter;
 	}
 	// metas: end
+	
+	private static final class AttachmentsMap
+	{
+		private static final transient CLogger logger = CLogger.getCLogger(AttachmentsMap.class);
+		
+		private static final int BUFFER_SIZE = 100;
+		
+		private final int adTableId;
+		private volatile boolean canHaveAttachments = false;
+		private Map<Integer, Integer> recordId2attachementId = null;
+		private boolean partiallyLoaded = true;
+
+		public AttachmentsMap(final int adTableId)
+		{
+			super();
+			this.adTableId = adTableId;
+			reset();
+		}
+		
+		public void setKeyColumnName(final String keyColumnName)
+		{
+			this.canHaveAttachments = keyColumnName != null && keyColumnName.endsWith("_ID");
+		}
+		
+		public boolean canHaveAttachment()
+		{
+			return canHaveAttachments;
+		}
+		
+		public synchronized void reset()
+		{
+			if (recordId2attachementId != null)
+			{
+				recordId2attachementId.clear();
+				recordId2attachementId = null;
+			}
+			partiallyLoaded = true;
+		}
+		
+		public synchronized void reset(final int recordId)
+		{
+			if (recordId2attachementId == null)
+			{
+				return;
+			}
+			
+			final Integer attachmentId = recordId2attachementId.remove(recordId);
+			if(attachmentId == null)
+			{
+				return;
+			}
+			
+			final boolean forceLoadIfNotExists = true;
+			getAD_Attachment_ID(recordId, forceLoadIfNotExists); // reload it
+		}
+		
+		/**
+		 * Get AD_Attachment_ID for given Record_ID.
+		 *
+		 * @return AD_Attachment_ID or 0, if not found
+		 */
+		public final synchronized int getAD_Attachment_ID(final int recordId)
+		{
+			final boolean forceLoadIfNotExists = false;
+			return getAD_Attachment_ID(recordId, forceLoadIfNotExists);
+		}
+		
+		private final synchronized int getAD_Attachment_ID(final int recordId, final boolean forceLoadIfNotExists)
+		{
+			if (recordId < 0)
+			{
+				return 0;
+			}
+			
+			final Map<Integer, Integer> recordId2attachmentId = getMap();
+			
+			final Integer attachmentIdExisting = recordId2attachmentId.get(recordId);
+			if (attachmentIdExisting != null)
+			{
+				return attachmentIdExisting > 0 ? attachmentIdExisting : 0;
+			}
+			
+			if (partiallyLoaded || forceLoadIfNotExists)
+			{
+				final String sql = "SELECT AD_Attachment_ID FROM AD_Attachment WHERE AD_Table_ID=? AND Record_ID=?";
+				int attachmentId = DB.getSQLValue(ITrx.TRXNAME_None, sql, adTableId, recordId);
+				if (attachmentId <= 0)
+				{
+					attachmentId = 0;
+				}
+				recordId2attachmentId.put(recordId, attachmentId); // cache it even if the AD_Attachment_ID was not found
+				return attachmentId;
+			}
+			
+			return 0;
+		}
+		
+		public final boolean hasAttachment(final int recordId)
+		{
+			final int attachmentId = getAD_Attachment_ID(recordId);
+			return attachmentId > 0;
+		}
+
+		
+		private final Map<Integer, Integer> getMap()
+		{
+			if (!canHaveAttachment())
+			{
+				return ImmutableMap.of();
+			}
+			
+			if (this.recordId2attachementId != null)
+			{
+				return this.recordId2attachementId;
+			}
+			
+			final Map<Integer, Integer> recordId2attachementId = new HashMap<>(BUFFER_SIZE);
+			boolean partiallyLoaded = false;
+
+			final String sql = "SELECT AD_Attachment_ID, Record_ID FROM AD_Attachment WHERE AD_Table_ID=? LIMIT ?";
+			int rowsLoaded = 0;
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
+			{
+				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+				pstmt.setInt(1, adTableId);
+				pstmt.setInt(2, BUFFER_SIZE + 1); // buffer size + 1 to be able to figure out when the buffer is exceeded
+				rs = pstmt.executeQuery();
+				while (rs.next())
+				{
+					// Check if we exceeded the buffer size
+					if (rowsLoaded >= BUFFER_SIZE)
+					{
+						partiallyLoaded = true;
+						break;
+					}
+					
+					final int attachmentId = rs.getInt(1);
+					final int recordId = rs.getInt(2);
+					recordId2attachementId.put(recordId, attachmentId);
+					rowsLoaded++;
+				}
+			}
+			catch (final SQLException e)
+			{
+				logger.log(Level.SEVERE, "Failed loading the attachments", e);
+				partiallyLoaded = true; // consider it partially loaded
+			}
+			finally
+			{
+				DB.close(rs, pstmt);
+			}
+			
+			this.recordId2attachementId = recordId2attachementId;
+			this.partiallyLoaded = partiallyLoaded;
+			
+			return recordId2attachementId;
+		}
+
+	}
 }	// GridTab

@@ -36,12 +36,12 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 public interface IHUInOutBL extends ISingletonService
 {
 	/**
-	 * Create a packing material line. i.e. Updates a new inout line and sets all informations from <code>candidate</code>. At the end, <code>inoutLine</code> will be saved
+	 * Create a packing material line. i.e. updates a new inout line and sets all informations from <code>candidate</code>. At the end, <code>inoutLine</code> will be saved
 	 *
 	 * @param inoutLine new drafted inout line which will be updated from <code>candidate</code>.
 	 * @param candidate
 	 */
-	void updatePackingMaterialInOutLine(org.compiere.model.I_M_InOutLine inoutLine, HUPackingMaterialDocumentLineCandidate candidate);
+	void updatePackingMaterialInOutLine(de.metas.inout.model.I_M_InOutLine inoutLine, HUPackingMaterialDocumentLineCandidate candidate);
 
 	/**
 	 * Create additional inout lines for packing materials (TU and LU) based on the qtyTUs.

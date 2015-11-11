@@ -997,7 +997,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	 */
 	public boolean testAllocation()
 	{
-		return Services.get(IInvoiceBL.class).testAllocation(this);
+		final boolean ignoreProcessed = false;
+		return Services.get(IInvoiceBL.class).testAllocation(this, ignoreProcessed);
 		
 		// tsa: 04098: moving getAllocatedAmt business logic to the implementors of IInvoiceBL
 //		boolean change = false;

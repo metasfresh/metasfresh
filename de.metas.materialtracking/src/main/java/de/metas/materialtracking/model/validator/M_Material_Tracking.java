@@ -22,7 +22,6 @@ package de.metas.materialtracking.model.validator;
  * #L%
  */
 
-
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -47,7 +46,15 @@ public class M_Material_Tracking
 		calloutProvider.registerAnnotatedCallout(new de.metas.materialtracking.ch.lagerkonf.callout.M_Material_Tracking());
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	/**
+	  * Note: ifColumnsChanged is adapted to the BL that is called. if you change the BL, pls check if ifColumnsChanged also needs to be changed
+	  */
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW,
+					ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_M_Material_Tracking.COLUMNNAME_Lot,
+					I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID,
+					I_M_Material_Tracking.COLUMNNAME_M_Product_ID })
 	public void createMaterialTrackingAttributeValue(final I_M_Material_Tracking materialTracking)
 	{
 		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);

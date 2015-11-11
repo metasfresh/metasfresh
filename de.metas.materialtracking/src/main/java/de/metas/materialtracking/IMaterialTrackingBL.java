@@ -22,10 +22,10 @@ package de.metas.materialtracking;
  * #L%
  */
 
-
 import org.adempiere.util.ISingletonService;
 
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 
 public interface IMaterialTrackingBL extends ISingletonService
 {
@@ -61,9 +61,10 @@ public interface IMaterialTrackingBL extends ISingletonService
 	void addModelTrackingListener(final String tableName, final IMaterialTrackingListener listener);
 
 	/**
-	 * Link given model to a material tracking record.
+	 * Link given model to a material tracking record. The beforeModelLinked() and afterModelLinked() methods of all registered {@link IMaterialTrackingListener}s will be called before resp. after the
+	 * new {@link I_M_Material_Tracking_Ref} record is saved.
 	 *
-	 * If model was previously assigned to another material tracking, it will be unlinked first.
+	 * If model was previously assigned to another material tracking and {@link MTLinkRequest#isAssumeNotAlreadyAssigned()} is <code>false</code>, then it will be unlinked first.
 	 *
 	 * @param req
 	 */
@@ -73,14 +74,16 @@ public interface IMaterialTrackingBL extends ISingletonService
 	 * Unlink given model from ANY material tracking.
 	 *
 	 * @param model
+	 * @return <code>true</code> if there was a <code>M_MaterialTracking_Ref</code> to delete.
 	 */
-	void unlinkModelFromMaterialTracking(Object model);
+	boolean unlinkModelFromMaterialTracking(Object model);
 
 	/**
-	 * Unlink given model from given material tracking (if exists).
+	 * Unlink given given <code>model</code> from the given <code>materialTracking </code>, if such a link exists.
 	 *
 	 * @param model
 	 * @param materialTracking
+	 * @return <code>true</code> if there was a <code>M_MaterialTracking_Ref</code> to delete.
 	 */
-	void unlinkModelFromMaterialTracking(Object model, I_M_Material_Tracking materialTracking);
+	boolean unlinkModelFromMaterialTracking(Object model, I_M_Material_Tracking materialTracking);
 }

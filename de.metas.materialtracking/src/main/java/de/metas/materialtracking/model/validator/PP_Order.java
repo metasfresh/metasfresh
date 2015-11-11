@@ -48,7 +48,7 @@ public class PP_Order
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 		materialTrackingBL.addModelTrackingListener(I_PP_Order.Table_Name, PPOrderMaterialTrackingListener.instance);
 	}
-
+	
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_CLOSE })
 	public void updateQualityFields(final I_PP_Order ppOrder)
 	{

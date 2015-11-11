@@ -22,7 +22,6 @@ package org.eevolution.api;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
@@ -43,10 +42,20 @@ public interface IPPCostCollectorDAO extends ISingletonService
 	List<I_PP_Cost_Collector> retrieveForOrder(I_PP_Order order);
 
 	/**
+	 * Retrieve the cost collectors of the given <code>order</code> that are active and are either completed or closed.
+	 * 
+	 * @param order
+	 * @return
+	 */
+	List<I_PP_Cost_Collector> retrieveNotReversedForOrder(I_PP_Order order);
+
+	/**
 	 * Retrieve the cost collectors for the given ppOrder. The cost collectors must have:
-	 * <li> ppOrder's id
-	 * <li> status completed
-	 * <li> type Material receipt
+	 * <ul>
+	 * <li>ppOrder's id
+	 * <li>status completed
+	 * <li>type Material receipt
+	 * </ul>
 	 * 
 	 * @param ppOrder
 	 * @return

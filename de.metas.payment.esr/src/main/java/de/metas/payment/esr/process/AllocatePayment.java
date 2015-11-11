@@ -82,7 +82,9 @@ public class AllocatePayment extends org.compiere.process.SvrProcess
 		final I_C_Payment payment = InterfaceWrapperHelper.create(getCtx(), p_C_Payment_ID, I_C_Payment.class, get_TrxName());
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(getCtx(), p_C_Invoice_ID, I_C_Invoice.class, get_TrxName());
 		Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice, payment, true);
-		Services.get(IInvoiceBL.class).testAllocation(invoice);
+
+		final boolean ignoreProcessed = false;
+		Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
 
 		return "OK";
 	}

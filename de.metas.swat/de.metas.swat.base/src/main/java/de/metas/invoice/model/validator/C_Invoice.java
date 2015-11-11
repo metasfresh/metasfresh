@@ -22,7 +22,6 @@ package de.metas.invoice.model.validator;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
@@ -178,6 +177,22 @@ public class C_Invoice
 	public void onVoidOrReverse_UnlinkRefAdjustmentCharge(final I_C_Invoice adjustmentCharge)
 	{
 		unlinkAdjustmentChargeReferences(adjustmentCharge);
+	}
+
+	/**
+	 * Mark invoice as paid if the grand total/open amount is 0
+	 * 
+	 * @param invoice
+	 * @task 09489
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void markAsPaid(final I_C_Invoice invoice)
+	{
+		// services
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+		final boolean ignoreProcessed = true; // need to ignoreProcessed, because right now, PRocessed not yet set to true by the engine.  
+		invoiceBL.testAllocation(invoice, ignoreProcessed);
 	}
 
 	/**

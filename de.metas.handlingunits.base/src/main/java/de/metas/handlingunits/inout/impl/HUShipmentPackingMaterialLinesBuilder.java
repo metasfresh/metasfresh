@@ -198,7 +198,15 @@ public class HUShipmentPackingMaterialLinesBuilder
 		// Create Packing Material InOut Lines based on collected packing materials
 		for (final HUPackingMaterialDocumentLineCandidate pmCandidate : packingMaterialsCollector.getAndClearCandidates())
 		{
-			createPackingMaterialLine(pmCandidate);
+			final I_M_InOutLine packingMaterialLine = createPackingMaterialLine(pmCandidate);
+
+			// task 09502: set the reference from line to packing-line
+			final List<I_M_InOutLine> sourceIols = pmCandidate.getSources();
+			for (final I_M_InOutLine sourceIol : sourceIols)
+			{
+				sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
+				InterfaceWrapperHelper.save(sourceIol);
+			}
 		}
 
 		configurable = false;
@@ -251,7 +259,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		if (huPIItemProduct != null)
 		{
 			final I_M_HU_PI huPI = huPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-			packingMaterialsCollectorFromOverrides.addM_HU_PI(huPI, countTUs_Override);
+			packingMaterialsCollectorFromOverrides.addM_HU_PI(huPI, countTUs_Override, shipmentLine);
 		}
 		//
 		// Collect LU packing materials from overrides

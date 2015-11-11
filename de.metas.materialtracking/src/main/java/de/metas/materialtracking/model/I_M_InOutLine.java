@@ -22,17 +22,9 @@ package de.metas.materialtracking.model;
  * #L%
  */
 
-
-
-public interface I_M_InOutLine extends de.metas.inout.model.I_M_InOutLine
+public interface I_M_InOutLine extends
+		de.metas.inout.model.I_M_InOutLine,
+		IMaterialTrackingAware
 {
-	// code formatter will be off to maintain aspect
 
-	// @formatter:off
-	public static final String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
-	public void setM_Material_Tracking_ID(int M_HU_PackingMaterial_ID);
-	public int getM_Material_Tracking_ID();
-	public void setM_Material_Tracking(I_M_Material_Tracking M_Material_Tracking) throws RuntimeException;
-	public I_M_Material_Tracking getM_Material_Tracking() throws RuntimeException;
-	// @formatter:on
 }

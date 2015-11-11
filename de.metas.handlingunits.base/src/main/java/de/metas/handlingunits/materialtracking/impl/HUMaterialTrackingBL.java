@@ -4,15 +4,20 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.IContextAware;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 
 import com.google.common.base.Optional;
 
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /*
  * #%L
@@ -56,5 +61,23 @@ public class HUMaterialTrackingBL implements IHUMaterialTrackingBL
 	public Optional<IQualityInspectionSchedulable> asQualityInspectionSchedulable(final IContextAware context, final IAttributeStorage attributeStorage)
 	{
 		return AttributeStorageQualityInspectionSchedulable.of(this, context, attributeStorage);
+	}
+	
+	@Override
+	public void updateHUAttributeRecursive(final I_M_HU hu,
+			final I_M_Material_Tracking materialTracking,
+			final String onlyHUStatus)
+	{
+		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
+		final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+		
+		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
+		final I_M_Attribute materialTrackingAttribute = materialTrackingAttributeBL.getMaterialTrackingAttribute(ctx);
+		final Object attributeValue = materialTracking == null ? null : materialTracking.getM_Material_Tracking_ID();
+		
+		huAttributesBL.updateHUAttributeRecursive(hu, 
+				materialTrackingAttribute, 
+				attributeValue,
+				onlyHUStatus);
 	}
 }

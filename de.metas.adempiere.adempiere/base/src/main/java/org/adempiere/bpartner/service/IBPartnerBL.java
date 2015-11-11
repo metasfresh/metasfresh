@@ -115,4 +115,12 @@ public interface IBPartnerBL extends ISingletonService
 	 * @return {@link Language} or <code>null</code>
 	 */
 	Language getLanguage(Properties ctx, int bpartnerId);
+
+	/**
+	 * Get the language of the given model's C_BPartner, if it has a <code>C_BPartner_ID</code> column and if the BPartner is set.
+	 * 
+	 * @param model
+	 * @return the language, if found, <code>null</code> otherwise.
+	 */
+	Language getLanguageForModel(Object model);
 }

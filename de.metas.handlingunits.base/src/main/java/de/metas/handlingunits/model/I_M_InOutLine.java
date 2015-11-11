@@ -22,7 +22,6 @@ package de.metas.handlingunits.model;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
 public interface I_M_InOutLine extends de.metas.materialtracking.model.I_M_InOutLine
@@ -63,14 +62,6 @@ public interface I_M_InOutLine extends de.metas.materialtracking.model.I_M_InOut
 	// @formatter:on
 
 	// @formatter:off
-	// public static final String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
-	@Override
-	public void setIsPackagingMaterial(boolean IsPackagingMaterial);
-	@Override
-	public boolean isPackagingMaterial();
-	// @formatter:on
-
-	// @formatter:off
 	// task: http://dewiki908/mediawiki/index.php/08228_Packvorschrift_%C3%A4nderbar_in_Lieferschen_plus_Recalc_plus_Abweichende_Menge_plus_Prozess_plus_Rolle_Spedition
 	public static final String COLUMNNAME_IsManualPackingMaterial = "IsManualPackingMaterial";
 	public void setIsManualPackingMaterial(boolean IsManualPackingMaterial);
@@ -100,5 +91,4 @@ public interface I_M_InOutLine extends de.metas.materialtracking.model.I_M_InOut
 	public void setM_HU_PI_Item_Product_Override(I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Override) throws RuntimeException;
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Override() throws RuntimeException;
 	// @formatter:on
-
 }
