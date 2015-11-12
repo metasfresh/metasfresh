@@ -67,8 +67,7 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION paymentavailable(numeric)
-  OWNER TO adempiere;
+
 
   
 -- Function: paymentallocated(numeric, numeric)
@@ -134,5 +133,4 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION paymentallocated(numeric, numeric)
-  OWNER TO adempiere;
+
