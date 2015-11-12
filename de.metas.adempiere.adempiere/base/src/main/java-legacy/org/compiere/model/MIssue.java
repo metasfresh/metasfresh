@@ -315,9 +315,13 @@ public class MIssue extends X_AD_Issue
 			return;
 		StackTrace = StackTrace.replace("java.lang.", "");
 		StackTrace = StackTrace.replace("java.sql.", "");
-		if (StackTrace.length() > INFOLENGTH)
-			StackTrace = StackTrace.substring(0,INFOLENGTH-1);
-		super.setStackTrace (StackTrace);
+
+		// Truncate the stacktrace if necessary
+		final int maxLength = getPOInfo().getFieldLength(COLUMNNAME_StackTrace);
+		if (maxLength > 0 && StackTrace.length() > maxLength)
+			StackTrace = StackTrace.substring(0, maxLength - 1);
+		
+		super.setStackTrace(StackTrace);
 	}	//	setStackTrace
 	
 	
