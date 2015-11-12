@@ -30,7 +30,7 @@ WHERE true
 	AND report.IsActive='Y'
 ;
 
-ALTER TABLE report.RV_C_Order_MFGWarehouse_Report_Header OWNER TO adempiere;
+
 
 drop view if exists report.RV_C_Order_MFGWarehouse_Report_Description;
 create or replace view report.RV_C_Order_MFGWarehouse_Report_Description
@@ -76,7 +76,7 @@ WHERE true
 	AND report.IsActive='Y'
 ;
 
-ALTER TABLE report.RV_C_Order_MFGWarehouse_Report_Description OWNER TO adempiere;
+
 
 
 
@@ -158,7 +158,7 @@ ORDER BY
 */
 ;
 
-ALTER TABLE report.RV_C_Order_MFGWarehouse_Report_Details OWNER TO adempiere;
+
 
 
 
@@ -248,7 +248,7 @@ ORDER BY
 */
 ;
 
-ALTER TABLE report.RV_C_Order_MFGWarehouse_Report_Details_HU OWNER TO adempiere;
+
 
 
 

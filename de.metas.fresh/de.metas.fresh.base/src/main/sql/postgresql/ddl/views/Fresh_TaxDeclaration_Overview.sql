@@ -27,4 +27,4 @@ GROUP BY
 	td.Datefrom,
 	td.Dateto
 ;
-ALTER TABLE report.fresh_TaxDeclaration_Overview OWNER TO adempiere;
+

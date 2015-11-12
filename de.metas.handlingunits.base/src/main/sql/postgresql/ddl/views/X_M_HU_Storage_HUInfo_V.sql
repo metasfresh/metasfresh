@@ -46,4 +46,4 @@ WHERE
 	-- Exclude HU Storages if the warehouse has IsHUStorageDisabled
 	wh.IsHUStorageDisabled<>'Y'
 ;
-ALTER TABLE x_m_hu_storage_huinfo_v OWNER TO adempiere;
+

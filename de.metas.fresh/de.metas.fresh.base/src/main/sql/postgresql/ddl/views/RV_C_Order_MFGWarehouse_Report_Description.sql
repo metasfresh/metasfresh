@@ -42,4 +42,4 @@ WHERE true
 	AND report.IsActive='Y'
 ;
 
-ALTER TABLE report.RV_C_Order_MFGWarehouse_Report_Description OWNER TO adempiere;
+

@@ -50,6 +50,6 @@ CREATE OR REPLACE VIEW v_bpartnercockpit AS
    LEFT JOIN x_bpartner_cockpit_search_mv bpcs ON bp.c_bpartner_id = bpcs.c_bpartner_id
   WHERE bp.iscustomer = 'Y'::bpchar OR bp.isprospect = 'Y'::bpchar;
 
-ALTER TABLE v_bpartnercockpit OWNER TO adempiere;
+
 
 

@@ -18,4 +18,4 @@ FROM
 	LEFT JOIN C_Invoice_Clearing_alloc ica ON ic.C_Invoice_Candidate_ID = ica.C_Invoice_Cand_ToClear_ID AND ica.isActive = 'Y'
 	LEFT JOIN C_Invoice_Candidate icc ON ica.C_Invoice_Candidate_ID = icc.C_Invoice_Candidate_ID AND ic.AD_Table_ID = ( SELECT Get_Table_ID('C_Flatrate_Term') ) AND ic.isActive = 'Y';
 
-ALTER TABLE "de.metas.inout".M_Material_Balance_Detail_V OWNER TO adempiere;
+

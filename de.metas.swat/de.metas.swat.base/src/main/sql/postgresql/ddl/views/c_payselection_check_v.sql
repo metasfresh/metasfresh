@@ -13,5 +13,5 @@ CREATE OR REPLACE VIEW c_payselection_check_v AS
    JOIN c_bpartner obp ON psc.ad_org_id = obp.ad_orgbp_id
    LEFT OUTER JOIN C_Bpartner_Location obpl ON obp.C_BPartner_ID = obpl.C_Bpartner_ID AND obpl.IsDefaultLocation = 'Y'; -- location from bpartner location;
 
-ALTER TABLE c_payselection_check_v OWNER TO adempiere;
+
 GRANT ALL ON TABLE c_payselection_check_v TO adempiere;

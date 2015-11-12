@@ -33,5 +33,4 @@ LEFT JOIN C_BPartner_Location bpl ON bpl.C_BPartner_ID=lookup.C_BPartner_ID AND 
 WHERE lookup.UPC IS NOT NULL AND TRIM(BOTH ' ' FROM lookup.UPC)!=''
 ;
 
-ALTER TABLE EDI_M_Product_Lookup_UPC_v
-  OWNER TO adempiere;
+

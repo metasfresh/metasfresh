@@ -22,4 +22,3 @@ LEFT OUTER JOIN C_Invoice i
 ON i.C_Invoice_ID = list.C_Invoice_ID;
 
 
-ALTER TABLE RV_Prt_Bericht_Statistik_List_Per_Org OWNER TO adempiere;

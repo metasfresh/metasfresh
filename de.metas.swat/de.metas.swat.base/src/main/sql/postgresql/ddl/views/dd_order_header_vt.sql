@@ -25,5 +25,5 @@ CREATE OR REPLACE VIEW dd_order_header_vt AS
    LEFT JOIN ad_user u ON o.salesrep_id = u.ad_user_id
    LEFT JOIN c_bpartner ubp ON u.c_bpartner_id = ubp.c_bpartner_id;
 
-ALTER TABLE dd_order_header_vt OWNER TO adempiere;
+
 GRANT ALL ON TABLE dd_order_header_vt TO adempiere;

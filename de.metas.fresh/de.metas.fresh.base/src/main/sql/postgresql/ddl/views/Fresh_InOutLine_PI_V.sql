@@ -30,5 +30,5 @@ WHERE
 	COALESCE ( pi.name, pifb.name ) != 'VirtualPI'
 ;
 
-ALTER TABLE Report.fresh_InOutLine_PI_V OWNER TO adempiere;
+
 COMMENT ON VIEW Report.fresh_InOutLine_PI_V IS 'Lists all InOutline_IDs with their Packing instruction name';

@@ -23,6 +23,6 @@ CREATE OR REPLACE VIEW M_HU_Instance_Properties_v AS
 				) doc ON doc.M_HU_ID=hua.M_HU_ID
 ;
 
-ALTER TABLE M_HU_Instance_Properties_v OWNER TO adempiere;
+
 
 GRANT ALL ON TABLE M_HU_Instance_Properties_v TO adempiere;

@@ -182,8 +182,6 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE
   COST 100;
-ALTER FUNCTION X_MRP_ProductInfo_Detail_MV_Refresh()
-  OWNER TO adempiere;
 COMMENT ON FUNCTION X_MRP_ProductInfo_Detail_MV_Refresh(date, numeric, numeric) IS 'tasks 08681 and 08682: refreshes the table X_MRP_ProductInfo_Detail_MV.
 1. deleting existing records
 2. calling X_MRP_ProductInfo_Detail_MV so add new records

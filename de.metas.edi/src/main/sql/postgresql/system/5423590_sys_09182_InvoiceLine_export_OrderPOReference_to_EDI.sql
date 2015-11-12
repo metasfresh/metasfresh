@@ -124,8 +124,6 @@ COMMENT ON VIEW edi_cctop_invoic_500_v IS 'Notes:
 we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyInved for historical reasons.
 task 08878: Note: we try to aggregate ils which have the same order line. Grouping by C_OrderLine_ID to make sure that we don''t aggregate too much;
 ';
-ALTER TABLE edi_cctop_invoic_500_v
-  OWNER TO adempiere;
 
 -- View: EDI_Cctop_INVOIC_v
 
@@ -213,7 +211,3 @@ LEFT JOIN (
 ) t ON t.C_Invoice_ID = i.C_Invoice_ID
 LEFT JOIN C_BPartner sp ON sp.AD_OrgBP_ID = i.AD_Org_ID
 ;
-
-ALTER TABLE EDI_Cctop_INVOIC_v
-  OWNER TO adempiere;
-  

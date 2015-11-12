@@ -19,4 +19,4 @@ LEFT JOIN pg_attribute af ON af.attrelid = co.confrelid AND ARRAY[af.attnum] <@ 
 WHERE (co.contype = ANY (ARRAY['p'::"char", 'f'::"char"])) AND ns.nspname = 'adempiere'::name
 ;
 
-ALTER TABLE db_constraints OWNER TO adempiere;
+

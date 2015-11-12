@@ -18,5 +18,5 @@ FROM
 WHERE 
 	plv.IsActive = 'Y'::bpchar;
 
-ALTER TABLE report.fresh_Pricelist_Version_Val_Rule OWNER TO adempiere;
+
 COMMENT ON VIEW report.fresh_Pricelist_Version_Val_Rule IS 'Returns all currently valid C_PriceList_Version_IDs for all C_BPartner_ID along with the valid-from-date and price list version name';

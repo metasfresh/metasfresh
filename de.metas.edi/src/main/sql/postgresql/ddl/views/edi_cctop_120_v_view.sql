@@ -27,6 +27,5 @@ CREATE OR REPLACE VIEW edi_cctop_120_v AS
    LEFT JOIN c_paymentterm pt ON pt.c_paymentterm_id = i.c_paymentterm_id
   GROUP BY i.c_invoice_id, i.dateinvoiced, tc.tax_count, c.iso_code, pt.netdays, i.ad_client_id, i.ad_org_id, i.created, i.createdby, i.updated, i.updatedby, i.isactive;
 
-ALTER TABLE edi_cctop_120_v
-  OWNER TO adempiere;
+
 

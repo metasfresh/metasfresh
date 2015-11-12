@@ -29,5 +29,4 @@ WHERE lookup.UPC IS NOT NULL AND trim(both ' ' from lookup.UPC)!=''
 ORDER BY lookup.UPC, bpl.GLN, lookup.M_HU_PI_Item_Product_ID DESC
 ;
 
-ALTER TABLE EDI_M_HU_PI_Item_Product_Lookup_UPC_v
-  OWNER TO adempiere;
+

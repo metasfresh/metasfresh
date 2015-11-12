@@ -9,6 +9,3 @@ SELECT
 	IsActive
 FROM C_BPartner_Location
 WHERE GLN IS NOT NULL AND GLN != '';
-
-ALTER TABLE EDI_AD_Org_Lookup_BPL_GLN_v
-  OWNER TO adempiere;

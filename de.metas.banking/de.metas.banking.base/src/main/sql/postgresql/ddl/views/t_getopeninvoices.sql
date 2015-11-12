@@ -23,8 +23,6 @@ SELECT
 	, NULL::character varying AS POReference
 ;
 
-ALTER TABLE t_getopeninvoices
-  OWNER TO adempiere;
 COMMENT ON VIEW t_getopeninvoices
   IS 'Used as return type in the SQL-function getopeninvoices';
 

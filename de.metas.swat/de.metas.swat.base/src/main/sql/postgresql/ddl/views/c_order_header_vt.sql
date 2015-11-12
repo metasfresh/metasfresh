@@ -33,5 +33,5 @@ CREATE OR REPLACE VIEW c_order_header_vt AS
    JOIN c_bpartner_location bbpl ON o.bill_location_id = bbpl.c_bpartner_location_id
    LEFT JOIN ad_user bbpc ON o.bill_user_id = bbpc.ad_user_id;
 
-ALTER TABLE c_order_header_vt OWNER TO adempiere;
+
 GRANT ALL ON TABLE c_order_header_vt TO adempiere;

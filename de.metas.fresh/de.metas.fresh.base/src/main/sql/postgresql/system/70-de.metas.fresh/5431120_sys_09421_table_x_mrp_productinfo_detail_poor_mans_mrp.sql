@@ -129,8 +129,7 @@ CREATE SEQUENCE "de.metas.fresh".X_MRP_ProductInfo_Detail_Poor_Mans_MRP_seq
   MAXVALUE 2147483647
   START 1000000
   CACHE 1;
-ALTER TABLE "de.metas.fresh".X_MRP_ProductInfo_Detail_Poor_Mans_MRP_seq
-  OWNER TO adempiere;
+
 GRANT ALL ON TABLE "de.metas.fresh".X_MRP_ProductInfo_Detail_Poor_Mans_MRP_seq TO adempiere;
 GRANT ALL ON TABLE "de.metas.fresh".X_MRP_ProductInfo_Detail_Poor_Mans_MRP_seq TO zabbix;
 
@@ -149,8 +148,6 @@ CREATE TABLE "de.metas.fresh".x_mrp_productinfo_detail_poor_mans_mrp
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE "de.metas.fresh".x_mrp_productinfo_detail_poor_mans_mrp
-  OWNER TO adempiere;
 
 -- Index: "de.metas.fresh".x_mrp_productinfo_detail_poor_mans_mrp_tuple
 DROP INDEX IF EXISTS "de.metas.fresh".x_mrp_productinfo_detail_poor_mans_mrp_tuple;

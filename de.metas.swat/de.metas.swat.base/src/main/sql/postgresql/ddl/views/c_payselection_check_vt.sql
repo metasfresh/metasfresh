@@ -14,5 +14,5 @@ CREATE OR REPLACE VIEW c_payselection_check_vt AS
    LEFT JOIN ad_language l ON l.issystemlanguage = 'Y'::bpchar
    LEFT JOIN c_greeting_trl bpg ON bp.c_greeting_id = bpg.c_greeting_id AND bpg.ad_language::text = l.ad_language::text;
 
-ALTER TABLE c_payselection_check_vt OWNER TO adempiere;
+
 GRANT ALL ON TABLE c_payselection_check_vt TO adempiere;

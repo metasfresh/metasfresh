@@ -34,6 +34,6 @@ FROM
 	LEFT OUTER JOIN M_AttributeValue av ON c_hua.value = av.Value AND c_hua.M_Attribute_ID = av.M_Attribute_ID
 ;
 
-ALTER TABLE report.halbfabrikat_product_origin OWNER TO adempiere;
+
 COMMENT ON VIEW report.halbfabrikat_product_origin IS 'the view tries to find HUs that contain components of an HU that contains a manufactured Product. The component HUs are used to retrieve the component products and the "Herkunft"-Attribute. According to the requirements of task 07909, the first 4 characters of the product and the first 3 characters of the origin ("Herkunft"-attribute) are returned in one string.';
 

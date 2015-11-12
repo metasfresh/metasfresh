@@ -52,7 +52,7 @@ FROM ad_tab t
 JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
 WHERE t.isactive = 'Y'::bpchar AND tbl.isactive = 'Y'::bpchar;
 
-ALTER TABLE ad_tab_v OWNER TO adempiere;
+
 GRANT ALL ON TABLE ad_tab_v TO adempiere;
 
 -- DROP VIEW ad_tab_vt;
@@ -110,7 +110,7 @@ JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
 JOIN ad_tab_trl trl ON t.ad_tab_id = trl.ad_tab_id
 WHERE t.isactive = 'Y'::bpchar AND tbl.isactive = 'Y'::bpchar;
 
-ALTER TABLE ad_tab_vt OWNER TO adempiere;
+
 GRANT ALL ON TABLE ad_tab_vt TO adempiere;
 
 -- NOTE: keep in sync with ad_field_vt
@@ -185,7 +185,7 @@ LEFT JOIN ad_val_rule vr ON vr.ad_val_rule_id = COALESCE(f.ad_val_rule_id, c.ad_
 WHERE (f.ad_field_id IS NULL OR f.isactive = 'Y'::bpchar) AND c.isactive = 'Y'::bpchar
 ;
 
-ALTER TABLE ad_field_v OWNER TO adempiere;
+
 
 -- NOTE: keep in sync with ad_field_v
 
@@ -263,5 +263,5 @@ LEFT JOIN ad_val_rule vr ON vr.ad_val_rule_id = COALESCE(f.ad_val_rule_id, c.ad_
 WHERE (f.ad_field_id IS NULL OR f.isactive = 'Y'::bpchar) AND c.isactive = 'Y'::bpchar
 ;
 
-ALTER TABLE ad_field_vt OWNER TO adempiere;
+
 

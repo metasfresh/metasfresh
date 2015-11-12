@@ -8,7 +8,7 @@ CREATE TABLE x_bpartner_cockpit_search_mv
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE x_bpartner_cockpit_search_mv OWNER TO adempiere;
+
 
 -- Index: x_bpartner_cockpit_search_mv_bpartner
 

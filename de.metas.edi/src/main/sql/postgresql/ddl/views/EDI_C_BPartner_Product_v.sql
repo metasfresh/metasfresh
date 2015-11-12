@@ -33,6 +33,3 @@ FROM (
 ) lookup
 LEFT JOIN C_BPartner_Product bpp ON (bpp.C_BPartner_ID = lookup.C_BPartner_ID AND bpp.M_Product_ID=lookup.M_Product_ID)
 WHERE lookup.M_Product_ID IS NOT NULL AND (lookup.M_InOutLine_ID IS NOT NULL OR lookup.C_OrderLine_ID IS NOT NULL);
-
-ALTER TABLE EDI_C_BPartner_Product_v
-  OWNER TO adempiere;

@@ -68,8 +68,7 @@ left outer join M_HU_PI_Version p6_piv on (p6_piv.M_HU_PI_Version_ID=p6_hu.M_HU_
 */
 where vhu_piv.HU_UnitType='V'
 ;
-ALTER TABLE "de.metas.handlingunits".M_LU_TU_VHU_v
-OWNER TO adempiere;
+
 
 COMMENT ON VIEW "de.metas.handlingunits".M_LU_TU_VHU_v IS '
 In its results this view is similar to "de.metas.handlingunits".M_VHU_TU_LUv, but it searches/joins the other way around. 

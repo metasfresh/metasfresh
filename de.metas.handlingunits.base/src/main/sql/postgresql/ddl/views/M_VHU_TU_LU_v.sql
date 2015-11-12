@@ -66,8 +66,7 @@ left outer join M_HU_PI_Version p1_piv on (p1_piv.M_HU_PI_Version_ID=p1_hu.M_HU_
 
 where p6_hu.M_HU_Item_Parent_ID IS NULL
 ;
-ALTER TABLE "de.metas.handlingunits".M_VHU_TU_LU_v
-OWNER TO adempiere;
+
 COMMENT ON VIEW "de.metas.handlingunits".M_VHU_TU_LU_v IS '
 WARNING: this view was not yet thoroughly used/tested There might e.g. be typos in the view definition. Pls remove this warning after having used the view and gained confidence in it.
 

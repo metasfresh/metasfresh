@@ -59,8 +59,7 @@ CREATE TABLE report.fresh_product_statistics_report
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE report.fresh_product_statistics_report
-  OWNER TO adempiere;
+
 
 CREATE OR REPLACE FUNCTION report.fresh_product_statistics_report 
 	(

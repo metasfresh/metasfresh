@@ -22,8 +22,7 @@ AND NOT EXISTS (
 	AND ioOther.EDI_ExportStatus='S'
 );
 
-ALTER TABLE EDI_M_InOut_Overdelivery_C_OrderLine_v
-  OWNER TO adempiere;
+
 
 COMMENT ON VIEW adempiere.edi_m_inout_overdelivery_c_orderline_v
   IS 'selects those order lines which have *no* delivery (note that the view''s name is misleading in that respect)';

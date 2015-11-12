@@ -21,6 +21,4 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE
   COST 100;
-ALTER FUNCTION "de.metas.edi".getediexportstatus(numeric, numeric)
-  OWNER TO adempiere;
 COMMENT ON FUNCTION "de.metas.edi".getediexportstatus(numeric, numeric) IS 'fresh 08038: Get EDI_ExportStatus from C_Doc_Outbound_Log';

@@ -14,7 +14,7 @@ CREATE TABLE report.fresh_payselection_report
 WITH (
 	OIDS=FALSE
 );
-ALTER TABLE report.fresh_payselection_report OWNER TO adempiere;
+
 
 CREATE FUNCTION report.fresh_payselection_report(IN record_id numeric, IN c_bpartner_id numeric, IN isallowesrpayments character varying, printSinglePayment character varying ) RETURNS SETOF report.fresh_payselection_report AS
 $BODY$SELECT

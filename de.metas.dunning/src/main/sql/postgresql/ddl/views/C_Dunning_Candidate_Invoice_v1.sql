@@ -31,4 +31,3 @@ WHERE
 	AND i.DocStatus IN ('CO', 'CL')
 ;
 
-ALTER TABLE C_Dunning_Candidate_Invoice_v1 OWNER TO adempiere;

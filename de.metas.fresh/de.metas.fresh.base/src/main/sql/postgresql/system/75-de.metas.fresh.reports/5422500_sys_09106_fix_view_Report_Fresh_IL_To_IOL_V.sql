@@ -37,7 +37,7 @@ FROM
 	INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
 ;
 
-ALTER TABLE Report.fresh_IL_To_IOL_V OWNER TO adempiere;
+
 COMMENT ON VIEW Report.fresh_IL_To_IOL_V IS 'Retrieves all links between invoice lines and in out lines as well as invoice lines and their invoice candidates 
 For sales invoices the view uses the link over the invoice candidates because MatchInv is notused for sales invoices (yet).
 For purchase invoice the Table MatchInv is used.';
@@ -53,5 +53,5 @@ FROM
 	INNER JOIN Report.fresh_InOutLine_PI_V iolpi ON iliol.M_InOutLine_ID = iolpi.M_InOutLine_ID
 ;
 
-ALTER TABLE Report.fresh_InvoiceLine_PI_V OWNER TO adempiere;
+
 COMMENT ON VIEW Report.fresh_InvoiceLine_PI_V IS 'Lists all invoice lines together with their Packing instruction name. the packing instrucion name is retrieved via invoice candidate and in out line. (M_MatchInv was not working properly by the time of implementation, also this view is used by sales and purchase invoices)';

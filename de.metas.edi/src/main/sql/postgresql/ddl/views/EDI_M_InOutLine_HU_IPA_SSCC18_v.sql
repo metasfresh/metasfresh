@@ -14,5 +14,3 @@ LEFT JOIN M_HU_Instance_Properties_v hip ON hip.M_HU_ID=ioh.M_HU_ID
 WHERE hip.AttributeName='SSCC18'
 ;
 
-ALTER TABLE EDI_M_InOutLine_HU_IPA_SSCC18_v
-  OWNER TO adempiere;

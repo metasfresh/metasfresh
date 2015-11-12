@@ -25,5 +25,5 @@ CREATE OR REPLACE VIEW c_dunning_header_vt AS
    LEFT JOIN ad_user u ON dre.salesrep_id = u.ad_user_id
    LEFT JOIN c_bpartner ubp ON u.c_bpartner_id = ubp.c_bpartner_id;
 
-ALTER TABLE c_dunning_header_vt OWNER TO adempiere;
+
 GRANT ALL ON TABLE c_dunning_header_vt TO adempiere;

@@ -47,4 +47,3 @@ GROUP BY
 ;
 
 
-ALTER TABLE rv_async_batch_statistics OWNER TO adempiere;

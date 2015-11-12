@@ -25,5 +25,5 @@ CREATE OR REPLACE VIEW c_dunning_header_v AS
    LEFT JOIN c_bpartner ubp ON u.c_bpartner_id = ubp.c_bpartner_id;
    
 
-ALTER TABLE c_dunning_header_v OWNER TO adempiere;
+
 GRANT ALL ON TABLE c_dunning_header_v TO adempiere;

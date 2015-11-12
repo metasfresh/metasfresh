@@ -20,5 +20,3 @@ CREATE OR REPLACE VIEW edi_cctop_901_991_v AS
   -- can either be an ESRReferenceNumber, or we may not have it at all. Regardless, both cases should work.
   AND (rn.c_referenceno_type_id = 540005 OR rnd.c_referenceno_doc_id is null) /* c_referenceno_type_id = 540005 (ESRReferenceNumber) */;
 
-ALTER TABLE edi_cctop_901_991_v
-  OWNER TO adempiere;

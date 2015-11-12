@@ -36,5 +36,5 @@ SELECT * FROM
 WHERE COALESCE( ai_value, '') != ''
 ;
 
-ALTER TABLE Report.fresh_Attributes OWNER TO adempiere;
+
 COMMENT ON VIEW Report.fresh_Attributes IS 'retrieves Attributes in the way they are needed for the jasper reports';

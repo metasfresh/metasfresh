@@ -80,4 +80,4 @@ ORDER BY
 */
 ;
 
-ALTER TABLE report.RV_C_Order_MFGWarehouse_Report_Details_HU OWNER TO adempiere;
+

@@ -74,5 +74,5 @@ LEFT JOIN ad_val_rule vr ON vr.ad_val_rule_id = COALESCE(f.ad_val_rule_id, c.ad_
 WHERE (f.ad_field_id IS NULL OR f.isactive = 'Y'::bpchar) AND c.isactive = 'Y'::bpchar
 ;
 
-ALTER TABLE ad_field_vt OWNER TO adempiere;
+
 

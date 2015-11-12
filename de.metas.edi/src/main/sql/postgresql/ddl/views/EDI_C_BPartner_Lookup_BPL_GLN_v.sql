@@ -36,6 +36,3 @@ FROM
 WHERE master.GLN IS NOT NULL AND TRIM(BOTH ' ' FROM master.GLN) != ''
 GROUP BY C_BPartner_ID, IsActive, GLN, StoreGLN
 ;
-
-ALTER TABLE EDI_C_BPartner_Lookup_BPL_GLN_v
-  OWNER TO adempiere;

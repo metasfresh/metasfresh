@@ -22,5 +22,5 @@ CREATE OR REPLACE VIEW m_inout_header_v AS
    JOIN ad_clientinfo ci ON io.ad_client_id = ci.ad_client_id
    JOIN m_warehouse wh ON io.m_warehouse_id = wh.m_warehouse_id;
 
-ALTER TABLE m_inout_header_v OWNER TO adempiere;
+
 GRANT ALL ON TABLE m_inout_header_v TO adempiere;

@@ -59,7 +59,7 @@ CREATE TABLE report.fresh_qty_statistics_report
 WITH (
 	OIDS=FALSE
 );
-ALTER TABLE report.fresh_qty_statistics_report OWNER TO adempiere;
+
 
 CREATE FUNCTION report.fresh_qty_statistics_report 
 	(

@@ -136,4 +136,3 @@ WHERE 1=1
 -- ORDER BY v.tablename, v.table_ref, v.columnname
 ;
 
-ALTER TABLE db_columns_fk OWNER TO adempiere;

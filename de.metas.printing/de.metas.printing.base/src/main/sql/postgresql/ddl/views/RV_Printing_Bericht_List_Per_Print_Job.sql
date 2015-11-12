@@ -37,5 +37,5 @@ LEFT OUTER JOIN C_Location l ON bpl.C_Location_ID = l.C_Location_ID
 WHERE ar.AD_Table_ID = (select AD_Table_ID from AD_Table where tablename = 'C_Invoice')
 and i.C_Invoice_ID is not null;
 
-ALTER TABLE RV_Printing_Bericht_List_Per_Print_Job OWNER TO adempiere;
+
 

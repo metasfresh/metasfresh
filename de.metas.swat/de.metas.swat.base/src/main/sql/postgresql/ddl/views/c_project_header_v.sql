@@ -25,5 +25,5 @@ CREATE OR REPLACE VIEW c_project_header_v AS
    LEFT JOIN c_bpartner_location bpl ON p.c_bpartner_location_id = bpl.c_bpartner_location_id
    LEFT JOIN c_paymentterm pt ON p.c_paymentterm_id = pt.c_paymentterm_id;
 
-ALTER TABLE c_project_header_v OWNER TO adempiere;
+
 GRANT ALL ON TABLE c_project_header_v TO adempiere;

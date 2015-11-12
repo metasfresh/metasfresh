@@ -9,6 +9,5 @@ CREATE OR REPLACE VIEW edi_cctop_140_v AS
    LEFT JOIN c_invoicetax it ON it.c_invoice_id = i.c_invoice_id
    LEFT JOIN c_tax t ON t.c_tax_id = it.c_tax_id;
 
-ALTER TABLE edi_cctop_140_v
-  OWNER TO adempiere;
+
 

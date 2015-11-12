@@ -364,7 +364,6 @@ public class InstallMain {
 		// ORDER BY ssr.c_bpartner_id, i.c_advcommissionterm_id,
 		// i."levelforecast", p.startdate;
 		//		
-		// ALTER TABLE c_advcommission_info_v OWNER TO adempiere;
 		// GRANT ALL ON TABLE c_advcommission_info_v TO adempiere;
 
 		logger.info("Replacing column 'Level' with 'LevelHierarchy'");

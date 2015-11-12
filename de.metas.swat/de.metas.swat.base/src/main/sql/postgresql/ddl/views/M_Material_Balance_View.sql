@@ -56,4 +56,4 @@ ORDER BY
 
 
 
-ALTER TABLE M_Material_Balance_View OWNER TO adempiere;
+

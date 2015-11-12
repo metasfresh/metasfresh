@@ -93,4 +93,4 @@ INNER JOIN fresh_QtyOnHand qoh ON (qoh.fresh_QtyOnHand_ID=qohl.fresh_QtyOnHand_I
 --
 ;
 
-ALTER TABLE RV_HU_Quantities OWNER TO adempiere;
+

@@ -101,8 +101,7 @@ FROM
 			AND ppa.signature = ppa2.signature
 ;
 
-ALTER TABLE RV_fresh_PriceList_Comparison
-  OWNER TO adempiere;
+
 COMMENT ON VIEW RV_fresh_PriceList_Comparison
   IS 'fresh 06042 Preisliste Drucken Preisänderung (100373416918)
 Refactored in Tasks 07833 and 07915

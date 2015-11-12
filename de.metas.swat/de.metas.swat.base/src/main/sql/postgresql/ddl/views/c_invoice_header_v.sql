@@ -26,5 +26,5 @@ CREATE OR REPLACE VIEW c_invoice_header_v AS
    LEFT JOIN ad_user u ON i.salesrep_id = u.ad_user_id
    LEFT JOIN c_bpartner ubp ON u.c_bpartner_id = ubp.c_bpartner_id;
 
-ALTER TABLE c_invoice_header_v OWNER TO adempiere;
+
 GRANT ALL ON TABLE c_invoice_header_v TO adempiere;

@@ -60,4 +60,3 @@ FROM
 	LEFT JOIN M_HU_PI_Item pmit ON it.M_HU_PI_Version_ID = pmit.M_HU_PI_Version_ID AND pmit.itemType = 'PM'
 	LEFT JOIN M_HU_PackingMaterial pm ON pmit.M_HU_PackingMaterial_ID = pm.M_HU_PackingMaterial_ID
 ;
-ALTER TABLE m_pricelist_v OWNER TO adempiere;

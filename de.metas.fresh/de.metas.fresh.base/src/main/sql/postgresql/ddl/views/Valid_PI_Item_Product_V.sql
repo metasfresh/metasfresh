@@ -21,6 +21,6 @@ WHERE
 	AND (ip.validto >= now() OR ip.validto IS NULL)
 ;
 
-ALTER TABLE report.valid_pi_item_product_v OWNER TO adempiere;
+
 COMMENT ON VIEW report.valid_pi_item_product_v IS 'This view returns a list of all active and currently valid Packing instructions.';
 

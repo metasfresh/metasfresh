@@ -81,6 +81,3 @@ LANGUAGE plpgsql VOLATILE
 COST 100;
 
 COMMENT ON FUNCTION C_Payment_Reconciled_CheckAll() IS 'Function used to check and update the C_Payment.IsReconciled flag';
-
-ALTER FUNCTION C_Payment_Reconciled_CheckAll() OWNER TO adempiere;
-

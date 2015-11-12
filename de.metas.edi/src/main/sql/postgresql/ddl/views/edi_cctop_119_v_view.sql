@@ -225,5 +225,3 @@ ORDER BY (
 	END
 );
 
-ALTER TABLE EDI_Cctop_119_v
-  OWNER TO adempiere;

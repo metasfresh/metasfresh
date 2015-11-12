@@ -56,7 +56,7 @@ CREATE TABLE report.fresh_umsatzliste_bpartner_report_sub
 WITH (
 	OIDS=FALSE
 );
-ALTER TABLE report.fresh_umsatzliste_bpartner_report_sub OWNER TO adempiere;
+
 
 CREATE FUNCTION report.fresh_umsatzliste_bpartner_report_sub 
 	(
@@ -200,7 +200,7 @@ CREATE TABLE report.fresh_umsatzliste_bpartner_report
 WITH (
 	OIDS=FALSE
 );
-ALTER TABLE report.fresh_umsatzliste_bpartner_report OWNER TO adempiere;
+
 
 CREATE FUNCTION report.fresh_umsatzliste_bpartner_report 
 	(

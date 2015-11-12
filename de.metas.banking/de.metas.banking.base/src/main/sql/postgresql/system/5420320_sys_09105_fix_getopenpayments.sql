@@ -42,8 +42,7 @@ $BODY$
   LANGUAGE sql VOLATILE
   COST 100
   ROWS 1000;
-ALTER FUNCTION getopenpayments(numeric, numeric, character varying, numeric, timestamp without time zone, numeric)
-  OWNER TO adempiere;
+
 COMMENT ON FUNCTION getopenpayments(numeric, numeric, character varying, numeric, timestamp without time zone, numeric) IS '
 * Used in de.mets.paymentallocation.form.Allocation.queryPaymentTable()
 * Uses the view T_GetOpenPayments as return type';

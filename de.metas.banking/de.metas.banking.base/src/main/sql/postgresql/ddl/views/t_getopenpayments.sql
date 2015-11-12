@@ -19,8 +19,6 @@ SELECT
 	, NULL::numeric AS multiplierap
  ;
 
-ALTER TABLE t_getopenpayments
-  OWNER TO adempiere;
 COMMENT ON VIEW t_getopenpayments
   IS 'Used as return type in the SQL-function getopenpayments';
 

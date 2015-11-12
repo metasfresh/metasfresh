@@ -55,8 +55,7 @@ CREATE TABLE report.fresh_statistics
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE report.fresh_statistics
-  OWNER TO adempiere;
+
 /* ***************************************************************** */
 
 CREATE FUNCTION report.fresh_statistics

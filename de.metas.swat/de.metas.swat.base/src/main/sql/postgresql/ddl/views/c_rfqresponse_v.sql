@@ -15,5 +15,5 @@ CREATE OR REPLACE VIEW c_rfqresponse_v AS
    JOIN c_bpartner_location bpl ON rr.c_bpartner_location_id = bpl.c_bpartner_location_id
    LEFT JOIN ad_user bpc ON rr.ad_user_id = bpc.ad_user_id;
 
-ALTER TABLE c_rfqresponse_v OWNER TO adempiere;
+
 GRANT ALL ON TABLE c_rfqresponse_v TO adempiere;

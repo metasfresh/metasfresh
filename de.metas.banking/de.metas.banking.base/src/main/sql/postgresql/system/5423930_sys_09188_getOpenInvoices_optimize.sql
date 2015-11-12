@@ -23,8 +23,6 @@ SELECT
 	, NULL::character varying AS POReference
 ;
 
-ALTER TABLE t_getopeninvoices
-  OWNER TO adempiere;
 COMMENT ON VIEW t_getopeninvoices
   IS 'Used as return type in the SQL-function getopeninvoices';
 
@@ -152,8 +150,7 @@ ORDER BY i.Date, i.DocNo
   LANGUAGE sql VOLATILE
   COST 100
   ROWS 1000;
-ALTER FUNCTION getopeninvoices(numeric, numeric, character varying, numeric, timestamp without time zone, numeric, numeric)
-  OWNER TO adempiere;
+
 COMMENT ON FUNCTION getopeninvoices(numeric, numeric, character varying, numeric, timestamp without time zone, numeric, numeric) IS '
 * Used in de.mets.paymentallocation.form.Allocation.queryInvoiceTable()
 * Uses the view T_GetOpenInvoices as return type';

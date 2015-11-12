@@ -24,8 +24,7 @@ WHERE TRUE
 		where dlOther.C_OrderLine_ID=ol_null.C_OrderLine_ID
 	);
 
-ALTER TABLE EDI_Desadv_NullDelivery_C_OrderLine_v
-  OWNER TO adempiere;
+
 
 COMMENT ON VIEW adempiere.EDI_Desadv_NullDelivery_C_OrderLine_v
   IS 'task 08456: selects those order lines which have *no* desadvLine, but which have a "sibling" in this desadv';

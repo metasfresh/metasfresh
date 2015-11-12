@@ -52,8 +52,7 @@ from
 left outer join M_Attribute a on (a.M_Attribute_ID=t.M_Attribute_ID)
 -- order by t.M_HU_PI_ID, t.M_HU_PI_Version_ID, a.Value
 ;
-ALTER TABLE "de.metas.handlingunits".M_HU_PI_Attribute_Actual_v
-OWNER TO adempiere;
+
 
 
 

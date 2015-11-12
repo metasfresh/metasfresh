@@ -11,7 +11,7 @@ CREATE OR REPLACE VIEW ad_org_v AS
    LEFT JOIN c_bpartner bp ON o.ad_org_id = bp.ad_orgbp_id
    LEFT OUTER JOIN C_Bpartner_Location bpl ON bp.C_BPartner_ID = bpl.C_Bpartner_ID AND bpl.IsDefaultLocation = 'Y'; -- location from bpartner location
 
-ALTER TABLE ad_org_v OWNER TO adempiere;
+
 GRANT ALL ON TABLE ad_org_v TO adempiere;
 
 

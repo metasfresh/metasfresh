@@ -36,6 +36,6 @@ GROUP BY
 	ppa.M_ProductPrice_ID, ppa.M_ProductPrice_Attribute_ID, ppa.PriceStd, ppa.IsActive, ppa.M_HU_PI_Item_Product_ID
 ;
 
-ALTER TABLE report.fresh_AttributePrice OWNER TO adempiere;
+
 COMMENT ON VIEW report.fresh_AttributePrice IS 'This View is supposed to be used by the View RV_fresh_PriceList_Comparison and retrieves the Attribute price together with a rendered list of Attributes and a signature. Attribute prices of different Price list version but with the same attributes and packin instruction config can be matched and therefore compared with this.';
 

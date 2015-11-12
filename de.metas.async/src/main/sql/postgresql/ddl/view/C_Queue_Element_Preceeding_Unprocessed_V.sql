@@ -23,4 +23,4 @@ WHERE true
 	AND wp2.Processed='N'
 GROUP BY e.C_Queue_Element_ID;
 
-ALTER TABLE "de.metas.async".C_Queue_Element_Preceeding_Unprocessed_V OWNER TO adempiere;
+

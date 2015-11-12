@@ -87,5 +87,3 @@ LEFT JOIN (
 LEFT JOIN C_BPartner sp ON sp.AD_OrgBP_ID = i.AD_Org_ID
 ;
 
-ALTER TABLE EDI_Cctop_INVOIC_v
-  OWNER TO adempiere;

@@ -32,4 +32,4 @@ FROM
 	LEFT OUTER JOIN C_ElementValue ev ON (ev.C_ElementValue_ID=fa.Account_ID)
 ;
 
-ALTER TABLE report.rv_taxdeclarationline OWNER TO adempiere;
+

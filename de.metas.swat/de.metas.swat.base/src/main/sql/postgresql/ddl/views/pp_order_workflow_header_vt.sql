@@ -20,5 +20,5 @@ CREATE OR REPLACE VIEW pp_order_workflow_header_vt AS
    JOIN ad_clientinfo ci ON o.ad_client_id = ci.ad_client_id
    LEFT JOIN ad_user u ON o.planner_id = u.ad_user_id;
 
-ALTER TABLE pp_order_workflow_header_vt OWNER TO adempiere;
+
 GRANT ALL ON TABLE pp_order_workflow_header_vt TO adempiere;

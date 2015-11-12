@@ -25,6 +25,5 @@ CREATE OR REPLACE VIEW edi_cctop_111_v AS
    FROM c_order o
    JOIN m_inout s ON s.c_order_id = o.c_order_id;
 
-ALTER TABLE edi_cctop_111_v
-  OWNER TO adempiere;
+
 

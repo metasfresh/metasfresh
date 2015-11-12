@@ -92,6 +92,5 @@ we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyIn
 task 08878: Note: we try to aggregate ils which have the same order line. Grouping by C_OrderLine_ID to make sure that we don''t aggregate too much;
 task 09182: in OrderPOReference and OrderLine we show reference and line for the original order, but fall back to the invoice''s own reference and line if there is no order(line).
 ';
-ALTER TABLE edi_cctop_invoic_500_v
-  OWNER TO adempiere;
+
 

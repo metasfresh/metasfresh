@@ -20,6 +20,5 @@ CREATE OR REPLACE VIEW "de.metas.async".c_queue_overview_v AS
    LEFT JOIN ad_issue i ON i.ad_issue_id = qwp.ad_issue_id
   ORDER BY qwp.c_queue_workpackage_id DESC, qe.c_queue_element_id;
 
-ALTER TABLE "de.metas.async".c_queue_overview_v
-  OWNER TO adempiere;
+
 

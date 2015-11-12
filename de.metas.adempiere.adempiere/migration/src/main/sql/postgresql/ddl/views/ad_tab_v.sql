@@ -52,6 +52,6 @@ FROM ad_tab t
 JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
 WHERE t.isactive = 'Y'::bpchar AND tbl.isactive = 'Y'::bpchar;
 
-ALTER TABLE ad_tab_v OWNER TO adempiere;
+
 GRANT ALL ON TABLE ad_tab_v TO adempiere;
 

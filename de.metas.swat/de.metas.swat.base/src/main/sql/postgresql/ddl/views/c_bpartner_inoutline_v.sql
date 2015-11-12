@@ -41,4 +41,4 @@ FROM
 ;
 
 	
-ALTER TABLE report.c_bpartner_inoutline_v OWNER TO adempiere;
+

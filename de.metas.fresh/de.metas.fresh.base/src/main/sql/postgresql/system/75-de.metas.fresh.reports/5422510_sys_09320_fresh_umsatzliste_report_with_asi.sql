@@ -30,7 +30,7 @@ CREATE TABLE report.fresh_Umsatzreport_Report_Sub
 WITH (
 	OIDS=FALSE
 );
-ALTER TABLE report.fresh_Umsatzreport_Report_Sub OWNER TO adempiere;
+
 
 CREATE FUNCTION report.fresh_Umsatzreport_Report_Sub(IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric ) RETURNS SETOF report.fresh_Umsatzreport_Report_Sub AS
 $BODY$
@@ -171,7 +171,7 @@ CREATE TABLE report.fresh_umsatzreport_report
 WITH (
 	OIDS=FALSE
 );
-ALTER TABLE report.fresh_umsatzreport_report OWNER TO adempiere;
+
 
 CREATE FUNCTION report.fresh_umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric) RETURNS SETOF report.fresh_umsatzreport_report AS
 $BODY$

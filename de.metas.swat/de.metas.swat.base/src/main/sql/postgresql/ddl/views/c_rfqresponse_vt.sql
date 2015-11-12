@@ -17,5 +17,5 @@ CREATE OR REPLACE VIEW c_rfqresponse_vt AS
    LEFT JOIN ad_user bpc ON rr.ad_user_id = bpc.ad_user_id
    JOIN ad_language l ON l.issystemlanguage = 'Y'::bpchar;
 
-ALTER TABLE c_rfqresponse_vt OWNER TO adempiere;
+
 GRANT ALL ON TABLE c_rfqresponse_vt TO adempiere;
