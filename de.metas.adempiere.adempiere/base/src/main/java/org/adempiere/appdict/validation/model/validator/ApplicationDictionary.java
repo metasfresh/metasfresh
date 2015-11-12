@@ -79,7 +79,7 @@ public class ApplicationDictionary implements ModelValidator
 	{
 		//
 		// Log Migration Scripts, if we log in with SysAdm role and the ID server is configured
-		if (AD_Role_ID == IUserRolePermissions.SYSTEM_ROLE_ID && MSequence.isUseExternalIDSystem())
+		if (AD_Role_ID == IUserRolePermissions.SYSTEM_ROLE_ID && MSequence.isExternalIDSystemEnabled())
 		{
 			Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
 		}

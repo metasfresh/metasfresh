@@ -551,7 +551,7 @@ public final class Preference extends CDialog
 		}
 		
 		// If the ID server is not enabled, don't show the log migration scripts flags because can cause huge problems (see task 09544)
-		if (!MSequence.isUseExternalIDSystem())
+		if (!MSequence.isExternalIDSystemEnabled())
 		{
 			adempiereSys.setSelected(false);
 			adempiereSys.setVisible(false);

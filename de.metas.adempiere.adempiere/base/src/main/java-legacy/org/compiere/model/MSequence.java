@@ -34,13 +34,13 @@ import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 /**
@@ -793,13 +793,22 @@ public class MSequence extends X_AD_Sequence
 	}
 
 	/**
-	 * @return true if we use an external ID system (e.g. centralized ID server, project ID server)
+	 * @return true if the external ID system is enabled (e.g. centralized ID server, project ID server)
 	 */
-	public static boolean isUseExternalIDSystem()
+	public static boolean isExternalIDSystemEnabled()
 	{
-		final String tableName = null;
-		final int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
-		return isUseExternalIDSystem(tableName, AD_Client_ID);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		
+		if (sysConfigBL.getBooleanValue(SYSCONFIG_PROJECT_ID_USE_CENTRALIZED_ID, false))
+		{
+			return true;
+		}
+		if (sysConfigBL.getBooleanValue(SYSCONFIG_DICTIONARY_ID_USE_CENTRALIZED_ID, false))
+		{
+			return true;
+		}
+		
+		return false;
 	}
 
 }	//	MSequence
