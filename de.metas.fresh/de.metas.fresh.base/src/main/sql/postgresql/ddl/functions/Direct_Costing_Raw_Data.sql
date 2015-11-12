@@ -64,5 +64,5 @@ ORDER BY
 $BODY$
 LANGUAGE sql STABLE
 ;
-ALTER FUNCTION de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data (Date) OWNER TO Adempiere;
+
 

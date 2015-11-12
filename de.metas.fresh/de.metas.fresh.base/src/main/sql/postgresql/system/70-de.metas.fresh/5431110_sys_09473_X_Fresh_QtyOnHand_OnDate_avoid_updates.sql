@@ -41,6 +41,5 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION "de.metas.fresh".m_transaction_update_x_Fresh_qtyonhand_ondate()
-  OWNER TO adempiere;
+
 COMMENT ON FUNCTION "de.metas.fresh".m_transaction_update_x_Fresh_qtyonhand_ondate() IS 'the function is VOLATILE because it is called from a trigger function and to avoid the error "ERROR: INSERT is not allowed in a non-volatile function';

@@ -90,5 +90,5 @@ WHERE
 --	AND po_issue.PP_Order_ID=1046130
 --	AND hu.M_HU_ID=10100810 --has 2 rows..2 iol-ID
 ;
--- ALTER TABLE RV_M_Material_Tracking_HU_Details OWNER TO adempiere;
+
 
