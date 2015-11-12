@@ -59,7 +59,7 @@ where (hua.M_HU_ID=t.M_HU_ID and hua.M_HU_PI_Attribute_ID=t.M_HU_PI_Attribute_ID
 --
 -- Create and set M_Attribute_ID
 -- Duration: ~26sec
-update TMP_M_HU_Attribute_ToInsert set M_HU_Attribute_ID=nextval('adempiere.m_hu_attribute_seq');
+update TMP_M_HU_Attribute_ToInsert set M_HU_Attribute_ID=nextval('m_hu_attribute_seq');
 
 --
 -- Insert
