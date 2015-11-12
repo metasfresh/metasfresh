@@ -227,12 +227,12 @@
 								</opts>
 							</jre>
 							<versionInfo>
-								<fileVersion>4.1.0RC1.${BUILD_NUMBER_NUMERIC}</fileVersion>
-								<txtFileVersion>4.1.0RC1.${BUILD_NUMBER_NUMERIC}</txtFileVersion>
+								<fileVersion>4.1.0.${BUILD_NUMBER_NUMERIC}</fileVersion>
+								<txtFileVersion>4.1.0.${BUILD_NUMBER_NUMERIC}</txtFileVersion>
 								<fileDescription>metas Fresh ERP client</fileDescription>
 								<copyright>${project.organization.name}</copyright>
-								<productVersion>4.1.0RC1.${BUILD_NUMBER_NUMERIC}</productVersion>
-								<txtProductVersion>4.1.0RC1.${BUILD_NUMBER_NUMERIC}</txtProductVersion>
+								<productVersion>4.1.0.${BUILD_NUMBER_NUMERIC}</productVersion>
+								<txtProductVersion>4.1.0.${BUILD_NUMBER_NUMERIC}</txtProductVersion>
 								<productName>metas fresh ERP</productName>
 								<internalName>metas-fresh</internalName>
 								<originalFilename>metas-fresh.exe</originalFilename>
