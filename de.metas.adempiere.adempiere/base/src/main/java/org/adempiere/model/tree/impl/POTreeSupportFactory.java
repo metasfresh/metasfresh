@@ -46,6 +46,8 @@ public class POTreeSupportFactory implements IPOTreeSupportFactory
 	@Override
 	public IPOTreeSupport get(final String tableName)
 	{
+		// NOTE: we need to create a new instance each time because IPOTreeSupport implementations are stateful
+		
 		final Class<? extends IPOTreeSupport> cl = map.get(tableName);
 
 		final IPOTreeSupport result;

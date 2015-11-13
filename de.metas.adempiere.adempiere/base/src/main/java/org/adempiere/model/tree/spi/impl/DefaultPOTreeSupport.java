@@ -52,6 +52,7 @@ public class DefaultPOTreeSupport implements IPOTreeSupport
 
 	private String tableName;
 
+	private boolean checkRoleAccessWhileLoading = true;
 
 	@Override
 	public int getAD_Tree_ID(final PO po)
@@ -279,5 +280,16 @@ public class DefaultPOTreeSupport implements IPOTreeSupport
 	protected String getTableName()
 	{
 		return tableName;
+	}
+	
+	@Override
+	public final void disableRoleAccessCheckWhileLoading()
+	{
+		this.checkRoleAccessWhileLoading = false;
+	}
+	
+	protected final boolean isCheckRoleAccessWhileLoading()
+	{
+		return checkRoleAccessWhileLoading;
 	}
 }

@@ -180,7 +180,13 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final int AD_Workflow_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Workflow_ID);
 		final int AD_Task_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Task_ID);
 
+		if (!isCheckRoleAccessWhileLoading())
+		{
+			return info;
+		}
+
 		//
+		// Check role access
 		final IUserRolePermissions role = Env.getUserRolePermissions(tree.getCtx());
 		Boolean access = null;
 		if (X_AD_Menu.ACTION_Window.equals(action))
@@ -243,13 +249,13 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		{
 			access = role.checkTaskAccess(AD_Task_ID);
 		}
-
 		//
 		if (access == null // rw or ro for Role
 				&& !tree.isEditable())
 		{
 			return null;
 		}
+		
 		return info;
 	}
 }

@@ -25,7 +25,6 @@ package org.adempiere.model.tree.spi;
  * #L%
  */
 
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -37,6 +36,9 @@ import org.compiere.model.MTree_Base;
 import org.compiere.model.PO;
 
 /**
+ * 
+ * NOTE: implementations of this interface are stateful
+ * 
  * @author tsa
  *
  */
@@ -85,6 +87,22 @@ public interface IPOTreeSupport
 
 	public MTreeNode getNodeInfo(GridTab gridTab);
 
+	/**
+	 * Advice the implementation to not enforce role access while loading the {@link MTreeNode}.
+	 * 
+	 * @see #loadNodeInfo(MTree, ResultSet)
+	 */
+	void disableRoleAccessCheckWhileLoading();
+
+	/**
+	 * Load {@link MTreeNode}.
+	 * 
+	 * @param tree
+	 * @param rs
+	 * @return loaded tree node or null if load could not be loaded or the role does not have access to that node
+	 * @throws SQLException
+	 * @see {@link #disableRoleAccessCheckWhileLoading()}
+	 */
 	MTreeNode loadNodeInfo(MTree tree, ResultSet rs) throws SQLException;
 
 	/**

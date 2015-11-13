@@ -62,6 +62,14 @@ public class TreeMaintenance {
 
 		final String sourceTableName = m_tree.getSourceTableName();
 		final IPOTreeSupport poTreeSupport = treeSupportFactory.get(m_tree.getSourceTableName());
+		
+		// If we are running on system level, don't enforce any role access because we want to see all items (task 09562).
+		// E.g. if we are looking at AD_Menu entries we want to see all of them, not only those which system can access. 
+		if (Env.getAD_Client_ID(Env.getCtx()) == Env.CTXVALUE_AD_Client_ID_System)
+		{
+			poTreeSupport.disableRoleAccessCheckWhileLoading();
+		}
+		
 		final List<Object> sqlParams = new ArrayList<>();
 		String sql = poTreeSupport.getNodeInfoSelectSQL(m_tree, sqlParams);
 		sql = Env.getUserRolePermissions().addAccessSQL(sql, sourceTableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
