@@ -35,6 +35,7 @@ import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.MTree;
@@ -61,7 +62,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		{
 			sqlDeveloperMode
 					.append("\n, (select min(t.TableName) from AD_Tab tt inner join AD_Table t on (t.AD_Table_ID=tt.AD_Table_ID) where tt.AD_Window_ID=AD_Menu.AD_Window_ID and tt.SeqNo=10 and tt.IsActive='Y') as AD_Window_TableName");
-			sqlDeveloperMode.append("\n, (select process.Classname from AD_Process process where process.AD_Process_ID=AD_Menu.AD_Process_ID) as AD_Process_ClassName");
+			sqlDeveloperMode.append("\n, (select coalesce(process.JasperReport, process.Classname) from AD_Process process where process.AD_Process_ID=AD_Menu.AD_Process_ID) as AD_Process_ClassName");
 			sqlDeveloperMode.append("\n, (select form.Classname from AD_Form form where form.AD_Form_ID=AD_Menu.AD_Form_ID) as AD_Form_ClassName");
 			sqlDeveloperMode.append("\n");
 		}
@@ -189,7 +190,10 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
 				final String tableName = rs.getString("AD_Window_TableName"); // table name of first window tab
-				info.setName(info.getName() + " (" + tableName + ")");
+				if (!Check.isEmpty(tableName, true))
+				{
+					info.setName(info.getName() + " (" + tableName + ")");
+				}
 			}
 		}
 		else if (X_AD_Menu.ACTION_Process.equals(action))
@@ -199,12 +203,24 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
 				final String classname = rs.getString("AD_Process_ClassName");
-				info.setName(info.getName() + " (" + classname + ")");
+				if (!Check.isEmpty(classname, true))
+				{
+					info.setName(info.getName() + " (" + classname + ")");
+				}
 			}
 		}
 		else if (X_AD_Menu.ACTION_Report.equals(action))
 		{
 			access = role.checkProcessAccess(AD_Process_ID);
+
+			if (Services.get(IDeveloperModeBL.class).isEnabled())
+			{
+				final String classname = rs.getString("AD_Process_ClassName");
+				if (!Check.isEmpty(classname, true))
+				{
+					info.setName(info.getName() + " (" + classname + ")");
+				}
+			}
 		}
 		else if (X_AD_Menu.ACTION_Form.equals(action))
 		{
@@ -213,7 +229,10 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
 				final String classname = rs.getString("AD_Form_ClassName");
-				info.setName(info.getName() + " (" + classname + ")");
+				if (!Check.isEmpty(classname, true))
+				{
+					info.setName(info.getName() + " (" + classname + ")");
+				}
 			}
 		}
 		else if (X_AD_Menu.ACTION_WorkFlow.equals(action))
