@@ -13,8 +13,7 @@
 	<queryString>
 		<![CDATA[SELECT 	*
 FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD_ID}, $P{ad_language} )
-;
-]]>
+;]]>
 	</queryString>
 	<field name="description" class="java.lang.String"/>
 	<field name="documentno" class="java.lang.String"/>

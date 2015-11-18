@@ -1,7 +1,8 @@
+DROP VIEW IF EXISTS de_metas_endcustomer_fresh_reports.Direct_Costing_selection;
 
 CREATE OR REPLACE VIEW de_metas_endcustomer_fresh_reports.Direct_Costing_selection AS
 SELECT
-	mc.SeqNo || ' ' || l3.lvl1_SeqNo || ' ' || l3.lvl2_SeqNo || ' ' || l3.lvl3_SeqNo AS SeqNo,
+	to_char(mc.SeqNo, '0000') || to_char(l3.lvl1_seqno, '0000') || to_char(l3.lvl2_seqno, '0000') || to_char(l3.lvl3_seqno, '0000') AS SeqNo,
 	mc.name AS margin,
 	l1.C_ElementValue_ID AS L1_ElementValue_ID, l1.value AS L1_value, l1.name AS L1_Name, 
 	l2.C_ElementValue_ID AS L2_ElementValue_ID, l2.value AS L2_value, l2.name AS L2_Name, 

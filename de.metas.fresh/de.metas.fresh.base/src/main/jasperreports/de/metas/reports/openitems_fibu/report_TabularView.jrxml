@@ -78,7 +78,7 @@ FROM
 
 	WHERE
 		invoiceopentodate( i.C_Invoice_ID, COALESCE( ips.C_InvoicePaySchedule_ID, 0::numeric ), $P{Reference_Date}  ) <> 0::numeric
-		AND i.DocStatus NOT IN ('DR','VO','RE')
+		AND i.DocStatus IN ('CO','CL','RE')
 		AND fa.AD_Table_ID = Get_Table_ID('C_Invoice')
 
 	ORDER BY

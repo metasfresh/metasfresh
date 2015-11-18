@@ -10,12 +10,12 @@ package de.metas.adempiere.gui.search.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -67,7 +67,6 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		if (asiId >= 0)
 		{
 			Services.get(IAttributeSetInstanceBL.class).cloneASI(to, from);
-			//to.setM_AttributeSetInstance_ID(asiId);
 		}
 		to.setC_UOM(from.getC_UOM());
 		to.setQty(from.getQty());
@@ -178,21 +177,21 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		}
 
 		final I_M_Product product = record.getM_Product();
-		
+
 		if(product == null)
 		{
 			//nothing to do; shall not happen
 			return null;
 		}
 		final I_C_UOM uom = record.getC_UOM();
-		
-		// task 08583: this may happen in case of manually entered M_HU_PI_Item_Products in manually created document lines. 
+
+		// task 08583: this may happen in case of manually entered M_HU_PI_Item_Products in manually created document lines.
 		// It has to be possible for the user to  set the M_HU_PI_Item_product before setting the uom.
 		if(uom == null)
 		{
 			return null;
 		}
-		
+
 		final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 		final IHUCapacityDefinition capacityDef = capacityBL.getCapacity(huPiItemProduct, product, uom);
 

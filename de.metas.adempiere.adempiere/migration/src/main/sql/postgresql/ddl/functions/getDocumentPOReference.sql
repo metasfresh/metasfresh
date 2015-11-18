@@ -22,7 +22,5 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE
   COST 100;
-ALTER FUNCTION getDocumentPOReference(numeric, numeric)
-  OWNER TO adempiere;
 COMMENT ON FUNCTION getDocumentPOReference(numeric, numeric) IS 'fresh 08456: Get POReference'
 ;

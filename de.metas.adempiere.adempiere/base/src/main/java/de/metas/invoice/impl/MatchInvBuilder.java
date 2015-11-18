@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import org.adempiere.inout.service.IInOutBL;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -40,6 +39,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.util.TimeUtil;
 
+import de.metas.inout.IInOutBL;
 import de.metas.invoice.IMatchInvBuilder;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoice.MatchInvException;

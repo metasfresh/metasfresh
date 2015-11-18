@@ -24,13 +24,13 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.inout.service.IInOutBL;
 import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.inout.IInOutBL;
 import de.metas.invoice.IMatchInvDAO;
 
 /**

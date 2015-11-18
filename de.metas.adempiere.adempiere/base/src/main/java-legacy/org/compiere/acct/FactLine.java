@@ -98,6 +98,7 @@ public final class FactLine extends X_Fact_Acct
 	private Doc m_doc = null;
 	/** Document Line */
 	private DocLine m_docLine = null;
+	private ICurrencyConversionContext currencyConversionCtx = null;
 
 	/**
 	 * Create Reversal (negate DR/CR) of the line
@@ -271,6 +272,28 @@ public final class FactLine extends X_Fact_Acct
 		setAmtAcctDr(AmtAcctDr);
 		setAmtAcctCr(AmtAcctCr);
 	}   // setAmtAcct
+	
+	public final void invertDrAndCrAmounts()
+	{
+		final BigDecimal amtSourceDr = getAmtSourceDr(); 
+		final BigDecimal amtSourceCr = getAmtSourceCr();
+		final BigDecimal amtAcctDr = getAmtAcctDr();
+		final BigDecimal amtAcctCr = getAmtAcctCr();
+		
+		setAmtSourceDr(amtSourceCr);
+		setAmtSourceCr(amtSourceDr);
+		setAmtAcctDr(amtAcctCr);
+		setAmtAcctCr(amtAcctDr);
+	}
+
+	public final void invertDrAndCrAmountsIfTrue(final boolean condition)
+	{
+		if (!condition)
+		{
+			return;
+		}
+		invertDrAndCrAmounts();
+	}
 
 	/**
 	 * Set Accounted Amounts rounded by currency
@@ -324,24 +347,29 @@ public final class FactLine extends X_Fact_Acct
 	 * @param doc document
 	 * @param docLine doc line
 	 */
-	public void setDocumentInfo(Doc doc, DocLine docLine)
+	protected void setDocumentInfo(final Doc doc, final DocLine docLine)
 	{
 		m_doc = doc;
 		m_docLine = docLine;
+		
 		// reset
 		setAD_Org_ID(0);
 		setC_SalesRegion_ID(0);
+		
 		// Client
 		if (getAD_Client_ID() == 0)
 			setAD_Client_ID(m_doc.getAD_Client_ID());
+		
 		// Date Trx
 		setDateTrx(m_doc.getDateDoc());
 		if (m_docLine != null && m_docLine.getDateDoc() != null)
 			setDateTrx(m_docLine.getDateDoc());
+		
 		// Date Acct
 		setDateAcct(m_doc.getDateAcct());
 		if (m_docLine != null && m_docLine.getDateAcct() != null)
 			setDateAcct(m_docLine.getDateAcct());
+		
 		// Period, Tax
 		if (m_docLine != null && m_docLine.getC_Period_ID() != 0)
 			setC_Period_ID(m_docLine.getC_Period_ID());
@@ -354,7 +382,7 @@ public final class FactLine extends X_Fact_Acct
 		setDocStatus(m_doc.getDocStatus());
 		
 		// Description
-		StringBuilder description = new StringBuilder(m_doc.getDocumentNo());
+		final StringBuilder description = new StringBuilder(m_doc.getDocumentNo());
 		if (m_docLine != null)
 		{
 			description.append(" #").append(m_docLine.getLine());
@@ -366,6 +394,7 @@ public final class FactLine extends X_Fact_Acct
 		else if (m_doc.getDescription() != null && m_doc.getDescription().length() > 0)
 			description.append(" (").append(m_doc.getDescription()).append(")");
 		setDescription(description.toString());
+		
 		// Journal Info
 		setGL_Budget_ID(m_doc.getGL_Budget_ID());
 		setGL_Category_ID(m_doc.getGL_Category_ID());
@@ -375,9 +404,11 @@ public final class FactLine extends X_Fact_Acct
 			setM_Product_ID(m_docLine.getM_Product_ID());
 		if (getM_Product_ID() == 0)
 			setM_Product_ID(m_doc.getM_Product_ID());
+		
 		// UOM
 		if (m_docLine != null)
 			setC_UOM_ID(m_docLine.getC_UOM_ID());
+		
 		// Qty
 		if (get_Value("Qty") == null)	// not previously set
 		{
@@ -391,46 +422,56 @@ public final class FactLine extends X_Fact_Acct
 			setC_LocFrom_ID(m_docLine.getC_LocFrom_ID());
 		if (getC_LocFrom_ID() == 0)
 			setC_LocFrom_ID(m_doc.getC_LocFrom_ID());
+		
 		// Loc To (maybe set earlier)
 		if (getC_LocTo_ID() == 0 && m_docLine != null)
 			setC_LocTo_ID(m_docLine.getC_LocTo_ID());
 		if (getC_LocTo_ID() == 0)
 			setC_LocTo_ID(m_doc.getC_LocTo_ID());
+		
 		// BPartner
 		if (m_docLine != null)
 			setC_BPartner_ID(m_docLine.getC_BPartner_ID());
-		if (getC_BPartner_ID() == 0)
+		if (getC_BPartner_ID() <= 0)
 			setC_BPartner_ID(m_doc.getC_BPartner_ID());
+		
 		// Sales Region from BPLocation/Sales Rep
+		// NOTE: it will be set on save or on first call of getC_SalesRegion_ID() method.
+		
 		// Trx Org
 		if (m_docLine != null)
 			setAD_OrgTrx_ID(m_docLine.getAD_OrgTrx_ID());
-		if (getAD_OrgTrx_ID() == 0)
+		if (getAD_OrgTrx_ID() <= 0)
 			setAD_OrgTrx_ID(m_doc.getAD_OrgTrx_ID());
+		
 		// Project
 		if (m_docLine != null)
 			setC_Project_ID(m_docLine.getC_Project_ID());
-		if (getC_Project_ID() == 0)
+		if (getC_Project_ID() <= 0)
 			setC_Project_ID(m_doc.getC_Project_ID());
+		
 		// Campaign
 		if (m_docLine != null)
 			setC_Campaign_ID(m_docLine.getC_Campaign_ID());
-		if (getC_Campaign_ID() == 0)
+		if (getC_Campaign_ID() <= 0)
 			setC_Campaign_ID(m_doc.getC_Campaign_ID());
+		
 		// Activity
 		if (m_docLine != null)
 			setC_Activity_ID(m_docLine.getC_Activity_ID());
-		if (getC_Activity_ID() == 0)
+		if (getC_Activity_ID() <= 0)
 			setC_Activity_ID(m_doc.getC_Activity_ID());
+		
 		// User List 1
 		if (m_docLine != null)
 			setUser1_ID(m_docLine.getUser1_ID());
-		if (getUser1_ID() == 0)
+		if (getUser1_ID() <= 0)
 			setUser1_ID(m_doc.getUser1_ID());
+		
 		// User List 2
 		if (m_docLine != null)
 			setUser2_ID(m_docLine.getUser2_ID());
-		if (getUser2_ID() == 0)
+		if (getUser2_ID() <= 0)
 			setUser2_ID(m_doc.getUser2_ID());
 		// References in setAccount
 	}   // setDocumentInfo
@@ -627,13 +668,13 @@ public final class FactLine extends X_Fact_Acct
 	 */
 	public boolean isDrSourceBalance()
 	{
-		return getSourceBalance().signum() != -1;
+		return getSourceBalance().signum() >= 0;
 	}   // isDrSourceBalance
 
 	/**
 	 * Get Accounted Balance
 	 * 
-	 * @return accounting balance
+	 * @return accounting balance (DR - CR)
 	 */
 	public BigDecimal getAcctBalance()
 	{
@@ -643,6 +684,74 @@ public final class FactLine extends X_Fact_Acct
 			setAmtAcctCr(Env.ZERO);
 		return getAmtAcctDr().subtract(getAmtAcctCr());
 	}   // getAcctBalance
+
+	public boolean isDrAcctBalance()
+	{
+		return getAcctBalance().signum() >= 0;
+	}   // isDrSourceBalance
+
+	/**
+	 * @return AmtAcctDr or AmtAcctCr, which one is not ZERO
+	 * @throws IllegalStateException if both of them are not ZERO
+	 */
+	public final BigDecimal getAmtAcctDrOrCr()
+	{
+		final BigDecimal amtAcctDr = getAmtAcctDr();
+		final int amtAcctDrSign = amtAcctDr == null ? 0 : amtAcctDr.signum();
+		final BigDecimal amtAcctCr = getAmtAcctCr();
+		final int amtAcctCrSign = amtAcctCr == null ? 0 : amtAcctCr.signum();
+		
+		if(amtAcctDrSign != 0 && amtAcctCrSign == 0)
+		{
+			return amtAcctDr;
+		}
+		else if(amtAcctDrSign == 0 && amtAcctCrSign != 0)
+		{
+			return amtAcctCr;
+		}
+		else if (amtAcctDrSign == 0 && amtAcctCrSign == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		else
+		{
+			// shall not happen
+			throw new IllegalStateException("Both AmtAcctDr and AmtAcctCr are not zero: " + this);
+		}
+	}
+	
+	/**
+	 * @return AmtSourceDr/AmtAcctDr or AmtSourceCr/AmtAcctCr, which one is not ZERO
+	 * @throws IllegalStateException if both of them are not ZERO
+	 */
+	public final AmountSourceAndAcct getAmtSourceAndAcctDrOrCr()
+	{
+		final BigDecimal amtAcctDr = getAmtAcctDr();
+		final int amtAcctDrSign = amtAcctDr == null ? 0 : amtAcctDr.signum();
+		final BigDecimal amtAcctCr = getAmtAcctCr();
+		final int amtAcctCrSign = amtAcctCr == null ? 0 : amtAcctCr.signum();
+		
+		if(amtAcctDrSign != 0 && amtAcctCrSign == 0)
+		{
+			final BigDecimal amtSourceDr = getAmtSourceDr();
+			return AmountSourceAndAcct.of(amtSourceDr, amtAcctDr);
+		}
+		else if(amtAcctDrSign == 0 && amtAcctCrSign != 0)
+		{
+			final BigDecimal amtSourceCr = getAmtSourceCr();
+			return AmountSourceAndAcct.of(amtSourceCr, amtAcctCr);
+		}
+		else if (amtAcctDrSign == 0 && amtAcctCrSign == 0)
+		{
+			return AmountSourceAndAcct.ZERO;
+		}
+		else
+		{
+			// shall not happen
+			throw new IllegalStateException("Both AmtAcctDr and AmtAcctCr are not zero: " + this);
+		}
+		
+	}
 
 	/**
 	 * Is Account on Balance Sheet
@@ -694,10 +803,11 @@ public final class FactLine extends X_Fact_Acct
 	 */
 	public void convert()
 	{
-		// Document has no currency
+		// Document has no currency => set it from accounting schema
 		if (getC_Currency_ID() == Doc.NO_CURRENCY)
 			setC_Currency_ID(m_acctSchema.getC_Currency_ID());
 
+		// If same currency as the accounting schema => no conversion is needed
 		if (m_acctSchema.getC_Currency_ID() == getC_Currency_ID())
 		{
 			setAmtAcctDr(getAmtSourceDr());
@@ -705,6 +815,31 @@ public final class FactLine extends X_Fact_Acct
 			setCurrencyRate(BigDecimal.ONE);
 			return;
 		}
+		
+		final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+		final ICurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
+		final ICurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(conversionCtx, getC_Currency_ID(), m_acctSchema.getC_Currency_ID());
+		final BigDecimal amtAcctDr = currencyRate.convertAmount(getAmtSourceDr());
+		final BigDecimal amtAcctCr = currencyRate.convertAmount(getAmtSourceCr());
+
+		setAmtAcctDr(amtAcctDr);
+		setAmtAcctCr(amtAcctCr);
+		setCurrencyRate(currencyRate.getConversionRate());
+	}	// convert
+	
+	public void setCurrencyConversionCtx(final ICurrencyConversionContext currencyConversionCtx)
+	{
+		this.currencyConversionCtx = currencyConversionCtx;
+	}
+	
+	private final ICurrencyConversionContext getCurrencyConversionCtx()
+	{
+		// Use preset currency conversion context, if any
+		if (currencyConversionCtx != null)
+		{
+			return currencyConversionCtx;
+		}
+		
 		// Get Conversion Type from Line or Header
 		int C_ConversionType_ID = ICurrencyConversionBL.DEFAULT_ConversionType_ID;
 		int AD_Org_ID = 0;
@@ -723,14 +858,8 @@ public final class FactLine extends X_Fact_Acct
 
 		final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
 		final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(getDateAcct(), C_ConversionType_ID, m_doc.getAD_Client_ID(), AD_Org_ID);
-		final ICurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(conversionCtx, getC_Currency_ID(), m_acctSchema.getC_Currency_ID());
-		final BigDecimal amtAcctDr = currencyRate.convertAmount(getAmtSourceDr());
-		final BigDecimal amtAcctCr = currencyRate.convertAmount(getAmtSourceCr());
-
-		setAmtAcctDr(amtAcctDr);
-		setAmtAcctCr(amtAcctCr);
-		setCurrencyRate(currencyRate.getConversionRate());
-	}	// convert
+		return conversionCtx;
+	}
 
 	/**
 	 * Get Account

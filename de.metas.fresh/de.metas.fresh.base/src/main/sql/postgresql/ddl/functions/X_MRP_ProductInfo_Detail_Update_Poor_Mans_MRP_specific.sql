@@ -1,6 +1,6 @@
 
 DROP FUNCTION IF EXISTS  "de.metas.fresh".X_MRP_ProductInfo_Detail_Update_Poor_Mans_MRP(date, numeric, numeric);
-CREATE OR REPLACE FUNCTION "de.metas.fresh".X_MRP_ProductInfo_Detail_Update_Poor_Mans_MRP(IN DateFrom date, IN M_Product_ID numeric, IN M_AttributesetInstance_ID numeric) 
+CREATE OR REPLACE FUNCTION "de.metas.fresh".X_MRP_ProductInfo_Detail_Update_Poor_Mans_MRP(IN DateAt date, IN M_Product_ID numeric, IN M_AttributesetInstance_ID numeric) 
 	RETURNS VOID AS
 $BODY$
 
@@ -11,7 +11,7 @@ $BODY$
 		-- deleting by ASIKey, not just by asi-ID, because further down in the where and also 
 		-- *inside* MRP_ProductInfo_Poor_Mans_MRP_V(numeric, numeric) we are using the ASI-Key 
 		--		AND M_AttributesetInstance_ID = $3
-		AND GenerateHUStorageASIKey(M_AttributesetInstance_ID)=GenerateHUStorageASIKey($3,'')
+		AND GenerateHUStorageASIKey(M_AttributeSetInstance_Root_ID,'')=GenerateHUStorageASIKey($3,'')
 	;
 	
 	INSERT INTO "de.metas.fresh".X_MRP_ProductInfo_Detail_Poor_Mans_MRP

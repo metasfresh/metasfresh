@@ -26,7 +26,8 @@ package org.adempiere.currency.impl;
 import java.util.Date;
 
 import org.adempiere.currency.ICurrencyConversionContext;
-import org.adempiere.util.lang.ObjectUtils;
+
+import com.google.common.base.MoreObjects;
 
 public class CurrencyConversionContext implements ICurrencyConversionContext
 {
@@ -38,7 +39,11 @@ public class CurrencyConversionContext implements ICurrencyConversionContext
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		// NOTE: keep it short because we want to append it to Fact_Acct.Description
+		return MoreObjects.toStringHelper(this)
+				.add("date", conversionDate)
+				.add("conversionTypeId", conversionTypeId)
+				.toString();
 	}
 
 	@Override

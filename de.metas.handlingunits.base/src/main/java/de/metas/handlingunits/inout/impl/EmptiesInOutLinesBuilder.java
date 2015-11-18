@@ -25,7 +25,6 @@ package de.metas.handlingunits.inout.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.inout.service.IInOutBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLinesBuilder;
 import de.metas.handlingunits.impl.PlainPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.inout.IInOutBL;
 
 public class EmptiesInOutLinesBuilder extends AbstractPackingMaterialDocumentLinesBuilder
 {

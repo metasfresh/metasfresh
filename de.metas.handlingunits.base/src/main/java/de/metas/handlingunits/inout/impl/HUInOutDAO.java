@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.inout.service.IInOutDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.inout.IInOutDAO;
 
 public class HUInOutDAO implements IHUInOutDAO
 {

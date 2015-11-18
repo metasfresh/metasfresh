@@ -24,6 +24,7 @@ package de.metas.allocation.api;
 
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -66,6 +67,8 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 	// Status
 	private final I_C_AllocationHdr allocHdr;
 	private boolean _built;
+	
+	private final java.util.List<I_C_AllocationLine> allocationLines = new ArrayList<>();
 
 	private final BuilderSupport<DefaultAllocationLineBuilder> s = new BuilderSupport<DefaultAllocationLineBuilder>(this);
 
@@ -150,6 +153,8 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 		return (T)s.addLine(implClazz);
 	}
 
+	
+	
 	@Override
 	public I_C_AllocationHdr create(final boolean complete)
 	{
@@ -177,6 +182,7 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 			if (allocationLine != null)
 			{
 				createdLinesCount++;
+				allocationLines.add(allocationLine);
 			}
 		}
 
@@ -254,6 +260,12 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 		}
 
 		return allocationLineIds.iterator().next();
+	}
+	
+	@Override
+	public final java.util.List<I_C_AllocationLine> getC_AllocationLines()
+	{
+		return allocationLines;
 	}
 
 	@Override

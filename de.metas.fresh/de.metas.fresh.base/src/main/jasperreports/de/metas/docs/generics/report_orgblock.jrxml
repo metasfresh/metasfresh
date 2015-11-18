@@ -14,11 +14,12 @@
 	<parameter name="IsSOTrx" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
+	<parameter name="email" class="java.lang.String" isForPrompting="false"/>
 	<queryString>
 		<![CDATA[SELECT
 	*
 FROM
-	de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report( $P{IsSOTrx}, $P{org_id} )
+	de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report( $P{email}, $P{IsSOTrx}, $P{org_id} )
 ;]]>
 	</queryString>
 	<field name="name" class="java.lang.String"/>

@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.inout.service.IInOutBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
@@ -42,6 +41,7 @@ import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.inout.IInOutBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;

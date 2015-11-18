@@ -28,7 +28,7 @@ public interface I_C_AllocationLine
     public static final String Table_Name = "C_AllocationLine";
 
     /** AD_Table_ID=390 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
@@ -280,6 +280,29 @@ public interface I_C_AllocationLine
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
+	 * Set Counter_AllocationLine_ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCounter_AllocationLine_ID (int Counter_AllocationLine_ID);
+
+	/**
+	 * Get Counter_AllocationLine_ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCounter_AllocationLine_ID();
+
+    /** Column definition for Counter_AllocationLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_Counter_AllocationLine_ID = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "Counter_AllocationLine_ID", null);
+    /** Column name Counter_AllocationLine_ID */
+    public static final String COLUMNNAME_Counter_AllocationLine_ID = "Counter_AllocationLine_ID";
+
+	/**
 	 * Set Zahlung.
 	 * Payment identifier
 	 *
@@ -468,7 +491,7 @@ public interface I_C_AllocationLine
 	 * Amount to write-off
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setPaymentWriteOffAmt (java.math.BigDecimal PaymentWriteOffAmt);
@@ -478,7 +501,7 @@ public interface I_C_AllocationLine
 	 * Amount to write-off
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.math.BigDecimal getPaymentWriteOffAmt();
@@ -489,8 +512,7 @@ public interface I_C_AllocationLine
     public static final String COLUMNNAME_PaymentWriteOffAmt = "PaymentWriteOffAmt";
 
 	/**
-	 * Set Reversal Line.
-	 * Use to keep the reversal line ID for reversing costing purpose
+	 * Set Storno-Zeile.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -499,8 +521,7 @@ public interface I_C_AllocationLine
 	public void setReversalLine_ID (int ReversalLine_ID);
 
 	/**
-	 * Get Reversal Line.
-	 * Use to keep the reversal line ID for reversing costing purpose
+	 * Get Storno-Zeile.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

@@ -23,12 +23,12 @@ package de.metas.banking.payment.paymentallocation.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,8 +51,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -129,7 +131,13 @@ public class PaymentAllocationForm
 	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	
+
+	/**
+	 * @task http://dewiki908/mediawiki/index.php/09558_Zahlung-Zuordnung_Sperre_raus_f%C3%BCr_G1093_%28109678726752%29
+	 */
+	private final String SPECIALVENDORID_ALLOWMULTIPLEDOCSALLOCATION_PREFIX = "de.metas.banking.SpecialVendorID_";
+
+
 	/** This AD_Form_ID */
 	public static final int AD_FORM_ID = 104;
 
@@ -201,7 +209,7 @@ public class PaymentAllocationForm
 	private final JButton writeOffPaymentButton = new JButton();
 	private final JXTable paymentTable = AnnotatedTableFactory.newInstance().create();
 	private final JXTable invoiceTable = AnnotatedTableFactory.newInstance().create();
-	
+
 	// controlPanel
 	private GridField addForeignInvoice = null;
 	private GridField addForeignPayment = null;
@@ -474,7 +482,7 @@ public class PaymentAllocationForm
 				{
 					final boolean allowed = DisplayType.toBoolean(evt.getNewValue());
 					onAllowWriteOffFlagChanged(type, allowed);
-					
+
 					final boolean reloadTables = false;
 					updateInfos(reloadTables);
 				}
@@ -570,7 +578,7 @@ public class PaymentAllocationForm
 		allocateButton.setText(msgBL.getMsg(ctx, "Process"));
 		allocateButton.addActionListener(this);
 		allocationPanel.add(allocateButton, "cell 5 1, growx, pushx");
-		
+
 		writeOffPaymentButton.setText(msgBL.getMsg(ctx, "WriteOffPayment"));
 		writeOffPaymentButton.addActionListener(this);
 		allocationPanel.add(writeOffPaymentButton, "cell 3 1, growx, pushx");
@@ -735,6 +743,27 @@ public class PaymentAllocationForm
 	}
 
 	/**
+	 * Check if the vendor is allowed to allocate multiple documents in one step .<br>
+	 * Generally, a vendor can not allocate more then one document per type.<br>
+	 * But can we have a vendor exception from this rule.
+	 *
+	 * @return
+	 * @task http://dewiki908/mediawiki/index.php/09558_Zahlung-Zuordnung_Sperre_raus_f%C3%BCr_G1093_%28109678726752%29
+	 */
+	private boolean isAllowOnlyOneVendorDoc()
+	{
+		final Map<String, String> bpartnerIDsMap = sysConfigBL.getValuesForPrefix(SPECIALVENDORID_ALLOWMULTIPLEDOCSALLOCATION_PREFIX, Env.getAD_Client_ID(getCtx()), 0);
+		final List<String> bpartnerIDs = new ArrayList<String>(new TreeMap<String, String>(bpartnerIDsMap).values());
+
+		if (bpartnerIDs.size() == 0 || !bpartnerIDs.contains(Integer.toString(getC_BPartner_ID())))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Allocate selected invoices and selected payments.
 	 */
 	private void allocate()
@@ -770,6 +799,7 @@ public class PaymentAllocationForm
 					.setAD_Org_ID(adOrgId)
 					.setPayableDocuments(payableDocuments)
 					.setPaymentDocuments(paymentDocuments)
+					.setAllowOnlyOneVendorDoc(isAllowOnlyOneVendorDoc())
 					.setDate(getDate())
 					.build();
 			statusBar.setStatusLine(summary);
@@ -1240,7 +1270,7 @@ public class PaymentAllocationForm
 		// Reload everything (including payment and invoice rows)
 		refresh();
 	}
-	
+
 	/**
 	 * Reload payment and invoice rows, update all amount fields.
 	 */

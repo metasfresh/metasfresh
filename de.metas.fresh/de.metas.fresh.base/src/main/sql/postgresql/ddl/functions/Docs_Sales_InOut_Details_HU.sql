@@ -40,7 +40,7 @@ FROM
 WHERE
 	io.M_InOut_ID = $1
 	AND pc.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
-	AND QtyEntered != 0 -- Don't display lines without a Qty. See fresh_08293
+	AND QtyEntered != 0 -- Don't display lines without a Qty. See 08293
 GROUP BY
 	 COALESCE(pt.Name, p.name), COALESCE(uomt.UOMSymbol, uom.UOMSymbol), dlsi.SeqNo
 ORDER BY 

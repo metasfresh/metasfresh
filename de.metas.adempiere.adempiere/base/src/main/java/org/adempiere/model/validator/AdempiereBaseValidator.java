@@ -106,6 +106,11 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 			engine.addModelValidator(new de.metas.adempiere.docline.sort.model.validator.C_DocLine_Sort(), client);
 			engine.addModelValidator(new de.metas.adempiere.docline.sort.model.validator.C_BP_DocLine_Sort(), client);
 		}
+		
+		//
+		// Task 09548
+		engine.addModelValidator(de.metas.inout.model.validator.M_InOutLine.INSTANCE, client);
+
 	}
 
 	@Override

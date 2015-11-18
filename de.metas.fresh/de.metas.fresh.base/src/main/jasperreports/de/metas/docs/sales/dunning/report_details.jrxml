@@ -1,761 +1,323 @@
-<?xml version="1.0" encoding="UTF-8"  ?>
-<!-- Created with iReport - A designer for JasperReports -->
-<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
-<jasperReport
-		 name="report_details"
-		 columnCount="1"
-		 printOrder="Vertical"
-		 orientation="Portrait"
-		 pageWidth="521"
-		 pageHeight="842"
-		 columnWidth="521"
-		 columnSpacing="0"
-		 leftMargin="0"
-		 rightMargin="0"
-		 topMargin="0"
-		 bottomMargin="0"
-		 whenNoDataType="NoPages"
-		 isTitleNewPage="false"
-		 isSummaryNewPage="false"
-		 resourceBundle="de/metas/docs/sales/dunning/report">
-	<property name="ireport.scriptlethandling" value="0" />
-	<property name="ireport.encoding" value="UTF-8" />
-	<import value="java.util.*" />
-	<import value="net.sf.jasperreports.engine.*" />
-	<import value="net.sf.jasperreports.engine.data.*" />
-
-	<parameter name="dre_id" isForPrompting="true" class="java.lang.Integer"/>
-	<parameter name="ad_language" isForPrompting="true" class="java.lang.String">
-		<defaultValueExpression ><![CDATA[$P{ad_language}]]></defaultValueExpression>
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/dunning/report" uuid="62240efe-5146-48f0-97d4-e6ce43d597fb">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new Integer(1000000)]]></defaultValueExpression>
 	</parameter>
-	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
-		<defaultValueExpression ><![CDATA["M:\\BusinessPartner\\\\ERP\\Jasper Reports\\Documents\\Sales\\Order\\"]]></defaultValueExpression>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[new String("DE_de")]]></defaultValueExpression>
 	</parameter>
-	<parameter name="report_details_sum" isForPrompting="true" class="java.lang.String"/>
-	<queryString><![CDATA[SELECT *
-FROM (
-	SELECT 
-		dre.c_dunningrunentry_id,
-		i.documentno,
-		i.dateinvoiced,
-		paymenttermduedate(i.c_paymentterm_id, i.dateinvoiced::timestamp with time zone) AS duedate, 
-		drl.daysdue,
-		i.grandtotal, 
-		invoicepaid(i.c_invoice_id, i.c_currency_id, 1::numeric) AS paidamt, 
-		invoiceopen(i.c_invoice_id, 0::numeric) AS openamt, 
-		coalesce(cur.cursymbol,cur.iso_code) as cursymbol,
-		dt.printname,
-		drl.timesdunned,
-		dl.isshowalldue,
-		'de_DE' as ad_language,
-		'LINE' as tag,
-		1 as position
-
-
-	FROM
-		c_dunningrunline drl
-		JOIN c_dunningrunentry dre ON drl.c_dunningrunentry_id = dre.c_dunningrunentry_id
-		JOIN c_dunningrun dr ON dre.c_dunningrun_id = dr.c_dunningrun_id
-		JOIN c_dunninglevel dl ON dr.c_dunninglevel_id = dl.c_dunninglevel_id
-		JOIN c_invoice i ON drl.c_invoice_id = i.c_invoice_id
-		JOIN c_doctype dt ON i.c_doctype_id = dt.c_doctype_id
-		JOIN c_currency cur ON i.c_currency_id = cur.c_currency_id
-UNION
-
-	SELECT 
-		dre.c_dunningrunentry_id,
-		i.documentno,
-		i.dateinvoiced,
-		paymenttermduedate(i.c_paymentterm_id, i.dateinvoiced::timestamp with time zone) AS duedate, 
-		drl.daysdue,
-		i.grandtotal, 
-		invoicepaid(i.c_invoice_id, i.c_currency_id, 1::numeric) AS paidamt, 
-		invoiceopen(i.c_invoice_id, 0::numeric) AS openamt, 
-		coalesce(cur.cursymbol,cur.iso_code) as cursymbol,
-		dt.printname,
-		drl.timesdunned,
-		dl.isshowalldue,
-		dt.ad_language as ad_language,
-		'LINE' as tag,
-		1 as position
-
-	FROM
-		c_dunningrunline drl
-		JOIN c_dunningrunentry dre ON drl.c_dunningrunentry_id = dre.c_dunningrunentry_id
-		JOIN c_dunningrun dr ON dre.c_dunningrun_id = dr.c_dunningrun_id
-		JOIN c_dunninglevel dl ON dr.c_dunninglevel_id = dl.c_dunninglevel_id
-		JOIN c_invoice i ON drl.c_invoice_id = i.c_invoice_id
-		JOIN c_doctype_trl dt ON i.c_doctype_id = dt.c_doctype_id
-		JOIN c_currency cur ON i.c_currency_id = cur.c_currency_id
-
-UNION
-		
-	SELECT
-		dre.c_dunningrunentry_id,
-		null			as documentno,
-		null 			as dateinvoiced,
-		null			as duedate,
-		null			as daysdue,
-		dl.feeamt		as grandtotal,
-		0			as paidamt,
-		dl.feeamt		as openamt,
-		COALESCE(cur.cursymbol,cur.iso_code)as cursymbol,
-		null			as printname,
-		null			as timesdunned,
-		'N'			as isshowalldue,
-		null			as ad_language,
-		'FEE'			as tag,
-		2			as position
-	FROM
-		c_dunningrunentry dre
-		JOIN c_dunningrun dr ON dre.c_dunningrun_id = dr.c_dunningrun_id
-		JOIN c_dunninglevel dl ON dr.c_dunninglevel_id = dl.c_dunninglevel_id
-		JOIN c_currency cur ON dre.c_currency_id = cur.c_currency_id
-	WHERE
-		dl.feeamt > 0
-) as foo
-WHERE
-	foo.c_dunningrunentry_id = $P{dre_id}
-	AND (foo.ad_language = $P{ad_language} OR foo.tag = 'FEE')
-	
-order by foo.position, foo.daysdue desc, foo.dateinvoiced, foo.documentno
-;]]></queryString>
-
-	<field name="c_dunningrunentry_id" class="java.math.BigDecimal"/>
+	<queryString>
+		<![CDATA[select * from report.Docs_Sales_Dunning_Report_details ( $P{RECORD_ID}, $P{ad_language}) ;]]>
+	</queryString>
+	<field name="printname" class="java.lang.String"/>
 	<field name="documentno" class="java.lang.String"/>
-	<field name="dateinvoiced" class="java.sql.Timestamp"/>
-	<field name="duedate" class="java.sql.Timestamp"/>
-	<field name="daysdue" class="java.math.BigDecimal"/>
+	<field name="documentdate" class="java.sql.Timestamp"/>
+	<field name="currency" class="java.lang.String"/>
 	<field name="grandtotal" class="java.math.BigDecimal"/>
 	<field name="paidamt" class="java.math.BigDecimal"/>
 	<field name="openamt" class="java.math.BigDecimal"/>
-	<field name="cursymbol" class="java.lang.String"/>
-	<field name="printname" class="java.lang.String"/>
-	<field name="timesdunned" class="java.math.BigDecimal"/>
-	<field name="isshowalldue" class="java.lang.String"/>
-	<field name="ad_language" class="java.lang.String"/>
-	<field name="tag" class="java.lang.String"/>
-	<field name="position" class="java.lang.Integer"/>
-
-	<variable name="grandtotal" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
-		<variableExpression><![CDATA[$F{grandtotal}]]></variableExpression>
-	</variable>
-	<variable name="paidamt" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
-		<variableExpression><![CDATA[$F{paidamt}]]></variableExpression>
-	</variable>
-	<variable name="openamt" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
-		<variableExpression><![CDATA[$F{openamt}]]></variableExpression>
-	</variable>
-
-		<group  name="currency" >
-			<groupExpression><![CDATA[$F{cursymbol}]]></groupExpression>
-			<groupHeader>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-			</groupHeader>
-			<groupFooter>
-			<band height="17"  isSplitAllowed="true" >
-				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="267"
-						y="1"
-						width="66"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-67"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="true" pdfFontName="Helvetica-Bold" />
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$R{sum}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="459"
-						y="1"
-						width="43"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-68"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="true" pdfFontName="Helvetica-Bold" />
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{openamt}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="502"
-						y="1"
-						width="18"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-69"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="true" pdfFontName="Helvetica-Bold" />
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{cursymbol}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="441"
-						y="1"
-						width="18"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-80"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="true" pdfFontName="Helvetica-Bold" />
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{cursymbol}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="403"
-						y="1"
-						width="38"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-81"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="true" pdfFontName="Helvetica-Bold" />
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{paidamt}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="385"
-						y="1"
-						width="18"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-87"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="true" pdfFontName="Helvetica-Bold" />
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{cursymbol}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="334"
-						y="1"
-						width="51"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-88"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="true" pdfFontName="Helvetica-Bold" />
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{grandtotal}]]></textFieldExpression>
-				</textField>
-			</band>
-			</groupFooter>
-		</group>
+	<field name="feeamt" class="java.math.BigDecimal"/>
+	<field name="totalamt" class="java.math.BigDecimal"/>
+	<field name="duedate" class="java.sql.Timestamp"/>
+	<field name="daysdue" class="java.math.BigDecimal"/>
 		<background>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
+		<band splitType="Stretch"/>
 		</background>
 		<title>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
+		<band splitType="Stretch"/>
 		</title>
 		<pageHeader>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</pageHeader>
-		<columnHeader>
-			<band height="34"  isSplitAllowed="true" >
-				<rectangle radius="0" >
-					<reportElement
-						mode="Opaque"
-						x="1"
-						y="0"
-						width="518"
-						height="20"
-						forecolor="#CCCCCC"
-						backcolor="#999999"
-						key="element-22"/>
-					<graphicElement stretchType="NoStretch" pen="Thin"/>
-				</rectangle>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="0"
-						y="-1"
-						width="44"
-						height="11"
-						forecolor="#FFFFFF"
-						key="textField-46"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+		<band height="13" splitType="Stretch">
+			<line>
+				<reportElement uuid="76b8b71a-c8dc-4ce0-a046-831521655630" key="line-1" mode="Opaque" x="57" y="12" width="488" height="1" forecolor="#000000"/>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="126" y="0" width="37" height="11"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression><![CDATA[$R{docno}]]></textFieldExpression>
+				</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="5bae02b8-e382-4775-be1a-9aee3987ce92" key="textField-52" mode="Transparent" x="57" y="0" width="68" height="11"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression><![CDATA[$R{doctype}]]></textFieldExpression>
+				</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="218" y="0" width="60" height="11"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression><![CDATA[$R{duedate}]]></textFieldExpression>
+				</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="316" y="0" width="54" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+					<textElement textAlignment="Right">
+					<font size="8"/>
+					</textElement>
+				<textFieldExpression><![CDATA[$R{doctotal}]]></textFieldExpression>
+				</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="370" y="0" width="42" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+					<textElement textAlignment="Right">
+					<font size="8"/>
+					</textElement>
+				<textFieldExpression><![CDATA[$R{paidamt}]]></textFieldExpression>
+				</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="412" y="0" width="39" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$R{docno}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{openamt}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="53"
-						y="-1"
-						width="51"
-						height="11"
-						forecolor="#FFFFFF"
-						key="textField-63"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" rightPadding="5" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font size="8"/>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="451" y="0" width="50" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+					<textElement textAlignment="Right">
+					<font size="8"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$R{invoicedate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{feeamt}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="120"
-						y="-1"
-						width="52"
-						height="11"
-						forecolor="#FFFFFF"
-						key="textField-64"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" rightPadding="5" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$R{doctype}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="285"
-						y="-1"
-						width="47"
-						height="20"
-						forecolor="#FFFFFF"
-						key="textField-65"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="500" y="0" width="45" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$R{daysafterdue}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{totalamt}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="459"
-						y="-1"
-						width="56"
-						height="11"
-						forecolor="#FFFFFF"
-						key="textField-66"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" rightPadding="5" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
+			<textField pattern="###0.00" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="279" y="0" width="37" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+					</textElement>
+				<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
+				</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="165" y="0" width="52" height="11"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
 						<font size="8"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$R{open}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="236"
-						y="-1"
-						width="47"
-						height="20"
-						forecolor="#FFFFFF"
-						key="textField-70"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$R{duedate}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="267"
-						y="21"
-						width="66"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-72">
-							<printWhenExpression><![CDATA[$V{grandtotal}.intValue()>0 ? new Boolean(true) : new Boolean(false)]]></printWhenExpression>
-						</reportElement>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$R{carry}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="459"
-						y="21"
-						width="43"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-73">
-							<printWhenExpression><![CDATA[$V{grandtotal}.intValue()>0 ? new Boolean(true) : new Boolean(false)]]></printWhenExpression>
-						</reportElement>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{openamt}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="502"
-						y="21"
-						width="18"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-74">
-							<printWhenExpression><![CDATA[$V{grandtotal}.intValue()>0 ? new Boolean(true) : new Boolean(false)]]></printWhenExpression>
-						</reportElement>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{cursymbol}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="441"
-						y="21"
-						width="18"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-75">
-							<printWhenExpression><![CDATA[$V{grandtotal}.intValue()>0 ? new Boolean(true) : new Boolean(false)]]></printWhenExpression>
-						</reportElement>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{cursymbol}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="403"
-						y="-1"
-						width="51"
-						height="11"
-						forecolor="#FFFFFF"
-						key="textField-76"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" rightPadding="5" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$R{paid}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="403"
-						y="21"
-						width="38"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-77">
-							<printWhenExpression><![CDATA[$V{grandtotal}.intValue()>0 ? new Boolean(true) : new Boolean(false)]]></printWhenExpression>
-						</reportElement>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{paidamt}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="385"
-						y="21"
-						width="18"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-82">
-							<printWhenExpression><![CDATA[$V{grandtotal}.intValue()>0 ? new Boolean(true) : new Boolean(false)]]></printWhenExpression>
-						</reportElement>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{cursymbol}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="333"
-						y="-1"
-						width="65"
-						height="11"
-						forecolor="#FFFFFF"
-						key="textField-83"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" rightPadding="5" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$R{totalamt}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="334"
-						y="21"
-						width="51"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-84">
-							<printWhenExpression><![CDATA[$V{grandtotal}.intValue()>0 ? new Boolean(true) : new Boolean(false)]]></printWhenExpression>
-						</reportElement>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{grandtotal}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="172"
-						y="-1"
-						width="49"
-						height="20"
-						forecolor="#FFFFFF"
-						key="textField-89"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$R{timesdunned}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{docdate}]]></textFieldExpression>
 				</textField>
 			</band>
-		</columnHeader>
+	</pageHeader>
 		<detail>
-			<band height="15"  isSplitAllowed="true" >
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="0"
-						y="0"
-						width="44"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-47"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+		<band height="11" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="fd32f53b-3a9b-471f-ba96-747c6f748a0e" key="textField-53" mode="Transparent" x="57" y="0" width="68" height="11" forecolor="#000000"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="8" isBold="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="218" y="0" width="60" height="11"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{duedate}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="322" y="0" width="48" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
+					<font size="8"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{documentno}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="53"
-						y="0"
-						width="51"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-58"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.util.Date"><![CDATA[$F{dateinvoiced}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="120"
-						y="0"
-						width="52"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-59"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{tag}.equals("FEE")? $R{dunningfee} : $F{printname}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="285"
-						y="0"
-						width="47"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-60"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+			<textField pattern="###0.00" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="371" y="0" width="41" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
+					<font size="8"/>
 					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{daysdue}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{paidamt}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="459"
-						y="0"
-						width="43"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-61"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+			<textField pattern="###0.00" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="412" y="0" width="39" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
+					<font size="8"/>
 					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{openamt}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{openamt}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="502"
-						y="0"
-						width="18"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-62"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{cursymbol}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="236"
-						y="0"
-						width="47"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-71"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.util.Date"><![CDATA[$F{duedate}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="441"
-						y="0"
-						width="18"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-78"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{cursymbol}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="403"
-						y="0"
-						width="38"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-79"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+			<textField pattern="###0.00" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="451" y="0" width="50" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
+					<font size="8"/>
 					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{paidamt}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{feeamt}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="385"
-						y="0"
-						width="18"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-85"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Left">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{cursymbol}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="334"
-						y="0"
-						width="51"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-86"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+			<textField pattern="###0.00" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="500" y="0" width="45" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="279" y="0" width="37" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="c180e3e7-35df-46c4-8b53-ec49039f850c" key="textField-53" mode="Transparent" x="126" y="0" width="37" height="11" isPrintWhenDetailOverflows="true" forecolor="#000000"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="8" isBold="false" pdfFontName="Helvetica"/>
 					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{grandtotal}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						mode="Opaque"
-						x="172"
-						y="0"
-						width="49"
-						height="11"
-						forecolor="#000000"
-						backcolor="#FFFFFF"
-						key="textField-90"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font fontName="SansSerif"  size="8" isBold="false"/>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="165" y="0" width="52" height="11"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{documentdate}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="11">
+			<textField pattern="###0" isBlankWhenNull="true">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="219" y="0" width="59" height="11" isRemoveLineWhenBlank="true"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
 					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{timesdunned}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["(" + $F{daysdue} + " " + $R{days} + ")"]]></textFieldExpression>
 				</textField>
 			</band>
 		</detail>
 		<columnFooter>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
+		<band splitType="Stretch"/>
 		</columnFooter>
 		<pageFooter>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
+		<band splitType="Stretch"/>
 		</pageFooter>
+	<lastPageFooter>
+		<band splitType="Stretch"/>
+	</lastPageFooter>
 		<summary>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
+		<band splitType="Stretch"/>
 		</summary>
 </jasperReport>

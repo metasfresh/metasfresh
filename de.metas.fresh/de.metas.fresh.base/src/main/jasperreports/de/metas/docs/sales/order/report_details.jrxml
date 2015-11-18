@@ -60,7 +60,7 @@ FROM
 	-- Get Attributes
 	LEFT OUTER JOIN	(
 		SELECT 	String_agg ( ai_value, ', ' ORDER BY length(ai_value)) AS Attributes, M_AttributeSetInstance_ID
-		FROM 	Report.Fresh_Attributes
+		FROM 	Report.fresh_Attributes
 		WHERE	at_Value IN ('1000002', '1000001', '1000030', '1000015')
 		GROUP BY	M_AttributeSetInstance_ID
 	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID

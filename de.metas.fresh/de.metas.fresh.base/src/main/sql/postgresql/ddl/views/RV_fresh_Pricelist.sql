@@ -33,6 +33,6 @@ WHERE
 	plc.M_Pricelist_Version_ID = plc.Alt_PriceList_Version_ID
 ;
 
-COMMENT ON VIEW RV_fresh_PriceList IS 'fresh 05956 Printformat for Pricelist (109054740508) 
+COMMENT ON VIEW RV_fresh_PriceList IS '05956 Printformat for Pricelist (109054740508) 
 Refactored in Task 07833 and 07915
 A view for a report that displays all product prices of a BPartner, including the attribute prices and CU:TU relation';

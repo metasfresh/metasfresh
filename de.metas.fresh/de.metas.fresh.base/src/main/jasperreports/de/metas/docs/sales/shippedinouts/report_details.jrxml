@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.zoom" value="1.8627639691774733"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -39,7 +39,7 @@ FROM
 	LEFT OUTER JOIN
 	(
 		SELECT String_Agg( DISTINCT name, E'\n' ) AS Name, M_InOutLine_ID
-		FROM Report.Fresh_InOutLine_PI_V
+		FROM Report.fresh_InOutLine_PI_V
 		GROUP BY M_InOutLine_ID
 	) pi ON iol.M_InOutLine_ID = pi.M_InOutLine_ID
 	-- Product and its translation

@@ -101,7 +101,7 @@ $F{ad_language}.equals("it_CH")?"Seite":
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="email">
-					<subreportParameterExpression><![CDATA[$R{email}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$R{mail}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>

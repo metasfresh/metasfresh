@@ -24,9 +24,11 @@ package de.metas.allocation.api;
 
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Set;
 
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
 
 import de.metas.builder.IBuilder;
 
@@ -103,4 +105,11 @@ public interface IAllocationBuilder extends IBuilder
 	 * In this case, the caller shall take care about this aspect.
 	 */
 	IAllocationBuilder disableUpdateBPartnerTotalOpenBanace();
+
+	/**
+	 * Gets all C_AllocationLine
+	 * 
+	 * @return Iterator<I_C_AllocationLine>
+	 */
+	List<I_C_AllocationLine> getC_AllocationLines();
 }

@@ -137,7 +137,7 @@ final class AllocationLineCandidate
 	{
 		return paymentDocumentRef;
 	}
-
+	
 	public int getC_BPartner_ID()
 	{
 		return C_BPartner_ID;
@@ -236,7 +236,7 @@ final class AllocationLineCandidate
 		{
 			return paymentDocumentRef;
 		}
-
+		
 		public Builder setC_BPartner_ID(final int bpartnerId)
 		{
 			C_BPartner_ID = bpartnerId;

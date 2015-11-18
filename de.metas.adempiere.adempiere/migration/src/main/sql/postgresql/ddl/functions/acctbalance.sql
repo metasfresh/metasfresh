@@ -42,6 +42,4 @@ END;
 $BODY$
   LANGUAGE plpgsql STABLE
   COST 100;
-ALTER FUNCTION acctbalance(numeric, numeric, numeric)
-  OWNER TO adempiere;
 COMMENT ON FUNCTION acctbalance(numeric, numeric, numeric) IS 'Also used by mondrian cubes. Please keep in sync with (java) AccountBL.calculateBalance().'

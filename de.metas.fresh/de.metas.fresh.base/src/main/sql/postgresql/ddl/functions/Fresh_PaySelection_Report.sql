@@ -49,7 +49,7 @@ WHERE
 	ps.C_PaySelection_ID = $1
 	-- only filter for BPartner if the parameter was set
 	AND i.C_BPartner_ID = CASE WHEN $2 IS NULL THEN i.C_BPartner_ID ELSE $2 END
-	-- We don't want to display ESR payments (if they are not allowed). See Task fresh_08383
+	-- We don't want to display ESR payments (if they are not allowed). See Task 08383
 	AND (
  		( $3 = 'N' AND ba.IsESRAccount='N' )
 		OR $3 = 'Y'
@@ -62,11 +62,10 @@ GROUP BY
 	ps.processed
 HAVING
 	-- The following filter shall not be applied if printSinglePayment is set
-	-- We only want to display documents if there is more than one payment. see Task fresh_08383
+	-- We only want to display documents if there is more than one payment. see Task 08383
 	($4 = 'Y' OR ($4 = 'N' AND count( psl.C_PaySelectionLine_ID ) > 1))
 ORDER BY
 	i.C_BPartner_ID
 $BODY$
 LANGUAGE sql STABLE;
-ALTER FUNCTION report.fresh_payselection_report(IN numeric, IN numeric, IN character varying, printSinglePayment character varying ) OWNER TO adempiere;
 

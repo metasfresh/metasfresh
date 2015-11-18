@@ -32,7 +32,7 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1423288203L;
+	private static final long serialVersionUID = 147441035L;
 
     /** Standard Constructor */
     public X_C_AllocationLine (Properties ctx, int C_AllocationLine_ID, String trxName)
@@ -44,6 +44,8 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 			setC_AllocationHdr_ID (0);
 			setC_AllocationLine_ID (0);
 			setDiscountAmt (Env.ZERO);
+			setPaymentWriteOffAmt (Env.ZERO);
+// 0
 			setWriteOffAmt (Env.ZERO);
         } */
     }
@@ -295,6 +297,28 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 		return ii.intValue();
 	}
 
+	/** Set Counter_AllocationLine_ID.
+		@param Counter_AllocationLine_ID Counter_AllocationLine_ID	  */
+	@Override
+	public void setCounter_AllocationLine_ID (int Counter_AllocationLine_ID)
+	{
+		if (Counter_AllocationLine_ID < 1) 
+			set_Value (COLUMNNAME_Counter_AllocationLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_Counter_AllocationLine_ID, Integer.valueOf(Counter_AllocationLine_ID));
+	}
+
+	/** Get Counter_AllocationLine_ID.
+		@return Counter_AllocationLine_ID	  */
+	@Override
+	public int getCounter_AllocationLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Counter_AllocationLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_C_Payment getC_Payment() throws RuntimeException
 	{
@@ -428,7 +452,7 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	@Override
 	public void setPaymentWriteOffAmt (java.math.BigDecimal PaymentWriteOffAmt)
 	{
-		set_ValueNoCheck (COLUMNNAME_PaymentWriteOffAmt, PaymentWriteOffAmt);
+		set_Value (COLUMNNAME_PaymentWriteOffAmt, PaymentWriteOffAmt);
 	}
 
 	/** Get Payment Write-off Amount.
@@ -455,10 +479,8 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 		set_ValueFromPO(COLUMNNAME_ReversalLine_ID, org.compiere.model.I_C_AllocationLine.class, ReversalLine);
 	}
 
-	/** Set Reversal Line.
-		@param ReversalLine_ID 
-		Use to keep the reversal line ID for reversing costing purpose
-	  */
+	/** Set Storno-Zeile.
+		@param ReversalLine_ID Storno-Zeile	  */
 	@Override
 	public void setReversalLine_ID (int ReversalLine_ID)
 	{
@@ -468,9 +490,8 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 			set_Value (COLUMNNAME_ReversalLine_ID, Integer.valueOf(ReversalLine_ID));
 	}
 
-	/** Get Reversal Line.
-		@return Use to keep the reversal line ID for reversing costing purpose
-	  */
+	/** Get Storno-Zeile.
+		@return Storno-Zeile	  */
 	@Override
 	public int getReversalLine_ID () 
 	{

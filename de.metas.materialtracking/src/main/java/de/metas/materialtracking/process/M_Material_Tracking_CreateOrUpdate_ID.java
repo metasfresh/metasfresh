@@ -27,7 +27,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.inout.service.IInOutDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
@@ -40,6 +39,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.service.IOrderDAO;
+import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;

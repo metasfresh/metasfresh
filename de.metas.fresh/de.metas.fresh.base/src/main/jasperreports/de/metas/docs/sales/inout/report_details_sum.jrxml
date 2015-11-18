@@ -15,12 +15,9 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[
-SELECT 	*
+		<![CDATA[SELECT 	*
 FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Sum( $P{m_inout_id} )
-;
-
-]]>
+;]]>
 	</queryString>
 	<field name="totalentered" class="java.math.BigDecimal"/>
 	<field name="discount" class="java.math.BigDecimal"/>

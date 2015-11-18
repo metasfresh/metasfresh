@@ -28,6 +28,3 @@ GROUP BY
 
 ORDER BY M_Product_ID, M_Locator_ID ASC NULLS FIRST, HUStorageASIKey
 ;
-
-ALTER TABLE RV_M_HU_Storage_InvoiceHistory OWNER TO adempiere
-;

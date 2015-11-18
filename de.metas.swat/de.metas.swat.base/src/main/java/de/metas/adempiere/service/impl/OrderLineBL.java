@@ -10,12 +10,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.document.service.IDocActionBL;
@@ -47,7 +46,6 @@ import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -368,7 +366,7 @@ public class OrderLineBL implements IOrderLineBL
 
 	/**
 	 * task 07080
-	 * 
+	 *
 	 * @param orderLine
 	 * @param order
 	 * @return
@@ -719,52 +717,6 @@ public class OrderLineBL implements IOrderLineBL
 		final org.compiere.model.I_M_Product product = orderLine.getM_Product();
 		final BigDecimal qtyInPriceUOM = Services.get(IUOMConversionBL.class).convertQty(product, qty, qtyUOM, priceUOM);
 		return qtyInPriceUOM;
-	}
-
-	@Override
-	public <T extends org.compiere.model.I_C_OrderLine> IQueryFilter<Pair<T, T>> createSOLineToPOLineCopyHandlerFilter()
-	{
-		return new IQueryFilter<Pair<T, T>>()
-		{
-			@Override
-			public boolean accept(final Pair<T, T> model)
-			{
-				Check.assumeNotNull(model, "Param 'model not null");
-
-				if (model.getFirst() == null || model.getSecond() == null)
-				{
-					// nothing to do if we don't have both a copy source and destination
-					return false;
-				}
-
-				final T orderLineFrom = model.getFirst(); // 'orderLineFrom' is the original sales order line
-				final T orderLineTo = model.getSecond(); // 'orderLineTo' is the newly created purchase order line
-
-				if (orderLineTo.getLink_OrderLine_ID() != orderLineFrom.getC_OrderLine_ID())
-				{
-					// nothing to do if not linked orderLine
-					return false;
-				}
-
-				final I_C_Order orderFrom = orderLineFrom.getC_Order();
-				Check.assumeNotNull(orderFrom, "C_Order not set in {0}" + orderLineTo);
-				if (!orderFrom.isSOTrx())
-				{
-					// nothing to do if our source is a purchase order
-					return false;
-				}
-
-				final I_C_Order orderTo = orderLineTo.getC_Order();
-				Check.assumeNotNull(orderLineTo, "C_Order not set in {0}", orderLineFrom);
-				if (orderTo.isSOTrx())
-				{
-					// nothing to do if our destination is a sales order
-					return false;
-				}
-
-				return true;
-			}
-		};
 	}
 
 	@Override

@@ -114,7 +114,7 @@ import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
 import de.metas.invoice.model.validator.C_Invoice;
 import de.metas.invoice.model.validator.C_InvoiceLine;
 import de.metas.invoice.model.validator.M_MatchInv;
-import de.metas.order.modelvalidator.C_Order;
+import de.metas.order.model.validator.C_Order;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute_Line;
 import de.metas.pricing.attributebased.spi.impl.AttributePlvCreationListener;

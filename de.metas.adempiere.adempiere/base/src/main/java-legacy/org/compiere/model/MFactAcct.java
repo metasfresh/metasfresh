@@ -19,8 +19,10 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
@@ -101,21 +103,16 @@ public class MFactAcct extends X_Fact_Acct
 	}	//	toString
 
 	/**
-	 * 	Derive MAccount from record
-	 *	@return Valid Account Combination
+	 * Derive MAccount from record
+	 *
+	 * @return Valid Account Combination
+	 * @deprecated Please use {@link IFactAcctBL#getAccount(I_Fact_Acct)}
 	 */
+	@Deprecated
 	public MAccount getMAccount()
 	{
-		MAccount acct = MAccount.get (getCtx(), getAD_Client_ID(), getAD_Org_ID(),
-			getC_AcctSchema_ID(), getAccount_ID(), getC_SubAcct_ID(),
-			getM_Product_ID(), getC_BPartner_ID(), getAD_OrgTrx_ID(), 
-			getC_LocFrom_ID(), getC_LocTo_ID(), getC_SalesRegion_ID(), 
-			getC_Project_ID(), getC_Campaign_ID(), getC_Activity_ID(),
-			getUser1_ID(), getUser2_ID(), getUserElement1_ID(), getUserElement2_ID());
-		if (acct != null && acct.get_ID() <= 0)
-			acct.save();
-		return acct;
-	}	//	getMAccount
+		return Services.get(IFactAcctBL.class).getAccount(this);
+	}
 
 	/**
 	 * Check if a document is already posted

@@ -25,7 +25,12 @@ package de.metas.banking.payment.paymentallocation.model;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.adempiere.service.ICurrencyDAO;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_Currency;
+import org.compiere.model.MCurrency;
+import org.compiere.util.Env;
 
 import de.metas.banking.payment.paymentallocation.service.IPaymentDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
@@ -206,9 +211,12 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	public IPaymentDocument copyAsPaymentDocument()
 	{
 		final IPaymentRow paymentRow = this;
+		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(Env.getCtx(), paymentRow.getCurrencyISOCode());
+		
 		return PaymentDocument.builder()
 				.setC_BPartner_ID(paymentRow.getC_BPartner_ID())
 				.setReference(org.compiere.model.I_C_Payment.Table_Name, paymentRow.getC_Payment_ID())
+				.setC_Currency_ID(currency.getC_Currency_ID())
 				.setOpenAmt(paymentRow.getOpenAmtConv_APAdjusted())
 				.setIsSOTrx(paymentRow.isCustomerDocument())
 				.setDocumentNo(paymentRow.getDocumentNo())

@@ -44,7 +44,7 @@ FROM
 	LEFT OUTER JOIN
 	(
 		SELECT 	String_agg ( ai_value, ', ' ORDER BY length(ai_value), ai_value) AS Attributes, M_AttributeSetInstance_ID
-		FROM 	Report.Fresh_Attributes att
+		FROM 	Report.fresh_Attributes att
 		WHERE 	att.at_Value IN ('1000002', '1000001', '1000030', '1000015', '1000021', 'M_Material_Tracking_ID')
 			-- Label, Herkunft, Aktionen, Marke (ADR), MHD, M_Material_Tracking_ID
 		GROUP BY	M_AttributeSetInstance_ID

@@ -37,7 +37,7 @@ import org.compiere.util.Ini;
 
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
-import de.metas.order.modelvalidator.C_OrderLine;
+import de.metas.order.model.validator.C_OrderLine;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;

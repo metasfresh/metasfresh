@@ -24,9 +24,12 @@
 	, $P{ad_language}
 );]]>
 	</queryString>
+	<field name="bp_value" class="java.lang.String"/>
+	<field name="bp_name" class="java.lang.String"/>
 	<field name="productcategory" class="java.lang.String"/>
 	<field name="m_product_id" class="java.lang.Integer"/>
 	<field name="value" class="java.lang.String"/>
+	<field name="customerproductnumber" class="java.lang.String"/>
 	<field name="productname" class="java.lang.String"/>
 	<field name="isseasonfixedprice" class="java.lang.String"/>
 	<field name="itemproductname" class="java.lang.String"/>

@@ -32,7 +32,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -565551893L;
+	private static final long serialVersionUID = 563564447L;
 
     /** Standard Constructor */
     public X_Fact_Acct (Properties ctx, int Fact_Acct_ID, String trxName)
@@ -1237,6 +1237,31 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set SubLine ID.
+		@param SubLine_ID 
+		Transaction sub line ID (internal)
+	  */
+	@Override
+	public void setSubLine_ID (int SubLine_ID)
+	{
+		if (SubLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_SubLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_SubLine_ID, Integer.valueOf(SubLine_ID));
+	}
+
+	/** Get SubLine ID.
+		@return Transaction sub line ID (internal)
+	  */
+	@Override
+	public int getSubLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SubLine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

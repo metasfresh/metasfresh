@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report(  IN IsSOTrx Character Varying(1), IN AD_Org_ID Numeric );
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report( IN Email Character Varying(60), IN IsSOTrx Character Varying(1), IN AD_Org_ID Numeric );
 DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report;
 
 CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report 
@@ -13,7 +13,7 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report
 	Email Character Varying(60)
 );
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report(IN IsSOTrx Character Varying(1), IN AD_Org_ID Numeric ) 
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report( IN Email Character Varying(60), IN IsSOTrx Character Varying(1), IN AD_Org_ID Numeric ) 
 RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report
 AS
 $$
@@ -26,7 +26,7 @@ SELECT
 	COALESCE(us.fax, org_bpl.fax, '-') AS fax,
 	loc.postal,
 	loc.city,
-	us.email as email
+	COALESCE($1, us.email) as email
 FROM
 	ad_org ad_org
 	INNER JOIN c_bpartner org_bp ON ad_org.ad_org_id = org_bp.ad_orgbp_id
@@ -43,12 +43,12 @@ FROM
 	(
 		SELECT AD_User_ID FROM AD_User sub_us
 		WHERE org_bp.c_bpartner_id = sub_us.c_bpartner_id
-		AND (($1 = 'Y' AND IsSalesContact = 'Y') OR ($1 = 'N' AND IsPurchaseContact = 'Y'))
+		AND (($2 = 'Y' AND IsSalesContact = 'Y') OR ($2 = 'N' AND IsPurchaseContact = 'Y'))
 		ORDER BY IsDefaultContact DESC
 		LIMIT 1
 	)
 WHERE
-	ad_org.ad_org_id = $2
+	ad_org.ad_org_id = $3
 )
 $$
 LANGUAGE sql STABLE 

@@ -10,18 +10,17 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -45,9 +44,15 @@ import de.metas.adempiere.service.IAttributeSetInstanceBL;
 
 public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 {
-
 	@Override
 	public String buildDescription(final I_M_AttributeSetInstance asi)
+	{
+
+		return buildDescription(asi, false);
+	}
+
+	@Override
+	public String buildDescription(final I_M_AttributeSetInstance asi, final boolean verboseDescription)
 	{
 		//
 		// Guard against null or new ASI
@@ -83,13 +88,13 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		for (final I_M_AttributeInstance instance : attributeInstances)
 		{
 			String value = instance.getValue();
-			// do not try value number.it looks like this for "empty" ASIs and currently there is no demand: 0_0_0_0_0
-			// after all we are just creating a description here that just contains of AI values..not even the attribute name is included.
-			// if (Check.isEmpty(value))
-			// {
-			// // try valueNumber too
-			// value = instance.getValueNumber().toString();
-			// }
+			if (Check.isEmpty(value) && instance.getValueNumber() != null && verboseDescription)
+			{
+				// only try value number if verboseDescription==true.
+				// it looks like this for "empty" ASIs and currently there is no demand for "normal" users : 0_0_0_0_0
+				// after all we are just creating a description here that just contains of AI values..not even the attribute name is included.
+				value = instance.getValueNumber().toString();
+			}
 			if (!Check.isEmpty(value, false))
 			{
 				if (sb.length() > 0)

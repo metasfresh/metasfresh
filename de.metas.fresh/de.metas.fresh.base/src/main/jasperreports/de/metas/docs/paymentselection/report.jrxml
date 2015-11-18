@@ -23,7 +23,7 @@
 $P{C_BPartner_ID},
 $P{IsAllowESRPayments},
 $P{printSingleSelection}
-)]]>
+);]]>
 	</queryString>
 	<field name="c_bpartner_id" class="java.math.BigDecimal"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>

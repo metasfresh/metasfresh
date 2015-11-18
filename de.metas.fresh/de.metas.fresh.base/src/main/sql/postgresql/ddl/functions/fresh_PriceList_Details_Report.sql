@@ -1,37 +1,18 @@
 drop function if exists report.fresh_PriceList_Details_Report(numeric, numeric, numeric, character varying);
 
-CREATE OR REPLACE FUNCTION report.fresh_PriceList_Details_Report(
-	p_C_BPartner_ID numeric -- 1
-	, p_M_PriceList_Version_ID numeric -- 2
-	, p_Alt_PriceList_Version_ID numeric -- 3
-	, p_AD_Language character varying -- 4
-)
-RETURNS TABLE (
-		ProductCategory text
-		, M_Product_ID integer
-		, Value text
-		, ProductName text
-		, IsSeasonFixedPrice character
-		, ItemProductName character varying
-		, QtyCUsPerTU numeric
-		, PackingMaterialName text
-		, PriceStd numeric
-		, AltPriceStd numeric
-		, HasAltPrice integer
-		, UOMSymbol text
-		, UOM_X12DE355 text
-		, Attributes text
-		, M_ProductPrice_ID integer
-		, M_ProductPrice_Attribute_ID integer
-		, M_HU_PI_Item_Product_ID integer
-)
-AS
+-- DROP FUNCTION report.fresh_pricelist_details_report(numeric, numeric, numeric, character varying);
+
+CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_alt_pricelist_version_id numeric, IN p_ad_language character varying)
+  RETURNS TABLE(bp_value text, bp_name text, productcategory text, m_product_id integer, value text, customerproductnumber text, productname text, isseasonfixedprice character, itemproductname character varying, qtycuspertu numeric, packingmaterialname text, pricestd numeric, altpricestd numeric, hasaltprice integer, uomsymbol text, uom_x12de355 text, attributes text, m_productprice_id integer, m_productprice_attribute_id integer, m_hu_pi_item_product_id integer) AS
 $BODY$
 --
 	SELECT
+		bp.value AS BP_Value,
+		bp.name AS BP_Name,
 		plc.ProductCategory,
 		plc.M_Product_ID::integer,
 		plc.Value,
+		bpp.ProductNo AS CustomerProductNumber,
 		COALESCE( pt.name, plc.ProductName ) AS ProductName,
 		plc.IsSeasonFixedPrice,
 		plc.ItemProductName,
@@ -49,6 +30,8 @@ $BODY$
 	FROM
 		RV_fresh_PriceList_Comparison plc
 		LEFT OUTER JOIN M_Product_Trl pt ON plc.M_Product_ID = pt.M_Product_ID AND AD_Language = $4
+		LEFT OUTER JOIN C_BPartner bp ON plc.C_BPartner_ID = bp.C_BPartner_ID
+		LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND plc.M_Product_ID = bpp.M_Product_ID
 	WHERE
 		plc.C_BPartner_ID = $1
 		AND plc.M_Pricelist_Version_ID = $2
@@ -69,10 +52,7 @@ $BODY$
 		plc.ItemProductName
 --
 $BODY$
-LANGUAGE sql STABLE
-COST 100
-ROWS 1000
-;
---
-ALTER FUNCTION report.fresh_PriceList_Details_Report(numeric, numeric, numeric, character varying)
-OWNER TO adempiere;
+  LANGUAGE sql STABLE
+  COST 100
+  ROWS 1000;
+

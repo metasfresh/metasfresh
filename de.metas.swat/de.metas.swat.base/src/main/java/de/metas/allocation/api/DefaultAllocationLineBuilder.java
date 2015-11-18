@@ -214,4 +214,11 @@ public class DefaultAllocationLineBuilder implements IAllocationLineBuilder
 		return this;
 	}
 
+	@Override
+	public IAllocationLineBuilder setCounter_AllocationLine_ID(int Counter_AllocationLine_ID)
+	{
+		allocLine.setCounter_AllocationLine_ID(Counter_AllocationLine_ID);
+		return this;
+	}
+
 }

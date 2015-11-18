@@ -58,7 +58,7 @@ FROM
 	LEFT OUTER JOIN C_Tax t			ON ol.C_Tax_ID = t.C_Tax_ID
 	-- Get Attributes
 	LEFT OUTER JOIN	(
-		SELECT 	String_agg ( ai_value, ', ' ORDER BY length(ai_value)) AS Attributes, M_AttributeSetInstance_ID FROM Report.Fresh_Attributes
+		SELECT 	String_agg ( ai_value, ', ' ORDER BY length(ai_value)) AS Attributes, M_AttributeSetInstance_ID FROM Report.fresh_Attributes
 		WHERE	at_Value IN ('1000002', '1000001', '1000030', '1000015', 'M_Material_Tracking_ID')
 			-- att.at_IsAttrDocumentRelevant = 'Y' currently those flags are set to be correct for purchase invoices. we need something more flexible for all kinds of documents
 		GROUP BY	M_AttributeSetInstance_ID

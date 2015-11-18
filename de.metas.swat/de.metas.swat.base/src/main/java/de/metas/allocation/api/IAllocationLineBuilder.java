@@ -41,6 +41,8 @@ public interface IAllocationLineBuilder extends ILineBuilder
 	IAllocationLineBuilder setC_BPartner_ID(int C_BPartner_ID);
 
 	IAllocationLineBuilder setC_Invoice_ID(int C_Invoice_ID);
+	
+	IAllocationLineBuilder setCounter_AllocationLine_ID(int Counter_AllocationLine_ID);
 
 	IAllocationLineBuilder setPrepayOrder_ID(int C_Order_ID);
 

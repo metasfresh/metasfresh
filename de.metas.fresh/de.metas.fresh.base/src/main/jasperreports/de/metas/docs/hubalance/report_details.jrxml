@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.1204880918624327"/>
-	<property name="ireport.x" value="532"/>
+	<property name="ireport.x" value="282"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -176,7 +176,7 @@ FROM
 				<text><![CDATA[Zu Gunsten]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="5add5ade-6629-4805-8e78-cd67cd75c7d9" key="textField-20" x="481" y="22" width="82" height="12" forecolor="#000000"/>
+				<reportElement uuid="249e8f15-3d41-4509-b78b-1b420d5a4d29" key="textField-20" x="481" y="22" width="82" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>

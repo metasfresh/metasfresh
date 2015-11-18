@@ -84,7 +84,7 @@ FROM
 		LEFT OUTER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID AND ips.isvalid = 'Y'
 	WHERE
 		invoiceopentodate( i.C_Invoice_ID, COALESCE( ips.C_InvoicePaySchedule_ID, 0::numeric ), $P{Reference_Date}  ) <> 0::numeric
-		AND i.DocStatus NOT IN ('DR','VO','RE')
+		AND i.DocStatus IN ('CO','CL','RE')
 	ORDER BY
 		 i.DocumentNo
 	)as oi

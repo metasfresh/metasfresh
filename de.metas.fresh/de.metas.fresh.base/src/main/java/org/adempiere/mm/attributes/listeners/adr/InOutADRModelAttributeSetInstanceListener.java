@@ -26,12 +26,13 @@ package org.adempiere.mm.attributes.listeners.adr;
 import java.util.Arrays;
 import java.util.List;
 
-import org.adempiere.inout.service.IInOutDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+
+import de.metas.inout.IInOutDAO;
 
 public class InOutADRModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {

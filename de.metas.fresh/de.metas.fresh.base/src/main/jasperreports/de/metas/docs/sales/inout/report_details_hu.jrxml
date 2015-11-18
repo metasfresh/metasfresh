@@ -15,8 +15,7 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[
-SELECT 	*
+		<![CDATA[SELECT 	*
 FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout_id}, $P{ad_language} )]]>
 	</queryString>
 	<field name="movementqty" class="java.math.BigDecimal"/>

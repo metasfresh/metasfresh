@@ -19,18 +19,18 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for C_Activity
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_C_Activity extends PO implements I_C_Activity, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_C_Activity extends org.compiere.model.PO implements I_C_Activity, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 584969577L;
 
     /** Standard Constructor */
     public X_C_Activity (Properties ctx, int C_Activity_ID, String trxName)
@@ -51,32 +51,20 @@ public class X_C_Activity extends PO implements I_C_Activity, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 2 - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_Activity[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set Activity.
+	/** Set Kostenstelle.
 		@param C_Activity_ID 
-		Business Activity
+		Kostenstelle
 	  */
+	@Override
 	public void setC_Activity_ID (int C_Activity_ID)
 	{
 		if (C_Activity_ID < 1) 
@@ -85,9 +73,10 @@ public class X_C_Activity extends PO implements I_C_Activity, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
 	}
 
-	/** Get Activity.
-		@return Business Activity
+	/** Get Kostenstelle.
+		@return Kostenstelle
 	  */
+	@Override
 	public int getC_Activity_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
@@ -96,52 +85,55 @@ public class X_C_Activity extends PO implements I_C_Activity, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Comment/Help.
+	/** Set Kommentar/Hilfe.
 		@param Help 
 		Comment or Hint
 	  */
-	public void setHelp (String Help)
+	@Override
+	public void setHelp (java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Comment/Help.
+	/** Get Kommentar/Hilfe.
 		@return Comment or Hint
 	  */
-	public String getHelp () 
+	@Override
+	public java.lang.String getHelp () 
 	{
-		return (String)get_Value(COLUMNNAME_Help);
+		return (java.lang.String)get_Value(COLUMNNAME_Help);
 	}
 
-	/** Set Summary Level.
+	/** Set Zusammenfassungseintrag.
 		@param IsSummary 
 		This is a summary entity
 	  */
+	@Override
 	public void setIsSummary (boolean IsSummary)
 	{
 		set_Value (COLUMNNAME_IsSummary, Boolean.valueOf(IsSummary));
 	}
 
-	/** Get Summary Level.
+	/** Get Zusammenfassungseintrag.
 		@return This is a summary entity
 	  */
+	@Override
 	public boolean isSummary () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSummary);
@@ -158,7 +150,8 @@ public class X_C_Activity extends PO implements I_C_Activity, I_Persistent
 		@param Name 
 		Alphanumeric identifier of the entity
 	  */
-	public void setName (String Name)
+	@Override
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -166,33 +159,62 @@ public class X_C_Activity extends PO implements I_C_Activity, I_Persistent
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
-	public String getName () 
+	@Override
+	public java.lang.String getName () 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getName());
-    }
+	@Override
+	public org.compiere.model.I_C_Activity getParent_Activity() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Parent_Activity_ID, org.compiere.model.I_C_Activity.class);
+	}
 
-	/** Set Search Key.
+	@Override
+	public void setParent_Activity(org.compiere.model.I_C_Activity Parent_Activity)
+	{
+		set_ValueFromPO(COLUMNNAME_Parent_Activity_ID, org.compiere.model.I_C_Activity.class, Parent_Activity);
+	}
+
+	/** Set Hauptkostenstelle.
+		@param Parent_Activity_ID Hauptkostenstelle	  */
+	@Override
+	public void setParent_Activity_ID (int Parent_Activity_ID)
+	{
+		if (Parent_Activity_ID < 1) 
+			set_Value (COLUMNNAME_Parent_Activity_ID, null);
+		else 
+			set_Value (COLUMNNAME_Parent_Activity_ID, Integer.valueOf(Parent_Activity_ID));
+	}
+
+	/** Get Hauptkostenstelle.
+		@return Hauptkostenstelle	  */
+	@Override
+	public int getParent_Activity_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Parent_Activity_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Suchschlüssel.
 		@param Value 
 		Search key for the record in the format required - must be unique
 	  */
-	public void setValue (String Value)
+	@Override
+	public void setValue (java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
-	/** Get Search Key.
+	/** Get Suchschlüssel.
 		@return Search key for the record in the format required - must be unique
 	  */
-	public String getValue () 
+	@Override
+	public java.lang.String getValue () 
 	{
-		return (String)get_Value(COLUMNNAME_Value);
+		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 }

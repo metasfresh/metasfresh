@@ -702,33 +702,42 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param GL_JournalBatch_ID reversal batch
 	 * @return reversed Journal or null
 	 */
-	public MJournal reverseCorrectIt(int GL_JournalBatch_ID)
+	MJournal reverseCorrectIt(int GL_JournalBatch_ID)
 	{
-		log.info(toString());
+		log.log(Level.INFO, "{0}", this);
+		
 		// Journal
-		MJournal reverse = new MJournal(this);
+		final MJournal reverse = new MJournal(this);
 		reverse.setGL_JournalBatch_ID(GL_JournalBatch_ID);
 		reverse.setDateDoc(getDateDoc());
 		reverse.setDateAcct(getDateAcct());
 		// Reverse indicator
 		reverse.addDescription("(->" + getDocumentNo() + ")");
-		// FR [ 1948157 ]
-		reverse.setReversal_ID(getGL_Journal_ID());
-		if (!reverse.save())
-			return null;
+		reverse.setReversal_ID(getGL_Journal_ID()); // FR [ 1948157 ]
+		InterfaceWrapperHelper.save(reverse);
 		addDescription("(" + reverse.getDocumentNo() + "<-)");
 		
 		reverse.setControlAmt(this.getControlAmt().negate());
 
 		// Lines
 		reverse.copyLinesFrom(this, null, 'C');
-		//
-		setProcessed(true);
-		// FR [ 1948157 ]
-		setReversal_ID(reverse.getGL_Journal_ID());
-		setDocAction(DOCACTION_None);
 		
+		// Complete the reversal and set it's status to Reversed
+		if (!reverse.processIt(DocAction.ACTION_Complete))
+		{
+			throw new AdempiereException(reverse.getProcessMsg());
+		}
+		reverse.setDocStatus(DOCSTATUS_Reversed);
+		reverse.setDocAction(DOCACTION_None);
 		InterfaceWrapperHelper.save(reverse);
+		
+		//
+		// Update this journal
+		setProcessed(true);
+		setReversal_ID(reverse.getGL_Journal_ID()); // FR [ 1948157 ]
+		setDocStatus(DOCSTATUS_Reversed);
+		setDocAction(DOCACTION_None);
+		saveEx();
 		
 		return reverse;
 	}	// reverseCorrectionIt

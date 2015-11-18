@@ -16,7 +16,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
-import de.metas.invoicecandidate.spi.IOLHandlerDAO;
+import de.metas.invoicecandidate.spi.IC_OrderLine_HandlerDAO;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 
@@ -71,7 +71,7 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 		// Retrieve order lines
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		final List<I_C_OrderLine> orderLines = Services.get(IOLHandlerDAO.class).retrieveMissingOrderLinesQuery(ctx, trxName)
+		final List<I_C_OrderLine> orderLines = Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(ctx, trxName)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
 				.create()
 				.list(I_C_OrderLine.class);

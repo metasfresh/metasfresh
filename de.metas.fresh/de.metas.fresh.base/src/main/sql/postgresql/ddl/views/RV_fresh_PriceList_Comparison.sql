@@ -60,7 +60,7 @@ FROM
 	  */
 	LEFT OUTER JOIN 
 		((
-			SELECT * FROM Report.Valid_PI_Item_Product_V WHERE isInfiniteCapacity = 'N'
+			SELECT * FROM Report.Valid_PI_Item_Product_V /* WHERE isInfiniteCapacity = 'N' task 09045: we can also export PiiPs with infinite capacity */
 		)) ip
 			ON ip.M_Product_ID = p.M_Product_ID 
 			AND ( ( COALESCE(spi.hasSpecificBP, False ) AND ip.C_BPartner_ID = bp.C_BPartner_ID ) 
@@ -103,6 +103,6 @@ FROM
 
 
 COMMENT ON VIEW RV_fresh_PriceList_Comparison
-  IS 'fresh 06042 Preisliste Drucken Preisänderung (100373416918)
+  IS '06042 Preisliste Drucken Preisänderung (100373416918)
 Refactored in Tasks 07833 and 07915
 A view for a report that displays the same data as RV_fresh_PriceList but imroved to be able to filter by two Price list versions, to be able to compare them';

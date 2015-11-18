@@ -37,5 +37,3 @@ GROUP BY
 	, product.isActive
 ;
 
-ALTER TABLE RV_HU_Quantities_Summary OWNER TO adempiere
-;

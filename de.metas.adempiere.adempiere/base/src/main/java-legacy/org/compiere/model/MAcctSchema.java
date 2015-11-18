@@ -29,6 +29,9 @@ import org.adempiere.util.Services;
 import org.compiere.report.MReportTree;
 import org.compiere.util.KeyNamePair;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+
 /**
  *  Accounting Schema Model (base)
  *
@@ -143,8 +146,6 @@ public class MAcctSchema extends X_C_AcctSchema
 	private MAcctSchemaElement[]	m_elements = null;
 	/** GL Info				*/
 	private MAcctSchemaGL			m_gl = null;
-	/** Default Info		*/
-	private MAcctSchemaDefault		m_default = null;
 	
 	private MAccount				m_SuspenseError_Acct = null;
 	private MAccount				m_CurrencyBalancing_Acct = null;
@@ -211,14 +212,24 @@ public class MAcctSchema extends X_C_AcctSchema
 	 * 	Get AcctSchema Defaults
 	 *	@return defaults
 	 */
-	public MAcctSchemaDefault getAcctSchemaDefault()
+	public final MAcctSchemaDefault getAcctSchemaDefault()
 	{
-		if (m_default == null)
-			m_default = MAcctSchemaDefault.get(getCtx(), getC_AcctSchema_ID());
-		if (m_default == null)
-			throw new IllegalStateException("No Default Definition for C_AcctSchema_ID=" + getC_AcctSchema_ID());
-		return m_default;
-	}	//	getAcctSchemaDefault
+		return acctSchemaDefaultSupplier.get();
+	}
+
+	private final Supplier<MAcctSchemaDefault> acctSchemaDefaultSupplier = Suppliers.memoize(new Supplier<MAcctSchemaDefault>()
+	{
+		@Override
+		public MAcctSchemaDefault get()
+		{
+			final MAcctSchemaDefault acctSchemaDefault = MAcctSchemaDefault.get(getCtx(), getC_AcctSchema_ID());
+			if(acctSchemaDefault == null)
+			{
+				throw new IllegalStateException("No Default Definition for C_AcctSchema_ID=" + getC_AcctSchema_ID());
+			}
+			return acctSchemaDefault;
+		}
+	});
 
 	/**
 	 *	String representation
@@ -227,7 +238,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("AcctSchema[");
+		StringBuilder sb = new StringBuilder("AcctSchema[");
 			sb.append(get_ID()).append("-").append(getName())
 				.append("]");
 		return sb.toString();
@@ -241,7 +252,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	{
 		if (m_gl == null)
 			getAcctSchemaGL();
-		return m_gl.isUseSuspenseBalancing() && m_gl.getSuspenseBalancing_Acct() != 0;
+		return m_gl.isUseSuspenseBalancing() && m_gl.getSuspenseBalancing_Acct() > 0;
 	}	//	isSuspenseBalancing
 
 	/**
@@ -324,6 +335,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	 * @deprecated only orgs are now fetched automatically
 	 * @throws IllegalStateException every time when you call it 
 	 */
+	@Deprecated
 	public void setOnlyOrgs (Integer[] orgs)
 	{
 //		m_onlyOrgs = orgs;

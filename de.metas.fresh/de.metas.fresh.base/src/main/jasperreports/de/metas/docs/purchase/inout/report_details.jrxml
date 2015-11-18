@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="261"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -56,8 +56,8 @@ FROM
 		--
 		/*
 		 * Now, join all in out lines of those in outs. Might be more than the in out lines selected in the previous
-		 * sub select because not all in out lines are linked to the order (e.g Packing material). 
-		 * NOTE: we assume that all lines of one inout belong to only one order
+		 * sub select because not all in out lines are linked to the order (e.g Packing material). NOTE: Due to the
+		 * process we assume, that all lines of one inout belong to only one order
 		 */
 		INNER JOIN M_InOutLine iol 			ON io.M_InOut_ID = iol.M_InOut_ID
 		-- Product and its translation
@@ -100,7 +100,7 @@ FROM
 			FROM	(
 					SELECT 	String_agg ( ai_value, ', ' ORDER BY M_AttributeSetInstance_ID, length(ai_value), ai_value) AS Attributes,
 						M_AttributeSetInstance_ID
-					FROM 	Report.Fresh_Attributes att
+					FROM 	Report.fresh_Attributes att
 					WHERE 	-- Label, Herkunft, Aktionen, Marke (ADR), MHD, M_Material_Tracking_ID
 						att.at_Value IN ('1000002', '1000001', '1000030', '1000015', '1000021', 'M_Material_Tracking_ID')
 						/* currently those flags are set to be correct for purchase invoices. we need something

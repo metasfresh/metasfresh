@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="338"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -103,11 +103,11 @@ $P{ad_language}.equals("it_CH")?"Geschäftspartner":
 	<pageHeader>
 		<band height="34" splitType="Stretch">
 			<textField>
-				<reportElement uuid="36c58e3b-a923-433d-907c-2f2df4d021c3" key="textField-20" x="309" y="22" width="80" height="12" forecolor="#000000"/>
+				<reportElement uuid="1961f61d-4343-40d4-b5f3-02cc754c144d" key="textField-20" x="309" y="22" width="80" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{vonuns}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{orgname}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="7fb61e78-8e1d-48d1-bae8-5c8824835944" key="textField-20" x="309" y="11" width="80" height="12" forecolor="#000000"/>

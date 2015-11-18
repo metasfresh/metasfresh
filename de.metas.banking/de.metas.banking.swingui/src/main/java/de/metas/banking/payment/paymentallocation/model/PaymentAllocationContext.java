@@ -10,12 +10,12 @@ package de.metas.banking.payment.paymentallocation.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.IProcessor;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Env;
 
@@ -40,9 +41,11 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
+import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
+
 /**
  * Context of payment allocation, used by DAO methods and calculation methods.
- * 
+ *
  * @author tsa
  *
  */
@@ -64,6 +67,8 @@ public final class PaymentAllocationContext
 	private final BigDecimal writeOffExceedOpenAmtTolerance;
 
 	private final IProcessor<Exception> warningsConsumer;
+
+	private final boolean allowPurchaseSalesInvoiceCompensation;
 
 	public static final Builder builder()
 	{
@@ -87,6 +92,8 @@ public final class PaymentAllocationContext
 		writeOffExceedOpenAmtTolerance = DEFAULT_WriteOffExceedOpenAmtTolerance;
 		//
 		warningsConsumer = builder.warningsConsumer;
+
+		allowPurchaseSalesInvoiceCompensation = builder.isAllowPurchaseSalesInvoiceCompensation();
 	}
 
 	@Override
@@ -129,17 +136,17 @@ public final class PaymentAllocationContext
 	{
 		return date;
 	}
-	
+
 	public Collection<Integer> getDocumentIdsToIncludeWhenQuering(final AllocableDocType docType)
 	{
 		return documentIds.get(docType);
 	}
-	
+
 	public int getFilter_Payment_ID()
 	{
 		return filterPaymentId;
 	}
-	
+
 	public String getFilterPOReference()
 	{
 		return filterPOReference;
@@ -208,6 +215,15 @@ public final class PaymentAllocationContext
 		}
 
 		warningsConsumer.process(e);
+	}
+
+	/**
+	 * @return true if compensating customer invoices with purchase invoices shall be allowed
+	 * @task 09451
+	 */
+	public boolean isAllowPurchaseSalesInvoiceCompensation()
+	{
+		return allowPurchaseSalesInvoiceCompensation;
 	}
 
 	//
@@ -283,7 +299,7 @@ public final class PaymentAllocationContext
 			}
 			return this;
 		}
-		
+
 		public Builder addAllowedWriteOffType(final InvoiceWriteOffAmountType allowedWriteOffType)
 		{
 			Check.assumeNotNull(allowedWriteOffType, "allowedWriteOffType not null");
@@ -315,5 +331,9 @@ public final class PaymentAllocationContext
 			return this;
 		}
 
+		private final boolean isAllowPurchaseSalesInvoiceCompensation()
+		{
+			return Services.get(IPaymentAllocationBL.class).isPurchaseSalesInvoiceCompensationAllowed();
+		}
 	}
 }

@@ -10,12 +10,12 @@ package de.metas.handlingunits.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,6 @@ import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.document.service.ICopyHandlerBL;
 import org.adempiere.mm.attributes.spi.impl.WeightGenerateHUTrxListener;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.util.Services;
@@ -43,13 +42,11 @@ import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.impl.HUOrderFastInputHandler;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -72,7 +69,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.order.spi.impl.SOLineToPOLineHUCopyHandler;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPListener;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPValidator;
 import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineHUTrxListener;
@@ -92,11 +88,14 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.spi.impl.HUReceiptScheduleProducer;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.facet.IInvoiceCandidateFacetCollectorFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.IOLHandlerDAO;
+import de.metas.invoicecandidate.spi.IC_OrderLine_HandlerDAO;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
+import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
+import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
 import de.metas.storage.IStorageEngineService;
@@ -156,7 +155,7 @@ public final class Main extends AbstractModuleInterceptor
 
 		// 09502: sync material tracking changes with already created planning-HUs
 		engine.addModelValidator(new de.metas.handlingunits.materialtracking.model.validator.M_ReceiptSchedule(), client);
-		
+
 		//
 		// 08743: M_ShipperTransportation
 		engine.addModelValidator(new M_ShipperTransportation(), client);
@@ -174,7 +173,7 @@ public final class Main extends AbstractModuleInterceptor
 
 		// invoice line callout
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.callout.C_InvoiceLine.instance);
-		
+
 		//
 		// Manufacturing
 		engine.addModelValidator(new PP_Cost_Collector(), client);
@@ -301,34 +300,31 @@ public final class Main extends AbstractModuleInterceptor
 			Services.get(IHUDocumentHandlerFactory.class).registerHandler(I_DD_OrderLine.Table_Name, DDOrderLineHUDocumentHandler.class);
 		}
 
-		// 07221 register handler to copy HU specific things when a purchase order line is created from a slaes order line.
-		{
-			final ICopyHandlerBL copyHandlerBL = Services.get(ICopyHandlerBL.class);
-			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
-			copyHandlerBL.registerCopyHandler(
-					org.compiere.model.I_C_OrderLine.class,
-					orderLineBL.createSOLineToPOLineCopyHandlerFilter(),
-					new SOLineToPOLineHUCopyHandler());
-		}
+		final EqualsQueryFilter<I_C_OrderLine> excludePackageOrderLinesFilter = new EqualsQueryFilter<I_C_OrderLine>(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, false);
 
 		// task 07242: don't create invoice candidates for packaging order lines
 		{
-			Services.get(IOLHandlerDAO.class)
-					.addAdditionalFilter(new EqualsQueryFilter<de.metas.interfaces.I_C_OrderLine>(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, false));
+			Services.get(IC_OrderLine_HandlerDAO.class).addAdditionalFilter(excludePackageOrderLinesFilter);
+		}
+
+		// task 09557: don't attempt to create purchase order lines from packaging sale order lines
+		// note: the registerListener() invocation is also there to cover task 07221
+		{
+			Services.get(IC_Order_CreatePOFromSOsDAO.class).addAdditionalOrderLinesFilter(excludePackageOrderLinesFilter);
+			Services.get(IC_Order_CreatePOFromSOsBL.class).registerListener(new de.metas.handlingunits.order.process.spi.impl.HUC_Order_CreatePOFromSOsListener());
 		}
 
 		// task 08147: validate if the C_OLCand's PIIP is OK
 		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandPIIPValidator());
 
-		// task 08839: 
+		// task 08839:
 		Services.get(IOLCandBL.class).registerOLCandListener(new OLCandPIIPListener());
-		
+
 		//
 		// Invoice candidates facets collector
 		Services.get(IInvoiceCandidateFacetCollectorFactory.class)
 				.registerFacetCollectorClass(C_Invoice_Candidate_HUPackingMaterials_FacetCollector.class);
-		
+
 		//
 		// Material tracking
 		Services.get(IMaterialTrackingBL.class).addModelTrackingListener(I_C_OrderLine.Table_Name, HUDocumentLineLineMaterialTrackingListener.INSTANCE); // task 09106

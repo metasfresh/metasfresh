@@ -89,5 +89,3 @@ FROM
 -- WHERE
 -- 	lu.M_HU_ID = $P{M_HU_ID}
 ;
-
-ALTER VIEW report.fresh_HU_SSCC_Label_Report OWNER TO adempiere;

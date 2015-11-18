@@ -15,7 +15,7 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<parameter name="SUBREPORT_DIR" class="java.lang.String">
-		<defaultValueExpression><![CDATA["M:\\BusinessPartner\\\\ERP\\Jasper Reports\\Documents\\Sales\\Order\\"]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["M:\\BusinessPartner\\ERP\\Jasper Reports\\Documents\\Sales\\Order\\"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="report_details_sum" class="java.lang.String"/>
 	<queryString>

@@ -13,7 +13,8 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<migration-sql-basedir>50-de.metas.dunning</migration-sql-basedir>
+		<!-- empty property because the sql migration dir already contains a list of base directories -->
+		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<dependencies>
@@ -48,7 +49,7 @@
 			<artifactId>de.metas.swat.base</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 	</dependencies>
 
 	<build>

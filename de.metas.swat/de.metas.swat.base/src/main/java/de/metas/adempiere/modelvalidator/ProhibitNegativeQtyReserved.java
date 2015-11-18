@@ -37,7 +37,7 @@ import org.compiere.util.CLogger;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.modelvalidator.SwatValidator;
-import de.metas.order.modelvalidator.C_OrderLine;
+import de.metas.order.model.validator.C_OrderLine;
 
 /**
  * Makes sure that there are no negative QtyReserved values.

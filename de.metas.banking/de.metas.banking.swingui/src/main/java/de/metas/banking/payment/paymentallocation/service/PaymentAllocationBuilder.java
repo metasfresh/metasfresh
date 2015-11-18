@@ -10,18 +10,17 @@ package de.metas.banking.payment.paymentallocation.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -34,12 +33,14 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
@@ -54,6 +55,7 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationLineBuilder;
 import de.metas.banking.model.I_C_Payment;
+import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
 import de.metas.banking.payment.paymentallocation.model.IInvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
 
@@ -71,7 +73,6 @@ public class PaymentAllocationBuilder
 	}
 
 	// services
-	// private static final transient CLogger logger = CLogger.getCLogger(PaymentAllocationBuilder.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	// private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
@@ -83,6 +84,7 @@ public class PaymentAllocationBuilder
 	private Date _date;
 	private ImmutableList<IPayableDocument> _payableDocuments = ImmutableList.of();
 	private ImmutableList<IPaymentDocument> _paymentDocuments = ImmutableList.of();
+	private boolean _allowOnlyOneVendorDoc = true;
 
 	// Status
 	private boolean _built = false;
@@ -155,7 +157,7 @@ public class PaymentAllocationBuilder
 
 	/**
 	 * Create and complete one {@link I_C_AllocationHdr} for given candidate.
-	 * 
+	 *
 	 * @param line
 	 */
 	private final void createAndCompleteAllocation(final AllocationLineCandidate line)
@@ -204,10 +206,12 @@ public class PaymentAllocationBuilder
 			payableLineBuilder.setC_Payment_ID(paymentDocRef.getRecord_ID());
 		}
 		//
-		// Invoice - CreditMemo invoice
+		// Invoice - CreditMemo invoice or Sales invoice - Purchase Invoice
 		else if (I_C_Invoice.Table_Name.equals(payableDocTableName) && I_C_Invoice.Table_Name.equals(paymentDocTableName))
 		{
 			payableLineBuilder.setC_Invoice_ID(payableDocRef.getRecord_ID());
+			//
+
 			// Credit memo line
 			allocationBuilder.addLine()
 					.setAD_Org_ID(adOrgId)
@@ -251,11 +255,41 @@ public class PaymentAllocationBuilder
 		}
 
 		allocationBuilder.createAndComplete();
+
+		//
+		final List<I_C_AllocationLine> lines = allocationBuilder.getC_AllocationLines();
+		setCounter_AllocationLine_ID(lines);
+
+	}
+
+	/**
+	 * Sets the counter allocation line - that means the mathcing line
+	 * The id is set only if we have 2 line: credit memo - invoice; purchase invoice - sales invoice; incoming payment - outgoing payment
+	 *
+	 * @param lines
+	 */
+	private void setCounter_AllocationLine_ID(List<I_C_AllocationLine> lines)
+	{
+		if (lines.size() != 2)
+		{
+			return;
+		}
+
+		//
+		final I_C_AllocationLine al1 = lines.get(0);
+		final I_C_AllocationLine al2 = lines.get(1);
+
+		al1.setCounter_AllocationLine_ID(al2.getC_AllocationLine_ID());
+		InterfaceWrapperHelper.save(al1);
+
+		//
+		al2.setCounter_AllocationLine_ID(al1.getC_AllocationLine_ID());
+		InterfaceWrapperHelper.save(al2);
 	}
 
 	/**
 	 * Allocate {@link #getPayableDocuments()} and {@link #getPaymentDocuments()}.
-	 * 
+	 *
 	 * @return created allocation candidates
 	 */
 	private List<AllocationLineCandidate> createAllocationLineCandidates()
@@ -272,12 +306,19 @@ public class PaymentAllocationBuilder
 		//
 		// Make sure that we allow allocation one document per type for vendor documents
 		assertOnlyOneVendorDocType(payableDocuments, paymentDocuments);
-		
+
 		final List<AllocationLineCandidate> allocationCandidates = new ArrayList<>();
 
 		//
 		// Try to allocate credit memos to regular invoices
 		allocationCandidates.addAll(createAllocationLineCandidates_CreditMemosToInvoices(payableDocuments));
+
+		//
+		// Try to allocate purchase invoices to sales invoices
+		if (Services.get(IPaymentAllocationBL.class).isPurchaseSalesInvoiceCompensationAllowed())
+		{
+			allocationCandidates.addAll(createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(payableDocuments));
+		}
 
 		//
 		// Allocate payments to invoices
@@ -297,12 +338,18 @@ public class PaymentAllocationBuilder
 
 	/***
 	 * Do not allow to allocate more then one document type for vendor documents
-	 * 
+	 *
 	 * @param payableDocuments
 	 * @param paymentDocuments
 	 */
-	private void assertOnlyOneVendorDocType(final List<IPayableDocument> payableDocuments, final List<IPaymentDocument> paymentDocuments)
+	private void assertOnlyOneVendorDocType(final List<IPayableDocument> payableDocuments,
+			final List<IPaymentDocument> paymentDocuments)
 	{
+		if (!isAllowOnlyOneVendorDoc())
+		{
+			return; // task 09558: nothing to do
+		}
+
 		// filter payments
 		final List<IPaymentDocument> paymentVendorDocuments = ListUtils.copyAndFilter(paymentDocuments, new Predicate<IPaymentDocument>()
 		{
@@ -331,7 +378,7 @@ public class PaymentAllocationBuilder
 					paymentVendorDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
 					return false;
 				}
-				
+
 				if (!payable.isVendorDocument())
 				{
 					return false;
@@ -346,14 +393,14 @@ public class PaymentAllocationBuilder
 			final List<IPaymentDocument> paymentVendorDocs = new ArrayList<>();
 			paymentVendorDocs.addAll(paymentVendorDocuments);
 			paymentVendorDocs.addAll(paymentVendorDocuments_CreditMemos);
-			
+
 			throw new MultipleVendorDocumentsException(paymentVendorDocs, payableVendorDocuments_NoCreditMemos);
 		}
 	}
-	
+
 	/**
 	 * Allocate given payments to given payable documents.
-	 * 
+	 *
 	 * @param payableDocuments
 	 * @param paymentDocuments
 	 * @return created allocation candidates
@@ -446,9 +493,35 @@ public class PaymentAllocationBuilder
 		return createAllocationLineCandidates(payableDocuments_NoCreditMemos, paymentDocuments_CreditMemos);
 	}
 
+	private final List<AllocationLineCandidate> createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(final List<IPayableDocument> payableDocuments)
+	{
+		final List<IPaymentDocument> paymentDocuments_PurchaseInvoices = new ArrayList<>();
+		final List<IPayableDocument> payableDocuments_SaleInvoices = ListUtils.copyAndFilter(payableDocuments, new Predicate<IPayableDocument>()
+		{
+			@Override
+			public boolean apply(IPayableDocument payable)
+			{
+				// do not support credit memo
+				if (payable.isCreditMemo())
+				{
+					return false;
+				}
+
+				if (!payable.isCustomerDocument())
+				{
+					paymentDocuments_PurchaseInvoices.add(PurchaseInvoiceAsPaymentDocument.wrap(payable));
+					return false;
+				}
+				return true;
+			}
+		});
+
+		return createAllocationLineCandidates(payableDocuments_SaleInvoices, paymentDocuments_PurchaseInvoices);
+	}
+
 	/**
 	 * Iterate all payment documents and try to allocate incoming payments to outgoing payments
-	 * 
+	 *
 	 * @param paymentDocuments
 	 */
 	private final List<AllocationLineCandidate> createAllocationLineCandidates_ForPayments(final List<IPaymentDocument> paymentDocuments)
@@ -527,7 +600,7 @@ public class PaymentAllocationBuilder
 
 	/**
 	 * Iterate all given payable documents and create an allocation only for Discount and WriteOff amounts.
-	 * 
+	 *
 	 * @param payableDocuments
 	 * @return created allocation candidates.
 	 */
@@ -619,7 +692,7 @@ public class PaymentAllocationBuilder
 
 	/**
 	 * Check if given payment document can be allocated to payable document.
-	 * 
+	 *
 	 * @param payable
 	 * @param payment
 	 * @return true if the invoice and payment are compatible and we could try to do an allocation
@@ -755,6 +828,18 @@ public class PaymentAllocationBuilder
 		return this;
 	}
 
+	public boolean isAllowOnlyOneVendorDoc()
+	{
+		return _allowOnlyOneVendorDoc;
+	}
+
+	public PaymentAllocationBuilder setAllowOnlyOneVendorDoc(boolean AllowOnlyOneVendorDoc)
+	{
+		assertNotBuilt();
+		this._allowOnlyOneVendorDoc = AllowOnlyOneVendorDoc;
+		return this;
+	}
+
 	public PaymentAllocationBuilder setPayableDocuments(final Collection<IPayableDocument> payableDocuments)
 	{
 		this._payableDocuments = ImmutableList.copyOf(payableDocuments);
@@ -767,29 +852,29 @@ public class PaymentAllocationBuilder
 		return this;
 	}
 
-//	/** Sets invoices to allocate */
-//	public PaymentAllocationBuilder setInvoicesAndPayments(final Collection<IInvoiceRow> invoiceRows, final Collection<IPaymentRow> paymentRows)
-//	{
-//		assertNotBuilt();
-//
-//		final List<IPayableDocument> payableDocuments = new ArrayList<>();
-//		final List<IPaymentDocument> paymentDocuments = new ArrayList<>();
-//
-//		for (final IInvoiceRow invoiceRow : invoiceRows)
-//		{
-//			payableDocuments.add(invoiceRow.copyAsPayableDocument());
-//		}
-//
-//		for (final IPaymentRow paymentRow : paymentRows)
-//		{
-//			paymentDocuments.add(paymentRow.copyAsPaymentDocument());
-//		}
-//
-//		this._payableDocuments = ImmutableList.copyOf(payableDocuments);
-//		this._paymentDocuments = ImmutableList.copyOf(paymentDocuments);
-//
-//		return this;
-//	}
+	// /** Sets invoices to allocate */
+	// public PaymentAllocationBuilder setInvoicesAndPayments(final Collection<IInvoiceRow> invoiceRows, final Collection<IPaymentRow> paymentRows)
+	// {
+	// assertNotBuilt();
+	//
+	// final List<IPayableDocument> payableDocuments = new ArrayList<>();
+	// final List<IPaymentDocument> paymentDocuments = new ArrayList<>();
+	//
+	// for (final IInvoiceRow invoiceRow : invoiceRows)
+	// {
+	// payableDocuments.add(invoiceRow.copyAsPayableDocument());
+	// }
+	//
+	// for (final IPaymentRow paymentRow : paymentRows)
+	// {
+	// paymentDocuments.add(paymentRow.copyAsPaymentDocument());
+	// }
+	//
+	// this._payableDocuments = ImmutableList.copyOf(payableDocuments);
+	// this._paymentDocuments = ImmutableList.copyOf(paymentDocuments);
+	//
+	// return this;
+	// }
 
 	private final List<IPayableDocument> getPayableDocuments()
 	{

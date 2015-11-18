@@ -1,5 +1,4 @@
---DROP FUNCTION de_metas_endcustomer_fresh_reports.direct_costing_raw_data(double precision);
---DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data (Year Date) ;
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data (Year Date) ;
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data (Year Date) RETURNS TABLE
 	(
 	Margin text, 

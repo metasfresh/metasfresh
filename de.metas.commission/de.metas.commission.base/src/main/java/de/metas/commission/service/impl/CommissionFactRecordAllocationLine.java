@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.document.service.IDocumentPA;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
@@ -309,7 +310,7 @@ class CommissionFactRecordAllocationLine
 
 			if (!MCAdvCommissionFact.mkQuery(ctx, trxName)
 					.setAdvCommissionInstanceId(instance.getC_AdvCommissionInstance_ID())
-					.setTableId(I_C_AllocationLine.Table_ID)
+					.setTableId(Services.get(IADTableDAO.class).retrieveTableId(I_C_AllocationLine.Table_Name))
 					.setRecordId(allocLine.getC_AllocationLine_ID())
 					.setFactType(typeToLookFor, false)
 					.list()

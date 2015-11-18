@@ -48,7 +48,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
-import de.metas.invoicecandidate.spi.IOLHandlerDAO;
+import de.metas.invoicecandidate.spi.IC_OrderLine_HandlerDAO;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.product.acct.api.IProductAcctDAO;
@@ -75,7 +75,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public Iterator<I_C_OrderLine> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
 	{
-		return Services.get(IOLHandlerDAO.class).retrieveMissingOrderLinesQuery(ctx, trxName)
+		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(ctx, trxName)
 				.create()
 				.list(I_C_OrderLine.class)
 				.iterator();

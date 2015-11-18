@@ -298,7 +298,7 @@ public abstract class Doc
 	/** Facts */
 	private List<Fact> m_fact = null;
 
-	/** No Currency in Document Indicator (-1) */
+	/** No Currency in Document Indicator (-2) */
 	protected static final int NO_CURRENCY = -2;
 
 	// /** Actual Posting Status (see STATUS_* constants) */
@@ -886,7 +886,7 @@ public abstract class Doc
 		// No Document Type defined
 		if (m_DocumentType == null && getC_DocType_ID() > 0)
 		{
-			String sql = "SELECT DocBaseType, GL_Category_ID FROM C_DocType WHERE C_DocType_ID=?";
+			final String sql = "SELECT DocBaseType, GL_Category_ID FROM C_DocType WHERE C_DocType_ID=?";
 			PreparedStatement pstmt = null;
 			ResultSet rsDT = null;
 			try
@@ -919,7 +919,7 @@ public abstract class Doc
 		// We have a document Type, but no GL info - search for DocType
 		if (m_GL_Category_ID <= 0)
 		{
-			String sql = "SELECT GL_Category_ID FROM C_DocType WHERE AD_Client_ID=? AND DocBaseType=?";
+			final String sql = "SELECT GL_Category_ID FROM C_DocType WHERE AD_Client_ID=? AND DocBaseType=?";
 			PreparedStatement pstmt = null;
 			ResultSet rsDT = null;
 			try
@@ -942,16 +942,18 @@ public abstract class Doc
 		}
 
 		// Still no GL_Category - get Default GL Category
-		if (m_GL_Category_ID == 0)
+		if (m_GL_Category_ID <= 0)
 		{
-			String sql = "SELECT GL_Category_ID FROM GL_Category "
+			final String sql = "SELECT GL_Category_ID FROM GL_Category "
 					+ "WHERE AD_Client_ID=? "
 					+ "ORDER BY IsDefault DESC";
+			PreparedStatement pstmt = null;
+			ResultSet rsDT = null;
 			try
 			{
-				PreparedStatement pstmt = DB.prepareStatement(sql, null);
+				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 				pstmt.setInt(1, getAD_Client_ID());
-				ResultSet rsDT = pstmt.executeQuery();
+				rsDT = pstmt.executeQuery();
 				if (rsDT.next())
 					m_GL_Category_ID = rsDT.getInt(1);
 				rsDT.close();
@@ -961,9 +963,13 @@ public abstract class Doc
 			{
 				log.log(Level.SEVERE, sql, e);
 			}
+			finally
+			{
+				DB.close(rsDT, pstmt);
+			}
 		}
 		//
-		if (m_GL_Category_ID == 0)
+		if (m_GL_Category_ID <= 0)
 			log.log(Level.SEVERE, "No default GL_Category - " + toString());
 
 		if (m_DocumentType == null)
@@ -1024,7 +1030,7 @@ public abstract class Doc
 		final Iterator<Integer> it = set.iterator();
 		while (it.hasNext() && convertible)
 		{
-			int C_Currency_ID = it.next().intValue();
+			final int C_Currency_ID = it.next().intValue();
 			if (C_Currency_ID != acctSchema.getC_Currency_ID())
 			{
 				BigDecimal amt = currencyConversionBL.getRate(C_Currency_ID, acctSchema.getC_Currency_ID(),
@@ -1496,7 +1502,7 @@ public abstract class Doc
 	protected final MAccount getAccount(final int AcctType, final I_C_AcctSchema as)
 	{
 		int C_ValidCombination_ID = getValidCombination_ID(AcctType, as);
-		if (C_ValidCombination_ID == 0)
+		if (C_ValidCombination_ID <= 0)
 			return null;
 		// Return Account
 		final MAccount acct = MAccount.get(getCtx(), C_ValidCombination_ID);
@@ -1584,10 +1590,10 @@ public abstract class Doc
 	{
 		if (m_C_Currency_ID == -1)
 		{
-			int index = p_po.get_ColumnIndex("C_Currency_ID");
+			final int index = p_po.get_ColumnIndex("C_Currency_ID");
 			if (index != -1)
 			{
-				Integer ii = (Integer)p_po.get_Value(index);
+				final Integer ii = (Integer)p_po.get_Value(index);
 				if (ii != null)
 					m_C_Currency_ID = ii.intValue();
 			}
@@ -1848,7 +1854,7 @@ public abstract class Doc
 	 * 
 	 * @return BankAccount
 	 */
-	public final int getC_BP_BankAccount_ID()
+	final int getC_BP_BankAccount_ID()
 	{
 		if (m_C_BP_BankAccount_ID == -1)
 		{
@@ -1874,7 +1880,7 @@ public abstract class Doc
 	 *
 	 * @param C_BP_BankAccount_ID bank acct
 	 */
-	protected final void setC_BP_BankAccount_ID(int C_BP_BankAccount_ID)
+	final void setC_BP_BankAccount_ID(int C_BP_BankAccount_ID)
 	{
 		m_C_BP_BankAccount_ID = C_BP_BankAccount_ID;
 	}	// setC_BP_BankAccount_ID

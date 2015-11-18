@@ -34,8 +34,8 @@ FROM
 	) io
 	/*
 	 * Now, join all in out lines of those in outs. Might be more than the in out lines selected in the previous
-	 * sub select because not all in out lines are linked to the order (e.g Packing material). 
-	 * NOTE: we assume that all lines of one inout belong to only one order
+	 * sub select because not all in out lines are linked to the order (e.g Packing material). NOTE: Due to the
+	 * process we assume, that all lines of one inout belong to only one order
 	 */
 	INNER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
 	INNER JOIN M_Product p ON iol.M_Product_ID = p.M_Product_ID

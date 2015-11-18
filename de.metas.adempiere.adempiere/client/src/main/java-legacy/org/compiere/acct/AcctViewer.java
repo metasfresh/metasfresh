@@ -43,10 +43,10 @@ import javax.swing.table.TableColumnModel;
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.IPostingService;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -236,6 +236,10 @@ public class AcctViewer extends CFrame
 	private CButton selAcctTo = new CButton();
 	private CLabel lDate = new CLabel();
 	private CLabel lacctSchema = new CLabel();
+	/**
+	 * Checkbox to tell if voided/reactivated documents are to be displayed or not
+	 */
+	private CCheckBox displayVoidDocuments = new CCheckBox();
 	private CLabel lpostingType = new CLabel();
 
 	private VDate selDateFrom = new VDate("DateFrom", false, false, true, DisplayType.Date, Services.get(IMsgBL.class).translate(Env.getCtx(), "DateFrom"));
@@ -266,6 +270,7 @@ public class AcctViewer extends CFrame
 
 	/**
 	 *  Static Init.
+	 * 
 	 *  <pre>
 	 *  - mainPanel
 	 *      - tabbedPane
@@ -273,6 +278,7 @@ public class AcctViewer extends CFrame
 	 *          - result
 	 *          - graphPanel
 	 *  </pre>
+	 * 
 	 *  @throws Exception
 	 */
 	private void jbInit() throws Exception
@@ -325,6 +331,11 @@ public class AcctViewer extends CFrame
 		lsel7.setLabelFor(sel7);
 		lsel8.setLabelFor(sel8);
 
+		// task 09243: checkbox to display voided docs or not
+		displayVoidDocuments.setText(msgBL.getMsg(ctx, "DisplayVoidDocuments"));
+		// open it as selected so we have the old functionality without user intervention
+		displayVoidDocuments.setSelected(true);
+
 		// Display
 		displayBorder = new TitledBorder(BorderFactory.createEtchedBorder(
 				Color.white, new Color(148, 145, 140)), msgBL.getMsg(ctx, "Display"));
@@ -354,8 +365,8 @@ public class AcctViewer extends CFrame
 		//
 		// Sort/Group by fields
 		{
-			final List<Component> sortComponents = Arrays.<Component>asList(lSort, sortBy1, sortBy2, sortBy3, sortBy4);
-			final List<Component> groupByComponents = Arrays.<Component>asList(lGroup, group1, group2, group3, group4);
+			final List<Component> sortComponents = Arrays.<Component> asList(lSort, sortBy1, sortBy2, sortBy3, sortBy4);
+			final List<Component> groupByComponents = Arrays.<Component> asList(lGroup, group1, group2, group3, group4);
 			for (int i = 0; i < sortComponents.size(); i++)
 			{
 				final Component sortComponent = sortComponents.get(i);
@@ -444,6 +455,9 @@ public class AcctViewer extends CFrame
 				, GridBagConstraints.EAST, GridBagConstraints.NONE, INSETS_5_5_0_5, 0, 0));
 		selectionPanel.add(sel8, new GridBagConstraints(1, 13, 2, 1, 0.0, 0.0
 				, GridBagConstraints.WEST, GridBagConstraints.NONE, INSETS_5_5_0_5, 0, 0));
+
+		selectionPanel.add(displayVoidDocuments, new GridBagConstraints(0, 14, 1, 1, 0.0, 0.0
+				, GridBagConstraints.EAST, GridBagConstraints.NONE, INSETS_5_5_0_5, 0, 0));
 
 		queryLayout.setHgap(5);
 		queryLayout.setVgap(5);
@@ -545,7 +559,7 @@ public class AcctViewer extends CFrame
 	 *  @param AD_Table_ID table
 	 *  @param Record_ID record
 	 */
-	private void dynInit (int AD_Table_ID, int Record_ID)
+	private void dynInit(int AD_Table_ID, int Record_ID)
 	{
 		m_data.fillAcctSchema(selAcctSchema);
 		selAcctSchema.addActionListener(this);
@@ -557,7 +571,7 @@ public class AcctViewer extends CFrame
 		selRecord.addActionListener(this);
 		selRecord.setText("");
 		//
-		m_data.fillPostingType (selPostingType);
+		m_data.fillPostingType(selPostingType);
 
 		//  Mandatory Elements
 		m_data.fillOrg(selOrg);
@@ -577,7 +591,7 @@ public class AcctViewer extends CFrame
 
 		//  Document Select
 		boolean haveDoc = AD_Table_ID != 0 && Record_ID != 0;
-		selDocument.setSelected (haveDoc);
+		selDocument.setSelected(haveDoc);
 		actionDocument();
 		actionTable();
 		statusLine.setText(" " + msgBL.getMsg(Env.getCtx(), "ViewerOptions"));
@@ -673,6 +687,10 @@ public class AcctViewer extends CFrame
 		{
 			exportExcel();
 		}
+		else if (source == displayVoidDocuments)
+		{
+			// nothing to do
+		}
 		else if (source instanceof CButton)
 		{
 			// InfoButtons
@@ -724,13 +742,13 @@ public class AcctViewer extends CFrame
 		sortBy2.removeAllItems();
 		sortBy3.removeAllItems();
 		sortBy4.removeAllItems();
-		sortAddItem(new ValueNamePair("",""));
+		sortAddItem(new ValueNamePair("", ""));
 		sortAddItem(new ValueNamePair("DateAcct", msgBL.translate(Env.getCtx(), "DateAcct")));
 		sortAddItem(new ValueNamePair("DateTrx", msgBL.translate(Env.getCtx(), "DateTrx")));
 		sortAddItem(new ValueNamePair("C_Period_ID", msgBL.translate(Env.getCtx(), "C_Period_ID")));
 		//
-		CLabel[] labels = new CLabel[] {lsel1, lsel2, lsel3, lsel4, lsel5, lsel6, lsel7, lsel8};
-		CButton[] buttons = new CButton[] {sel1, sel2, sel3, sel4, sel5, sel6, sel7, sel8};
+		CLabel[] labels = new CLabel[] { lsel1, lsel2, lsel3, lsel4, lsel5, lsel6, lsel7, lsel8 };
+		CButton[] buttons = new CButton[] { sel1, sel2, sel3, sel4, sel5, sel6, sel7, sel8 };
 		int selectionIndex = 0;
 		
 		final List<I_C_AcctSchema_Element> elements = acctSchemaDAO.retrieveSchemaElements(m_data.getC_AcctSchema());
@@ -745,8 +763,8 @@ public class AcctViewer extends CFrame
 			sortAddItem(new ValueNamePair(columnName, displayColumnNameTrl));
 			
 			//  Additional Elements
-			if (!Check.equals(ase.getElementType(),X_C_AcctSchema_Element.ELEMENTTYPE_Organization) 
-				&& !Check.equals(ase.getElementType(),X_C_AcctSchema_Element.ELEMENTTYPE_Account))
+			if (!Check.equals(ase.getElementType(), X_C_AcctSchema_Element.ELEMENTTYPE_Organization)
+					&& !Check.equals(ase.getElementType(), X_C_AcctSchema_Element.ELEMENTTYPE_Account))
 			{
 				labels[selectionIndex].setText(displayColumnNameTrl);
 				labels[selectionIndex].setVisible(true);
@@ -768,6 +786,7 @@ public class AcctViewer extends CFrame
 	
 	/**
 	 * 	Add to Sort
+	 *
 	 *	@param vn name pair
 	 */
 	private void sortAddItem(ValueNamePair vn)
@@ -843,6 +862,11 @@ public class AcctViewer extends CFrame
 			m_data.setAccountTo_ID(accountToId);
 		}
 
+		// task 09243: display void/reversed docs
+		final boolean isDisplayVoidDocuments = displayVoidDocuments.isSelected();
+
+		m_data.setDisplayVoidDocuments(isDisplayVoidDocuments);
+
 		//  Save Display Choices
 		m_data.displayQty = displayQty.isSelected();
 		para.append(" - Display Qty=").append(m_data.displayQty);
@@ -852,6 +876,7 @@ public class AcctViewer extends CFrame
 		para.append(", Doc=").append(m_data.displayDocumentInfo);
 		m_data.setDisplayEndingBalance(displayEndingBalance.isSelected());
 		para.append(", EndingBalance=").append(m_data.isDisplayEndingBalance());
+		
 		//
 		m_data.sortBy1 = (sortBy1.getSelectedItem()).getValue();
 		m_data.group1 = group1.isSelected();
@@ -966,7 +991,14 @@ public class AcctViewer extends CFrame
 		}
 		final int factAcctId = factAcctKnp.getKey();
 
-		final I_Fact_Acct factAcct = InterfaceWrapperHelper.create(Env.getCtx(), factAcctId, I_Fact_Acct.class, ITrx.TRXNAME_None);
+		// Retrieve the Fact_Acct record.
+		// NOTE: we query for it because in case it was deleted (user re-posted the document in another window), we don't want to get an error here.
+		final I_Fact_Acct factAcct = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_Fact_Acct.class)
+				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_Fact_Acct_ID, factAcctId)
+				.create()
+				.firstOnly(I_Fact_Acct.class);
 		return factAcct;
 	}
 
@@ -1083,7 +1115,7 @@ public class AcctViewer extends CFrame
 		}
 		
 		// Show model Info panel and wait for it's close
-		//info.setVisible(true); // task: this has no effect. need to call info.showWindow() instead (thx teo)
+		// info.setVisible(true); // task: this has no effect. need to call info.showWindow() instead (thx teo)
 		info.showWindow();
 		
 		final String selectSQL = info.getSelectedSQL();       //  C_Project_ID=100 or ""
@@ -1140,22 +1172,28 @@ public class AcctViewer extends CFrame
 	/**
 	 * Export to Excel
 	 */
-	private void exportExcel() {
+	private void exportExcel()
+	{
 		RModel model = table.getRModel();
-		if (model == null) {
+		if (model == null)
+		{
 			return;
 		}
-		try {
+		try
+		{
 			RModelExcelExporter exporter = new RModelExcelExporter(model);
 			exporter.export(null, null);
 		}
-		catch (Exception e) {
+		catch (Exception e)
+		{
 			ADialog.error(0, this, "Error", e.getLocalizedMessage());
-			if (CLogMgt.isLevelFinest()) e.printStackTrace();
+			if (CLogMgt.isLevelFinest())
+				e.printStackTrace();
 		}
 	}
 	
-	private static final String PROPERTY_ButtonSelectedId = AcctViewer.class.getName()+"#SelectedId";
+	private static final String PROPERTY_ButtonSelectedId = AcctViewer.class.getName() + "#SelectedId";
+
 	private void setButtonSelectedId(final CButton button, final int selectedId, final String text)
 	{
 		button.setText(text);

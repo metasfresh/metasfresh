@@ -126,7 +126,7 @@ public class DocLine
 	/** Item */
 	private Boolean m_isItem = null;
 	/** Currency */
-	private int m_C_Currency_ID = -1;
+	private Integer m_C_Currency_ID = null;
 	/** Conversion Type */
 	private int m_C_ConversionType_ID = -1;
 	/** Period */
@@ -158,18 +158,26 @@ public class DocLine
 	 */
 	public final int getC_Currency_ID()
 	{
-		if (m_C_Currency_ID == -1)
+		if (m_C_Currency_ID == null)
 		{
-			int index = p_po.get_ColumnIndex("C_Currency_ID");
+			// Get it from underlying document line model
+			final int index = p_po.get_ColumnIndex("C_Currency_ID");
 			if (index != -1)
 			{
-				Integer ii = (Integer)p_po.get_Value(index);
-				if (ii != null)
-					m_C_Currency_ID = ii.intValue();
+				final Integer currencyIdObj = (Integer)p_po.get_Value(index);
+				if (currencyIdObj != null && currencyIdObj > 0)
+				{
+					m_C_Currency_ID = currencyIdObj;
+				}
 			}
-			if (m_C_Currency_ID <= 0)
+			
+			// Get it from document header
+			if (m_C_Currency_ID == null || m_C_Currency_ID <= 0)
+			{
 				m_C_Currency_ID = m_doc.getC_Currency_ID();
+			}
 		}
+		
 		return m_C_Currency_ID;
 	}   // getC_Currency_ID
 
@@ -1364,7 +1372,7 @@ public class DocLine
 	/**
 	 * @see Doc#isSOTrx()
 	 */
-	public final boolean isSOTrx()
+	public boolean isSOTrx()
 	{
 		return m_doc.isSOTrx();
 	}

@@ -617,7 +617,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 		}
 		
 		//	Reverse it
-		MJournalBatch reverse = new MJournalBatch (this);
+		final MJournalBatch reverse = new MJournalBatch (this);
 		reverse.setDateDoc(getDateDoc());
 		reverse.setDateAcct(getDateAcct());
 		//	Reverse indicator
@@ -635,20 +635,31 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 		//	Reverse Journals
 		for (int i = 0; i < journals.length; i++)
 		{
-			MJournal journal = journals[i];
+			final MJournal journal = journals[i];
 			if (!journal.isActive())
 				continue;
 			if (journal.reverseCorrectIt(reverse.getGL_JournalBatch_ID()) == null)
 			{
-				m_processMsg = "Could not reverse " + journal;
-				return false;
+				throw new AdempiereException("Could not reverse " + journal);
 			}
-			journal.save();
+			InterfaceWrapperHelper.save(journal);
 		}
 		
-		//[ 1948157  ]
-		setReversal_ID(reverse.getGL_JournalBatch_ID());
-		save();
+		//
+		// Mark the reversal journal batch as reversed
+		reverse.setProcessed(true);
+		reverse.setProcessing(false);
+		reverse.setDocStatus(DOCSTATUS_Reversed);
+		reverse.setDocAction(DOCACTION_None);
+		InterfaceWrapperHelper.save(reverse);
+		
+		//
+		// Update this Journal Batch
+		setReversal_ID(reverse.getGL_JournalBatch_ID()); //[ 1948157  ]
+		setDocStatus(DOCSTATUS_Reversed);
+		setDocAction(DOCACTION_None);
+		saveEx();
+		
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)

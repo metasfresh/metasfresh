@@ -27,11 +27,11 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.inout.service.IInOutDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IMaterialBalanceConfigDAO;
 import de.metas.inout.api.IMaterialBalanceDetailBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;

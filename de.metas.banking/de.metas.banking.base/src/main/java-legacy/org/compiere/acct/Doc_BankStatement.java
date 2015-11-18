@@ -241,6 +241,7 @@ public class Doc_BankStatement extends Doc
 									lineRef.getC_Currency_ID(), lineRef.getTrxAmt().negate());
 							if (fl != null)
 							{
+								fl.setSubLine_ID(lineRef.getC_BankStatementLine_Ref_ID());
 								fl.setC_BPartner_ID(lineRef.getC_BPartner_ID());
 								if (AD_Org_ID != 0)
 									fl.setAD_Org_ID(AD_Org_ID);

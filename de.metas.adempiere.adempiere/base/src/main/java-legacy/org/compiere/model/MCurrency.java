@@ -19,7 +19,9 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.CCache;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ICurrencyDAO;
+import org.adempiere.util.Services;
 
 /**
  * 	Currency Model.
@@ -86,33 +88,22 @@ public class MCurrency extends X_C_Currency
 	}	//	MCurrency
 
 
-	/**	Store System Currencies			**/
-	private static CCache<Integer,MCurrency> s_currencies = new CCache<Integer,MCurrency>("C_Currency", 50);
-	/** Cache System Currencies by using ISO code as key **/
-	private static CCache<String,MCurrency> s_currenciesISO = new CCache<String,MCurrency>("C_CurrencyISO", 50);
-
 	/**
 	 * 	Get Currency using ISO code
 	 *	@param ctx Context
 	 *	@param ISOcode	Iso code
 	 *	@return MCurrency
 	 */
+	@Deprecated
 	public static MCurrency get (Properties ctx, String ISOcode)
 	{
-		//	Try Cache
-		MCurrency retValue = (MCurrency)s_currenciesISO.get(ISOcode);
-		if (retValue != null)
-			return retValue;
-
-		//	Try database
-		Query query = new Query(ctx, MCurrency.Table_Name, "iso_code=?", null);
-		query.setParameters(new Object[]{ISOcode});
-		retValue = (MCurrency)query.firstOnly();
+		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(ctx, ISOcode);
+		if (currency == null)
+		{
+			return null;
+		}
 		
-		//	Save 
-		if (retValue!=null)
-			s_currenciesISO.put(ISOcode, retValue);
-		return retValue;
+		return InterfaceWrapperHelper.getPO(currency);
 	}	
 	
 
@@ -122,25 +113,16 @@ public class MCurrency extends X_C_Currency
 	 *	@param C_Currency_ID currency
 	 *	@return ISO Code
 	 */
+	@Deprecated
 	public static MCurrency get (Properties ctx, int C_Currency_ID)
 	{
-		if (C_Currency_ID <= 0)
+		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, C_Currency_ID);
+		if (currency == null)
 		{
 			return null;
 		}
 		
-		//	Try Cache
-		Integer key = new Integer(C_Currency_ID);
-		MCurrency retValue = (MCurrency)s_currencies.get(key);
-		if (retValue != null)
-			return retValue;
-
-		//	Create it
-		retValue = new MCurrency(ctx, C_Currency_ID, null);
-		//	Save in System
-		if (retValue.getAD_Client_ID() == 0)
-			s_currencies.put(key, retValue);
-		return retValue;
+		return InterfaceWrapperHelper.getPO(currency);
 	}	//	get
 
 	/**
@@ -149,18 +131,10 @@ public class MCurrency extends X_C_Currency
 	 *	@param C_Currency_ID currency
 	 *	@return ISO Code
 	 */
+	@Deprecated
 	public static String getISO_Code (Properties ctx, int C_Currency_ID)
 	{
-		String contextKey = "C_Currency_" + C_Currency_ID;
-		String retValue = ctx.getProperty(contextKey);
-		if (retValue != null)
-			return retValue;
-
-		//	Create it
-		MCurrency c = get(ctx, C_Currency_ID);
-		retValue = c.getISO_Code();
-		ctx.setProperty(contextKey, retValue);
-		return retValue;
+		return Services.get(ICurrencyDAO.class).getISO_Code(ctx, C_Currency_ID);
 	}	//	getISO
 
 	/**
@@ -169,14 +143,10 @@ public class MCurrency extends X_C_Currency
 	 *	@param C_Currency_ID currency
 	 *	@return Standard Precision
 	 */
+	@Deprecated
 	public static int getStdPrecision (Properties ctx, int C_Currency_ID)
 	{
-		final MCurrency c = get(ctx, C_Currency_ID);
-		if (c == null || c.getC_Currency_ID() <= 0)
-		{
-			return 2; // default
-		}
-		return c.getStdPrecision();
+		return Services.get(ICurrencyDAO.class).getStdPrecision(ctx, C_Currency_ID);
 	}	//	getStdPrecision
 
 	/**

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
@@ -55,7 +56,7 @@ public class MTax extends X_C_Tax
 	public static MTax[] getAll (Properties ctx)
 	{
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		MTax[] retValue = (MTax[])s_cacheAll.get(AD_Client_ID);
+		MTax[] retValue = s_cacheAll.get(AD_Client_ID);
 		if (retValue != null)
 			return retValue;
 
@@ -90,7 +91,7 @@ public class MTax extends X_C_Tax
 		}
 		
 		Integer key = new Integer (C_Tax_ID);
-		MTax retValue = (MTax) s_cache.get (key);
+		MTax retValue = s_cache.get (key);
 		if (retValue != null)
 			return retValue;
 		retValue = new MTax (ctx, C_Tax_ID, null);
@@ -239,6 +240,7 @@ public class MTax extends X_C_Tax
 		return getRate().signum() == 0;
 	}	//	isZeroTax
 	
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("MTax[")
@@ -277,6 +279,7 @@ public class MTax extends X_C_Tax
 	 *	@param success success
 	 *	@return success
 	 */
+	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (newRecord && success)
@@ -289,6 +292,7 @@ public class MTax extends X_C_Tax
 	 * 	Before Delete
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeDelete ()
 	{
 		return delete_Accounting("C_Tax_Acct"); 
@@ -330,33 +334,25 @@ public class MTax extends X_C_Tax
 	}
 
 
-	public static MAccount getDiscountAccount(int C_Tax_ID, boolean isSOTrx, MAcctSchema as) {
+	public static MAccount getDiscountAccount(final int C_Tax_ID, final boolean isDiscountExpense, final MAcctSchema as)
+	{
 		String sql = "SELECT T_PayDiscount_Exp_Acct FROM C_Tax_Acct WHERE C_Tax_ID=? AND C_AcctSchema_ID=?";
-		if(!isSOTrx) {
+		if(!isDiscountExpense)
+		{
 			sql = "SELECT T_PayDiscount_Rev_Acct FROM C_Tax_Acct WHERE C_Tax_ID=? AND C_AcctSchema_ID=?";
 		}
-		int Account_ID = 0;
-		try {
-			PreparedStatement pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, C_Tax_ID);
-			pstmt.setInt (2, as.getC_AcctSchema_ID());
-			ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
-				Account_ID = rs.getInt(1);
-			rs.close();
-			pstmt.close();
-		} catch (SQLException e) {
-			s_log.log(Level.SEVERE, sql, e);
-			return null;
-		}
+		
+		
+		final int Account_ID = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, C_Tax_ID, as.getC_AcctSchema_ID());
 		// No account
-		if (Account_ID == 0) {
+		if (Account_ID <= 0)
+		{
 			s_log.severe("NO account for C_Tax_ID=" + C_Tax_ID);
 			return null;
 		}
 
 		// Return Account
-		MAccount acct = MAccount.get(Env.getCtx(), Account_ID);
+		final MAccount acct = MAccount.get(Env.getCtx(), Account_ID);
 		return acct;
 	}
 

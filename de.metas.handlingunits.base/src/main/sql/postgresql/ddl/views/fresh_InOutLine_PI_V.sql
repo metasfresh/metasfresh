@@ -11,7 +11,7 @@ CREATE OR REPLACE VIEW Report.fresh_InOutLine_PI_V AS
 SELECT DISTINCT 
 	COALESCE ( pi.name, pifb.name ) AS name, -- Packing instruction name
 	iol.M_InOutLine_ID,
-	COALSCE ( pi.M_HU_PI_Item_Product_ID, pifb.M_HU_PI_Item_Product_ID ) AS M_HU_PI_Item_Product_ID
+	COALESCE ( pi.M_HU_PI_Item_Product_ID, pifb.M_HU_PI_Item_Product_ID ) AS M_HU_PI_Item_Product_ID
 FROM 	
 	M_InOutLine iol
 	/** Workaround: customer doesn't use verdichtung which means there are no HUs assigned to the In Out Lines. 

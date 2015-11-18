@@ -21,7 +21,8 @@
 ($P{Record_ID},
 $P{C_BPartner_ID},
 $P{IsAllowESRPayments}
-)]]>
+);
+]]>
 	</queryString>
 	<field name="c_payselectionline_id" class="java.math.BigDecimal"/>
 	<field name="c_bpartner_id" class="java.math.BigDecimal"/>

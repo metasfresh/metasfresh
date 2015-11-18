@@ -71,6 +71,7 @@ public class MAccount extends X_C_ValidCombination
 	 * @return account or null
 	 * @deprecated Use {@link #get(Properties,AccountDimensionVO)} instead
 	 */
+	@Deprecated
 	public static MAccount get(Properties ctx,
 			int AD_Client_ID, int AD_Org_ID, int C_AcctSchema_ID,
 			int Account_ID, int C_SubAcct_ID,
@@ -110,98 +111,98 @@ public class MAccount extends X_C_ValidCombination
 		params.add(dimension.getC_AcctSchema_ID());
 		params.add(dimension.getC_ElementValue_ID());
 		// Optional fields
-		if (dimension.getC_SubAcct_ID() == 0)
+		if (dimension.getC_SubAcct_ID() <= 0)
 			whereClause.append(" AND C_SubAcct_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND C_SubAcct_ID=?");
 			params.add(dimension.getC_SubAcct_ID());
 		}
-		if (dimension.getM_Product_ID() == 0)
+		if (dimension.getM_Product_ID() <= 0)
 			whereClause.append(" AND M_Product_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND M_Product_ID=?");
 			params.add(dimension.getM_Product_ID());
 		}
-		if (dimension.getC_BPartner_ID() == 0)
+		if (dimension.getC_BPartner_ID() <= 0)
 			whereClause.append(" AND C_BPartner_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND C_BPartner_ID=?");
 			params.add(dimension.getC_BPartner_ID());
 		}
-		if (dimension.getAD_OrgTrx_ID() == 0)
+		if (dimension.getAD_OrgTrx_ID() <= 0)
 			whereClause.append(" AND AD_OrgTrx_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND AD_OrgTrx_ID=?");
 			params.add(dimension.getAD_OrgTrx_ID());
 		}
-		if (dimension.getC_LocFrom_ID() == 0)
+		if (dimension.getC_LocFrom_ID() <= 0)
 			whereClause.append(" AND C_LocFrom_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND C_LocFrom_ID=?");
 			params.add(dimension.getC_LocFrom_ID());
 		}
-		if (dimension.getC_LocTo_ID() == 0)
+		if (dimension.getC_LocTo_ID() <= 0)
 			whereClause.append(" AND C_LocTo_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND C_LocTo_ID=?");
 			params.add(dimension.getC_LocTo_ID());
 		}
-		if (dimension.getC_SalesRegion_ID() == 0)
+		if (dimension.getC_SalesRegion_ID() <= 0)
 			whereClause.append(" AND C_SalesRegion_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND C_SalesRegion_ID=?");
 			params.add(dimension.getC_SalesRegion_ID());
 		}
-		if (dimension.getC_Project_ID() == 0)
+		if (dimension.getC_Project_ID() <= 0)
 			whereClause.append(" AND C_Project_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND C_Project_ID=?");
 			params.add(dimension.getC_Project_ID());
 		}
-		if (dimension.getC_Campaign_ID() == 0)
+		if (dimension.getC_Campaign_ID() <= 0)
 			whereClause.append(" AND C_Campaign_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND C_Campaign_ID=?");
 			params.add(dimension.getC_Campaign_ID());
 		}
-		if (dimension.getC_Activity_ID() == 0)
+		if (dimension.getC_Activity_ID() <= 0)
 			whereClause.append(" AND C_Activity_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND C_Activity_ID=?");
 			params.add(dimension.getC_Activity_ID());
 		}
-		if (dimension.getUser1_ID() == 0)
+		if (dimension.getUser1_ID() <= 0)
 			whereClause.append(" AND User1_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND User1_ID=?");
 			params.add(dimension.getUser1_ID());
 		}
-		if (dimension.getUser2_ID() == 0)
+		if (dimension.getUser2_ID() <= 0)
 			whereClause.append(" AND User2_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND User2_ID=?");
 			params.add(dimension.getUser2_ID());
 		}
-		if (dimension.getUserElement1_ID() == 0)
+		if (dimension.getUserElement1_ID() <= 0)
 			whereClause.append(" AND UserElement1_ID IS NULL");
 		else
 		{
 			whereClause.append(" AND UserElement1_ID=?");
 			params.add(dimension.getUserElement1_ID());
 		}
-		if (dimension.getUserElement2_ID() == 0)
+		if (dimension.getUserElement2_ID() <= 0)
 			whereClause.append(" AND UserElement2_ID IS NULL");
 		else
 		{

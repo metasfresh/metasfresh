@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.adempiere.currency.ICurrencyConversionContext;
 import org.adempiere.currency.ICurrencyConversionResult;
 import org.adempiere.currency.ICurrencyRate;
+import org.adempiere.currency.exceptions.NoCurrencyRateFoundException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Currency;
 
@@ -123,5 +124,13 @@ public interface ICurrencyConversionBL extends ISingletonService
 
 	ICurrencyRate getCurrencyRateOrNull(ICurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
 
+	/**
+	 * 
+	 * @param conversionCtx
+	 * @param currencyFromId
+	 * @param currencyToId
+	 * @return currency rate
+	 * @throws NoCurrencyRateFoundException
+	 */
 	ICurrencyRate getCurrencyRate(ICurrencyConversionContext conversionCtx, int currencyFromId, int currencyToId);
 }

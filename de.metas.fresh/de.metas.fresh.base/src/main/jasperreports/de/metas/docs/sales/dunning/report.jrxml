@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/dunning/report">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/dunning/report" uuid="a1fcf6a3-db4f-439e-bfc4-ef89d9533f31">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="net.sf.jasperreports.governor.max.pages.enabled" value="true"/>
+	<property name="net.sf.jasperreports.governor.max.pages" value="2"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -9,160 +14,94 @@
 		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<parameter name="doctype" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["i"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[SELECT * 
-FROM 
-	(
-------------------------------------------------------------------------------------------
-	SELECT 
-		dre.ad_user_id 			as dre_user_id, 
-		dre.ad_org_id			as dre_org_id,
-		dre.c_dunningrunentry_id 	as dre_id, 
-		dre.c_bpartner_id 		as dre_bpartner_id,
-		dre.c_bpartner_location_id	as dre_bpartner_location_id, 
-		case when (bp.ad_language is null or bp.ad_language = '') then 'de_DE'
-			else bp.ad_language
-		end as bp_language,
-		'/report_details.jasper' 	as path,
-		10 as source
-	
-	FROM 
-		c_dunningrunentry dre
-		JOIN c_bpartner bp 		ON dre.c_bpartner_id 	= bp.c_bpartner_id
-UNION
-------------------------------------------------------------------------------------------
-	SELECT 
-		dre.ad_user_id 			as dre_user_id, 
-		dre.ad_org_id			as dre_org_id,
-		dre.c_dunningrunentry_id 	as dre_id, 
-		dre.c_bpartner_id 		as dre_bpartner_id,
-		dre.c_bpartner_location_id	as dre_bpartner_location_id, 
-		case when (bp.ad_language is null or bp.ad_language = '') then 'de_DE'
-			else bp.ad_language
-		end as bp_language,
-		'/report_details_footer.jasper' 	as path,
-		20 as source
-	
-	FROM 
-		c_dunningrunentry dre
-		JOIN c_bpartner bp 		ON dre.c_bpartner_id 	= bp.c_bpartner_id
-	) as dre
-WHERE
-	dre.dre_id = $P{RECORD_ID}
-ORDER BY source
-;]]>
+		<![CDATA[select * from report.Docs_Sales_Dunning_Report_Root ($P{RECORD_ID}, $P{ad_language}) ;]]>
 	</queryString>
-	<field name="dre_user_id" class="java.math.BigDecimal"/>
-	<field name="dre_org_id" class="java.math.BigDecimal"/>
-	<field name="dre_id" class="java.math.BigDecimal"/>
-	<field name="dre_bpartner_id" class="java.math.BigDecimal"/>
-	<field name="dre_bpartner_location_id" class="java.math.BigDecimal"/>
-	<field name="bp_language" class="java.lang.String"/>
-	<field name="path" class="java.lang.String"/>
-	<field name="source" class="java.lang.Integer"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="processed" class="java.lang.String"/>
 	<background>
-		<band splitType="Stretch"/>
+		<band height="842" splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="298" splitType="Stretch">
+		<band height="280" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-4" x="0" y="31" width="595" height="123"/>
+				<reportElement uuid="3779eea3-77cc-4294-93da-2a9ea38437b2" key="subreport-7" mode="Transparent" x="295" y="113" width="300" height="134"/>
 				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{dre_org_id}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="doctype">
+					<subreportParameterExpression><![CDATA[new String("d")]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="printmembershipinfos">
+					<subreportParameterExpression><![CDATA[new Boolean(false)]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-6" x="60" y="153" width="309" height="114"/>
-				<subreportParameter name="bp_loc_id">
-					<subreportParameterExpression><![CDATA[$F{dre_bpartner_location_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{dre_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="ad_user_id">
-					<subreportParameterExpression><![CDATA[$F{dre_user_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA["de/metas/docs/generics/report_bpblock.jasper"]]></subreportExpression>
-			</subreport>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="20" y="267" width="575" height="30"/>
+				<reportElement uuid="97ec00bb-e49d-47a5-ab42-eb561d796bf1" key="subreport-8" mode="Transparent" x="0" y="265" width="595" height="15"/>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$F{bp_language}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA["de/metas/docs/sales/dunning/report_description.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-9" x="369" y="153" width="226" height="114"/>
+				<reportElement uuid="3b0e2770-a120-46bb-8203-ed37a3bb6d8d" key="subreport-8" mode="Transparent" x="22" y="100" width="225" height="100"/>
 				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{dre_org_id}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement uuid="8d540ecf-6f54-4712-a4e6-81d7568900ef" key="subreport-4" x="0" y="31" width="595" height="85"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</title>
 	<pageHeader>
-		<band height="150" splitType="Stretch">
-			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-5" x="1" y="0" width="595" height="123"/>
-				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{dre_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
-			</subreport>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-10" x="20" y="122" width="534" height="27"/>
-				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$F{bp_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA["de/metas/docs/sales/dunning/report_page_header.jasper"]]></subreportExpression>
-			</subreport>
-		</band>
+		<band splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="70" splitType="Stretch">
+		<band height="14" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="30" y="2" width="521" height="67"/>
-				<subreportParameter name="REPORT_LOCALE">
-					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="dre_id">
+				<reportElement uuid="9bf203c7-2bc8-4fa7-8df8-83a3b4ac2e8f" key="subreport-3" mode="Transparent" x="0" y="0" width="595" height="12"/>
+				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="REPORT_PARAMETERS_MAP">
-					<subreportParameterExpression><![CDATA[new HashMap($P{REPORT_PARAMETERS_MAP})]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="REPORT_CONNECTION">
-					<subreportParameterExpression><![CDATA[$P{REPORT_CONNECTION}]]></subreportParameterExpression>
-				</subreportParameter>
 				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$F{bp_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="REPORT_RESOURCE_BUNDLE">
-					<subreportParameterExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA["de/metas/docs/sales/dunning"+$F{path}]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_details.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="12">
+			<subreport isUsingCache="true">
+				<reportElement uuid="314ae68f-641f-4932-bf62-37acb4f401d7" key="subreport-1" mode="Transparent" x="0" y="0" width="595" height="12"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_details_sum.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
@@ -170,57 +109,32 @@ ORDER BY source
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band height="62" splitType="Stretch">
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-7" x="20" y="0" width="534" height="52"/>
-				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{dre_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
-			</subreport>
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-62" x="487" y="1" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$V{PAGE_NUMBER} + "/ "]]></textFieldExpression>
-			</textField>
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-63" x="424" y="1" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$R{page}]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-64" x="508" y="1" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
-			</textField>
-		</band>
+		<band splitType="Stretch"/>
 	</pageFooter>
 	<summary>
-		<band splitType="Stretch"/>
+		<band height="350" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0" key="subreport-3" mode="Transparent" x="0" y="106" width="595" height="244"/>
+				<subreportParameter name="REPORT_MAX_COUNT">
+					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_esr.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement uuid="97ec00bb-e49d-47a5-ab42-eb561d796bf1" key="subreport-8" mode="Transparent" x="0" y="0" width="595" height="53"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_description_bottom.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
 	</summary>
 </jasperReport>

@@ -142,6 +142,7 @@ public class DifferenceRowBalancer
 		{
 			balance_RegularInvoices_to_CreditMemos(copyAndFilter(invoiceRows, PREDICATE_CustomerDocument));
 			balance_RegularInvoices_to_CreditMemos(copyAndFilter(invoiceRows, PREDICATE_VendorDocument));
+			balance_PurchaseInvoices_to_SalesInvoices(invoiceRows);
 			return;
 		}
 
@@ -276,6 +277,118 @@ public class DifferenceRowBalancer
 		}
 	}
 
+	/**
+	 * Balance purchase invoices applied amounts over sales invoices.
+	 * 
+	 * As a result,
+	 * <ul>
+	 * <li> sale invoice's WriteOff amount type is adjusted when there is too less purchase invoice amount to distribute
+	 * <li> sale invoice's Over/Under amount type is adjusted when there is too much purchase invoice amount to distribute
+	 * </ul>
+	 * @param invoiceRows
+	 */
+	private final void balance_PurchaseInvoices_to_SalesInvoices(final List<IInvoiceRow> invoiceRows)
+	{
+		final PaymentAllocationContext context = getContext();
+		if (!context.isAllowPurchaseSalesInvoiceCompensation())
+		{
+			return;
+		}
+		
+		final List<IInvoiceRow> saleInvoiceRows = copyAndFilter(invoiceRows, PREDICATE_CustomerDocument);
+		final List<IInvoiceRow> purchaseInvoiceRows = copyAndFilter(invoiceRows, PREDICATE_VendorDocument);
+		
+		if (saleInvoiceRows.isEmpty() || purchaseInvoiceRows.isEmpty())
+		{
+			return;
+		}
+		
+		//
+		// Prepare:
+		// * sort by DocumentDate, DocumentNo ascending!
+		Collections.sort(saleInvoiceRows, ORDERING_DocumentDate_DocumentNo);
+		Collections.sort(purchaseInvoiceRows, ORDERING_DocumentDate_DocumentNo);
+		
+		//
+		// Build initial informations
+		// * sale invoices list
+		// * purchase invoices list
+		// * how much purchase amount we need to distribute to sales invoices
+		BigDecimal amtTotalPurchaseInvoiceToDistribute = BigDecimal.ZERO;
+		final List<IInvoiceRow> purchaseInvoices = new ArrayList<>();
+		for (final IInvoiceRow invoiceRow : purchaseInvoiceRows)
+		{
+			final BigDecimal amtApplied = invoiceRow.getAppliedAmt();
+			if (!invoiceRow.isCreditMemo()	&& amtApplied.signum() > 0 )
+			{
+				amtTotalPurchaseInvoiceToDistribute = amtTotalPurchaseInvoiceToDistribute.add(amtApplied);
+
+				// collect only those invoices which are not locked, because we are not touching the locked ones
+				if (!invoiceRow.isTaboo())
+				{
+					purchaseInvoices.add(invoiceRow);
+				}
+			}
+		}
+		
+		// If there is nothing to distribute, then stop here
+		if (amtTotalPurchaseInvoiceToDistribute.signum() == 0)
+		{
+			return;
+		}
+		
+		// collect sales invoices
+		final List<IInvoiceRow> salesInvoices = new ArrayList<>();
+		for (final IInvoiceRow invoiceRow : saleInvoiceRows)
+		{
+			if (!invoiceRow.isCreditMemo())
+			{
+
+				// collect only those invoices which are not locked, because we are not touching the locked ones
+				if (!invoiceRow.isTaboo())
+				{
+					salesInvoices.add(invoiceRow);
+				}
+			}
+		}
+		
+		
+		//
+		// Iterate the sales invoices and distribute the total credit memo amount on them.
+		for (final IInvoiceRow salesInvoice : salesInvoices)
+		{
+			final BigDecimal amtAppliedInitial = salesInvoice.getAppliedAmt();
+			final BigDecimal amtToApply = amtAppliedInitial.min(amtTotalPurchaseInvoiceToDistribute);
+			
+			salesInvoice.setAppliedAmtAndUpdate(context, amtToApply);
+			notifyRowChanged(salesInvoice);
+			
+			amtTotalPurchaseInvoiceToDistribute = amtTotalPurchaseInvoiceToDistribute.subtract(amtToApply);
+		}
+
+		//
+		// If we still have purchase invoice to distribute and OverUnderAmt is allowed, adjust the purchase (from last to first),
+		// by distributing the remaining amount to their over/under.
+		final boolean overUnderAmtAllowed = context.getAllowedWriteOffTypes().contains(InvoiceWriteOffAmountType.OverUnder);
+		if (overUnderAmtAllowed && amtTotalPurchaseInvoiceToDistribute.signum() != 0)
+		{
+			
+			for (final IInvoiceRow purchase : Lists.reverse(purchaseInvoices))
+			{
+				final BigDecimal amtAppliedInitial = purchase.getAppliedAmt();
+				final BigDecimal amtAppliedToSubtract = amtAppliedInitial.min(amtTotalPurchaseInvoiceToDistribute);
+				final BigDecimal amtToApply = amtAppliedInitial.subtract(amtAppliedToSubtract);
+
+				purchase.setAppliedAmt(amtToApply);
+				purchase.distributeNotAppliedAmtToWriteOffs(InvoiceWriteOffAmountType.OverUnder);
+				notifyRowChanged(purchase);
+
+				amtTotalPurchaseInvoiceToDistribute = amtTotalPurchaseInvoiceToDistribute.subtract(amtAppliedToSubtract);
+			}
+		}
+		
+	}
+	
 	/**
 	 * Balance credit memos applied amounts over regular invoices.
 	 * 

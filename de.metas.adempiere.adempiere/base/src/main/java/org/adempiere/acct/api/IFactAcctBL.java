@@ -27,6 +27,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_ValidCombination;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.MAccount;
 import org.compiere.report.core.RColumn;
 
 public interface IFactAcctBL extends ISingletonService
@@ -43,4 +46,11 @@ public interface IFactAcctBL extends ISingletonService
 	 */
 	RColumn createEndingBalanceRColumn(Properties ctx, final Map<String, String> columnName2whereClause);
 
+	/**
+	 * Gets/creates the account (i.e. {@link I_C_ValidCombination}) of given fact line.
+	 * 
+	 * @param factAcct
+	 * @return
+	 */
+	MAccount getAccount(I_Fact_Acct factAcct);
 }

@@ -37,8 +37,6 @@ import org.adempiere.document.service.IDocumentNoBuilder;
 import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
-import org.adempiere.inout.service.IInOutBL;
-import org.adempiere.inout.service.IInOutDAO;
 import org.adempiere.inout.service.IMTransactionDAO;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.misc.service.IPOService;
@@ -60,6 +58,8 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IAttributeSetInstanceBL;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
 

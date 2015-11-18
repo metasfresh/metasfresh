@@ -60,6 +60,10 @@ public class PaymentDocument implements IPaymentDocument
 	//
 	private final BigDecimal openAmtInitial;
 	private final BigDecimal amountToAllocateInitial;
+	
+	//
+	private int C_Currency_ID;
+	
 	//
 	private BigDecimal allocatedAmt;
 	private BigDecimal amountToAllocate;
@@ -71,6 +75,7 @@ public class PaymentDocument implements IPaymentDocument
 		documentNo = builder.getDocumentNo();
 		reference = builder.getReference();
 		isSOTrx = builder.isSOTrx;
+		C_Currency_ID = builder.getC_Currency_ID();
 		allowedPayableDocumentType = builder.getAllowedPayableDocumentType();
 
 		//
@@ -91,6 +96,12 @@ public class PaymentDocument implements IPaymentDocument
 	public int getC_BPartner_ID()
 	{
 		return bpartnerId;
+	}
+	
+	@Override
+	public int getC_Currency_ID()
+	{
+		return C_Currency_ID;
 	}
 
 	@Override
@@ -144,6 +155,8 @@ public class PaymentDocument implements IPaymentDocument
 				.subtract(amountToAllocate);
 		return projectedOverUnderAmt;
 	}
+	
+	
 
 	public static class Builder
 	{
@@ -151,7 +164,10 @@ public class PaymentDocument implements IPaymentDocument
 		private String documentNo;
 		private ITableRecordReference reference;
 		private boolean isSOTrx;
-
+		//
+		private int C_Currency_ID;
+		//
+		
 		public static final Set<PayableDocumentType> AllowedPayableDocumentTypes_ALL = Sets.immutableEnumSet(EnumSet.allOf(PayableDocumentType.class));
 		private Set<PayableDocumentType> allowedPayableDocumentType = AllowedPayableDocumentTypes_ALL;
 		//
@@ -168,6 +184,17 @@ public class PaymentDocument implements IPaymentDocument
 			return new PaymentDocument(this);
 		}
 
+		public Builder setC_Currency_ID(final int C_Currency_ID)
+		{
+			this.C_Currency_ID = C_Currency_ID;
+			return this;
+		}
+		
+		public int getC_Currency_ID()
+		{
+			return C_Currency_ID > 0 ? C_Currency_ID : -1;
+		}
+		
 		public Builder setIsSOTrx(boolean isSOTrx)
 		{
 			this.isSOTrx = isSOTrx;

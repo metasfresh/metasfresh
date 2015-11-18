@@ -57,6 +57,8 @@ public interface IPayableDocument
 	BigDecimal getAmountToAllocateInitial();
 
 	BigDecimal getAmountToAllocate();
+	
+	int getC_Currency_ID();
 
 	void addAllocatedAmounts(BigDecimal allocatedAmtToAdd, BigDecimal discountAmtToAdd, BigDecimal writeOffAmtToAdd);
 

@@ -178,7 +178,17 @@ public final class PostingException extends AdempiereException
 
 	public I_C_AcctSchema getC_AcctSchema()
 	{
-		return _acctSchema;
+		if (_acctSchema != null)
+		{
+			return _acctSchema;
+		}
+		
+		if (_fact != null)
+		{
+			return _fact.getAcctSchema();
+		}
+		
+		return null;
 	}
 
 	public PostingException setC_AcctSchema(final I_C_AcctSchema acctSchema)

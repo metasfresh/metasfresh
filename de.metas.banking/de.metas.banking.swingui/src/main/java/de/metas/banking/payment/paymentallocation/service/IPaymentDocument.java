@@ -42,6 +42,8 @@ public interface IPaymentDocument
 	BigDecimal getAmountToAllocateInitial();
 
 	BigDecimal getAmountToAllocate();
+	
+	int getC_Currency_ID();
 
 	void addAllocatedAmt(BigDecimal allocatedAmtToAdd);
 

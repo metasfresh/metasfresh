@@ -68,5 +68,3 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-ALTER FUNCTION get_db_columns_string() OWNER TO adempiere;

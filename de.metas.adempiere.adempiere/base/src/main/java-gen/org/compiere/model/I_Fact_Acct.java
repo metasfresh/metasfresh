@@ -1145,6 +1145,31 @@ public interface I_Fact_Acct
     public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+	 * Set SubLine ID.
+	 * Transaction sub line ID (internal)
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSubLine_ID (int SubLine_ID);
+
+	/**
+	 * Get SubLine ID.
+	 * Transaction sub line ID (internal)
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSubLine_ID();
+
+    /** Column definition for SubLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_SubLine_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "SubLine_ID", null);
+    /** Column name SubLine_ID */
+    public static final String COLUMNNAME_SubLine_ID = "SubLine_ID";
+
+	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *

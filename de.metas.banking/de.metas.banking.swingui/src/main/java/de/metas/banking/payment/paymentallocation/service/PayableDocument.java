@@ -62,6 +62,8 @@ public class PayableDocument implements IPayableDocument
 	//
 	private BigDecimal writeOffAmtAllocated;
 	private BigDecimal writeOffAmtToAllocate;
+	//
+	private int C_Currency_ID;
 
 	protected PayableDocument(final Builder builder)
 	{
@@ -73,6 +75,7 @@ public class PayableDocument implements IPayableDocument
 		type = builder.getType();
 		reference = builder.getReference();
 		creditMemo = builder.creditMemo;
+		C_Currency_ID = builder.C_Currency_ID;
 		//
 		//
 		openAmtInitial = builder.openAmt;
@@ -179,6 +182,12 @@ public class PayableDocument implements IPayableDocument
 	{
 		return writeOffAmtToAllocate;
 	}
+	
+	@Override
+	public int getC_Currency_ID()
+	{
+		return C_Currency_ID;
+	}
 
 	@Override
 	public BigDecimal calculateProjectedOverUnderAmt(final BigDecimal amountToAllocate, final BigDecimal discountAmtToAllocate, final BigDecimal writeOffAmtToAllocate)
@@ -206,7 +215,9 @@ public class PayableDocument implements IPayableDocument
 		private ITableRecordReference reference;
 		private PayableDocumentType type;
 		private boolean creditMemo = false;
-
+		//
+		private int C_Currency_ID;
+		
 		//
 		private BigDecimal openAmt = BigDecimal.ZERO;
 		private BigDecimal amountToAllocate = BigDecimal.ZERO;
@@ -228,12 +239,23 @@ public class PayableDocument implements IPayableDocument
 			this.bpartnerId = bpartnerId;
 			return this;
 		}
-
+		
 		private int getC_BPartner_ID()
 		{
 			return bpartnerId > 0 ? bpartnerId : -1;
 		}
 
+		public Builder setC_Currency_ID(final int C_Currency_ID)
+		{
+			this.C_Currency_ID = C_Currency_ID;
+			return this;
+		}
+		
+		public int getC_Currency_ID()
+		{
+			return C_Currency_ID > 0 ? C_Currency_ID : -1;
+		}
+		
 		private PayableDocumentType getType()
 		{
 			Check.assumeNotNull(type, "type not null");
@@ -313,4 +335,5 @@ public class PayableDocument implements IPayableDocument
 			return this;
 		}
 	}
+
 }

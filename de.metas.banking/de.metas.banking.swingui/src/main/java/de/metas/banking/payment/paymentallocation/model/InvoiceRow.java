@@ -28,12 +28,16 @@ import java.math.RoundingMode;
 import java.util.Date;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ICurrencyDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.util.Env;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -503,8 +507,11 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 			throw new AdempiereException("No document reference: " + invoiceRow);
 		}
 
+		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(Env.getCtx(), invoiceRow.getCurrencyISOCode());
+		
 		return PayableDocument.builder()
 				.setC_BPartner_ID(invoiceRow.getC_BPartner_ID())
+				.setC_Currency_ID(currency.getC_Currency_ID())
 				.setIsSOTrx(invoiceRow.isCustomerDocument())
 				.setReference(type, reference)
 				.setCreditMemo(creditMemo)

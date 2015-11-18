@@ -124,6 +124,12 @@ public class CreditMemoInvoiceAsPaymentDocument implements IPaymentDocument
 		{
 			return false;
 		}
+		
+		// if currency differs, do not allow payment
+		if (payable.getC_Currency_ID() != creditMemoPayableDoc.getC_Currency_ID())
+		{
+			return false;
+		}
 
 		return true;
 	}
@@ -139,4 +145,11 @@ public class CreditMemoInvoiceAsPaymentDocument implements IPaymentDocument
 	{
 		return creditMemoPayableDoc.isVendorDocument();
 	}
+
+	@Override
+	public int getC_Currency_ID()
+	{
+		return creditMemoPayableDoc.getC_Currency_ID();
+	}
+	
 }

@@ -83,5 +83,4 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION role_access_update()
-  OWNER TO adempiere;
+

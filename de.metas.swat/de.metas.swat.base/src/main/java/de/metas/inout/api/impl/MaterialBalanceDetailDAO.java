@@ -32,7 +32,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.inout.service.IInOutBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Calendar;
@@ -42,6 +41,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;
 import de.metas.inout.model.I_M_InOut;
