@@ -52,6 +52,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.inout.IInOutBL;
+import de.metas.inout.event.InOutGeneratedEventBus;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IInOutProducer;
