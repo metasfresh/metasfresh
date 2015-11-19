@@ -49,47 +49,40 @@ FROM
 				</textElement>
 				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement uuid="562ec472-4a1b-4bb4-befd-5e5b651c43d7" x="37" y="22" width="142" height="12"/>
-				<textElement markup="none">
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{pobox}]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="1431cdbf-1301-49a6-af76-2d2ba3a76ad4" x="37" y="44" width="142" height="12"/>
+				<reportElement uuid="1431cdbf-1301-49a6-af76-2d2ba3a76ad4" x="37" y="33" width="142" height="12"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{phone} + " " + $F{phone}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="7d7a9e70-529b-4146-ac4c-d8a7e78a5624" x="37" y="55" width="142" height="12"/>
+				<reportElement uuid="7d7a9e70-529b-4146-ac4c-d8a7e78a5624" x="37" y="44" width="142" height="12"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{fax} + " " + $F{fax}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{orgfax} + " " + $F{fax}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="63844d65-924b-417a-b6a3-52eb03cc7a72" x="37" y="66" width="142" height="12"/>
+				<reportElement uuid="63844d65-924b-417a-b6a3-52eb03cc7a72" x="37" y="55" width="142" height="12"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{email}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="e3a762a7-0af4-4579-bc6c-59da19b88de9" x="37" y="77" width="142" height="12"/>
+				<reportElement uuid="e3a762a7-0af4-4579-bc6c-59da19b88de9" x="37" y="66" width="142" height="12"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vataxid} + " " + $F{vataxid}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="382642ff-3a69-4cd5-ae1c-f374c3c8226d" x="37" y="33" width="142" height="12"/>
+				<reportElement uuid="382642ff-3a69-4cd5-ae1c-f374c3c8226d" x="37" y="22" width="142" height="12"/>
 				<textElement markup="none">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{countrycode} + $F{postal} + " " + $F{city}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{postal} + " " + $F{city}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
