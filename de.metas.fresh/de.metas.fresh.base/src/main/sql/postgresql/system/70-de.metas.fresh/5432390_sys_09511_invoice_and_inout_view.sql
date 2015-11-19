@@ -5,7 +5,7 @@
 
 -- View: Report.fresh_InOutLine_PI_V
 
-DROP VIEW if exists Report.fresh_InOutLine_PI_V;
+--DROP VIEW if exists Report.fresh_InOutLine_PI_V;
 
 CREATE OR REPLACE VIEW Report.fresh_InOutLine_PI_V AS 
 SELECT DISTINCT 
