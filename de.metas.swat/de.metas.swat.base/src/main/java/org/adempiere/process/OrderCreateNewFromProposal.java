@@ -22,21 +22,26 @@ package org.adempiere.process;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.order.createNewFromProposal.INewFromPoposalService;
-import org.adempiere.order.createNewFromProposal.NewFromPoposalService;
+import org.adempiere.document.service.IDocActionBL;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.CopyRecordSupport;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
+import org.compiere.model.PO;
+import org.compiere.process.DocAction;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
-public final class OrderCreateNewFromProposal extends SvrProcess {
+public final class OrderCreateNewFromProposal extends SvrProcess 
+{
 
 	private final static CLogger log = CLogger
 			.getCLogger(OrderCreateNewFromProposal.class);
@@ -51,26 +56,71 @@ public final class OrderCreateNewFromProposal extends SvrProcess {
 
 	private boolean newOrderClompleteIt = false;
 
-	private final INewFromPoposalService service = new NewFromPoposalService();
+
 
 	@Override
-	protected String doIt() throws Exception {
+	protected String doIt() throws Exception
+	{
 
-		// setting the optional service properties
-		service.setCompleteNewOrder(newOrderClompleteIt);
-		service.setNewOrderDateOrdered(newOrderDateOrdered);
-		service.setPOReference(poReference);
 
+		final I_C_Order newOrder = InterfaceWrapperHelper.create(getCtx(), I_C_Order.class, get_TrxName());
+		final PO to = InterfaceWrapperHelper.getPO(newOrder);
+		PO.copyValues(sourceOrder, to, true);
+		
 		final MDocType docType = MDocType.get(Env.getCtx(), newOrderDocType);
+		newOrder.setC_DocTypeTarget(docType);
+		newOrder.setC_DocType(docType);
+		
+		if (newOrderDateOrdered != null)
+		{
+			newOrder.setDateOrdered(newOrderDateOrdered);
+		}
+		if (poReference != null)
+		{
+			newOrder.setPOReference(poReference);
+		}
+		
+		newOrder.setRef_Proposal(sourceOrder);
+		
+		InterfaceWrapperHelper.save(newOrder);
+		
+		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Order.Table_Name);
+		childCRS.setGridTab(null);
+		childCRS.setParentPO(to);
+		childCRS.setParentID(to.get_ID());
+		childCRS.setBase(true);
+		childCRS.copyRecord(sourceOrder, get_TrxName());
 
-		final I_C_Order newOrder = service.create(sourceOrder, docType
-				.getDocSubType(), get_TrxName());
+		
+		
+		InterfaceWrapperHelper.save(newOrder);
+
+		String docAction;
+		if (newOrderClompleteIt)
+		{
+			docAction = DocAction.ACTION_Complete;
+			Services.get(IDocActionBL.class).processEx(newOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		}
+		else
+		{
+			docAction = DocAction.ACTION_Prepare;
+		}
+
+		newOrder.setDocAction(docAction);
+
+		
+		InterfaceWrapperHelper.save(newOrder);
+		
+		
+		sourceOrder.setRef_Order_ID(newOrder.getC_Order_ID());
+		InterfaceWrapperHelper.save(sourceOrder, get_TrxName());
 
 		return newOrder.getDocumentNo();
 	}
 
 	@Override
-	protected void prepare() {
+	protected void prepare()
+	{
 
 		sourceOrder = new MOrder(Env.getCtx(), getRecord_ID(), null);
 
@@ -83,31 +133,45 @@ public final class OrderCreateNewFromProposal extends SvrProcess {
 				.getDocBaseType()) //
 		&& MDocType.DOCSUBTYPE_Proposal.equals(sourceOrderDocType
 				.getDocSubType())//
-		)) {
+		))
+		{
 			throw new IllegalStateException(
 					"This process may be started for proposals only");
 		}
 
 		final ProcessInfoParameter[] para = getParameter();
 
-		for (int i = 0; i < para.length; i++) {
+		for (int i = 0; i < para.length; i++)
+		{
 			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null) {
+			if (para[i].getParameter() == null)
+			{
 				// do nothing
-			} else if (name.equals("C_DocType_ID")) {
-				newOrderDocType = ((BigDecimal) para[i].getParameter())
+			}
+			else if (name.equals("C_DocType_ID"))
+			{
+				newOrderDocType = ((BigDecimal)para[i].getParameter())
 						.intValue();
-			} else if (name.equals("DateOrdered")) {
-				newOrderDateOrdered = (Timestamp) para[i].getParameter();
-			} else if (name.equals("DocumentNo")) {
-				poReference = (String) para[i].getParameter();
-			} else if (name.equals("CompleteIt")) {
-				
-				final String strCompleteIt = (String) para[i].getParameter();
+			}
+			else if (name.equals("DateOrdered"))
+			{
+				newOrderDateOrdered = (Timestamp)para[i].getParameter();
+			}
+			else if (name.equals("DocumentNo"))
+			{
+				poReference = (String)para[i].getParameter();
+			}
+			else if (name.equals("CompleteIt"))
+			{
+
+				final String strCompleteIt = (String)para[i].getParameter();
 				newOrderClompleteIt = ("Y".equals(strCompleteIt));
-			} else {
+			}
+			else
+			{
 				log.severe("Unknown Parameter: " + name);
 			}
 		}
 	}
+
 }
