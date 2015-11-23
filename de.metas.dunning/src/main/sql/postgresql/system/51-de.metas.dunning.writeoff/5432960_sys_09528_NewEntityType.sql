@@ -1,6 +1,6 @@
 ﻿-- 11.11.2015 11:07
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_EntityType (AD_Client_ID,AD_EntityType_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,Help,IsActive,ModelPackage,Name,Processing,Updated,UpdatedBy) VALUES (0,540075,0,TO_TIMESTAMP('2015-11-11 11:07:55','YYYY-MM-DD HH24:MI:SS'),100,'Dunning writeoff','de.metas.dunning.writeoff',NULL,'Y','de.metas.dunning.model','de.metas.dunning.writeoff','N',TO_TIMESTAMP('2015-11-11 11:07:55','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_EntityType (AD_Client_ID,AD_EntityType_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,Help,IsActive,ModelPackage,Name,Processing,Updated,UpdatedBy) VALUES (0,54075,0,TO_TIMESTAMP('2015-11-11 11:07:55','YYYY-MM-DD HH24:MI:SS'),100,'Dunning writeoff','de.metas.dunning.writeoff',NULL,'Y','de.metas.dunning.model','de.metas.dunning.writeoff','N',TO_TIMESTAMP('2015-11-11 11:07:55','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 11.11.2015 11:08
