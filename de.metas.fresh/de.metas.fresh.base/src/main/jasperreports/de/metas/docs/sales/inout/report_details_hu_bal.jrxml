@@ -14,10 +14,21 @@
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
+	<parameter name="ad_org_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[SELECT 0;]]>
+		<![CDATA[SELECT c.countrycode
+FROM
+AD_Org org
+LEFT OUTER JOIN AD_OrgInfo orginfo ON orginfo.ad_org_id = org.ad_org_id
+LEFT OUTER JOIN C_BPartner_Location org_loc ON orginfo.Orgbp_Location_ID = org_loc.C_BPartner_Location_ID
+LEFT OUTER JOIN C_Location org_l ON org_loc.C_Location_ID = org_l.C_Location_ID
+LEFT OUTER JOIN C_Country c ON org_l.C_Country_ID = c.C_Country_ID
+
+WHERE org.ad_org_id = $P{ad_org_id}]]>
 	</queryString>
-	<field name="?column?" class="java.lang.Integer"/>
+	<field name="countrycode" class="java.lang.String"/>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
@@ -117,7 +128,9 @@ $P{ad_language}.equals("fr_CH")?"Signature":
 		<band height="60">
 			<printWhenExpression><![CDATA[new Boolean(!$P{ad_language}.equals("fr_CH"))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="37" y="0" width="488" height="60"/>
+				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="37" y="0" width="488" height="60">
+					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
+				</reportElement>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
@@ -127,7 +140,9 @@ $P{ad_language}.equals("fr_CH")?"Signature":
 		<band height="60">
 			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("fr_CH"))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="37" y="0" width="488" height="60"/>
+				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="37" y="0" width="488" height="60">
+					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
+				</reportElement>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>

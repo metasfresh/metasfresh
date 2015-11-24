@@ -28,6 +28,3 @@ WHERE
 ;
 $$ 
 LANGUAGE sql STABLE;
-
-
-

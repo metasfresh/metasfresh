@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="133"/>
 	<property name="net.sf.jasperreports.governor.max.pages.enabled" value="true"/>
 	<property name="net.sf.jasperreports.governor.max.pages" value="2"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -25,6 +25,7 @@
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="processed" class="java.lang.String"/>
+	<field name="countrycode" class="java.lang.String"/>
 	<background>
 		<band height="842" splitType="Stretch"/>
 	</background>
@@ -113,6 +114,7 @@
 	</pageFooter>
 	<summary>
 		<band height="350" splitType="Stretch">
+			<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
 			<subreport isUsingCache="true">
 				<reportElement uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0" key="subreport-3" mode="Transparent" x="0" y="106" width="595" height="244"/>
 				<subreportParameter name="REPORT_MAX_COUNT">
