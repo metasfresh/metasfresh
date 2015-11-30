@@ -24,6 +24,7 @@ package de.metas.flatrate.process;
 
 import java.sql.Timestamp;
 import java.util.Iterator;
+import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -37,7 +38,9 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
+import de.metas.flatrate.api.IFlatrateDB;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.flatrate.model.I_C_Flatrate_Matching;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 
 public class C_FlatrateTerm_Create_For_BPartners extends C_FlatrateTerm_Create
@@ -59,6 +62,13 @@ public class C_FlatrateTerm_Create_For_BPartners extends C_FlatrateTerm_Create
 		p_startDate = para.getParameterAsTimestamp(I_C_Flatrate_Term.COLUMNNAME_StartDate);
 
 		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.create(getCtx(), p_flatrateconditionsID, I_C_Flatrate_Conditions.class, getTrxName());
+
+		final List<I_C_Flatrate_Matching> matchings = Services.get(IFlatrateDB.class).retrieveFlatrateMatchings(conditions);
+		if (matchings.size() == 1 && matchings.get(0).getM_Product_ID() > 0)
+		{
+			// this is the case for quality-based contracts
+			setProduct(matchings.get(0).getM_Product());
+		}
 
 		final I_AD_User userInCharge = p_adUserInChargeId > 0 ? InterfaceWrapperHelper.create(getCtx(), p_adUserInChargeId, I_AD_User.class, getTrxName()) : null;
 

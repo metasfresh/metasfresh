@@ -554,7 +554,7 @@ public class FlatrateDB implements IFlatrateDB
 			{
 				continue;
 			}
-			Check.assume(result == null, "there is only one non-sim term for " + ic);
+			Check.errorIf(result != null, "We can have only one non-sim term for {0}, but we have the following terms with at least two non-sim: {1}" + ic, terms);
 			result = term;
 		}
 		return result;
