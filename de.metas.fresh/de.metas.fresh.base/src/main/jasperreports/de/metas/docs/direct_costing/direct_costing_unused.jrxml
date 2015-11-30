@@ -73,7 +73,7 @@ FROM
 				Budget,
 				L_Multiplicator
 			FROM
-				de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data2($P{Date})
+				de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data_Remainings($P{Date})
 			) x
 		) y
 	) z
