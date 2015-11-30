@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="direct_costing_unused" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="3e0a681d-8905-4d93-8369-ef2c24038d15">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="Date" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+	* ,
+	ABS( ROUND( Balance_1000 / Gross_1000 * 100, 2 ) ) AS L_Percentage_1000,
+	ABS( ROUND( Balance_2000 / Gross_2000 * 100, 2 ) ) AS L_Percentage_2000,
+	ABS( ROUND( Balance_100 / Gross_100 * 100, 2 ) ) AS L_Percentage_100,
+	ABS( ROUND( Balance_150 / Gross_150 * 100, 2 ) ) AS L_Percentage_150,
+	ABS( ROUND( Balance / Gross_all * 100, 2 ) ) AS L_percentage_All,
+	ABS( ROUND( Balance_1000 / NULLIF( Budget_1000, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_1000,
+	ABS( ROUND( Balance_2000 / NULLIF( Budget_2000, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_2000,
+	ABS( ROUND( Balance_100 / NULLIF( Budget_100, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_100,
+	ABS( ROUND( Balance_150 / NULLIF( Budget_150, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_150,
+	ABS( ROUND( Balance / NULLIF( Budget, 0 ) * 100, 2 ) ) AS L_Budget_Percentage_All,
+	SUM( Balance_Other ) OVER () != 0 AS isDisplayOther
+FROM
+	(
+	SELECT
+		*,
+		NULLIF( First_agg ( L_1000 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_1000,
+		NULLIF( First_agg ( L_2000 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_2000,
+		NULLIF( First_agg ( L_100 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_100,
+		NULLIF( First_agg ( L_150 ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_150,
+		NULLIF( First_agg ( L_all ) OVER ( ORDER BY L_Value ), 0 ) AS Gross_All
+	FROM
+		(
+		SELECT
+			--
+			-- Balances
+
+			-- Create an Incremental sum for the Margins. This sum will be Displayed in the report
+			-- It is a requirement of the report that the sums are incremental over the margins
+			-- Note: The window function Last_Value does not get the Last Value, but the maximum
+			-- Level
+			L_Value, L_Name,
+			Sum ( Balance_1000 ) OVER ( PARTITION BY L_Value ) AS L_1000,
+			Sum ( Balance_2000 ) OVER ( PARTITION BY L_Value ) AS L_2000,
+			Sum ( Balance_100 ) OVER ( PARTITION BY L_Value ) AS L_100,
+			Sum ( Balance_150 ) OVER ( PARTITION BY L_Value ) AS L_150,
+			Sum ( Balance_other ) OVER ( PARTITION BY L_Value ) AS L_other,
+			Sum ( Balance ) OVER ( PARTITION BY L_Value ) AS L_All,
+
+
+
+			Balance_1000, Balance_2000, Balance_100, Balance_150, Balance_other, Balance,
+			L_Multiplicator,
+			--
+			-- Budgets
+
+			Budget_1000, Budget_2000, Budget_100, Budget_150, Budget
+		FROM
+			(
+			SELECT
+				L_Value, L_Name,
+				-- Preparing an incremantal Sum over all lines, to later extract an incremental sum for margin level
+				Balance_1000,
+				Balance_2000,
+				Balance_100,
+				Balance_150,
+				Balance_other,
+				Balance,
+				Budget_1000,
+				Budget_2000,
+				Budget_100,
+				Budget_150,
+				Budget,
+				L_Multiplicator
+			FROM
+				de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data2($P{Date})
+			) x
+		) y
+	) z
+	LEFT OUTER JOIN (
+		SELECT
+			First_Agg ( StartDate::text ORDER BY PeriodNo )::Date AS StartDate,
+			$P{Date}::date::date AS EndDate
+		FROM
+			C_Period
+		WHERE
+			C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000,  $P{Date}::Date ))
+	) date ON true
+
+;]]>
+	</queryString>
+	<field name="l_value" class="java.lang.String"/>
+	<field name="l_name" class="java.lang.String"/>
+	<field name="l_1000" class="java.math.BigDecimal"/>
+	<field name="l_2000" class="java.math.BigDecimal"/>
+	<field name="l_100" class="java.math.BigDecimal"/>
+	<field name="l_150" class="java.math.BigDecimal"/>
+	<field name="l_other" class="java.math.BigDecimal"/>
+	<field name="l_all" class="java.math.BigDecimal"/>
+	<field name="balance_1000" class="java.math.BigDecimal"/>
+	<field name="balance_2000" class="java.math.BigDecimal"/>
+	<field name="balance_100" class="java.math.BigDecimal"/>
+	<field name="balance_150" class="java.math.BigDecimal"/>
+	<field name="balance_other" class="java.math.BigDecimal"/>
+	<field name="balance" class="java.math.BigDecimal"/>
+	<field name="l_multiplicator" class="java.math.BigDecimal"/>
+	<field name="budget_1000" class="java.math.BigDecimal"/>
+	<field name="budget_2000" class="java.math.BigDecimal"/>
+	<field name="budget_100" class="java.math.BigDecimal"/>
+	<field name="budget_150" class="java.math.BigDecimal"/>
+	<field name="budget" class="java.math.BigDecimal"/>
+	<field name="gross_1000" class="java.math.BigDecimal"/>
+	<field name="gross_2000" class="java.math.BigDecimal"/>
+	<field name="gross_100" class="java.math.BigDecimal"/>
+	<field name="gross_150" class="java.math.BigDecimal"/>
+	<field name="gross_all" class="java.math.BigDecimal"/>
+	<field name="startdate" class="java.sql.Date"/>
+	<field name="enddate" class="java.sql.Date"/>
+	<field name="l_percentage_1000" class="java.math.BigDecimal"/>
+	<field name="l_percentage_2000" class="java.math.BigDecimal"/>
+	<field name="l_percentage_100" class="java.math.BigDecimal"/>
+	<field name="l_percentage_150" class="java.math.BigDecimal"/>
+	<field name="l_percentage_all" class="java.math.BigDecimal"/>
+	<field name="l_budget_percentage_1000" class="java.math.BigDecimal"/>
+	<field name="l_budget_percentage_2000" class="java.math.BigDecimal"/>
+	<field name="l_budget_percentage_100" class="java.math.BigDecimal"/>
+	<field name="l_budget_percentage_150" class="java.math.BigDecimal"/>
+	<field name="l_budget_percentage_all" class="java.math.BigDecimal"/>
+	<field name="isdisplayother" class="java.lang.Boolean"/>
+	<group name="level_group">
+		<groupExpression><![CDATA[$F{l_value}]]></groupExpression>
+		<groupHeader>
+			<band height="20">
+				<textField evaluationTime="Group" evaluationGroup="level_group" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="343" y="0" width="50" height="9">
+						<printWhenExpression><![CDATA[new Boolean ($F{l_2000}.multiply( $F{l_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
+					</reportElement>
+					<box rightPadding="1"/>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_2000}.multiply( $F{l_multiplicator} )]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="10" y="0" width="200" height="9"/>
+					<textElement>
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_name}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="level_group" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="703" y="0" width="50" height="9">
+						<printWhenExpression><![CDATA[new Boolean ($F{l_all}.multiply( $F{l_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
+					</reportElement>
+					<box rightPadding="1"/>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_all}.multiply( $F{l_multiplicator} )]]></textFieldExpression>
+				</textField>
+				<textField pattern="0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="753" y="0" width="25" height="9">
+						<printWhenExpression><![CDATA[new Boolean($F{l_percentage_all}.floatValue() != 0 ||
+    $F{l_all}.floatValue() != 0 )]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_percentage_all}]]></textFieldExpression>
+				</textField>
+				<textField pattern="0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="603" y="0" width="25" height="9">
+						<printWhenExpression><![CDATA[new Boolean($F{l_percentage_150}.floatValue() != 0 ||
+    $F{l_150}.floatValue() != 0 )]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_percentage_150}]]></textFieldExpression>
+				</textField>
+				<textField pattern="0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="528" y="0" width="25" height="9">
+						<printWhenExpression><![CDATA[new Boolean($F{l_percentage_100}.floatValue() != 0 ||
+    $F{l_100}.floatValue() != 0 )]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_budget_percentage_100}]]></textFieldExpression>
+				</textField>
+				<textField pattern="0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="628" y="0" width="25" height="9">
+						<printWhenExpression><![CDATA[new Boolean($F{l_percentage_150}.floatValue() != 0 ||
+    $F{l_150}.floatValue() != 0 )]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_budget_percentage_150}]]></textFieldExpression>
+				</textField>
+				<textField pattern="0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="778" y="0" width="25" height="9">
+						<printWhenExpression><![CDATA[new Boolean($F{l_percentage_all}.floatValue() != 0 ||
+    $F{l_all}.floatValue() != 0 )]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_budget_percentage_all}]]></textFieldExpression>
+				</textField>
+				<textField pattern="0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="318" y="0" width="25" height="9">
+						<printWhenExpression><![CDATA[new Boolean($F{l_percentage_1000}.floatValue() != 0 ||
+    $F{l_1000}.floatValue() != 0 )]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_budget_percentage_1000}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="213" y="0" width="30" height="9"/>
+					<textElement textAlignment="Center">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_value}]]></textFieldExpression>
+				</textField>
+				<textField pattern="0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="418" y="0" width="25" height="9">
+						<printWhenExpression><![CDATA[new Boolean($F{l_percentage_2000}.floatValue() != 0 ||
+    $F{l_2000}.floatValue() != 0 )]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_budget_percentage_2000}]]></textFieldExpression>
+				</textField>
+				<textField pattern="0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="293" y="0" width="25" height="9">
+						<printWhenExpression><![CDATA[new Boolean($F{l_percentage_1000}.floatValue() != 0 ||
+    $F{l_1000}.floatValue() != 0 )]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_percentage_1000}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="level_group" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="653" y="0" width="50" height="9">
+						<printWhenExpression><![CDATA[new Boolean ($F{l_other}.multiply( $F{l_multiplicator} ).floatValue() != 0)&& $F{isdisplayother}]]></printWhenExpression>
+					</reportElement>
+					<box rightPadding="1"/>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_other}.multiply( $F{l_multiplicator} )]]></textFieldExpression>
+				</textField>
+				<textField pattern="0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="493" y="0" width="35" height="9">
+						<printWhenExpression><![CDATA[new Boolean($F{l_percentage_100}.floatValue() != 0 ||
+    $F{l_100}.floatValue() != 0 )]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_percentage_100}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="level_group" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="553" y="0" width="50" height="9">
+						<printWhenExpression><![CDATA[new Boolean ($F{l_150}.multiply( $F{l_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
+					</reportElement>
+					<box rightPadding="1"/>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_150}.multiply( $F{l_multiplicator} )]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="level_group" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="443" y="0" width="50" height="9">
+						<printWhenExpression><![CDATA[new Boolean ($F{l_100}.multiply( $F{l_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
+					</reportElement>
+					<box rightPadding="1"/>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_100}.multiply( $F{l_multiplicator} )]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="level_group" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="243" y="0" width="50" height="9">
+						<printWhenExpression><![CDATA[new Boolean ($F{l_1000}.multiply( $F{l_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
+					</reportElement>
+					<box rightPadding="1"/>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_1000}.multiply( $F{l_multiplicator} )]]></textFieldExpression>
+				</textField>
+				<textField pattern="0.00" isBlankWhenNull="true">
+					<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="393" y="0" width="25" height="9">
+						<printWhenExpression><![CDATA[new Boolean($F{l_percentage_2000}.floatValue() != 0 ||
+    $F{l_2000}.floatValue() != 0 )]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l_percentage_2000}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="56" splitType="Stretch">
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="653" y="27" width="50" height="9">
+					<printWhenExpression><![CDATA[$F{isdisplayother}]]></printWhenExpression>
+				</reportElement>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Andere"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="293" y="27" width="25" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="55" y="27" width="30" height="9"/>
+				<textElement>
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["von"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="553" y="35" width="50" height="9"/>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["ADMIN"]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="85" y="27" width="125" height="9"/>
+				<textElement>
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{startdate}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="10" y="10" width="260" height="14"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Fehlende Konten in Deckungsbeitragsrechnung"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="753" y="27" width="25" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="318" y="27" width="25" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="443" y="27" width="50" height="9"/>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["100"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="493" y="27" width="35" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="343" y="35" width="50" height="9"/>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["FLG"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="553" y="27" width="50" height="9"/>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["150"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="778" y="27" width="25" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="343" y="27" width="50" height="9"/>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["2000"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="213" y="27" width="30" height="9"/>
+				<textElement textAlignment="Center">
+					<font size="6" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Konto"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="628" y="27" width="25" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="443" y="35" width="50" height="9"/>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["FUHRPARK"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="393" y="27" width="25" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="10" y="27" width="46" height="9"/>
+				<textElement>
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="85" y="35" width="125" height="9"/>
+				<textElement>
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{enddate}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="55" y="35" width="30" height="9"/>
+				<textElement>
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["bis"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="528" y="27" width="25" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="243" y="27" width="50" height="9"/>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["1000"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="418" y="27" width="25" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="703" y="27" width="50" height="9"/>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Total"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="603" y="27" width="25" height="9"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="243" y="35" width="50" height="9"/>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["CONV"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

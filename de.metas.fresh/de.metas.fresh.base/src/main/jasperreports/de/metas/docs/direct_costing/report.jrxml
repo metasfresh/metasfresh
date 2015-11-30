@@ -11,6 +11,7 @@
 	<parameter name="Date" class="java.util.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+	<parameter name="showRemainings" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT
 	*,
@@ -1386,6 +1387,17 @@ ORDER BY
 		<band height="1"/>
 	</lastPageFooter>
 	<summary>
-		<band splitType="Stretch"/>
+		<band height="100" splitType="Stretch">
+			<subreport>
+				<reportElement uuid="bf4b68d0-d9f4-4c72-8572-99c98d767e0e" x="0" y="0" width="842" height="100">
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showRemainings}))]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="Date">
+					<subreportParameterExpression><![CDATA[$P{Date}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/direct_costing/direct_costing_unused.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
 	</summary>
 </jasperReport>
