@@ -60,5 +60,4 @@ public class CreatePOLineFromSOLinesAggregationKeyBuilder extends AbstractAggreg
 
 		return poLineKey.toString();
 	}
-
 }

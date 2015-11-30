@@ -4,10 +4,14 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 
+import org.adempiere.ad.process.ISvrProcessPrecondition;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.GridTab;
+import org.compiere.process.DocAction;
 import org.compiere.process.SvrProcess;
 
 import de.metas.interfaces.I_C_OrderLine;
@@ -44,7 +48,9 @@ import de.metas.order.process.impl.CreatePOFromSOsAggregator;
  * @author metas-dev <dev@metas-fresh.com>
  * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
  */
-public class C_Order_CreatePOFromSOs extends SvrProcess
+public class C_Order_CreatePOFromSOs
+		extends SvrProcess
+		implements ISvrProcessPrecondition
 {
 
 	private Timestamp p_DatePromised_From;
@@ -62,6 +68,8 @@ public class C_Order_CreatePOFromSOs extends SvrProcess
 	private String p_poReference;
 
 	private final IC_Order_CreatePOFromSOsDAO orderCreatePOFromSOsDAO = Services.get(IC_Order_CreatePOFromSOsDAO.class);
+
+	private final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
 
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/07228_Create_bestellung_from_auftrag_more_than_once_%28100300573628%29
@@ -97,13 +105,19 @@ public class C_Order_CreatePOFromSOs extends SvrProcess
 				p_DatePromised_From,
 				p_DatePromised_To);
 
-		final CreatePOFromSOsAggregator workpackageAggregator = new CreatePOFromSOsAggregator(this, p_IsDropShip);
+		final String purchaseQtySource = orderCreatePOFromSOsBL.getConfigPurchaseQtySource();
+		final CreatePOFromSOsAggregator workpackageAggregator = new CreatePOFromSOsAggregator(this,
+				p_IsDropShip,
+				purchaseQtySource);
+
 		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this));
 		workpackageAggregator.setGroupsBufferSize(100);
 
 		for (final I_C_Order salesOrder : IteratorUtils.asIterable(it))
 		{
-			final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder, p_allowMultiplePOOrders);
+			final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder,
+					p_allowMultiplePOOrders,
+					purchaseQtySource);
 			for (final I_C_OrderLine salesOrderLine : salesOrderLines)
 			{
 				workpackageAggregator.add(salesOrderLine);
@@ -114,4 +128,21 @@ public class C_Order_CreatePOFromSOs extends SvrProcess
 
 		return "Success";
 	}
+
+	/**
+	 * @return <code>true</code> if the given gridTab is a completed sales order.
+	 */
+	@Override
+	public boolean isPreconditionApplicable(final GridTab gridTab)
+	{
+		if (!I_C_Order.Table_Name.equals(gridTab.getTableName()))
+		{
+			return false;
+		}
+
+		final I_C_Order order = InterfaceWrapperHelper.create(gridTab, I_C_Order.class);
+		return order.isSOTrx()
+				&& DocAction.STATUS_Completed.equals(order.getDocStatus());
+	}
+
 }

@@ -67,9 +67,12 @@ public interface IC_Order_CreatePOFromSOsDAO extends ISingletonService
 	 *
 	 * @param order
 	 * @param allowMultiplePOOrders if <code>false</code>, then only those sales order lines will be returned that have <code>Link_OrderLine_ID == null</code>.
+	 * @param purchaseQtySource see {@link IC_Order_CreatePOFromSOsBL#getConfigPurchaseQtySource()}.
 	 * @return
 	 */
-	List<I_C_OrderLine> retrieveOrderLines(I_C_Order order, boolean allowMultiplePOOrders);
+	List<I_C_OrderLine> retrieveOrderLines(I_C_Order order,
+			boolean allowMultiplePOOrders,
+			String purchaseQtySource);
 
 	/**
 	 * See {@link #retrieveOrderLines(I_C_Order)}.

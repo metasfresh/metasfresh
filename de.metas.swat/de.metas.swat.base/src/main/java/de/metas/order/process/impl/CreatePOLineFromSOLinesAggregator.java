@@ -10,9 +10,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.MapReduceAggregator;
+import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
 
@@ -54,11 +56,20 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 
 	private final I_C_Order purchaseOrder;
 
+	private final String purchaseQtySource;
+
 	private final Map<I_C_OrderLine, List<I_C_OrderLine>> purchaseOrderLine2saleOrderLines = new IdentityHashMap<>();
 
-	/* package */public CreatePOLineFromSOLinesAggregator(final I_C_Order purchaseOrder)
+	/**
+	 *
+	 * @param purchaseOrder
+	 * @param purchaseQtySource column name of the sales order line column to get the qty from. Can be either can be either QtyOrdered or QtyReserved.
+	 */
+	/* package */public CreatePOLineFromSOLinesAggregator(final I_C_Order purchaseOrder, final String purchaseQtySource)
 	{
 		this.purchaseOrder = purchaseOrder;
+
+		this.purchaseQtySource = purchaseQtySource;
 	}
 
 	@Override
@@ -143,10 +154,25 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 	{
 		final BigDecimal oldQtyEntered = purchaseOrderLine.getQtyEntered();
 
-		// the purchase order line's UOM is the internal stocking UOM, so we don't need to convert from qtyReserved to qtyEntered.
-		final BigDecimal newQtyEntered = oldQtyEntered.add(salesOrderLine.getQtyReserved());
+		// the purchase order line's UOM is the internal stocking UOM, so we don't need to convert from qtyOrdered/qtyReserved to qtyEntered.
+		final BigDecimal purchaseQty;
+		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(purchaseQtySource))
+		{
+			purchaseQty = salesOrderLine.getQtyOrdered();
+		}
+		else if (I_C_OrderLine.COLUMNNAME_QtyReserved.equals(purchaseQtySource))
+		{
+			purchaseQty = salesOrderLine.getQtyReserved();
+		}
+		else
+		{
+			Check.errorIf(true, "Unsupported purchaseQtySource={0}", purchaseQtySource);
+			purchaseQty = null; // won't be reached
+		}
 
-		// setting QtyEtnered, because qtyOrdered will be set from qtyEntered by a model interceptor
+		final BigDecimal newQtyEntered = oldQtyEntered.add(purchaseQty);
+
+		// setting QtyEntered, because qtyOrdered will be set from qtyEntered by a model interceptor
 		purchaseOrderLine.setQtyEntered(newQtyEntered);
 
 		purchaseOrderLine2saleOrderLines.get(purchaseOrderLine).add(salesOrderLine); // no NPE, because the list for this key was added in createGroup()
@@ -155,5 +181,11 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 	I_C_Order getPurchaseOrder()
 	{
 		return purchaseOrder;
+	}
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
 	}
 }

@@ -13,6 +13,7 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.MapReduceAggregator;
+import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
@@ -54,6 +55,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private static final String MSG_PURCHASE_ORDER_CREATED = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseOrderCreated";
 	private final IContextAware context;
 	private final boolean p_IsDropShip;
+	private final String purchaseQtySource;
 
 	private final I_C_Order dummyOrder;
 
@@ -62,10 +64,13 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
-	public CreatePOFromSOsAggregator(final IContextAware context, final boolean p_IsDropShip)
+	public CreatePOFromSOsAggregator(final IContextAware context,
+			final boolean p_IsDropShip,
+			final String purchaseQtySource)
 	{
 		this.context = context;
 		this.p_IsDropShip = p_IsDropShip;
+		this.purchaseQtySource = purchaseQtySource;
 
 		dummyOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, context);
 		dummyOrder.setDocumentNo(CreatePOFromSOsAggregationKeyBuilder.KEY_SKIP);
@@ -148,7 +153,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		CreatePOLineFromSOLinesAggregator orderLinesAggregator = orderKey2OrderLineAggregator.get(pruchaseOrder.getDocumentNo());
 		if (orderLinesAggregator == null)
 		{
-			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(pruchaseOrder);
+			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(pruchaseOrder, purchaseQtySource);
 			orderLinesAggregator.setItemAggregationKeyBuilder(CreatePOLineFromSOLinesAggregationKeyBuilder.INSTANCE);
 			orderLinesAggregator.setGroupsBufferSize(100);
 
@@ -243,5 +248,11 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private ILoggable getLoggable()
 	{
 		return ILoggable.THREADLOCAL.getLoggable();
+	}
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
 	}
 }

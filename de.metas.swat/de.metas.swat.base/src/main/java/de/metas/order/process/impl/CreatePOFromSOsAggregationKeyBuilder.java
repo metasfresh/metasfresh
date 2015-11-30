@@ -6,6 +6,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
@@ -58,8 +59,8 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractAggregationKey
 
 	/* package */static final String KEY_SKIP = "SKIP_SALES_ORDER_LINE";
 
-	private final IBPartnerProductDAO bpProductDAO = Services.get(IBPartnerProductDAO.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final transient IBPartnerProductDAO bpProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final int p_Vendor_ID;
 	private final IContextAware context;
@@ -133,4 +134,9 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractAggregationKey
 		return poPartner.getValue();
 	}
 
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
+	}
 }

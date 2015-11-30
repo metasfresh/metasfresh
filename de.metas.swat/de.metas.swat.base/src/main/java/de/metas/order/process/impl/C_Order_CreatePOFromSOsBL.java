@@ -2,6 +2,10 @@ package de.metas.order.process.impl;
 
 import java.util.ArrayList;
 
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.ILoggable;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
@@ -31,6 +35,8 @@ import de.metas.order.process.spi.IC_Order_CreatePOFromSOsListener;
 
 public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 {
+	private static final String SYSCONFIG_PURCHASE_QTY_SOURCE = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseQtySource";
+	private static final String SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT = I_C_OrderLine.COLUMNNAME_QtyOrdered;
 
 	private final ArrayList<IC_Order_CreatePOFromSOsListener> listeners = new ArrayList<>();
 
@@ -54,5 +60,30 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 				}
 			}
 		};
+	}
+
+	@Override
+	public String getConfigPurchaseQtySource()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		// afaiu, qtyReserved would make more sense, but there seem to be problems in C_OrderLine.QtyReserved
+		final String purchaseQtySource = sysConfigBL.getValue(SYSCONFIG_PURCHASE_QTY_SOURCE, SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT);
+
+		if (!SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT.equalsIgnoreCase(purchaseQtySource)
+				&& !I_C_OrderLine.COLUMNNAME_QtyReserved.equalsIgnoreCase(purchaseQtySource))
+		{
+			ILoggable.THREADLOCAL.getLoggable().addLog(
+					"AD_SysConfig " + SYSCONFIG_PURCHASE_QTY_SOURCE + " has an unsspported value: " + purchaseQtySource + "; Instead we use the default value: " + SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT);
+
+			return SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT;
+		}
+		return purchaseQtySource;
+	}
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
 	}
 }

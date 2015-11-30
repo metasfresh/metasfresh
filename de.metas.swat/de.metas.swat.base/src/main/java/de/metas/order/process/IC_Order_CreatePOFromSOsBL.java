@@ -45,4 +45,11 @@ public interface IC_Order_CreatePOFromSOsBL extends ISingletonService
 	 * @return a composite of all listeners that were added. Never returns <code>null</code>.
 	 */
 	IC_Order_CreatePOFromSOsListener getCompositeListener();
+
+	/**
+	 * Retrieve the name of the <code>C_OrderLine</code> column to aggregate the purchase order lines' qtys.
+	 *
+	 * @return <code>QtyOrdered</code> or <code>QtyReserved</code>. Never anything else.
+	 */
+	String getConfigPurchaseQtySource();
 }

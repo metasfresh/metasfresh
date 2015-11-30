@@ -14,6 +14,7 @@ import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
@@ -148,15 +149,23 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLines(final I_C_Order order,
-			final boolean allowMultiplePOOrders)
+			final boolean allowMultiplePOOrders,
+			final String purchaseQtySource)
 	{
+		Check.assumeNotNull(order, "Param order is not null");
+		Check.assumeNotEmpty(purchaseQtySource, "Param purchaseQtySource is not empty");
+		Check.assume(I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(purchaseQtySource) || I_C_OrderLine.COLUMNNAME_QtyReserved.equals(purchaseQtySource),
+				"Param purchaseQtySource={0} needs to be either {1} or {2}",
+				purchaseQtySource, I_C_OrderLine.COLUMNNAME_QtyOrdered, I_C_OrderLine.COLUMNNAME_QtyReserved
+				);
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_C_OrderLine> orderLineQueryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.setContext(order)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
-				.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyReserved, Operator.Greather, BigDecimal.ZERO)
+				.addCompareFilter(purchaseQtySource, Operator.Greather, BigDecimal.ZERO)
 				.filter(additionalFilters);
 
 		if (!allowMultiplePOOrders)
@@ -177,5 +186,11 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 	public void addAdditionalOrderLinesFilter(final IQueryFilter<I_C_OrderLine> filter)
 	{
 		additionalFilters.addFilter(filter);
+	}
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
 	}
 }
