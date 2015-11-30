@@ -106,7 +106,6 @@ import de.metas.adempiere.service.ITriggerUIBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.validator.M_InOut;
-import de.metas.inout.model.validator.M_InOutLine;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_OrderLine;
@@ -185,7 +184,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new OrderLine(), client);
 		engine.addModelValidator(new C_Invoice(), client); // 03771
 		engine.addModelValidator(new M_InOut(), client); // 03771
-		engine.addModelValidator(M_InOutLine.INSTANCE, client);
 		engine.addModelValidator(new OrgInfo(), client);
 		engine.addModelValidator(new Payment(), client);
 		engine.addModelValidator(new ProcessValidator(), client);
