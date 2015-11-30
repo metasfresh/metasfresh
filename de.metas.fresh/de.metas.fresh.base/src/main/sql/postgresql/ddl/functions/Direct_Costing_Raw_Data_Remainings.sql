@@ -43,10 +43,13 @@ FROM
 			SUM( CASE WHEN a.Value = '150' THEN Budget  ELSE 0 END ) AS Budget_150
 		FROM
 			(
-				SELECT Account_ID, C_Activity_ID, 
-					CASE WHEN postingtype = 'A' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Balance,
-					CASE WHEN postingtype = 'B' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Budget
-				FROM 	Fact_Acct 
+				SELECT fa.Account_ID
+					, COALESCE(ap.C_Activity_ID, a.C_Activity_ID) as C_Activity_ID
+					, CASE WHEN postingtype = 'A' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Balance
+					, CASE WHEN postingtype = 'B' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Budget
+				FROM Fact_Acct fa
+				left outer join C_Activity a on (a.C_Activity_ID=fa.C_Activity_ID)
+				left outer join C_Activity ap on (ap.C_Activity_ID=a.Parent_Activity_ID)
 				WHERE	dateacct::date <= $1
 					AND dateacct::Date >= (
 						SELECT MIN( StartDate )::Date FROM C_Period 
