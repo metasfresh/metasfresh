@@ -22,10 +22,10 @@ package org.compiere.server.devtools;
  * #L%
  */
 
-
-import java.io.File;
+import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.util.Check;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.MAcctProcessor;
 import org.compiere.server.AcctProcessor;
@@ -44,14 +44,10 @@ public class AcctProcessor_RunNow
 
 	public static void main(String[] args) throws InterruptedException
 	{
-		final String username = System.getProperty("user.name");
-		
-		// final String propertyDir = "../de.metas.endcustomer/";
-		//final String propertyDir = "c:/workspaces/live/de.metas.endcustomer/";
-		final String propertyDir = "c:/workspaces//de.metas.endcustomer/";
-		
-		final String propertyFile = new File(propertyDir, "Adempiere.properties_" + username).getAbsolutePath();
-		System.setProperty("PropertyFile", propertyFile);
+		if (Check.isEmpty(System.getProperty("PropertyFile"), true))
+		{
+			throw new IllegalStateException("Make sure the PropertyFile is configured in eclipse luncher");
+		}
 
 		Env.getSingleAdempiereInstance().startup(RunMode.BACKEND);
 
@@ -60,20 +56,24 @@ public class AcctProcessor_RunNow
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, 0);
 		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 0);
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 0);
-		for (final MAcctProcessor acctProcessorModel : MAcctProcessor.getActive(ctx))
-		{
-			 final AcctProcessor acctProcessor = new AcctProcessor(acctProcessorModel);
-			 acctProcessor.setInitialNapSeconds(0);
-			 System.out.println("Running " + acctProcessor);
-//			 acctProcessor.runNow();
-			 acctProcessor.start();
-			 acctProcessor.join();
-			 
 
-//			final I_AD_Client adClient = acctProcessorModel.getAD_Client();
-//			Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, adClient.getAD_Client_ID());
-//			System.out.println("Running MCost.create for " + adClient);
-//			MCost.create(adClient);
+		final long sleepMS = 30 * 1000;
+
+		while (true)
+		{
+			for (final MAcctProcessor acctProcessorModel : MAcctProcessor.getActive(ctx))
+			{
+				final AcctProcessor acctProcessor = new AcctProcessor(acctProcessorModel);
+				acctProcessor.setInitialNapSeconds(0);
+				System.out.println("Running " + acctProcessor);
+				acctProcessor.runNow();
+				System.out.println("Done " + acctProcessor + ": " + acctProcessor.getServerInfo());
+				// acctProcessor.start();
+				// acctProcessor.join();
+			}
+
+			System.out.println("Sleeping " + sleepMS + "ms until " + new Date(System.currentTimeMillis() + sleepMS));
+			Thread.sleep(sleepMS);
 		}
 	}
 

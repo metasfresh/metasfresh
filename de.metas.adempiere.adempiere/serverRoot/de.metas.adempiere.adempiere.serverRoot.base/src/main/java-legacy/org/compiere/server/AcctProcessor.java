@@ -230,7 +230,8 @@ public class AcctProcessor extends AdempiereServer
 	@Override
 	public final String getServerInfo()
 	{
-		return "#" + p_runCount + " - Last=" + m_summary.toString();
+		final StringBuffer sumary = this.m_summary;
+		return "#" + p_runCount + " - Last=" + (sumary == null ? "-" : sumary.toString());
 	}	// getServerInfo
 
 }	// AcctProcessor

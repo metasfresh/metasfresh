@@ -57,12 +57,12 @@ import org.compiere.util.Env;
  *          amt Teo Sarca <li>FR [ 2819081 ] FactLine.getDocLine should be public https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2819081&group_id=176962
  * 
  */
-public final class FactLine extends X_Fact_Acct
+final class FactLine extends X_Fact_Acct
 {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 6141312459030795891L;
+	private static final long serialVersionUID = 1287219868802190295L;
 
 	/**
 	 * Constructor
@@ -73,7 +73,7 @@ public final class FactLine extends X_Fact_Acct
 	 * @param Line_ID - Optional line id
 	 * @param trxName transaction
 	 */
-	public FactLine(Properties ctx, int AD_Table_ID, int Record_ID, int Line_ID, String trxName)
+	FactLine(Properties ctx, int AD_Table_ID, int Record_ID, int Line_ID, String trxName)
 	{
 		super(ctx, 0, trxName);
 		setAD_Client_ID(0);							// do not derive
@@ -293,6 +293,22 @@ public final class FactLine extends X_Fact_Acct
 			return;
 		}
 		invertDrAndCrAmounts();
+	}
+	
+	/**
+	 * Negate the DR and CR source and acounted amounts.
+	 */
+	public final void negateDrAndCrAmounts()
+	{
+		final BigDecimal amtSourceDr = getAmtSourceDr(); 
+		final BigDecimal amtSourceCr = getAmtSourceCr();
+		final BigDecimal amtAcctDr = getAmtAcctDr();
+		final BigDecimal amtAcctCr = getAmtAcctCr();
+		
+		setAmtSourceDr(amtSourceDr.negate());
+		setAmtSourceCr(amtSourceCr.negate());
+		setAmtAcctDr(amtAcctDr.negate());
+		setAmtAcctCr(amtAcctCr.negate());
 	}
 
 	/**
@@ -689,6 +705,30 @@ public final class FactLine extends X_Fact_Acct
 	{
 		return getAcctBalance().signum() >= 0;
 	}   // isDrSourceBalance
+	
+	/**
+	 * 
+	 * @param factLine
+	 * @return true if the given fact line is booked on same DR/CR side as this line 
+	 */
+	public boolean isSameAmtSourceDrCrSideAs(final FactLine factLine)
+	{
+		final boolean thisDR = getAmtAcctDr().signum() != 0;
+		final boolean otherDR = factLine != null && factLine.getAmtAcctDr().signum() != 0;
+		if (thisDR != otherDR)
+		{
+			return false;
+		}
+		
+		final boolean thisCR = getAmtAcctCr().signum() != 0;
+		final boolean otherCR = factLine != null && factLine.getAmtAcctCr().signum() != 0;
+		if (thisCR != otherCR)
+		{
+			return false;
+		}
+		
+		return true;
+	}
 
 	/**
 	 * @return AmtAcctDr or AmtAcctCr, which one is not ZERO
