@@ -97,9 +97,9 @@ public class C_Invoice
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-		final boolean processed = true; // only processed PLVs count
+		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 		final I_M_PriceList_Version priceListVersion = priceListDAO
-				.retrievePriceListVersionOrNull(invoice.getM_PriceList(), invoiceDate, processed); // can be null
+				.retrievePriceListVersionOrNull(invoice.getM_PriceList(), invoiceDate, processedPLVFiltering); // can be null
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 

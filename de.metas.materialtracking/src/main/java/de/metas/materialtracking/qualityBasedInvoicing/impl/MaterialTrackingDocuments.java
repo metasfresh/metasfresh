@@ -218,10 +218,10 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 		plvId2qiOrders = new HashMap<>();
 		plvs = new TreeMap<>();
 
-		final List<IQualityInspectionOrder> qualityInspectionOrders = getAllProductionOrders();
-		for (final IQualityInspectionOrder qualityInspectionOrder : qualityInspectionOrders)
+		final List<IQualityInspectionOrder> productionOrders = getAllProductionOrders();
+		for (final IQualityInspectionOrder productionOrder : productionOrders)
 		{
-			final I_PP_Order ppOrder = qualityInspectionOrder.getPP_Order();
+			final I_PP_Order ppOrder = productionOrder.getPP_Order();
 			final Pair<I_M_PriceList_Version, List<I_M_InOutLine>> plvAndIols = providePriceListVersionOrNullForPPOrder(ppOrder, pricingSystem);
 			final I_M_PriceList_Version plv = plvAndIols.getFirst();
 			if (plv == null)
@@ -231,7 +231,7 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 
 			plvs.put(plv.getM_PriceList_Version_ID(), plv);
 
-			((QualityInspectionOrder)qualityInspectionOrder).setPriceListversion(plv);
+			((QualityInspectionOrder)productionOrder).setPriceListversion(plv);
 			final int plvID = plv.getM_PriceList_Version_ID();
 
 			//
@@ -246,7 +246,7 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 				qiOrders = new ArrayList<>();
 				plvId2qiOrders.put(plvID, qiOrders);
 			}
-			qiOrders.add(qualityInspectionOrder);
+			qiOrders.add(productionOrder);
 		}
 
 		for (final I_M_PriceList_Version plv : plvs.values())
@@ -342,8 +342,8 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 
 		final Timestamp movementDate = inOutLine.getM_InOut().getMovementDate();
 		final I_M_PriceList priceList = priceLists.next();
-		final boolean processed = true;
-		final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, movementDate, processed);
+		final Boolean processedPLVFiltering = true; // task 09533: in material-tracking we work only with PLVs that are cleared
+		final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, movementDate, processedPLVFiltering);
 		if (plv == null)
 		{
 			ILoggable.THREADLOCAL.getLoggable().addLog("Unable to retrieve a processed priceListVersion for priceList {0} and movementDate {1}.", priceList, movementDate);

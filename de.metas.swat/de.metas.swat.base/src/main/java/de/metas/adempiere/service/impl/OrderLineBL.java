@@ -657,11 +657,11 @@ public class OrderLineBL implements IOrderLineBL
 			// If the line doesn't have a pricelist version, take the one from order.
 			final I_C_Order order = orderLine.getC_Order();
 
-			final boolean processed = true;
+			final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 			return Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(
 					order.getM_PriceList(),
 					getPriceDate(orderLine, order),
-					processed);
+					processedPLVFiltering);
 		}
 	}
 

@@ -175,8 +175,8 @@ public class PricingBL implements IPricingBL
 			final I_M_PriceList priceList = priceListDAO.retrievePriceList(ctx, pricingCtx.getM_PriceList_ID());
 			try
 			{
-				final boolean processed = true;
-				final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, priceDate, processed);
+				final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
+				final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, priceDate, processedPLVFiltering);
 				if (plv != null)
 				{
 					final int priceListVersionId = plv.getM_PriceList_Version_ID();

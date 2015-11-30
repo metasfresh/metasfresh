@@ -213,7 +213,7 @@ public class PriceListBL implements IPriceListBL
 
 		// This will be the most "fresh" pricelist (check the closest dateFrom)
 		I_M_PriceList currentPricelist = null;
-		final boolean processed = true; // only check for PLVs that are "cleared" by a user
+		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 		Timestamp currentValidFrom = null;
 		I_M_PriceList_Version lastPriceListVersion = null;
 
@@ -221,7 +221,7 @@ public class PriceListBL implements IPriceListBL
 		{
 			currentPricelist = pricelists.next();
 
-			lastPriceListVersion = priceListDAO.retrievePriceListVersionOrNull(currentPricelist, date, processed);
+			lastPriceListVersion = priceListDAO.retrievePriceListVersionOrNull(currentPricelist, date, processedPLVFiltering);
 
 			if (lastPriceListVersion != null)
 			{
@@ -233,7 +233,7 @@ public class PriceListBL implements IPriceListBL
 		{
 			final I_M_PriceList priceListToCheck = pricelists.next();
 
-			final I_M_PriceList_Version plvToCkeck = priceListDAO.retrievePriceListVersionOrNull(priceListToCheck, date, processed);
+			final I_M_PriceList_Version plvToCkeck = priceListDAO.retrievePriceListVersionOrNull(priceListToCheck, date, processedPLVFiltering);
 
 			if (plvToCkeck == null)
 			{

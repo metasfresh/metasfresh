@@ -930,6 +930,12 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		return detailForCurrentRegularOrder;
 	}
 
+	/**
+	 * Checks if our config has a QualityAdjustment for the given date.
+	 *
+	 * @param dateOfProduction
+	 * @return
+	 */
 	private boolean isInvoiceRegularOrderForDate(final Timestamp dateOfProduction)
 	{
 		final ILagerKonfQualityBasedConfig config = getQualityBasedConfig();

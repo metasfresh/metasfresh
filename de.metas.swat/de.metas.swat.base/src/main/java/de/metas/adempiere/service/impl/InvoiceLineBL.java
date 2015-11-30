@@ -174,14 +174,14 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final boolean onlyProcessedPLVs = true;
+		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
 		if (invoice.getM_PriceList_ID() != 100) // FIXME use PriceList_None constant
 		{
 			final I_M_PriceList priceList = invoice.getM_PriceList();
 
 
-			final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), onlyProcessedPLVs);
+			final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
 			Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {0}", invoice);
 
 			final int m_Product_ID = invoiceLine.getM_Product_ID();
@@ -208,7 +208,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			final I_M_PriceList priceList = order.getM_PriceList();
 
-			final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), onlyProcessedPLVs);
+			final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
 			Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {0}", invoice);
 
 			final int m_Product_ID = invoiceLine.getM_Product_ID();

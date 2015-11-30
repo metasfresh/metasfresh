@@ -517,8 +517,8 @@ public class OrderBL implements IOrderBL
 			orderDate = order.getDateOrdered();
 		}
 
-		final boolean processed = true;
-		final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(order.getM_PriceList(), orderDate, processed);
+		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
+		final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(order.getM_PriceList(), orderDate, processedPLVFiltering);
 		return plv;
 	}
 
