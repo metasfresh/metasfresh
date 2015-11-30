@@ -26,6 +26,7 @@ import java.util.logging.Level;
 
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.currency.ICurrencyConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -613,11 +614,24 @@ public class Doc_AllocationHdr extends Doc
 			createCashBasedAcct(fact, line, allocationSource);
 			return;
 		}
+		
+		//
+		// Determine which currency conversion we shall use
+		final ICurrencyConversionContext invoiceCurrencyConversionCtx;
+		if (line.getInvoiceC_Currency_ID() == as.getC_Currency_ID())
+		{
+			// use default context because the invoice is in accounting currency, so we shall have no currency gain/loss
+			invoiceCurrencyConversionCtx = null;
+		}
+		else
+		{
+			invoiceCurrencyConversionCtx = line.getInvoiceCurrencyConversionCtx();
+		}
 
 		final FactLineBuilder factLineBuilder = fact.createLine()
 				.setDocLine(line)
 				.setC_Currency_ID(getC_Currency_ID())
-				.setCurrencyConversionCtx(line.getInvoiceCurrencyConversionCtx())
+				.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
 				.setAD_Org_ID(line.getInvoiceOrg_ID())
 				.setC_BPartner_ID(line.getInvoiceBPartner_ID());
 
@@ -815,7 +829,7 @@ public class Doc_AllocationHdr extends Doc
 
 		//
 		// Get how much was booked for invoice, on allocation's date
-		final boolean isDR = invoiceFactLine.isDrAcctBalance();
+		final boolean isDR = invoiceFactLine.getAmtAcctDr().signum() != 0; 
 		final BigDecimal allocationAcctOnInvoiceDate = isDR ? invoiceFactLine.getAmtAcctDr() : invoiceFactLine.getAmtAcctCr();
 
 		//
