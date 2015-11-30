@@ -10,12 +10,12 @@ package de.metas.materialtracking.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,7 +54,7 @@ public class C_Invoice_Candidate
 	/**
 	 * Checks if the given <code>ic</code> references a record that is already tracked. If that is the case, the ic's
 	 * {@link de.metas.materialtracking.model.I_C_Invoice_Candidate#COLUMNNAME_M_Material_Tracking_ID M_Material_Tracking_ID} is set to the referenced object's tracking ID.
-	 * 
+	 *
 	 * @param ic
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
@@ -90,7 +90,7 @@ public class C_Invoice_Candidate
 	/**
 	 * Checks if the given <code>ic</code> has {@link de.metas.materialtracking.model.I_C_Invoice_Candidate#COLUMNNAME_M_Material_Tracking_ID M_Material_Tracking_ID} <code>>0</code>. If that is the
 	 * case, it is also linked to the tracking using {@link IMaterialTrackingBL#linkModelToMaterialTracking(Object, I_M_Material_Tracking)}.
-	 * 
+	 *
 	 * @param ic
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
@@ -106,7 +106,7 @@ public class C_Invoice_Candidate
 		final boolean createLink = false; // i.e. remove the link
 		updateLinkToTrackingIfNotNull(ic, createLink);
 	}
-	
+
 	private void updateLinkToTrackingIfNotNull(final I_C_Invoice_Candidate ic, final boolean createLink)
 	{
 		final de.metas.materialtracking.model.I_C_Invoice_Candidate icExt = InterfaceWrapperHelper.create(ic, de.metas.materialtracking.model.I_C_Invoice_Candidate.class);

@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.spi;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,11 +37,11 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  * Implementors of this class have the job to create and invalidate {@link I_C_Invoice_Candidate} records.
  *
  * They can be registered in {@link I_C_ILCandHandler} table.
- * 
+ *
  * To get an instance of this interface, use {@link IInvoiceCandidateHandlerBL} methods.
  *
  * Registered implementations will instantiated and their {@link #createMissingCandidates(Properties, String)} method will be called by API.
- * 
+ *
  * NOTE: because the API will create a new instance each time a handler is needed, it's safe to have status/field variables.
  *
  * @author ts
@@ -50,18 +50,31 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  */
 public interface IInvoiceCandidateHandler
 {
+	public enum OnInvalidateForModelAction
+	{
+		REVALIDATE,
+
+		/**
+		 * We will still revalidate invalid ICs, but if a referenced model changes, then {@link IInvoiceCandidateHandler#invalidateCandidatesFor(Object)} will not be called, but the model will be
+		 * scheduled for (re-)creation via {@link IInvoiceCandidateHandler#createCandidatesFor(InvoiceCandidateGenerateRequest)}.
+		 */
+		RECREATE_ASYNC
+	}
+
+	OnInvalidateForModelAction getOnInvalidateForModelAction();
+
 	/**
 	 * Checks if this handler, in general, can create invoice candidates automatically.
-	 * 
+	 *
 	 * This is a preliminary condition, and when the business logic has to create invoice candidates automatically, first it will call {@link #isCreateMissingCandidatesAutomatically(Object)}.
-	 * 
+	 *
 	 * @return true if the invoice candidates shall be automatically generated for {@link #getSourceTable()}.
 	 */
 	boolean isCreateMissingCandidatesAutomatically();
 
 	/**
 	 * Checks if this handler can generate invoice candidates for given model.
-	 * 
+	 *
 	 * @param model
 	 * @return true if the invoice candidates shall be automatically generated for given model.
 	 */
@@ -72,7 +85,7 @@ public interface IInvoiceCandidateHandler
 
 	/**
 	 * Retrieves all models which are eligible for invoicing but they have no invoice candidates.
-	 * 
+	 *
 	 * @param ctx
 	 * @param limit how many models shall be retrieved. Note that, at this moment, this is a recommendation which could be respected or not by current implementations.
 	 * @param trxName
@@ -82,12 +95,12 @@ public interface IInvoiceCandidateHandler
 
 	/**
 	 * Called by API to expand an initial invoice candidate generate request.
-	 * 
+	 *
 	 * Usually this method will return exactly the request which was provided as parameter, but there are some cases when an handler cannot generate missing candidates for a given model but the
 	 * handler can advice which handlers can do that and which models shall be used.
-	 * 
+	 *
 	 * An example would be the M_InOut handler which will expand the initial request to M_InOutLine requests.
-	 * 
+	 *
 	 * @param request initial request
 	 * @return actual requests to be used. never returns null
 	 */

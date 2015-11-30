@@ -94,6 +94,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IC_OrderLine_HandlerDAO;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
+import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
 import de.metas.ordercandidate.api.IOLCandBL;
@@ -341,6 +342,9 @@ public final class Main extends AbstractModuleInterceptor
 
 		// Material tracking (07371)
 		Services.registerService(IHandlingUnitsInfoFactory.class, new HUHandlingUnitsInfoFactory());
+
+		// task 09533
+		Services.registerService(IPPOrderMInOutLineRetrievalService.class, new de.metas.handlingunits.materialtracking.spi.impl.PPOrderMInOutLineRetrievalService());
 	}
 
 	/**

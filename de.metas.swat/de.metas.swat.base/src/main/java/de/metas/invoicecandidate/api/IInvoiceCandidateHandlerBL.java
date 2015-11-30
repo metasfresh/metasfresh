@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,10 +44,10 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	 * Calls {@link #mkInstance(I_C_ILCandHandler)} with the given handlerRecord and sets the record's SourceTable and Is_AD_User_InCharge_UI_Setting fields.
 	 *
 	 * @param ilCandGenerator
-	 *
+	 * @param failIfClassNotFound if <code>true</code> and the handler's ClassName value can't be instantiated as a java-class, then throw an AdempiereException.
 	 * @see IInvoiceCandidateHandler
 	 */
-	void evalClassName(I_C_ILCandHandler handlerRecord);
+	void evalClassName(I_C_ILCandHandler handlerRecord, boolean failIfClassNotFound);
 
 	/**
 	 * Creates and returns a new instance of the ICreator SPI implementation defined in the classname column of the given creatorRecord.

@@ -10,18 +10,17 @@ package de.metas.materialtracking.qualityBasedInvoicing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -30,7 +29,6 @@ import javax.annotation.Nonnull;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 
 /**
@@ -38,10 +36,10 @@ import de.metas.materialtracking.IHandlingUnitsInfo;
  *
  * Contains informations about vendor material receipt. These informations will be used a reference when projected quantities will be calculated.
  *
+ * @param <T> the type of the instances to to add using the {@link #add(Object)} method.
  * @author tsa
- *
  */
-public interface IVendorReceipt
+public interface IVendorReceipt<T>
 {
 	/**
 	 * @return received product
@@ -67,9 +65,9 @@ public interface IVendorReceipt
 	IHandlingUnitsInfo getHandlingUnitsInfo();
 
 	/**
-	 * Add another invoice candidate. Needs to be consistent with previously added candidates.
-	 * 
+	 * Add another model. Needs to be consistent with previously added models.
+	 *
 	 * @param invoiceCandidate
 	 */
-	void add(I_C_Invoice_Candidate invoiceCandidate);
+	void add(T model);
 }

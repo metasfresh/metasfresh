@@ -13,18 +13,17 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -39,6 +38,7 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -51,7 +51,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductNotOnPriceListException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.model.GenericPO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
@@ -214,7 +213,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				// we'll need those icIols to be up to date to date in order to have QtyWithIssues (updateQtyWithIssues() et al. further down),
 				// and we need them (depending on which handler) for setDeliveredData()
 				populateC_InvoiceCandidate_InOutLine(ic, ic.getC_OrderLine());
-				
+
 				// updating qty delivered
 				// 07814-IT2 only from now on we have the correct QtyDelivered
 				// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
@@ -399,7 +398,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * <li> {@link X_C_Invoice_Candidate#INVOICERULE_Sofort} : <code>DateOrdered</code>
 	 * <li>else (which should not happen, unless a new invoice rule is introduced): <code>Created</code>
 	 * </ul>
-	 * 
+	 *
 	 * @param ctx
 	 * @param ic
 	 * @param trxName
@@ -583,7 +582,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * Updates 'QtyToInvoice_OverrideFulfilled'. If <code>QtyToInvoice_Override</code> is empty, it does nothing besides also resetting QtyToInvoice_OverrideFulfilled.
 	 * <p>
 	 * If is turns out that the fulfillment (i.e. QtyInvoiced) is now sufficient, it resets both 'QtyToInvoice_Override' and 'QtyToInvoice_OverrideFulfilled'.
-	 * 
+	 *
 	 * @param ic
 	 * @param oldQtyInvoiced
 	 * @param factor
@@ -665,7 +664,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Sum up 'QtyInvoiced' and 'NetAmtInvoiced'.
-	 * 
+	 *
 	 * @param ilas
 	 * @return
 	 */
@@ -1064,7 +1063,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// Note: we don't invalidate the 'ic' directly, but we call the framework to do the invalidation.
 		// This is because certain SPI implementations might have to invalidate further candidates besides 'ic'
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
 
 		// invalidating all candidates that related to the PO that is referenced by 'ic'
 		if (ic.getAD_Table_ID() > 0)
@@ -1075,7 +1073,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// we don't have to use the handler to find further candidates that need invalidation.
 			for (final IInvoiceCandidateHandler handler : handlerBL.retrieveImplementationsForTable(ctx, tableName))
 			{
-				handler.invalidateCandidatesFor(new GenericPO(tableName, ctx, ic.getRecord_ID(), trxName));
+				final Object referencedValue = TableRecordCacheLocal.getReferencedValue(ic, Object.class);
+				handler.invalidateCandidatesFor(referencedValue);
 			}
 		}
 	}
@@ -1568,7 +1567,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 				else
 				{
-					// default behavior: subtract something, but not more than what was originally invoiced. 
+					// default behavior: subtract something, but not more than what was originally invoiced.
 					final BigDecimal reversalQtyInvoiced = reversalLine.getQtyInvoiced().multiply(factor);
 
 					// task 08927: it could be that il's original qtyInvoiced was already subtracted (maybe partially)
@@ -1668,7 +1667,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 				else
 				{
-					// task 04868, G03T010: even if invoice candidates exist, there might be no link in case the invoice has been created "old school", like new MInvoice(...), or by crediting an invoice
+					// task 04868, G03T010: even if invoice candidates exist, there might be no link in case the invoice has been created "old school", like new MInvoice(...), or by crediting an
+					// invoice
 					toLinkAgainstIl.addAll(existingICs);
 				}
 			}

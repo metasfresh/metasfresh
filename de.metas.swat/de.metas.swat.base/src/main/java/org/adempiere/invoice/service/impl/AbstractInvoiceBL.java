@@ -10,12 +10,12 @@ package org.adempiere.invoice.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,15 +24,19 @@ package org.adempiere.invoice.service.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.document.service.ICopyHandlerBL;
 import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.document.service.IDocCopyHandler;
@@ -70,6 +74,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -92,12 +98,13 @@ import de.metas.tax.api.ITaxDAO;
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
-	//
-	// Services
-	protected final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 	/** Logger */
 	protected final transient CLogger log = CLogger.getCLogger(getClass());
+
+	/**
+	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine)}.
+	 */
+	private static final ModelDynAttributeAccessor<I_C_InvoiceLine, Boolean> HAS_FIXED_LINE_NUMBER = new ModelDynAttributeAccessor<>(Boolean.class);
 
 	//
 	// System configurations (public for testing)
@@ -552,50 +559,115 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 	}
 
-	// metas
 	@Override
-	public final void renumberLinesWithoutComment(final I_C_Invoice invoice, final int step)
+	public final void renumberLines(final I_C_Invoice invoice, final int step)
 	{
-		int number = step;
 
-		List<I_C_InvoiceLine> lines = Services.get(IInvoiceDAO.class).retrieveLines(invoice, InterfaceWrapperHelper.getTrxName(invoice));
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice, InterfaceWrapperHelper.getTrxName(invoice));
+		renumberLines(lines, step);
+	}
 
-		// 02139: Sort InvoiceLines before renumbering.
-		lines = sortLines(lines);
-
+	@Override
+	public final void renumberLines(final List<I_C_InvoiceLine> lines, final int step)
+	{
+		// collect those line numbers that are already "taken"
+		final Set<Integer> fixedNumbers = new HashSet<>();
 		for (final I_C_InvoiceLine line : lines)
 		{
-			if (line.getLine() % step == 0)
+			if (isHasFixedLineNumber(line))
 			{
-				line.setLine(number);
-				number += step;
+				fixedNumbers.add(line.getLine());
 			}
-			else
+		}
+
+		// 02139: Sort InvoiceLines before renumbering.
+		final List<I_C_InvoiceLine> linesToReorder = new ArrayList<I_C_InvoiceLine>(lines);
+		sortLines(linesToReorder);
+
+		int number = step;
+		int lineIdx = 0;
+
+		while (lineIdx < linesToReorder.size())
+		{
+			final I_C_InvoiceLine invoiceLine = linesToReorder.get(lineIdx);
+
+			if (invoiceLine.getLine() % step == 0)
 			{
-				if (line.getLine() % 2 == 0)
+				if (!isHasFixedLineNumber(invoiceLine) && !fixedNumbers.contains(number))
 				{
-					line.setLine(number - 2);
+					// only give this line a (new) number, if its current number is not fixed
+					// and only give it a number that is not yet taken as some line's fixed number
+					invoiceLine.setLine(number);
+					lineIdx++;
+				}
+				else if (isHasFixedLineNumber(invoiceLine))
+				{
+					// this line already has a number
+					lineIdx++;
 				}
 				else
 				{
-					line.setLine(number - 1);
+					// this line has *no* fixed number and the current 'number' value is one of the fixed ones, so just increase 'number', but not 'lineIdx'.
+					// I.e. try this invoice again, with the next 'number' value
+				}
+
+				if (!isHasFixedLineNumber(invoiceLine) || fixedNumbers.contains(number))
+				{
+					// this number value was just used, or is already used as a fixed-number by some line => one step forward
+					number += step;
 				}
 			}
-			InterfaceWrapperHelper.save(line);
+			else
+			{
+				if (invoiceLine.getLine() % 2 == 0)
+				{
+					if (!isHasFixedLineNumber(invoiceLine) && !fixedNumbers.contains(number - 2))
+					{
+						invoiceLine.setLine(number - 2);
+					}
+				}
+				else
+				{
+					if (!isHasFixedLineNumber(invoiceLine) && !fixedNumbers.contains(number - 1))
+					{
+						invoiceLine.setLine(number - 1);
+					}
+				}
+				lineIdx++;
+			}
+			InterfaceWrapperHelper.save(invoiceLine);
 		}
 	} // renumberLinesWithoutComment
 
 	@Override
-	public final List<I_C_InvoiceLine> sortLines(final List<I_C_InvoiceLine> lines)
+	public void setHasFixedLineNumber(final I_C_InvoiceLine line, final boolean value)
+	{
+		HAS_FIXED_LINE_NUMBER.setValue(line, value);
+	}
+
+	private boolean isHasFixedLineNumber(final I_C_InvoiceLine line)
+	{
+		return Boolean.TRUE.equals(HAS_FIXED_LINE_NUMBER.getValue(line));
+	}
+
+	/**
+	 * Orders the InvoiceLines by their InOut. For each InOut, the FreightCostLine comes last. Lines whose M_InOut_ID equals 0, will get the M_InOut_ID of the next Line whose InOut_ID is not 0.
+	 *
+	 * @param lines - The unsorted array of InvoiceLines - is sorted by this method
+	 */
+	@VisibleForTesting
+	/* package */final void sortLines(final List<I_C_InvoiceLine> lines)
 	{
 		final Comparator<I_C_InvoiceLine> cmp = getInvoiceLineComparator(lines);
 
 		Collections.sort(lines, cmp);
-		return lines;
 	}
 
 	private final Comparator<I_C_InvoiceLine> getInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
 	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 		final ComparatorChain<I_C_InvoiceLine> ilComparator = new ComparatorChain<>();
 
 		//
@@ -611,7 +683,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// Default comparator (original one, covered by tests)
 		//
 		// Note: add this at the end (first comparators are first served)
-		//
 		{
 			final Comparator<I_C_InvoiceLine> inOutLineComparator = getDefaultInvoiceLineComparator(lines);
 			ilComparator.addComparator(inOutLineComparator);

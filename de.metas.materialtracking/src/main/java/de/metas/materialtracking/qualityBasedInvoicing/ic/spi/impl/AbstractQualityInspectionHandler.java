@@ -10,28 +10,24 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
+import org.adempiere.util.Check;
 
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
@@ -46,70 +42,60 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandler
  * @author ts
  *
  */
-public class QualityInspectionHandler extends AbstractInvoiceCandidateHandler
+public abstract class AbstractQualityInspectionHandler extends AbstractInvoiceCandidateHandler
 {
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public final boolean isCreateMissingCandidatesAutomatically()
 	{
 		return true;
 	}
 
+	/**
+	 * @return <code>true</code> if the given model is invoicable according to {@link IQualityInspectionHandlerDAO#getInvoiceableOrderFilter()}.
+	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	public final boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(model, I_PP_Order.class);
-		return Services.get(IQualityInspectionHandlerDAO.class)
-				.getInvoiceableOrderFilter()
-				.accept(ppOrder);
-	}
-
-	@Override
-	public DocTimingType getAutomaticallyCreateMissingCandidatesDocTiming()
-	{
-		return DocTimingType.AFTER_CLOSE;
+		return true;
 	}
 
 	private final PPOrder2InvoiceCandidatesProducer createInvoiceCandidatesProducer()
 	{
-		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = new PPOrder2InvoiceCandidatesProducer();
-		invoiceCandidatesProducer.setC_ILCandHandler(getHandlerRecord());
+		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = new PPOrder2InvoiceCandidatesProducer()
+				.setC_ILCandHandler(getHandlerRecord())
+				.setILCandHandlerInstance(this);
+
 		return invoiceCandidatesProducer;
 	}
 
-	@Override
-	public Iterator<I_PP_Order> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
-	{
-		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = createInvoiceCandidatesProducer();
-		return invoiceCandidatesProducer.retrieveAllModelsWithMissingCandidates(ctx, limit, trxName);
-	}
-
+	/**
+	 * Creates <b>or updates</b> ICs for the given request.
+	 */
 	@Override
 	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
 	{
-		final I_PP_Order ppOrder = request.getModel(I_PP_Order.class);
+		final Object model = request.getModel();
 
 		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = createInvoiceCandidatesProducer();
-		final List<de.metas.materialtracking.model.I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidatesProducer.createInvoiceCandidates(ppOrder);
+
+		final List<de.metas.materialtracking.model.I_C_Invoice_Candidate> invoiceCandidates =
+				invoiceCandidatesProducer.createInvoiceCandidates(model);
+
+		final IIsInvoiceCandidateAware isInvoiceCandidateAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IIsInvoiceCandidateAware.class);
+		if (isInvoiceCandidateAware != null)
+		{
+			// we flag the record, no matter if we actually created an IC or not. This is fine for this handler
+			isInvoiceCandidateAware.setIsInvoiceCandidate(true);
+			InterfaceWrapperHelper.save(isInvoiceCandidateAware);
+		}
+
 		return InvoiceCandidateGenerateResult.of(this, invoiceCandidates);
 	}
 
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
-		final List<I_C_Invoice_Candidate> referencingICs = invoiceCandDAO.retrieveReferencing(model);
-
-		for (final I_C_Invoice_Candidate ic : referencingICs)
-		{
-			invoiceCandDAO.invalidateCand(ic);
-		}
-	}
-
-	@Override
-	public String getSourceTable()
-	{
-		return org.eevolution.model.I_PP_Order.Table_Name;
+		Check.errorIf(true, "Shall not be called, because we have getOnInvalidateForModelAction()=RECREATE_ASYNC; model: {0}", model);
 	}
 
 	@Override
@@ -166,5 +152,17 @@ public class QualityInspectionHandler extends AbstractInvoiceCandidateHandler
 	{
 		ic.setPriceEntered(ic.getPriceActual());
 	}
+
+	/**
+	 *
+	 * @returns {@link OnInvalidateForModelAction#RECREATE_ASYNC}.
+	 */
+	@Override
+	public final OnInvalidateForModelAction getOnInvalidateForModelAction()
+	{
+		return OnInvalidateForModelAction.RECREATE_ASYNC;
+	}
+
+	/* package */abstract boolean isInvoiceable(Object model);
 
 }

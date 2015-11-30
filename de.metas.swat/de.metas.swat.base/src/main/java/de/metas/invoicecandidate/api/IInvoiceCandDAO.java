@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -61,7 +61,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(Properties ctx, int AD_PInstance_ID, String trxName);
 
 	/**
-	 * 
+	 *
 	 * @param queryBuilder
 	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
 	 */
@@ -122,7 +122,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates just the given candidate.
-	 * 
+	 *
 	 * @param ic
 	 */
 	void invalidateCand(I_C_Invoice_Candidate ic);
@@ -130,7 +130,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Invalidates the given collection of invoice candidates. Note that for more than one candidate, this method is more efficient than repeated calls of
 	 * {@link #invalidateCand(I_C_Invoice_Candidate)}
-	 * 
+	 *
 	 * @param ics
 	 * @param trxName
 	 */
@@ -140,7 +140,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates all candidates that have the same <code>(AD_Table_ID, Record_ID)</code> reference.
-	 * 
+	 *
 	 * @param ic
 	 */
 	void invalidateCandsWithSameReference(I_C_Invoice_Candidate ic);
@@ -158,14 +158,14 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates all ICs that have the given <code>Bill_BPartner_ID</code> and have their effective invoice rule set to <code>KundenintervallNachLieferung</code>.
-	 * 
+	 *
 	 * @param bPartner
 	 */
 	void invalidateCandsForBPartnerInvoiceRule(I_C_BPartner bPartner);
 
 	/**
 	 * Invalidates all ICs that have the given <code>Bill_BPartner_ID</code>.
-	 * 
+	 *
 	 * @param bPartner
 	 */
 	void invalidateCandsForBPartner(I_C_BPartner bPartner);
@@ -189,7 +189,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>DateAcct</code> column
-	 * 
+	 *
 	 * @param p_DateInvoiced
 	 * @param ad_PInstance_ID
 	 * @param trxName
@@ -199,7 +199,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>POReference</code> column
-	 * 
+	 *
 	 * @param poReference
 	 * @param ad_PInstance_ID
 	 * @param trxName
@@ -208,9 +208,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Mass-update a given invoice candidate column.
-	 * 
+	 *
 	 * If there were any changes, those invoice candidates will be invalidated.
-	 * 
+	 *
 	 * @param invoiceCandidateColumnName {@link I_C_Invoice_Candidate}'s column to update
 	 * @param value value to set (you can also use {@link ModelColumnNameValue})
 	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
@@ -252,7 +252,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInvoiceCandidate(I_C_Invoice_Candidate invoiceCandidate);
 
 	/**
-	 * 
+	 *
 	 * @param invoiceCandidate
 	 * @return also returns inactive records (intended use is for deletion)
 	 */
@@ -268,7 +268,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Retrieves those invoice candidates that belong to the given <code>inOutLine</code> by either referencing it directly via <code>(AD_Table_ID, Record_ID)</code> or by referencing the inOutLine's
 	 * order line record.
-	 * 
+	 *
 	 * @param inOutLine
 	 * @return
 	 */
@@ -291,7 +291,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Checks if there exists an allocation between given invoice candidate and given receipt/shipment line.
-	 * 
+	 *
 	 * @param ic invoice candidate
 	 * @param iol receipt/shipment line
 	 * @return true if an allocation exists
@@ -302,7 +302,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Checks if the given <code>ic</code> is referenced by a <code>C_Invoice_Candidate_Recompute</code> record. The check is made within the ic's transaction.<br>
 	 * Please use this method instead of calling the SQL-column based {@link I_C_Invoice_Candidate#isToRecompute()}.
-	 * 
+	 *
 	 * @param ic
 	 * @return
 	 */
@@ -310,20 +310,24 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Save given invoice candidate.
-	 * 
+	 *
 	 * If there were any errors encountered while saving, this method will save the errors fields directly in database.
-	 * 
+	 *
 	 * @param invoiceCandidate
 	 */
 	void save(I_C_Invoice_Candidate invoiceCandidate);
 
 	/**
 	 * Returns all invoice candidates that have Processed='N'
-	 * 
+	 *
 	 * @param plainContextAware
 	 * @return
 	 */
 	Iterator<I_C_Invoice_Candidate> retrieveNonProcessed(PlainContextAware plainContextAware);
 
 	void invalidateCandsForAggregationBuilder(I_C_Aggregation aggregation);
+
+	int deleteInvoiceDetails(I_C_Invoice_Candidate ic);
+
+
 }

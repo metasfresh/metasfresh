@@ -10,12 +10,12 @@ package de.metas.materialtracking.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -71,16 +71,17 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 			final I_M_Material_Tracking materialTracking = getMaterialTrackingFromDocumentLineASI(documentLine);
 			if (materialTracking == null)
 			{
-				// the line has no materialtracking-ASI, so make sure that it is not linked to any material tracking
+				// the line has no material tracking-ASI, so make sure that it is not linked to any material tracking
 				materialTrackingBL.unlinkModelFromMaterialTracking(documentLine);
 			}
 			else
 			{
+				final boolean assumeNotAlreadyAssigned = false; // unlink from another material tracking if necessary
 				materialTrackingBL.linkModelToMaterialTracking(
 						MTLinkRequest.builder()
 								.setModel(documentLine)
 								.setMaterialTracking(materialTracking)
-								.setAssumeNotAlreadyAssigned(false) // unlink from another material tracking if neccesary
+								.setAssumeNotAlreadyAssigned(assumeNotAlreadyAssigned)
 								.build());
 			}
 		}
@@ -92,10 +93,8 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 			, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })
 	public final void unlinkFromMaterialTracking(final DocumentType document)
 	{
-		if (!isEligibleForMaterialTracking(document))
-		{
-			return;
-		}
+		// Don't invoke isEligibleForMaterialTracking().
+		// If it is linked for whatever reason, then we need to unlink it, no matter what isEligibleForMaterialTracking() returns.
 
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 
@@ -129,7 +128,7 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 	/**
 	 *
 	 * @param document
-	 * @return true if given document is eligible for material tracking
+	 * @return true if given document is eligible to be linked to a material tracking via a new <code>M_Material_Tracking_Ref</code> record.
 	 */
 	protected abstract boolean isEligibleForMaterialTracking(DocumentType document);
 

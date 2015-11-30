@@ -10,18 +10,17 @@ package de.metas.materialtracking.qualityBasedInvoicing.invoicing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -30,6 +29,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
+import de.metas.materialtracking.model.I_PP_Order;
 
 /**
  * See https://drive.google.com/file/d/0B-AaY-YNDnR5b045VGJsdVhRUGc/view
@@ -92,4 +92,11 @@ public interface IQualityInvoiceLine
 	 * @return Handling Units Informations (e.g. how many TUs, TU's name etc).
 	 */
 	IHandlingUnitsInfo getHandlingUnitsInfo();
+
+	/**
+	 * Returns the PP_Order associated with the given line (if any)
+	 *
+	 * @return
+	 */
+	I_PP_Order getPP_Order();
 }

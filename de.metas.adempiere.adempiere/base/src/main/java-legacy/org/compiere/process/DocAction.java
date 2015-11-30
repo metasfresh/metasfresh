@@ -25,7 +25,7 @@ import org.compiere.util.CLogger;
 
 /**
  *	Document Action Interface
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: DocAction.java,v 1.3 2006/07/30 00:54:44 jjanke Exp $
  */
@@ -45,6 +45,8 @@ public interface DocAction
 	public static final String ACTION_Void = "VO";
 	/** Close = CL */
 	public static final String ACTION_Close = "CL";
+	/** UnClose = UC */
+	public static final String ACTION_UnClose = "UC";
 	/** Reverse - Correct = RC */
 	public static final String ACTION_Reverse_Correct = "RC";
 	/** Reverse - Accrual = RA */
@@ -89,7 +91,7 @@ public interface DocAction
 
 	/** DocAction Ref_List values **/
 	public static final int AD_REFERENCE_ID = 135;
-	
+
 	/**
 	 * 	Set Doc Status
 	 *	@param newStatus new Status
@@ -101,8 +103,8 @@ public interface DocAction
 	 *	@return Document Status
 	 */
 	public String getDocStatus();
-	
-	
+
+
 	/*************************************************************************
 	 * 	Process document
 	 *	@param action document action
@@ -110,30 +112,30 @@ public interface DocAction
 	 *	@throws Exception
 	 */
 	public boolean processIt (String action) throws Exception;
-	
+
 	/**
 	 * 	Unlock Document.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	public boolean unlockIt();
 	/**
 	 * 	Invalidate Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	public boolean invalidateIt();
 	/**
 	 *	Prepare Document
-	 * 	@return new status (In Progress or Invalid) 
+	 * 	@return new status (In Progress or Invalid)
 	 */
 	public String prepareIt();
 	/**
 	 * 	Approve Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	public boolean  approveIt();
 	/**
 	 * 	Reject Approval
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	public boolean rejectIt();
 	/**
@@ -143,27 +145,37 @@ public interface DocAction
 	public String completeIt();
 	/**
 	 * 	Void Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	public boolean voidIt();
 	/**
 	 * 	Close Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	public boolean closeIt();
+
+// @Formatter:off
+//  ts: Note: not declaring this method, because i don't want each DocAction to have to implement it
+//	/**
+//	 * 	Unclose Document
+//	 * 	@return true if success
+//	 */
+//	public boolean unCloseIt();
+// @Formatter:on
+
 	/**
 	 * 	Reverse Correction
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	public boolean reverseCorrectIt();
 	/**
 	 * 	Reverse Accrual
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	public boolean reverseAccrualIt();
-	/** 
+	/**
 	 * 	Re-activate
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	public boolean reActivateIt();
 
@@ -190,19 +202,19 @@ public interface DocAction
 	 *	@return file
 	 */
 	public File createPDF ();
-	
+
 	/**
 	 * 	Get Process Message
 	 *	@return clear text message
 	 */
 	public String getProcessMsg ();
-	
+
 	/**
 	 * 	Get Document Owner
 	 *	@return AD_User_ID
 	 */
 	public int getDoc_User_ID();
-	
+
 	/**
 	 * 	Get Document Currency
 	 *	@return C_Currency_ID
@@ -239,25 +251,25 @@ public interface DocAction
 	 *	@return true if saved
 	 */
 	public boolean save();
-	
+
 	/**
 	 * 	Get Context
 	 *	@return context
 	 */
 	public Properties getCtx();
-	
+
 	/**
 	 * 	Get ID of record
 	 *	@return ID
 	 */
 	public int get_ID();
-	
+
 	/**
 	 * 	Get AD_Table_ID
 	 *	@return AD_Table_ID
 	 */
 	public int get_Table_ID();
-	
+
 	/**
 	 * 	Get Logger
 	 *	@return logger
@@ -274,7 +286,7 @@ public interface DocAction
 
 	/**
 	 * Checks if document is active
-	 * 
+	 *
 	 * @return true if document is active (i.e. IsActive flag is set to Yes)
 	 */
 	public boolean isActive();

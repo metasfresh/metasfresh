@@ -10,18 +10,17 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +29,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
@@ -54,13 +55,15 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 
 	// Loaded values
 	private int _pricingSystemId = -1;
+	private I_M_PricingSystem _pricingSystem = null;
 	private I_C_Flatrate_Term _flatrateTerm = null;
 	private String _invoiceRule = null;
 	private boolean _invoiceRuleSet = false;
 
+	private I_M_PriceList_Version _priceListVersion = null;
+
 	public InvoiceCandidateAsVendorInvoicingInfo()
 	{
-		super();
 	}
 
 	@Override
@@ -74,6 +77,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 				+ ", C_Flatrate_Term=" + (_flatrateTerm == null ? "not-loaded" : _flatrateTerm)
 				+ ", InvoiceRule=" + (_invoiceRuleSet ? _invoiceRule : "not-loaded")
 				+ ", M_PricingSystem_ID=" + (_pricingSystemId < 0 ? "not-loaded" : _pricingSystemId)
+				+ ", M_PriceList_Version_ID=" + (_priceListVersion == null ? "not-set" : _priceListVersion.getM_PriceList_Version_ID())
 				+ "]";
 	}
 
@@ -102,20 +106,40 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 	}
 
 	@Override
+	public I_M_PriceList_Version getM_PriceList_Version()
+	{
+		return _priceListVersion;
+	}
+
+	@Override
 	public int getM_PricingSystem_ID()
 	{
-		if (_pricingSystemId > 0)
+		if (_pricingSystemId <= 0)
 		{
-			return _pricingSystemId;
+			loadPricingSystem();
 		}
+		return _pricingSystemId;
+	}
 
+	@Override
+	public I_M_PricingSystem getM_PricingSystem()
+	{
+		if (_pricingSystem == null)
+		{
+			loadPricingSystem();
+		}
+		return _pricingSystem;
+	}
+
+	private void loadPricingSystem()
+	{
 		final I_C_Flatrate_Term flatrateTerm = getC_Flatrate_Term();
 		final int contractPricingSystemID = flatrateTerm.getM_PricingSystem_ID();
 
-		final int pricingSytemToUseId;
 		if (contractPricingSystemID > 0)
 		{
-			pricingSytemToUseId = contractPricingSystemID;
+			_pricingSystemId = contractPricingSystemID;
+			_pricingSystem = flatrateTerm.getM_PricingSystem();
 		}
 		else
 		{
@@ -125,11 +149,10 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 			Check.assumeNotNull(orderLine, "orderLine not null");
 
 			final I_C_Order order = orderLine.getC_Order();
-			pricingSytemToUseId = order.getM_PricingSystem_ID();
-		}
 
-		_pricingSystemId = pricingSytemToUseId;
-		return _pricingSystemId;
+			_pricingSystemId = order.getM_PricingSystem_ID();
+			_pricingSystem = order.getM_PricingSystem();
+		}
 	}
 
 	@Override
@@ -175,5 +198,10 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 		Check.assume(!invoiceCandidate.isToRecompute(), "invoiceCandidate is valid (IsToRecompute=false)");
 		invoiceCandidates.add(invoiceCandidate);
 
+	}
+
+	public void setM_PriceList_Version(final I_M_PriceList_Version priceListVersion)
+	{
+		_priceListVersion = priceListVersion;
 	}
 }

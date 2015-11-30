@@ -10,18 +10,17 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Properties;
@@ -50,7 +49,7 @@ public interface IHUAssignmentBL extends ISingletonService
 	IHUAssignmentListener getHUAssignmentListeners();
 
 	/**
-	 * Assign given HUs.
+	 * Assign given HUs <b>as top level HUs</b>
 	 *
 	 * NOTE: old assignments will NOT be touched.
 	 *
@@ -61,10 +60,17 @@ public interface IHUAssignmentBL extends ISingletonService
 	 */
 	void assignHUs(Object model, Collection<I_M_HU> huList);
 
+	/**
+	 * See {@link #assignHUs(Object, Collection)}.
+	 *
+	 * @param model
+	 * @param huList
+	 * @param trxName
+	 */
 	void assignHUs(Object model, Collection<I_M_HU> huList, final String trxName);
 
 	/**
-	 * Assign given HU.
+	 * Assign given HU <b>as top level HU</b>.
 	 *
 	 * @param model
 	 * @param hu
@@ -73,6 +79,15 @@ public interface IHUAssignmentBL extends ISingletonService
 	 */
 	I_M_HU_Assignment assignHU(Object model, I_M_HU hu, final String trxName);
 
+	/**
+	 * Assign given HU <b>as top level HU</b>.
+	 *
+	 * @param model
+	 * @param hu
+	 * @param isTransferPackingMaterials
+	 * @param trxName
+	 * @return
+	 */
 	I_M_HU_Assignment assignHU(Object model, I_M_HU hu, boolean isTransferPackingMaterials, String trxName);
 
 	/**

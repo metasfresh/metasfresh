@@ -24,7 +24,9 @@ import java.sql.Timestamp;
 import java.util.logging.Level;
 
 import org.adempiere.exceptions.DBException;
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
@@ -46,17 +48,20 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.interfaces.I_C_OrderLine;
 
 /**
  * Generate Invoices
- * 
+ *
  * @author Jorg Janke
- * @author t.schoeneberg@metas.de: invoices are never consolidated if
- *         {@link CustomColNames#C_BPartner_ALLOW_CONSOLIDATE_INVOICE} is 'N'
+ * @author t.schoeneberg@metas.de: invoices are never consolidated if {@link CustomColNames#C_BPartner_ALLOW_CONSOLIDATE_INVOICE} is 'N'
  */
 // metas: synched with rev. 9749
-public class InvoiceGenerate extends SvrProcess {
+public class InvoiceGenerate extends SvrProcess
+{
+
+	final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	/** Manual Selection */
 	private boolean p_Selection = false;
@@ -88,16 +93,18 @@ public class InvoiceGenerate extends SvrProcess {
 	 * Prepare - e.g., get Parameters.
 	 */
 	@Override
-	protected void prepare() {
+	protected void prepare()
+	{
 		ProcessInfoParameter[] para = getParameter();
-		for (int i = 0; i < para.length; i++) {
+		for (int i = 0; i < para.length; i++)
+		{
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)
 				;
 			else if (name.equals("Selection"))
 				p_Selection = "Y".equals(para[i].getParameter());
 			else if (name.equals("DateInvoiced"))
-				p_DateInvoiced = (Timestamp) para[i].getParameter();
+				p_DateInvoiced = (Timestamp)para[i].getParameter();
 			else if (name.equals("AD_Org_ID"))
 				p_AD_Org_ID = para[i].getParameterAsInt();
 			else if (name.equals("C_BPartner_ID"))
@@ -107,7 +114,7 @@ public class InvoiceGenerate extends SvrProcess {
 			else if (name.equals("ConsolidateDocument"))
 				p_ConsolidateDocument = "Y".equals(para[i].getParameter());
 			else if (name.equals("DocAction"))
-				p_docAction = (String) para[i].getParameter();
+				p_docAction = (String)para[i].getParameter();
 			else
 				log.log(Level.SEVERE, "Unknown Parameter: " + name);
 		}
@@ -125,12 +132,13 @@ public class InvoiceGenerate extends SvrProcess {
 
 	/**
 	 * Generate Invoices
-	 * 
+	 *
 	 * @return info
 	 * @throws Exception
 	 */
 	@Override
-	protected String doIt() throws Exception {
+	protected String doIt() throws Exception
+	{
 		log.info("Selection=" + p_Selection + ", DateInvoiced="
 				+ p_DateInvoiced + ", AD_Org_ID=" + p_AD_Org_ID
 				+ ", C_BPartner_ID=" + p_C_BPartner_ID + ", C_Order_ID="
@@ -145,7 +153,9 @@ public class InvoiceGenerate extends SvrProcess {
 					+ "AND C_Order.C_Order_ID = T_Selection.T_Selection_ID "
 					+ "AND T_Selection.AD_PInstance_ID=? "
 					+ "ORDER BY C_Order.M_Warehouse_ID, C_Order.PriorityRule, C_Order.C_BPartner_ID, C_Order.C_Order_ID";
-		} else {
+		}
+		else
+		{
 			// metas: we don't invoice closed orders, even if there are open deliveries!
 			sql = "SELECT * FROM C_Order o "
 					+ "WHERE DocStatus IN('CO') AND IsSOTrx='Y'";
@@ -166,12 +176,16 @@ public class InvoiceGenerate extends SvrProcess {
 		// sql += " FOR UPDATE";
 
 		PreparedStatement pstmt = null;
-		try {
+		try
+		{
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			int index = 1;
-			if (p_Selection) {
+			if (p_Selection)
+			{
 				pstmt.setInt(index, getAD_PInstance_ID());
-			} else {
+			}
+			else
+			{
 				if (p_AD_Org_ID != 0)
 					pstmt.setInt(index++, p_AD_Org_ID);
 				if (p_C_BPartner_ID != 0)
@@ -179,7 +193,9 @@ public class InvoiceGenerate extends SvrProcess {
 				if (p_C_Order_ID != 0)
 					pstmt.setInt(index++, p_C_Order_ID);
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			log.log(Level.SEVERE, sql, e);
 		}
 		return generate(pstmt);
@@ -187,17 +203,20 @@ public class InvoiceGenerate extends SvrProcess {
 
 	/**
 	 * Generate Shipments
-	 * 
+	 *
 	 * @param pstmt
 	 *            order query
 	 * @return info
 	 */
-	private String generate(PreparedStatement pstmt) {
+	private String generate(PreparedStatement pstmt)
+	{
 
 		ResultSet rs = null;
-		try {
+		try
+		{
 			rs = pstmt.executeQuery();
-			while (rs.next()) {
+			while (rs.next())
+			{
 				MOrder order = new MOrder(getCtx(), rs, get_TrxName());
 
 				final boolean consolidate = computeConsolidate(order);
@@ -214,7 +233,8 @@ public class InvoiceGenerate extends SvrProcess {
 						&& m_invoice.getC_BPartner_Location_ID() != order
 								.getBill_Location_ID();
 
-				if (prepayOrder || !consolidate || differentAddress) {
+				if (prepayOrder || !consolidate || differentAddress)
+				{
 					completeInvoice();
 				}
 				boolean completeOrder = MOrder.INVOICERULE_AfterOrderDelivered
@@ -223,15 +243,19 @@ public class InvoiceGenerate extends SvrProcess {
 				// Schedule After Delivery
 				boolean doInvoice = false;
 				if (MOrder.INVOICERULE_CustomerScheduleAfterDelivery
-						.equals(order.getInvoiceRule())) {
+						.equals(order.getInvoiceRule()))
+				{
 					m_bp = new MBPartner(getCtx(), order.getBill_BPartner_ID(),
 							null);
-					if (m_bp.getC_InvoiceSchedule_ID() == 0) {
+					if (m_bp.getC_InvoiceSchedule_ID() == 0)
+					{
 						log
 								.warning("BPartner has no Schedule - set to After Delivery");
 						order.setInvoiceRule(MOrder.INVOICERULE_AfterDelivery);
 						order.save();
-					} else {
+					}
+					else
+					{
 						MInvoiceSchedule is = MInvoiceSchedule.get(getCtx(),
 								m_bp.getC_InvoiceSchedule_ID(), get_TrxName());
 						if (is.canInvoice(order.getDateOrdered(), order
@@ -245,16 +269,19 @@ public class InvoiceGenerate extends SvrProcess {
 				// After Delivery
 				if (doInvoice
 						|| MOrder.INVOICERULE_AfterDelivery.equals(order
-								.getInvoiceRule())) {
+								.getInvoiceRule()))
+				{
 					MInOut[] shipments = order.getShipments();
-					for (int i = 0; i < shipments.length; i++) {
+					for (int i = 0; i < shipments.length; i++)
+					{
 						MInOut ship = shipments[i];
 						if (!ship.isComplete() // ignore incomplete or reversals
 								|| ship.getDocStatus().equals(
 										MInOut.DOCSTATUS_Reversed))
 							continue;
 						MInOutLine[] shipLines = ship.getLines(false);
-						for (int j = 0; j < shipLines.length; j++) {
+						for (int j = 0; j < shipLines.length; j++)
+						{
 							MInOutLine shipLine = shipLines[j];
 							if (!order
 									.isOrderLine(shipLine.getC_OrderLine_ID()))
@@ -266,9 +293,11 @@ public class InvoiceGenerate extends SvrProcess {
 					}
 				}
 				// After Order Delivered, Immediate
-				else {
+				else
+				{
 					MOrderLine[] oLines = order.getLines(true, null);
-					for (int i = 0; i < oLines.length; i++) {
+					for (int i = 0; i < oLines.length; i++)
+					{
 						MOrderLine oLine = oLines[i];
 						BigDecimal toInvoice = oLine.getQtyOrdered().subtract(
 								oLine.getQtyInvoiced());
@@ -283,7 +312,8 @@ public class InvoiceGenerate extends SvrProcess {
 								.compareTo(oLine.getQtyDelivered()) == 0;
 
 						// Complete Order
-						if (completeOrder && !fullyDelivered) {
+						if (completeOrder && !fullyDelivered)
+						{
 							log.fine("Failed CompleteOrder - " + oLine);
 							addLog("Failed CompleteOrder - " + oLine); // Elaine
 							// 2008/11/25
@@ -292,7 +322,8 @@ public class InvoiceGenerate extends SvrProcess {
 						}
 						// Immediate
 						else if (MOrder.INVOICERULE_Immediate.equals(order
-								.getInvoiceRule())) {
+								.getInvoiceRule()))
+						{
 							log.fine("Immediate - ToInvoice=" + toInvoice
 									+ " - " + oLine);
 							BigDecimal qtyEntered = toInvoice;
@@ -305,7 +336,9 @@ public class InvoiceGenerate extends SvrProcess {
 										BigDecimal.ROUND_HALF_UP);
 							createLine(order, oLine, toInvoice, qtyEntered,
 									consolidate);
-						} else {
+						}
+						else
+						{
 							log.fine("Failed: " + order.getInvoiceRule()
 									+ " - ToInvoice=" + toInvoice + " - "
 									+ oLine);
@@ -322,16 +355,19 @@ public class InvoiceGenerate extends SvrProcess {
 				// Complete Order successful
 				if (completeOrder
 						&& MOrder.INVOICERULE_AfterOrderDelivered.equals(order
-								.getInvoiceRule())) {
+								.getInvoiceRule()))
+				{
 					MInOut[] shipments = order.getShipments();
-					for (int i = 0; i < shipments.length; i++) {
+					for (int i = 0; i < shipments.length; i++)
+					{
 						MInOut ship = shipments[i];
 						if (!ship.isComplete() // ignore incomplete or reversals
 								|| ship.getDocStatus().equals(
 										MInOut.DOCSTATUS_Reversed))
 							continue;
 						MInOutLine[] shipLines = ship.getLines(false);
-						for (int j = 0; j < shipLines.length; j++) {
+						for (int j = 0; j < shipLines.length; j++)
+						{
 							MInOutLine shipLine = shipLines[j];
 							if (!order
 									.isOrderLine(shipLine.getC_OrderLine_ID()))
@@ -343,19 +379,27 @@ public class InvoiceGenerate extends SvrProcess {
 					}
 				} // complete Order
 			} // for all orders
-		} catch (SQLException e) {
+		}
+		catch (SQLException e)
+		{
 			// metas: applying best practices
 			throw new DBException(e);
-		} finally {
+		}
+		finally
+		{
 			DB.close(rs, pstmt);
 		}
 
 		// metas : renumber invoice lines
-		if (m_invoice != null) {
+		if (m_invoice != null)
+		{
 			m_bp = new MBPartner(getCtx(), m_invoice.getC_BPartner_ID(),
 					get_TrxName());
 			if (p_ConsolidateDocument && allowsCons(m_invoice.isSOTrx()))
-				m_invoice.renumberLinesWithoutComment(10);
+			{
+				final I_C_Invoice invoice = InterfaceWrapperHelper.create(m_invoice, de.metas.adempiere.model.I_C_Invoice.class);
+				invoiceBL.renumberLines(invoice, 10);
+			}
 		}
 		// metas end
 
@@ -365,14 +409,14 @@ public class InvoiceGenerate extends SvrProcess {
 
 	private boolean allowsCons(final boolean isSOTrx)
 	{
-//		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(m_bp, I_C_BPartner.class);
-//		return Services.get(IBPartnerBL.class).isAllowConsolidateInvoiceEffective(bPartner, isSOTrx);
+		// final I_C_BPartner bPartner = InterfaceWrapperHelper.create(m_bp, I_C_BPartner.class);
+		// return Services.get(IBPartnerBL.class).isAllowConsolidateInvoiceEffective(bPartner, isSOTrx);
 		return isSOTrx;
 	}
 
 	/**************************************************************************
 	 * Create Invoice Line from Order Line
-	 * 
+	 *
 	 * @param order
 	 *            order
 	 * @param orderLine
@@ -384,23 +428,25 @@ public class InvoiceGenerate extends SvrProcess {
 	 */
 	private void createLine(final MOrder order, final MOrderLine orderLine,
 			final BigDecimal qtyInvoiced, final BigDecimal qtyEntered,
-			final boolean consolidate) {
+			final boolean consolidate)
+	{
 
-		if (m_invoice == null) {
+		if (m_invoice == null)
+		{
 			m_invoice = new MInvoice(order, 0, p_DateInvoiced);
 			m_invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); // US1184
 			m_invoice.setC_Currency_ID(order.getC_Currency_ID()); // US1184
 			if (!m_invoice.save())
 				throw new IllegalStateException("Could not create Invoice (o)");
 		}
-		//	
+		//
 		MInvoiceLine line = new MInvoiceLine(m_invoice);
 		line.setOrderLine(orderLine);
 		line.setQtyInvoiced(qtyInvoiced);
 		line.setQtyEntered(qtyEntered);
 
 		Services.get(IPOService.class).copyValue(
-				orderLine, line,				I_C_OrderLine.COLUMNNAME_IsIndividualDescription);
+				orderLine, line, I_C_OrderLine.COLUMNNAME_IsIndividualDescription);
 
 		setLineNo(line, orderLine.getLine(), consolidate);
 		if (!line.save())
@@ -409,19 +455,23 @@ public class InvoiceGenerate extends SvrProcess {
 	} // createLine
 
 	private void setLineNo(final MInvoiceLine line, final int sourceLineNo,
-			final boolean consolidate) {
-		if (consolidate) {
+			final boolean consolidate)
+	{
+		if (consolidate)
+		{
 			// we have order lines from multiple orders in this invoice, so
 			// we use m_line to make sure that there are no collisions
 			line.setLine(m_line + sourceLineNo);
-		} else {
+		}
+		else
+		{
 			line.setLine(sourceLineNo);
 		}
 	}
 
 	/**
 	 * Create Invoice Line from Shipment
-	 * 
+	 *
 	 * @param order
 	 *            order
 	 * @param ship
@@ -430,9 +480,11 @@ public class InvoiceGenerate extends SvrProcess {
 	 *            shipment line
 	 */
 	private void createLine(final MOrder order, final MInOut ship,
-			final MInOutLine sLine, final boolean consolidate) {
+			final MInOutLine sLine, final boolean consolidate)
+	{
 
-		if (m_invoice == null) {
+		if (m_invoice == null)
+		{
 			m_invoice = new MInvoice(order, 0, p_DateInvoiced);
 			m_invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); // US1184
 			m_invoice.setC_Currency_ID(order.getC_Currency_ID()); // US1184
@@ -440,7 +492,8 @@ public class InvoiceGenerate extends SvrProcess {
 				throw new IllegalStateException("Could not create Invoice (s)");
 		}
 		// Create Shipment Comment Line
-		if (m_ship == null || m_ship.getM_InOut_ID() != ship.getM_InOut_ID()) {
+		if (m_ship == null || m_ship.getM_InOut_ID() != ship.getM_InOut_ID())
+		{
 			MDocType dt = MDocType.get(getCtx(), ship.getC_DocType_ID());
 			if (m_bp == null
 					|| m_bp.getC_BPartner_ID() != ship.getC_BPartner_ID())
@@ -471,7 +524,8 @@ public class InvoiceGenerate extends SvrProcess {
 				throw new IllegalStateException(
 						"Could not create Invoice Comment Line (sh)");
 			// Optional Ship Address if not Bill Address
-			if (order.getBill_Location_ID() != ship.getC_BPartner_Location_ID()) {
+			if (order.getBill_Location_ID() != ship.getC_BPartner_Location_ID())
+			{
 				MLocation addr = MLocation.getBPLocation(getCtx(), ship
 						.getC_BPartner_Location_ID(), null);
 				line = new MInvoiceLine(m_invoice);
@@ -483,7 +537,7 @@ public class InvoiceGenerate extends SvrProcess {
 							"Could not create Invoice Comment Line 2 (sh)");
 			}
 		}
-		//	
+		//
 		MInvoiceLine line = new MInvoiceLine(m_invoice);
 		line.setShipLine(sLine);
 		if (sLine.sameOrderLineUOM())
@@ -512,14 +566,20 @@ public class InvoiceGenerate extends SvrProcess {
 	/**
 	 * Complete Invoice
 	 */
-	private void completeInvoice() {
-		if (m_invoice != null) {
+	private void completeInvoice()
+	{
+		if (m_invoice != null)
+		{
 			// metas: Neunumerierung der Rechnung (10, 20, ...)
 			if (p_ConsolidateDocument && allowsCons(m_invoice.isSOTrx()))
-				m_invoice.renumberLinesWithoutComment(10);
+			{
+				final I_C_Invoice invoice = InterfaceWrapperHelper.create(m_invoice, de.metas.adempiere.model.I_C_Invoice.class);
+				invoiceBL.renumberLines(invoice, 10);
+			}
 			// metas end
 
-			if (!m_invoice.processIt(p_docAction)) {
+			if (!m_invoice.processIt(p_docAction))
+			{
 				log.warning("completeInvoice - failed: " + m_invoice);
 				addLog("completeInvoice - failed: " + m_invoice); // Elaine
 				// 2008/11/25
@@ -536,22 +596,22 @@ public class InvoiceGenerate extends SvrProcess {
 	} // completeInvoice
 
 	/**
-	 * 
+	 *
 	 * @param order
-	 * 
+	 *
 	 * @return true iff both {@link #p_ConsolidateDocument} and
 	 *         CustomColNames.C_BPartner_ALLOW_CONSOLIDATE_INVOICE of the
 	 *         order's boll bPArtner are true.
 	 */
 	private boolean computeConsolidate(final I_C_Order order)
 	{
-		if (!p_ConsolidateDocument) 
+		if (!p_ConsolidateDocument)
 		{
 			return false;
 		}
 
-//		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(getCtx(), order.getBill_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-//		return Services.get(IBPartnerBL.class).isAllowConsolidateInvoiceEffective(bPartner, order.isSOTrx());
+		// final I_C_BPartner bPartner = InterfaceWrapperHelper.create(getCtx(), order.getBill_BPartner_ID(), I_C_BPartner.class, get_TrxName());
+		// return Services.get(IBPartnerBL.class).isAllowConsolidateInvoiceEffective(bPartner, order.isSOTrx());
 		return order.isSOTrx();
 	}
 

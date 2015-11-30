@@ -19,18 +19,18 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for AD_Table_ScriptValidator
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_Table_ScriptValidator extends PO implements I_AD_Table_ScriptValidator, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_Table_ScriptValidator extends org.compiere.model.PO implements I_AD_Table_ScriptValidator, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 1226522657L;
 
     /** Standard Constructor */
     public X_AD_Table_ScriptValidator (Properties ctx, int AD_Table_ScriptValidator_ID, String trxName)
@@ -53,35 +53,30 @@ public class X_AD_Table_ScriptValidator extends PO implements I_AD_Table_ScriptV
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 4 - System 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Table_ScriptValidator[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_Rule getAD_Rule() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Rule_ID, org.compiere.model.I_AD_Rule.class);
+	}
 
-	public I_AD_Rule getAD_Rule() throws RuntimeException
-    {
-		return (I_AD_Rule)MTable.get(getCtx(), I_AD_Rule.Table_Name)
-			.getPO(getAD_Rule_ID(), get_TrxName());	}
+	@Override
+	public void setAD_Rule(org.compiere.model.I_AD_Rule AD_Rule)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Rule_ID, org.compiere.model.I_AD_Rule.class, AD_Rule);
+	}
 
-	/** Set Rule.
-		@param AD_Rule_ID Rule	  */
+	/** Set Regel.
+		@param AD_Rule_ID Regel	  */
+	@Override
 	public void setAD_Rule_ID (int AD_Rule_ID)
 	{
 		if (AD_Rule_ID < 1) 
@@ -90,8 +85,9 @@ public class X_AD_Table_ScriptValidator extends PO implements I_AD_Table_ScriptV
 			set_Value (COLUMNNAME_AD_Rule_ID, Integer.valueOf(AD_Rule_ID));
 	}
 
-	/** Get Rule.
-		@return Rule	  */
+	/** Get Regel.
+		@return Regel	  */
+	@Override
 	public int getAD_Rule_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Rule_ID);
@@ -100,15 +96,23 @@ public class X_AD_Table_ScriptValidator extends PO implements I_AD_Table_ScriptV
 		return ii.intValue();
 	}
 
-	public I_AD_Table getAD_Table() throws RuntimeException
-    {
-		return (I_AD_Table)MTable.get(getCtx(), I_AD_Table.Table_Name)
-			.getPO(getAD_Table_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+	}
 
-	/** Set Table.
+	@Override
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+	}
+
+	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
 	  */
+	@Override
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
@@ -117,9 +121,10 @@ public class X_AD_Table_ScriptValidator extends PO implements I_AD_Table_ScriptV
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
-	/** Get Table.
+	/** Get DB-Tabelle.
 		@return Database Table information
 	  */
+	@Override
 	public int getAD_Table_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
@@ -130,6 +135,7 @@ public class X_AD_Table_ScriptValidator extends PO implements I_AD_Table_ScriptV
 
 	/** Set Table Script Validator.
 		@param AD_Table_ScriptValidator_ID Table Script Validator	  */
+	@Override
 	public void setAD_Table_ScriptValidator_ID (int AD_Table_ScriptValidator_ID)
 	{
 		if (AD_Table_ScriptValidator_ID < 1) 
@@ -140,6 +146,7 @@ public class X_AD_Table_ScriptValidator extends PO implements I_AD_Table_ScriptV
 
 	/** Get Table Script Validator.
 		@return Table Script Validator	  */
+	@Override
 	public int getAD_Table_ScriptValidator_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ScriptValidator_ID);
@@ -148,7 +155,10 @@ public class X_AD_Table_ScriptValidator extends PO implements I_AD_Table_ScriptV
 		return ii.intValue();
 	}
 
-	/** EventModelValidator AD_Reference_ID=53237 */
+	/** 
+	 * EventModelValidator AD_Reference_ID=53237
+	 * Reference name: EventModelValidator
+	 */
 	public static final int EVENTMODELVALIDATOR_AD_Reference_ID=53237;
 	/** Table Before New = TBN */
 	public static final String EVENTMODELVALIDATOR_TableBeforeNew = "TBN";
@@ -200,13 +210,16 @@ public class X_AD_Table_ScriptValidator extends PO implements I_AD_Table_ScriptV
 	public static final String EVENTMODELVALIDATOR_TableAfterChangeReplication = "TACR";
 	/** Table Before Delete Replication = TBDR */
 	public static final String EVENTMODELVALIDATOR_TableBeforeDeleteReplication = "TBDR";
-	
-	/** metas-ts us1076 subsequent processing */
-	public static final String EVENTMODELVALIDATOR_TableSubsequentProcessing = "TBSP";
-	
+	/** Table Subsequent Processing = TSP */
+	public static final String EVENTMODELVALIDATOR_TableSubsequentProcessing = "TSP";
+	/** Document Before UnClose = DBUC */
+	public static final String EVENTMODELVALIDATOR_DocumentBeforeUnClose = "DBUC";
+	/** Document After UnClose = DAUC */
+	public static final String EVENTMODELVALIDATOR_DocumentAfterUnClose = "DAUC";
 	/** Set Event Model Validator.
 		@param EventModelValidator Event Model Validator	  */
-	public void setEventModelValidator (String EventModelValidator)
+	@Override
+	public void setEventModelValidator (java.lang.String EventModelValidator)
 	{
 
 		set_Value (COLUMNNAME_EventModelValidator, EventModelValidator);
@@ -214,31 +227,26 @@ public class X_AD_Table_ScriptValidator extends PO implements I_AD_Table_ScriptV
 
 	/** Get Event Model Validator.
 		@return Event Model Validator	  */
-	public String getEventModelValidator () 
+	@Override
+	public java.lang.String getEventModelValidator () 
 	{
-		return (String)get_Value(COLUMNNAME_EventModelValidator);
+		return (java.lang.String)get_Value(COLUMNNAME_EventModelValidator);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), String.valueOf(getEventModelValidator()));
-    }
-
-	/** Set Sequence.
+	/** Set Reihenfolge.
 		@param SeqNo 
 		Method of ordering records; lowest number comes first
 	  */
+	@Override
 	public void setSeqNo (int SeqNo)
 	{
 		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
 	}
 
-	/** Get Sequence.
+	/** Get Reihenfolge.
 		@return Method of ordering records; lowest number comes first
 	  */
+	@Override
 	public int getSeqNo () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);

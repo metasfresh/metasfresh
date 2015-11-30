@@ -167,7 +167,6 @@ import de.metas.lock.exceptions.LockFailedException;
 			{
 				throw new IllegalStateException("Result " + resultRef.getValue() + " not supported for " + workPackage);
 			}
-
 		}
 		catch (final Exception e)
 		{

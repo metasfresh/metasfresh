@@ -10,12 +10,12 @@ package de.metas.invoice.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -96,7 +96,10 @@ public class C_Invoice
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersion(invoice.getM_PriceList(), invoiceDate); // can be null
+
+		final boolean processed = true; // only processed PLVs count
+		final I_M_PriceList_Version priceListVersion = priceListDAO
+				.retrievePriceListVersionOrNull(invoice.getM_PriceList(), invoiceDate, processed); // can be null
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
@@ -151,7 +154,7 @@ public class C_Invoice
 
 	/**
 	 * Unlink the credit memo from its parent invoice in case of reactivation or voiding
-	 * 
+	 *
 	 * @param creditMemo
 	 */
 	@DocValidate(timings = {
@@ -166,7 +169,7 @@ public class C_Invoice
 
 	/**
 	 * Unlink the credit memo from its parent invoice in case of reactivation or voiding
-	 * 
+	 *
 	 * @param creditMemo
 	 */
 	@DocValidate(timings = {
@@ -181,7 +184,7 @@ public class C_Invoice
 
 	/**
 	 * Mark invoice as paid if the grand total/open amount is 0
-	 * 
+	 *
 	 * @param invoice
 	 * @task 09489
 	 */
@@ -191,13 +194,13 @@ public class C_Invoice
 		// services
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
-		final boolean ignoreProcessed = true; // need to ignoreProcessed, because right now, PRocessed not yet set to true by the engine.  
+		final boolean ignoreProcessed = true; // need to ignoreProcessed, because right now, PRocessed not yet set to true by the engine.
 		invoiceBL.testAllocation(invoice, ignoreProcessed);
 	}
 
 	/**
 	 * Allocate the credit memo against it's parent invoices.
-	 * 
+	 *
 	 * Note: ATM, there should only be one parent invoice for a credit memo, but it's possible to have more in the future.
 	 *
 	 * @param creditMemo
@@ -293,7 +296,7 @@ public class C_Invoice
 
 	/**
 	 * For all the invoices that have Ref_AdjustmentCharge_ID same with the ID of the invoice given as parameter, set the ID to 0.
-	 * 
+	 *
 	 * @param adjustmentCharge
 	 */
 	private void unlinkAdjustmentChargeReferences(I_C_Invoice adjustmentCharge)
@@ -328,7 +331,7 @@ public class C_Invoice
 
 	/**
 	 * For all the invoices that have Ref_CreditMemo_ID same with the ID of the invoice given as parameter, set the ID to 0.
-	 * 
+	 *
 	 * @param creditMemo
 	 */
 	private void unlinkCreditMemoReferences(I_C_Invoice creditMemo)
@@ -368,7 +371,7 @@ public class C_Invoice
 	 * We need to delete the Invoice Lines before deleting the Invoice itself.
 	 * This is not a common thing to be done, therefore I will leave this method only here, as private (not in the DAO class).
 	 * Currently, it shall only happen in case of uncompleted invoices that are adjustment charges or credit memos.
-	 * 
+	 *
 	 * @param invoice
 	 */
 	private void deleteInvoiceLines(final I_C_Invoice invoice)

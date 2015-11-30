@@ -10,25 +10,24 @@ package org.adempiere.pricing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -81,7 +80,7 @@ public class PricingBL implements IPricingBL
 		pricingCtx.setM_Product_ID(M_Product_ID);
 		pricingCtx.setC_BPartner_ID(C_BPartner_ID);
 		pricingCtx.setConvertPriceToContextUOM(true); // backward compatibility
-		
+
 		if (Qty != null && Qty.signum() != 0)
 		{
 			pricingCtx.setQty(Qty);
@@ -103,33 +102,33 @@ public class PricingBL implements IPricingBL
 
 		final IPricingContext pricingCtxToUse = setupPricingContext(ctx, pricingCtx);
 		final IPricingResult result = createInitialResult(pricingCtxToUse);
-		
+
 		// task 08908 do not change anything if the price is manual
 		Boolean isManualPrice = pricingCtxToUse.isManualPrice();
-		
+
 		// if the manualPrice value was not set in the pricing context, take it from the reference object
 		if (isManualPrice == null)
 		{
 			final Object referenceObject = pricingCtxToUse.getReferencedObject();
-			
+
 			if (referenceObject != null)
 			{
 				isManualPrice = InterfaceWrapperHelper.getValueOrNull(referenceObject, I_C_InvoiceLine.COLUMNNAME_IsManualPrice);
 			}
 		}
-		
+
 		// if the isManualPrice is not even a column of the reference object, consider it false
-		final boolean isManualPriceToUse = isManualPrice == null? false : isManualPrice;
-		
-		if(isManualPriceToUse)
-		{		
-			//task 08908: returning the result is not reliable enough because we are not sure the values
-			//in the initial result are the ones from the reference object.
+		final boolean isManualPriceToUse = isManualPrice == null ? false : isManualPrice;
+
+		if (isManualPriceToUse)
+		{
+			// task 08908: returning the result is not reliable enough because we are not sure the values
+			// in the initial result are the ones from the reference object.
 			// TODO: a new pricing rule for manual prices (if needed)
 			// Keeping the fine log anyway
 			logger.log(Level.FINE, "The pricing engine doesn't have to calculate the price because it was already manually set in the priocing context: {0}.", pricingCtxToUse);
-			
-			//return result;
+
+			// return result;
 		}
 
 		final AggregatedPricingRule aggregatedPricingRule = getAggregatedPricingRule(ctx);
@@ -138,7 +137,7 @@ public class PricingBL implements IPricingBL
 
 		//
 		// After calculation
-		
+
 		// First we check if we have different UOM in the context and result
 		adjustPriceByUOM(pricingCtxToUse, result);
 		setPrecision(pricingCtxToUse, result);
@@ -154,30 +153,34 @@ public class PricingBL implements IPricingBL
 
 	/**
 	 * Set various fields in context, before using it.
-	 * 
+	 *
 	 * @param ctx
 	 * @param pricingCtx
 	 * @return configured pricing context (to be used in pricing calculations)
 	 */
 	private IPricingContext setupPricingContext(final Properties ctx, final IPricingContext pricingCtx)
 	{
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
 		final IEditablePricingContext pricingCtxToUse = pricingCtx.copy();
 
+		final Timestamp priceDate = pricingCtxToUse.getPriceDate();
+
 		//
-		// Set M_PriceList_Version_ID
+		// Set M_PriceList_Version_ID from PL and date
 		if (pricingCtxToUse.getM_PriceList_Version_ID() <= 0
 				&& pricingCtxToUse.getM_PriceList_ID() > 0
-				&& pricingCtxToUse.getPriceDate() != null)
+				&& priceDate != null)
 		{
-			final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 			final I_M_PriceList priceList = priceListDAO.retrievePriceList(ctx, pricingCtx.getM_PriceList_ID());
 			try
 			{
-				final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersion(priceList, pricingCtxToUse.getPriceDate());
+				final boolean processed = true;
+				final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, priceDate, processed);
 				if (plv != null)
 				{
 					final int priceListVersionId = plv.getM_PriceList_Version_ID();
-					logger.log(Level.INFO, "Setting to context: M_PriceList_Version_ID={0}", priceListVersionId);
+					logger.log(Level.INFO, "Setting to context: M_PriceList_Version_ID={0} from M_PriceList={1} and PriceDate={2}", priceListVersionId, priceList, priceDate);
 					pricingCtxToUse.setM_PriceList_Version_ID(priceListVersionId);
 				}
 			}
@@ -187,6 +190,26 @@ public class PricingBL implements IPricingBL
 				// NOTE2: also pls keep in mind that if we would fail here the whole pricing calculation would fail.
 				logger.log(Level.INFO, "Skip setting pricing context's price list version because it was not found", e);
 			}
+		}
+
+		//
+		// set PL from PLV
+		if (pricingCtxToUse.getM_PriceList_ID() <= 0
+				&& pricingCtxToUse.getM_PriceList_Version_ID() > 0)
+		{
+			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
+
+			logger.log(Level.INFO, "Setting to context: M_PriceList_ID={0} from M_PriceList_Version={1}", priceListVersion.getM_PriceList_ID(), priceListVersion);
+			pricingCtxToUse.setM_PriceList_ID(priceListVersion.getM_PriceList_ID());
+		}
+
+		if (pricingCtxToUse.getPriceDate() == null
+				&& pricingCtxToUse.getM_PriceList_Version_ID() > 0)
+		{
+			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
+
+			logger.log(Level.INFO, "Setting to context: PriceDate={0} from M_PriceList_Version={1}", priceListVersion.getValidFrom(), priceListVersion);
+			pricingCtxToUse.setPriceDate(priceListVersion.getValidFrom());
 		}
 
 		return pricingCtxToUse;
@@ -203,7 +226,7 @@ public class PricingBL implements IPricingBL
 			}
 		}
 	}
-	
+
 	private void adjustPriceByUOM(IPricingContext pricingCtx, IPricingResult result)
 	{
 		// We are asked to keep the prices in context's UOM, so do nothing
@@ -211,7 +234,7 @@ public class PricingBL implements IPricingBL
 		{
 			return;
 		}
-		
+
 		if ((pricingCtx.getC_UOM_ID() > 0) && (pricingCtx.getC_UOM_ID() != result.getPrice_UOM_ID()))
 		{
 			final I_C_UOM uomTo = InterfaceWrapperHelper.create(Env.getCtx(), pricingCtx.getC_UOM_ID(), I_C_UOM.class, ITrx.TRXNAME_None);
@@ -229,7 +252,7 @@ public class PricingBL implements IPricingBL
 	}
 
 	@Cached(cacheName = I_M_Product.Table_Name)
-	/* package */ I_M_Product getM_Product(@CacheCtx final Properties ctx, final int productId)
+	/* package */I_M_Product getM_Product(@CacheCtx final Properties ctx, final int productId)
 	{
 		return InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, ITrx.TRXNAME_None);
 	}
@@ -248,7 +271,7 @@ public class PricingBL implements IPricingBL
 		}
 
 		result.setM_Product_Category_ID(product.getM_Product_Category_ID());
-		
+
 		//
 		// Set Price_UOM_ID (06942)
 		if (pricingCtx.getM_PriceList_Version_ID() > 0)
@@ -275,9 +298,11 @@ public class PricingBL implements IPricingBL
 	{
 		final PricingResult result = new PricingResult();
 		result.setM_PricingSystem_ID(pricingCtx.getM_PricingSystem_ID());
+		result.setM_PriceList_Version_ID(pricingCtx.getM_PriceList_Version_ID());
 		result.setM_Product_ID(pricingCtx.getM_Product_ID());
 		result.setC_Currency_ID(pricingCtx.getC_Currency_ID());
 		result.setDisallowDiscount(pricingCtx.isDisallowDiscount());
+		result.setPriceDate(pricingCtx.getPriceDate());
 
 		result.setCalculated(false);
 
@@ -325,7 +350,7 @@ public class PricingBL implements IPricingBL
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ruleDef
 	 * @return {@link IPricingRule} or null if an error occurred
 	 */

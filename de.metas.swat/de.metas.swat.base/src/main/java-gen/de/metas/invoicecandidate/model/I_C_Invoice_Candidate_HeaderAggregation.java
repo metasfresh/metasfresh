@@ -32,7 +32,7 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 7 - System - Client - Org 
+    /** AccessLevel = 7 - System - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
 
@@ -218,7 +218,7 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 
 	/**
 	 * Set Abrechnungsgruppe.
-	 * Rechnungskandidaten mit der selben Abrechnungsgruppe können zu einer Rechnung zusammengefasst werden
+	 * Dev-Hinweis: Werte werden per DB-Trigger-Funktion gesetzt!
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -228,7 +228,7 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 
 	/**
 	 * Get Abrechnungsgruppe.
-	 * Rechnungskandidaten mit der selben Abrechnungsgruppe können zu einer Rechnung zusammengefasst werden
+	 * Dev-Hinweis: Werte werden per DB-Trigger-Funktion gesetzt!
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true

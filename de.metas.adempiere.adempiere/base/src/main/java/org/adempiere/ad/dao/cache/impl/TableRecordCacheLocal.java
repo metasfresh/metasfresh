@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.cache.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,11 +38,11 @@ import com.google.common.base.Optional;
 
 /**
  * Local cache used to store model references on records which have AD_Table_ID, Record_ID.
- * 
+ *
  * TODO: merge logic with {@link org.adempiere.util.lang.impl.TableRecordReference}.
- * 
+ *
  * @author tsa
- * 
+ *
  * @param <ParentModelType>
  */
 public class TableRecordCacheLocal<ParentModelType>
@@ -59,9 +59,9 @@ public class TableRecordCacheLocal<ParentModelType>
 
 	/**
 	 * Gets/Retrieves the model referenced by parentModel's {@link #getAD_Table_ID()} and {@link #getRecord_ID()} and wraps it to <code>childModelClass</code>.
-	 * 
+	 *
 	 * If childModelClass's table does not match {@link #getAD_Table_ID()} then <code>null</code> will be returned.
-	 * 
+	 *
 	 * @param parentModel
 	 * @param modelClass
 	 * @return referenced model or <code>null</code> if is not set or it's not matching given childModelClass.
@@ -74,9 +74,9 @@ public class TableRecordCacheLocal<ParentModelType>
 
 	/**
 	 * Checks if the underlying referenced record is of given type.
-	 * 
+	 *
 	 * NOTE: this method is actually checking only the underlying "AD_Table_ID" and not if the referenced record exists.
-	 * 
+	 *
 	 * @param parentModel
 	 * @param childModelClass
 	 * @return true if referenced (child) model is of given type
@@ -93,7 +93,7 @@ public class TableRecordCacheLocal<ParentModelType>
 	private static final <ParentModelType> TableRecordCacheLocal<ParentModelType> getTableRecordCacheLocal(final ParentModelType parentModel)
 	{
 		TableRecordCacheLocal<ParentModelType> cache = InterfaceWrapperHelper.getDynAttribute(parentModel, DYNATTR_TableRecord);
-		if (cache == null)
+		if (cache == null || !cache.hasParentModel())
 		{
 			cache = new TableRecordCacheLocal<ParentModelType>(parentModel);
 			InterfaceWrapperHelper.setDynAttribute(parentModel, DYNATTR_TableRecord, cache);
@@ -115,7 +115,7 @@ public class TableRecordCacheLocal<ParentModelType>
 	}
 
 	/**
-	 * 
+	 *
 	 * @return parent model (never null)
 	 */
 	protected final ParentModelType getParentModel()
@@ -126,6 +126,11 @@ public class TableRecordCacheLocal<ParentModelType>
 			throw new AdempiereException("parent model expired");
 		}
 		return parentModel;
+	}
+
+	private boolean hasParentModel()
+	{
+		return _parentModelRef.get() != null;
 	}
 
 	protected Properties getCtx()
@@ -181,9 +186,9 @@ public class TableRecordCacheLocal<ParentModelType>
 
 	/**
 	 * Gets/Retrieves the model referenced by {@link #getAD_Table_ID()} and {@link #getRecord_ID()} and wraps it to <code>modelClass</code>.
-	 * 
+	 *
 	 * If modelClass's table does not match {@link #getAD_Table_ID()} then <code>null</code> will be returned.
-	 * 
+	 *
 	 * @param modelClass
 	 * @return referenced model or null
 	 */

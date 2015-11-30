@@ -32,9 +32,9 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.text.AttributedCharacterIterator;
+import java.text.AttributedCharacterIterator.Attribute;
 import java.text.AttributedString;
 import java.text.MessageFormat;
-import java.text.AttributedCharacterIterator.Attribute;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -61,10 +61,10 @@ import org.w3c.dom.NodeList;
 
 /**
  * General Utilities
- * 
+ *
  * @author Jorg Janke
  * @version $Id: Util.java,v 1.3 2006/07/30 00:52:23 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL - BF [ 1748346 ]
  */
 public class Util
@@ -74,7 +74,7 @@ public class Util
 
 	/**
 	 * Replace String values.
-	 * 
+	 *
 	 * @param value string to be processed
 	 * @param oldPart old part
 	 * @param newPart replacement - can be null or ""
@@ -105,7 +105,7 @@ public class Util
 
 	/**
 	 * Remove CR / LF from String
-	 * 
+	 *
 	 * @param in input
 	 * @return cleaned string
 	 */
@@ -126,7 +126,7 @@ public class Util
 
 	/**
 	 * Fetch the numbers from a string
-	 * 
+	 *
 	 * @param text
 	 * @return string which contains all digits, or null if text is null
 	 */
@@ -149,7 +149,7 @@ public class Util
 	 * Fetch only the text from a given string <br>
 	 * E.g. text= '9000 St. Gallen'<br>
 	 * This method will return test St. Gallen
-	 * 
+	 *
 	 * @param text
 	 * @return string which contains all letters not digits, or null if text is null
 	 */
@@ -172,7 +172,7 @@ public class Util
 
 	/**
 	 * Clean - Remove all white spaces
-	 * 
+	 *
 	 * @param in in
 	 * @return cleaned string
 	 */
@@ -201,7 +201,7 @@ public class Util
 
 	/**
 	 * remove white space from the begin
-	 * 
+	 *
 	 * @param in
 	 * @return
 	 */
@@ -220,7 +220,7 @@ public class Util
 	}
 
 	/**
-	 * 
+	 *
 	 * @param value note: <code>null</code> is threaded like ""
 	 * @param size
 	 * @param description
@@ -247,7 +247,7 @@ public class Util
 
 	/**
 	 * Mask HTML content. i.e. replace characters with &values; CR is not masked
-	 * 
+	 *
 	 * @param content content
 	 * @return masked content
 	 * @see #maskHTML(String, boolean)
@@ -259,7 +259,7 @@ public class Util
 
 	/**
 	 * Mask HTML content. i.e. replace characters with &values;
-	 * 
+	 *
 	 * @param content content
 	 * @param maskCR convert CR into <br>
 	 * @return masked content or null if the <code>content</code> is null
@@ -310,7 +310,7 @@ public class Util
 
 	/**
 	 * Get the number of occurances of countChar in string.
-	 * 
+	 *
 	 * @param string String to be searched
 	 * @param countChar to be counted character
 	 * @return number of occurances
@@ -331,10 +331,10 @@ public class Util
 
 	/**
 	 * Is String Empty
-	 * 
+	 *
 	 * @param str string
 	 * @return true if >= 1 char
-	 * 
+	 *
 	 * @deprecated Please use {@link Check#isEmpty(String)}
 	 */
 	@Deprecated
@@ -345,11 +345,11 @@ public class Util
 
 	/**
 	 * Is String Empty
-	 * 
+	 *
 	 * @param str string
 	 * @param trimWhitespaces trim whitespaces
 	 * @return true if >= 1 char
-	 * 
+	 *
 	 * @deprecated Please use {@link Check#isEmpty(String, boolean)}
 	 */
 	@Deprecated
@@ -359,7 +359,7 @@ public class Util
 	}	// isEmpty
 
 	/**
-	 * 
+	 *
 	 * @param bd
 	 * @return true if bd is null or bd.signum() is zero
 	 */
@@ -377,7 +377,7 @@ public class Util
 
 	/**************************************************************************
 	 * Find index of search character in str. This ignores content in () and 'texts'
-	 * 
+	 *
 	 * @param str string
 	 * @param search search character
 	 * @return index or -1 if not found
@@ -389,7 +389,7 @@ public class Util
 
 	/**
 	 * Find index of search characters in str. This ignores content in () and 'texts'
-	 * 
+	 *
 	 * @param str string
 	 * @param search1 first search character
 	 * @param search2 second search character (or)
@@ -424,7 +424,7 @@ public class Util
 
 	/**
 	 * Find index of search character in str. This ignores content in () and 'texts'
-	 * 
+	 *
 	 * @param str string
 	 * @param search search character
 	 * @return index or -1 if not found
@@ -461,7 +461,7 @@ public class Util
 
 	/**************************************************************************
 	 * Return Hex String representation of byte b
-	 * 
+	 *
 	 * @param b byte
 	 * @return Hex
 	 */
@@ -477,7 +477,7 @@ public class Util
 
 	/**
 	 * Return Hex String representation of char c
-	 * 
+	 *
 	 * @param c character
 	 * @return Hex
 	 */
@@ -490,7 +490,7 @@ public class Util
 
 	/**************************************************************************
 	 * Init Cap Words With Spaces
-	 * 
+	 *
 	 * @param in string
 	 * @return init cap
 	 */
@@ -518,7 +518,7 @@ public class Util
 
 	/**************************************************************************
 	 * Return a Iterator with only the relevant attributes. Fixes implementation in AttributedString, which returns everything
-	 * 
+	 *
 	 * @param aString attributed string
 	 * @param relevantAttributes relevant attributes
 	 * @return iterator
@@ -572,7 +572,7 @@ public class Util
 
 	/**
 	 * Dump a Map (key=value) to out
-	 * 
+	 *
 	 * @param map Map
 	 */
 	@SuppressWarnings("rawtypes")
@@ -590,7 +590,7 @@ public class Util
 
 	/**
 	 * Print Action and Input Map for component
-	 * 
+	 *
 	 * @param comp Component with ActionMap
 	 */
 	public static void printActionInputMap(JComponent comp)
@@ -662,7 +662,7 @@ public class Util
 
 	/**
 	 * Is 8 Bit
-	 * 
+	 *
 	 * @param str string
 	 * @return true if string contains chars > 255
 	 */
@@ -684,7 +684,7 @@ public class Util
 
 	/**
 	 * Clean Ampersand (used to indicate shortcut)
-	 * 
+	 *
 	 * @param in input
 	 * @return cleaned string
 	 */
@@ -703,7 +703,7 @@ public class Util
 
 	/**
 	 * Trim to max character length
-	 * 
+	 *
 	 * @param str string
 	 * @param length max (incl) character length
 	 * @return string
@@ -721,7 +721,7 @@ public class Util
 
 	/**
 	 * Size of String in bytes
-	 * 
+	 *
 	 * @param str string
 	 * @return size in bytes
 	 */
@@ -744,7 +744,7 @@ public class Util
 
 	/**
 	 * Trim to max byte size
-	 * 
+	 *
 	 * @param str string
 	 * @param size max size in bytes
 	 * @return string
@@ -778,7 +778,7 @@ public class Util
 
 	/**************************************************************************
 	 * Test
-	 * 
+	 *
 	 * @param args args
 	 */
 	public static void main(String[] args)
@@ -801,7 +801,7 @@ public class Util
 	/**
 	 * Sets an alternative {@link IClassInstanceProvider} implementation. Intended use is for testing. This method is called by {@link org.adempiere.test.AdempiereTestHelper#init()}.
 	 * Also see {@link org.adempiere.util.reflect.TestingClassInstanceProvider}.
-	 * 
+	 *
 	 * @param classInstanceProvider
 	 */
 	public static void setClassInstanceProvider(final IClassInstanceProvider classInstanceProvider)
@@ -815,7 +815,7 @@ public class Util
 	 * This method works exactly like {@link #getInstanceOrNull(Class, String)} but it also throws and {@link AdempiereException} if class was not found.
 	 * <p>
 	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, RuntimeException)}.
-	 * 
+	 *
 	 * @param interfaceClazz interface class or super class that needs to be implemented by class. May be <code>NULL</code>. If set, then the method will check if the given class name extends this
 	 *            param value.
 	 * @param className class name
@@ -851,7 +851,7 @@ public class Util
 	 * Create an instance of given className.
 	 * <p>
 	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, RuntimeException)}.
-	 * 
+	 *
 	 * @param interfaceClazz interface class that needs to be implemented by class
 	 * @param className class name
 	 * @return instance or null if class was not found
@@ -880,7 +880,7 @@ public class Util
 	 * Little method that throws an {@link AdempiereException} if the given boolean condition is false. It might be a good idea to use "assume" instead of the assert keyword, because <li>assert is
 	 * globally switched on and off and you never know what else libs are using assert</li> <li>there are critical assumptions that should always be validated. Not only during development time or when
 	 * someone minds to use the -ea cmdline parameter</li>
-	 * 
+	 *
 	 * @param cond
 	 * @param errMsg the error message to pass to the assertion error, if the condition is <code>false</code>
 	 * @param params message parameters (@see {@link MessageFormat})
@@ -893,7 +893,7 @@ public class Util
 
 	/**
 	 * Assumes that given <code>object</code> is not null
-	 * 
+	 *
 	 * @param object
 	 * @param assumptionMessage message
 	 * @param params message parameters (@see {@link MessageFormat})
@@ -909,7 +909,7 @@ public class Util
 	 * This method similar to {@link #assume(boolean, String, Object...)}, but the message should be formulated in terms of an error message instead of an assumption.
 	 * <p>
 	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
-	 * 
+	 *
 	 * @param cond
 	 * @param errMsg
 	 * @param params
@@ -925,7 +925,7 @@ public class Util
 	 * of an assumption.
 	 * <p>
 	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
-	 * 
+	 *
 	 * @param cond
 	 * @param errMsg
 	 * @param params
@@ -937,7 +937,7 @@ public class Util
 	}
 
 	/**
-	 * 
+	 *
 	 * @param message
 	 * @param params
 	 * @return
@@ -951,7 +951,7 @@ public class Util
 
 	/**
 	 * Returns an instance of {@link ArrayKey} that can be used as a key in HashSets and HashMaps.
-	 * 
+	 *
 	 * @param input
 	 * @return
 	 */
@@ -971,11 +971,11 @@ public class Util
 	/**
 	 * Immutable wrapper for arrays that uses {@link Arrays#hashCode(Object[]))} and {@link Arrays#equals(Object)}. Instances of this class are obtained by {@link Util#mkKey(Object...)} and can be
 	 * used as keys in hashmaps and hash sets.
-	 * 
+	 *
 	 * Thanks to http://stackoverflow.com/questions/1595588/java-how-to-be-sure-to-store-unique-arrays-based-on -its-values-on-a-list
-	 * 
+	 *
 	 * @author ts
-	 * 
+	 *
 	 */
 	public static class ArrayKey implements Comparable<ArrayKey>
 	{
@@ -1081,7 +1081,7 @@ public class Util
 
 	/**
 	 * Tests whether two objects are equals.
-	 * 
+	 *
 	 * @deprecated please use {@link Check#equals(Object, Object)}
 	 */
 	@Deprecated
@@ -1092,10 +1092,10 @@ public class Util
 
 	/**
 	 * Tests whether two objects refer to the same object.
-	 * 
+	 *
 	 * It's advisable to use this method instead of directly comparing those 2 objects by o1 == o2, because in this way you are telling to static analyzer tool that comparing by reference was your
 	 * intention.
-	 * 
+	 *
 	 * @param o1
 	 * @param o2
 	 * @return true if objects are the same (i.e. o1 == o2)
@@ -1107,7 +1107,7 @@ public class Util
 
 	/**
 	 * Read given file and returns it as byte array
-	 * 
+	 *
 	 * @param file
 	 * @return file contents as byte array
 	 * @throws AdempiereException on any {@link IOException}
@@ -1146,7 +1146,7 @@ public class Util
 
 	/**
 	 * Read bytes from given InputStream. This method closes the stream.
-	 * 
+	 *
 	 * @param in
 	 * @return stream contents as byte array
 	 * @throws AdempiereException on error
@@ -1185,7 +1185,7 @@ public class Util
 
 	/***
 	 * insert selection into DB
-	 * 
+	 *
 	 * @deprecated Please use {@link DB#createT_Selection(int, java.util.Collection, String)}.
 	 */
 	@Deprecated
@@ -1209,7 +1209,7 @@ public class Util
 
 	/***
 	 * encode base64
-	 * 
+	 *
 	 * @param b
 	 * @return
 	 * @throws Exception
@@ -1233,7 +1233,7 @@ public class Util
 
 	/***
 	 * decode base64
-	 * 
+	 *
 	 * @param b
 	 * @return
 	 * @throws Exception
@@ -1296,7 +1296,7 @@ public class Util
 
 	/**
 	 * Writes the given {@link Throwable}s stack trace into a string.
-	 * 
+	 *
 	 * @param e
 	 * @return
 	 */
@@ -1310,7 +1310,7 @@ public class Util
 
 	/**
 	 * Smart converting given exception to string
-	 * 
+	 *
 	 * @param e
 	 * @return
 	 */
@@ -1342,10 +1342,11 @@ public class Util
 	}
 
 	/**
-	 * 
+	 *
 	 * @param values
 	 * @return first not null value from list
 	 */
+	@SafeVarargs
 	public static final <T> T coalesce(T... values)
 	{
 		if (values == null || values.length == 0)

@@ -10,12 +10,12 @@ package de.metas.materialtracking.qualityBasedInvoicing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -80,6 +81,12 @@ public interface IQualityInspectionOrder
 
 	/**
 	 *
+	 * @return plv or <code>null</code>
+	 */
+	I_M_PriceList_Version getPriceListVersion();
+
+	/**
+	 *
 	 * @return production date; never return null
 	 */
 	Timestamp getDateOfProduction();
@@ -114,17 +121,9 @@ public interface IQualityInspectionOrder
 
 	/**
 	 *
-	 * @return manufacturing orders with the same material tracking and a lower {@link #getDateOfProduction()} value
-	 * @throws AdempiereException if this is not a quality inspection (see {@link #isQualityInspection()})
-	 */
-	List<IQualityInspectionOrder> getPreceedingOrders();
-
-	/**
-	 * 
 	 * @return all manufacturing orders with the same material tracking, including this one.
 	 */
 	List<IQualityInspectionOrder> getAllOrders();
 
 	BigDecimal getAlreadyInvoicedNetSum();
-
 }

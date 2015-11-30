@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.spi;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -60,13 +59,13 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	{
 		this.record = record;
 	}
-	
+
 	@Override
 	public DocTimingType getAutomaticallyCreateMissingCandidatesDocTiming()
 	{
 		return DocTimingType.AFTER_COMPLETE;
 	}
-	
+
 	@Override
 	public List<InvoiceCandidateGenerateRequest> expandRequest(InvoiceCandidateGenerateRequest request)
 	{
@@ -110,8 +109,19 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	}
 
 	/**
+	 * Default implementation. Might be overridden.
+	 *
+	 * @returns {@link OnInvalidateForModelAction#REVALIDATE}.
+	 */
+	@Override
+	public OnInvalidateForModelAction getOnInvalidateForModelAction()
+	{
+		return OnInvalidateForModelAction.REVALIDATE;
+	}
+
+	/**
 	 * Checks if the underlying product is a service which will never ever be received.
-	 * 
+	 *
 	 * @param ic
 	 * @return true if we deal with a service which will never ever be received
 	 * @task http://dewiki908/mediawiki/index.php/08408_Transporte_auf_Rechnungsstellung_sofort_setzen_in_Rechnungsdispo_%28107611160033%29
@@ -140,7 +150,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 
 	/**
 	 * Sets delivery data from first shipment/receipt that was created for this invoice candidate.
-	 * 
+	 *
 	 * @param ic invoice candidate
 	 * @param firstInOut first shipment/receipt or <code>null</code>
 	 */

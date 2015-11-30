@@ -10,12 +10,12 @@ package de.metas.materialtracking.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,8 +52,10 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.materialtracking.model.validator.M_InOut(), client);
 		engine.addModelValidator(new de.metas.materialtracking.model.validator.M_InOutLine(), client); // task 07734
 		engine.addModelValidator(new de.metas.materialtracking.model.validator.C_Invoice_Candidate(), client);
+		engine.addModelValidator(new de.metas.materialtracking.model.validator.C_Invoice_Detail(), client); // task 09533
 		engine.addModelValidator(new de.metas.materialtracking.model.validator.C_Invoice(), client);
 		engine.addModelValidator(new de.metas.materialtracking.model.validator.C_AllocationHdr(), client);
+		engine.addModelValidator(new de.metas.materialtracking.model.validator.M_PriceList_Version(), client);
 		engine.addModelValidator(new de.metas.materialtracking.model.validator.PP_Order(), client);
 		engine.addModelValidator(new de.metas.materialtracking.model.validator.PP_Cost_Collector(), client);
 	}

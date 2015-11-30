@@ -10,12 +10,12 @@ package org.adempiere.pricing.spi.impl.rules;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,9 +36,9 @@ import org.compiere.util.Env;
 
 /**
  * Mocked {@link IPricingRule} implementation to be used in testing.
- * 
+ *
  * Make sure you have called {@link #reset()} before starting to use it.
- * 
+ *
  * @author tsa
  *
  */
@@ -51,7 +51,7 @@ public class MockedPricingRule extends PricingRuleAdapter
 
 	private static int precision;
 
-	/** M_Product_ID to "price to return" */
+	/** M_Product_ID to "price" to return" */
 	private static final Map<Integer, BigDecimal> productId2price = new HashMap<>();
 
 	/**
@@ -62,12 +62,12 @@ public class MockedPricingRule extends PricingRuleAdapter
 		priceToReturn = priceToReturnInitial;
 		productId2price.clear();
 	}
-	
+
 	public static void setPrecision(int precision)
 	{
 		MockedPricingRule.precision = precision;
 	}
-	
+
 	public static void setProductPrice(final I_M_Product product, final BigDecimal price)
 	{
 		productId2price.put(product.getM_Product_ID(), price);
@@ -96,7 +96,9 @@ public class MockedPricingRule extends PricingRuleAdapter
 		result.setPriceStd(price);
 
 		result.setPrecision(precision);
-		
+
+		result.setC_TaxCategory_ID(100);
+
 		result.setCalculated(true);
 
 		// final I_C_UOM uom = InterfaceWrapperHelper.create(Env.getCtx(), I_C_UOM.class, ITrx.TRXNAME_None);

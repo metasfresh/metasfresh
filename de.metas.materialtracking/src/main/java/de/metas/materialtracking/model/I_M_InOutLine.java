@@ -24,6 +24,7 @@ package de.metas.materialtracking.model;
 
 public interface I_M_InOutLine extends
 		de.metas.inout.model.I_M_InOutLine,
+		de.metas.invoicecandidate.model.I_M_InOutLine,
 		IMaterialTrackingAware
 {
 

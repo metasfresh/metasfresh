@@ -10,18 +10,17 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
+import de.metas.materialtracking.model.I_C_Invoice_Detail;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 
@@ -100,8 +99,8 @@ public class InvoiceDetailWriter
 	}
 
 	/**
-	 * If set to <code>true</code>, then the following invocations of {@link #save(Collection)} will be store their {@link org.adempiere.model.I_C_Invoice_Detail I_C_Invoice_Detail} records with
-	 * {@link org.adempiere.model.I_C_Invoice_Detail#COLUMN_IsDetailOverridesLine IsDetailOverridesLine} to <code>true</code>.
+	 * If set to <code>true</code>, then the following invocations of {@link #saveLines(Collection)} will be store their {@link org.adempiere.model.I_C_Invoice_Detail I_C_Invoice_Detail} records
+	 * with {@link org.adempiere.model.I_C_Invoice_Detail#COLUMN_IsDetailOverridesLine IsDetailOverridesLine} to <code>true</code>.
 	 * <p>
 	 * Note: will also set {@link org.adempiere.model.I_C_Invoice_Detail#COLUMN_IsPrintBefore IsPrintBefore} to <code>true</code>, but that shouldn't matter.
 	 *
@@ -113,7 +112,11 @@ public class InvoiceDetailWriter
 		_printBefore = true;
 	}
 
-	public void save(final Collection<IQualityInvoiceLine> lines)
+	/**
+	 *
+	 * @param lines
+	 */
+	public void saveLines(final Collection<IQualityInvoiceLine> lines)
 	{
 		if (lines == null || lines.isEmpty())
 		{
@@ -124,11 +127,11 @@ public class InvoiceDetailWriter
 		// Iterate lines and save one by one
 		for (final IQualityInvoiceLine line : lines)
 		{
-			save(line);
+			saveLine(line);
 		}
 	}
 
-	private void save(final IQualityInvoiceLine line)
+	private void saveLine(final IQualityInvoiceLine line)
 	{
 		Check.assumeNotNull(line, "line not null");
 
@@ -173,6 +176,8 @@ public class InvoiceDetailWriter
 		invoiceDetail.setQty(line.getQty());
 		invoiceDetail.setQtyEnteredInPriceUOM(line.getQty());
 		invoiceDetail.setPercentage(line.getPercentage());
+
+		invoiceDetail.setPP_Order(line.getPP_Order());
 
 		// Set Handling Units specific infos
 		handlingUnitsInfoFactory.updateInvoiceDetail(invoiceDetail, line.getHandlingUnitsInfo());

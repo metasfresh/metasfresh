@@ -10,12 +10,12 @@ package org.adempiere.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,22 +28,23 @@ package org.adempiere.util;
  * Interface implementations can be passed to business logic to perform high-level logging. The signature of this
  * interface's only method is chosen so that all {@link org.compiere.process.SvrProcess} subclasses can implement it without further code
  * changes.
- * 
+ *
  * @author ts
- * 
+ *
  */
 public interface ILoggable
 {
 	/** The null loggable which can be used without NPE, but doesn't do anything */
 	public static ILoggable NULL = NullLoggable.instance;
-	
+
 	/** Holds the {@link ILoggable} instance of current thread */
 	public static final ThreadLocalLoggableHolder THREADLOCAL = ThreadLocalLoggableHolder.instance;
-	
+
 	/**
 	 * Add a log message.
-	 * 
+	 *
 	 * @param msg
+	 * @param msgParameters
 	 */
-	public void addLog(String msg);
+public void addLog(String msg, Object... msgParameters);
 }

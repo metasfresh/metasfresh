@@ -10,43 +10,34 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.X_PP_Order;
 
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingDAO;
-import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderService;
@@ -55,95 +46,6 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 
 public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 {
-	@Override
-	public Iterator<de.metas.materialtracking.model.I_PP_Order> retrievePPOrdersWithMissingICs(final Properties ctx, final int limit, final String trxName)
-	{
-		// Services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryBuilder<I_PP_Order> ppOrderQueryBuilder = queryBL.createQueryBuilder(I_PP_Order.class, ctx, trxName)
-				.addOnlyContextClient()
-				.addOnlyActiveRecordsFilter();
-
-		//
-		// Only those manufacturing orders which are invoiceable
-		ppOrderQueryBuilder.filter(getInvoiceableOrderFilter());
-
-		//
-		// Only those manufacturing orders which do not have an invoice candidate
-		{
-			final int ppOrderTableId = InterfaceWrapperHelper.getTableId(I_PP_Order.class);
-			final IQuery<I_C_Invoice_Candidate> invoiceCandidatesForPPOrderQuery = queryBL
-					.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
-					.addEqualsFilter(de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, ppOrderTableId)
-					.create();
-
-			ppOrderQueryBuilder.addNotInSubQueryFilter(I_PP_Order.COLUMNNAME_PP_Order_ID,
-					de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Record_ID,
-					invoiceCandidatesForPPOrderQuery);
-		}
-
-		//
-		// Order by
-		// (just to have a predictable order)
-		ppOrderQueryBuilder.orderBy()
-				.addColumn(I_PP_Order.COLUMN_PP_Order_ID);
-
-		//
-		// Execute query and return
-		return ppOrderQueryBuilder
-				.setLimit(limit)
-				.create()
-				.iterate(de.metas.materialtracking.model.I_PP_Order.class);
-	}
-
-	/**
-	 * Gets a filter which accepts only those {@link I_PP_Order}s which are invoiceable.
-	 *
-	 * More precisely, manufacturing orders which are:
-	 * <ul>
-	 * <li>quality inspection
-	 * <li>are closed
-	 * </ul>
-	 *
-	 * @return
-	 */
-	@Override
-	public IQueryFilter<I_PP_Order> getInvoiceableOrderFilter()
-	{
-		// Services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
-
-		final ICompositeQueryFilter<I_PP_Order> filters = queryBL.createCompositeQueryFilter(I_PP_Order.class);
-
-		//
-		// Only those manufacturing orders which are closed
-		filters.addInArrayFilter(I_PP_Order.COLUMN_DocStatus, X_PP_Order.DOCSTATUS_Closed);
-
-		//
-		// Only those manufacturing orders which are quality inspection
-		filters.addFilter(materialTrackingPPOrderBL.getQualityInspectionFilter());
-
-		return filters;
-	}
-
-	/**
-	 *
-	 * @param ppOrder
-	 * @return true if given manufacturing order is invoiceable
-	 * @see #getInvoiceableOrderFilter()
-	 */
-	@Override
-	public boolean isInvoiceable(final I_PP_Order ppOrder)
-	{
-		final IQueryFilter<I_PP_Order> invoiceableFilter = getInvoiceableOrderFilter();
-		return invoiceableFilter.accept(ppOrder);
-	}
-
-	/**
-	 * Gets a list of {@link I_C_Invoice_Candidate}s of original purchase order.
-	 */
 	@Override
 	public <T extends I_C_Invoice_Candidate> List<T> retrieveOriginalInvoiceCandidates(final I_M_Material_Tracking materialTracking, final Class<T> clazz)
 	{
@@ -171,7 +73,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 	 * @return {@link I_C_Invoice_Clearing_Alloc}; never return null
 	 */
 	@Override
-	public I_C_Invoice_Clearing_Alloc retrieveInitialInvoiceClearingAlloc(final I_C_Invoice_Candidate invoiceCandidate)
+	public I_C_Invoice_Clearing_Alloc retrieveInitialInvoiceClearingAlloc(final de.metas.invoicecandidate.model.I_C_Invoice_Candidate invoiceCandidate)
 	{
 		Check.assumeNotNull(invoiceCandidate, "invoiceCandidate not null");
 		Check.assume(invoiceCandidate.isToClear(), "Invoice Candidate shall have IsToClear flag set: {0}", invoiceCandidate);
@@ -227,7 +129,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		if (!originalIC.isToClear())
 		{
 			// this can happen if the user created a tracking with a product & partner that have/has no contract. This shouldn't kill the whole IC-process.
-			return; 
+			return;
 		}
 		final I_C_Invoice_Clearing_Alloc invoiceClearingAlloc = Services.get(IQualityInspectionHandlerDAO.class).retrieveInitialInvoiceClearingAlloc(originalIC);
 		if (invoiceClearingAlloc == null)
@@ -248,4 +150,23 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		}
 	}
 
+	@Override
+	public List<I_C_Invoice_Candidate> retrieveRelatedICs(final Object model)
+	{
+		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
+		final I_M_Material_Tracking materialTrackingForModel = materialTrackingDAO.retrieveMaterialTrackingForModel(model);
+		if (materialTrackingForModel == null)
+		{
+			return Collections.emptyList();
+		}
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class, model)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(de.metas.materialtracking.model.I_C_Invoice_Candidate.COLUMNNAME_M_Material_Tracking_ID, materialTrackingForModel.getM_Material_Tracking_ID())
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsPackagingMaterial, false)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsToClear, false)
+				.orderBy().addColumn(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID).endOrderBy()
+				.create()
+				.list();
+	}
 }

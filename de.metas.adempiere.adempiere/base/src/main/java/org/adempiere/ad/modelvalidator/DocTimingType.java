@@ -10,12 +10,12 @@ package org.adempiere.ad.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -61,7 +61,10 @@ public enum DocTimingType
 	BEFORE_POST(ModelValidator.TIMING_BEFORE_POST),
 	/** Called after document is posted */
 	AFTER_POST(ModelValidator.TIMING_AFTER_POST),
-
+	/** Called before document is un-closed */
+	BEFORE_UNCLOSE(ModelValidator.TIMING_BEFORE_UNCLOSE),
+	/** Called after document is un-closed */
+	AFTER_UNCLOSE(ModelValidator.TIMING_AFTER_UNCLOSE)
 	;
 
 	private final int timing;
@@ -139,6 +142,10 @@ public enum DocTimingType
 		else if (DocAction.ACTION_Void.equals(docAction))
 		{
 			return before ? BEFORE_VOID : AFTER_VOID;
+		}
+		else if (DocAction.ACTION_UnClose.equals(docAction))
+		{
+			return before ? BEFORE_UNCLOSE : AFTER_UNCLOSE;
 		}
 		else
 		{

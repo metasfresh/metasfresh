@@ -10,12 +10,12 @@ package org.adempiere.pricing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,6 +44,7 @@ class PricingContext implements IEditablePricingContext
 	private int M_Product_ID;
 	private int M_PriceList_ID;
 	private int M_PriceList_Version_ID;
+
 	/**
 	 * PriceDate timestamp.
 	 * NOTE: storing as milliseconds only because {@link Timestamp} is not an immutable class.
@@ -54,11 +55,12 @@ class PricingContext implements IEditablePricingContext
 	 * NOTE: We are taking a snapshot of the current timestamp because we want to return the same value each time we are asked.
 	 */
 	private long priceDateNowTS = SystemTime.millis();
+
 	private int C_UOM_ID;
 	private int C_Currency_ID;
 	private int C_BPartner_ID;
 	private BigDecimal qty;
-	boolean isSOTrx;
+	private boolean isSOTrx;
 	private int AD_Table_ID;
 	private int Record_ID;
 	private int m_PP_Product_BOM_ID;
@@ -210,12 +212,6 @@ class PricingContext implements IEditablePricingContext
 	public Timestamp getPriceDate()
 	{
 		return new Timestamp(priceDateTS <= 0 ? priceDateNowTS : priceDateTS);
-	}
-
-	@Override
-	public boolean isDisallowDiscount()
-	{
-		return disallowDiscount;
 	}
 
 	/**
@@ -395,6 +391,12 @@ class PricingContext implements IEditablePricingContext
 		{
 			trxName = InterfaceWrapperHelper.getTrxName(referencedObject);
 		}
+	}
+
+	@Override
+	public boolean isDisallowDiscount()
+	{
+		return disallowDiscount;
 	}
 
 	@Override

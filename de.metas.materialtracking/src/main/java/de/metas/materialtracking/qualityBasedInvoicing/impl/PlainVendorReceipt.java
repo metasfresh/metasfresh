@@ -29,7 +29,6 @@ import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 
@@ -41,7 +40,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
  * @author tsa
  *
  */
-public class PlainVendorReceipt implements IVendorReceipt
+public class PlainVendorReceipt implements IVendorReceipt<Object>
 {
 	private I_M_Product product;
 	private BigDecimal qtyReceived;
@@ -116,7 +115,7 @@ public class PlainVendorReceipt implements IVendorReceipt
 	 * This method does nothing!
 	 */
 	@Override
-	public void add(final I_C_Invoice_Candidate IGNORED)
+	public void add(final Object IGNORED)
 	{
 	}
 }

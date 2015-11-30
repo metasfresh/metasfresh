@@ -10,18 +10,17 @@ package de.metas.materialtracking.qualityBasedInvoicing.invoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -30,6 +29,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
+import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 
 public class QualityInvoiceLine implements IQualityInvoiceLine
@@ -40,25 +40,27 @@ public class QualityInvoiceLine implements IQualityInvoiceLine
 	private BigDecimal qty;
 	private I_C_UOM uom;
 	private IPricingResult pricingResult;
-	private boolean displayed = true;
+	private boolean displayed = false; // not displayed by default. Set to true if you want it displayed.
 	private String description = null;
 	private IHandlingUnitsInfo handlingUnitsInfo;
+	private I_PP_Order ppOrder;
 
 	@Override
 	public String toString()
 	{
 		final BigDecimal price = pricingResult == null ? null : pricingResult.getPriceStd();
 		return "QualityInvoiceLine ["
-		+ "product=" + (product == null ? null : product.getName())
-		+ ", productName=" + productName
-		+ ", percentage=" + percentage
-		+ ", qty=" + qty
-		+ ", uom=" + (uom == null ? null : uom.getUOMSymbol())
-		+ ", price=" + price
-		+ ", displayed=" + displayed
-		+ ", description=" + description
-		+ ", handlingUnitsInfo=" + handlingUnitsInfo
-		+ "]";
+				+ "product=" + (product == null ? null : product.getName())
+				+ ", productName=" + productName
+				+ ", percentage=" + percentage
+				+ ", qty=" + qty
+				+ ", uom=" + (uom == null ? null : uom.getUOMSymbol())
+				+ ", price=" + price
+				+ ", displayed=" + displayed
+				+ ", description=" + description
+				+ ", ppOrder=" + ppOrder
+				+ ", handlingUnitsInfo=" + handlingUnitsInfo
+				+ "]";
 	}
 
 	@Override
@@ -158,5 +160,16 @@ public class QualityInvoiceLine implements IQualityInvoiceLine
 	public void setHandlingUnitsInfo(final IHandlingUnitsInfo handlingUnitsInfo)
 	{
 		this.handlingUnitsInfo = handlingUnitsInfo;
+	}
+
+	@Override
+	public I_PP_Order getPP_Order()
+	{
+		return ppOrder;
+	}
+
+	public void setPP_Order(I_PP_Order ppOrder)
+	{
+		this.ppOrder = ppOrder;
 	}
 }

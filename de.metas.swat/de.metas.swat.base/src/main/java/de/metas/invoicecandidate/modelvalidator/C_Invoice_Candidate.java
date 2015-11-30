@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -64,7 +64,7 @@ public class C_Invoice_Candidate
 //	{
 //		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 //		final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
-//		
+//
 //		//
 //		// Setup callouts for Header Aggregation Key
 //		final IAggregationKeyBuilder<I_C_Invoice_Candidate> headerAggregationKeyBuilder = aggregationBL.getHeaderAggregationKeyBuilder();
@@ -254,7 +254,7 @@ public class C_Invoice_Candidate
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteInvoiceLineAllocs(final I_C_Invoice_Candidate ic)
+	public void deleteC_Invoice_Line_Allocs(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -268,7 +268,7 @@ public class C_Invoice_Candidate
 	 * When an invoice candidate is deleted, then also delete its IC_IOLs
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteInvoiceCandidateInOutLine(final I_C_Invoice_Candidate ic)
+	public void deleteC_InvoiceCandidate_InOutLines(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -276,6 +276,12 @@ public class C_Invoice_Candidate
 		{
 			InterfaceWrapperHelper.delete(icIol);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void deleteC_Invoice_Details(final I_C_Invoice_Candidate ic)
+	{
+		Services.get(IInvoiceCandDAO.class).deleteInvoiceDetails(ic);
 	}
 
 	/**
@@ -311,7 +317,7 @@ public class C_Invoice_Candidate
 	 * </ul>
 	 * Note that if <code>QtyToInvoice_Override</code> is change to null, then QtyToInvoice_OverrideFulfilled is reset to <code>null</code>, otherwise to zero. This hopefully makes things more
 	 * transparent to the user.
-	 * 
+	 *
 	 * @param ic
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
@@ -330,7 +336,7 @@ public class C_Invoice_Candidate
 
 	/**
 	 * Update header aggregation key, unless (=>task 08451) the given <code>id</code> is already processed or a background process (creating, updating or invoicing) is currently in progress.
-	 * 
+	 *
 	 * @param ic
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })

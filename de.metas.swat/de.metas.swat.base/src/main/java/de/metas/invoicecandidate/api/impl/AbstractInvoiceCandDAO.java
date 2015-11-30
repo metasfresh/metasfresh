@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,6 +56,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 
 public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
@@ -327,6 +328,16 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 
 			saveErrorToDB(invoiceCandidate);
 		}
+	}
+
+
+	@Override
+	public int deleteInvoiceDetails(final I_C_Invoice_Candidate ic)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Detail.class, ic)
+				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
+				.create()
+				.delete();
 	}
 
 	protected abstract void saveErrorToDB(final I_C_Invoice_Candidate ic);

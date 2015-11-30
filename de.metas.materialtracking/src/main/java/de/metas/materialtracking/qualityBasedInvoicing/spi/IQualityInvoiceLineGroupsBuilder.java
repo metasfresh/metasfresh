@@ -35,7 +35,7 @@ public interface IQualityInvoiceLineGroupsBuilder
 
 	List<IQualityInvoiceLineGroup> getCreatedInvoiceLineGroups();
 
-	void setReceiptFromVendor(IVendorReceipt receiptFromVendor);
+	void setReceiptFromVendor(IVendorReceipt<?> receiptFromVendor);
 
 	void setPricingContext(IPricingContext pricingContext);
 

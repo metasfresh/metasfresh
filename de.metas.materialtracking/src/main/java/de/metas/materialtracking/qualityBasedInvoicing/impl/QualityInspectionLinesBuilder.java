@@ -10,12 +10,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,7 +47,7 @@ import de.metas.materialtracking.util.QualityBasedInspectionUtils;
  * Creates {@link IQualityInspectionLine}s for a given {@link IQualityInspectionOrder}.
  * <p>
  * ts: note that is seems as if the IQualityInspectionOrder does not necessarily have to be an actual quality inspection PP_Order. It might also be regular PP_Order.
- * 
+ *
  * @author tsa
  *
  */
@@ -56,13 +56,13 @@ public class QualityInspectionLinesBuilder
 	// Parameters
 	private final IQualityInspectionOrder _qiOrder;
 	private final boolean _buildWithAveragedValues;
-	private IVendorReceipt _receiptFromVendor;
+	private IVendorReceipt<?> _receiptFromVendor;
 
 	// Result
 	private List<IQualityInspectionLine> _createdQualityInspectionLines = null;
 
 	/**
-	 * 
+	 *
 	 * @param qiOrder the instance for which we build the lines
 	 * @param buildWithAveragedValues decides if the averaged values of the given qiOrder shall be used or the actual values
 	 */
@@ -86,7 +86,7 @@ public class QualityInspectionLinesBuilder
 		Check.assumeNotNull(_createdQualityInspectionLines, "lines shall be created before");
 		return new QualityInspectionLinesCollection(getCreatedQualityInspectionLines(), _qiOrder);
 	}
-	
+
 	private final IQualityInspectionOrder getQualityInspectionOrder()
 	{
 		// not null
@@ -113,13 +113,13 @@ public class QualityInspectionLinesBuilder
 		return getQualityInspectionOrder().getMainProductionMaterial();
 	}
 
-	public void setReceiptFromVendor(final IVendorReceipt receiptFromVendor)
+	public void setReceiptFromVendor(final IVendorReceipt<?> receiptFromVendor)
 	{
 		Check.assumeNotNull(receiptFromVendor, "receiptFromVendor not null");
 		_receiptFromVendor = receiptFromVendor;
 	}
 
-	private final IVendorReceipt getReceiptFromVendor()
+	private final IVendorReceipt<?> getReceiptFromVendor()
 	{
 		Check.assumeNotNull(_receiptFromVendor, "_receiptFromVendor not null");
 		return _receiptFromVendor;
@@ -129,7 +129,7 @@ public class QualityInspectionLinesBuilder
 	{
 		Check.assumeNotNull(uomTo, "uomTo not null");
 
-		final IVendorReceipt receiptFromVendor = getReceiptFromVendor();
+		final IVendorReceipt<?> receiptFromVendor = getReceiptFromVendor();
 		final BigDecimal qtyReceivedFromVendor = receiptFromVendor.getQtyReceived();
 		final I_C_UOM qtyReceivedFromVendorUOM = receiptFromVendor.getQtyReceivedUOM();
 		if (qtyReceivedFromVendorUOM.getC_UOM_ID() != uomTo.getC_UOM_ID())
@@ -149,7 +149,7 @@ public class QualityInspectionLinesBuilder
 		_createdQualityInspectionLines = new ArrayList<IQualityInspectionLine>();
 
 		//
-		final IVendorReceipt receiptFromVendor = getReceiptFromVendor();
+		final IVendorReceipt<?> receiptFromVendor = getReceiptFromVendor();
 		final I_C_UOM uom = receiptFromVendor.getQtyReceivedUOM(); // reporting UOM
 		final List<IProductionMaterial> productionMaterials = new ArrayList<>(getAllProductionMaterials());
 

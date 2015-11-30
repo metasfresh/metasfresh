@@ -61,7 +61,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.invoice.IMatchInvBL;
@@ -85,7 +84,7 @@ import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 public class MInvoice extends X_C_Invoice implements DocAction
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5406556271212363271L;
 
@@ -110,7 +109,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	 * 	Create new Invoice by copying
 	 * 	@param from invoice
 	 * 	@param dateDoc date of the document date
-	 *  @param acctDate original account date 
+	 *  @param acctDate original account date
 	 * 	@param C_DocTypeTarget_ID target doc type
 	 * 	@param isSOTrx sales order
 	 * 	@param counter create counter links
@@ -130,12 +129,12 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		final I_C_Invoice to = Services.get(IInvoiceBL.class).copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, counter, setOrder,
 				false, // setInvoiceRef == false
 				true); // copyLines == true
-		
+
 		// Make sure DateAcct is set (08356)
 		to.setDateAcct(dateAcct);
 		InterfaceWrapperHelper.save(to);
 
-		
+
 		return LegacyAdapters.convertToPO(to);
 	}
 
@@ -293,8 +292,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		poService.copyValue(ship, this, C_Order_DESCRIPTION_BOTTOM);
 		poService.copyValue(ship, this, C_Invoice_ISUSE_BPARTNER_ADDRESS);
 		poService.copyValue(ship, this, C_Invoice_BPARTNERADDRESS);
-		
-		
+
+
 		InterfaceWrapperHelper.setDynAttribute(this, I_M_InOut.Table_Name, ship); // task 07286
 		// metas end
 	}	//	MInvoice
@@ -951,7 +950,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	public BigDecimal getAllocatedAmt ()
 	{
 		// ts: 04054: moving getAllocatedAmt business logic to the implementors of IInvoicePA
-		
+
 //		BigDecimal retValue = null;
 //		String sql = "SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,"
 //				+ "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
@@ -999,7 +998,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	{
 		final boolean ignoreProcessed = false;
 		return Services.get(IInvoiceBL.class).testAllocation(this, ignoreProcessed);
-		
+
 		// tsa: 04098: moving getAllocatedAmt business logic to the implementors of IInvoiceBL
 //		boolean change = false;
 //
@@ -1117,7 +1116,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 //		if (isCreditMemo())
 //			return m_openAmt.negate();
 //		return m_openAmt;
-		
+
 		return Services.get(IAllocationDAO.class).retrieveOpenAmt(this, creditMemoAdjusted);
 	}	//	getOpenAmt
 
@@ -1415,7 +1414,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 //		}	//	while count != 0
 //	}	//	explodeBOM
 	// @formatter:on
-	
+
 	/**
 	 * 	Calculate Tax and Total
 	 * 	@return true if calculated
@@ -1423,16 +1422,16 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	public boolean calculateTaxTotal()
 	{
 		final String trxName = get_TrxName();
-		
+
 		log.fine("");
-		
+
 		//	Delete Taxes
 		DB.executeUpdateEx("DELETE FROM C_InvoiceTax WHERE C_Invoice_ID=" + getC_Invoice_ID(), trxName);
 		m_taxes = null;
 
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final int taxPrecision = invoiceBL.getPrecision(this);
-		
+
 		//	Lines
 		BigDecimal totalLines = Env.ZERO;
 		final Set<Integer> taxIds = new HashSet<Integer>();
@@ -1440,13 +1439,13 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		for (final MInvoiceLine line : lines)
 		{
 			totalLines = totalLines.add(line.getLineNetAmt());
-			
+
 			final int taxId = line.getC_Tax_ID();
 			if (taxIds.contains(taxId))
 			{
 				continue;
 			}
-			
+
 			final MInvoiceTax iTax = MInvoiceTax.get(line, taxPrecision, false, trxName); // current Tax
 			if (iTax == null)
 			{
@@ -1493,7 +1492,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 						grandTotal = grandTotal.add(taxAmt);
 					}
 				}
-				
+
 				iTax.setProcessed(false);
 				InterfaceWrapperHelper.delete(iTax);
 			}
@@ -1555,10 +1554,10 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	{
 		final String result = completeIt0();
 		Services.get(IPrepayOrderAllocationBL.class).invoiceAfterCompleteIt(this);
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * 	Complete Document
 	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
@@ -1582,7 +1581,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			approveIt();
 		log.info(toString());
 		StringBuffer info = new StringBuffer();
-		
+
 		// POS supports multiple payments
 		boolean fromPOS = false;
 		if ( getC_Order_ID() > 0 )
@@ -1699,7 +1698,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			if (line.getM_InOutLine_ID() > 0
 				&& line.getM_Product_ID() > 0
 				&& !isReversal() // in case of reversal, the job is done by IInvoiceBL.handleReversalForInvoice()
-			) 
+			)
 			{
 				final boolean matchInvCreated = Services.get(IMatchInvBL.class).createMatchInvBuilder()
 						.setContext(this)
@@ -1723,7 +1722,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		{
 			info.append(" @M_MatchPO_ID@#").append(matchPO).append(" ");
 		}
-	
+
 		// verify that we can deal with the invoice's currency
 		//	Update total revenue and balance / credit limit (reversed on AllocationLine.processIt)
 		final BigDecimal invAmt = Services.get(ICurrencyConversionBL.class).convertBase(
@@ -1816,7 +1815,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		if (dt.isOverwriteDateOnComplete()) {
 			setDateInvoiced(SystemTime.asTimestamp());  // metas: use SystemTime
 		}
-		if (dt.isOverwriteSeqOnComplete()) 
+		if (dt.isOverwriteSeqOnComplete())
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
@@ -1965,7 +1964,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					//	Unlink Shipment
 					if (line.getM_InOutLine_ID() > 0)
 					{
-						I_M_InOutLine ioLine = line.getM_InOutLine(); 
+						I_M_InOutLine ioLine = line.getM_InOutLine();
 						ioLine.setIsInvoiced(false);
 						InterfaceWrapperHelper.save(ioLine);
 						line.setM_InOutLine(null);
@@ -2030,7 +2029,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	public boolean reverseCorrectIt()
 	{
 		Services.get(IPrepayOrderAllocationBL.class).invoiceBeforeReverseCorrectIt(this);
-		
+
 		log.info(toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSECORRECT);
@@ -2118,7 +2117,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		reversal.setDocStatus(DOCSTATUS_Reversed);
 		reversal.setDocAction(DOCACTION_None);
 		InterfaceWrapperHelper.save(reversal);
-		
+
 		m_processMsg = reversal.getDocumentNo();
 		//
 		addDescription("(" + reversal.getDocumentNo() + "<-)");
@@ -2133,7 +2132,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 				final I_M_InOutLine ioLine = iLine.getM_InOutLine();
 				ioLine.setIsInvoiced(false);
 				InterfaceWrapperHelper.save(ioLine);
-				
+
 				//	Reconsiliation
 				iLine.setM_InOutLine(null);
 				InterfaceWrapperHelper.save(iLine);
@@ -2330,149 +2329,5 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		return Services.get(IInvoiceBL.class).isComplete(this);
 	}	//	isComplete
 
-// metas: begin
 
-	/**
-	 * Renumbers all Lines for this invoice after they are sorted.
-	 * 
-	 * @param step
-	 *            start and step
-	 */
-	// metas
-	public void renumberLinesWithoutComment(int step)
-	{
-		int number = step;
-		MInvoiceLine[] linePOs = getLines(false);
-		
-		List<I_C_InvoiceLine> lines = new ArrayList<I_C_InvoiceLine>();
-		
-		for (final MInvoiceLine linePO : linePOs)
-		{
-			lines.add(InterfaceWrapperHelper.create(linePO, I_C_InvoiceLine.class));
-		}
-
-		// 02139: Sort InvoiceLines before renumbering.
-		lines = sortLines(lines);
-
-		for (final I_C_InvoiceLine line : lines)
-		{
-			if (line.getLine() % step == 0)
-			{
-				line.setLine(number);
-				number += step;
-			}
-			else
-			{
-				if (line.getLine() % 2 == 0)
-				{
-					line.setLine(number - 2);
-				}
-				else
-				{
-					line.setLine(number - 1);
-				}
-			}
-			InterfaceWrapperHelper.save(line);
-		}
-		m_lines = null;
-	} // renumberLinesWithoutComment
-
-	
-	/**
-	 * Orders the InvoiceLines by their InOut. For each InOut, the FreightCostLine comes last. Lines whose M_InOut_ID
-	 * equals 0, will get the M_InOut_ID of the next Line whose InOut_ID is not 0.
-	 * 
-	 * @param lines
-	 *            - The unsorted array of InvoiceLines
-	 * @return The sorted array
-	 * @deprecated please use {@link IInvoiceBL#sortLines(List)} instead
-	 */
-	@Deprecated
-	private List<I_C_InvoiceLine> sortLines(final List<I_C_InvoiceLine> lines)
-	{
-		return Services.get(IInvoiceBL.class).sortLines(lines);
-		
-//		/*
-//		 * Set M_InOut_ID for comment lines: The Invoice Lines are initially ordered by their M_InOut_ID, so that there
-//		 * is a "Block" of invoice lines for each InOut. There are 2 comment lines in front of every block, which are
-//		 * supposed to increase the clear arrangement in the Invoice window. None of these lines are attached to a
-//		 * M_InOutLine which means that the Virtual Column M_InOut_ID is NULL. This causes Problems when trying to order
-//		 * the lines, so first we need to allocate an InOut_ID to each InvoiceLine. To do this a hash map is used.
-//		 */
-//		final HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
-//
-//		for (int i = 0; i < lines.size(); i++)
-//		{
-//			I_C_InvoiceLine il = lines.get(i);
-//			int currentInOutID = il.getM_InOut_ID();
-//			int currentLineID = il.getC_InvoiceLine_ID();
-//
-//			// if this is not a comment line:
-//			if (currentInOutID != 0)
-//			{
-//				map.put(currentLineID, currentInOutID);
-//				continue;
-//			}
-//
-//			int valueIdToUse = -1;
-//			
-//			// If this is a comment line: Get next line with a valid ID
-//			for (int j = 1; i + j < lines.size(); j++)
-//			{
-//				int nextID = lines.get(i + j).getM_InOut_ID();
-//				if (nextID != 0) // If this is a valid ID, put it into the Map.
-//				{
-//					valueIdToUse = nextID;
-//					break;
-//				}
-//			}
-//			
-//			map.put(currentLineID, valueIdToUse);
-//		}
-//
-//		Check.assume(map.size() == lines.size(), "Every line's id has been added to map '" + map + "'");
-//		
-//		// create Comparator
-//		final Comparator<I_C_InvoiceLine> cmp = new Comparator<I_C_InvoiceLine>()
-//		{
-//			@Override
-//			public int compare(I_C_InvoiceLine line1, I_C_InvoiceLine line2)
-//			{
-//				// InOut_ID
-//				int InOut_ID1 = map.get(line1.getC_InvoiceLine_ID());
-//				int InOut_ID2 = map.get(line2.getC_InvoiceLine_ID());
-//				
-//				if (InOut_ID1 > InOut_ID2)
-//					return 1;
-//				if (InOut_ID1 < InOut_ID2)
-//					return -1;
-//
-//				// Freight cost
-//				boolean fc1 = line1.isFreightCostLine();
-//				boolean fc2 = line2.isFreightCostLine();
-//				
-//				if(fc1 && !fc2)
-//					return 1;
-//				if(!fc1 && fc2)
-//					return -1;
-//				
-//				// LineNo
-//				int line1No = line1.getLine();
-//				int line2No = line2.getLine();
-//				
-//				if(line1No > line2No)
-//					return 1;
-//				if(line1No < line2No)
-//					return -1;
-//				
-//				return 0;
-//			}
-//		};
-//		
-//		// sort
-//		Collections.sort(lines,cmp);
-//		
-//		return lines;
-	}	// sortLines
-	
 }	//	MInvoice

@@ -10,12 +10,12 @@ package org.adempiere.pricing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,7 +54,10 @@ public class PriceListBL implements IPriceListBL
 	private static final CLogger logger = CLogger.getCLogger(PriceListBL.class);
 
 	@Override
-	public I_M_PriceList getCurrentPricelistOrNull(final I_M_PricingSystem pricingSystem, final I_C_BPartner_Location partnerLocation, final Timestamp date, final boolean isSoTrx)
+	public I_M_PriceList getCurrentPricelistOrNull(final I_M_PricingSystem pricingSystem,
+			final I_C_BPartner_Location partnerLocation,
+			final Timestamp date,
+			final boolean isSoTrx)
 	{
 		final I_M_PriceList_Version currentVersion = getLastPriceListVersionOrNull(pricingSystem, partnerLocation, date, isSoTrx);
 
@@ -165,9 +168,12 @@ public class PriceListBL implements IPriceListBL
 	}
 
 	/**
-	 * find the newest version from a pricing system based on bp location
+	 * Find the newest version from a pricing system based on bp location
 	 */
-	private I_M_PriceList_Version getLastPriceListVersionOrNull(final I_M_PricingSystem pricingSystem, final I_C_BPartner_Location partnerLocation, final Timestamp date, final boolean isSoTrx)
+	private I_M_PriceList_Version getLastPriceListVersionOrNull(final I_M_PricingSystem pricingSystem,
+			final I_C_BPartner_Location partnerLocation,
+			final Timestamp date,
+			final boolean isSoTrx)
 	{
 		if (partnerLocation == null)
 		{
@@ -197,7 +203,8 @@ public class PriceListBL implements IPriceListBL
 		}
 
 		final I_C_Country country = partnerLocation.getC_Location().getC_Country();
-		final Iterator<I_M_PriceList> pricelists = Services.get(IPriceListDAO.class).retrievePriceLists(pricingSystem, country, isSoTrx);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystem, country, isSoTrx);
 
 		if (pricelists == null)
 		{
@@ -206,15 +213,15 @@ public class PriceListBL implements IPriceListBL
 
 		// This will be the most "fresh" pricelist (check the closest dateFrom)
 		I_M_PriceList currentPricelist = null;
-
+		final boolean processed = true; // only check for PLVs that are "cleared" by a user
 		Timestamp currentValidFrom = null;
-
 		I_M_PriceList_Version lastPriceListVersion = null;
 
 		if (pricelists.hasNext())
 		{
 			currentPricelist = pricelists.next();
-			lastPriceListVersion = Services.get(IPriceListDAO.class).retrieveLastVersion(currentPricelist, date);
+
+			lastPriceListVersion = priceListDAO.retrievePriceListVersionOrNull(currentPricelist, date, processed);
 
 			if (lastPriceListVersion != null)
 			{
@@ -226,7 +233,7 @@ public class PriceListBL implements IPriceListBL
 		{
 			final I_M_PriceList priceListToCheck = pricelists.next();
 
-			final I_M_PriceList_Version plvToCkeck = Services.get(IPriceListDAO.class).retrieveLastVersion(priceListToCheck, date);
+			final I_M_PriceList_Version plvToCkeck = priceListDAO.retrievePriceListVersionOrNull(priceListToCheck, date, processed);
 
 			if (plvToCkeck == null)
 			{

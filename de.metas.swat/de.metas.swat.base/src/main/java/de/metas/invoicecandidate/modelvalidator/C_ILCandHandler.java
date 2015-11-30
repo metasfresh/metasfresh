@@ -22,15 +22,11 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
@@ -59,7 +55,7 @@ public class C_ILCandHandler
 			final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 			final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
 			final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-			final Set<String> registeredTableNames = new HashSet<>();
+
 			for (final I_C_ILCandHandler handlerDef : invoiceCandidateHandlerDAO.retrieveAll(Env.getCtx()))
 			{
 				final IInvoiceCandidateHandler handler = invoiceCandidateHandlerBL.mkInstance(handlerDef);
@@ -69,10 +65,6 @@ public class C_ILCandHandler
 				if (!tableDAO.isExistingTable(tableName))
 				{
 					continue;
-				}
-				if (!registeredTableNames.add(tableName))
-				{
-					throw new AdempiereException("More then one handler for table " + tableName + " is not supported");
 				}
 
 				final ILHandlerModelInterceptor modelInterceptor = ILHandlerModelInterceptor.builder()
@@ -89,6 +81,7 @@ public class C_ILCandHandler
 			, ifColumnsChanged = { I_C_ILCandHandler.COLUMNNAME_Classname })
 	public void validateClassname(final I_C_ILCandHandler handlerDef)
 	{
-		Services.get(IInvoiceCandidateHandlerBL.class).evalClassName(handlerDef);
+		final boolean failIfClassNotFound = true;
+		Services.get(IInvoiceCandidateHandlerBL.class).evalClassName(handlerDef, failIfClassNotFound);
 	}
 }

@@ -10,12 +10,12 @@ package de.metas.materialtracking;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -71,10 +71,10 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefForType(I_M_Material_Tracking materialTracking, Class<?> modelClass);
 
 	/**
-	 * If the given model has a <code>M_Material_Tracking_ID</code> column, then return that referenced material tracking.
+	 * If the given model has a <code>M_Material_Tracking_ID</code> column, then return that referenced material tracking (=> might be <code>null</code>).
 	 * Otherwise, if the given model is referenced by a {@link I_M_Material_Tracking_Ref}, then return that reference's material tracking.
 	 * Otherwise, return <code>null</code>.
-	 * 
+	 *
 	 * @param model
 	 * @return material tracking or <code>null</code>
 	 */
@@ -82,9 +82,9 @@ public interface IMaterialTrackingDAO extends ISingletonService
 
 	/**
 	 * Retrieves {@link I_M_Material_Tracking}s list for models specified by a query builder.
-	 * 
+	 *
 	 * This method is very useful when performance is important and we don't want to fetch all the intermediary records.
-	 * 
+	 *
 	 * @param modelsQuery models query
 	 * @return {@link I_M_Material_Tracking}s
 	 */

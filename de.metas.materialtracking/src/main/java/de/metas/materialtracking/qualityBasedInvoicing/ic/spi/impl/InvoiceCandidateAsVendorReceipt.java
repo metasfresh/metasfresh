@@ -51,7 +51,7 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
  * @author tsa
  *
  */
-/* package */class InvoiceCandidateAsVendorReceipt implements IVendorReceipt
+/* package */class InvoiceCandidateAsVendorReceipt implements IVendorReceipt<I_C_Invoice_Candidate>
 {
 	private static final transient CLogger logger = CLogger.getCLogger(InvoiceCandidateAsVendorReceipt.class);
 	
@@ -75,7 +75,9 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 		add(invoiceCandidate);
 	}
 
-	// final, because it's called from the constructor
+	/**
+	 * Final, because it's called from the constructor.
+	 */
 	@Override
 	public final void add(final I_C_Invoice_Candidate invoiceCandidate)
 	{

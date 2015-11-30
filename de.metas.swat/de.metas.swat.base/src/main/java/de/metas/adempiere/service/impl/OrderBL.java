@@ -10,12 +10,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,6 +42,7 @@ import org.adempiere.model.POWrapper;
 import org.adempiere.order.service.IOrderPA;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.product.service.IProductPA;
+import org.adempiere.service.ICurrencyDAO;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
@@ -59,7 +60,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MCurrency;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MPricingSystem;
@@ -465,7 +465,7 @@ public class OrderBL implements IOrderBL
 
 	/**
 	 * Retrieve the deliveryViaRule based on partner form order
-	 * 
+	 *
 	 * @param order
 	 * @return
 	 */
@@ -517,13 +517,14 @@ public class OrderBL implements IOrderBL
 			orderDate = order.getDateOrdered();
 		}
 
-		final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersion(order.getM_PriceList(), orderDate);
+		final boolean processed = true;
+		final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(order.getM_PriceList(), orderDate, processed);
 		return plv;
 	}
 
 	/**
 	 * Set Business Partner Defaults & Details. SOTrx should be set.
-	 * 
+	 *
 	 * @param bp business partner
 	 */
 	@Override
@@ -583,7 +584,7 @@ public class OrderBL implements IOrderBL
 		{
 			ss = bp.getPO_DeliveryViaRule();
 		}
-		
+
 		if (ss != null)
 		{
 			order.setDeliveryViaRule(ss);
@@ -644,7 +645,7 @@ public class OrderBL implements IOrderBL
 	{
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-		final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(bp.getC_BPartner_ID(), false, ITrx.TRXNAME_None);
+		final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(bp);
 
 		// Set Locations
 		final List<I_C_BPartner_Location> shipLocations = new ArrayList<I_C_BPartner_Location>();
@@ -689,8 +690,8 @@ public class OrderBL implements IOrderBL
 	}
 
 	/**
-	 * 
-	 * 
+	 *
+	 *
 	 * @param order
 	 */
 	@Override
@@ -750,7 +751,7 @@ public class OrderBL implements IOrderBL
 		if (!foundLoc)
 		{
 			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-			final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(billBPartner.getC_BPartner_ID(), false, ITrx.TRXNAME_None);
+			final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(billBPartner);
 
 			// Set Locations
 			final List<I_C_BPartner_Location> invLocations = new ArrayList<I_C_BPartner_Location>();
@@ -850,7 +851,8 @@ public class OrderBL implements IOrderBL
 	public int getPrecision(final org.compiere.model.I_C_Order order)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		return MCurrency.getStdPrecision(ctx, order.getC_Currency_ID());
+		return Services.get(ICurrencyDAO.class)
+				.getStdPrecision(ctx, order.getC_Currency_ID());
 	}
 
 	@Override

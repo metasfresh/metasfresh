@@ -10,12 +10,12 @@ package org.adempiere.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +36,7 @@ public final class StringUtils
 
 	/**
 	 * Truncate string to a given length.
-	 * 
+	 *
 	 * @param str
 	 * @param length
 	 * @return
@@ -58,7 +58,7 @@ public final class StringUtils
 
 	/**
 	 * Casts a string to integer. Returns 0 if the operation fails.
-	 * 
+	 *
 	 * @param str
 	 * @return
 	 */
@@ -82,7 +82,7 @@ public final class StringUtils
 
 	/**
 	 * Casts a string to BigDecimal. Returns BigDecimal.ZERO if the operation fails.
-	 * 
+	 *
 	 * @param str
 	 * @return
 	 */
@@ -103,6 +103,12 @@ public final class StringUtils
 		}
 	}
 
+	/**
+	 *
+	 * @param message
+	 * @param params
+	 * @return
+	 */
 	public static String formatMessage(final String message, Object... params)
 	{
 		String messageFormated;
@@ -141,7 +147,7 @@ public final class StringUtils
 
 	/**
 	 * String diacritics from given string
-	 * 
+	 *
 	 * @param s original string
 	 * @return string without diacritics
 	 */
@@ -152,14 +158,14 @@ public final class StringUtils
 		return s;
 		/*
 		 * JAVA6 behaviour * if (s == null) { return s; } String normStr = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD);
-		 * 
+		 *
 		 * StringBuffer sb = new StringBuffer(); for (int i = 0; i < normStr.length(); i++) { char ch = normStr.charAt(i); if (ch < 255) sb.append(ch); } return sb.toString(); /*
 		 */
 	}
 
 	/**
 	 * Check if given string contains digits only.
-	 * 
+	 *
 	 * @param stringToVerify
 	 * @return {@link code true} if the given string consists only of digits (i.e. contains no letter, whitespace decimal point etc).
 	 */

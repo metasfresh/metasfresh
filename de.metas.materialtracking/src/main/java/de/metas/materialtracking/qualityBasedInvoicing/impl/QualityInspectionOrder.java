@@ -10,18 +10,17 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -37,6 +36,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
 
@@ -75,12 +75,11 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 	private IProductionMaterial _productionMaterial_Main;
 	/** Scrap */
 	private IProductionMaterial _productionMaterial_Scrap;
-	/** amoutn that was already invoiced in recent waschproben-invoices */
+	/** amount that was already invoiced in recent waschproben-invoices */
 	private BigDecimal _alreadyInvoicedSum = null;
 
-	private List<IQualityInspectionOrder> preceedingOrders;
-
 	private List<IQualityInspectionOrder> allOrders;
+	private I_M_PriceList_Version _priceListversion;
 
 	/**
 	 * Constructor.
@@ -168,6 +167,17 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 
 		Check.assume(inspectionNumber >= 1, "inspectionNumber >= 1");
 		_inspectionNumber = inspectionNumber;
+	}
+
+	protected void setPriceListversion(final I_M_PriceList_Version priceListVersion)
+	{
+		this._priceListversion = priceListVersion;
+	}
+
+	@Override
+	public I_M_PriceList_Version getPriceListVersion()
+	{
+		return _priceListversion;
 	}
 
 	@Override
@@ -316,7 +326,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 		{
 			final BigDecimal producedQtyInScrapUOM = producedMaterial.getQty(scrapUOM);
 			producedQtyInScrapUOMSum = producedQtyInScrapUOMSum.add(producedQtyInScrapUOM);
-			
+
 			final BigDecimal producedQtyInScrapUOMAvg = producedMaterial.getQM_QtyDeliveredAvg(scrapUOM);
 			producedQtyInScrapUOMSumAvg = producedQtyInScrapUOMSumAvg.add(producedQtyInScrapUOMAvg);
 		}
@@ -414,30 +424,6 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 		return result;
 	}
 
-	/**
-	 * Called by API to set preceeding orders.
-	 *
-	 * @param previousOrders
-	 */
-	protected void setPreceedingOrders(final List<IQualityInspectionOrder> previousOrders)
-	{
-		assumeQualityInspection();
-
-		Check.assumeNotNull(previousOrders, "previousOrders not null");
-		preceedingOrders = Collections.unmodifiableList(new ArrayList<>(previousOrders));
-	}
-
-	@Override
-	public List<IQualityInspectionOrder> getPreceedingOrders()
-	{
-		assumeQualityInspection();
-
-		Check.assumeNotNull(preceedingOrders, "preceeding orders shall be loaded");
-		// NOTE: maybe in future we can implement automatically loading here
-
-		return preceedingOrders;
-	}
-
 	protected void setAllOrders(final List<IQualityInspectionOrder> allOrders)
 	{
 		assumeQualityInspection();
@@ -445,13 +431,13 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 		Check.assumeNotNull(allOrders, "allOrders not null");
 		this.allOrders = Collections.unmodifiableList(new ArrayList<>(allOrders));
 	}
-	
+
 	@Override
 	public List<IQualityInspectionOrder> getAllOrders()
 	{
 		return allOrders;
 	}
-	
+
 	@Override
 	public BigDecimal getAlreadyInvoicedNetSum()
 	{
@@ -503,8 +489,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 		builder.append(_productionMaterial_Scrap);
 		builder.append(", _alreadyInvoicedSum=");
 		builder.append(_alreadyInvoicedSum);
-		builder.append(", preceedingOrders=");
-		builder.append(preceedingOrders);
+		// builder.append(", preceedingOrders=");
+		// builder.append(preceedingOrders);
 		builder.append("]");
 		return builder.toString();
 	}

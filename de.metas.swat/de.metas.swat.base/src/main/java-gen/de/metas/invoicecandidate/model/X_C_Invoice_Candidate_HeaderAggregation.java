@@ -30,7 +30,7 @@ public class X_C_Invoice_Candidate_HeaderAggregation extends org.compiere.model.
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -981978009L;
+	private static final long serialVersionUID = 1317450643L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_HeaderAggregation (Properties ctx, int C_Invoice_Candidate_HeaderAggregation_ID, String trxName)
@@ -174,7 +174,7 @@ public class X_C_Invoice_Candidate_HeaderAggregation extends org.compiere.model.
 
 	/** Set Abrechnungsgruppe.
 		@param InvoicingGroupNo 
-		Rechnungskandidaten mit der selben Abrechnungsgruppe können zu einer Rechnung zusammengefasst werden
+		Dev-Hinweis: Werte werden per DB-Trigger-Funktion gesetzt!
 	  */
 	@Override
 	public void setInvoicingGroupNo (int InvoicingGroupNo)
@@ -183,7 +183,7 @@ public class X_C_Invoice_Candidate_HeaderAggregation extends org.compiere.model.
 	}
 
 	/** Get Abrechnungsgruppe.
-		@return Rechnungskandidaten mit der selben Abrechnungsgruppe können zu einer Rechnung zusammengefasst werden
+		@return Dev-Hinweis: Werte werden per DB-Trigger-Funktion gesetzt!
 	  */
 	@Override
 	public int getInvoicingGroupNo () 

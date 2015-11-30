@@ -44,6 +44,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -64,16 +65,16 @@ import com.google.common.cache.LoadingCache;
 
 /**
  * Server Process base class.
- * 
+ *
  * Also see
  * <ul>
  * <li> {@link ISvrProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
  * <li> {@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
  * </ul>
- * 
+ *
  *
  * @author Jorg Janke
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  *         <ul>
  *         <li>FR [ 1646891 ] SvrProcess - post process support
@@ -83,7 +84,7 @@ import com.google.common.cache.LoadingCache;
  *         <li>BF [ 1935093 ] SvrProcess.unlock() is setting invalid result
  *         <li>FR [ 2788006 ] SvrProcess: change access to some methods https://sourceforge.net/tracker/?func=detail&aid=2788006&group_id=176962&atid=879335
  *         </ul>
- * 
+ *
  */
 public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAware
 {
@@ -127,21 +128,21 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	protected static String MSG_OK = "OK";
 	/**
 	 * Process failed error message. To be returned from {@link #doIt()}.
-	 * 
+	 *
 	 * In case it's returned the process will be rolled back.
 	 */
 	protected static final String MSG_Error = "@Error@";
 
 	/**
 	 * Start the process.
-	 * 
+	 *
 	 * It should only return false, if the function could not be performed as this causes the process to abort.
 	 *
 	 * @param ctx Context
 	 * @param pi Process Info
 	 * @param trx existing/inherited transaction if any
 	 * @return true if process was executed successfully
-	 * 
+	 *
 	 * @see org.compiere.process.ProcessCall#startProcess(Properties, ProcessInfo, ITrx)
 	 */
 	@Override
@@ -190,7 +191,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			if (!prepareExecuted || !doItExecuted)
 			{
 				startTrx(trx);
-				
+
 				if (!prepareExecuted)
 				{
 					prepareExecuted = true;
@@ -220,7 +221,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		finally
 		{
 			// NOTE: at this point the thread local loggable was restored
-			
+
 			endTrx(success);
 			unlock();
 		}
@@ -234,7 +235,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Asserts we are running out of transaction.
-	 * 
+	 *
 	 * @param trx
 	 */
 	private final void assertOutOfTransaction(final ITrx trx)
@@ -257,7 +258,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Starts transaction.
-	 * 
+	 *
 	 * @param trxExisting existing transaction, if any
 	 */
 	private final void startTrx(final ITrx trxExisting)
@@ -306,9 +307,9 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Ends current transaction, if a local transaction.
-	 * 
+	 *
 	 * This method can be called as many times as possible and even if the transaction was not started before.
-	 * 
+	 *
 	 * @param success
 	 */
 	private final void endTrx(final boolean success)
@@ -416,21 +417,24 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		if (error)
 		{
 			if (e.getCause() != null)
+			{
 				log.log(Level.SEVERE, msg, e.getCause());
+			}
 			else
+			{
 				log.log(Level.SEVERE, msg, e);
-
+			}
 			m_pi.setThrowable(e); // only if it's really an error
 		}
 	}
 
 	/**
 	 * Prepare process run.
-	 * 
+	 *
 	 * Here you would implement process preparation business logic (e.g. parameters retrieval).
-	 * 
+	 *
 	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}. By default, this method is executed in transaction.
-	 * 
+	 *
 	 * @throws ProcessCanceledException in case there is a cancel request on prepare
 	 * @throws RuntimeException in case of any failure
 	 */
@@ -438,11 +442,11 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Actual process business logic to be executed.
-	 * 
+	 *
 	 * This method is called after {@link #prepare()}.
-	 * 
+	 *
 	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}. By default, this method is executed in transaction.
-	 * 
+	 *
 	 * @return Message (variables are parsed)
 	 * @throws ProcessCanceledException in case there is a cancel request on doIt
 	 * @throws Exception if not successful e.g. <code>throw new AdempiereException ("@MyExceptionADMessage@");</code>
@@ -452,7 +456,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	/**
 	 * Post process actions (outside trx). Please note that at this point the transaction is committed so you can't rollback. This method is useful if you need to do some custom work when the process
 	 * complete the work (e.g. open some windows).
-	 * 
+	 *
 	 * @param success true if the process was success
 	 * @since 3.1.4
 	 */
@@ -463,7 +467,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Commit
-	 * 
+	 *
 	 * @deprecated suggested to use commitEx instead
 	 */
 	@Deprecated
@@ -477,7 +481,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Commit and throw exception if error
-	 * 
+	 *
 	 * @throws SQLException on commit error
 	 * @deprecated Please consider not managing the transaction and using other APIs.
 	 */
@@ -490,7 +494,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Rollback.
-	 * 
+	 *
 	 * @deprecated Please consider not managing the transaction, throwing an exception or using other APIs.
 	 */
 	@Deprecated
@@ -548,7 +552,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**************************************************************************
 	 * Get Process Info
-	 * 
+	 *
 	 * @return Process Info
 	 */
 	public final ProcessInfo getProcessInfo()
@@ -558,7 +562,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Get Properties
-	 * 
+	 *
 	 * @return context; never returns null
 	 */
 	// org.adempiere.model.IContextAware#getCtx()
@@ -570,7 +574,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Get Name/Title
-	 * 
+	 *
 	 * @return Name
 	 */
 	protected final String getName()
@@ -580,7 +584,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Get Process Instance
-	 * 
+	 *
 	 * @return Process Instance
 	 */
 	protected final int getAD_PInstance_ID()
@@ -590,7 +594,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Get Table_ID
-	 * 
+	 *
 	 * @return AD_Table_ID
 	 */
 	protected final int getTable_ID()
@@ -600,7 +604,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Get Record_ID
-	 * 
+	 *
 	 * @return Record_ID
 	 */
 	protected final int getRecord_ID()
@@ -610,7 +614,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID using current transaction (i.e. {@link #getTrxName()}).
-	 * 
+	 *
 	 * @param modelClass
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
@@ -622,7 +626,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Get AD_User_ID
-	 * 
+	 *
 	 * @return AD_User_ID of Process owner or -1 if not found
 	 */
 	protected final int getAD_User_ID()
@@ -653,7 +657,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Get AD_User_ID
-	 * 
+	 *
 	 * @return AD_User_ID of Process owner
 	 */
 	protected final int getAD_Client_ID()
@@ -687,7 +691,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**************************************************************************
 	 * Add Log Entry
-	 * 
+	 *
 	 * @param date date or null
 	 * @param id record id or 0
 	 * @param number number or null
@@ -706,17 +710,17 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 * @param msg message
 	 */
 	@Override
-	public final void addLog(final String msg)
+	public final void addLog(final String msg, final Object... msgParameters)
 	{
 		if (msg != null)
 		{
-			addLog(0, null, null, msg);
+			addLog(0, null, null, StringUtils.formatMessage(msg, msgParameters));
 		}
 	}	// addLog
 
 	/**************************************************************************
 	 * Execute function
-	 * 
+	 *
 	 * @param className class
 	 * @param methodName method
 	 * @param args arguments
@@ -811,7 +815,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Return the main transaction of the current process.
-	 * 
+	 *
 	 * @return the transaction name
 	 */
 	public final String get_TrxName()
@@ -859,7 +863,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Used to annotate that {@link SvrProcess#prepare()} or {@link SvrProcess#doIt()} shall be executed out of transaction.
-	 * 
+	 *
 	 * If {@link SvrProcess#doIt()} is annotated then {@link SvrProcess#prepare()} will be executed out of transaction too.
 	 */
 	@Inherited
@@ -872,11 +876,11 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Contains informations about the process class.
-	 * 
+	 *
 	 * This instance will be build by introspecting a particular process class and fetching it's annotations.
-	 * 
+	 *
 	 * To create a new instance, call {@link #of(Class)} builder.
-	 * 
+	 *
 	 * @author tsa
 	 */
 	private static final class ProcessClassInfo
@@ -897,7 +901,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			}
 			return ProcessClassInfo.NULL;
 		}
-		
+
 		/** "Process class" to {@link ProcessClassInfo} cache */
 		private static final LoadingCache<Class<?>, ProcessClassInfo> processClassInfoCache = CacheBuilder.newBuilder()
 				.weakKeys() // to prevent ClassLoader memory leaks nightmare
@@ -912,7 +916,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 		/**
 		 * Introspect given process class and return info.
-		 * 
+		 *
 		 * @param processClass
 		 * @return process class info or {@link #NULL} in case of failure.
 		 */
@@ -935,7 +939,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 				return NULL;
 			}
 		}
-		
+
 		private static final boolean isRunOutOfTrx(final Class<?> processClass, final Class<?> returnType, final String methodName)
 		{
 			// Get all methods with given format,
@@ -946,14 +950,14 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 					, ReflectionUtils.withName(methodName)
 					, ReflectionUtils.withParameters()
 					, ReflectionUtils.withReturnType(returnType));
-			
-			// No methods of given format were found. This can be problematic because we assume given method is declared somewhere. 
+
+			// No methods of given format were found. This can be problematic because we assume given method is declared somewhere.
 			if (methods.isEmpty())
 			{
 				throw new IllegalStateException("Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types");
 			}
 
-			// Iterate all methods and return on first RunOutOfTrx annotation found. 
+			// Iterate all methods and return on first RunOutOfTrx annotation found.
 			for (final Method method : methods)
 			{
 				final RunOutOfTrx runOutOfTrxAnnotation = method.getAnnotation(RunOutOfTrx.class);
@@ -962,7 +966,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 					return true;
 				}
 			}
-			
+
 			// Fallback: no RunOutOfTrx annotation found
 			return false;
 		}
@@ -988,7 +992,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			this.runPrepareOutOfTransaction = runPrepareOutOfTransaction;
 			this.runDoItOutOfTransaction = runDoItOutOfTransaction;
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -1000,7 +1004,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		{
 			return runPrepareOutOfTransaction;
 		}
-		
+
 		/** @return <code>true</code> if we shall run {@link SvrProcess#doIt()} method out of transaction */
 		public boolean isRunDoItOutOfTransaction()
 		{
@@ -1010,7 +1014,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/**
 	 * Exceptions to be thrown if we want to cancel the process run.
-	 * 
+	 *
 	 * If this exception is thrown:
 	 * <ul>
 	 * <li>the process will be terminated right away
@@ -1018,7 +1022,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 * <li>process summary message will be set from this exception message (i.e. {@link ProcessInfo#getSummary()})
 	 * <li>process will NOT be flagged as error (i.e. {@link ProcessInfo#isError()} will return <code>false</code>)
 	 * </ul>
-	 * 
+	 *
 	 * @author tsa
 	 */
 	public static final class ProcessCanceledException extends AdempiereException

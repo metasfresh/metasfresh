@@ -10,25 +10,23 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.eevolution.model.I_PP_Order;
 
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -60,31 +58,30 @@ public class QualityBasedInvoicingDAO implements IQualityBasedInvoicingDAO
 	}
 
 	@Override
-	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsForPPOrder(final I_PP_Order ppOrder)
+	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsFor(final Object model)
 	{
-		final IMaterialTrackingDocuments materialTrackingDocuments = retrieveMaterialTrackingDocumentsForPPOrderOrNull(ppOrder);
+		final IMaterialTrackingDocuments materialTrackingDocuments = retrieveMaterialTrackingDocumentsOrNullFor(model);
 		if (materialTrackingDocuments == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Material_Tracking_ID@"
-					+ "\n @PP_Order_ID@: " + ppOrder);
+					+ "\n model: " + model);
 		}
 		return materialTrackingDocuments;
 	}
 
 	@Override
-	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsForPPOrderOrNull(final I_PP_Order ppOrder)
+	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsOrNullFor(final Object model)
 	{
-		Check.assumeNotNull(ppOrder, "ppOrder not null");
+		Check.assumeNotNull(model, "model not null");
 
-		//
-		// Retrieve Material Tracking for given PP_Order
+		// Retrieve Material Tracking via material_tracklin
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(ppOrder);
+		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(model);
+
 		if (materialTracking == null)
 		{
 			return null;
 		}
-
 		return retrieveMaterialTrackingDocuments(materialTracking);
 	}
 }

@@ -10,18 +10,17 @@ package org.adempiere.pricing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -36,6 +35,8 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
@@ -45,7 +46,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.exceptions.PriceListVersionNotFoundException;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -59,7 +59,6 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_ProductPrice;
@@ -346,7 +345,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_M_PriceList.Table_Name)
+	@Cached(cacheName = I_M_PriceList.Table_Name + "#By#M_PriceList_ID")
 	public I_M_PriceList retrievePriceList(@CacheCtx final Properties ctx, final int priceListId)
 	{
 		if (priceListId <= 0)
@@ -356,57 +355,6 @@ public class PriceListDAO implements IPriceListDAO
 
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(ctx, priceListId, I_M_PriceList.class, ITrx.TRXNAME_None);
 		return priceList;
-	}
-
-	@Override
-	public I_M_PriceList_Version retrievePriceListVersion(final org.compiere.model.I_M_PriceList priceList, final Date date)
-	{
-		Check.assumeNotNull(priceList, "param 'priceList' not null", priceList);
-		Check.assumeNotNull(priceList, "param 'date' not null", date);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(priceList);
-		final String trxName = InterfaceWrapperHelper.getTrxName(priceList);
-
-		final int priceListId = priceList.getM_PriceList_ID();
-		final Timestamp dateDay = date == null ? null : TimeUtil.getDay(date);
-
-		final I_M_PriceList_Version priceListVersion = retrievePriceListVersion(ctx, priceListId, dateDay, trxName);
-		if (priceListVersion == null)
-		{
-			throw new PriceListVersionNotFoundException(priceList, date);
-		}
-		return priceListVersion;
-	}
-
-	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date")
-	/* package */I_M_PriceList_Version retrievePriceListVersion(
-			@CacheCtx final Properties ctx,
-			final int priceListId,
-			final Date dateDay,
-			@CacheTrx final String trxName)
-	{
-		final IQueryBuilder<I_M_PriceList_Version> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class, ctx, trxName)
-				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceListId)
-				.addCompareFilter(
-						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
-						CompareQueryFilter.Operator.LessOrEqual,
-						dateDay,
-						DateTruncQueryFilterModifier.DAY)
-				.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-				.addColumn(I_M_PriceList_Version.COLUMNNAME_ValidFrom, false);
-
-		final IQuery<I_M_PriceList_Version> query = queryBuilder.create();
-
-		final I_M_PriceList_Version plv = query.first();
-
-		if (plv == null)
-		{
-			logger.log(Level.WARNING, "None found M_PriceList_ID=" + priceListId + ", date=" + dateDay + ", query=" + query);
-		}
-
-		return plv;
 	}
 
 	@Override
@@ -497,41 +445,118 @@ public class PriceListDAO implements IPriceListDAO
 		final IQueryBuilder<I_M_PriceList> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class, pricingSystem)
 				.addOnlyActiveRecordsFilter();
 
-		final ICompositeQueryFilter<I_M_PriceList> filters = queryBL.<I_M_PriceList> createCompositeQueryFilter(I_M_PriceList.class);
-		filters.setJoinAnd();
+		final ICompositeQueryFilter<I_M_PriceList> filters = queryBL.<I_M_PriceList> createCompositeQueryFilter(I_M_PriceList.class)
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystem.getM_PricingSystem_ID())
+				.addEqualsFilter(org.compiere.model.I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOTrx);
 
-		filters.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystem.getM_PricingSystem_ID());
-		filters.setJoinAnd();
-		filters.addEqualsFilter(org.compiere.model.I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOTrx);
+		final ICompositeQueryFilter<I_M_PriceList> countryFilter = queryBL.<I_M_PriceList> createCompositeQueryFilter(I_M_PriceList.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, country.getC_Country_ID())
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, null);
+		filters
+				.addFilter(countryFilter);
 
-		final ICompositeQueryFilter<I_M_PriceList> countryFilter = queryBL.<I_M_PriceList> createCompositeQueryFilter(I_M_PriceList.class);
-		countryFilter.setJoinOr();
-		countryFilter.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, country.getC_Country_ID());
-
-		countryFilter.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, null);
-
-		filters.setJoinAnd().addFilter(countryFilter);
-		queryBuilder.filter(filters);
-		return queryBuilder.create()
+		return queryBuilder
+				.filter(filters)
+				.orderBy()
+				.addColumn(I_M_PriceList.COLUMNNAME_C_Country_ID, Direction.Ascending, Nulls.Last).endOrderBy()
+				.create()
 				.iterate(I_M_PriceList.class);
 	}
 
 	@Override
-	public I_M_PriceList_Version retrieveLastVersion(final I_M_PriceList priceList, final Timestamp date)
+	public I_M_PriceList_Version retrievePriceListVersionOrNull(final org.compiere.model.I_M_PriceList priceList,
+			final Date date,
+			final Boolean processed)
 	{
-		final IQueryBuilder<I_M_PriceList_Version> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class, priceList)
+		Check.assumeNotNull(priceList, "param 'priceList' not null", priceList);
+		Check.assumeNotNull(priceList, "param 'date' not null", date);
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(priceList);
+
+		final int priceListId = priceList.getM_PriceList_ID();
+		final I_M_PriceList_Version plv = retrieveLastVersion(ctx, priceListId, date, processed);
+
+		return plv;
+	}
+
+	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date#Processed")
+	/* package */ I_M_PriceList_Version retrieveLastVersion(@CacheCtx final Properties ctx,
+			final int priceListId,
+			final Date date,
+			final Boolean processed)
+	{
+		final IQueryBuilder<I_M_PriceList_Version> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_PriceList_Version.class, ctx, ITrx.TRXNAME_None)
 				// Same pricelist
-				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceList.getM_PriceList_ID())
-				// valid from must be befoire the date we need it
-				.addCompareFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, Operator.LessOrEqual, date)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceListId)
+				// valid from must be before the date we need it
+				.addCompareFilter(
+						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
+						CompareQueryFilter.Operator.LessOrEqual,
+						new Timestamp(date.getTime()),
+						DateTruncQueryFilterModifier.DAY)
+
 				// active
 				.addOnlyActiveRecordsFilter();
+
+		if (processed != null)
+		{
+			queryBuilder
+					.addEqualsFilter(org.adempiere.pricing.model.I_M_PriceList_Version.COLUMNNAME_Processed, processed);
+		}
 
 		// Order the version by validFrom, descending.
 		queryBuilder.orderBy()
 				.addColumn(I_M_PriceList_Version.COLUMNNAME_ValidFrom, false);
 
-		return queryBuilder.create().first();
+		final IQuery<I_M_PriceList_Version> query = queryBuilder.create();
+		final I_M_PriceList_Version result = query.first();
+		if (result == null)
+		{
+			logger.log(Level.WARNING, "None found M_PriceList_ID=" + priceListId + ", date=" + date + ", query=" + query);
+		}
+		return result;
+	}
+
+	@Override
+	public I_M_PriceList_Version retrieveNextVersionOrNull(final I_M_PriceList_Version plv)
+	{
+		// we want the PLV with the lowest ValidFrom that is just greater than plv's
+		final Operator validFromOperator = Operator.Greather;
+		final boolean orderAscending = true;
+
+		return retrievePreviousOrNext(plv, validFromOperator, orderAscending);
+	}
+
+	@Override
+	public I_M_PriceList_Version retrievePreviousVersionOrNull(final I_M_PriceList_Version plv)
+	{
+		// we want the PLV with the highest ValidFrom that is just less than plv's
+		final Operator validFromOperator = Operator.Less;
+		final boolean orderAscending = false; // i.e. descending
+		return retrievePreviousOrNext(plv, validFromOperator, orderAscending);
+	}
+
+	private I_M_PriceList_Version retrievePreviousOrNext(final I_M_PriceList_Version plv,
+			final Operator validFromOperator,
+			final boolean orderAscending)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class, plv)
+				// active
+				.addOnlyActiveRecordsFilter()
+				// same price list
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, plv.getM_PriceList_ID())
+				// same processed value
+				.addEqualsFilter(org.adempiere.pricing.model.I_M_PriceList_Version.COLUMNNAME_Processed, true)
+				// valid from must be after the given PLV's validFrom date
+				.addCompareFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, validFromOperator, plv.getValidFrom())
+				// by validFrom, ascending.
+				.orderBy()
+				.addColumn(I_M_PriceList_Version.COLUMNNAME_ValidFrom, orderAscending)
+				.endOrderBy()
+				.create()
+				.first();
 	}
 
 	@Override

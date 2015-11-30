@@ -13,18 +13,17 @@ package org.adempiere.pricing.spi;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -113,10 +112,7 @@ public final class AggregatedPricingRule implements IPricingRule
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
-		if (logger.isLoggable(Level.FINE))
-		{
-			logger.fine("PricingContext: " + pricingCtx);
-		}
+		logger.log(Level.FINE, "Evaluating prcing rules with pricingContext: {0}", pricingCtx);
 
 		for (final IPricingRule rule : rules)
 		{
@@ -128,10 +124,7 @@ public final class AggregatedPricingRule implements IPricingRule
 			// Preliminary check if there is a chance this pricing rule to be applied
 			if (!rule.applies(pricingCtx, result))
 			{
-				if (logger.isLoggable(Level.FINE))
-				{
-					logger.fine("Skiped rule " + rule + ", result: " + result);
-				}
+				logger.log(Level.FINE, "Skipped rule {0}, result: {1}", rule, result);
 				continue;
 			}
 
@@ -148,10 +141,7 @@ public final class AggregatedPricingRule implements IPricingRule
 			// As a side effect on some pricing results you will get a list of applied rules like: ProductScalePrice, PriceListVersionVB, PriceListVersion, Discount,
 			// which means that ProductScalePrice and PriceListVersionVB were not actually applied because they found out that while doing the "calculate()".
 			result.getRulesApplied().add(rule);
-			if (logger.isLoggable(Level.FINE))
-			{
-				logger.fine("Applied rule " + rule + ", result: " + result);
-			}
+			logger.log(Level.FINE, "Applied rule {0}, result: {1}", rule, result);
 		}
 	}
 

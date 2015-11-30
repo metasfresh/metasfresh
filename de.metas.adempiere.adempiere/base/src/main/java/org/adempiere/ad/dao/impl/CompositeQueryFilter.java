@@ -674,7 +674,8 @@ import org.compiere.model.IQuery;
 	@Override
 	public boolean accept(final T model)
 	{
-		final boolean accepted = accept(model, filters, isDefaultAccept());
+		final boolean defaultAccept = isDefaultAccept();
+		final boolean accepted = accept(model, filters, defaultAccept);
 		return accepted;
 	}
 

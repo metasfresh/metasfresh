@@ -43,11 +43,11 @@ public class C_Order
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_CLOSE })
 	public void invalidateInvoiceCandidates(final I_C_Order order)
 	{
-		final IInvoiceCandidateHandlerBL creatorBL = Services.get(IInvoiceCandidateHandlerBL.class);
+		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final List<IInvoiceCandidateHandler> invalidators = creatorBL.retrieveImplementationsForTable(ctx, I_C_OrderLine.Table_Name);
+		final List<IInvoiceCandidateHandler> invalidators = invoiceCandidateHandlerBL.retrieveImplementationsForTable(ctx, I_C_OrderLine.Table_Name);
 		
 		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order))
 		{

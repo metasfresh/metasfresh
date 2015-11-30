@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,7 +36,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.MTable;
 import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -72,7 +72,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	{
 		return true;
 	}
-	
+
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
@@ -90,7 +90,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	{
 		return I_C_OLCand.Table_Name;
 	}
-	
+
 	@Override
 	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
 	{
@@ -268,13 +268,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 	private I_C_OLCand getOLCand(final I_C_Invoice_Candidate ic)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
-
-		final I_C_OLCand olc =
-				InterfaceWrapperHelper.create(
-						MTable.get(ctx, ic.getAD_Table_ID()).getPO(ic.getRecord_ID(), trxName),
-						I_C_OLCand.class);
+		final I_C_OLCand olc =TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
 		return olc;
 	}
 

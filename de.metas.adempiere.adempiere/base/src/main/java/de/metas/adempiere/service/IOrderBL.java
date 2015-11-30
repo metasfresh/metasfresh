@@ -10,12 +10,12 @@ package de.metas.adempiere.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,10 +44,10 @@ public interface IOrderBL extends ISingletonService
 	 * given BPartner, Location and Shipper.
 	 * <p>
 	 * <b>Important: Implementors may not assume that the given order is instanceof PO.<b>
-	 * 
+	 *
 	 * @param order
 	 * @return
-	 * 
+	 *
 	 * @see "<a href='http://dewiki908/mediawiki/index.php/Versandkostenermittlung/_-berechnung_(2009_0027_G28)'>DV-Konzept (2009_0027_G28)</a>"
 	 */
 	String checkFreightCost(Properties ctx, I_C_Order order, boolean nullIfOk, String trxName);
@@ -56,20 +56,20 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.
-	 * 
+	 *
 	 * @param mTab
 	 * @return
 	 */
 	String setPriceList(I_C_Order order, boolean nullIfOk, int pricingSysId, String trxName);
 
 	/**
-	 * Gets the corresponding pricelist version for the given <code>order</code>, using
+	 * Gets the corresponding priceListVersion for the given <code>order</code>, using
 	 * <ul>
 	 * <li>the order's <code>M_PriceList_ID</code> and</li>
 	 * <li>the date being taken from order/order's <code>DatePromised</code>, falling back to <code>DateOrdered</code>, if <code>DatePromised</code> is <code>null</code></li>
 	 * </ul>
 	 * Note: if the given order is <code>null</code>, then the method returns <code>null</code>; also note that there is sort of a sibling method in IOrderLineBL.
-	 * 
+	 *
 	 * @param order
 	 * @return
 	 */
@@ -77,7 +77,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Returns the given order's <code>C_BPartner</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_Partner</code>.
-	 * 
+	 *
 	 * @param order
 	 * @return
 	 */
@@ -85,7 +85,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Returns the given order's <code>C_BPartner_Location</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_Location</code>.
-	 * 
+	 *
 	 * @param order
 	 * @return
 	 */
@@ -93,7 +93,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Returns the given order's <code>AD_User</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_User</code>.
-	 * 
+	 *
 	 * @param order
 	 * @return
 	 */
@@ -101,7 +101,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Returns the given order's <code>C_BPartner_Location</code>, or if set then returns the <code>Bill_Location</code>.
-	 * 
+	 *
 	 * @param order
 	 * @return
 	 */
@@ -109,7 +109,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Check if there is a price list for the given location and pricing system.
-	 * 
+	 *
 	 * @param mTab
 	 * @return
 	 */
@@ -117,7 +117,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Retrieve total tax amount for this order
-	 * 
+	 *
 	 * @param order
 	 * @param trxName
 	 * @return
@@ -128,7 +128,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Retrieve and set Bill_User_ID
-	 * 
+	 *
 	 * @return true if set
 	 */
 	public boolean setBill_User_ID(org.compiere.model.I_C_Order order);
@@ -136,7 +136,7 @@ public interface IOrderBL extends ISingletonService
 	void setM_PricingSystem_ID(I_C_Order order);
 
 	/**
-	 * 
+	 *
 	 * @param order
 	 * @return M_PriceList_ID
 	 * @see "<a href='http://dewiki908/mediawiki/index.php/Produktzulassung_Land_%282009_0027_G9%29'>(2009_0027_G9)<a>"
@@ -147,7 +147,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Please, if you change this, also change {@link org.compiere.model.MOrder.setC_DocTypeTarget_ID()}
-	 * 
+	 *
 	 * @param order
 	 */
 	void setDocTypeTargetId(I_C_Order order);
@@ -156,14 +156,14 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Updates the addresses in the order lines from the order. Also sets the header info in the lines.
-	 * 
+	 *
 	 * @param order
 	 */
 	void updateAddresses(I_C_Order order);
 
 	/**
 	 * retrieve deliveryVIaRule from order if the rule is already set, is retrieving the one set in order, if not, retrieves the deliveryViaRule from partner
-	 * 
+	 *
 	 * @param order
 	 * @return
 	 */
@@ -178,7 +178,7 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * Attempts to set the <code>Bill_Location_ID</code> in the given <code>order</code>. If the bill location is found, also set the bill partner accordingly. First tries to use the order's BPartner
 	 * & Bill location, then look into the order's BP_Relations for it. Note that this method does not save the given order.
-	 * 
+	 *
 	 * @param order the order whose <code>Bill_Location_ID</code> and bill partner ID will be set, if they are found.
 	 * @return <code>true</code> if the bill location (and bill partner) were found and the order by subsequently changed.
 	 */
@@ -186,7 +186,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Set C_BPartner_Location in order
-	 * 
+	 *
 	 * @param order
 	 * @param bp
 	 */
@@ -194,7 +194,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Get Currency Precision
-	 * 
+	 *
 	 * @param order
 	 * @return precision
 	 */
@@ -202,7 +202,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Is Tax Included in Amount.
-	 * 
+	 *
 	 * @param order
 	 * @param tax optional
 	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, for the given
@@ -212,22 +212,22 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Close given order line (i.e. set QtyOrdered=QtyDelivered) and update reservations.
-	 * 
+	 *
 	 * This method is saving the order line.
-	 * 
+	 *
 	 * This is the counter-part of {@link #reopenLine(I_C_OrderLine)}.
-	 * 
+	 *
 	 * @param orderLine
 	 */
 	void closeLine(I_C_OrderLine orderLine);
 
 	/**
 	 * Re-open closed line (i.e. set QtyOrdered=QtyEntered converted to product stocking UOM) and update reservations.
-	 * 
+	 *
 	 * This method is saving the order line.
-	 * 
+	 *
 	 * This is the counter-part of {@link #closeLine(I_C_OrderLine)}.
-	 * 
+	 *
 	 * @param orderLine
 	 */
 	void reopenLine(I_C_OrderLine orderLine);

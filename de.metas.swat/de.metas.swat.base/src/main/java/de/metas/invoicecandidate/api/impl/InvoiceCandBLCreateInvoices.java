@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +35,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.document.service.IDocActionBL;
@@ -96,8 +95,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private static final String MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P = "InvoiceCandBL_Processing_Error";
 	private static final String MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P = "InvoiceCandBL_Processing_Error_Desc";
 
-	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_InvoiceLine, Integer> DYNATTR_FixedInvoiceLineNo = new ModelDynAttributeAccessor<org.compiere.model.I_C_InvoiceLine, Integer>(Integer.class);
-	
 	//
 	// Services
 	private static final transient CLogger logger = CLogger.getCLogger(InvoiceCandBLCreateInvoices.class);
@@ -209,30 +206,16 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			//
 			// Check if we shall renumber the lines and renumber them if needed.
 			// We are preventing lines renumbering if there is at least one invoice with a fixed LineNo set (which actually comes from invoice candidate).
-			boolean renumberInvoiceLines = true;
-			for (final I_C_InvoiceLine line : lines)
-			{
-				final int fixedInvoiceLineNo = getFixedInvoiceLineNo(line);
-				if (fixedInvoiceLineNo > 0)
-				{
-					renumberInvoiceLines = false;
-					break;
-				}
-			}
-			if (renumberInvoiceLines)
-			{
-				invoiceBL.renumberLinesWithoutComment(invoice, 10);
-			}
-			
+			invoiceBL.renumberLines(lines, 10);
+
 			//task 08926: on invoice creation
-					
 			final List<I_C_Invoice_Candidate> allCands = new ArrayList<I_C_Invoice_Candidate>();
-			
+
 			for(final IInvoiceCandAggregate aggregated: header.getLines())
 			{
 				allCands.addAll(aggregated.getAllCands());
 			}
-			
+
 			if(!allCands.isEmpty())
 			{
 				 invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
@@ -417,7 +400,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				InvoiceCandBL.DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete.setValue(invoice, Boolean.TRUE);
 				
 				trxManager.run(trxName, genLines);
-				createdLines.addAll(genLines.getCreatedLines());		
+				createdLines.addAll(genLines.getCreatedLines());
 			}
 
 			return createdLines;
@@ -429,28 +412,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		if (lineNo > 0)
 		{
 			invoiceLine.setLine(lineNo);
-			DYNATTR_FixedInvoiceLineNo.setValue(invoiceLine, lineNo);
+			invoiceBL.setHasFixedLineNumber(invoiceLine, true);
 		}
 		else
 		{
 			invoiceLine.setLine(0); // auto
-			DYNATTR_FixedInvoiceLineNo.setValue(invoiceLine, null); // there is no fixed invoice line number
+			invoiceBL.setHasFixedLineNumber(invoiceLine, false);
 		}
-	}
-
-	/**
-	 *
-	 * @param invoiceLine
-	 * @return fixed line no (see {@link #setInvoiceLineNo(I_C_InvoiceLine, int)}) or ZERO if not available
-	 */
-	private int getFixedInvoiceLineNo(final I_C_InvoiceLine invoiceLine)
-	{
-		final Integer lineNo = DYNATTR_FixedInvoiceLineNo.getValue(invoiceLine);
-		if (lineNo == null || lineNo <= 0)
-		{
-			return 0;
-		}
-		return lineNo;
 	}
 
 	private final void setC_DocType(final I_C_Invoice invoice, final IInvoiceHeader invoiceHeader)
@@ -684,37 +652,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						for (final IInvoiceCandidateInOutLineToUpdate iciolToUpdate : ilVO.getInvoiceCandidateInOutLinesToUpdate())
 						{
 							final I_C_InvoiceCandidate_InOutLine icIol = iciolToUpdate.getC_InvoiceCandidate_InOutLine();
-
 							final I_M_InOutLine inOutLine = icIol.getM_InOutLine();
-							final I_M_InOut inOut = inOutLine.getM_InOut();
 
-							final I_M_MatchInv matchInv = InterfaceWrapperHelper.newInstance(I_M_MatchInv.class, invoiceLine);
-							matchInv.setC_InvoiceLine_ID(invoiceLine.getC_InvoiceLine_ID());
-							matchInv.setM_InOutLine_ID(icIol.getM_InOutLine_ID());
-
-							// task 08606: iciolToUpdate.getQtyInvoiced() might be bigger than the delivered qty of the respective InOutLine, because e.g. due to a QtyToInvoice_Override setting, we
-							// might have invoiced more than what was delivered. Therefore we need to get the min (or max, in case of negative amounts) between the invoiced and delivered qty for the
-							// matchInv.
-							final BigDecimal qtyForMatchInv;
-							if (iciolToUpdate.getQtyInvoiced().signum() > 0)
-							{
-								qtyForMatchInv = iciolToUpdate.getQtyInvoiced().min(icIol.getM_InOutLine().getMovementQty());
-							}
-							else
-							{
-								qtyForMatchInv = iciolToUpdate.getQtyInvoiced().max(icIol.getM_InOutLine().getMovementQty());
-							}
-							matchInv.setQty(qtyForMatchInv);
-
-							matchInv.setM_Product_ID(inOutLine.getM_Product_ID());
-							matchInv.setM_AttributeSetInstance_ID(inOutLine.getM_AttributeSetInstance_ID());
-
-							matchInv.setDateTrx(invoice.getDateInvoiced());
-							matchInv.setIsSOTrx(inOut.isSOTrx());
-							matchInv.setDocumentNo(inOut.getDocumentNo());
-
-							matchInv.setProcessed(true);
-							InterfaceWrapperHelper.save(matchInv);
+							matchInvBL.createMatchInvBuilder()
+									.setContext(invoiceLine)
+									.setC_InvoiceLine(invoiceLine)
+									.setM_InOutLine(inOutLine)
+									.setDateTrx(invoice.getDateInvoiced())
+									.build();
 						}
 					}
 
@@ -877,7 +822,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	/**
-	 * 
+	 *
 	 * @param aggregationEngine note that this is a {@link org.adempiere.util.IMultitonService}, i.e. a service with internal state.
 	 */
 	private void aggregateAndInvoice(final IAggregationEngine aggregationEngine)
@@ -935,7 +880,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	/**
-	 * 
+	 *
 	 * @param affectedCands the invoice candidates for which an invoice line creation has failed. Note that an aggregator can create one {@link IInvoiceLineRW} from multiple candidates.
 	 * @param error
 	 * @return
@@ -960,7 +905,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			DB.getConstraints().addAllowedTrxNamePrefix("POSave");
 
 			loggable.addLog("Caught exception " + error + " with meesage: " + error.getLocalizedMessage());
-			
+
 			final List<I_AD_Note> result = new ArrayList<I_AD_Note>();
 
 			final Map<Integer, List<I_C_Invoice_Candidate>> userId2cands = new HashMap<Integer, List<I_C_Invoice_Candidate>>();

@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 
 /**
  * Wraps JUL's {@link Logger} as {@link ILoggable}
- * 
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -50,9 +50,9 @@ public class JULLoggable implements ILoggable
 	}
 
 	@Override
-	public void addLog(final String msg)
+	public void addLog(String msg, Object... msgParameters)
 	{
-		logger.log(level, msg);
+		logger.log(level, msg, msgParameters);
 	}
 
 }

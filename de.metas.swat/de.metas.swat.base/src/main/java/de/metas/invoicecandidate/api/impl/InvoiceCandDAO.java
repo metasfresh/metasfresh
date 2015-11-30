@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -177,7 +177,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
 		final int count = DB.executeUpdateEx(sql, new Object[] { invoiceCandidateId }, trxName);
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates C_Invoice_Candidate_ID={1}", new Object[] { count, invoiceCandidateId });
-		
+
 		if (count > 0)
 		{
 			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(InterfaceWrapperHelper.getCtx(ic), trxName);
@@ -215,7 +215,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int count = DB.executeUpdateEx(sql, new Object[] { headerAggregationKey }, trxName);
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for HeaderAggregationKey={1}", new Object[] { count, headerAggregationKey });
-		
+
 		if (count > 0)
 		{
 			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(ctx, trxName);
@@ -238,7 +238,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int count = DB.executeUpdateEx(sql, new Object[] { ad_Table_ID, record_ID }, trxName);
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for AD_Table_ID={1} and Record_ID={2}", new Object[] { count, ad_Table_ID, record_ID });
-		
+
 		if (count > 0)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
@@ -260,7 +260,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 				.execute();
 
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for bPartner={1}", new Object[] { count, bPartner });
-		
+
 		if (count > 0)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
@@ -315,7 +315,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 				.mapColumn(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				.execute();
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for aggregation={1}", new Object[] { count, aggregation });
-		
+
 		if (count > 0)
 		{
 			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(ctx, trxName);
@@ -338,7 +338,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int count = DB.executeUpdateEx(sql, new Object[] { bPartner.getC_BPartner_ID() }, trxName);
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for bPartner={1}", new Object[] { count, bPartner });
-		
+
 		if (count > 0)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
@@ -356,7 +356,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int updCnt = DB.executeUpdate(sql, trxName);
 		logger.fine("Invalidated " + updCnt + " records");
-		
+
 		if (updCnt > 0)
 		{
 			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(ctx, trxName);
@@ -373,7 +373,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int count = DB.executeUpdateEx(sql, new Object[] { adPInstanceId }, trxName);
 		logger.log(Level.INFO, "Invalidated {0} C_Invoice_Candidates for AD_PInstance_ID={1}", new Object[] { count, adPInstanceId });
-		
+
 		if (count > 0)
 		{
 			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
@@ -874,7 +874,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
 		logger.log(Level.INFO, "Invalidated {0} shipment schedules for M_ShipmentSchedule_IDs={1}", new Object[] { count, icIds });
-		
+
 		if (count > 0)
 		{
 			UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(Env.getCtx(), trxName);

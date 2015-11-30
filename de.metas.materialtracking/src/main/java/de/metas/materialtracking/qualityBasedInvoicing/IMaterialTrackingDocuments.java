@@ -10,12 +10,12 @@ package de.metas.materialtracking.qualityBasedInvoicing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,8 +25,10 @@ package de.metas.materialtracking.qualityBasedInvoicing;
 
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
 
+import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /**
@@ -49,15 +51,13 @@ public interface IMaterialTrackingDocuments
 	List<IQualityInspectionOrder> getQualityInspectionOrders();
 
 	/**
-	 * Gets {@link IQualityInspectionOrder} for given manufacturing order.
+	 * Gets {@link IQualityInspectionOrder} for the given model.
 	 *
-	 * NOTE: the returned {@link IQualityInspectionOrder} it could contain other instance of given manufacturing order (identification is made by ID only)
+	 * NOTE: the returned {@link IQualityInspectionOrder} could contain another instance of given manufacturing order (identification is made by ID only)
 	 *
-	 * @param ppOrder
-	 * @return {@link IQualityInspectionOrder}; never return null
-	 * @throws AdempiereException if order was not found
+	 * @return
 	 */
-	IQualityInspectionOrder getQualityInspectionOrder(org.eevolution.model.I_PP_Order ppOrder);
+	IQualityInspectionOrder getQualityInspectionOrderOrNull();
 
 	/**
 	 * Links given model to material tracking.
@@ -65,4 +65,14 @@ public interface IMaterialTrackingDocuments
 	 * @param model
 	 */
 	void linkModelToMaterialTracking(Object model);
+
+	/**
+	 *
+	 * @param pricingSystem
+	 */
+	List<I_M_PriceList_Version> setPricingSystemLoadPLVs(I_M_PricingSystem pricingSystem);
+
+	List<IQualityInspectionOrder> getQualityInspectionOrdersForPLV(I_M_PriceList_Version plv);
+
+	IVendorReceipt<I_M_InOutLine> getVendorReceiptForPLV(I_M_PriceList_Version plv);
 }

@@ -10,12 +10,12 @@ package org.adempiere.invoice.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,7 +48,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Copies a given invoice
-	 * 
+	 *
 	 * @param from the copy source
 	 * @param dateDoc
 	 * @param C_DocTypeTarget_ID
@@ -82,7 +82,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Load and iterate the invoice lines from the given <code>fromInvoice</code> and create new invoice lines for the given <code>toInvoice</code>.
-	 * 
+	 *
 	 * @param fromInvoice
 	 * @param toInvoice
 	 * @param counter if <code>true</code>, then
@@ -105,14 +105,6 @@ public interface IInvoiceBL extends ISingletonService
 	int copyLinesFrom(I_C_Invoice fromInvoice, I_C_Invoice toInvoice, boolean counter, boolean setOrderRef, boolean setInvoiceRef,
 			IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> docLineCopyHandler);
 
-	/**
-	 * Orders the InvoiceLines by their InOut. For each InOut, the FreightCostLine comes last. Lines whose M_InOut_ID equals 0, will get the M_InOut_ID of the next Line whose InOut_ID is not 0.
-	 * 
-	 * @param lines - The unsorted array of InvoiceLines
-	 * @return The sorted array
-	 */
-	List<I_C_InvoiceLine> sortLines(List<I_C_InvoiceLine> lines);
-
 	String getSummary(I_C_Invoice invoice);
 
 	/**
@@ -122,14 +114,14 @@ public interface IInvoiceBL extends ISingletonService
 	boolean isCreditMemo(I_C_Invoice invoice);
 
 	/**
-	 * 
+	 *
 	 * @param docBaseType
 	 * @return true if the given invoice DocBaseType is a CreditMemo (APC or ARC)
 	 */
 	boolean isCreditMemo(String docBaseType);
 
 	/**
-	 * 
+	 *
 	 * @param invoice
 	 * @return <code>true</code> if the given invoice is the reversal of another invoice.
 	 */
@@ -143,7 +135,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Writes off the given openAmt from the given invoice.
-	 * 
+	 *
 	 * @param invoice
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
 	 * @param description
@@ -162,14 +154,14 @@ public interface IInvoiceBL extends ISingletonService
 	 * values.
 	 * <li>The created credit memo will always have <code>IsTaxIncluded='Y'</code>
 	 * </ul>
-	 * 
+	 *
 	 * Depending in the <code>completeAndAllocate</code> parameter, the credit memo will also be allocated against the invoice, so that both have <code>IsPaid='Y'</code>.
-	 * 
+	 *
 	 * @param invoice the invoice to be credited. May not be fully paid/allocated and may not be a credit memo itself
 	 * @param creditCtx see {@link IInvoiceCreditContext}
-	 * 
+	 *
 	 * @return the created credit memo
-	 * 
+	 *
 	 * @throws AdempiereException if
 	 *             <ul>
 	 *             <li>the given invoice is <code>null</code> or</li> <li>the given C_Charge_ID doesn't have a valid C_Charge or</li> <li>the given invoice is a credit memo or</li> <li>the given
@@ -180,7 +172,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Creates a new invoice line for the given invoice. Note that the new line is not saved.
-	 * 
+	 *
 	 * @param invoice
 	 * @return
 	 */
@@ -188,7 +180,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Test Allocation (and set paid flag)
-	 * 
+	 *
 	 * @param invoice the invoice to be checked
 	 * @param ignoreProcessed if true, then the change will be done even if the given <code>invoice</code> currently still have <code>Processed='N'</code>.
 	 * @return true if the isPaid value was changed
@@ -196,7 +188,7 @@ public interface IInvoiceBL extends ISingletonService
 	boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
 
 	/**
-	 * 
+	 *
 	 * @param order
 	 * @param C_DocTypeTarget_ID invoice's document type
 	 * @param dateInvoiced may be <code>null</code>
@@ -213,18 +205,37 @@ public interface IInvoiceBL extends ISingletonService
 	boolean setC_DocTypeTarget(de.metas.adempiere.model.I_C_Invoice invoice, String docBaseType);
 
 	/**
-	 * Renumbers all Lines for this invoice after they are sorted.
-	 * 
+	 * Sort and then renumber all invoice lines.
+	 *
+	 * @param invoice
 	 * @param step start and step
 	 */
-	void renumberLinesWithoutComment(de.metas.adempiere.model.I_C_Invoice invoice, int step);
+	void renumberLines(de.metas.adempiere.model.I_C_Invoice invoice, int step);
+
+	/**
+	 * Similar to {@link #renumberLines(de.metas.adempiere.model.I_C_Invoice, int)}, but in addition, leave alone lines which were flagged using {@link #setHasFixedLineNumber(I_C_InvoiceLine)}
+	 * and don't assign their <code>Line</code> value to any other line.
+	 *
+	 * @param lines
+	 * @param step
+	 */
+	void renumberLines(List<I_C_InvoiceLine> lines, int step);
+
+	/**
+	 * Use {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor ModelDynAttributeAccessor} to flag lines whose <code>C_InvoiceLine.Line</code> value shall not be changed by
+	 * {@link #renumberLines(List, int)}.
+	 *
+	 * @param line
+	 * @param value
+	 */
+	void setHasFixedLineNumber(I_C_InvoiceLine line, boolean value);
 
 	/**
 	 * Updates the given invoice line's <code>M_Product_ID</code>, <code>C_UOM_ID</code> and <code>M_AttributeSetInstance_ID</code>.<br>
 	 * Product ID and UOM ID are set to the product and it's respective UOM or to 0 if the given <code>productId</code> is 0. The ASI ID is always set to 0.
 	 * <p>
 	 * Important note: what we do <b>not</b> set there is the price UOM because that one is set only together with the price.
-	 * 
+	 *
 	 * @param invoiceLine
 	 * @param productId
 	 */
@@ -233,7 +244,7 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Set the given invoiceline's QtyInvoiced, QtyEntered and QtyInvoicedInPriceUOM.
 	 * This method assumes that the given invoice Line has a product (with an UOM) and a C_UOM and Price_UOM set.
-	 * 
+	 *
 	 * @param invoiceLine
 	 * @param qtyInvoiced qtyInvoice to be set. The other two values are computed from it, using UOM conversions.
 	 */
@@ -256,7 +267,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Get Currency Precision
-	 * 
+	 *
 	 * @param invoice
 	 * @return precision
 	 */
@@ -264,7 +275,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Get Currency Precision. Calls {@link #getPrecision(I_C_Invoice)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code>.
-	 * 
+	 *
 	 * @param invoice
 	 * @return precision
 	 */
@@ -274,7 +285,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * Creates a copy of given Invoice with C_DocType "Nachbelastung" (Adjustment Charge). The button is active just for 'ARI' docbasetypes. There can be more types of Adjustment Charges, with
 	 * different DocSubTypes. For example we have: "Nachbelastung - Mengendifferenz" which copies the Invoice but sets the product prices readOnly. "Nachbelastung - Preisdifferenz" which copies the
 	 * Invoice but sets the quantity read only.
-	 * 
+	 *
 	 * @param invoice
 	 * @return adjustmentCharge {@link de.metas.adempiere.model.I_C_Invoice}
 	 */
@@ -291,7 +302,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * If the document subtype is {@code DOC_SUBTYPE_ARI_AP} or {@code DOC_SUBTYPE_ARC_CR}, then the qty shall be read-only.<br>
 	 * If the document subtype is {@code DOC_SUBTYPE_ARI_AQ} or {@code DOC_SUBTYPE_ARC_CQ}, then the price shall be read-only.<br>
 	 * IF (and only if!, as of now) the the document subtype is {@code DOC_SUBTYPE_ARC_CS}, then the order line shall be editable.
-	 * 
+	 *
 	 * @param invoice may not be null
 	 * @param invoiceLines optional, the lines to update; if <code>null</code> or empty, then all invoice lines are updated <b>and saved</b>. Otherwise, the given lines are only updated, but not
 	 *            saved.
@@ -301,7 +312,7 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * If the given <code>invoiceLine</code> references a <code>C_Charge</code>, then the method returns that charge's tax category. Otherwise, it uses the pricing APO to get the tax category that is
 	 * referenced from the invoice line's pricing data (i.e. <code>M_ProductPrice</code> record).
-	 * 
+	 *
 	 * @param invoiceLine
 	 * @return
 	 */
@@ -309,7 +320,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, org.adempiere.document.service.ICopyHandler)}, but makes sure that the correct types are used.
-	 * 
+	 *
 	 * @param filter
 	 * @param copyHandler
 	 */
@@ -320,7 +331,7 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Basically this method delegates to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, org.adempiere.document.service.ICopyHandler)}, but makes sure that the correct types are used.
 	 * If this proves to be usefull, we can add similar methods e.g. to <code>IOrderBL</code>.
-	 * 
+	 *
 	 * @param filter
 	 * @param copyHandler
 	 */
@@ -330,7 +341,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Calls {@link #isTaxIncluded(I_C_Invoice, I_C_Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
-	 * 
+	 *
 	 * @param invoiceLine
 	 * @return
 	 */
@@ -338,7 +349,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Is Tax Included in Amount.
-	 * 
+	 *
 	 * @param invoice
 	 * @param tax
 	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, the given invoice's
@@ -349,14 +360,14 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Supposed to be called if an invoice is reversed. Iterate the given invoice's lines, iterate each line's <code>M_MatchInv</code> and create a reversal M_Matchinv that references the respective
 	 * reversal invoice line.
-	 * 
+	 *
 	 * @param invoice
 	 */
 	void handleReversalForInvoice(I_C_Invoice invoice);
 
 	/**
 	 * Allocate parent invoice against it's credit memo
-	 * 
+	 *
 	 * @param invoice
 	 * @param creditMemo
 	 * @param openAmt
@@ -377,17 +388,17 @@ public interface IInvoiceBL extends ISingletonService
 	 * <li>LastResult
 	 * </ul>
 	 * The BL doing this was moved from MInvoice.
-	 * 
+	 *
 	 * @param invoices
 	 * @param async if <code>true</code>, then an async workpackage is enqueued to do the jobs asynchronously.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08999_Lieferdisposition_a.frieden_%28104263801724%29
 	 */
 	void updateBPartnerStats(List<I_C_Invoice> invoices, boolean async);
 
 	/**
 	 * Decide if the given invoice is an Adjustment Charge
-	 * 
+	 *
 	 * @param invoice
 	 * @return
 	 */
@@ -395,7 +406,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Decide if the given doctype is of an Adjustment Charge
-	 * 
+	 *
 	 * @param docType
 	 * @return
 	 */

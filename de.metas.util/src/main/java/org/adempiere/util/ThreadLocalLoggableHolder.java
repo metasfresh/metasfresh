@@ -15,12 +15,12 @@ import org.adempiere.util.lang.IAutoCloseable;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,7 +29,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 
 /**
  * Holds the {@link ILoggable} instance of current thread.
- * 
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -37,9 +37,9 @@ public final class ThreadLocalLoggableHolder
 {
 	/**
 	 * Temporary set the current thread level loggable to given one.
-	 * 
+	 *
 	 * The method is designed to be used in try-with-resources block, so the previous thread level loggable will be restored when the returned closeable will be closed.
-	 * 
+	 *
 	 * @param loggable
 	 * @return
 	 */
@@ -68,10 +68,12 @@ public final class ThreadLocalLoggableHolder
 		};
 	}
 
-	/** @return current thread's {@link ILoggable} instance or null */
+	/**
+	 * @return current thread's {@link ILoggable} instance or the {@link NullLoggable}. Never returns <code>null</code>
+	 */
 	public ILoggable getLoggable()
 	{
-		return loggableRef.get();
+		return getLoggableOr(ILoggable.NULL);
 	}
 
 	/** @return current thread's {@link ILoggable} instance or <code>defaultLoggable</code> if there was no thread level {@link ILoggable} */

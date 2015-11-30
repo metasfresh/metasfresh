@@ -70,15 +70,15 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Model Validation Engine
- * 
+ *
  * @author Jorg Janke
  * @version $Id: ModelValidationEngine.java,v 1.2 2006/07/30 00:58:38 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>FR [ 1670025 ] ModelValidator.afterLoadPreferences will be useful <li>BF [ 1679692 ] fireDocValidate doesn't treat exceptions as errors <li>FR [
  *         1724662 ] Support Email should contain model validators info <li>FR [ 2788276 ] Data Import Validator https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335
  *         <li>BF [ 2804135 ] Global FactsValidator are not invoked https://sourceforge.net/tracker/?func=detail&aid=2804135&group_id=176962&atid=879332 <li>BF [ 2819617 ] NPE if script validator rule
  *         returns null https://sourceforge.net/tracker/?func=detail&aid=2819617&group_id=176962&atid=879332
- * 
+ *
  * @author Tobias Schoeneberg, t.schoeneberg@metas.de <li>FR [ADEMPIERE-28] ModelValidatorException https://adempiere.atlassian.net/browse/ADEMPIERE-28
  */
 public class ModelValidationEngine implements IModelValidationEngine
@@ -86,7 +86,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Get Singleton
-	 * 
+	 *
 	 * @return engine
 	 */
 	public synchronized static ModelValidationEngine get()
@@ -109,12 +109,12 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Sets the list of EntityTypes for which the model interceptors shall be loaded.
-	 * 
+	 *
 	 * You can provide a custom list of entity types, or you can use a predefined one:
 	 * <ul>
 	 * <li> {@link #INITENTITYTYPE_Minimal} - only the core entity types. It is used when we need to start adempiere from other tools and we don't want to start the servers, processors and stuff.
 	 * </ul>
-	 * 
+	 *
 	 * @param initEntityTypes
 	 */
 	public synchronized static void setInitEntityTypes(final List<String> initEntityTypes)
@@ -369,9 +369,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Loads module activator class for given name.
-	 * 
+	 *
 	 * If the class was not found this method will return null and the exception will be silently swallowed.
-	 * 
+	 *
 	 * @param classname
 	 * @return module activator class or null if class was not found.
 	 */
@@ -416,7 +416,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Initialize and add validator
-	 * 
+	 *
 	 * @param validator
 	 * @param client
 	 */
@@ -432,7 +432,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Called when login is complete
-	 * 
+	 *
 	 * @param AD_Client_ID client
 	 * @param AD_Org_ID org
 	 * @param AD_Role_ID role
@@ -572,7 +572,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**************************************************************************
 	 * Add Model Change Listener
-	 * 
+	 *
 	 * @param tableName table name
 	 * @param listener listener
 	 */
@@ -619,7 +619,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Remove Model Change Listener
-	 * 
+	 *
 	 * @param tableName table name
 	 * @param listener listener
 	 */
@@ -638,7 +638,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Fire Model Change. Call modelChange method of added validators
-	 * 
+	 *
 	 * @param po persistent objects
 	 * @param type ModelValidator.TYPE_*
 	 * @return error message or NULL for no veto
@@ -847,13 +847,13 @@ public class ModelValidationEngine implements IModelValidationEngine
 	/**
 	 * Makes sure given <code>model</code> is valid before firing listeners.<br>
 	 * Logs (but doesn't throw!) an exception if the given model has no trxName.
-	 * 
+	 *
 	 * Background: if trxName is null when firing the events that is usually some development/framework error.<br>
 	 * We rely on this trxName when creating <b>further</b> objects, so if trxName is <code>null</code> then we can't cleanly roll back and will end in some inconsistency fxxx-up in case something
 	 * fails.
 	 * <p>
 	 * Note: In future we might throw the exception instead of just logging it.
-	 * 
+	 *
 	 * @param model
 	 */
 	private final void assertModelValidBeforeFiringEvent(final PO model, final boolean isDocumentValidateEvent, final int timing)
@@ -922,7 +922,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**************************************************************************
 	 * Add Document Validation Listener
-	 * 
+	 *
 	 * @param tableName table name
 	 * @param listener listener
 	 */
@@ -961,7 +961,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Remove Document Validation Listener
-	 * 
+	 *
 	 * @param tableName table name
 	 * @param listener listener
 	 */
@@ -980,19 +980,24 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Fire Document Validation. Call docValidate method of added validators
-	 * 
-	 * @param po persistent objects
-	 * @param timing see ModelValidator.TIMING_ constants
+	 *
+	 * @param model if <code>null</code> or if {@link InterfaceWrapperHelper#getPO(Object)} returns <code>null</code> for the given value, then the method will do nothing.
+	 * @param docTiming see ModelValidator.TIMING_ constants
 	 * @return always returns <code>null</code>; we keep this string return type only for legacy purposes (when the error message was returned)
 	 * @throws AdempiereException in case of failure
 	 */
-	public String fireDocValidate(final PO po, final int docTiming)
+	public String fireDocValidate(final Object model, final int docTiming)
 	{
+		if (model == null)
+		{
+			return null; // avoid InterfaceWrapperHelper from throwing an exception under any circumstances
+		}
+
+		final PO po = InterfaceWrapperHelper.getPO(model);
 		if (po == null || m_docValidateListeners.isEmpty())
 		{
 			return null;
 		}
-
 		//
 		// Make sure model if valid before firing the listeners
 		assertModelValidBeforeFiringEvent(po, true, docTiming); // isDocumentValidateEvent=true
@@ -1113,7 +1118,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**************************************************************************
 	 * Add Accounting Facts Validation Listener
-	 * 
+	 *
 	 * @param tableName table name
 	 * @param listener listener
 	 */
@@ -1138,7 +1143,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**************************************************************************
 	 * Add Date Import Validation Listener
-	 * 
+	 *
 	 * @param tableName table name
 	 * @param listener listener
 	 */
@@ -1160,7 +1165,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Remove Accounting Facts Validation Listener
-	 * 
+	 *
 	 * @param tableName table name
 	 * @param listener listener
 	 */
@@ -1179,7 +1184,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Fire Accounting Facts Validation. Call factsValidate method of added validators
-	 * 
+	 *
 	 * @param schema
 	 * @param facts
 	 * @param doc
@@ -1230,7 +1235,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Fire Import Validation. Call {@link IImportValidator#validate(IImportProcess, Object, Object, int)} or registered validators.
-	 * 
+	 *
 	 * @param process import process
 	 * @param importModel import record (e.g. X_I_BPartner)
 	 * @param targetModel target model (e.g. MBPartner, MBPartnerLocation, MUser)
@@ -1254,7 +1259,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -1270,11 +1275,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Create Model Validators Info
-	 * 
+	 *
 	 * @param sb optional string buffer
 	 * @param ctx context
 	 * @return Model Validators Info
-	 * 
+	 *
 	 * @author Teo Sarca, FR [ 1724662 ]
 	 */
 	public StringBuffer getInfoDetail(StringBuffer sb, Properties ctx)
@@ -1320,7 +1325,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * After Load Preferences into Context for selected client.
-	 * 
+	 *
 	 * @param ctx context
 	 * @see org.compiere.util.Login#loadPreferences(KeyNamePair, KeyNamePair, java.sql.Timestamp, String)
 	 * @author Teo Sarca - FR [ 1670025 ] - https://sourceforge.net/tracker/index.php?func=detail&aid=1670025&group_id=176962&atid=879335
@@ -1502,7 +1507,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * Name of a dynamic attribute to disable model interceptors (i.e. validators) on ModelChange for a particular PO. Set the value to <code>true</code> if you want to bypass <b>all</b> model
 	 * validators.
 	 * <p>
-	 * 
+	 *
 	 * @FIXME [12:09:52] Teo metas: use org.adempiere.ad.persistence.ModelDynAttributeAccessor<ModelType, AttributeType> to define the dynamic attribute
 	 */
 	public static final String DYNATTR_DO_NOT_INVOKE_ON_MODEL_CHANGE = "DO_NOT_INVOKE_ON_MODEL_CHANGE";

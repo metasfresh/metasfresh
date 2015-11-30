@@ -10,12 +10,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -173,17 +173,21 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final boolean onlyProcessedPLVs = true;
+
 		if (invoice.getM_PriceList_ID() != 100) // FIXME use PriceList_None constant
 		{
 			final I_M_PriceList priceList = invoice.getM_PriceList();
 
-			final I_M_PriceList_Version priceListVersion = Services.get(IPriceListDAO.class).retrievePriceListVersion(priceList, invoice.getDateInvoiced());
+
+			final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), onlyProcessedPLVs);
 			Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {0}", invoice);
 
 			final int m_Product_ID = invoiceLine.getM_Product_ID();
 			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {0}", invoiceLine);
 
-			final I_M_ProductPrice productPrice = Services.get(IPriceListDAO.class).retrieveProductPrice(priceListVersion, m_Product_ID);
+			final I_M_ProductPrice productPrice = priceListDAO.retrieveProductPrice(priceListVersion, m_Product_ID);
 
 			return productPrice.getC_TaxCategory_ID();
 		}
@@ -204,13 +208,13 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			final I_M_PriceList priceList = order.getM_PriceList();
 
-			final I_M_PriceList_Version priceListVersion = Services.get(IPriceListDAO.class).retrievePriceListVersion(priceList, invoice.getDateInvoiced());
+			final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), onlyProcessedPLVs);
 			Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {0}", invoice);
 
 			final int m_Product_ID = invoiceLine.getM_Product_ID();
 			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {0}", invoiceLine);
 
-			final I_M_ProductPrice productPrice = Services.get(IPriceListDAO.class).retrieveProductPrice(priceListVersion, m_Product_ID);
+			final I_M_ProductPrice productPrice = priceListDAO.retrieveProductPrice(priceListVersion, m_Product_ID);
 
 			return productPrice.getC_TaxCategory_ID();
 		}
@@ -350,7 +354,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return;
 		}
-		
+
 		//
 		// Calculate Pricing Result
 		final IEditablePricingContext pricingCtx = createPricingContext(invoiceLine);
@@ -358,7 +362,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		pricingCtx.setConvertPriceToContextUOM(!usePriceUOM);
 
 		pricingCtx.setManualPrice(invoiceLine.isManualPrice());
-		
+
 		if(pricingCtx.isManualPrice())
 		{
 			// Task 08908: 	do not calculate the prices in case the price is manually set

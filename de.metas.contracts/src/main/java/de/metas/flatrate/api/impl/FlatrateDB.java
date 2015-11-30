@@ -22,7 +22,6 @@ package de.metas.flatrate.api.impl;
  * #L%
  */
 
-
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -30,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -183,20 +183,19 @@ public class FlatrateDB implements IFlatrateDB
 	@Override
 	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Invoice_Candidate invoiceCand)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCand);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceCand);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ICompositeQueryFilter<I_C_Invoice_Clearing_Alloc> orFilter =
+				queryBL.createCompositeQueryFilter(I_C_Invoice_Clearing_Alloc.class)
+						.setJoinOr()
+						.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID, invoiceCand.getC_Invoice_Candidate_ID())
+						.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID());
 
-		final String wc = I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID + "=? OR "
-				+ I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Candidate_ID + "=?";
-
-		return new Query(ctx, I_C_Invoice_Clearing_Alloc.Table_Name, wc, trxName)
-				.setParameters(
-						invoiceCand.getC_Invoice_Candidate_ID(),
-						invoiceCand.getC_Invoice_Candidate_ID())
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Clearing_Alloc_ID)
-				.list(I_C_Invoice_Clearing_Alloc.class);
+		return queryBL.createQueryBuilder(I_C_Invoice_Clearing_Alloc.class, invoiceCand)
+				.addOnlyActiveRecordsFilter()
+				.filter(orFilter)
+				.orderBy().addColumn(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Clearing_Alloc_ID).endOrderBy()
+				.create()
+				.list();
 	}
 
 	@Override

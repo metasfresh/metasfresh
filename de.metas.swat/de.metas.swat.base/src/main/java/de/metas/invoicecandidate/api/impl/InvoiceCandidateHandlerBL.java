@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,13 +30,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.compiere.model.MTable;
 import org.compiere.util.CLogger;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
@@ -47,11 +47,14 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.OnInvalidateForModelAction;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lock.api.ILock;
@@ -78,7 +81,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	{
 		final List<IInvoiceCandidateHandler> result = new ArrayList<IInvoiceCandidateHandler>();
 
-		for (final I_C_ILCandHandler record : Services.get(IInvoiceCandidateHandlerDAO.class).retrieveForTable(ctx, tableName))
+		final List<I_C_ILCandHandler> handlerRecordsForTable = Services.get(IInvoiceCandidateHandlerDAO.class).retrieveForTable(ctx, tableName);
+		for (final I_C_ILCandHandler record : handlerRecordsForTable)
 		{
 			result.add(mkInstance(record));
 		}
@@ -86,7 +90,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	@Override
-	public void evalClassName(final I_C_ILCandHandler ilCandGenerator)
+	public void evalClassName(final I_C_ILCandHandler ilCandGenerator, final boolean failIfClassNotFound)
 	{
 		if (Check.isEmpty(ilCandGenerator.getClassname()))
 		{
@@ -94,11 +98,23 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			return;
 		}
 
-		final IInvoiceCandidateHandler handlerClass = mkInstance(ilCandGenerator);
+		final IInvoiceCandidateHandler handlerClass;
+		try
+		{
+			handlerClass = mkInstance(ilCandGenerator);
+		}
+		catch (final AdempiereException e)
+		{
+			if (failIfClassNotFound)
+			{
+				throw e;
+			}
+			ilCandGenerator.setTableName(null);
+			return;
+		}
 
 		ilCandGenerator.setTableName(handlerClass.getSourceTable());
 		ilCandGenerator.setIs_AD_User_InCharge_UI_Setting(handlerClass.isUserInChargeUserEditable());
-
 		return;
 	}
 
@@ -227,7 +243,11 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	 * @param trxName
 	 * @return created candidates
 	 */
-	private List<I_C_Invoice_Candidate> createCandidates(final Properties ctx, final Object modelOrNoModel, final int bufferSize, final IInvoiceCandidateHandler invoiceCandiateHandler, final String trxName)
+	private List<I_C_Invoice_Candidate> createCandidates(final Properties ctx,
+			final Object modelOrNoModel,
+			final int bufferSize,
+			final IInvoiceCandidateHandler invoiceCandiateHandler,
+			final String trxName)
 	{
 		//
 		// Retrieve actual models for whom we will generate invoice candidates
@@ -240,7 +260,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		{
 			models = Iterators.singletonIterator(modelOrNoModel);
 		}
-		
+
 		//
 		// Locking
 		final ILockManager lockManager = Services.get(ILockManager.class);
@@ -249,7 +269,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		//
 		// Iterate retrieved models and generate invoice candidates for them
 		final List<I_C_Invoice_Candidate> invoiceCandidatesAll = new ArrayList<>();
-		while(models.hasNext())
+		while (models.hasNext())
 		{
 			//
 			// Create the initial request and then ask the handler to expand it to proper models to be used.
@@ -268,8 +288,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 						.setAutoCleanup(true)
 						.setFailIfAlreadyLocked(true)
 						.acquire();
-				
-				try (ILockAutoCloseable unlocker = lock.asAutoCloseable())
+
+				try (final ILockAutoCloseable unlocker = lock.asAutoCloseable())
 				{
 					final IInvoiceCandidateHandler handler = request.getHandler();
 					final InvoiceCandidateGenerateResult result = handler.createCandidatesFor(request);
@@ -282,13 +302,13 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				}
 			}
 		}
-		
+
 		// Invalidate all generated invoice candidates in one run.
 		invalidateNewCandidates(invoiceCandidatesAll);
 
 		return invoiceCandidatesAll;
 	}
-	
+
 	/**
 	 * Make sure all candidates are persisted to database. It also:
 	 * <ul>
@@ -301,7 +321,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	private void updateDefaultsAndSave(final InvoiceCandidateGenerateResult result)
 	{
 		final IInvoiceCandidateHandler handler = result.getHandler();
-		
+
 		for (final I_C_Invoice_Candidate ic : result.getC_Invoice_Candidates())
 		{
 			updateDefaultsAndSaveSingleCandidate(handler, ic);
@@ -314,7 +334,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 		//
 		// Make sure there is a link to creator/handler.
-		// We are setting the handler only if it was not set because it might be that the handler was set by a delegated handler which is not this one. 
+		// We are setting the handler only if it was not set because it might be that the handler was set by a delegated handler which is not this one.
 		final I_C_ILCandHandler handlerDef = handler.getHandlerRecord();
 		if (handlerDef != null && ic.getC_ILCandHandler_ID() <= 0)
 		{
@@ -332,14 +352,11 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		InterfaceWrapperHelper.save(ic);
 
 		// task 05791: notify the system whenever this new ic references an existing PO
-		if (ic.getAD_Table_ID() > 0 && ic.getRecord_ID() > 0)
+		final Object fromModel = TableRecordCacheLocal.getReferencedValue(ic, Object.class);
+		if (fromModel != null)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(ic, true); // useClientOrgFromModel == true
-			final String trxName = InterfaceWrapperHelper.getTrxName(ic); // using the ic's transaction as opposed to ITrx.TRXNAME_None, because the PO referenced by ic might as well have been created
-																			// within it
-
 			Services.get(IWFExecutionFactory.class).notifyActivityPerformed( // 03745
-					MTable.get(ctx, ic.getAD_Table_ID()).getPO(ic.getRecord_ID(), trxName),
+					fromModel,
 					ic);
 		}
 	}
@@ -347,6 +364,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	private void invalidateNewCandidates(final List<I_C_Invoice_Candidate> candidates)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		// group them by
 		// * HeaderAggregationKey
@@ -358,6 +376,15 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		final Map<ArrayKey, I_C_Invoice_Candidate> referencedRecordKey2IC = new HashMap<ArrayKey, I_C_Invoice_Candidate>();
 		for (final I_C_Invoice_Candidate ic : candidates)
 		{
+			final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+			final OnInvalidateForModelAction onInvalidateForModelAction = handler.getOnInvalidateForModelAction();
+			if (onInvalidateForModelAction == OnInvalidateForModelAction.RECREATE_ASYNC)
+			{
+				// just plainly invalidate the actual IC as hand.
+				invoiceCandDAO.invalidateCand(ic);
+				continue;
+			}
+
 			final ArrayKey headerAndPartnerKey = Util.mkKey(ic.getHeaderAggregationKey(), ic.getBill_BPartner_ID());
 			if (!headerAndPartnerKey2IC.containsKey(headerAndPartnerKey))
 			{
@@ -426,9 +453,22 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final String tableName = InterfaceWrapperHelper.getTableName(model.getClass());
 
-		for (final IInvoiceCandidateHandler handler : retrieveImplementationsForTable(ctx, tableName))
+		final List<IInvoiceCandidateHandler> handlersForTable = retrieveImplementationsForTable(ctx, tableName);
+		for (final IInvoiceCandidateHandler handler : handlersForTable)
 		{
-			handler.invalidateCandidatesFor(model);
+			final OnInvalidateForModelAction onInvalidateForModelAction = handler.getOnInvalidateForModelAction();
+			switch (onInvalidateForModelAction)
+			{
+				case RECREATE_ASYNC:
+					CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(model);
+					break;
+				case REVALIDATE:
+					handler.invalidateCandidatesFor(model);
+					break;
+				default:
+					// nothing
+					break;
+			}
 		}
 	}
 

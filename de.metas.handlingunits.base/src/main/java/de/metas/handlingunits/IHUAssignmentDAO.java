@@ -10,18 +10,17 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.List;
@@ -62,7 +61,7 @@ public interface IHUAssignmentDAO extends ISingletonService
 	List<I_M_HU_Assignment> retrieveHUAssignmentsForModel(Properties ctx, int adTableId, int recordId, String trxName);
 
 	/**
-	 * Retrieve top-level handling unit assignments for given document
+	 * Retrieve <b>top-level</b> handling unit assignments for given document
 	 *
 	 * @param model
 	 * @return assignments
@@ -80,9 +79,9 @@ public interface IHUAssignmentDAO extends ISingletonService
 
 	/**
 	 * Retrieves HUs which are top level and assigned to given model.
-	 * 
+	 *
 	 * NOTE: this method will NOT exclude destroyed HUs.
-	 * 
+	 *
 	 * @param model
 	 * @param trxName
 	 * @return HUs which are top level and assigned to given model.
@@ -91,9 +90,9 @@ public interface IHUAssignmentDAO extends ISingletonService
 
 	/**
 	 * Retrieves TUs assigned to <code>model</code>.
-	 * 
+	 *
 	 * NOTE: this method will NOT exclude destroyed HUs.
-	 * 
+	 *
 	 * @param model
 	 * @return TUs assigned to <code>model</code>
 	 * @see #retrieveTUHUAssignmentsForModelQuery(Object)
@@ -181,21 +180,32 @@ public interface IHUAssignmentDAO extends ISingletonService
 
 	/**
 	 * Asserts given model has no assignments.
-	 * 
+	 *
 	 * @param model
 	 * @throws HUException in case any HU assignment was found
 	 */
 	void assertNoHUAssignmentsForModel(Object model);
 
 	/**
-	 * Retrieve the models whose table name matches the given class and which have an (active) assignment with the given <code>hu</code>.
-	 * <p>
-	 * <b>IMPORTANT:</b> assume that the correct key column name and <code>AD_Table_ID</code> can be extracted from the given <code>clazz</code> using {@link InterfaceWrapperHelper#getTableId(Class)}
-	 * and {@link InterfaceWrapperHelper#getKeyColumnName(Class)}.
-	 * 
+	 * Call {@link #retrieveModelsForHU(I_M_HU, Class, boolean)} with <code>topLevel==true</code>.
+	 *
 	 * @param hu
 	 * @param clazz
 	 * @return
 	 */
 	<T> List<T> retrieveModelsForHU(I_M_HU hu, Class<T> clazz);
+
+	/**
+	 * Retrieve the models whose table name matches the given class and which have an (active) assignment with the given <code>hu</code>.
+	 * <p>
+	 * <b>IMPORTANT:</b> assume that the correct key column name and <code>AD_Table_ID</code> can be extracted from the given <code>clazz</code> using {@link InterfaceWrapperHelper#getTableId(Class)}
+	 * and {@link InterfaceWrapperHelper#getKeyColumnName(Class)}.
+	 *
+	 * @param hu
+	 * @param clazz
+	 * @param topLevel if <code>true</code>, then only assignments which reference the given <code>hu</code> via <code>M_HU_ID</code> are considered, and none which reference the <code>hu</code> via
+	 *            <code>M_LU_HU_ID</code>. If <code>false</code>, then it is the other way round.
+	 * @return
+	 */
+	<T> List<T> retrieveModelsForHU(I_M_HU hu, Class<T> clazz, boolean topLevel);
 }

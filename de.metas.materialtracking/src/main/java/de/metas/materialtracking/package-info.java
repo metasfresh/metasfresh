@@ -25,7 +25,7 @@
  * <li>When the Quality Inspection Manufacturing Order is closed, the system will generate
  * <ul>
  * <li><code>C_Invoice_Candidates</code>, and will link them to the original IC (the one with <code>IsToClear='Y'</code>, see above) via {@link de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc I_C_Invoice_Clearing_Alloc} records.</li>
- * <li>{@link de.metas.invoicecandidate.model.I_C_Invoice_Detail I_C_Invoice_Detail} lines linked to the ICs.</li>
+ * <li>{@link de.metas.materialtracking.model.I_C_Invoice_Detail I_C_Invoice_Detail} lines linked to the ICs.</li>
  * <li>{@link de.metas.materialtracking.model.I_PP_Order_Report I_PP_Order_Report} lines.</li>
  * </ul></li>
  * <li>the <code>PP_Order_Report</code> lines are used to display the PP_Order in jasper</li>
@@ -58,7 +58,7 @@
  * <li> {@link de.metas.invoicecandidate.model.I_C_Invoice_Candidate} - invoice candidates
  * 	<ul>
  * 		<li>created based on {@link de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup}
- * 		<li>created by {@link de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.InvoiceCandidateBuilder}
+ * 		<li>created by {@link de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.InvoiceCandidateWriter}
  * 	</ul>
  * </li>
  * </ul>

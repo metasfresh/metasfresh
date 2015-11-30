@@ -10,12 +10,12 @@ package org.adempiere.invoice.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,7 +56,9 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 public final class InvoiceBL extends AbstractInvoiceBL
 {
 	@Override
-	public MInvoice createAndCompleteForInOut(final I_M_InOut inOut, final Timestamp dateInvoiced, final String trxName)
+	public MInvoice createAndCompleteForInOut(final I_M_InOut inOut,
+			final Timestamp dateInvoiced,
+			final String trxName)
 	{
 		if (inOut == null)
 		{
@@ -113,7 +115,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		}
 
 		// metas: Neunumerierung der Rechnungszeilen vor Fertigstellung
-		invoice.renumberLinesWithoutComment(10);
+		this.renumberLines(InterfaceWrapperHelper.create(invoice, de.metas.adempiere.model.I_C_Invoice.class), 10);
 
 		Services.get(IDocActionBL.class).processEx(invoice, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 
@@ -131,9 +133,9 @@ public final class InvoiceBL extends AbstractInvoiceBL
 	}
 
 	@Override
-	public int copyLinesFrom(final I_C_Invoice fromInvoice, 
+	public int copyLinesFrom(final I_C_Invoice fromInvoice,
 			final I_C_Invoice toInvoice,
-			final boolean counter, 
+			final boolean counter,
 			final boolean setOrderRef,
 			final boolean setInvoiceRef, // settings
 			final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> additionalDocLineHandler)

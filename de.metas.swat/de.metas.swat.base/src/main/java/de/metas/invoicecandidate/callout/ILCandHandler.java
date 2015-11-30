@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.callout;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +35,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 
 public class ILCandHandler extends CalloutEngine
-{ // de.metas.invoicecandidate.callout.ILCandHandler
+{
 	public String className(
 			final Properties ctx,
 			final int WindowNo,
@@ -44,11 +44,10 @@ public class ILCandHandler extends CalloutEngine
 			final Object value)
 	{
 		final I_C_ILCandHandler ilCandGenerator = GridTabWrapper.create(mTab, I_C_ILCandHandler.class);
-		
-		Services.get(IInvoiceCandidateHandlerBL.class).evalClassName(ilCandGenerator);
-		
+
+		final boolean failIfClassNotFound = false;
+		Services.get(IInvoiceCandidateHandlerBL.class).evalClassName(ilCandGenerator, failIfClassNotFound);
+
 		return "";
 	}
-
-	
 }
