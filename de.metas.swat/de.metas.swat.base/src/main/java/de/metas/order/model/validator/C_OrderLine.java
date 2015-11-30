@@ -40,6 +40,7 @@ import org.compiere.model.CalloutOrder;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.CLogger;
 
+import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.api.IOLCandDAO;
@@ -199,5 +200,21 @@ public class C_OrderLine
 		// doesn't help, because it actuall *was* a UI action..the action ust didn't change one of these two)
 		// olPO.setIsManualPrice(true);
 		// olPO.setIsManualDiscount(true);
+	}
+	
+	/**
+	 * 
+	 * @param orderLine
+	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }
+			, ifColumnsChanged = {
+					I_C_OrderLine.COLUMNNAME_QtyOrdered,
+					I_C_OrderLine.COLUMNNAME_QtyInvoiced,
+					I_C_OrderLine.COLUMNNAME_QtyDelivered
+			})
+	public void updateQuantities(final I_C_OrderLine orderLine) 
+	{
+		Services.get(IOrderBL.class).updateOrderQtySums(orderLine.getC_Order());
 	}
 }
