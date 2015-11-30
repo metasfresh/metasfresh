@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="3.0"/>
-	<property name="ireport.x" value="111"/>
+	<property name="ireport.x" value="258"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -43,8 +43,7 @@ LEFT JOIN c_bank bank			ON bpb.c_bank_id	   = bank.c_bank_id
 
 WHERE
 ad_org.ad_org_id = $P{org_id}
-;
-]]>
+;]]>
 	</queryString>
 	<field name="org_name" class="java.lang.String"/>
 	<field name="org_address1" class="java.lang.String"/>
@@ -57,6 +56,10 @@ ad_org.ad_org_id = $P{org_id}
 	<field name="org_bank_swift" class="java.lang.String"/>
 	<field name="org_addressline" class="java.lang.String"/>
 	<field name="description" class="java.lang.String"/>
+	<variable name="conditions" class="java.lang.String">
+		<variableExpression><![CDATA["Es gelten unsere allgemeinen Liefer- und Geschäftsbedingungen"]]></variableExpression>
+		<initialValueExpression><![CDATA["Es gelten unsere allgemeinen Liefer- und Geschäftsbedingungen"]]></initialValueExpression>
+	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -76,9 +79,9 @@ ad_org.ad_org_id = $P{org_id}
 				<textElement textAlignment="Center">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{placeofbusiness} + " " + $F{org_address1} + ", " + $F{org_postal} + " " + $F{org_city}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{placeofbusiness} + " " + $F{org_address1} + " | " + $F{org_postal} + " " + $F{org_city}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement uuid="de404e34-2884-4c60-88a7-ccdb6046dff1" key="textField-6" x="97" y="16" width="344" height="9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -95,8 +98,7 @@ ad_org.ad_org_id = $P{org_id}
 				<reportElement uuid="b231d9e7-2991-4ed0-b2b1-626e2925eed0" key="textField-7" x="182" y="38" width="66" height="9">
 					<printWhenExpression><![CDATA[!$F{org_bank_name}.equals("") && !$F{org_bank_blz}.equals("")
 	?new Boolean(true)
-	:new Boolean(false)
-]]></printWhenExpression>
+	:new Boolean(false)]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -107,9 +109,9 @@ ad_org.ad_org_id = $P{org_id}
 				<textElement textAlignment="Right">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{org_bank_name} + ", "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{org_bank_name} + " | "]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement uuid="2acced95-3851-4712-9669-aa6cefe5ee40" key="textField-8" x="122" y="1" width="293" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -120,7 +122,7 @@ ad_org.ad_org_id = $P{org_id}
 				<textElement textAlignment="Center">
 					<font size="8" isBold="false" pdfFontName="Helvetica"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{conditions}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{conditions}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="2ab5f606-c793-4c17-a3f4-35165013b1fa" key="textField-7" x="97" y="45" width="127" height="9">
@@ -137,9 +139,9 @@ ad_org.ad_org_id = $P{org_id}
 				<textElement textAlignment="Right">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{account} + $F{org_bank_acct} + ", "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{account} + $F{org_bank_acct} + " | "]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement uuid="2697a4df-45de-408d-ac7d-c04709a7df84" x="97" y="30" width="344" height="10"/>
 				<textElement textAlignment="Center">
 					<font size="7"/>
@@ -161,7 +163,7 @@ ad_org.ad_org_id = $P{org_id}
 				<textElement>
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{routingno} + $F{org_bank_blz} + ", "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{routingno} + $F{org_bank_blz} + " | "]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="b231d9e7-2991-4ed0-b2b1-626e2925eed0" key="textField-7" x="276" y="38" width="107" height="9">
@@ -212,7 +214,7 @@ ad_org.ad_org_id = $P{org_id}
 				<textElement textAlignment="Right">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{org_bank_name} + ", "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{org_bank_name} + " | "]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
