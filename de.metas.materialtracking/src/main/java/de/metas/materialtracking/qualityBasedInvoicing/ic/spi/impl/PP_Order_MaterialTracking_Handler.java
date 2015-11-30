@@ -47,7 +47,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandler
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
-public abstract class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateHandler
+public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final PP_Order_MaterialTracking_HandlerDAO dao = new PP_Order_MaterialTracking_HandlerDAO();
 
