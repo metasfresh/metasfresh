@@ -21,8 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.adempiere.currency.ICurrencyConversionContext;
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.product.service.IProductBL;
+import org.adempiere.service.ICurrencyConversionBL;
+import org.adempiere.tax.api.ITaxBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_Invoice;
@@ -33,6 +38,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
+import org.compiere.model.MTax;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -57,13 +63,10 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
  */
 public class Doc_MatchInv extends Doc
 {
-	/**
-	 * Constructor
-	 * 
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
+	// services
+	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
+
 	public Doc_MatchInv(final IDocBuilder docBuilder)
 	{
 		super(docBuilder, DOCTYPE_MatMatchInv);
@@ -71,6 +74,10 @@ public class Doc_MatchInv extends Doc
 
 	/** Invoice Line */
 	private I_C_InvoiceLine m_invoiceLine = null;
+	private int invoiceCurrencyId;
+	/** Invoice line net amount, excluding taxes, in invoice's currency */
+	private BigDecimal invoiceLineNetAmt = null;
+	private ICurrencyConversionContext invoiceCurrencyConversionCtx;
 	/** Material Receipt */
 	private I_M_InOutLine m_receiptLine = null;
 
@@ -91,15 +98,42 @@ public class Doc_MatchInv extends Doc
 		setC_Currency_ID(Doc.NO_CURRENCY);
 		setDateDoc(matchInv.getDateTrx());
 		setQty(matchInv.getQty());
-		// Invoice Info
+
 		final String trxName = getTrxName();
-		m_invoiceLine = InterfaceWrapperHelper.create(matchInv.getC_InvoiceLine(), I_C_InvoiceLine.class);
-		// BP for NotInvoicedReceipts
-		final int C_BPartner_ID = m_invoiceLine.getC_Invoice().getC_BPartner_ID();
-		setC_BPartner_ID(C_BPartner_ID);
-		//
+
+		// Invoice Info
+		{
+			m_invoiceLine = InterfaceWrapperHelper.create(matchInv.getC_InvoiceLine(), I_C_InvoiceLine.class);
+			final I_C_Invoice invoice = m_invoiceLine.getC_Invoice();
+			
+			// BP for NotInvoicedReceipts
+			final int C_BPartner_ID = invoice.getC_BPartner_ID();
+			setC_BPartner_ID(C_BPartner_ID);
+			
+			invoiceCurrencyId = invoice.getC_Currency_ID();
+			invoiceLineNetAmt = m_invoiceLine.getLineNetAmt();
+
+			// Correct included Tax
+			final boolean taxIncluded = invoiceBL.isTaxIncluded(m_invoiceLine);
+			final int C_Tax_ID = m_invoiceLine.getC_Tax_ID();
+			if (taxIncluded && C_Tax_ID > 0)
+			{
+				final MTax tax = MTax.get(getCtx(), C_Tax_ID);
+				if (!tax.isZeroTax())
+				{
+					final int taxPrecision = getStdPrecision();
+					final BigDecimal lineTaxAmt = taxBL.calculateTax(tax, invoiceLineNetAmt, true, taxPrecision);
+					log.log(Level.FINE, "LineNetAmt={0} - LineTaxAmt={1}", new Object[] { invoiceLineNetAmt, lineTaxAmt });
+					invoiceLineNetAmt = invoiceLineNetAmt.subtract(lineTaxAmt);
+				}
+			}	// correct included Tax
+
+		}
+		
+		// Receipt info
 		m_receiptLine = matchInv.getM_InOutLine();
-		//
+		
+		// Product costing
 		m_pc = new ProductCost(getCtx(),
 				getM_Product_ID(), matchInv.getM_AttributeSetInstance_ID(),
 				trxName);
@@ -178,10 +212,9 @@ public class Doc_MatchInv extends Doc
 		// create Fact Header
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		setC_Currency_ID(as.getC_Currency_ID());
-		boolean isInterOrg = isInterOrg(as);
 
 		/**
-		 * Needs to be handeled in PO Matching as no Receipt info if (m_pc.isService()) { log.fine("Service - skipped"); return fact; }
+		 * Needs to be handled in PO Matching as no Receipt info if (m_pc.isService()) { log.fine("Service - skipped"); return fact; }
 		 **/
 
 		// NotInvoicedReceipt DR
@@ -189,7 +222,7 @@ public class Doc_MatchInv extends Doc
 		final BigDecimal receiptQtyMultiplier = getQty()
 				.divide(m_receiptLine.getMovementQty(), 12, BigDecimal.ROUND_HALF_UP)
 				.abs();
-		FactLine dr = fact.createLine(null,
+		final FactLine dr = fact.createLine(null,
 				getAccount(Doc.ACCTTYPE_NotInvoicedReceipts, as),
 				as.getC_Currency_ID(), Env.ONE, null);			// updated below
 		if (dr == null)
@@ -228,7 +261,7 @@ public class Doc_MatchInv extends Doc
 		MAccount expense = m_pc.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as);
 		if (m_pc.isService())
 			expense = m_pc.getAccount(ProductCost.ACCTTYPE_P_Expense, as);
-		BigDecimal LineNetAmt = m_invoiceLine.getLineNetAmt();
+		BigDecimal LineNetAmt = getInvoiceLineNetAmt();
 
 		final BigDecimal invoiceQtyMultiplier = getQty()
 				.divide(m_invoiceLine.getQtyInvoiced(), 12, BigDecimal.ROUND_HALF_UP)
@@ -241,10 +274,17 @@ public class Doc_MatchInv extends Doc
 		if (m_pc.isService())
 			LineNetAmt = dr.getAcctBalance();	// book out exact receipt amt
 		
-		FactLine cr = null;
+		final FactLine cr;
+		final int invoiceCurrencyId = getInvoiceCurrencyId();
 		if (as.isAccrual())
 		{
-			cr = fact.createLine(null, expense, as.getC_Currency_ID(), null, LineNetAmt);		// updated below
+			cr = fact.createLine()
+					.setAccount(expense)
+					.setC_Currency_ID(invoiceCurrencyId)
+					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
+					.setAmtSource(null, LineNetAmt)
+					// NOTE: the other fields and dimensions will be updated below
+					.buildAndAdd();
 			if (cr == null)
 			{
 				log.fine("Line Net Amt=0 - M_Product_ID=" + getM_Product_ID() + ",Qty=" + getQty() + ",InOutQty=" + m_receiptLine.getMovementQty());
@@ -253,16 +293,11 @@ public class Doc_MatchInv extends Doc
 				final BigDecimal ipv = dr.getSourceBalance().negate();
 				if (ipv.signum() != 0)
 				{
-					I_C_Invoice m_invoice = m_invoiceLine.getC_Invoice();
-					int C_Currency_ID = m_invoice.getC_Currency_ID();
-					FactLine pv = fact.createLine(null,
-							m_pc.getAccount(ProductCost.ACCTTYPE_P_IPV, as),
-							C_Currency_ID, ipv);
+					final FactLine pv = fact.createLine(null, m_pc.getAccount(ProductCost.ACCTTYPE_P_IPV, as), invoiceCurrencyId, ipv);
 					pv.setC_Activity_ID(m_invoiceLine.getC_Activity_ID());
 					pv.setC_Campaign_ID(m_invoiceLine.getC_Campaign_ID());
 					pv.setC_Project_ID(m_invoiceLine.getC_Project_ID());
-					final I_C_InvoiceLine il = InterfaceWrapperHelper.create(m_invoiceLine, I_C_InvoiceLine.class);
-					pv.setC_UOM_ID(il.getPrice_UOM_ID());
+					pv.setC_UOM_ID(m_invoiceLine.getPrice_UOM_ID());
 					pv.setUser1_ID(m_invoiceLine.getUser1_ID());
 					pv.setUser2_ID(m_invoiceLine.getUser2_ID());
 				}
@@ -300,13 +335,10 @@ public class Doc_MatchInv extends Doc
 		else
 		// Cash Acct
 		{
-			I_C_Invoice invoice = m_invoiceLine.getC_Invoice();
-			if (as.getC_Currency_ID() != invoice.getC_Currency_ID())
+			if (as.getC_Currency_ID() != invoiceCurrencyId)
 			{
-				LineNetAmt = currencyConversionBL.convert(getCtx(), LineNetAmt,
-						invoice.getC_Currency_ID(), as.getC_Currency_ID(),
-						invoice.getDateAcct(), invoice.getC_ConversionType_ID(),
-						invoice.getAD_Client_ID(), invoice.getAD_Org_ID());
+				LineNetAmt = currencyConversionBL.convert(getInvoiceCurrencyConversionCtx(), LineNetAmt, invoiceCurrencyId, as.getC_Currency_ID())
+						.getAmount();
 			}
 			cr = fact.createLine(null, expense, as.getC_Currency_ID(), null, LineNetAmt);
 			cr.setQty(getQty().multiply(invoiceQtyMultiplier).negate());
@@ -314,8 +346,7 @@ public class Doc_MatchInv extends Doc
 		cr.setC_Activity_ID(m_invoiceLine.getC_Activity_ID());
 		cr.setC_Campaign_ID(m_invoiceLine.getC_Campaign_ID());
 		cr.setC_Project_ID(m_invoiceLine.getC_Project_ID());
-		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(m_invoiceLine, I_C_InvoiceLine.class);
-		cr.setC_UOM_ID(il.getPrice_UOM_ID());
+		cr.setC_UOM_ID(m_invoiceLine.getPrice_UOM_ID());
 		cr.setUser1_ID(m_invoiceLine.getUser1_ID());
 		cr.setUser2_ID(m_invoiceLine.getUser2_ID());
 
@@ -329,44 +360,39 @@ public class Doc_MatchInv extends Doc
 		// Avoid usage of clearing accounts
 		// If both accounts Not Invoiced Receipts and Inventory Clearing are equal
 		// then remove the posting
-		
-		MAccount acct_db = dr.getAccount(); // not_invoiced_receipts
-		MAccount acct_cr = cr.getAccount(); // inventory_clearing
-
-		if ((!as.isPostIfClearingEqual()) && acct_db.equals(acct_cr) && (!isInterOrg))
 		{
-
-			BigDecimal debit = dr.getAmtSourceDr();
-			BigDecimal credit = cr.getAmtSourceCr();
-
-			if (debit.compareTo(credit) == 0)
+			MAccount acct_db = dr.getAccount(); // not_invoiced_receipts
+			MAccount acct_cr = cr.getAccount(); // inventory_clearing
+	
+			if ((!as.isPostIfClearingEqual()) && acct_db.equals(acct_cr) && (!isInterOrg(as)))
 			{
-				fact.remove(dr);
-				fact.remove(cr);
+				BigDecimal debit = dr.getAmtAcctDr();
+				BigDecimal credit = cr.getAmtAcctCr();
+				if (debit.compareTo(credit) == 0)
+				{
+					fact.remove(dr);
+					fact.remove(cr);
+				}
 			}
-
 		}
-		// End Avoid usage of clearing accounts
 
+		//
 		// Invoice Price Variance difference
 		final BigDecimal ipv = cr.getAcctBalance().add(dr.getAcctBalance()).negate();
 		if (ipv.signum() != 0)
 		{
-			FactLine pv = fact.createLine(null,
-					m_pc.getAccount(ProductCost.ACCTTYPE_P_IPV, as),
-					as.getC_Currency_ID(), ipv);
+			final FactLine pv = fact.createLine(null, m_pc.getAccount(ProductCost.ACCTTYPE_P_IPV, as), as.getC_Currency_ID(), ipv);
 			pv.setC_Activity_ID(m_invoiceLine.getC_Activity_ID());
 			pv.setC_Campaign_ID(m_invoiceLine.getC_Campaign_ID());
 			pv.setC_Project_ID(m_invoiceLine.getC_Project_ID());
-			pv.setC_UOM_ID(il.getPrice_UOM_ID());
+			pv.setC_UOM_ID(m_invoiceLine.getPrice_UOM_ID());
 			pv.setUser1_ID(m_invoiceLine.getUser1_ID());
 			pv.setUser2_ID(m_invoiceLine.getUser2_ID());
 		}
 		log.fine("IPV=" + ipv + "; Balance=" + fact.getSourceBalance());
 
 		// Update Costing
-		updateProductInfo(as.getC_AcctSchema_ID(),
-				MAcctSchema.COSTINGMETHOD_StandardCosting.equals(as.getCostingMethod()));
+		updateProductInfo(as.getC_AcctSchema_ID(), MAcctSchema.COSTINGMETHOD_StandardCosting.equals(as.getCostingMethod()));
 		//
 		facts.add(fact);
 
@@ -469,4 +495,32 @@ public class Doc_MatchInv extends Doc
 		}
 		return true;
 	}   // updateProductInfo
+	
+	private final int getInvoiceCurrencyId()
+	{
+		return this.invoiceCurrencyId;
+	}
+
+	/** @return Invoice line net amount, excluding taxes, in invoice's currency */
+	private final BigDecimal getInvoiceLineNetAmt()
+	{
+		return this.invoiceLineNetAmt;
+	}
+	
+	public final ICurrencyConversionContext getInvoiceCurrencyConversionCtx()
+	{
+		if (invoiceCurrencyConversionCtx == null)
+		{
+			final I_C_Invoice invoice = m_invoiceLine.getC_Invoice();
+			Check.assumeNotNull(invoice, "invoice not null");
+			final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
+					invoice.getDateAcct(),
+					invoice.getC_ConversionType_ID(),
+					invoice.getAD_Client_ID(),
+					invoice.getAD_Org_ID());
+		}
+		return invoiceCurrencyConversionCtx;
+	}
+
 }   // Doc_MatchInv
