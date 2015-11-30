@@ -10,6 +10,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -17,6 +18,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
+import org.compiere.util.TimeUtil;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.model.I_C_Order;
@@ -122,15 +124,19 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 				orderQueryBuilder
 						.addEqualsFilter(I_C_Order.COLUMNNAME_POReference, poReference);
 			}
+
+			// the time of the orders' datePromised is usually 23:59.
+			// if a user set datePromised_From = nov-19th and datePromised_To = nov-19th, they expect any order with a datepromised on that date
+			final DateTruncQueryFilterModifier dateTruncModifier = DateTruncQueryFilterModifier.forTruncString(TimeUtil.TRUNC_DAY);
 			if (datePromised_From != null)
 			{
 				orderQueryBuilder
-						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.GreatherOrEqual, datePromised_From);
+						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.GreatherOrEqual, datePromised_From, dateTruncModifier);
 			}
 			if (datePromised_To != null)
 			{
 				orderQueryBuilder
-						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.LessOrEqual, datePromised_To);
+						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.LessOrEqual, datePromised_To, dateTruncModifier);
 			}
 		}
 
