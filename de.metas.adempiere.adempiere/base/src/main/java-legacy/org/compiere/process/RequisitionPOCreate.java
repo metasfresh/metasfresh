@@ -27,7 +27,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.NoVendorForProductException;
 import org.adempiere.util.Services;
-import org.apache.commons.collections.keyvalue.MultiKey;
+import org.apache.commons.collections4.keyvalue.MultiKey;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MCharge;
 import org.compiere.model.MOrder;
@@ -365,7 +366,7 @@ public class RequisitionPOCreate extends SvrProcess
 			m_order.setBPartner(m_bpartner);
 			m_order.setM_PriceList_ID(M_PriceList_ID); 
 			//	References
-			m_order.setC_Currency_ID(rLine.getParent().getC_Currency_ID()); // task _05914 : currency is mandatory
+			m_order.setC_Currency_ID(rLine.getParent().getC_Currency_ID()); // task 05914 : currency is mandatory
 			
 			//	default po document type
 			if (!p_ConsolidateDocument)
@@ -418,7 +419,7 @@ public class RequisitionPOCreate extends SvrProcess
 
 		//	Get Business Partner
 		int C_BPartner_ID = rLine.getC_BPartner_ID();
-		if (C_BPartner_ID != 0 && isVendorForProduct(C_BPartner_ID, product)) // // task _05914 : is is vendor, the partner is ok; can be used
+		if (C_BPartner_ID != 0 && isVendorForProduct(C_BPartner_ID, product)) // // task 05914 : is is vendor, the partner is ok; can be used
 		{
 			;
 		}
@@ -436,7 +437,7 @@ public class RequisitionPOCreate extends SvrProcess
 			C_BPartner_ID = 0; // reset partner, since the one form line is not vendor
 			// Find Strategic Vendor for Product
 			
-			// task _05914: start			
+			// task 05914: start			
 			final String sql = I_C_BPartner_Product.COLUMNNAME_M_Product_ID + " = ? ";
 			final List<Object> params = new ArrayList<Object>();
 			params.add(rLine.getM_Product_ID());
@@ -451,7 +452,7 @@ public class RequisitionPOCreate extends SvrProcess
 			{
 				throw new NoVendorForProductException(product.getName());
 			}
-			// task _05914: end
+			// task 05914: end
 		}
 		
 		if (!isGenerateForVendor(C_BPartner_ID))
@@ -488,7 +489,7 @@ public class RequisitionPOCreate extends SvrProcess
 		//	Prepare Save
 		m_M_Product_ID = rLine.getM_Product_ID();
 		m_M_AttributeSetInstance_ID = rLine.getM_AttributeSetInstance_ID();
-		m_orderLine.setM_Warehouse_ID(rLine.getParent().getM_Warehouse_ID()); // task _05914 : warehouse is mandatory
+		m_orderLine.setM_Warehouse_ID(rLine.getParent().getM_Warehouse_ID()); // task 05914 : warehouse is mandatory
 		m_orderLine.saveEx();
 	}	//	newLine
 

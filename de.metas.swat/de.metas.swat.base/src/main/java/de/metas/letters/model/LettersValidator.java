@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.letters.model;
 
@@ -13,12 +13,12 @@ package de.metas.letters.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +36,7 @@ import java.util.regex.Matcher;
 
 import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
-import org.apache.commons.collections.keyvalue.MultiKey;
+import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Cash;
@@ -83,18 +83,20 @@ public class LettersValidator implements ModelValidator
 
 	private static Map<MultiKey, Set<MADBoilerPlateVar>> s_cacheVars = new HashMap<MultiKey, Set<MADBoilerPlateVar>>();
 
+	@Override
 	public int getAD_Client_ID()
 	{
 		return m_AD_Client_ID;
 	}
 
+	@Override
 	public void initialize(ModelValidationEngine engine, MClient client)
 	{
 		if (client != null)
 			m_AD_Client_ID = client.getAD_Client_ID();
-		
+
 		Services.registerService(ITextTemplateBL.class, TextTemplateBL.get());
-		
+
 		engine.addModelChange(I_C_DunningRunEntry.Table_Name, this);
 		//
 		TreeSet<String> tableNames = new TreeSet<String>();
@@ -106,7 +108,7 @@ public class LettersValidator implements ModelValidator
 			final String tableName = getTableNameByDocBaseType(dt.getDocBaseType());
 			if (tableName == null)
 				continue;
-			
+
 			final MultiKey key = new MultiKey(timing.getAD_Client_ID(), tableName, dt.getC_DocType_ID(), timing.getEvalTime());
 			Set<MADBoilerPlateVar> list = s_cacheVars.get(key);
 			if (list == null)
@@ -125,11 +127,13 @@ public class LettersValidator implements ModelValidator
 		}
 	}
 
+	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
 		return null;
 	}
 
+	@Override
 	public String modelChange(PO po, int type) throws Exception
 	{
 		if (I_C_DunningRunEntry.Table_Name.equals(po.get_TableName())
@@ -141,6 +145,7 @@ public class LettersValidator implements ModelValidator
 		return null;
 	}
 
+	@Override
 	public String docValidate(PO po, int timing)
 	{
 		Set<MADBoilerPlateVar> vars = getVars(po, timing);
@@ -158,7 +163,7 @@ public class LettersValidator implements ModelValidator
 		//
 		return null;
 	}
-	
+
 	private static final Map<String, String> s_mapDocBaseTypeToTableName = new HashMap<String, String>(20);
 	static
 	{
@@ -197,7 +202,7 @@ public class LettersValidator implements ModelValidator
 	{
 		return s_mapDocBaseTypeToTableName.get(docBaseType);
 	}
-	
+
 	private static String getEvalTime(int timing)
 	{
 		if (TIMING_AFTER_PREPARE == timing)
@@ -219,7 +224,7 @@ public class LettersValidator implements ModelValidator
 		else
 			return null;
 	}
-	
+
 	private static Set<MADBoilerPlateVar> getVars(PO po, int timing)
 	{
 		int AD_Client_ID = Env.getAD_Client_ID(po.getCtx());
@@ -227,13 +232,13 @@ public class LettersValidator implements ModelValidator
 		int C_DocType_ID = getC_DocType_ID(po);
 		String evalTime = getEvalTime(timing);
 		MultiKey key = new MultiKey(AD_Client_ID, tableName, C_DocType_ID, evalTime);
-		
+
 		Set<MADBoilerPlateVar> vars = s_cacheVars.get(key);
 		if (vars == null)
 			vars = new TreeSet<MADBoilerPlateVar>();
 		return vars;
 	}
-	
+
 	private static int getC_DocType_ID(PO po)
 	{
 		int index = po.get_ColumnIndex("C_DocType_ID");
@@ -252,7 +257,7 @@ public class LettersValidator implements ModelValidator
 		}
 		return -1;
 	}
-	
+
 	private static void parseField(PO po, String columnName, Collection<MADBoilerPlateVar> vars)
 	{
 		final String text = po.get_ValueAsString(columnName);
@@ -290,16 +295,16 @@ public class LettersValidator implements ModelValidator
 			m.appendReplacement(sb, replacement);
 		}
 		m.appendTail(sb);
-		
+
 		final String textParsed = sb.toString();
 		po.set_ValueOfColumn(columnName, textParsed);
 	}
-	
+
 	private static void setDunningRunEntryNote(I_C_DunningRunEntry dre)
 	{
 		final Properties ctx = POWrapper.getCtx(dre);
 		final String trxName = POWrapper.getTrxName(dre);
-		
+
 		final I_C_DunningLevel dl = dre.getC_DunningLevel();
 		final MBPartner bp = MBPartner.get(ctx, dre.getC_BPartner_ID());
 		String adLanguage = bp.getAD_Language();
@@ -313,12 +318,12 @@ public class LettersValidator implements ModelValidator
 			text = dl.getNote();
 		}
 		final boolean isEmbeded = true;
-		
+
 		final Map<String, Object> attrs = new HashMap<String, Object>();
 		attrs.put(MADBoilerPlate.VAR_UserPO, POWrapper.getPO(dre));
 
 		final String textParsed = MADBoilerPlate.parseText(ctx, text, isEmbeded, attrs, trxName);
-		
+
 		dre.setNote(textParsed);
 	}
 }

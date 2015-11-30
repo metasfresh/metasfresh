@@ -1,19 +1,5 @@
 package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
 
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.logging.Level;
-
-import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.compiere.util.CLogger;
-
-import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
-import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
-import de.metas.materialtracking.IMaterialTrackingPPOrderDAO;
-import de.metas.materialtracking.model.I_PP_Order;
-
 /*
  * #%L
  * de.metas.materialtracking
@@ -36,10 +22,33 @@ import de.metas.materialtracking.model.I_PP_Order;
  * #L%
  */
 
-public class PP_Order_MaterialTracking_Handler extends AbstractQualityInspectionHandler
-{
-	private static transient CLogger logger = CLogger.getCLogger(PP_Order_MaterialTracking_Handler.class);
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
+import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+
+import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.model.I_PP_Order;
+import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
+
+/**
+ * Creates invoice candidates for {@link I_PP_Order}s that reference a {@link I_M_Material_Tracking}.<br>
+ * for this, it makes use of {@link PPOrder2InvoiceCandidatesProducer}
+ *
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
+public abstract class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateHandler
+{
 	private final PP_Order_MaterialTracking_HandlerDAO dao = new PP_Order_MaterialTracking_HandlerDAO();
 
 	@Override
@@ -49,9 +58,69 @@ public class PP_Order_MaterialTracking_Handler extends AbstractQualityInspection
 	}
 
 	@Override
+	public final boolean isCreateMissingCandidatesAutomatically()
+	{
+		return true;
+	}
+
+	@Override
 	public DocTimingType getAutomaticallyCreateMissingCandidatesDocTiming()
 	{
 		return DocTimingType.AFTER_CLOSE;
+	}
+
+	/**
+	 * @return <code>true</code> if the given model is invoicable according to {@link IQualityInspectionHandlerDAO#getInvoiceableOrderFilter()}.
+	 */
+	@Override
+	public final boolean isCreateMissingCandidatesAutomatically(final Object model)
+	{
+		return true;
+	}
+
+	private final PPOrder2InvoiceCandidatesProducer createInvoiceCandidatesProducer()
+	{
+		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = new PPOrder2InvoiceCandidatesProducer()
+				.setC_ILCandHandler(getHandlerRecord())
+				.setILCandHandlerInstance(this);
+
+		return invoiceCandidatesProducer;
+	}
+
+	/**
+	 * Creates <b>or updates</b> ICs for the given request.
+	 */
+	@Override
+	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
+	{
+		final I_PP_Order model = request.getModel(I_PP_Order.class);
+
+		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = createInvoiceCandidatesProducer();
+
+		final List<de.metas.materialtracking.model.I_C_Invoice_Candidate> invoiceCandidates =
+				invoiceCandidatesProducer.createInvoiceCandidates(model);
+
+		final IIsInvoiceCandidateAware isInvoiceCandidateAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IIsInvoiceCandidateAware.class);
+		if (isInvoiceCandidateAware != null)
+		{
+			// we flag the record, no matter if we actually created an IC or not. This is fine for this handler
+			isInvoiceCandidateAware.setIsInvoiceCandidate(true);
+			InterfaceWrapperHelper.save(isInvoiceCandidateAware);
+		}
+
+		return InvoiceCandidateGenerateResult.of(this, invoiceCandidates);
+	}
+
+	@Override
+	public void invalidateCandidatesFor(final Object model)
+	{
+		Check.errorIf(true, "Shall not be called, because we have getOnInvalidateForModelAction()=RECREATE_ASYNC; model: {0}", model);
+	}
+
+	@Override
+	public boolean isUserInChargeUserEditable()
+	{
+		return true;
 	}
 
 	/**
@@ -66,22 +135,69 @@ public class PP_Order_MaterialTracking_Handler extends AbstractQualityInspection
 		return dao.retrievePPOrdersWithMissingICs(ctx, limit, trxName);
 	}
 
+	/**
+	 * Does nothing.
+	 */
 	@Override
-	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
+	public void setOrderedData(final I_C_Invoice_Candidate ic)
 	{
-		final I_PP_Order ppOrder = request.getModel(I_PP_Order.class);
+		// nothing to do; the value won't change
+	}
 
-		final IMaterialTrackingPPOrderDAO materialTrackingPPOrderDAO = Services.get(IMaterialTrackingPPOrderDAO.class);
-		final int deleted = materialTrackingPPOrderDAO.deleteRelatedUnprocessedICs(ppOrder);
-		logger.log(Level.INFO, "Deleted {0} reexisting C_Invoice_Candidates for {1}", deleted, ppOrder);
-
-		return super.createCandidatesFor(request);
+	/**
+	 * <ul>
+	 * <li>QtyDelivered := QtyOrdered
+	 * <li>DeliveryDate := DateOrdered
+	 * <li>M_InOut_ID: untouched
+	 * </ul>
+	 *
+	 * @see IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate)
+	 */
+	@Override
+	public void setDeliveredData(final I_C_Invoice_Candidate ic)
+	{
+		ic.setQtyDelivered(ic.getQtyOrdered());
+		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 
 	@Override
-	boolean isInvoiceable(final Object model)
+	public void setPriceActual(final I_C_Invoice_Candidate ic)
+	{
+		// nothing to do; the value won't change
+	}
+
+	@Override
+	public void setBPartnerData(final I_C_Invoice_Candidate ic)
+	{
+		// nothing to do; the value won't change
+	}
+
+	@Override
+	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
+	{
+		// nothing to do; the value won't change
+	}
+
+	@Override
+	public void setPriceEntered(final I_C_Invoice_Candidate ic)
+	{
+		ic.setPriceEntered(ic.getPriceActual());
+	}
+
+	/**
+	 *
+	 * @returns {@link OnInvalidateForModelAction#RECREATE_ASYNC}.
+	 */
+	@Override
+	public final OnInvalidateForModelAction getOnInvalidateForModelAction()
+	{
+		return OnInvalidateForModelAction.RECREATE_ASYNC;
+	}
+
+	/* package */boolean isInvoiceable(final Object model)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(model, I_PP_Order.class);
 		return dao.isInvoiceable(ppOrder);
 	}
+
 }

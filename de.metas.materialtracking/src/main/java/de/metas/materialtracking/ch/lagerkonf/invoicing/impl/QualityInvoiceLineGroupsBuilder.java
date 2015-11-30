@@ -941,7 +941,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	{
 		if (!qualityBasedInvoicingBL.isLastInspection(_qiOrder))
 		{
-			return false;
+			return false; // for an akonto (downpayment) we don't create "auslagerungen"
 		}
 
 		final ILagerKonfQualityBasedConfig config = getQualityBasedConfig();

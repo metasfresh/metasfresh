@@ -10,12 +10,12 @@ package org.compiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,7 +27,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.collections.keyvalue.MultiKey;
+import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 
@@ -39,15 +39,15 @@ import org.compiere.util.Env;
 public class MUserDefWin extends X_AD_UserDef_Win
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 4180714433818623955L;
-	
+
 	/** Static Cache : Window,Role,User -> array of window customizations */
 	private static final CCache<MultiKey, MUserDefWin[]> s_cache = new CCache<MultiKey, MUserDefWin[]>(Table_Name, 20, 0);
 	/** No Windows (i.e. empty array) */
 	private static final MUserDefWin[] NoWindows = new MUserDefWin[]{};
-	
+
 	/**
 	 * Get existing User Defined Windows for Role or User
 	 * @param ctx context
@@ -64,7 +64,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 		final int AD_Org_ID = Env.getAD_Org_ID(ctx);
 		final int AD_User_ID = Env.getAD_User_ID(ctx);
 		final int AD_Role_ID= Env.getAD_Role_ID(ctx);
-		
+
 		// Try from cache
 		final MultiKey key = new MultiKey(AD_Window_ID, AD_Client_ID, AD_Org_ID, AD_User_ID, AD_Role_ID);
 		MUserDefWin[] arr = s_cache.get(key);
@@ -72,7 +72,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 		{
 			return arr;
 		}
-		
+
 		// Load from DB
 		final String whereClause = COLUMNNAME_AD_Window_ID+"=?"
 							+" AND (AD_Client_ID=? OR AD_Client_ID=0)"
@@ -110,9 +110,9 @@ public class MUserDefWin extends X_AD_UserDef_Win
 			vo.IsReadWrite = (uw.isReadOnly() ? "N" : "Y");
 		}
 	}
-	
+
 	/**
-	 * Apply customizations to given GridTabVO 
+	 * Apply customizations to given GridTabVO
 	 * @param vo
 	 * @return true if tab is displayed, false if tab is hidden
 	 */
@@ -161,7 +161,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 	{
 		super(ctx, rs, trxName);
 	}
-	
+
 	/**
 	 * @param reload if true, do not use cache
 	 * @return tab customizations for this window
@@ -183,7 +183,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 		return m_tabs;
 	}
 	private MUserDefTab[] m_tabs = null;
-	
+
 	/**
 	 * @param AD_Tab_ID
 	 * @return tab customization of given AD_Tab_ID or null if not found
@@ -203,7 +203,8 @@ public class MUserDefWin extends X_AD_UserDef_Win
 		}
 		return null;
 	}
-	
+
+	@Override
 	public String toString()
 	{
 		return getClass().getName()+"[ID="+get_ID()

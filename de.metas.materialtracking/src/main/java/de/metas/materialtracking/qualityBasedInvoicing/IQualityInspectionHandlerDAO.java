@@ -33,7 +33,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /**
  *
- * Retrieve different records that are related to creating/updating invoice candidates. Used by {@link de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.AbstractQualityInspectionHandler} and
+ * Retrieve different records that are related to creating/updating invoice candidates. Used by {@link de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.PP_Order_MaterialTracking_Handler} and
  * {@link de.metas.materialtracking.model.validator.C_Invoice_Candidate}.
  *
  */

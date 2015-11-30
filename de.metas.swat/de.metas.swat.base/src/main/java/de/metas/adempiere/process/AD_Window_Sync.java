@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.process;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,7 @@ import java.util.Map;
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.apache.commons.collections.keyvalue.MultiKey;
+import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.Lookup;
@@ -50,7 +50,7 @@ import org.compiere.util.DB;
 
 /**
  * @author tsa
- * 
+ *
  */
 public class AD_Window_Sync extends SvrProcess
 {
@@ -60,7 +60,7 @@ public class AD_Window_Sync extends SvrProcess
 
 //	/** Update ignore list: TableName -> list of ColumnName */
 //	private Map<String, List<String>> ignoreList = new HashMap<String, List<String>>();
-	
+
 	private static class IdPair
 	{
 		@SuppressWarnings("unused")
@@ -68,7 +68,7 @@ public class AD_Window_Sync extends SvrProcess
 		@SuppressWarnings("unused")
 		public int idOld = -1;
 		public int idNew = -1;
-		
+
 		public IdPair(String tableName, int idOld, int idNew)
 		{
 			super();
@@ -77,7 +77,7 @@ public class AD_Window_Sync extends SvrProcess
 			this.idNew = idNew;
 		}
 	}
-	
+
 	private static class IdPairMap
 	{
 		private Map<MultiKey, IdPair> map = new HashMap<MultiKey, IdPair>();
@@ -99,10 +99,10 @@ public class AD_Window_Sync extends SvrProcess
 		public int getNewId(String tableName, int idOld)
 		{
 			IdPair pair = getIdPair(tableName, idOld);
-			return pair == null ? -1 : pair.idNew; 
+			return pair == null ? -1 : pair.idNew;
 		}
 	}
-	
+
 	private final IdPairMap idsMap = new IdPairMap();
 	/** Ignore columns: TableName -> list of ColumnNames */
 	private final Map<String, List<String>> ignoreColumns = new HashMap<String, List<String>>();
@@ -136,11 +136,11 @@ public class AD_Window_Sync extends SvrProcess
 		{
 			throw new AdempiereException("Window from and to are the same. Nothing to do");
 		}
-		
+
 		addIgnoreColumn(I_AD_Tab.Table_Name, I_AD_Tab.COLUMNNAME_WhereClause);
 
 		syncRecords(window, null, windowTo, true);
-		
+
 		if(p_IsTest)
 		{
 			addLog("Doing again to see if we have more differences:");
@@ -165,7 +165,7 @@ public class AD_Window_Sync extends SvrProcess
 			throw new AdempiereException("@NotFound@ @AD_Window_ID@: " + AD_Window_ID);
 		return window;
 	}
-	
+
 	private void addIgnoreColumn(String tableName, String columnName)
 	{
 		List<String> columns = ignoreColumns.get(tableName);
@@ -184,7 +184,7 @@ public class AD_Window_Sync extends SvrProcess
 			return false;
 		return columns.contains(columnName);
 	}
-	
+
 	private PO[] getChildren(PO parent)
 	{
 		if (parent instanceof MWindow)
@@ -308,7 +308,7 @@ public class AD_Window_Sync extends SvrProcess
 			T po2 = arr[i];
 			if (po2 == null)
 				continue;
-			
+
 			if (isSimilar(po, po2))
 				return i;
 		}
@@ -328,7 +328,7 @@ public class AD_Window_Sync extends SvrProcess
 		}
 		return false;
 	}
-	
+
 	private void copyValues(PO from, PO to)
 	{
 		PO.copyValues(from, to);
@@ -344,11 +344,11 @@ public class AD_Window_Sync extends SvrProcess
 				to.set_ValueNoCheck(columnName, valueOld);
 				continue;
 			}
-			
+
 			String baseTableName = getColumnBaseTableName(poInfo, i);
 			if (baseTableName == null)
 				continue;
-			
+
 			int idOld = to.get_ValueAsInt(i);
 			if (idsMap.hasNewId(baseTableName, idOld))
 			{
@@ -357,7 +357,7 @@ public class AD_Window_Sync extends SvrProcess
 			}
 		}
 	}
-	
+
 	private String getColumnBaseTableName(POInfo poInfo, int index)
 	{
 		Lookup lookup = poInfo.getColumnLookup(getCtx(), index);
@@ -434,7 +434,7 @@ public class AD_Window_Sync extends SvrProcess
 		po.deleteEx(false);
 		addLog(msg);
 	}
-	
+
 	private String getPOSummary(PO po)
 	{
 		if (po == null)
