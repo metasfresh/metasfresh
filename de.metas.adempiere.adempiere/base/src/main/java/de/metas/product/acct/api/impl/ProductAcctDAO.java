@@ -22,7 +22,6 @@ package de.metas.product.acct.api.impl;
  * #L%
  */
 
-
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.IContextAware;
@@ -48,11 +47,18 @@ public class ProductAcctDAO implements IProductAcctDAO
 	{
 		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(contextProvider.getCtx(), org.getAD_Client_ID(), org.getAD_Org_ID());
 
+		if (acctSchema == null)
+		{
+			return null;
+		}
 		final I_M_Product_Acct acctInfo =
 				Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_Acct.class, contextProvider)
+						.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchema.getC_AcctSchema_ID())
+						.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+						.addOnlyActiveRecordsFilter()
 						.create()
 						.firstOnly(I_M_Product_Acct.class);
-		
+
 		if (acctInfo == null)
 		{
 			return null;
