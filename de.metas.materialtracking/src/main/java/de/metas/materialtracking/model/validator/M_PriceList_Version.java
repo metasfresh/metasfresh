@@ -46,6 +46,9 @@ import de.metas.materialtracking.model.I_PP_Order;
 public class M_PriceList_Version
 {
 	/**
+	 * Retrieves the <code>C_Invoice_Candidate</code>s that belong to the given <code>plv</code>, deletes their invoice candidates and calls
+	 * {@link IInvoiceCandidateHandlerBL#invalidateCandidatesFor(Object)} which will cause them to be recreated.
+	 *
 	 * Notes
 	 * <ul>
 	 * <li><code>if plv.isProcessed==true</code>, then the PLV just became relevant for pricing. therefore so the previous PLV just "lost" a number of ICs it was previously in charge of.
@@ -105,7 +108,7 @@ public class M_PriceList_Version
 			InterfaceWrapperHelper.save(ppOrder);
 
 			// need to delete them, because if a PLV was un-processed, then its IC would not be deleted
-			materialTrackingPPOrderDAO.deleteRelatedICs(ppOrder);
+			materialTrackingPPOrderDAO.deleteRelatedUnprocessedICs(ppOrder);
 			invoiceCandidateHandlerBL.invalidateCandidatesFor(ppOrder);
 		}
 	}

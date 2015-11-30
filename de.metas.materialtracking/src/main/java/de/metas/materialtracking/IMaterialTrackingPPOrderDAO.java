@@ -37,6 +37,6 @@ public interface IMaterialTrackingPPOrderDAO extends ISingletonService
 	 */
 	int deleteInvoiceDetails(I_PP_Order ppOrder);
 
-	int deleteRelatedICs(I_PP_Order ppOrder);
+	int deleteRelatedUnprocessedICs(I_PP_Order ppOrder);
 
 }

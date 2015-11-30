@@ -40,6 +40,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -155,6 +156,19 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 			return Collections.emptyList();
 		}
 
+		final boolean isDownPayment = !qiOrder.isQualityInspection() || qualityBasedInvoicingBL.isLastInspection(qiOrder);
+		if (isDownPayment)
+		{
+			final List<de.metas.invoicecandidate.model.I_C_Invoice_Candidate> downPaymentICs = Services.get(IInvoiceCandDAO.class).retrieveReferencing(qiOrder.getPP_Order());
+			if (!downPaymentICs.isEmpty())
+			{
+				final String msg = "Skip invoice candidates creation because {0} is a downpayment quality inspection and there are already C_Invoice_Candidates such as {1} for it";
+				loggable.addLog(msg, model, downPaymentICs.get(0));
+				logger.log(Level.WARNING, msg, model, downPaymentICs.get(0));
+				return Collections.emptyList();
+			}
+		}
+
 		final I_M_Material_Tracking materialTracking = materialTrackingDocuments.getM_Material_Tracking();
 		//
 		// Make sure all original invoice candidates are valid.
@@ -225,7 +239,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 
 			// task: 07845 decide which doctype to use
 			final int docTypeInvoice_ID;
-			if (!qiOrder.isQualityInspection() || qualityBasedInvoicingBL.isLastInspection(qiOrder))
+			if (isDownPayment)
 			{
 				// task 08848: also for regular PP_Orders (Auslagerung), we use the final-settlement doctype.
 				// That's because in the downpayment (1st inspection), we don't yet invoice any regular PP_Orders
@@ -258,7 +272,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 
 		final IQualityInspectionOrder qiOrder = materialTrackingDocuments.getQualityInspectionOrderOrNull();
 		// we can be sure it's not null because if it was then this method would not be called.
-		Check.assumeNotNull(qiOrder, "qiOrder of materialTrackingDocuments {0} is not null",materialTrackingDocuments);
+		Check.assumeNotNull(qiOrder, "qiOrder of materialTrackingDocuments {0} is not null", materialTrackingDocuments);
 
 		final IQualityInvoiceLineGroupsBuilder invoiceLineGroupsBuilder = qualityBasedSpiProviderService
 				.getQualityInvoiceLineGroupsBuilderProvider()

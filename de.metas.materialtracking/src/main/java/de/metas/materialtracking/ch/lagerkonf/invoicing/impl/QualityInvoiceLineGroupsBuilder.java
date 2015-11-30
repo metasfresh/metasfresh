@@ -254,7 +254,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// 08848: for now we create a PreceedingRegularOrder record for all PP_Orders
 		if (
 		// task 09117: we also want/need the regular orders if there is just one invoicing
-		// config.getOverallNumberOfInvoicings() > 1 && 08092: we only deal with regular orders if it is the last of > 1 invoicings */
+		// task 08092: we only deal with regular orders if it is the last of > 1 invoicings
 		qualityBasedInvoicingBL.isLastInspection(_qiOrder))
 		{
 			createQualityInvoiceLineGroups_RegularOrders();
@@ -325,7 +325,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		//
 		// TODO: Transport Units(TU) received from vendor
-		// i.e. Gebinde
 		{
 		}
 	}
@@ -334,7 +333,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	{
 		final ILagerKonfQualityBasedConfig config = getQualityBasedConfig();
 
-		final List<IQualityInspectionOrder> allRegularOrders = _materialTrackingDocuments.getQualityInspectionOrdersForPLV(getPricingContext().getM_PriceList_Version());
+		final List<IQualityInspectionOrder> allProductionOrders = _materialTrackingDocuments.getQualityInspectionOrdersForPLV(getPricingContext().getM_PriceList_Version());
 
 		final IQualityInspectionLinesCollection qualityInspectionLines = getQualityInspectionLinesCollection();
 		final IQualityInspectionLine producedWithoutByProducts = qualityInspectionLines.getByType(QualityInspectionLineType.ProducedTotalWithoutByProducts);
@@ -349,19 +348,24 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		//
 		// iterate allRegularOrders and create and add one QualityInvoiceLineGroup per date
 		final Map<Timestamp, QualityInvoiceLineGroup> date2InvoiceLineGroup = new HashMap<Timestamp, QualityInvoiceLineGroup>();
-		for (final IQualityInspectionOrder regularOrder : allRegularOrders)
+		for (final IQualityInspectionOrder productionOrder : allProductionOrders)
 		{
-			final Timestamp dateOfProduction = TimeUtil.getDay(regularOrder.getDateOfProduction());
+			final Timestamp dateOfProduction = TimeUtil.getDay(productionOrder.getDateOfProduction());
 
 			if (date2InvoiceLineGroup.containsKey(dateOfProduction))
 			{
 				continue; // already created one for this date
 			}
+
+			final boolean displayRegularOrderData = isInvoiceRegularOrderForDate(dateOfProduction);
+
 			final QualityInvoiceLineGroup qualityInvoiceLineGroup = new QualityInvoiceLineGroup();
 			qualityInvoiceLineGroup.setQualityInvoiceLineGroupType(QualityInvoiceLineGroupType.PreceeedingRegularOrderDeduction);
 
 			final QualityInvoiceLine invoiceableLine = new QualityInvoiceLine();
 			qualityInvoiceLineGroup.setInvoiceableLine(invoiceableLine);
+
+			invoiceableLine.setDisplayed(displayRegularOrderData);
 
 			// initial HUInfo
 			final IHandlingUnitsInfoWritableQty huInfo = handlingUnitsInfoFactory.createHUInfoWritableQty(overallRawHUInfo);
@@ -387,14 +391,11 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			// Pricing
 			final IPricingContext pricingCtx = createPricingContext(invoiceableLine);
 			BigDecimal priceActual = config.getQualityAdjustmentForDateOrNull(dateOfProduction);
-			final boolean displayed = priceActual != null;
-
 			if (priceActual == null)
 			{
 				// this means that for this config and dateOfProduction, there is no QualityAdjustment
 				// we set the price to be zero, and we'll create an invoice candidate, but we won't see it on the invoice jasper
 				priceActual = BigDecimal.ZERO;
-				invoiceableLine.setDisplayed(false); // we'll set the override line to be not displayed and don't want anyone to fall back to this line!
 			}
 
 			final IPricingResult pricingResult = createPricingResult(pricingCtx, invoiceableLine, priceActual, invoiceableLine.getC_UOM());
@@ -402,7 +403,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			// the detail that shall override the invoiceable line's displayed infos
 			final QualityInvoiceLine detail = createDetailForSingleRegularOrder(overallRawUOM, huInfo, invoiceableLine.getQty(), labelToUse);
-			detail.setDisplayed(displayed);
+			detail.setDisplayed(displayRegularOrderData);
 
 			qualityInvoiceLineGroup.setInvoiceableLineOverride(detail);
 
@@ -417,7 +418,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		//
 		// now iterate allRegularOrders again, create one non-displayed detail for each PP_Order and aggregate them on the per-date-groups
-		for (final IQualityInspectionOrder regularOrder : allRegularOrders)
+		for (final IQualityInspectionOrder regularOrder : allProductionOrders)
 		{
 			final Timestamp dateOfProduction = TimeUtil.getDay(regularOrder.getDateOfProduction());
 
@@ -452,7 +453,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 							.getInvoiceableLine()
 							.getProductName());
 
-			ppOrderDetailLine.setDisplayed(false); // it's not displayed, we just add it so that we can do some QA later on
+			ppOrderDetailLine.setDisplayed(false); // it's never displayed; we just add it so that we can do some QA later on
 			invoiceLineGroup.addDetailBefore(ppOrderDetailLine);
 
 			//
@@ -503,7 +504,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final int missingQtyTU = overallRawHUInfo.getQtyTU() - qtyTUSum;
 		final Timestamp dateForMissingQtyTUs = TimeUtil.addDays(config.getValidToDate(), 1);
 		if (missingQtyTU > 0
-				&& config.getQualityAdjustmentForDateOrNull(dateForMissingQtyTUs) != null)
+				&& isInvoiceRegularOrderForDate(dateForMissingQtyTUs))
 		{
 			final QualityInvoiceLineGroup invoiceLineGroup = new QualityInvoiceLineGroup();
 			invoiceLineGroup.setQualityInvoiceLineGroupType(QualityInvoiceLineGroupType.PreceeedingRegularOrderDeduction);
@@ -938,6 +939,11 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	 */
 	private boolean isInvoiceRegularOrderForDate(final Timestamp dateOfProduction)
 	{
+		if (!qualityBasedInvoicingBL.isLastInspection(_qiOrder))
+		{
+			return false;
+		}
+
 		final ILagerKonfQualityBasedConfig config = getQualityBasedConfig();
 
 		final BigDecimal priceActual = config.getQualityAdjustmentForDateOrNull(dateOfProduction);

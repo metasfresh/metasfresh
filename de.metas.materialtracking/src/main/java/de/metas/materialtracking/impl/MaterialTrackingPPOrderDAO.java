@@ -47,13 +47,12 @@ public class MaterialTrackingPPOrderDAO implements IMaterialTrackingPPOrderDAO
 	}
 
 	@Override
-	public int deleteRelatedICs(final I_PP_Order ppOrder)
+	public int deleteRelatedUnprocessedICs(final I_PP_Order ppOrder)
 	{
-		// first delete them all
 		// there might be many ICs with the regular PP_Order product but for different qualityInvoiceLineGroups
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+		// load the IC that whose C_Invoice_Detail references ppOrder.
 		// we expect just one, but want to be lenient if there are > 1.
 		final List<de.metas.materialtracking.model.I_C_Invoice_Candidate> ppOrderICs =
 				queryBL.createQueryBuilder(I_C_Invoice_Detail.class, ppOrder)
@@ -72,10 +71,12 @@ public class MaterialTrackingPPOrderDAO implements IMaterialTrackingPPOrderDAO
 		int result = 0;
 		for (final de.metas.materialtracking.model.I_C_Invoice_Candidate ppOrderIC : ppOrderICs)
 		{
+			// use ppOrderIC as a representative to delete all unprocessed ICs with the same PLV and M_Material_Tracking
 			result += queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ppOrder)
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, Services.get(IADTableDAO.class).retrieveTableId(I_PP_Order.Table_Name))
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, ppOrderIC.getRecord_ID())
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_PriceList_Version_ID, ppOrderIC.getM_PriceList_Version_ID())
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
 					.addEqualsFilter(de.metas.materialtracking.model.I_C_Invoice_Candidate.COLUMNNAME_M_Material_Tracking_ID, ppOrderIC.getM_Material_Tracking_ID())
 					.create()
 					.delete();

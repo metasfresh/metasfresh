@@ -36,6 +36,7 @@ import java.util.TreeMap;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
@@ -106,7 +107,7 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 
 	private List<IQualityInspectionOrder> getAllProductionOrders()
 	{
-		if (_allProductionOrders  == null)
+		if (_allProductionOrders == null)
 		{
 			_allProductionOrders = Collections.unmodifiableList(retrieveProductionOrders());
 		}
@@ -193,9 +194,10 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 	@Override
 	public List<IQualityInspectionOrder> getQualityInspectionOrdersForPLV(final I_M_PriceList_Version plv)
 	{
+		Check.assumeNotNull(plv, "Param plv not null");
 		if (plvId2qiOrders == null)
 		{
-			Check.errorIf(pricingSystem == null, "pricingSystem has to be set in order to get qualityInspectionOrders for a plv; this: {0}", this);
+			final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.create(plv.getM_PriceList(), I_M_PriceList.class).getM_PricingSystem();
 			loadPlvRelatedData(pricingSystem);
 		}
 		return plvId2qiOrders.get(plv.getM_PriceList_Version_ID());
@@ -204,9 +206,10 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 	@Override
 	public IVendorReceipt<I_M_InOutLine> getVendorReceiptForPLV(final I_M_PriceList_Version plv)
 	{
+		Check.assumeNotNull(plv, "Param plv not null");
 		if (plvId2vendorReceipt == null)
 		{
-			Check.errorIf(pricingSystem == null, "pricingSystem has to be set in order to get a vendorReceipt for a plv; this: {0}", this);
+			final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.create(plv.getM_PriceList(), I_M_PriceList.class).getM_PricingSystem();
 			loadPlvRelatedData(pricingSystem);
 		}
 		return plvId2vendorReceipt.get(plv.getM_PriceList_Version_ID());
@@ -374,6 +377,11 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 						.setModel(model)
 						.setMaterialTracking(materialTracking)
 						.build());
+	}
+
+	public I_M_PricingSystem getPricingSystem()
+	{
+		return this.pricingSystem;
 	}
 
 	@Override

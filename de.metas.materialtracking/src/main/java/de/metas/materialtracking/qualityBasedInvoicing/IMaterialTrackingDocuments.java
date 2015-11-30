@@ -22,7 +22,6 @@ package de.metas.materialtracking.qualityBasedInvoicing;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.compiere.model.I_M_PriceList_Version;
@@ -67,6 +66,7 @@ public interface IMaterialTrackingDocuments
 	void linkModelToMaterialTracking(Object model);
 
 	/**
+	 * Iterate all PP_Orders and find out to which PLV they belong, according to their inout's <code>MovementDate</code>.
 	 *
 	 * @param pricingSystem
 	 */
