@@ -176,8 +176,7 @@ public abstract class AbstractESRImportDAO implements IESRImportDAO
 	public List<I_ESR_ImportLine> fetchLinesForBankStatementLineRef(final I_C_BankStatementLine_Ref lineRef)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_ESR_ImportLine.class)
-				.setContext(lineRef)
+				.createQueryBuilder(I_ESR_ImportLine.class, lineRef)
 				.addEqualsFilter(I_ESR_ImportLine.COLUMN_C_BankStatementLine_Ref_ID, lineRef.getC_BankStatementLine_Ref_ID())
 				.create()
 				.list(I_ESR_ImportLine.class);

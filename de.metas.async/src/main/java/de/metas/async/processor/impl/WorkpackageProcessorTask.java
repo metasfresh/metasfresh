@@ -10,12 +10,12 @@ package de.metas.async.processor.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -100,7 +100,7 @@ import de.metas.lock.exceptions.LockFailedException;
 
 	/**
 	 * Creates the context to be used in this processing thread.
-	 * 
+	 *
 	 * @return processing context
 	 */
 	private final Properties createProcessingCtx()
@@ -117,8 +117,8 @@ import de.metas.lock.exceptions.LockFailedException;
 		final ILoggable loggable = Services.get(IWorkPackageBL.class).createLoggable(workPackage);
 
 		boolean finallyReleaseElementLockIfAny = true; // task 08999: only release the lock if there is no skip request.
-		
-		try (final IAutoCloseable contextRestorer = Env.switchContext(processingCtx); 
+
+		try (final IAutoCloseable contextRestorer = Env.switchContext(processingCtx);
 				final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(loggable))
 		{
 			final IMutable<Result> resultRef = new Mutable<>(null);
@@ -203,7 +203,7 @@ import de.metas.lock.exceptions.LockFailedException;
 
 	/**
 	 * Prepare and execute {@link IWorkpackageProcessor#processWorkPackage(I_C_Queue_WorkPackage, String)} now.
-	 * 
+	 *
 	 * @param trxName transaction name to be used
 	 * @return result
 	 */
@@ -223,8 +223,7 @@ import de.metas.lock.exceptions.LockFailedException;
 		// get the WPs that are currently locked for async-processing, and check if one of them shall cause *our* workPackage to be postponed.
 		{
 			final IQueryBuilder<I_C_Queue_WorkPackage> queryBuilder = Services.get(ILockManager.class)
-					.getLockedRecordsQueryBuilder(I_C_Queue_WorkPackage.class)
-					.setContext(workPackage)
+					.getLockedRecordsQueryBuilder(I_C_Queue_WorkPackage.class, workPackage)
 			// do not exclude the current WP; see the ILatchstragegy javadoc for background info.
 			// .addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMN_C_Queue_WorkPackage_ID, workPackage.getC_Queue_WorkPackage_ID())
 			;
@@ -241,9 +240,9 @@ import de.metas.lock.exceptions.LockFailedException;
 
 	/**
 	 * Method invoked after workpackage is processed. The method is invoked in any case (success, skip, error).
-	 * 
+	 *
 	 * NOTE: this method is protected to be easily to unit test (i.e. decouple queueProcessor)
-	 * 
+	 *
 	 * @param releaseElementLockIfAny if <code>true</code> (which is usually the case) and there is a lock on the work package elements, that lock is released in this method.
 	 */
 	protected void afterWorkpackageProcessed(final boolean releaseElementLockIfAny)
@@ -280,7 +279,7 @@ import de.metas.lock.exceptions.LockFailedException;
 
 	/**
 	 * Mark {@link I_C_Queue_WorkPackage} as started to process.
-	 * 
+	 *
 	 * @param workPackage
 	 */
 	private void markStartProcessing(final I_C_Queue_WorkPackage workPackage)
@@ -291,7 +290,7 @@ import de.metas.lock.exceptions.LockFailedException;
 
 	/**
 	 * Sets workpackage's LastEndTime and LastDurationMillis.
-	 * 
+	 *
 	 * @param workPackage
 	 */
 	private void setLastEndTime(final I_C_Queue_WorkPackage workPackage)
@@ -314,7 +313,7 @@ import de.metas.lock.exceptions.LockFailedException;
 
 	/**
 	 * Unlock and mark {@link I_C_Queue_WorkPackage} as processed
-	 * 
+	 *
 	 * @param workPackage
 	 */
 	private void markProcessed(final I_C_Queue_WorkPackage workPackage)
@@ -336,7 +335,7 @@ import de.metas.lock.exceptions.LockFailedException;
 
 	/**
 	 * Sets the current workpagage's skipped-at timestamp.
-	 * 
+	 *
 	 * @param workPackage
 	 */
 	private void markSkipped(final I_C_Queue_WorkPackage workPackage, final IWorkpackageSkipRequest skipRequest)
@@ -392,7 +391,7 @@ import de.metas.lock.exceptions.LockFailedException;
 
 	/**
 	 * Extracts the {@link IWorkpackageSkipRequest} from given exception
-	 * 
+	 *
 	 * @param ex
 	 * @return {@link IWorkpackageSkipRequest} or null
 	 */

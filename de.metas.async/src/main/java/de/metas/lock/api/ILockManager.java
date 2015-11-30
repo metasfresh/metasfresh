@@ -10,12 +10,12 @@ package de.metas.lock.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,7 +31,7 @@ import de.metas.lock.exceptions.LockFailedException;
 
 /**
  * Lock manager - this is the starting point for manipulating the locks
- * 
+ *
  * @author tsa
  *
  */
@@ -44,7 +44,7 @@ public interface ILockManager extends ISingletonService
 	boolean isLocked(Class<?> modelClass, int recordId);
 
 	/**
-	 * 
+	 *
 	 * @param modelClass
 	 * @param recordId
 	 * @param lockedBy lock or null
@@ -57,7 +57,7 @@ public interface ILockManager extends ISingletonService
 
 	/**
 	 * Tries to lock given persistent model
-	 * 
+	 *
 	 * @param model
 	 * @return true if locked, false if the record was already locked
 	 */
@@ -65,7 +65,7 @@ public interface ILockManager extends ISingletonService
 
 	/**
 	 * Tries to lock given persistent model
-	 * 
+	 *
 	 * @param adTableId
 	 * @param recordId
 	 * @return true if locked, false if the record was already locked
@@ -77,7 +77,7 @@ public interface ILockManager extends ISingletonService
 
 	/**
 	 * Tries to unlock given persistent model
-	 * 
+	 *
 	 * @param model
 	 * @return true if unlocked
 	 */
@@ -88,22 +88,22 @@ public interface ILockManager extends ISingletonService
 
 	/**
 	 * Retrieves next model from query and locks it (using {@link LockOwner#NONE}.
-	 * 
+	 *
 	 * @return retrieved record (already locked)
 	 */
 	<T> T retrieveAndLock(IQuery<T> query, Class<T> clazz);
 
 	/**
 	 * Builds a SQL where clause to be used in other queries to filter the results.
-	 * 
+	 *
 	 * For example, for table name 'MyTable' and join column 'MyTable.MyTable_ID', this method could return:
-	 * 
+	 *
 	 * <pre>
 	 * NOT EXISTS ("SELECT 1 FROM LockTable zz WHERE zz.AD_Table_ID=12345 AND zz.Record_ID=MyTable.MyTable_ID
 	 * </pre>
-	 * 
+	 *
 	 * but this is dependent on implementation.
-	 * 
+	 *
 	 * @param tableName
 	 * @param joinColumnName fully qualified record id column name
 	 * @return SQL where clause
@@ -112,7 +112,7 @@ public interface ILockManager extends ISingletonService
 
 	/**
 	 * Builds a SQL where clause used to filter records locked by a given {@link ILock}. Also see {@link #getNotLockedWhereClause(String, String)} for information.
-	 * 
+	 *
 	 * @param modelClass
 	 * @param joinColumnNameFQ
 	 * @param lock may <b>not</b> be <code>null</code>
@@ -122,7 +122,7 @@ public interface ILockManager extends ISingletonService
 
 	/**
 	 * Gets existing lock for given owner name
-	 * 
+	 *
 	 * @param lockOwner
 	 * @return existing lock
 	 * @throws LockFailedException in case lock does not exist
@@ -133,9 +133,10 @@ public interface ILockManager extends ISingletonService
 	 * Create and return a query builder that allows to retrieve all records of the given <code>modelClass</code> which are currently locked.
 	 * <p>
 	 * Note that the query builder does not specify any ordering.
-	 * 
+	 *
 	 * @param modelClass
+	 * @param contextProvider
 	 * @return
 	 */
-	<T> IQueryBuilder<T> getLockedRecordsQueryBuilder(Class<T> modelClass);
+	<T> IQueryBuilder<T> getLockedRecordsQueryBuilder(Class<T> modelClass, Object contextProvider);
 }

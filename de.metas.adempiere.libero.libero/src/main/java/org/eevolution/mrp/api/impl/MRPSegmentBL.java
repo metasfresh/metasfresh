@@ -210,8 +210,7 @@ public class MRPSegmentBL implements IMRPSegmentBL
 		{
 			final IQueryBL queryBL = Services.get(IQueryBL.class);
 			final List<I_M_Warehouse> warehousesForMRPRecords = queryBL
-					.createQueryBuilder(I_PP_MRP.class)
-					.setContext(ctx, ITrx.TRXNAME_None)
+					.createQueryBuilder(I_PP_MRP.class, ctx, ITrx.TRXNAME_None)
 					// Only PP_MRP records for our segment
 					.addEqualsFilter(I_PP_MRP.COLUMN_AD_Client_ID, mrpSegment.getAD_Client_ID())
 					.addEqualsFilter(I_PP_MRP.COLUMN_AD_Org_ID, mrpSegment.getAD_Org_ID())

@@ -87,8 +87,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 	@Override
 	protected final List<I_M_HU_Item> retrieveItems(final IContextAware ctx, final I_M_HU hu)
 	{
-		final IQueryBuilder<I_M_HU_Item> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Item.class)
-				.setContext(ctx)
+		final IQueryBuilder<I_M_HU_Item> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Item.class, ctx)
 				.addEqualsFilter(I_M_HU_Item.COLUMN_M_HU_ID, hu.getM_HU_ID())
 				.addOnlyActiveRecordsFilter();
 

@@ -38,8 +38,7 @@ public class EDIInvoiceCandDAO implements IEDIInvoiceCandDAO
 		// Services
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(bPartner)
+		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, bPartner)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, bPartner.getC_BPartner_ID())
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsEdiRecipient, !isEDIRecipient)

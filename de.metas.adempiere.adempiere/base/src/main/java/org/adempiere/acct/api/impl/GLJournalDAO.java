@@ -38,8 +38,7 @@ public class GLJournalDAO implements IGLJournalDAO
 	@Override
 	public List<I_GL_Journal> retrieveJournalsForBatch(final I_GL_JournalBatch batch)
 	{
-		final List<I_GL_Journal> journals = Services.get(IQueryBL.class).createQueryBuilder(I_GL_Journal.class)
-				.setContext(batch)
+		final List<I_GL_Journal> journals = Services.get(IQueryBL.class).createQueryBuilder(I_GL_Journal.class, batch)
 				.filter(new EqualsQueryFilter<I_GL_Journal>(I_GL_Journal.COLUMNNAME_GL_JournalBatch_ID, batch.getGL_JournalBatch_ID()))
 				.addOnlyActiveRecordsFilter()
 				.create()

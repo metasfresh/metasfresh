@@ -49,8 +49,7 @@ public class ResourceDAO implements IResourceDAO
 	public List<I_S_Resource> retrievePlants(final @CacheCtx Properties ctx)
 	{
 		final IQueryBuilder<I_S_Resource> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_S_Resource.class)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(I_S_Resource.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_S_Resource> filters = queryBuilder.getFilters();
 

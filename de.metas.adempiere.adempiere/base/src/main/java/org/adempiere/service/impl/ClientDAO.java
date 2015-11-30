@@ -61,8 +61,7 @@ public class ClientDAO implements IClientDAO
 	public List<I_AD_Client> retrieveAllClients(Properties ctx)
 	{
 		final IQueryBuilder<I_AD_Client> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Client.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Client.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter() // metas-ts: only return active clients (note that we have an inactive "trash" client with AD_Client_ID=99)
 		// .addOnlyContextClient() // NO! we want all of them
 		;
@@ -79,8 +78,7 @@ public class ClientDAO implements IClientDAO
 	public I_AD_ClientInfo retrieveClientInfo(@CacheCtx final Properties ctx, final int adClientId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_ClientInfo.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_ClientInfo.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_ClientInfo.COLUMN_AD_Client_ID, adClientId)
 				.create()
 				.firstOnlyNotNull(I_AD_ClientInfo.class);

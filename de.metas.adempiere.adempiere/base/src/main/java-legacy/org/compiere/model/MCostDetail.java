@@ -267,8 +267,7 @@ public class MCostDetail extends X_M_CostDetail
 	{
 		Check.assumeNotNull(inoutLine, "inoutLine not null");
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_CostDetail.class)
-				.setContext(inoutLine)
+				.createQueryBuilder(I_M_CostDetail.class, inoutLine)
 				.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_InOutLine_ID, inoutLine.getM_InOutLine_ID())
 				.create()
 				.list();

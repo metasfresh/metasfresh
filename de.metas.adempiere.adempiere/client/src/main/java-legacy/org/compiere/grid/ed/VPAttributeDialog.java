@@ -366,8 +366,7 @@ public class VPAttributeDialog extends CDialog
 			if (as == null && M_AttributeSet_ID == 0)
 			{
 				// FIXME: workaround to deal with M_AttributeSet_ID=0 which is an existing record
-				as = queryBL.createQueryBuilder(I_M_AttributeSet.class)
-						.setContext(ctx, ITrx.TRXNAME_None)
+				as = queryBL.createQueryBuilder(I_M_AttributeSet.class, ctx, ITrx.TRXNAME_None)
 						.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, 0)
 						.create()
 						.firstOnlyNotNull(MAttributeSet.class);
@@ -433,8 +432,7 @@ public class VPAttributeDialog extends CDialog
 		else if (isProcessParameter)
 		{
 			final IQueryBuilder<MAttribute> attributesQueryBuilder = queryBL
-					.createQueryBuilder(MAttribute.class)
-					.setContext(ctx, ITrx.TRXNAME_None)
+					.createQueryBuilder(MAttribute.class, ctx, ITrx.TRXNAME_None)
 					.addOnlyActiveRecordsFilter()
 					.addOnlyContextClient();
 			attributesQueryBuilder.orderBy()

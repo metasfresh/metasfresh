@@ -45,8 +45,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 	public I_PP_Product_Planning retrieveManufacturingProductPlanningOrNull(final I_C_OrderLine orderLine)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final I_PP_Product_Planning productPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class)
-				.setContext(orderLine)
+		final I_PP_Product_Planning productPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class, orderLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMN_M_Product_ID, orderLine.getM_Product_ID())
 				.addInArrayFilter(I_PP_Product_Planning.COLUMN_AD_Org_ID, orderLine.getAD_Org_ID(), 0)
@@ -78,8 +77,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 	public List<I_C_Order_MFGWarehouse_Report> retrieveAllReports(final I_C_Order order)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order_MFGWarehouse_Report.class)
-				.setContext(order)
+				.createQueryBuilder(I_C_Order_MFGWarehouse_Report.class, order)
 				// .addOnlyActiveRecordsFilter() // return all of them
 				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_C_Order_ID, order.getC_Order_ID())
 				.orderBy()
@@ -93,8 +91,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 	public List<I_C_Order_MFGWarehouse_ReportLine> retrieveAllReportLines(final I_C_Order_MFGWarehouse_Report report)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order_MFGWarehouse_ReportLine.class)
-				.setContext(report)
+				.createQueryBuilder(I_C_Order_MFGWarehouse_ReportLine.class, report)
 				// .addOnlyActiveRecordsFilter() // return all of them
 				.addEqualsFilter(I_C_Order_MFGWarehouse_ReportLine.COLUMN_C_Order_MFGWarehouse_Report_ID, report.getC_Order_MFGWarehouse_Report_ID())
 				.orderBy()

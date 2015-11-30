@@ -66,8 +66,7 @@ public class InOutDAO implements IInOutDAO
 		Check.assumeNotNull(inOut, "inOut not null");
 		Check.assumeNotNull(inoutLineClass, "inoutLineClass not null");
 
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
-				.setContext(inOut)
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, inOut)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inOut.getM_InOut_ID())
 		// .filterByClientId()
 		;
@@ -103,8 +102,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public <T extends I_M_InOutLine> List<T> retrieveLinesForOrderLine(final I_C_OrderLine orderLine, final Class<T> clazz)
 	{
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
-				.setContext(orderLine)
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, orderLine)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
 				// .filterByClientId()
 				.addOnlyActiveRecordsFilter();
@@ -118,8 +116,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public <T extends I_M_InOutLine> List<T> retrieveLinesWithoutOrderLine(final I_M_InOut inOut, final Class<T> clazz)
 	{
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
-				.setContext(inOut)
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, inOut)
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, null)
 				.addOnlyActiveRecordsFilter()
@@ -138,8 +135,7 @@ public class InOutDAO implements IInOutDAO
 		// + "    AND io.IsSOTrx='Y'"
 		// + "    AND iol.AD_Client_ID=?";
 
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus,
 						DocAction.STATUS_Drafted, // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
 						// anymore, because they are already in a shipper-transportation
@@ -157,7 +153,7 @@ public class InOutDAO implements IInOutDAO
 	public List<de.metas.inout.model.I_M_InOutLine> retrieveAllReferencingLines(final I_M_InOutLine packingMaterialLine)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_InOutLine.class)
+				.createQueryBuilder(I_M_InOutLine.class, packingMaterialLine)
 				// .addOnlyActiveRecordsFilter() add all, also inactive ones
 				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_PackingMaterial_InOutLine_ID, packingMaterialLine.getM_InOutLine_ID())
 				.orderBy().addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy()

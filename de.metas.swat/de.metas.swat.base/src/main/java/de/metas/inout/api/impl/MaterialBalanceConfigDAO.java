@@ -54,8 +54,7 @@ public class MaterialBalanceConfigDAO implements IMaterialBalanceConfigDAO
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_M_Material_Balance_Config> queryBuilder = queryBL.createQueryBuilder(I_M_Material_Balance_Config.class)
-				.setContext(line);
+		final IQueryBuilder<I_M_Material_Balance_Config> queryBuilder = queryBL.createQueryBuilder(I_M_Material_Balance_Config.class, line);
 
 		// product id
 		final I_M_Product product = line.getM_Product();

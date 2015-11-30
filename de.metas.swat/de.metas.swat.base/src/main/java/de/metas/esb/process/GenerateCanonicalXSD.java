@@ -102,8 +102,7 @@ public class GenerateCanonicalXSD extends SvrProcess
 		if (p_EntityType == null)
 			throw new FillMandatoryException("EntityType");
 
-		final IQueryBuilder<I_EXP_Format> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_EXP_Format.class)
-				.setContext(this);
+		final IQueryBuilder<I_EXP_Format> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_EXP_Format.class, this);
 
 		if (p_FilterBy_AD_Client_ID)
 		{

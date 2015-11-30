@@ -54,8 +54,7 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	public List<I_M_PickingSlot> retrievePickingSlots(final @CacheCtx Properties ctx, final @CacheTrx String trxName)
 	{
 		final IQueryBuilder<I_M_PickingSlot> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_M_PickingSlot.class, ctx, trxName);
 
 		queryBuilder.orderBy()
 				.addColumn(I_M_PickingSlot.COLUMNNAME_PickingSlot);
@@ -104,8 +103,7 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	public List<I_M_PickingSlot> retrivePickingSlotsForBPartners(final Properties ctx, final Collection<Integer> bpartnerIds, final Collection<Integer> bpLocIds)
 	{
 		final IQueryBuilder<I_M_PickingSlot> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_PickingSlot.class, ctx, ITrx.TRXNAME_None)
 				.filter(new InArrayQueryFilter<I_M_PickingSlot>(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID, bpartnerIds))
 				.filter(new InArrayQueryFilter<I_M_PickingSlot>(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID, bpLocIds));
 

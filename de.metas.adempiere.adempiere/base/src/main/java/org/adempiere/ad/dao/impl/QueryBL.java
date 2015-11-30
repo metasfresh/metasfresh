@@ -10,22 +10,22 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
@@ -38,9 +38,20 @@ import org.adempiere.ad.dao.IQueryOrderByBuilder;
 public class QueryBL implements IQueryBL
 {
 	@Override
-	public <T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass)
+	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass,
+			final Properties ctx,
+			final String trxName)
 	{
-		return new QueryBuilder<T>(modelClass);
+		return new QueryBuilder<T>(modelClass)
+				.setContext(ctx, trxName);
+	}
+
+	@Override
+	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass,
+			final Object contextProvider)
+	{
+		return new QueryBuilder<T>(modelClass)
+				.setContext(contextProvider);
 	}
 
 	@Deprecated
@@ -69,7 +80,7 @@ public class QueryBL implements IQueryBL
 	}
 
 	@Override
-	public <T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(Class<T> modelClass)
+	public <T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(final Class<T> modelClass)
 	{
 		return new CompositeQueryUpdater<T>(modelClass);
 	}
@@ -114,5 +125,4 @@ public class QueryBL implements IQueryBL
 
 		return result;
 	}
-
 }

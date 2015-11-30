@@ -66,8 +66,7 @@ public class PeriodStatus extends SvrProcess
 		//
 		// Retrieve period controls
 		final List<I_C_PeriodControl> periodControls = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PeriodControl.class)
-				.setContext(getCtx(), getTrxName())
+				.createQueryBuilder(I_C_PeriodControl.class, getCtx(), getTrxName())
 				.addEqualsFilter(I_C_PeriodControl.COLUMN_C_Period_ID, period.getC_Period_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()

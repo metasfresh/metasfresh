@@ -109,8 +109,7 @@ public class AggregationDAO implements IAggregationDAO
 		//
 		// Find existing header aggregation key ID
 		final int headerAggregationKeyId = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate_HeaderAggregation.class)
-				.setContext(ic)
+				.createQueryBuilder(I_C_Invoice_Candidate_HeaderAggregation.class, ic)
 				.addEqualsFilter(I_C_Invoice_Candidate_HeaderAggregation.COLUMN_HeaderAggregationKey, headerAggregationKeyCalc)
 				.create()
 				.firstIdOnly();

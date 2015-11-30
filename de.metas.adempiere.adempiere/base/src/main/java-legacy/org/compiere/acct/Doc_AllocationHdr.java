@@ -951,8 +951,7 @@ public class Doc_AllocationHdr extends Doc
 		// * later on org.compiere.acct.Doc_AllocationTax.createEntries(MAcctSchema, Fact, DocLine_Allocation), we skip the gross amount Fact_Acct line
 		// Get Source Amounts with account
 		final List<I_Fact_Acct> invoiceFactLines = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_Fact_Acct.class)
-				.setContext(getCtx(), fact.get_TrxName())
+				.createQueryBuilder(I_Fact_Acct.class, getCtx(), fact.get_TrxName())
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, 318) // C_Invoice
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, line.getC_Invoice_ID())
 				.addEqualsFilter(I_Fact_Acct.COLUMN_C_AcctSchema_ID, as.getC_AcctSchema_ID())

@@ -40,8 +40,7 @@ public class ForecastDAO implements IForecastDAO
 	@Override
 	public List<I_M_ForecastLine> retrieveLines(final I_M_Forecast forecast)
 	{
-		final IQueryBuilder<I_M_ForecastLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ForecastLine.class)
-				.setContext(forecast)
+		final IQueryBuilder<I_M_ForecastLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ForecastLine.class, forecast)
 				.filter(new EqualsQueryFilter<I_M_ForecastLine>(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, forecast.getM_Forecast_ID()))
 				.filterByClientId()
 				.filter(ActiveRecordQueryFilter.getInstance(I_M_ForecastLine.class));

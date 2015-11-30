@@ -526,8 +526,7 @@ public class RequisitionPOCreate extends SvrProcess
 
 	private boolean isVendorForProduct(final int C_BPartner_ID, final MProduct product)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Product.class)
-				.setContext(product)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Product.class, product)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, C_BPartner_ID)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.create()
@@ -537,8 +536,7 @@ public class RequisitionPOCreate extends SvrProcess
 	
 	private boolean isPOPriceList(final int M_PriceList_ID)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class)
-				.setContext(getProcessInfo())
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class, getProcessInfo())
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PriceList_ID, M_PriceList_ID)
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, false)
 				.create()

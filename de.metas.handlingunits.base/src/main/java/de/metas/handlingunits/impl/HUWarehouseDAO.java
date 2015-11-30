@@ -44,14 +44,12 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 	public List<I_M_Warehouse> retrievePickingWarehouses(final Properties ctx)
 	{
 		// 06902: We only take warehouses that have at least one *active* after picking locator.
-		final IQuery<I_M_Locator> subQuery = Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQuery<I_M_Locator> subQuery = Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_Locator.COLUMNNAME_IsAfterPickingLocator, true)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
-		final List<I_M_Warehouse> warehouses = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final List<I_M_Warehouse> warehouses = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_isPickingWarehouse, true)
 				.addInSubQueryFilter(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Locator.COLUMNNAME_M_Warehouse_ID, subQuery)
 				.addOnlyActiveRecordsFilter()

@@ -184,8 +184,7 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 				// fallback: if we don't have an explicitly referenced package line, 
 				// then iterate all package lines and change those which have same tracking ID as the current inOut line.
 				// note: i don't think there can be more than one such line, but if there is, it shall not be this processe's problem.
-				final List<I_M_InOutLine> packageInOutLines = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
-						.setContext(orderLine)
+				final List<I_M_InOutLine> packageInOutLines = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, orderLine)
 						.addOnlyActiveRecordsFilter()
 						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOutLine.getM_InOut_ID())
 						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Material_Tracking_ID, inOutLine.getM_Material_Tracking_ID())

@@ -10,12 +10,12 @@ package de.metas.flatrate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -409,10 +409,9 @@ public class FlatrateDB implements IFlatrateDB
 			final I_C_BPartner bPartner,
 			final I_C_Flatrate_Conditions flatrateConditions)
 	{
-		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Term.class);
+		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Term.class, bPartner);
 
 		queryBuilder
-				.setContext(bPartner)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_Bill_BPartner_ID, bPartner.getC_BPartner_ID())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, flatrateConditions.getC_Flatrate_Conditions_ID())
@@ -810,8 +809,7 @@ public class FlatrateDB implements IFlatrateDB
 	@Override
 	public I_C_Flatrate_Data retriveOrCreateFlatrateData(final I_C_BPartner bPartner)
 	{
-		I_C_Flatrate_Data existingData = Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Data.class)
-				.setContext(bPartner)
+		I_C_Flatrate_Data existingData = Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Data.class, bPartner)
 				.addEqualsFilter(I_C_Flatrate_Data.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
 				.addOnlyActiveRecordsFilter()
 				.filterByClientId()
@@ -829,5 +827,5 @@ public class FlatrateDB implements IFlatrateDB
 		}
 		return existingData;
 	}
-	
+
 }

@@ -182,8 +182,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 		if (productLLC >= 0)
 		{
 			final IQuery<I_M_Product> productQuery = queryBL
-					.createQueryBuilder(I_M_Product.class)
-					.setContext(contextProvider)
+					.createQueryBuilder(I_M_Product.class, contextProvider)
 					.filter(new EqualsQueryFilter<I_M_Product>(I_M_Product.COLUMNNAME_LowLevel, productLLC))
 					.create();
 			filters.addInSubQueryFilter(I_PP_MRP.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQuery);
@@ -276,8 +275,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 					.addEqualsFilter(I_PP_MRP.COLUMNNAME_TypeMRP, X_PP_MRP.TYPEMRP_Demand)
 					.addEqualsFilter(I_PP_MRP.COLUMNNAME_PP_MRP_ID, _enforced_PP_MRP_Demand_ID);
 
-			final IQuery<I_PP_MRP_Alloc> mrpSuppliesSubQuery = queryBL.createQueryBuilder(I_PP_MRP.class)
-					.setContext(contextProvider)
+			final IQuery<I_PP_MRP_Alloc> mrpSuppliesSubQuery = queryBL.createQueryBuilder(I_PP_MRP.class, contextProvider)
 					.filter(filterMRPDemands)
 					.andCollectChildren(I_PP_MRP_Alloc.COLUMN_PP_MRP_Demand_ID, I_PP_MRP_Alloc.class)
 					.create();
@@ -320,13 +318,11 @@ import org.eevolution.mrp.api.MRPFirmType;
 
 		// Exclude BPartners
 		{
-			final IQuery<I_C_BP_Group> excludedBPGroupsQuery = queryBL.createQueryBuilder(I_C_BP_Group.class)
-					.setContext(contextProvider)
+			final IQuery<I_C_BP_Group> excludedBPGroupsQuery = queryBL.createQueryBuilder(I_C_BP_Group.class, contextProvider)
 					.addEqualsFilter(I_C_BP_Group.COLUMN_MRP_Exclude, X_C_BP_Group.MRP_EXCLUDE_Yes)
 					.create();
 
-			final IQuery<I_C_BPartner> excludedBPartnersQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
-					.setContext(contextProvider)
+			final IQuery<I_C_BPartner> excludedBPartnersQuery = queryBL.createQueryBuilder(I_C_BPartner.class, contextProvider)
 					.setJoinOr()
 					.addEqualsFilter(I_C_BPartner.COLUMN_MRP_Exclude, X_C_BPartner.MRP_EXCLUDE_Yes)
 					.addInSubQueryFilter(I_C_BPartner.COLUMNNAME_C_BP_Group_ID, I_C_BP_Group.COLUMNNAME_C_BP_Group_ID, excludedBPGroupsQuery)
@@ -336,13 +332,11 @@ import org.eevolution.mrp.api.MRPFirmType;
 		}
 		// Exclude Products
 		{
-			final IQuery<I_M_Product_Category> excludedProductCategoriesQuery = queryBL.createQueryBuilder(I_M_Product_Category.class)
-					.setContext(contextProvider)
+			final IQuery<I_M_Product_Category> excludedProductCategoriesQuery = queryBL.createQueryBuilder(I_M_Product_Category.class, contextProvider)
 					.addEqualsFilter(I_M_Product_Category.COLUMN_MRP_Exclude, X_C_BP_Group.MRP_EXCLUDE_Yes)
 					.create();
 
-			final IQuery<I_M_Product> excludedProductsQuery = queryBL.createQueryBuilder(I_M_Product.class)
-					.setContext(contextProvider)
+			final IQuery<I_M_Product> excludedProductsQuery = queryBL.createQueryBuilder(I_M_Product.class, contextProvider)
 					.setJoinOr()
 					.addEqualsFilter(I_M_Product.COLUMN_MRP_Exclude, X_M_Product.MRP_EXCLUDE_Yes)
 					.addInSubQueryFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, I_M_Product_Category.COLUMNNAME_M_Product_Category_ID, excludedProductCategoriesQuery)
@@ -351,16 +345,14 @@ import org.eevolution.mrp.api.MRPFirmType;
 		}
 		// Exclude Warehouses
 		{
-			final IQuery<I_M_Warehouse> excludedWarehousesQuery = queryBL.createQueryBuilder(I_M_Warehouse.class)
-					.setContext(contextProvider)
+			final IQuery<I_M_Warehouse> excludedWarehousesQuery = queryBL.createQueryBuilder(I_M_Warehouse.class, contextProvider)
 					.addEqualsFilter(I_M_Warehouse.COLUMN_MRP_Exclude, X_M_Warehouse.MRP_EXCLUDE_Yes)
 					.create();
 			filters.addNotInSubQueryFilter(I_PP_MRP.COLUMNNAME_M_Warehouse_ID, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, excludedWarehousesQuery);
 		}
 		// Exclude Plants
 		{
-			final IQuery<I_S_Resource> excludedPlantsQuery = queryBL.createQueryBuilder(I_S_Resource.class)
-					.setContext(contextProvider)
+			final IQuery<I_S_Resource> excludedPlantsQuery = queryBL.createQueryBuilder(I_S_Resource.class, contextProvider)
 					.addEqualsFilter(I_S_Resource.COLUMN_MRP_Exclude, X_S_Resource.MRP_EXCLUDE_Yes)
 					.create();
 			filters.addNotInSubQueryFilter(I_PP_MRP.COLUMNNAME_S_Resource_ID, I_S_Resource.COLUMNNAME_S_Resource_ID, excludedPlantsQuery);
@@ -373,8 +365,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 	public IQueryBuilder<I_PP_MRP> createQueryBuilder()
 	{
 		final IQueryFilter<I_PP_MRP> filters = createQueryFilter();
-		final IQueryBuilder<I_PP_MRP> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP.class)
-				.setContext(getContextProviderToUse())
+		final IQueryBuilder<I_PP_MRP> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP.class, getContextProviderToUse())
 				.filter(filters);
 
 		return queryBuilder;

@@ -30,12 +30,6 @@
 		-->
 
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.base</artifactId>
 			<version>${project.version}</version>

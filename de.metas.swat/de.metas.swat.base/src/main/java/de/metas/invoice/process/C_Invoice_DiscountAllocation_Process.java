@@ -173,8 +173,7 @@ public class C_Invoice_DiscountAllocation_Process extends SvrProcess
 		// note that selecting all unpaid and then skipping all whose open amount is > p_OpenAmt is acceptable performance-wise, 
 		// at least when we worked with 14.000 invoices and the client was running remote, over an internet connection
 		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL
-				.createQueryBuilder(I_C_Invoice.class)
-				.setContext(this)
+				.createQueryBuilder(I_C_Invoice.class, this)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false); // this is a no-brainer

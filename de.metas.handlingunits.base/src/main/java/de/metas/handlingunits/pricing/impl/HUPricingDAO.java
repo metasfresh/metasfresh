@@ -51,8 +51,7 @@ public class HUPricingDAO implements IHUPricingDAO
 			return null; // task 08804
 		}
 
-		final IQueryBuilder<I_M_ProductPrice_Attribute> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice_Attribute.class)
-				.setContext(productPrice);
+		final IQueryBuilder<I_M_ProductPrice_Attribute> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice_Attribute.class, productPrice);
 
 		final ICompositeQueryFilter<I_M_ProductPrice_Attribute> filter = queryBuilder.getFilters();
 		filter.addOnlyActiveRecordsFilter();

@@ -79,8 +79,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Override
 	public List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(final I_M_HU_PI_Item itemDef)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item_Product.class)
-				.setContext(itemDef)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item_Product.class, itemDef)
 				.filter(new EqualsQueryFilter<I_M_HU_PI_Item_Product>(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, itemDef.getM_HU_PI_Item_ID()))
 				.create()
 				.setOnlyActiveRecords(true)
@@ -350,13 +349,11 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 					.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_HU_UnitType, huUnitType)
 					.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_HU_UnitType, null);
 
-			final IQuery<I_M_HU_PI_Version> piVersionQuery = queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
-					.setContext(ctx, trxName)
+			final IQuery<I_M_HU_PI_Version> piVersionQuery = queryBL.createQueryBuilder(I_M_HU_PI_Version.class, ctx, trxName)
 					.filter(piVersionFilter)
 					.create();
 
-			final IQuery<I_M_HU_PI_Item> piItemQuery = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
-					.setContext(ctx, trxName)
+			final IQuery<I_M_HU_PI_Item> piItemQuery = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx, trxName)
 					.filter(new InSubQueryFilter<I_M_HU_PI_Item>(
 							I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID,
 							I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID,
@@ -442,8 +439,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		//
 		// Final Query
 		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_M_HU_PI_Item_Product.class, ctx, trxName);
 
 		final IQueryFilter<I_M_HU_PI_Item_Product> filter = createQueryFilter(ctx, queryVO);
 		queryBuilder.filter(filter);

@@ -93,8 +93,7 @@ public class M_ReceiptSchedule_GenerateInOutFromSelection extends SvrProcess
 	{
 		final ProcessInfo processInfo = getProcessInfo();
 
-		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ReceiptSchedule.class)
-				.setContext(processInfo);
+		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ReceiptSchedule.class, processInfo);
 		//
 		// Only not processed lines
 		queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false);

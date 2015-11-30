@@ -278,8 +278,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 	// @Cached(cacheName = I_AD_Field_ContextMenu.Table_Name + "#By#AD_Client_ID") // not needed, we are caching the classname lists
 	private List<I_AD_Field_ContextMenu> retrieveContextMenuForClient(@CacheCtx final Properties ctx, final int adClientId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Field_ContextMenu.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Field_ContextMenu.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayFilter(I_AD_Field_ContextMenu.COLUMN_AD_Client_ID, 0, adClientId)
 				.addOnlyActiveRecordsFilter()
 				//

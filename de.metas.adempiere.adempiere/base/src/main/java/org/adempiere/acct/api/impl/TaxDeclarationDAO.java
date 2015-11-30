@@ -47,8 +47,7 @@ public class TaxDeclarationDAO implements ITaxDeclarationDAO
 	{
 		Check.assumeNotNull(taxDeclaration, "taxDeclaration not null");
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_TaxDeclarationLine.class)
-				.setContext(taxDeclaration)
+				.createQueryBuilder(I_C_TaxDeclarationLine.class, taxDeclaration)
 				.addEqualsFilter(I_C_TaxDeclarationLine.COLUMNNAME_C_TaxDeclaration_ID, taxDeclaration.getC_TaxDeclaration_ID())
 				.create()
 				.deleteDirectly();
@@ -59,8 +58,7 @@ public class TaxDeclarationDAO implements ITaxDeclarationDAO
 	{
 		Check.assumeNotNull(taxDeclaration, "taxDeclaration not null");
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_TaxDeclarationAcct.class)
-				.setContext(taxDeclaration)
+				.createQueryBuilder(I_C_TaxDeclarationAcct.class, taxDeclaration)
 				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_C_TaxDeclaration_ID, taxDeclaration.getC_TaxDeclaration_ID())
 				.create()
 				.deleteDirectly();
@@ -70,8 +68,7 @@ public class TaxDeclarationDAO implements ITaxDeclarationDAO
 	public int retrieveLastLineNoOfTaxDeclarationLine(final I_C_TaxDeclaration taxDeclaration)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_TaxDeclarationLine.class)
-				.setContext(taxDeclaration)
+				.createQueryBuilder(I_C_TaxDeclarationLine.class, taxDeclaration)
 				.addEqualsFilter(I_C_TaxDeclarationLine.COLUMNNAME_C_TaxDeclaration_ID, taxDeclaration.getC_TaxDeclaration_ID())
 				.create()
 				.aggregate(I_C_TaxDeclarationLine.COLUMNNAME_Line, IQuery.AGGREGATE_MAX, Integer.class);
@@ -81,8 +78,7 @@ public class TaxDeclarationDAO implements ITaxDeclarationDAO
 	public int retrieveLastLineNoOfTaxDeclarationAcct(final I_C_TaxDeclaration taxDeclaration)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_TaxDeclarationAcct.class)
-				.setContext(taxDeclaration)
+				.createQueryBuilder(I_C_TaxDeclarationAcct.class, taxDeclaration)
 				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_C_TaxDeclaration_ID, taxDeclaration.getC_TaxDeclaration_ID())
 				.create()
 				.aggregate(I_C_TaxDeclarationAcct.COLUMNNAME_Line, IQuery.AGGREGATE_MAX, Integer.class);

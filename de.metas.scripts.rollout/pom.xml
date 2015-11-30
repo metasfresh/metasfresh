@@ -24,6 +24,42 @@
 
 	<build>
 		<plugins>
+		
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+
+				<executions>
+					<execution>
+						<id>enforce-ban-duplicate-classes</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<banDuplicateClasses>
+									<dependencies>
+										<!-- 
+											do not check this dependency, because the allInOne-jar contains 
+											all the classes that are also its dependencies 
+										-->
+										<dependency>
+											<groupId>de.metas.migration</groupId>
+											<artifactId>de.metas.migration.cli</artifactId>
+											<ignoreClasses>
+												<ignoreClass>*</ignoreClass>
+											</ignoreClasses>
+										</dependency>
+									</dependencies>
+									<findAllDuplicates>true</findAllDuplicates>
+								</banDuplicateClasses>
+							</rules>
+							<fail>true</fail>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>

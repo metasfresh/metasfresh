@@ -44,8 +44,7 @@ public class JavaClassDAO implements IJavaClassDAO
 	@Override
 	public List<I_AD_JavaClass> retrieveJavaClasses(final I_AD_JavaClass_Type type)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_JavaClass.class)
-				.setContext(type)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_JavaClass.class, type)
 				.filter(new EqualsQueryFilter<I_AD_JavaClass>(I_AD_JavaClass.COLUMNNAME_AD_JavaClass_Type_ID, type.getAD_JavaClass_Type_ID()))
 				.create()
 				.list(I_AD_JavaClass.class);
@@ -61,8 +60,7 @@ public class JavaClassDAO implements IJavaClassDAO
 		{
 			return null;
 		}
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_JavaClass.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_JavaClass.class, ctx, ITrx.TRXNAME_None)
 				.filter(new EqualsQueryFilter<I_AD_JavaClass>(I_AD_JavaClass.COLUMNNAME_AD_JavaClass_ID, adJavaClassId))
 				.create()
 				.firstOnly(I_AD_JavaClass.class);
@@ -76,8 +74,7 @@ public class JavaClassDAO implements IJavaClassDAO
 		{
 			return null;
 		}
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_JavaClass_Type.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_JavaClass_Type.class, ctx, ITrx.TRXNAME_None)
 				.filter(new EqualsQueryFilter<I_AD_JavaClass_Type>(I_AD_JavaClass_Type.COLUMNNAME_AD_JavaClass_Type_ID, adJavaClassTypeId))
 				.create()
 				.firstOnly(I_AD_JavaClass_Type.class);

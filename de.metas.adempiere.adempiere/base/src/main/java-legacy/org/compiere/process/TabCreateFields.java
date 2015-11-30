@@ -130,14 +130,12 @@ public class TabCreateFields extends SvrProcess
 	private List<I_AD_Column> retrieveColumns(final I_AD_Tab adTab)
 	{
 		final IQuery<I_AD_Field> queryTabFields = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Field.class)
-				.setContext(getCtx(), get_TrxName())
+				.createQueryBuilder(I_AD_Field.class, getCtx(), get_TrxName())
 				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, adTab.getAD_Tab_ID())
 				.create();
 
 		final IQueryBuilder<I_AD_Column> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Column.class)
-				.setContext(getCtx(), get_TrxName())
+				.createQueryBuilder(I_AD_Column.class, getCtx(), get_TrxName())
 				//
 				// Columns for Tab's AD_Table_ID
 				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, adTab.getAD_Table_ID())

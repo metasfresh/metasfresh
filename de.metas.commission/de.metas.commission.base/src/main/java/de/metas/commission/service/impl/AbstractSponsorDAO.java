@@ -607,8 +607,7 @@ public abstract class AbstractSponsorDAO implements ISponsorDAO
 	@Override
 	public List<I_C_Sponsor_SalesRep> retrieveSalesRepsForConditionSet(final Properties ctx, final Set<Integer> conditionIDs, final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Sponsor_SalesRep.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Sponsor_SalesRep.class, ctx, trxName)
 				.filter(new InArrayQueryFilter<I_C_Sponsor_SalesRep>(I_C_Sponsor_SalesRep.COLUMNNAME_C_AdvCommissionCondition_ID, conditionIDs))
 				.create()
 				.list(I_C_Sponsor_SalesRep.class);
@@ -617,8 +616,7 @@ public abstract class AbstractSponsorDAO implements ISponsorDAO
 	@Override
 	public List<I_C_Sponsor_SalesRep> retrieveSponsorSalesRepsForCondition(final Properties ctx, final I_C_AdvCommissionCondition condition, final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Sponsor_SalesRep.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Sponsor_SalesRep.class, ctx, trxName)
 				.filter(new InArrayQueryFilter<I_C_Sponsor_SalesRep>(I_C_Sponsor_SalesRep.COLUMNNAME_C_AdvCommissionCondition_ID, condition.getC_AdvCommissionCondition_ID()))
 				.create()
 				.list(I_C_Sponsor_SalesRep.class);
@@ -660,8 +658,7 @@ public abstract class AbstractSponsorDAO implements ISponsorDAO
 		// " OR "
 		// + I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom + "<=? AND " + I_C_Sponsor_SalesRep.COLUMNNAME_ValidTo + ">=?" + ")";
 
-		final IQueryBuilder<I_C_Sponsor_SalesRep> queryBuilder = queryBL.createQueryBuilder(I_C_Sponsor_SalesRep.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_Sponsor_SalesRep> queryBuilder = queryBL.createQueryBuilder(I_C_Sponsor_SalesRep.class, ctx, trxName)
 				.filter(filter);
 		queryBuilder.orderBy().addColumn(I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom);
 

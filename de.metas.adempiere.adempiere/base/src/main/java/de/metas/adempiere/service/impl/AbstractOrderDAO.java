@@ -50,8 +50,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(final I_C_Order order,
 			final Class<T> clazz)
 	{
-		final IQueryBuilder<org.compiere.model.I_C_OrderLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
-				.setContext(order)
+		final IQueryBuilder<org.compiere.model.I_C_OrderLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
 				.filter(new EqualsQueryFilter<org.compiere.model.I_C_OrderLine>(org.compiere.model.I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID()));
 
 		queryBuilder.orderBy()
@@ -72,8 +71,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		
-		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
-				.setContext(order)
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
 				.addEqualsFilter(I_C_OrderLine.COLUMN_C_Order_ID, order.getC_Order_ID())
 				.addEqualsFilter(I_C_OrderLine.COLUMN_Line, lineNo)
 				.create()
@@ -83,8 +81,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public boolean hasCompletedOrders(final Properties ctx, final int bpartnerId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_DocStatus, X_C_Order.DOCSTATUS_Completed, X_C_Order.DOCSTATUS_Closed)
 				.create()
@@ -109,8 +106,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 
 	private IQueryBuilder<I_M_InOut> retrieveInOutsQuery(final I_C_Order order)
 	{
-		final IQueryBuilder<I_M_InOut> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class)
-				.setContext(order)
+		final IQueryBuilder<I_M_InOut> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, order)
 				.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
 				.filterByClientId()
 				.addOnlyActiveRecordsFilter();

@@ -695,8 +695,7 @@ public class MCost extends X_M_Cost
 		final Properties ctx = InterfaceWrapperHelper.getCtx(client);
 		
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_CostDetail.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_CostDetail.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_CostDetail.COLUMN_Processed, false) // not processed cost details
 				//
 				// Collect products from those cost details

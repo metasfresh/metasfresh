@@ -10,12 +10,12 @@ package de.metas.lock.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,7 +47,7 @@ import de.metas.lock.spi.ILockDatabase;
 
 /**
  * Abstract lock database which does not implement any database specific logic.
- * 
+ *
  * @author tsa
  *
  */
@@ -140,7 +140,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 	/**
 	 * Lock all records specified by {@link LockCommand#getSelectionToLock_AD_PInstance_ID()}.
-	 * 
+	 *
 	 * @param lockCommand
 	 * @return how many records were locked
 	 */
@@ -150,7 +150,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 	/**
 	 * Lock all records specified by {@link LockCommand#getRecordsToLockIterator()}.
-	 * 
+	 *
 	 * @param lockCommand
 	 * @return how many records were locked
 	 */
@@ -200,7 +200,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 	/**
 	 * Locks a single record.
-	 * 
+	 *
 	 * @param lockCommand
 	 * @param record
 	 * @return <ul>
@@ -213,7 +213,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 	/**
 	 * Change the lock of given record.
-	 * 
+	 *
 	 * @param lockCommand
 	 * @param record
 	 * @return true if lock was changed
@@ -334,7 +334,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	}
 
 	@Override
-	public final <T> IQueryBuilder<T> getLockedRecordsQueryBuilder(final Class<T> modelClass)
+	public final <T> IQueryBuilder<T> getLockedRecordsQueryBuilder(final Class<T> modelClass, final Object contextProvider)
 	{
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(modelClass);
 		final String joinColumnNameFQ = InterfaceWrapperHelper.getTableName(modelClass) + "." + keyColumnName;
@@ -342,7 +342,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		final String lockedRecordsSQL = getLockedWhereClauseAllowNullLock(modelClass, joinColumnNameFQ, null);
 
 		// note: don't specify a particular ordering; leave that freedom to the caller if this method
-		return Services.get(IQueryBL.class).createQueryBuilder(modelClass)
+		return Services.get(IQueryBL.class).createQueryBuilder(modelClass, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
 				.filter(new TypedSqlQueryFilter<T>(lockedRecordsSQL));

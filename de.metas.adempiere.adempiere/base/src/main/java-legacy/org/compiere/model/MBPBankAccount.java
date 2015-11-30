@@ -42,8 +42,7 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 //	public static MBPBankAccount[] getOfBPartner(final Properties ctx, final int C_BPartner_ID)
 //	{
 //		final List<I_C_BP_BankAccount> bpBankAccounts = Services.get(IQueryBL.class)
-//				.createQueryBuilder(I_C_BP_BankAccount.class)
-//				.setContext(ctx, ITrx.TRXNAME_None)
+//				.createQueryBuilder(I_C_BP_BankAccount.class, ctx, ITrx.TRXNAME_None)
 //				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_BPartner_ID, C_BPartner_ID)
 //				.addOnlyActiveRecordsFilter()
 //				.orderBy()

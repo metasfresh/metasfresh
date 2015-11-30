@@ -150,8 +150,7 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 			return Collections.emptySet();
 		}
 		final List<Integer> huItemIdsList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Item.class)
-				.setContext(getContext())
+				.createQueryBuilder(I_M_HU_Item.class, getContext())
 				.addInArrayFilter(I_M_HU_Item.COLUMN_M_HU_ID, huIds)
 				.create()
 				.listIds();
@@ -165,8 +164,7 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 			return Collections.emptySet();
 		}
 		final List<Integer> huIdsList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU.class)
-				.setContext(getContext())
+				.createQueryBuilder(I_M_HU.class, getContext())
 				.addInArrayFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, huItemIds)
 				.create()
 				.listIds();

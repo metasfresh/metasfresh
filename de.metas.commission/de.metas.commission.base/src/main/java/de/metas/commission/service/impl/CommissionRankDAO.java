@@ -151,8 +151,7 @@ public class CommissionRankDAO implements ICommissionRankDAO
 				.addEqualsFilter(I_C_AdvCommissionSalaryGroup.COLUMNNAME_C_AdvComRankCollection_ID, rankCollection.getC_AdvComRankCollection_ID())
 				.addOnlyActiveRecordsFilter();
 
-		final IQueryBuilder<I_C_AdvCommissionSalaryGroup> queryBuilder = queryBL.createQueryBuilder(I_C_AdvCommissionSalaryGroup.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_AdvCommissionSalaryGroup> queryBuilder = queryBL.createQueryBuilder(I_C_AdvCommissionSalaryGroup.class, ctx, trxName)
 				.filter(filter);
 
 		queryBuilder.orderBy()

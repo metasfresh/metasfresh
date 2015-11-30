@@ -61,8 +61,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		// Services
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_PP_Order> ppOrderQueryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_PP_Order> ppOrderQueryBuilder = queryBL.createQueryBuilder(I_PP_Order.class, ctx, trxName)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter();
 
@@ -75,8 +74,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		{
 			final int ppOrderTableId = InterfaceWrapperHelper.getTableId(I_PP_Order.class);
 			final IQuery<I_C_Invoice_Candidate> invoiceCandidatesForPPOrderQuery = queryBL
-					.createQueryBuilder(I_C_Invoice_Candidate.class)
-					.setContext(ctx, trxName)
+					.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 					.addEqualsFilter(de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, ppOrderTableId)
 					.create();
 
@@ -180,8 +178,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final I_C_Invoice_Clearing_Alloc invoiceClearingAlloc = queryBL
-				.createQueryBuilder(I_C_Invoice_Clearing_Alloc.class)
-				.setContext(invoiceCandidate)
+				.createQueryBuilder(I_C_Invoice_Clearing_Alloc.class, invoiceCandidate)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID, invoiceCandidate.getC_Invoice_Candidate_ID())

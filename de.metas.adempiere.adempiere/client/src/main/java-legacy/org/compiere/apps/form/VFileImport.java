@@ -242,8 +242,7 @@ public class VFileImport extends CPanel
 		// Load Formats
 		try
 		{
-			final List<I_AD_ImpFormat> impFormats = Services.get(IQueryBL.class).createQueryBuilder(I_AD_ImpFormat.class)
-					.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+			final List<I_AD_ImpFormat> impFormats = Services.get(IQueryBL.class).createQueryBuilder(I_AD_ImpFormat.class, Env.getCtx(), ITrx.TRXNAME_None)
 					.addOnlyActiveRecordsFilter()
 					.orderBy()
 					.addColumn(I_AD_ImpFormat.COLUMNNAME_Name)

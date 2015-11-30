@@ -90,8 +90,7 @@ public class MProductCategoryAcct extends X_M_Product_Category_Acct
 		// but we just rely on M_Product_Category_ID/C_AcctSchema_ID.
 		
 		final IQuery<I_M_Product_Category_Acct> query = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Product_Category_Acct.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_M_Product_Category_Acct.class, ctx, trxName)
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_M_Product_Category_ID, M_Product_Category_ID)
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_C_AcctSchema_ID, C_AcctSchema_ID)
 				.addOnlyActiveRecordsFilter()

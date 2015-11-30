@@ -49,11 +49,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(contextProvider.getCtx(), org.getAD_Client_ID(), org.getAD_Org_ID());
 
 		final I_M_Product_Acct acctInfo =
-				Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_Acct.class)
-						.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchema.getC_AcctSchema_ID())
-						.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
-						.addOnlyActiveRecordsFilter()
-						.setContext(contextProvider)
+				Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_Acct.class, contextProvider)
 						.create()
 						.firstOnly(I_M_Product_Acct.class);
 		

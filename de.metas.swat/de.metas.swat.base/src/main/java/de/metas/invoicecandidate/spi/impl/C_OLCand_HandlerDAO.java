@@ -42,8 +42,7 @@ public class C_OLCand_HandlerDAO
 	public IQueryBuilder<I_C_OLCand> retrieveMissingCandidatesQuery(final Properties ctx, final String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_C_OLCand> queryBuilder = queryBL.createQueryBuilder(I_C_OLCand.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_OLCand> queryBuilder = queryBL.createQueryBuilder(I_C_OLCand.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 
@@ -57,8 +56,7 @@ public class C_OLCand_HandlerDAO
 		//
 		// Only those which were not already created
 		{
-			final IQuery<I_C_Invoice_Candidate> existingICsQuery = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-					.setContext(ctx, trxName)
+			final IQuery<I_C_Invoice_Candidate> existingICsQuery = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OLCand.class))
 					.create();
 			

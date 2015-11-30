@@ -35,8 +35,7 @@ public class AbstractAttachmentDAO implements IAttachmentDAO
 	@Override
 	public I_AD_Attachment retrieveAttachment(final Properties ctx, final int adTableId, final int recordId, final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Attachment.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Attachment.class, ctx, trxName)
 				.addEqualsFilter(I_AD_Attachment.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_AD_Attachment.COLUMNNAME_Record_ID, recordId)
 				.create()

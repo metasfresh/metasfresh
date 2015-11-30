@@ -39,8 +39,7 @@ public class InOutCandHandlerDAO implements IInOutCandHandlerDAO
 	public List<I_M_IolCandHandler_Log> retrieveAllHandlerLogs(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_IolCandHandler_Log.class)
-				.setContext(shipmentSchedule)
+				.createQueryBuilder(I_M_IolCandHandler_Log.class, shipmentSchedule)
 				.addEqualsFilter(I_M_IolCandHandler_Log.COLUMN_AD_Table_ID, shipmentSchedule.getAD_Table_ID())
 				.addEqualsFilter(I_M_IolCandHandler_Log.COLUMN_Record_ID, shipmentSchedule.getRecord_ID())
 				.create()

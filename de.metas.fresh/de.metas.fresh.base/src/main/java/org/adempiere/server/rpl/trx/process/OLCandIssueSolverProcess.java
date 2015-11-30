@@ -166,8 +166,7 @@ public class OLCandIssueSolverProcess extends SvrProcess
 
 	private IQueryBuilder<I_C_OLCand> createOLCandQueryBuilder()
 	{
-		final IQueryBuilder<I_C_OLCand> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_OLCand.class)
-				.setContext(getCtx(), get_TrxName())
+		final IQueryBuilder<I_C_OLCand> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_OLCand.class, getCtx(), get_TrxName())
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_EXP_ReplicationTrx_ID, p_EXP_ReplicationTrx_ID);

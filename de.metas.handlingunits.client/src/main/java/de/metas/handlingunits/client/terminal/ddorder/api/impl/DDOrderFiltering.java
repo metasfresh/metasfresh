@@ -76,8 +76,7 @@ public class DDOrderFiltering extends AbstractFiltering
 		final ICompositeQueryFilter<I_DD_OrderLine> filters = createFilter(ctx, warehouseId);
 
 		final IQueryBuilder<I_DD_OrderLine> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_DD_OrderLine.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_DD_OrderLine.class, ctx, ITrx.TRXNAME_None)
 				.filter(filters);
 
 		// order by
@@ -135,8 +134,7 @@ public class DDOrderFiltering extends AbstractFiltering
 		//
 		// Only lines from Completed documents
 		{
-			final IQueryBuilder<I_DD_Order> ddOrderQueryBuilder = queryBL.createQueryBuilder(I_DD_Order.class)
-					.setContext(ctx, ITrx.TRXNAME_None);
+			final IQueryBuilder<I_DD_Order> ddOrderQueryBuilder = queryBL.createQueryBuilder(I_DD_Order.class, ctx, ITrx.TRXNAME_None);
 
 			final ICompositeQueryFilter<I_DD_Order> ddOrderFilters = ddOrderQueryBuilder.getFilters();
 			ddOrderFilters.addOnlyActiveRecordsFilter();
@@ -152,8 +150,7 @@ public class DDOrderFiltering extends AbstractFiltering
 		// Filter by warehouse
 		if (warehouseId > 0)
 		{
-			final IQuery<I_M_Locator> locatorQuery = queryBL.createQueryBuilder(I_M_Locator.class)
-					.setContext(ctx, ITrx.TRXNAME_None)
+			final IQuery<I_M_Locator> locatorQuery = queryBL.createQueryBuilder(I_M_Locator.class, ctx, ITrx.TRXNAME_None)
 					.filter(new EqualsQueryFilter<I_M_Locator>(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId))
 					.create()
 					.setOnlyActiveRecords(true);

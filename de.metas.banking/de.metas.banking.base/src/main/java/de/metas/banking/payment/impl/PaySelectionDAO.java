@@ -10,12 +10,12 @@ package de.metas.banking.payment.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -76,8 +76,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	public int retrieveLastPaySelectionLineNo(final Properties ctx, final int paySelectionId, final String trxName)
 	{
 		final BigDecimal lastLineNo = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PaySelectionLine.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_C_PaySelectionLine.class, ctx, trxName)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelectionId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -104,24 +103,23 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	public List<de.metas.banking.model.I_C_PaySelectionLine> retrievePaySelectionLines(I_C_BankStatementLine bankStatementLine)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PaySelectionLine.class)
-				.setContext(bankStatementLine)
+				.createQueryBuilder(I_C_PaySelectionLine.class, bankStatementLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.banking.model.I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_ID, bankStatementLine.getC_BankStatementLine_ID())
 				.create()
 				.list(de.metas.banking.model.I_C_PaySelectionLine.class);
 	}
-	
+
+	@Override
 	public de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLine(I_C_BankStatementLine_Ref bankStatementLineRef)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PaySelectionLine.class)
-				.setContext(bankStatementLineRef)
+				.createQueryBuilder(I_C_PaySelectionLine.class, bankStatementLineRef)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.banking.model.I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_Ref_ID, bankStatementLineRef.getC_BankStatementLine_Ref_ID())
 				.create()
 				.firstOnly(de.metas.banking.model.I_C_PaySelectionLine.class);
-		
+
 	}
 
 
@@ -136,9 +134,10 @@ public class PaySelectionDAO implements IPaySelectionDAO
 
 	private final IQueryBuilder<I_C_PaySelectionLine> createQueryBuilder(final I_C_PaySelection paySelection)
 	{
-		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class);
+		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder =
+				Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, paySelection);
+
 		queryBuilder.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelection.getC_PaySelection_ID())
-				.setContext(paySelection)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(InterfaceWrapperHelper.getCtx(paySelection));
 		return queryBuilder;
@@ -197,8 +196,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	{
 		Check.assumeNotNull(invoice, "Param 'invoice' is not null");
 
-		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class)
-				.setContext(invoice)
+		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, invoice)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID());
 

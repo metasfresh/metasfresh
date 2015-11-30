@@ -41,8 +41,7 @@ public class ShipperDAO implements IShipperDAO
 	{
 		Check.assumeNotNull(shipperBPartner, "shipperTransportation not null");
 
-		final IQueryBuilder<I_M_Shipper> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Shipper.class)
-				.setContext(shipperBPartner)
+		final IQueryBuilder<I_M_Shipper> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Shipper.class, shipperBPartner)
 				.filter(new EqualsQueryFilter<I_M_Shipper>(I_M_Shipper.COLUMNNAME_C_BPartner_ID, shipperBPartner.getC_BPartner_ID()))
 				.filter(new EqualsQueryFilter<I_M_Shipper>(I_M_Shipper.COLUMNNAME_AD_Client_ID, shipperBPartner.getAD_Client_ID()))
 				.filter(new EqualsQueryFilter<I_M_Shipper>(I_M_Shipper.COLUMNNAME_IsActive, true));

@@ -284,8 +284,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(shipmentSchedule);
-		final IQueryBuilder<I_M_InOut> queryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
-				.setContext(contextProvider)
+		final IQueryBuilder<I_M_InOut> queryBuilder = queryBL.createQueryBuilder(I_M_InOut.class, contextProvider)
 				.addOnlyActiveRecordsFilter();
 
 		//

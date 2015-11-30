@@ -91,8 +91,7 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_M_HU_PI_Attribute> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_PI_Attribute.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_M_HU_PI_Attribute.class, ctx, trxName);
 
 		queryBuilder.filter(new EqualsQueryFilter<I_M_HU_PI_Attribute>(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, piVersionId));
 

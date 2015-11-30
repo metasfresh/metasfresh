@@ -112,8 +112,7 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 	private IHandlingUnitsInfo createFromOrderOrBomLine(final I_PP_Order ppOrder,
 			final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
-		final IQueryBuilder<I_PP_Cost_Collector> ccFilter = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class)
-				.setContext(ppOrderBOMLine)
+		final IQueryBuilder<I_PP_Cost_Collector> ccFilter = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class, ppOrderBOMLine)
 				.addOnlyActiveRecordsFilter();
 
 		if (ppOrder != null)

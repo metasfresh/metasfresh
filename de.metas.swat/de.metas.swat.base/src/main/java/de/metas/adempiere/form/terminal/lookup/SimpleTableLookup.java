@@ -266,8 +266,7 @@ public class SimpleTableLookup<T> implements ITerminalLookup
 		}
 
 		final Properties ctx = getCtx();
-		final IQuery<T> query = queryBL.createQueryBuilder(modelClass)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQuery<T> query = queryBL.createQueryBuilder(modelClass, ctx, ITrx.TRXNAME_None)
 				.filter(filters)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)

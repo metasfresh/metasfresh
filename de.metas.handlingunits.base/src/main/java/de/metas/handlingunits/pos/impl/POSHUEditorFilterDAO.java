@@ -62,8 +62,7 @@ public class POSHUEditorFilterDAO implements IPOSHUEditorFilterDAO
 		// Services
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_C_POS_HUEditor_Filter> queryBuilder = queryBL.createQueryBuilder(I_C_POS_HUEditor_Filter.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_C_POS_HUEditor_Filter> queryBuilder = queryBL.createQueryBuilder(I_C_POS_HUEditor_Filter.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem();
 

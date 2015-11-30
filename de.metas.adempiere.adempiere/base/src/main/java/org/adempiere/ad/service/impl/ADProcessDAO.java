@@ -54,8 +54,7 @@ public class ADProcessDAO implements IADProcessDAO
 	public int retriveProcessIdByClassIfUnique(final Properties ctx, final Class<?> processClass)
 	{
 		List<Integer> processIds = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Process.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Process.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Process.COLUMN_Classname, processClass.getName())
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -80,8 +79,7 @@ public class ADProcessDAO implements IADProcessDAO
 	public int retriveProcessIdByValue(final Properties ctx, final String processValue)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Process.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Process.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Process.COLUMN_Value, processValue)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -92,8 +90,7 @@ public class ADProcessDAO implements IADProcessDAO
 	public I_AD_Process retriveProcessByValue(final Properties ctx, final String processValue)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Process.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Process.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Process.COLUMN_Value, processValue)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -178,8 +175,7 @@ public class ADProcessDAO implements IADProcessDAO
 		// Filter by assigned table processes
 		{
 			final IQuery<I_AD_Table_Process> queryTableProcessForTable = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_AD_Table_Process.class)
-					.setContext(ctx, trxName)
+					.createQueryBuilder(I_AD_Table_Process.class, ctx, trxName)
 					.filter(new EqualsQueryFilter<I_AD_Table_Process>(I_AD_Table_Process.COLUMNNAME_AD_Table_ID, adTableId))
 					.create()
 					.setOnlyActiveRecords(true);
@@ -198,8 +194,7 @@ public class ADProcessDAO implements IADProcessDAO
 		}
 
 		final IQueryBuilder<I_AD_Process> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Process.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_AD_Process.class, ctx, trxName)
 				.filter(filters);
 
 		queryBuilder.orderBy()
@@ -213,8 +208,7 @@ public class ADProcessDAO implements IADProcessDAO
 		final String trxName = ITrx.TRXNAME_NoneNotNull;
 
 		final IQueryBuilder<I_AD_Process> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Process.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_AD_Process.class, ctx, trxName)
 				.filter(new EqualsQueryFilter<I_AD_Process>(I_AD_Process.COLUMNNAME_AD_Form_ID, AD_Form_ID));
 
 		return queryBuilder.create()

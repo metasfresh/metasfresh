@@ -128,16 +128,6 @@
 		</dependency>
 
 		<!-- unit testing dependencies -->
-
-
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>test</artifactId>
-			<version>5.10</version>
-			<classifier>jdk15</classifier>
-			<scope>test</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.easymock</groupId>
 			<artifactId>easymock</artifactId>
@@ -150,6 +140,12 @@
 			<artifactId>easymockclassextension</artifactId>
 			<version>2.4</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.easymock</groupId>
+					<artifactId>easymock</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 

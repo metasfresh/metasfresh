@@ -62,8 +62,7 @@ public class FactAcctDAO implements IFactAcctDAO
 		final int recordId = InterfaceWrapperHelper.getId(document);
 
 		final IQueryBuilder<I_Fact_Acct> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_Fact_Acct.class)
-				.setContext(document)
+				.createQueryBuilder(I_Fact_Acct.class, document)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId);
 
@@ -82,8 +81,7 @@ public class FactAcctDAO implements IFactAcctDAO
 		final int lineId = InterfaceWrapperHelper.getId(documentLine);
 
 		final IQueryBuilder<I_Fact_Acct> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_Fact_Acct.class)
-				.setContext(documentLine)
+				.createQueryBuilder(I_Fact_Acct.class, documentLine)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, lineId);

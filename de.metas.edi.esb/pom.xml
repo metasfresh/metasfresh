@@ -123,13 +123,14 @@
 			<version>${smooks.version}</version>
 		</dependency>
 
+<!-- 
 		<dependency>
 			<groupId>org.milyn</groupId>
 			<artifactId>milyn-smooks-scripting</artifactId>
 			<version>${smooks.version}</version>
 			<scope>test</scope>
 		</dependency>
-
+ -->
 		<dependency>
 			<groupId>xalan</groupId>
 			<artifactId>xalan</artifactId>
@@ -147,7 +148,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.6.1</version>
+			<version>1.6.6</version>
 			<scope>provided</scope>
 		</dependency>
 

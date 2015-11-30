@@ -68,8 +68,7 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 	@Override
 	public I_M_HU_Storage retrieveStorage(final I_M_HU hu, final int productId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Storage.class)
-				.setContext(hu)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Storage.class, hu)
 				.filter(new EqualsQueryFilter<I_M_HU_Storage>(I_M_HU_Storage.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
 				.filter(new EqualsQueryFilter<I_M_HU_Storage>(I_M_HU_Storage.COLUMNNAME_M_Product_ID, productId))
 				.create()
@@ -87,8 +86,7 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 	public List<I_M_HU_Storage> retrieveStorages(final I_M_HU hu)
 	{
 		final List<I_M_HU_Storage> huStorages = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Storage.class)
-				.setContext(hu)
+				.createQueryBuilder(I_M_HU_Storage.class, hu)
 				.filter(new EqualsQueryFilter<I_M_HU_Storage>(I_M_HU_Storage.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
 				.create()
 				.setOnlyActiveRecords(true)
@@ -106,8 +104,7 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 	@Override
 	public I_M_HU_Item_Storage retrieveItemStorage(final I_M_HU_Item huItem, final I_M_Product product)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Item_Storage.class)
-				.setContext(huItem)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Item_Storage.class, huItem)
 				.filter(new EqualsQueryFilter<I_M_HU_Item_Storage>(I_M_HU_Item_Storage.COLUMNNAME_M_HU_Item_ID, huItem.getM_HU_Item_ID()))
 				.filter(new EqualsQueryFilter<I_M_HU_Item_Storage>(I_M_HU_Item_Storage.COLUMNNAME_M_Product_ID, product.getM_Product_ID()))
 				.create()
@@ -119,8 +116,7 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 	public List<I_M_HU_Item_Storage> retrieveItemStorages(final I_M_HU_Item huItem)
 	{
 		final IQueryBuilder<I_M_HU_Item_Storage> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Item_Storage.class)
-				.setContext(huItem)
+				.createQueryBuilder(I_M_HU_Item_Storage.class, huItem)
 				.filter(new EqualsQueryFilter<I_M_HU_Item_Storage>(I_M_HU_Item_Storage.COLUMNNAME_M_HU_Item_ID, huItem.getM_HU_Item_ID()));
 
 		queryBuilder.orderBy()

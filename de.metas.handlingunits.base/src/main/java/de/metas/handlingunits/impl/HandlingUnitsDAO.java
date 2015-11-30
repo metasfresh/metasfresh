@@ -152,8 +152,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	// NOTE: for caching to work, don't make it final
 	/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, final int piId)
 	{
-		final I_M_HU_PI pi = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final I_M_HU_PI pi = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class, ctx, ITrx.TRXNAME_None)
 				.filter(new EqualsQueryFilter<I_M_HU_PI>(I_M_HU_PI.COLUMNNAME_M_HU_PI_ID, piId))
 				.create()
 				.firstOnly(I_M_HU_PI.class);
@@ -393,8 +392,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			final @CacheTrx String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final List<I_M_HU_PI_Item> piItems = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
-				.setContext(ctx, trxName)
+		final List<I_M_HU_PI_Item> piItems = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx, trxName)
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID, huPIVersionId)
 				.create()
 				// .setOnlyActiveRecords(true) // retrieve all records, not only the active ones
@@ -421,8 +419,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			final int piId,
 			@CacheTrx final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Version.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Version.class, ctx, trxName)
 				.addEqualsFilter(I_M_HU_PI_Version.COLUMN_M_HU_PI_ID, piId)
 				.create()
 				.setOnlyActiveRecords(false) // return non-active also
@@ -459,8 +456,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			final int piId,
 			final @CacheTrx String trxName)
 	{
-		final I_M_HU_PI_Version version = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Version.class)
-				.setContext(ctx, trxName)
+		final I_M_HU_PI_Version version = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Version.class, ctx, trxName)
 				.addEqualsFilter(I_M_HU_PI_Version.COLUMN_M_HU_PI_ID, piId)
 				.addEqualsFilter(I_M_HU_PI_Version.COLUMN_IsCurrent, true)
 				.addOnlyActiveRecordsFilter()
@@ -473,8 +469,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public List<I_M_HU_PI_Item> retrievePIItemsForPackingMaterial(final I_M_HU_PackingMaterial pm)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item.class)
-				.setContext(pm)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item.class, pm)
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_M_HU_PackingMaterial_ID, pm.getM_HU_PackingMaterial_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -485,8 +480,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Cached(cacheName = I_M_HU_PI.Table_Name + "#By#ctx")
 	public List<I_M_HU_PI> retrieveAvailablePIs(@CacheCtx final Properties ctx)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_M_HU_PI.class);
@@ -510,8 +504,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class)
-				.setContext(ctx, trxName);
+		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_M_HU> filters = queryBuilder.getFilters();
 		filters.addInArrayFilter(I_M_HU.COLUMN_M_Locator_ID, locatorIds);
@@ -548,8 +541,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_M_HU_PI_Item> piItemsQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_M_HU_PI_Item> piItemsQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter();
 
 		//
@@ -791,8 +783,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			final @CacheCtx Properties ctx,
 			final @CacheTrx String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_DD_NetworkDistribution.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_DD_NetworkDistribution.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.filter(new EqualsQueryFilter<I_DD_NetworkDistribution>(I_DD_NetworkDistribution.COLUMNNAME_IsHUDestroyed, true))
 				.create()
@@ -822,8 +813,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Cached(cacheName = I_M_HU_Status.Table_Name + "#All", expireMinutes = Cached.EXPIREMINUTES_Never)
 	Map<String, I_M_HU_Status> retrieveAllHUStatuses(@CacheCtx final Properties ctx)
 	{
-		final List<I_M_HU_Status> huStatuses = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Status.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final List<I_M_HU_Status> huStatuses = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Status.class, ctx, ITrx.TRXNAME_None)
 				// .addOnlyActiveRecordsFilter() // get all!
 				.create()
 				.list(I_M_HU_Status.class);

@@ -72,8 +72,7 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_C_Order> orderQueryBuilder = queryBL.createQueryBuilder(I_C_Order.class)
-				.setContext(context)
+		final IQueryBuilder<I_C_Order> orderQueryBuilder = queryBL.createQueryBuilder(I_C_Order.class, context)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_IsSOTrx, true)
 
@@ -105,14 +104,14 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 						.addEqualsFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, vendor_ID)
 						.addEqualsFilter(I_C_BPartner_Product.COLUMN_C_BPartner_Vendor_ID, vendor_ID);
 
-				final IQuery<I_M_Product> productFilter = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
+				final IQuery<I_M_Product> productFilter = queryBL.createQueryBuilder(I_C_BPartner_Product.class, context)
 						.addOnlyActiveRecordsFilter()
 						.filter(bpProductFilter)
 						.andCollect(I_M_Product.COLUMN_M_Product_ID, I_M_Product.class)
 						.addOnlyActiveRecordsFilter()
 						.create();
 
-				final IQuery<I_C_OrderLine> bpProductOrderLineQuery = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				final IQuery<I_C_OrderLine> bpProductOrderLineQuery = queryBL.createQueryBuilder(I_C_OrderLine.class, context)
 						.addOnlyActiveRecordsFilter()
 						.addInSubQueryFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productFilter)
 						.create();
@@ -161,8 +160,7 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_C_OrderLine> orderLineQueryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.setContext(order)
+		final IQueryBuilder<I_C_OrderLine> orderLineQueryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class, order)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
 				.addCompareFilter(purchaseQtySource, Operator.Greather, BigDecimal.ZERO)

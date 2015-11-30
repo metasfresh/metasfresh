@@ -72,8 +72,7 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_DD_NetworkDistributionLine> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_DD_NetworkDistributionLine.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_DD_NetworkDistributionLine.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_DD_NetworkDistributionLine> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_DD_NetworkDistributionLine.COLUMNNAME_DD_NetworkDistribution_ID, distributionNetworkId);
@@ -157,8 +156,7 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 		// * has our Plant and Org warehouses as target
 		// * are configured to keep the target warehouse's Plant
 		final List<I_DD_NetworkDistributionLine> networkLinesWithKeepTargetPlant = queryBL
-				.createQueryBuilder(I_DD_NetworkDistributionLine.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_DD_NetworkDistributionLine.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DD_NetworkDistributionLine.COLUMNNAME_IsKeepTargetPlant, true)
 				//

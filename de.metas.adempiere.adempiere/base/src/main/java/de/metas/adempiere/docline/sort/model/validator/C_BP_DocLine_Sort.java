@@ -60,8 +60,7 @@ public class C_BP_DocLine_Sort
 
 		//
 		// Header query builder
-		final IQueryBuilder<I_C_DocLine_Sort> docLineQueryBuilder = queryBL.createQueryBuilder(I_C_DocLine_Sort.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_DocLine_Sort> docLineQueryBuilder = queryBL.createQueryBuilder(I_C_DocLine_Sort.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter();
 
 		final I_C_DocLine_Sort sort = bpSort.getC_DocLine_Sort();

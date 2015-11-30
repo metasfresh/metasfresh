@@ -87,8 +87,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	
 	private final IQueryBuilder<I_C_InvoiceLine> retrieveLinesQuery(final Properties ctx, final int invoiceId, final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceLine.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceLine.class, ctx, trxName)
 				// FIXME find out if this needs to return *all* lines or just active ones
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
 				//
@@ -112,8 +111,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Override
 	public I_C_InvoiceLine retrieveReversalLine(final I_C_InvoiceLine line, final int reversalInvoiceId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceLine.class)
-				.setContext(line)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceLine.class, line)
 				.filter(new EqualsQueryFilter<I_C_InvoiceLine>(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, reversalInvoiceId))
 				.filter(new EqualsQueryFilter<I_C_InvoiceLine>(I_C_InvoiceLine.COLUMNNAME_Line, line.getLine()))
 				.create()
@@ -128,8 +126,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inoutLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(inoutLine);
 		
-		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceLine.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceLine.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.filter(new EqualsQueryFilter<I_C_InvoiceLine>(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inoutLine.getM_InOutLine_ID()));
 
@@ -153,8 +150,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 			return Collections.emptyIterator();
 		}
 
-		return queryBL.createQueryBuilder(I_C_Invoice.class)
-				.setContext(creditMemo)
+		return queryBL.createQueryBuilder(I_C_Invoice.class, creditMemo)
 				.filterByClientId()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_CreditMemo_ID, creditMemo.getC_Invoice_ID())
 				.create()
@@ -174,8 +170,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 			return Collections.emptyIterator();
 		}
 
-		return queryBL.createQueryBuilder(I_C_Invoice.class)
-				.setContext(adjustmentCharge)
+		return queryBL.createQueryBuilder(I_C_Invoice.class, adjustmentCharge)
 				.filterByClientId()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_AdjustmentCharge_ID, adjustmentCharge.getC_Invoice_ID())
 				.create()

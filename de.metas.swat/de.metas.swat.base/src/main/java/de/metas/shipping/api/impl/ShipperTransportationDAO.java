@@ -47,8 +47,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		Check.assumeNotNull(shipperTransportation, "shipperTransportation not null");
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShippingPackage.class)
-				.setContext(shipperTransportation)
+				.createQueryBuilder(I_M_ShippingPackage.class, shipperTransportation)
 				.filter(new EqualsQueryFilter<I_M_ShippingPackage>(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportation.getM_ShipperTransportation_ID()))
 				.create()
 				.list(I_M_ShippingPackage.class);
@@ -58,8 +57,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	public <T extends I_M_ShipperTransportation> List<T> retrieveOpenShipperTransportations(final Properties ctx, final Class<T> clazz)
 	{
 		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(clazz)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(clazz, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Entwurf) // Drafts
 		;
@@ -78,8 +76,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		Check.assumeNotNull(mpackage, "mpackage not null");
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShippingPackage.class)
-				.setContext(mpackage)
+				.createQueryBuilder(I_M_ShippingPackage.class, mpackage)
 				.filter(new EqualsQueryFilter<I_M_ShippingPackage>(I_M_ShippingPackage.COLUMNNAME_M_Package_ID, mpackage.getM_Package_ID()))
 				.create()
 				.list(I_M_ShippingPackage.class);

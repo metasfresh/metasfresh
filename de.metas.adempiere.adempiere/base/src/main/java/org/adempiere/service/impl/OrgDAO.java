@@ -47,8 +47,7 @@ public class OrgDAO implements IOrgDAO
 	public List<I_AD_Org> retrieveClientOrgs(@CacheCtx final Properties ctx, final int adClientId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Org.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Org.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Org.COLUMNNAME_AD_Client_ID, adClientId)
 				.create()
 				.list(I_AD_Org.class);
@@ -59,8 +58,7 @@ public class OrgDAO implements IOrgDAO
 	public I_AD_Org retrieveOrg(@CacheCtx final Properties ctx, final int adOrgId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Org.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Org.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, adOrgId)
 				.create()
 				.firstOnly(I_AD_Org.class);
@@ -71,8 +69,7 @@ public class OrgDAO implements IOrgDAO
 	public I_AD_OrgInfo retrieveOrgInfo(@CacheCtx final Properties ctx, final int adOrgId, @CacheTrx final String trxName)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_OrgInfo.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_AD_OrgInfo.class, ctx, trxName)
 				.addEqualsFilter(I_AD_OrgInfo.COLUMNNAME_AD_Org_ID, adOrgId)
 				.create()
 				.firstOnly(I_AD_OrgInfo.class);
@@ -89,8 +86,7 @@ public class OrgDAO implements IOrgDAO
 		final String valueFixed = value.trim();
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Org.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Org.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, valueFixed)
 				.create()
 				.setClient_ID()
@@ -112,8 +108,7 @@ public class OrgDAO implements IOrgDAO
 		}
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_TreeNode.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_TreeNode.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_AD_Tree_ID, adTreeOrgId)
 				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_Parent_ID, parentOrgId)
 				.addOnlyActiveRecordsFilter()

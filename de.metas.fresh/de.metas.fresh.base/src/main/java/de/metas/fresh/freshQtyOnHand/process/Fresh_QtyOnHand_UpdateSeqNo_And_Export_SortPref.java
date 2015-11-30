@@ -178,8 +178,7 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends SvrProcess
 	private Iterator<I_Fresh_QtyOnHand_Line> retrieveLinesWithDateDoc(final Timestamp dateDoc)
 	{
 		final IQueryBuilder<I_Fresh_QtyOnHand_Line> linesWithDateDocQueryBuilder =
-				queryBL.createQueryBuilder(I_Fresh_QtyOnHand.class)
-						.setContext(getCtx(), ITrx.TRXNAME_None)
+				queryBL.createQueryBuilder(I_Fresh_QtyOnHand.class, getCtx(), ITrx.TRXNAME_None)
 						.addOnlyActiveRecordsFilter()
 						.addEqualsFilter(I_Fresh_QtyOnHand.COLUMN_Processed, true)
 						.addEqualsFilter(I_Fresh_QtyOnHand.COLUMN_DateDoc, dateDoc)

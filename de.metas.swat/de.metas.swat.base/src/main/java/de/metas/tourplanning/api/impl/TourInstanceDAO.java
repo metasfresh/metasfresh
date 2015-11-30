@@ -122,8 +122,7 @@ public class TourInstanceDAO implements ITourInstanceDAO
 		Check.assumeNotNull(contextProvider, "contextProvider not null");
 
 		final IQueryBuilder<I_M_Tour_Instance> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Tour_Instance.class)
-				.setContext(contextProvider)
+				.createQueryBuilder(I_M_Tour_Instance.class, contextProvider)
 				// Only active tour instances are relevant for us
 				.addOnlyActiveRecordsFilter()
 				// Matching our params
@@ -167,8 +166,7 @@ public class TourInstanceDAO implements ITourInstanceDAO
 		Check.assume(tourInstanceId > 0, "tourInstance shall not be a new/not saved one");
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_DeliveryDay.class)
-				.setContext(tourInstance)
+				.createQueryBuilder(I_M_DeliveryDay.class, tourInstance)
 				// .addOnlyActiveRecordsFilter() // check all records
 				// Delivery days for our tour instance
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_M_Tour_Instance_ID, tourInstanceId)
@@ -181,8 +179,7 @@ public class TourInstanceDAO implements ITourInstanceDAO
 		Check.assumeNotNull(shipperTransportation, "shipperTransportation not null");
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Tour_Instance.class)
-				.setContext(shipperTransportation)
+				.createQueryBuilder(I_M_Tour_Instance.class, shipperTransportation)
 				// .addOnlyActiveRecordsFilter()
 				// Delivery days for our tour instance
 				.addEqualsFilter(I_M_Tour_Instance.COLUMN_M_ShipperTransportation_ID, shipperTransportation.getM_ShipperTransportation_ID())

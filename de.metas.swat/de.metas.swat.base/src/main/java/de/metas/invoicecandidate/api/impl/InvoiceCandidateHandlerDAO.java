@@ -52,8 +52,7 @@ public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_C_ILCandHandler> queryBuilder = queryBL
-				.createQueryBuilder(I_C_ILCandHandler.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_ILCandHandler.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter() // only those handlers which are active
 		;
 

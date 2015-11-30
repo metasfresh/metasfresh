@@ -77,8 +77,7 @@ public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends Singl
 	protected List<IFacet<I_C_Invoice_Candidate>> collectFacets(final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
 	{
 		// Match only Products which are Packing Materials
-		final IQuery<I_M_HU_PackingMaterial> isPackingMaterialQueryFilter = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class)
-				.setContext(icQueryBuilder.getCtx(), icQueryBuilder.getTrxName())
+		final IQuery<I_M_HU_PackingMaterial> isPackingMaterialQueryFilter = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class, icQueryBuilder.getCtx(), icQueryBuilder.getTrxName())
 				.create();
 
 		//

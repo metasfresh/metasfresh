@@ -695,8 +695,7 @@ public class Doc_InOut extends Doc
 		}
 
 		final List<I_M_MatchInv> matchInvs = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_MatchInv.class)
-				.setContext(getCtx(), getTrxName())
+				.createQueryBuilder(I_M_MatchInv.class, getCtx(), getTrxName())
 				.addInArrayFilter(I_M_MatchInv.COLUMN_M_InOutLine_ID, inoutLineIds)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)

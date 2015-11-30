@@ -63,8 +63,7 @@ import de.metas.adempiere.docline.sort.api.IDocLineSortItemFinder;
 	{
 		//
 		// BPartner query builder
-		final IQueryBuilder<I_C_BP_DocLine_Sort> bpQueryBuilder = queryBL.createQueryBuilder(I_C_BP_DocLine_Sort.class)
-				.setContext(getCtx(), ITrx.TRXNAME_None)
+		final IQueryBuilder<I_C_BP_DocLine_Sort> bpQueryBuilder = queryBL.createQueryBuilder(I_C_BP_DocLine_Sort.class, getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter();
 
 		bpQueryBuilder.addEqualsFilter(I_C_BP_DocLine_Sort.COLUMN_C_BPartner_ID, getC_BPartner_ID());
@@ -95,8 +94,7 @@ import de.metas.adempiere.docline.sort.api.IDocLineSortItemFinder;
 
 		//
 		// Retrieve default if no match was found
-		final IQueryBuilder<I_C_DocLine_Sort> docLineDefaultQueryBuilder = queryBL.createQueryBuilder(I_C_DocLine_Sort.class)
-				.setContext(getCtx(), ITrx.TRXNAME_None)
+		final IQueryBuilder<I_C_DocLine_Sort> docLineDefaultQueryBuilder = queryBL.createQueryBuilder(I_C_DocLine_Sort.class, getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter();
 
 		//

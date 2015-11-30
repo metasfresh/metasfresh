@@ -10,12 +10,12 @@ package org.adempiere.ad.dao;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,7 +32,7 @@ import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
 /**
- * 
+ *
  * @author tsa
  *
  * @param <T> model type
@@ -43,17 +43,13 @@ public interface IQueryBuilder<T>
 
 	Class<T> getModelClass();
 
-	IQueryBuilder<T> setContext(Properties ctx, String trxName);
-
-	IQueryBuilder<T> setContext(Object contextProvider);
-
 	Properties getCtx();
 
 	String getTrxName();
 
 	/**
 	 * Add the given filter.
-	 * 
+	 *
 	 * @param filter
 	 * @return
 	 */
@@ -64,7 +60,7 @@ public interface IQueryBuilder<T>
 	ICompositeQueryFilter<T> getFilters();
 
 	IQueryBuilder<T> setLimit(int limit);
-	
+
 	int getLimit();
 
 	IQueryBuilderOrderByClause<T> orderBy();
@@ -87,18 +83,18 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Adds a substring filter to this instance's internal composite filter.
-	 * 
+	 *
 	 * @param columnname
 	 * @param substring
 	 * @return this
 	 * @see ICompositeQueryFilter#addSubstringFilter(String, String)
-	 * 
+	 *
 	 */
 	IQueryBuilder<T> addSubstringFilter(String columnname, String substring, boolean ignoreCase);
 
 	/**
 	 * See {@link #addSubstringFilter(String, String, boolean)}.
-	 * 
+	 *
 	 * @param column
 	 * @param substring
 	 * @param ignoreCase
@@ -134,7 +130,7 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitivelly expected).
-	 * 
+	 *
 	 * @param column
 	 * @param values
 	 * @return this
@@ -143,7 +139,7 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitivelly expected).
-	 * 
+	 *
 	 * @param columnName
 	 * @param values
 	 * @return this
@@ -153,7 +149,7 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 * 
+	 *
 	 * @param columnName the key column from the "main" query
 	 * @param subQueryColumnName the key column from the "sub" query
 	 * @param subQuery the actual sub query
@@ -164,7 +160,7 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addNotInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 * 
+	 *
 	 * @param column the key column from the "main" query
 	 * @param subQueryColumn the key column from the "sub" query
 	 * @param subQuery the actual sub query
@@ -176,20 +172,20 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Create a new {@link IQueryBuilder} which collects models from given model column.
-	 * 
+	 *
 	 * e.g. Collect all business partners from matched invoices:
-	 * 
+	 *
 	 * <pre>
 	 * final IQueryBuilder&lt;I_C_Order&gt; ordersQueryBuilder = ....;
-	 * 
+	 *
 	 * final List&lt;I_C_BPartner&gt; bpartners = ordersQueryBuilder
 	 *   .addCollect(I_C_Order.COLUMN_Bill_Partner_ID) // an IQueryBuilder&lt;I_C_BPartner&gt; is returned here
 	 *   .create() // create IQuery&lt;I_C_BPartner&gt;
 	 *   .list()   // list bpartners
 	 * </pre>
-	 * 
+	 *
 	 * <b>the method assumes that th</b>
-	 * 
+	 *
 	 * @param column model column
 	 * @return list of collected models
 	 */
@@ -197,7 +193,7 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Same as {@link #andCollect(ModelColumn)} but you can specify what interface to use for returning values.
-	 * 
+	 *
 	 * @param column
 	 * @param collectedType
 	 * @return
@@ -208,7 +204,7 @@ public interface IQueryBuilder<T>
 	/**
 	 * Returns record that reference the result of the query which was specified so far.<br>
 	 * Example: first, configure a query builder to select a certain kind of <code>M_InOuts</code>. then use this method to retrieve not the specified inOuts, but it's M_InOutLines.
-	 * 
+	 *
 	 * @param childTableColumn
 	 * @param childType
 	 * @return
@@ -217,7 +213,7 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Sets the join mode of this instance's internal composite filter.
-	 * 
+	 *
 	 * @return this
 	 * @see ICompositeQueryFilter#setJoinOr()
 	 */
@@ -225,7 +221,7 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Sets the join mode of this instance's internal composite filter.
-	 * 
+	 *
 	 * @return this
 	 * @see ICompositeQueryFilter#setJoinAnd()
 	 */
@@ -233,7 +229,7 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Will only return records that are referenced by a <code>T_Selection</code> records which has the given <code>AD_PInstance_ID</code>.
-	 * 
+	 *
 	 * @param AD_PInstance_ID
 	 * @return
 	 */
@@ -241,12 +237,12 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Start an aggregation of different columns, everything groupped by given <code>column</code>
-	 * 
+	 *
 	 * @param column
 	 * @return aggregation builder
 	 */
 	<TargetModelType> IQueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(ModelColumn<T, TargetModelType> column);
-	
+
 	IQueryBuilder<T> addBetweenFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier);
 
 	IQueryBuilder<T> addBetweenFilter(final String columnName, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier);
@@ -259,7 +255,7 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Creates, appends and returns new composite filter.
-	 * 
+	 *
 	 * @return created composite filter
 	 */
 	ICompositeQueryFilter<T> addCompositeQueryFilter();

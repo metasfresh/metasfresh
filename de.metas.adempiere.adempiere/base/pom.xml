@@ -74,13 +74,11 @@
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
-			<version>1.4.3</version>
 		</dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
-			<version>2.3</version>
 			<!-- scope>provided</scope> required also at runtime, for de.metas.endcustomer.*.aopc-->
 		</dependency>
 
@@ -121,6 +119,10 @@
 					<!-- NOTE we specified above that we are using another version -->
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-jms_1.1_spec</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

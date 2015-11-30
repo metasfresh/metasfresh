@@ -118,8 +118,7 @@ public class UserDAO implements IUserDAO
 	public I_AD_User retrieveUser(@CacheCtx final Properties ctx, final int adUserId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_User.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, adUserId)
 				.create()
 				.firstOnly(I_AD_User.class);

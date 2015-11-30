@@ -994,8 +994,7 @@ public class AcctViewer extends CFrame
 		// Retrieve the Fact_Acct record.
 		// NOTE: we query for it because in case it was deleted (user re-posted the document in another window), we don't want to get an error here.
 		final I_Fact_Acct factAcct = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_Fact_Acct.class)
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_Fact_Acct.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Fact_Acct_ID, factAcctId)
 				.create()
 				.firstOnly(I_Fact_Acct.class);

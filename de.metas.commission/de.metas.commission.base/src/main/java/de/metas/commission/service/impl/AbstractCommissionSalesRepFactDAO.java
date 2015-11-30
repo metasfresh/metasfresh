@@ -376,8 +376,7 @@ public abstract class AbstractCommissionSalesRepFactDAO implements ICommissionSa
 				.addInArrayFilter(I_C_AdvComSalesRepFact.COLUMNNAME_Status, status)
 				.addOnlyActiveRecordsFilter();
 
-		final IQueryBuilder<I_C_AdvComSalesRepFact> queryBuilder = queryBL.createQueryBuilder(I_C_AdvComSalesRepFact.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_AdvComSalesRepFact> queryBuilder = queryBL.createQueryBuilder(I_C_AdvComSalesRepFact.class, ctx, trxName)
 				.filter(filter);
 
 		queryBuilder.orderBy()

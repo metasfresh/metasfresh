@@ -57,8 +57,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_PP_Order_Node> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Order_Node.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_PP_Order_Node.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_PP_Order_Node> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_PP_Order_Node.COLUMNNAME_PP_Order_Workflow_ID, ppOrderWorkflowId);
@@ -85,8 +84,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_PP_Order_Node> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Order_Node.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_PP_Order_Node.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_PP_Order_Node> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_PP_Order_Node.COLUMNNAME_PP_Order_ID, ppOrderId);
@@ -123,8 +121,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_PP_Order_NodeNext> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Order_NodeNext.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_PP_Order_NodeNext.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_PP_Order_NodeNext> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_PP_Order_NodeNext.COLUMNNAME_PP_Order_Node_ID, orderNodeId);
@@ -195,8 +192,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 	@Override
 	public I_PP_Order_Workflow retrieveOrderWorkflow(final I_PP_Order order)
 	{
-		final I_PP_Order_Workflow orderWorkflow = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Workflow.class)
-				.setContext(order)
+		final I_PP_Order_Workflow orderWorkflow = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Workflow.class, order)
 				.filter(new EqualsQueryFilter<I_PP_Order_Workflow>(I_PP_Order_Workflow.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID()))
 				.filter(ActiveRecordQueryFilter.getInstance(I_PP_Order_Workflow.class))
 				.create()
@@ -211,8 +207,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 	@Override
 	public List<I_PP_Order_Node> retrieveOrderNodes(final I_PP_Order order)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Node.class)
-				.setContext(order)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Node.class, order)
 				.filter(new EqualsQueryFilter<I_PP_Order_Node>(I_PP_Order_Node.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID()))
 				.filter(ActiveRecordQueryFilter.getInstance(I_PP_Order_Node.class))
 				.create()
@@ -222,8 +217,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 	@Override
 	public List<I_PP_Order_Node_Asset> retrieveOrderNodeAssets(final I_PP_Order order)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Node_Asset.class)
-				.setContext(order)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Node_Asset.class, order)
 				.filter(new EqualsQueryFilter<I_PP_Order_Node_Asset>(I_PP_Order_Node_Asset.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID()))
 				.create()
 				// .setOnlyActiveRecords(true)
@@ -233,8 +227,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 	@Override
 	public List<I_PP_Order_Node_Product> retrieveOrderNodeProducts(final I_PP_Order order)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Node_Product.class)
-				.setContext(order)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Node_Product.class, order)
 				.filter(new EqualsQueryFilter<I_PP_Order_Node_Product>(I_PP_Order_Node_Product.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID()))
 				.create()
 				// .setOnlyActiveRecords(true)
@@ -244,8 +237,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 	@Override
 	public List<I_PP_Order_NodeNext> retrieveOrderNodeNexts(final I_PP_Order order)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_NodeNext.class)
-				.setContext(order)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_NodeNext.class, order)
 				.filter(new EqualsQueryFilter<I_PP_Order_NodeNext>(I_PP_Order_NodeNext.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID()))
 				.create()
 				// .setOnlyActiveRecords(true)

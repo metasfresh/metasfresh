@@ -108,8 +108,7 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 	private List<I_C_Queue_WorkPackage_Param> retrieveWorkpackageParametersList(final I_C_Queue_WorkPackage workpackage)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Queue_WorkPackage_Param.class)
-				.setContext(workpackage)
+				.createQueryBuilder(I_C_Queue_WorkPackage_Param.class, workpackage)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Queue_WorkPackage_Param.COLUMN_C_Queue_WorkPackage_ID, workpackage.getC_Queue_WorkPackage_ID())
 				.create()

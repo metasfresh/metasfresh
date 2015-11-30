@@ -91,8 +91,7 @@ public class WorkpackageCleanupStaleEntries
 		this.staleWorkpackagesCount = Services.get(IQueryBL.class)
 				//
 				// Select stale workpackages
-				.createQueryBuilder(I_C_Queue_WorkPackage.class)
-				.setContext(getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_Queue_WorkPackage.class, getCtx(), ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMN_Processed, false)
 				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMN_IsReadyForProcessing, false)
 				.addOnlyActiveRecordsFilter()

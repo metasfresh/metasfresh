@@ -68,8 +68,7 @@ public class OrderDAO extends AbstractOrderDAO
 	{
 		// retrieve purchase orders in specified time frame
 		final IQueryBuilder<I_C_Order> queryBuilder =
-				Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class)
-						.setContext(bpLoc)
+				Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class, bpLoc)
 						.addEqualsFilter(I_C_Order.COLUMNNAME_IsSOTrx, false)
 
 						// ts: it seems not really required and might be even counterproductive if we somhow extend

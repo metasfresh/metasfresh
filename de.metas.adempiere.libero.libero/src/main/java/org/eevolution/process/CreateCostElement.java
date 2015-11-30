@@ -181,8 +181,7 @@ public class CreateCostElement extends SvrProcess
 			return Collections.singletonList(0);
 		}
 
-		final IQueryBuilder<I_AD_Org> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Org.class)
-				.setContext(this)
+		final IQueryBuilder<I_AD_Org> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Org.class, this)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 
@@ -204,8 +203,7 @@ public class CreateCostElement extends SvrProcess
 		}
 
 		final IQueryBuilder<I_M_CostElement> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_CostElement.class)
-				.setContext(this)
+				.createQueryBuilder(I_M_CostElement.class, this)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 
@@ -231,8 +229,7 @@ public class CreateCostElement extends SvrProcess
 		}
 
 		final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Product.class)
-				.setContext(this)
+				.createQueryBuilder(I_M_Product.class, this)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 

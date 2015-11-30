@@ -10,12 +10,12 @@ package de.metas.materialtracking.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -141,8 +141,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 		final int adTableId = InterfaceWrapperHelper.getTableId(modelClass);
 
 		final IQueryBuilder<I_M_Material_Tracking_Ref> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Material_Tracking_Ref.class)
-				.setContext(materialTracking)
+				.createQueryBuilder(I_M_Material_Tracking_Ref.class, materialTracking)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_M_Material_Tracking_ID, materialTracking.getM_Material_Tracking_ID())
 				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_AD_Table_ID, adTableId);
@@ -197,8 +196,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final I_M_Material_Tracking materialTracking = queryBL.createQueryBuilder(I_M_Material_Tracking.class)
-				.setContext(attributeValue)
+		final I_M_Material_Tracking materialTracking = queryBL.createQueryBuilder(I_M_Material_Tracking.class, attributeValue)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Material_Tracking.COLUMNNAME_M_AttributeValue_ID, attributeValue.getM_AttributeValue_ID())
 				.create()

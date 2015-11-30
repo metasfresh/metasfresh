@@ -65,8 +65,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_PP_Product_BOMLine> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Product_BOMLine.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_PP_Product_BOMLine.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_PP_Product_BOMLine> filters = queryBuilder.getFilters();
 		filters.addOnlyActiveRecordsFilter();
@@ -143,8 +142,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Product_BOM.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_PP_Product_BOM.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId);
@@ -172,8 +170,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	public boolean hasBOMs(final I_M_Product product)
 	{
 		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Product_BOM.class)
-				.setContext(product);
+				.createQueryBuilder(I_PP_Product_BOM.class, product);
 
 		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, product.getM_Product_ID());
@@ -188,8 +185,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	public IQuery<I_PP_Product_BOMLine> retrieveBOMLinesForProductQuery(final Properties ctx, final int productId, final String trxName)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Product_BOMLine.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_PP_Product_BOMLine.class, ctx, trxName)
 				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)

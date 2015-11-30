@@ -14,11 +14,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>batik</groupId>
 			<artifactId>batik-bridge</artifactId>
 			<version>1.6-1</version>

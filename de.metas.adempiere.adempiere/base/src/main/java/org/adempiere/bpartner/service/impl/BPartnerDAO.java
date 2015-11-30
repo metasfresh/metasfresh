@@ -151,8 +151,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		Check.assumeNotNull(countryCode, "countryCode not null");
 
-		final I_C_Country country = Services.get(IQueryBL.class).createQueryBuilder(I_C_Country.class)
-				.setContext(Env.getCtx(), trxName)
+		final I_C_Country country = Services.get(IQueryBL.class).createQueryBuilder(I_C_Country.class, Env.getCtx(), trxName)
 				.addEqualsFilter(I_C_Country.COLUMNNAME_CountryCode, countryCode)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -171,8 +170,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		Check.assumeNotNull(name, "name not null");
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Location.class)
-				.setContext(Env.getCtx(), trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Location.class, Env.getCtx(), trxName)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_Name, name)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -253,8 +251,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			return Collections.emptyList();
 		}
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Location.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_C_BPartner_Location.class, ctx, trxName)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addOnlyActiveRecordsFilter();
 
@@ -280,8 +277,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	public List<I_AD_User> retrieveContacts(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_AD_User> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_AD_User.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_AD_User> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerId);
@@ -316,8 +312,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_AD_User> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_AD_User.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_AD_User> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerId)
@@ -350,8 +345,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public I_C_Greeting retrieveGreeting(final String name, final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Greeting.class)
-				.setContext(Env.getCtx(), trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Greeting.class, Env.getCtx(), trxName)
 				.addEqualsFilter(I_C_Country.COLUMNNAME_Name, name)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -365,8 +359,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			final Class<T> clazz,
 			final String trxName)
 	{
-		final T result = Services.get(IQueryBL.class).createQueryBuilder(clazz)
-				.setContext(ctx, trxName)
+		final T result = Services.get(IQueryBL.class).createQueryBuilder(clazz, ctx, trxName)
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_OrgBP_ID, orgId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -632,8 +625,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final String valueFixed = value.trim();
 
 		final IQueryBuilder<I_C_BPartner> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner.class)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(I_C_BPartner.class, ctx, ITrx.TRXNAME_None);
 
 		queryBuilder.getFilters()
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, valueFixed)
@@ -658,8 +650,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			final String bpValueFixed = bpValue.trim();
 
 			final IQueryBuilder<I_C_BPartner> queryBuilder = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_C_BPartner.class)
-					.setContext(ctx, ITrx.TRXNAME_None);
+					.createQueryBuilder(I_C_BPartner.class, ctx, ITrx.TRXNAME_None);
 
 			queryBuilder.getFilters()
 					.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, bpValueFixed)
@@ -682,8 +673,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final String bpValueSuffixToFallbackFixed = bpValueSuffixToFallback.trim();
 
 		final IQueryBuilder<I_C_BPartner> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner.class)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(I_C_BPartner.class, ctx, ITrx.TRXNAME_None);
 
 		queryBuilder.getFilters()
 				.addEndsWithQueryFilter(I_C_BPartner.COLUMNNAME_Value, bpValueSuffixToFallbackFixed)
@@ -711,8 +701,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		Check.assumeNotNull(partner, "partner not null");
 
-		final IQueryBuilder<I_C_BP_Relation> queryBuilder = queryBL.createQueryBuilder(I_C_BP_Relation.class)
-				.setContext(contextProvider);
+		final IQueryBuilder<I_C_BP_Relation> queryBuilder = queryBL.createQueryBuilder(I_C_BP_Relation.class, contextProvider);
 
 		//
 		// Filter by partner
@@ -755,8 +744,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Location.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_C_BPartner_Location.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_C_BPartner_Location> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerId);
@@ -777,8 +765,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		final IQueryBuilder<I_C_BP_Relation> bpRelationQueryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BP_Relation.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_C_BP_Relation.class, ctx, trxName)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bPartnerId)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsBillTo, true)
 				.addOnlyActiveRecordsFilter();
@@ -803,8 +790,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			final String trxName)
 	{
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Location.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_C_BPartner_Location.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_C_BPartner_Location> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerId);

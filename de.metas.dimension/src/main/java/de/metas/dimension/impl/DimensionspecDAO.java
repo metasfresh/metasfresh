@@ -55,16 +55,14 @@ public class DimensionspecDAO implements IDimensionspecDAO
 
 	private IQueryBuilder<I_DIM_Dimension_Spec_Assignment> createDimAssignmentQueryBuilderFor(final I_AD_Column column)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_Assignment.class)
-				.setContext(column)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_Assignment.class, column)
 				.addEqualsFilter(I_DIM_Dimension_Spec_Assignment.COLUMN_AD_Column_ID, column.getAD_Column_ID());
 	}
 
 	@Override
 	public void deleteAllSpecAttributeValues(final I_DIM_Dimension_Spec_Attribute specAttr)
 	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_AttributeValue.class)
-				.setContext(specAttr)
+		Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_AttributeValue.class, specAttr)
 				.addEqualsFilter(I_DIM_Dimension_Spec_AttributeValue.COLUMN_DIM_Dimension_Spec_Attribute_ID, specAttr.getDIM_Dimension_Spec_Attribute_ID())
 				.create()
 				.delete();
@@ -73,8 +71,7 @@ public class DimensionspecDAO implements IDimensionspecDAO
 	@Override
 	public void deleteAllAssociations(final I_DIM_Dimension_Spec spec)
 	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_Assignment.class)
-				.setContext(spec)
+		Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_Assignment.class, spec)
 				.addEqualsFilter(I_DIM_Dimension_Spec_Assignment.COLUMN_DIM_Dimension_Spec_ID, spec.getDIM_Dimension_Spec_ID())
 				.create()
 				.delete();
@@ -83,8 +80,7 @@ public class DimensionspecDAO implements IDimensionspecDAO
 	@Override
 	public void deleteAllSpecAttributes(final I_DIM_Dimension_Spec spec)
 	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class)
-				.setContext(spec)
+		Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class, spec)
 				.addEqualsFilter(I_DIM_Dimension_Spec_Attribute.COLUMN_DIM_Dimension_Spec_ID, spec.getDIM_Dimension_Spec_ID())
 				.create()
 				.delete();
@@ -97,8 +93,7 @@ public class DimensionspecDAO implements IDimensionspecDAO
 				.addOnlyActiveRecordsFilter()
 				.create();
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class)
-				.setContext(column)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class, column)
 				.addInSubQueryFilter(I_DIM_Dimension_Spec.COLUMN_DIM_Dimension_Spec_ID, I_DIM_Dimension_Spec_Assignment.COLUMN_DIM_Dimension_Spec_ID, assignmentQuery)
 				.create()
 				.list(I_DIM_Dimension_Spec.class);
@@ -107,8 +102,7 @@ public class DimensionspecDAO implements IDimensionspecDAO
 	@Override
 	public I_DIM_Dimension_Spec retrieveForInternalName(final String internalName, final IContextAware ctxAware)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class)
-				.setContext(ctxAware)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class, ctxAware)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DIM_Dimension_Spec.COLUMN_InternalName, internalName)
 				.create()

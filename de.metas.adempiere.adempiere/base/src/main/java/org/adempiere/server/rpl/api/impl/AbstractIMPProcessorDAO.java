@@ -50,8 +50,7 @@ public abstract class AbstractIMPProcessorDAO implements IIMPProcessorDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(impProcessor);
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_IMP_ProcessorParameter.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_IMP_ProcessorParameter.class, ctx, trxName)
 				.filter(new EqualsQueryFilter<I_IMP_ProcessorParameter>(I_IMP_ProcessorParameter.COLUMNNAME_IMP_Processor_ID, impProcessor.getIMP_Processor_ID()))
 				.filter(ActiveRecordQueryFilter.getInstance(I_IMP_ProcessorParameter.class))
 				.create()
@@ -72,8 +71,7 @@ public abstract class AbstractIMPProcessorDAO implements IIMPProcessorDAO
 	@Override
 	public I_IMP_ProcessorParameter retrieveParameter(final org.compiere.model.I_IMP_Processor impProcessor, final String parameterName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_IMP_ProcessorParameter.class)
-				.setContext(impProcessor)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_IMP_ProcessorParameter.class, impProcessor)
 				.filter(new EqualsQueryFilter<I_IMP_ProcessorParameter>(I_IMP_ProcessorParameter.COLUMNNAME_IMP_Processor_ID, impProcessor.getIMP_Processor_ID()))
 				.filter(new EqualsQueryFilter<I_IMP_ProcessorParameter>(I_IMP_ProcessorParameter.COLUMNNAME_Value, parameterName))
 				.create()
@@ -83,8 +81,7 @@ public abstract class AbstractIMPProcessorDAO implements IIMPProcessorDAO
 	@Override
 	public List<I_IMP_Processor> retrieveAllActive(final Properties ctx)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_IMP_Processor.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_IMP_Processor.class, ctx, ITrx.TRXNAME_None)
 				.filter(ActiveRecordQueryFilter.getInstance(I_IMP_Processor.class))
 				.create()
 				.list(I_IMP_Processor.class);

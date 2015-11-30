@@ -82,8 +82,7 @@ public final class MRPTracer
 		final PrintStream out = new PrintStream(baos);
 
 		final IQueryBuilder<I_PP_MRP> queryBuilder = queryBL
-				.createQueryBuilder(I_PP_MRP.class)
-				.setContext(contextProvider);
+				.createQueryBuilder(I_PP_MRP.class, contextProvider);
 
 		queryBuilder.orderBy()
 				.addColumn(I_PP_MRP.COLUMNNAME_M_Product_ID)
@@ -178,8 +177,7 @@ public final class MRPTracer
 
 		if (X_PP_MRP.TYPEMRP_Demand.equals(typeMRP))
 		{
-			final List<Integer> mrpSupplyIds = Services.get(IQueryBL.class).createQueryBuilder(I_PP_MRP_Alloc.class)
-					.setContext(mrp)
+			final List<Integer> mrpSupplyIds = Services.get(IQueryBL.class).createQueryBuilder(I_PP_MRP_Alloc.class, mrp)
 					.addEqualsFilter(I_PP_MRP_Alloc.COLUMN_PP_MRP_Demand_ID, mrp.getPP_MRP_ID())
 					.andCollect(I_PP_MRP_Alloc.COLUMN_PP_MRP_Supply_ID)
 					.create()
@@ -188,8 +186,7 @@ public final class MRPTracer
 		}
 		else if (X_PP_MRP.TYPEMRP_Supply.equals(typeMRP))
 		{
-			final List<Integer> mrpDemandIds = Services.get(IQueryBL.class).createQueryBuilder(I_PP_MRP_Alloc.class)
-					.setContext(mrp)
+			final List<Integer> mrpDemandIds = Services.get(IQueryBL.class).createQueryBuilder(I_PP_MRP_Alloc.class, mrp)
 					.addEqualsFilter(I_PP_MRP_Alloc.COLUMN_PP_MRP_Supply_ID, mrp.getPP_MRP_ID())
 					.andCollect(I_PP_MRP_Alloc.COLUMN_PP_MRP_Demand_ID)
 					.create()

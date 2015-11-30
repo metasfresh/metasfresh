@@ -110,8 +110,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(shipmentSchedule);
 
 		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
 				.filter(createPickedAndDeliveredFilter(shipmentSchedule))
 				.addOnlyActiveRecordsFilter();
 
@@ -128,8 +127,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(shipmentSchedule);
 
 		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
 				.filter(createPickedNotDeliveredFilter(shipmentSchedule))
 				.addOnlyActiveRecordsFilter();
 
@@ -144,8 +142,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	public BigDecimal retrievePickedNotDeliveredQty(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final BigDecimal qty = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.setContext(shipmentSchedule)
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, shipmentSchedule)
 				.filter(createPickedNotDeliveredFilter(shipmentSchedule))
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -166,8 +163,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		Check.assumeNotNull(modelClass, "modelClass not null");
 
 		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.setContext(shipmentSchedule)
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, shipmentSchedule)
 				// For given shipment schedule
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
 
@@ -185,8 +181,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		Check.assumeNotNull(modelClass, "modelClass not null");
 
 		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.setContext(inoutLine)
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, inoutLine)
 				// For given shipment schedule
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, inoutLine.getM_InOutLine_ID());
 
@@ -203,8 +198,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_M_ShipmentSchedule> linesBuilder =
-				queryBL.createQueryBuilder(I_M_InOutLine.class)
-						.setContext(inOut)
+				queryBL.createQueryBuilder(I_M_InOutLine.class, inOut)
 						.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inOut.getM_InOut_ID())
 						.andCollectChildren(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, I_M_ShipmentSchedule_QtyPicked.class)
 						.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID);

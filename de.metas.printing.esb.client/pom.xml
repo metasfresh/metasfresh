@@ -33,12 +33,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>net.dev.java</groupId>
 			<artifactId>pdf-renderer</artifactId>
 			<version>0.9.0</version>
@@ -56,8 +50,6 @@
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
-<!-- Version 1.4.1 is also available as OSGI bundle for servicemix, see http://repo1.maven.org/maven2/org/apache/servicemix/bundles/org.apache.servicemix.bundles.javax.mail -->
-			<version>1.4.1</version>
 		</dependency>
 	</dependencies>
 

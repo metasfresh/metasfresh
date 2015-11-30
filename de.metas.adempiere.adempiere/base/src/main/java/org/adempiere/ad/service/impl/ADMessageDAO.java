@@ -44,8 +44,7 @@ public class ADMessageDAO implements IADMessageDAO
 	public I_AD_Message retrieveByValue(@CacheCtx final Properties ctx, final String value)
 	{
 		final IQueryBuilder<I_AD_Message> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Message.class)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(I_AD_Message.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_AD_Message> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_AD_Message.COLUMNNAME_Value, value);

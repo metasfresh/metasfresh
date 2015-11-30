@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,14 +66,14 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 /**
  * {@link IHUQueryBuilder} implementation.
- * 
+ *
  * NOTE to developer: if you want to add a new filtering parameter, please make sure you are handling the parameters in following places:
  * <ul>
  * <li> {@link #createQueryFilter()} - creates the actual {@link I_M_HU} filter to be used. Here you will add your filters based on your new parameter value.
  * <li> {@link #copy()} - make sure when copy is invoked, your new parameter is copied
  * <li> {@link #hashCode()}, {@link #equals(Object)} - make sure your new parameter is checked
  * </ul>
- * 
+ *
  * @author tsa
  *
  */
@@ -300,12 +300,10 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	@Override
 	public IQueryBuilder<I_M_HU> createQueryBuilder()
 	{
-		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class);
-
 		//
-		// Set Query context
+		// get Query context
 		final Object contextProvider = getContextProvider();
-		queryBuilder.setContext(contextProvider);
+		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class,contextProvider);
 
 		// Only those HUs which are from our AD_Client
 		queryBuilder.addOnlyContextClient();
@@ -338,8 +336,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		if (!onlyInWarehouseIds.isEmpty() || _excludeAfterPickingLocator || _includeAfterPickingLocator)
 		{
 			final IQueryBuilder<I_M_Locator> locatorsQueryBuilder = queryBL
-					.createQueryBuilder(I_M_Locator.class)
-					.setContext(getContextProvider());
+					.createQueryBuilder(I_M_Locator.class, getContextProvider());
 
 			if (!onlyInWarehouseIds.isEmpty())
 			{
@@ -388,8 +385,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		final Set<Integer> onlyWithProductIds = getOnlyWithProductIds();
 		if (!onlyWithProductIds.isEmpty())
 		{
-			final IQuery<I_M_HU_Storage> huStoragesQuery = queryBL.createQueryBuilder(I_M_HU_Storage.class)
-					.setContext(getContextProvider())
+			final IQuery<I_M_HU_Storage> huStoragesQuery = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
 					.addInArrayFilter(I_M_HU_Storage.COLUMN_M_Product_ID, onlyWithProductIds)
 					.addNotEqualsFilter(I_M_HU_Storage.COLUMN_Qty, BigDecimal.ZERO)
 					.addOnlyActiveRecordsFilter()
@@ -403,8 +399,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		// Empty storage filter
 		if (_emptyStorage != null)
 		{
-			final IQuery<I_M_HU_Storage> notEmptyHUStoragesQuery = queryBL.createQueryBuilder(I_M_HU_Storage.class)
-					.setContext(getContextProvider())
+			final IQuery<I_M_HU_Storage> notEmptyHUStoragesQuery = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
 					.addNotEqualsFilter(I_M_HU_Storage.COLUMN_Qty, BigDecimal.ZERO)
 					.addOnlyActiveRecordsFilter()
 					.create();
@@ -440,8 +435,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 			}
 			if (parentHUId > 0)
 			{
-				final IQuery<I_M_HU_Item> parentHUItemQuery = queryBL.createQueryBuilder(I_M_HU_Item.class)
-						.setContext(getContextProvider())
+				final IQuery<I_M_HU_Item> parentHUItemQuery = queryBL.createQueryBuilder(I_M_HU_Item.class, getContextProvider())
 						.addOnlyActiveRecordsFilter()
 						.addEqualsFilter(I_M_HU_Item.COLUMNNAME_M_HU_ID, parentHUId)
 						.create();
@@ -476,8 +470,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 			{
 				final IQueryFilter<I_M_HU_Attribute> attributeFilter = attributeFilterVO.createQueryFilter();
 
-				final IQueryBuilder<I_M_HU_Attribute> attributesQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
-						.setContext(getContextProvider())
+				final IQueryBuilder<I_M_HU_Attribute> attributesQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Attribute.class, getContextProvider())
 						.addOnlyActiveRecordsFilter()
 						.filter(attributeFilter);
 				final IQuery<I_M_HU_Attribute> attributesQuery = attributesQueryBuilder.create();
@@ -492,14 +485,14 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		{
 			filters.addEqualsFilter(I_M_HU.COLUMN_Value, barcode.trim());
 		}
-		
+
 		//
 		// Include only specific HUs
 		if (_onlyHUIds != null && !_onlyHUIds.isEmpty())
 		{
 			filters.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, _onlyHUIds);
 		}
-		
+
 
 		//
 		// Exclude specified HUs
@@ -645,7 +638,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		Check.assumeNotNull(_contextProvider, "contextProvider not null");
 		return _contextProvider;
 	}
-	
+
 	private final Properties getCtx()
 	{
 		return InterfaceWrapperHelper.getCtx(getContextProvider());
@@ -882,7 +875,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 		return this;
 	}
-	
+
 	@Override
 	public IHUQueryBuilder addOnlyWithAttribute(final String attributeName, final Object value)
 	{
@@ -1017,7 +1010,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 		throw new HUException(message);
 	}
-	
+
 	@Override
 	public HUQueryBuilder addOnlyHUIds(final Collection<Integer> onlyHUIds)
 	{

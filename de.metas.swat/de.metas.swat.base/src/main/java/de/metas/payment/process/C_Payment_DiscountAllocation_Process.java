@@ -169,8 +169,7 @@ public class C_Payment_DiscountAllocation_Process extends SvrProcess
 		//
 		// Create the selection which we might need to update
 		final IQueryBuilder<I_C_Payment> queryBuilder = queryBL
-				.createQueryBuilder(I_C_Payment.class)
-				.setContext(this)
+				.createQueryBuilder(I_C_Payment.class, this)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAllocated, false);

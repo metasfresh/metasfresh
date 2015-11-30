@@ -48,8 +48,7 @@ public class AD_Note
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(note)
+				.createQueryBuilder(I_C_Invoice_Candidate.class, note)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Note_ID, note.getAD_Note_ID())
 				.create()
 				.update(new IQueryUpdater<I_C_Invoice_Candidate>()

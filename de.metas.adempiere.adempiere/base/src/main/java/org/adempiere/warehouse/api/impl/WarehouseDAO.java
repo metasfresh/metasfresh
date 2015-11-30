@@ -62,8 +62,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Cached(cacheName = I_M_Warehouse_Routing.Table_Name + "#By#M_Warehouse_ID")
 	public List<I_M_Warehouse_Routing> retrieveWarehouseRoutings(final @CacheCtx Properties ctx, final int warehouseId, final @CacheTrx String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse_Routing.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse_Routing.class, ctx, trxName)
 				.filter(new EqualsQueryFilter<I_M_Warehouse_Routing>(I_M_Warehouse_Routing.COLUMNNAME_M_Warehouse_ID, warehouseId))
 				.filter(ActiveRecordQueryFilter.getInstance(I_M_Warehouse_Routing.class))
 				.create()
@@ -115,8 +114,7 @@ public class WarehouseDAO implements IWarehouseDAO
 				.addColumn(I_M_Locator.COLUMNNAME_Z)
 				.createQueryOrderBy();
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class, ctx, trxName)
 				.filter(new EqualsQueryFilter<I_M_Locator>(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId))
 				.create()
 				.setOrderBy(orderBy)
@@ -128,14 +126,13 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		
-		final IQuery<I_M_Warehouse_Routing> queryWarehouseRoutingForDocBaseType = queryBL.createQueryBuilder(I_M_Warehouse_Routing.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQuery<I_M_Warehouse_Routing> queryWarehouseRoutingForDocBaseType = queryBL.createQueryBuilder(I_M_Warehouse_Routing.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Warehouse_Routing.COLUMNNAME_DocBaseType, docBaseType)
 				.create();
 		
-		final IQuery<I_M_Warehouse_Routing> queryWarehouseRoutingAllActive = queryBL.createQueryBuilder(I_M_Warehouse_Routing.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQuery<I_M_Warehouse_Routing> queryWarehouseRoutingAllActive = queryBL
+		                 .createQueryBuilder(I_M_Warehouse_Routing.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.create();
 		
@@ -186,8 +183,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	public List<I_M_Warehouse> retrieveWarehousesInTransitForOrg(@CacheCtx final Properties ctx, final int adOrgId)
 	{
 		final IQueryBuilder<I_M_Warehouse> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Warehouse.class)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None);
 
 		queryBuilder.getFilters()
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, adOrgId)
@@ -219,8 +215,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	public List<I_M_Warehouse> retrieveForOrg(final Properties ctx, final int AD_Org_ID)
 	{
 		final IQueryBuilder<I_M_Warehouse> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Warehouse.class)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None);
 
 		queryBuilder.getFilters()
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, AD_Org_ID)
@@ -236,8 +231,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Override
 	public List<I_M_Warehouse> retrieveWarehousesForCtx(final Properties ctx)
 	{
-		final List<I_M_Warehouse> warehouses = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final List<I_M_Warehouse> warehouses = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_M_Warehouse.class);

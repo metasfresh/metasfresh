@@ -354,8 +354,7 @@ public class MRPDocumentDeleteService implements IMRPDocumentDeleteService
 
 	private final int deletePending(final Class<?> documentClass, final int maxToDelete)
 	{
-		final IQueryBuilder<?> documentsToDeleteQuery = queryBL.createQueryBuilder(documentClass)
-				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		final IQueryBuilder<?> documentsToDeleteQuery = queryBL.createQueryBuilder(documentClass, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(COLUMNNAME_MRP_ToDelete, true)
 				.setLimit(maxToDelete);
 

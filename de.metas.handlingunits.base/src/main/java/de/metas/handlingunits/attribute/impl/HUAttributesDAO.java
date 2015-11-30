@@ -79,8 +79,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		// NOTE: don't cache on this level. Caching is handled on upper levels
 
 		// there are only some dozen attributes at most, so i think it'S fine to order them after loading
-		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class)
-				.setContext(hu)
+		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
 				.filter(new EqualsQueryFilter<I_M_HU_Attribute>(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
 				.create()
 				.setOnlyActiveRecords(true)
@@ -100,8 +99,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 
 	private final List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, final I_M_Attribute attribute)
 	{
-		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class)
-				.setContext(hu)
+		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
 				.filter(new EqualsQueryFilter<I_M_HU_Attribute>(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attribute.getM_Attribute_ID()))
 				.filter(new EqualsQueryFilter<I_M_HU_Attribute>(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
 				.create()

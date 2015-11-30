@@ -723,8 +723,7 @@ public class MUser extends X_AD_User
 		}
 		
 		m_bpAccess = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_UserBPAccess.class)
-				.setContext(getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_UserBPAccess.class, getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_UserBPAccess.COLUMNNAME_AD_User_ID, getAD_User_ID())
 				.create()

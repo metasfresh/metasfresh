@@ -56,8 +56,7 @@ public class PropertiesPanelModelConfigurator implements IPropertiesPanelModelCo
 	@Cached(cacheName = I_M_PropertiesConfig.Table_Name + "#By" + "#Value")
 	private final I_M_PropertiesConfig getPropertiesConfigOrNull(final String propertiesConfigValue)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PropertiesConfig.class)
-				.setContext(contextProvider)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PropertiesConfig.class, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_PropertiesConfig.COLUMNNAME_Value, propertiesConfigValue)
 				.create()
@@ -71,8 +70,7 @@ public class PropertiesPanelModelConfigurator implements IPropertiesPanelModelCo
 		{
 			return null;
 		}
-		final IQueryBuilder<I_M_PropertiesConfig_Line> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PropertiesConfig_Line.class)
-				.setContext(contextProvider)
+		final IQueryBuilder<I_M_PropertiesConfig_Line> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PropertiesConfig_Line.class, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_PropertiesConfig_Line.COLUMNNAME_M_PropertiesConfig_ID, propertiesConfig.getM_PropertiesConfig_ID())
 				.addEqualsFilter(I_M_PropertiesConfig_Line.COLUMNNAME_Name, name);

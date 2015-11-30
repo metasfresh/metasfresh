@@ -64,8 +64,7 @@ public class TourDAO implements ITourDAO
 	public List<I_M_Tour> retriveAllTours(final Properties ctx)
 	{
 		final IQueryBuilder<I_M_Tour> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Tour.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_Tour.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter();
 
 		queryBuilder.orderBy()
@@ -89,8 +88,7 @@ public class TourDAO implements ITourDAO
 		Check.assumeNotNull(tour, "tour not null");
 
 		final IQueryBuilder<I_M_TourVersion> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_TourVersion.class)
-				.setContext(tour)
+				.createQueryBuilder(I_M_TourVersion.class, tour)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_TourVersion.COLUMN_M_Tour_ID, tour.getM_Tour_ID())
 				.addOnlyActiveRecordsFilter()
@@ -266,8 +264,7 @@ public class TourDAO implements ITourDAO
 	List<I_M_TourVersionLine> retrieveTourVersionLines(@CacheCtx final Properties ctx, final int tourVersionId, @CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_M_TourVersionLine> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_TourVersionLine.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_M_TourVersionLine.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_TourVersionLine.COLUMN_M_TourVersion_ID, tourVersionId)
 				.addOnlyActiveRecordsFilter()

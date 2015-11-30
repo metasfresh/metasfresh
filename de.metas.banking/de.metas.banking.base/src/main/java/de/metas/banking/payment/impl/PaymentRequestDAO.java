@@ -47,8 +47,7 @@ public class PaymentRequestDAO implements IPaymentRequestDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_C_Payment_Request> queryBuilder = queryBL.createQueryBuilder(I_C_Payment_Request.class)
-				.setContext(invoice)
+		final IQueryBuilder<I_C_Payment_Request> queryBuilder = queryBL.createQueryBuilder(I_C_Payment_Request.class, invoice)
 				.addEqualsFilter(I_C_Payment_Request.COLUMN_C_Invoice_ID, invoice.getC_Invoice_ID())
 				.addOnlyActiveRecordsFilter() // NOTE: very important, BL relies on this (i.e. assumes it gets only active requests)
 				.addOnlyContextClient();
@@ -78,8 +77,7 @@ public class PaymentRequestDAO implements IPaymentRequestDAO
 		
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final List<Integer> actualPaymentRequestIdsList = queryBL.createQueryBuilder(I_C_Payment_Request.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final List<Integer> actualPaymentRequestIdsList = queryBL.createQueryBuilder(I_C_Payment_Request.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter() // NOTE: very important, BL relies on this (i.e. assumes it gets only active requests)
 				.addOnlyContextClient()
 				.addInArrayFilter(I_C_Payment_Request.COLUMN_C_Payment_Request_ID, paymentRequestIds)

@@ -36,8 +36,7 @@ public class PaymentDAO implements IPaymentDAO
 	@Override
 	public I_SEPA_Export retrieveForPaySelection(I_C_PaySelection paySelection)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_SEPA_Export.class)
-				.setContext(paySelection)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_SEPA_Export.class, paySelection)
 				.addEqualsFilter(I_SEPA_Export.COLUMNNAME_AD_Table_ID, I_C_PaySelection.Table_ID)
 				.addEqualsFilter(I_SEPA_Export.COLUMNNAME_Record_ID, paySelection.getC_PaySelection_ID())
 				.addEqualsFilter(I_SEPA_Export.COLUMNNAME_Processed, false)

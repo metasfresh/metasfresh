@@ -133,23 +133,20 @@ public class ProductCategoryHUKeyFilter extends AbstractHUKeyFilter
 
 		//
 		// Filter Product Category
-		final IQuery<I_M_Product> productSubQuery = queryBL.createQueryBuilder(I_M_Product.class)
-				.setContext(contextProvider)
+		final IQuery<I_M_Product> productSubQuery = queryBL.createQueryBuilder(I_M_Product.class, contextProvider)
 				.addEqualsFilter(I_M_Product.COLUMN_M_Product_Category_ID, productCategoryId)
 				.create();
 
 		//
 		// Filter HU Storage
-		final IQuery<I_M_HU_Storage> huStorageSubQuery = queryBL.createQueryBuilder(I_M_HU_Storage.class)
-				.setContext(contextProvider)
+		final IQuery<I_M_HU_Storage> huStorageSubQuery = queryBL.createQueryBuilder(I_M_HU_Storage.class, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_M_HU_Storage.COLUMN_M_Product_ID, I_M_Product.COLUMN_M_Product_ID, productSubQuery)
 				.create();
 
 		//
 		// Filter HUs
-		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class)
-				.setContext(contextProvider)
+		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, contextProvider)
 				.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Storage.COLUMN_M_HU_ID, huStorageSubQuery);
 		return queryBuilder.create();
 	}

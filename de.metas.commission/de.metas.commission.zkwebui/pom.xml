@@ -17,23 +17,13 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
+
 		<dependency>
 			<!-- needed because of TestClientUI class -->
 			<groupId>de.metas.adempiere.ait</groupId>
 			<artifactId>de.metas.adempiere.ait</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.async</groupId>
-			<artifactId>de.metas.async</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>

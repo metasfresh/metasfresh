@@ -44,8 +44,7 @@ public class AsyncBatchDAO implements IAsyncBatchDAO
 	@Override
 	public I_C_Async_Batch_Type retrieveAsyncBatchType(final Properties ctx, final String internalName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Async_Batch_Type.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Async_Batch_Type.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Async_Batch_Type.COLUMN_InternalName, internalName)
 				.addOnlyActiveRecordsFilter()
 				.create()

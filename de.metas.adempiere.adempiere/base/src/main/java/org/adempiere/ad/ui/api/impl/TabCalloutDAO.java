@@ -43,8 +43,7 @@ public class TabCalloutDAO implements ITabCalloutDAO
 	public List<I_AD_Tab_Callout> retrieveAllCalloutsDefinition(@CacheCtx Properties ctx, int adTabId)
 	{
 		final IQueryBuilder<I_AD_Tab_Callout> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Tab_Callout.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Tab_Callout.class, ctx, ITrx.TRXNAME_None)
 				// .addOnlyActiveRecordsFilter() // NOTE: we are retrieving all callouts, even if they are active or not
 				.addEqualsFilter(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID, adTabId);
 

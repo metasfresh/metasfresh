@@ -287,8 +287,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private List<I_AD_ModelValidator> retrieveModelValidators(final Properties ctx)
 	{
 		final IQueryBuilder<I_AD_ModelValidator> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_ModelValidator.class)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(I_AD_ModelValidator.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_AD_ModelValidator> filters = queryBuilder.getFilters();
 		filters.addOnlyActiveRecordsFilter();

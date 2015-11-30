@@ -42,16 +42,14 @@ public class SubProducerAttributeDAO implements ISubProducerAttributeDAO
 	public List<I_C_BPartner> retrieveSubProducerBPartners(final Properties ctx, final int bpartnerId)
 	{
 		final IQuery<I_C_BP_Relation> bpRelationQuery = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BP_Relation.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_BP_Relation.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(org.compiere.model.I_C_BP_Relation.COLUMNNAME_C_BPartnerRelation_ID, bpartnerId)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsMainProducer, true)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.create();
 
-		final IQueryBuilder<I_C_BPartner> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_C_BPartner> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner.class, ctx, ITrx.TRXNAME_None)
 				.addInSubQueryFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID,
 						org.compiere.model.I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpRelationQuery)
 				.addOnlyActiveRecordsFilter()

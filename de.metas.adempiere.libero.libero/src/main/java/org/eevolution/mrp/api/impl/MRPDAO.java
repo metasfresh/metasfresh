@@ -187,8 +187,7 @@ public class MRPDAO implements IMRPDAO
 	@Override
 	public boolean hasProductRecords(final I_M_Product product)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_MRP.class)
-				.setContext(product)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_MRP.class, product)
 				.filter(new EqualsQueryFilter<I_PP_MRP>(I_PP_MRP.COLUMNNAME_M_Product_ID, product.getM_Product_ID()))
 				.filter(new NotEqualsQueryFilter<I_PP_MRP>(I_PP_MRP.COLUMNNAME_Qty, BigDecimal.ZERO))
 				.create()
@@ -198,8 +197,7 @@ public class MRPDAO implements IMRPDAO
 	@Override
 	public int getMaxLowLevel(final IContextAware context)
 	{
-		final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
-				.setContext(context)
+		final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, context)
 				.addOnlyContextClient()
 				.addNotEqualsFilter(I_M_Product.COLUMNNAME_LowLevel, null); // LowLevel is not null
 
@@ -321,8 +319,7 @@ public class MRPDAO implements IMRPDAO
 	{
 		Check.assumeNotNull(mrp, "mrp not null");
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_PP_MRP_Alternative> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP_Alternative.class)
-				.setContext(mrp)
+		final IQueryBuilder<I_PP_MRP_Alternative> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP_Alternative.class, mrp)
 				.addEqualsFilter(I_PP_MRP_Alternative.COLUMN_PP_MRP_ID, mrp.getPP_MRP_ID());
 
 		// just to have a predictible order
@@ -341,8 +338,7 @@ public class MRPDAO implements IMRPDAO
 
 		//
 		// Retrieve distinct AD_Client_ID/AD_Org_ID/M_Warhouse_ID/Plant_ID from database
-		final IQueryBuilder<I_PP_MRP> mrpsQuery = queryBL.createQueryBuilder(I_PP_MRP.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_PP_MRP> mrpsQuery = queryBL.createQueryBuilder(I_PP_MRP.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_PP_MRP.COLUMN_IsAvailable, true)
@@ -362,8 +358,7 @@ public class MRPDAO implements IMRPDAO
 
 		//
 		// Retrieve distinct AD_Client_ID/AD_Org_ID/M_Warhouse_ID/Plant_ID from database
-		final IQueryBuilder<I_PP_MRP> mrpsQuery = queryBL.createQueryBuilder(I_PP_MRP.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_PP_MRP> mrpsQuery = queryBL.createQueryBuilder(I_PP_MRP.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_PP_MRP.COLUMN_IsAvailable, true)
@@ -441,8 +436,7 @@ public class MRPDAO implements IMRPDAO
 		Check.assumeNotNull(mrpSupply, "mrpSupply not null");
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_PP_MRP_Alloc.class)
-				.setContext(mrpSupply)
+		return queryBL.createQueryBuilder(I_PP_MRP_Alloc.class, mrpSupply)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_MRP_Alloc.COLUMN_PP_MRP_Supply_ID, mrpSupply.getPP_MRP_ID());
 	}
@@ -460,8 +454,7 @@ public class MRPDAO implements IMRPDAO
 		Check.assumeNotNull(mrpDemand, "mrpDemand not null");
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_PP_MRP_Alloc.class)
-				.setContext(mrpDemand)
+		return queryBL.createQueryBuilder(I_PP_MRP_Alloc.class, mrpDemand)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_MRP_Alloc.COLUMN_PP_MRP_Demand_ID, mrpDemand.getPP_MRP_ID());
 	}

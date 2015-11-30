@@ -60,8 +60,7 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	/* package */ I_C_BPartner retrieveLinkedBPartner(@CacheCtx final Properties ctx, final int adOrgId, @CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_C_BPartner> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_C_BPartner.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_C_BPartner> filters = queryBuilder.getFilters();
 		filters.addOnlyActiveRecordsFilter();

@@ -10,12 +10,12 @@ package org.adempiere.user.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -70,8 +70,7 @@ public class UserSortPrefDAO implements IUserSortPrefDAO
 				.addEqualsFilter(I_AD_User_SortPref_Hdr.COLUMN_AD_User_ID, user.getAD_User_ID())
 				.addEqualsFilter(I_AD_User_SortPref_Hdr.COLUMN_AD_User_ID, null);
 
-		final IQueryBuilder<I_AD_User_SortPref_Hdr> queryBuilder = createSortPreferenceHdrQueryBuilder(action, recordId)
-				.setContext(contextProvider)
+		final IQueryBuilder<I_AD_User_SortPref_Hdr> queryBuilder = createSortPreferenceHdrQueryBuilder(action, recordId, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.filter(userOrNullFilter)
 
@@ -93,8 +92,7 @@ public class UserSortPrefDAO implements IUserSortPrefDAO
 	{
 		final IContextAware contextProvider = new PlainContextAware(ctx);
 
-		final IQueryBuilder<I_AD_User_SortPref_Hdr> queryBuilder = createSortPreferenceHdrQueryBuilder(action, recordId)
-				.setContext(contextProvider)
+		final IQueryBuilder<I_AD_User_SortPref_Hdr> queryBuilder = createSortPreferenceHdrQueryBuilder(action, recordId, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_SortPref_Hdr.COLUMN_IsConference, true); // note: there is just one
 
@@ -107,8 +105,7 @@ public class UserSortPrefDAO implements IUserSortPrefDAO
 	{
 		final IContextAware contextProvider = new PlainContextAware(ctx);
 
-		final IQueryBuilder<I_AD_User_SortPref_Hdr> queryBuilder = createSortPreferenceHdrQueryBuilder(action, recordId)
-				.setContext(contextProvider)
+		final IQueryBuilder<I_AD_User_SortPref_Hdr> queryBuilder = createSortPreferenceHdrQueryBuilder(action, recordId, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_SortPref_Hdr.COLUMN_IsConference, false)
 				.addEqualsFilter(I_AD_User_SortPref_Hdr.COLUMN_AD_User_ID, null);
@@ -117,7 +114,9 @@ public class UserSortPrefDAO implements IUserSortPrefDAO
 				.firstOnly(I_AD_User_SortPref_Hdr.class);
 	}
 
-	private IQueryBuilder<I_AD_User_SortPref_Hdr> createSortPreferenceHdrQueryBuilder(final String action, final int recordId)
+	private IQueryBuilder<I_AD_User_SortPref_Hdr> createSortPreferenceHdrQueryBuilder(final String action,
+			final int recordId,
+			final Object contextProvider)
 	{
 		Check.assumeNotEmpty(action, "action not empty");
 
@@ -125,7 +124,7 @@ public class UserSortPrefDAO implements IUserSortPrefDAO
 		// Services
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_AD_User_SortPref_Hdr> queryBuilder = queryBL.createQueryBuilder(I_AD_User_SortPref_Hdr.class)
+		final IQueryBuilder<I_AD_User_SortPref_Hdr> queryBuilder = queryBL.createQueryBuilder(I_AD_User_SortPref_Hdr.class, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_SortPref_Hdr.COLUMN_Action, action);
 
@@ -163,8 +162,7 @@ public class UserSortPrefDAO implements IUserSortPrefDAO
 
 		final Object contextProvider = hdr;
 
-		final IQueryBuilder<I_AD_User_SortPref_Line> queryBuilder = queryBL.createQueryBuilder(I_AD_User_SortPref_Line.class)
-				.setContext(contextProvider)
+		final IQueryBuilder<I_AD_User_SortPref_Line> queryBuilder = queryBL.createQueryBuilder(I_AD_User_SortPref_Line.class, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_SortPref_Line.COLUMN_AD_User_SortPref_Hdr_ID, hdr.getAD_User_SortPref_Hdr_ID());
 
@@ -199,8 +197,7 @@ public class UserSortPrefDAO implements IUserSortPrefDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final Object contextProvider = sortPreferenceLine;
-		final IQueryBuilder<I_AD_User_SortPref_Line_Product> queryBuilder = queryBL.createQueryBuilder(I_AD_User_SortPref_Line_Product.class)
-				.setContext(contextProvider)
+		final IQueryBuilder<I_AD_User_SortPref_Line_Product> queryBuilder = queryBL.createQueryBuilder(I_AD_User_SortPref_Line_Product.class, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_SortPref_Line_Product.COLUMN_AD_User_SortPref_Line_ID, sortPreferenceLine.getAD_User_SortPref_Line_ID());
 
@@ -223,8 +220,7 @@ public class UserSortPrefDAO implements IUserSortPrefDAO
 		final List<I_AD_User_SortPref_Line> linesToDelete = retrieveSortPreferenceLines(hdr);
 		for (final I_AD_User_SortPref_Line line : linesToDelete)
 		{
-			final int countProductLinesDeleted = queryBL.createQueryBuilder(I_AD_User_SortPref_Line_Product.class)
-					.setContext(hdr)
+			final int countProductLinesDeleted = queryBL.createQueryBuilder(I_AD_User_SortPref_Line_Product.class, hdr)
 					.addEqualsFilter(I_AD_User_SortPref_Line_Product.COLUMN_AD_User_SortPref_Line_ID, line.getAD_User_SortPref_Line_ID())
 					.create()
 					.deleteDirectly();

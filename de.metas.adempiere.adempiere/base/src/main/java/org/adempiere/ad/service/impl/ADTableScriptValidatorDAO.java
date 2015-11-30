@@ -51,8 +51,7 @@ public class ADTableScriptValidatorDAO implements IADTableScriptValidatorDAO
 		//
 		// Retrieve all table script validators
 		final IQueryBuilder<I_AD_Table_ScriptValidator> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Table_ScriptValidator.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Table_ScriptValidator.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter();
 		queryBuilder.orderBy()
 				.addColumn(I_AD_Table_ScriptValidator.COLUMNNAME_AD_Table_ID)

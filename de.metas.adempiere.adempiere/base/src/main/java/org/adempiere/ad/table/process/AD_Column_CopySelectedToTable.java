@@ -107,8 +107,7 @@ public class AD_Column_CopySelectedToTable extends SvrProcess
 	protected List<I_AD_Column> getSourceColumns()
 	{
 		final IQueryFilter<I_AD_Column> selectedColumnsFilter = getProcessInfo().getQueryFilter();
-		final IQueryBuilder<I_AD_Column> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Column.class)
-				.setContext(this)
+		final IQueryBuilder<I_AD_Column> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Column.class, this)
 				.filter(selectedColumnsFilter);
 
 		queryBuilder.orderBy()

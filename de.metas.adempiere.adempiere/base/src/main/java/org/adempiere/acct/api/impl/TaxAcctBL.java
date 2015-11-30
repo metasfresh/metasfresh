@@ -98,8 +98,7 @@ public class TaxAcctBL implements ITaxAcctBL
 	public I_C_Tax_Acct retrieveTaxAcct(@CacheCtx final Properties ctx, final int taxId, final int acctSchemaId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Tax_Acct.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_Tax_Acct.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Tax_Acct.COLUMNNAME_C_Tax_ID, taxId)
 				.addEqualsFilter(I_C_Tax_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addOnlyActiveRecordsFilter()

@@ -10,12 +10,12 @@ package de.metas.payment.esr.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,7 +46,7 @@ public abstract class AbstractBPBankAccountDAO implements IESRBPBankAccountDAO
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_None;
 
-		final IQueryBuilder<I_C_BP_BankAccount> qb = Services.get(IQueryBL.class).createQueryBuilder(I_C_BP_BankAccount.class)
+		final IQueryBuilder<I_C_BP_BankAccount> qb = Services.get(IQueryBL.class).createQueryBuilder(I_C_BP_BankAccount.class, ctx, trxName)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_ESR_RenderedAccountNo, postAccountNo)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, true);
 
@@ -55,7 +55,7 @@ public abstract class AbstractBPBankAccountDAO implements IESRBPBankAccountDAO
 			qb.addEqualsFilter(org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_AccountNo, innerAccountNo);
 		}
 
-		qb.setContext(ctx, trxName)
+		qb
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 		return qb.create()

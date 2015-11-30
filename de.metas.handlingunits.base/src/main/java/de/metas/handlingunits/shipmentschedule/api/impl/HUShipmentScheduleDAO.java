@@ -51,8 +51,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder =
-				queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-						.setContext(hu)
+				queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, hu)
 						.addOnlyActiveRecordsFilter();
 
 		//
@@ -95,8 +94,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.setContext(hu)
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, hu)
 				// Not delivered
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null)
 				// Only Actives
@@ -133,8 +131,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(tuHU);
 		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder =
-				Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-						.setContext(ctx, trxName)
+				Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
 						.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
 						.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, tuHU.getM_HU_ID())
 						.addOnlyActiveRecordsFilter();
@@ -159,8 +156,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 		Check.assumeNotNull(vhu, "vhu not null");
 
 		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder =
-				Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-						.setContext(vhu)
+				Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, vhu)
 						.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhu.getM_HU_ID())
 						.addOnlyActiveRecordsFilter();
 

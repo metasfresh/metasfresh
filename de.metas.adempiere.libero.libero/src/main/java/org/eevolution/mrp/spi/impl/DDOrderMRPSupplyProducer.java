@@ -811,8 +811,7 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	{
 		Check.assumeNotNull(ddOrderLineAlt, "ddOrderLineAlt not null");
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_PP_MRP_Alternative> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP_Alternative.class)
-				.setContext(ddOrderLineAlt)
+		final IQueryBuilder<I_PP_MRP_Alternative> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP_Alternative.class, ddOrderLineAlt)
 				.addEqualsFilter(I_PP_MRP_Alternative.COLUMN_DD_OrderLine_Alternative_ID, ddOrderLineAlt.getDD_OrderLine_Alternative_ID());
 
 		queryBuilder.create().deleteDirectly();
@@ -837,8 +836,7 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		Check.assumeNotNull(mrp, "mrp not null");
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_PP_MRP_Alternative> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP_Alternative.class)
-				.setContext(ddOrderLineAlt)
+		final IQueryBuilder<I_PP_MRP_Alternative> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP_Alternative.class, ddOrderLineAlt)
 				.addEqualsFilter(I_PP_MRP_Alternative.COLUMN_DD_OrderLine_Alternative_ID, ddOrderLineAlt.getDD_OrderLine_Alternative_ID())
 				.addEqualsFilter(I_PP_MRP_Alternative.COLUMN_PP_MRP_ID, mrp.getPP_MRP_ID());
 

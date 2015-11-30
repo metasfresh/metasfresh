@@ -70,8 +70,7 @@ public class ADInfoWindowDAO implements IADInfoWindowDAO
 			, @CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_AD_InfoWindow_From> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_InfoWindow_From.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_AD_InfoWindow_From.class, ctx, trxName)
 				.filter(new EqualsQueryFilter<I_AD_InfoWindow_From>(I_AD_InfoWindow_From.COLUMNNAME_AD_InfoWindow_ID, adInfoWindowId))
 				.filter(ActiveRecordQueryFilter.getInstance(I_AD_InfoWindow_From.class));
 
@@ -94,8 +93,7 @@ public class ADInfoWindowDAO implements IADInfoWindowDAO
 		}
 
 		final IQueryBuilder<I_AD_InfoWindow> queryBuilder =
-				Services.get(IQueryBL.class).createQueryBuilder(I_AD_InfoWindow.class)
-						.setContext(ctx, ITrx.TRXNAME_None)
+				Services.get(IQueryBL.class).createQueryBuilder(I_AD_InfoWindow.class, ctx, ITrx.TRXNAME_None)
 						.filter(new EqualsQueryFilter<I_AD_InfoWindow>(I_AD_InfoWindow.COLUMNNAME_AD_Table_ID, adTableId))
 						.filter(ActiveRecordQueryFilter.getInstance(I_AD_InfoWindow.class));
 
@@ -130,8 +128,7 @@ public class ADInfoWindowDAO implements IADInfoWindowDAO
 			final int adInfoWindowId,
 			@CacheTrx final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_InfoColumn.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_InfoColumn.class, ctx, trxName)
 				.filter(new EqualsQueryFilter<I_AD_InfoColumn>(I_AD_InfoColumn.COLUMNNAME_AD_InfoWindow_ID, adInfoWindowId))
 				.filter(ActiveRecordQueryFilter.getInstance(I_AD_InfoColumn.class))
 				.create()
@@ -144,13 +141,11 @@ public class ADInfoWindowDAO implements IADInfoWindowDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(infoWindow);
 
-		final IQueryBuilder<I_AD_Element> addElementQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Element.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_AD_Element> addElementQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Element.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Element.COLUMNNAME_ColumnName, columnName);
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_InfoColumn.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_InfoColumn.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_InfoColumn.COLUMNNAME_AD_InfoWindow_ID, infoWindow.getAD_InfoWindow_ID())
 				.addInSubQueryFilter(I_AD_InfoColumn.COLUMNNAME_AD_Element_ID, I_AD_Element.COLUMNNAME_AD_Element_ID, addElementQueryBuilder.create())
@@ -236,8 +231,7 @@ public class ADInfoWindowDAO implements IADInfoWindowDAO
 	public List<I_AD_InfoWindow> retrieveInfoWindowsInMenu(final Properties ctx)
 	{
 		final IQueryBuilder<I_AD_InfoWindow> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_InfoWindow.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_InfoWindow.class, ctx, ITrx.TRXNAME_None)
 				.addCompareFilter(I_AD_InfoWindow.COLUMNNAME_AD_InfoWindow_ID, CompareQueryFilter.Operator.NotEqual, 540008) // FIXME: hardcoded "Info Partner"
 				.addCompareFilter(I_AD_InfoWindow.COLUMNNAME_AD_InfoWindow_ID, CompareQueryFilter.Operator.NotEqual, 540009) // FIXME: hardcoded "Info Product"
 				.addEqualsFilter(I_AD_InfoWindow.COLUMNNAME_IsActive, true)

@@ -42,8 +42,7 @@ public class PeriodDAO implements IPeriodDAO
 	public Map<String, I_C_PeriodControl> retrievePeriodControlsByDocBaseType(final @CacheCtx Properties ctx, final int periodId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PeriodControl.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_PeriodControl.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_PeriodControl.COLUMN_C_Period_ID, periodId)
 				.addOnlyActiveRecordsFilter()
 				.create()

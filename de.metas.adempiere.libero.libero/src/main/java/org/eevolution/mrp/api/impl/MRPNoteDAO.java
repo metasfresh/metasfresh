@@ -47,8 +47,7 @@ public class MRPNoteDAO implements IMRPNoteDAO
 	public int deleteMRPNotes(final IMRPContext mrpContext)
 	{
 		final IQueryBuilder<I_AD_Note> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Note.class)
-				.setContext(mrpContext);
+				.createQueryBuilder(I_AD_Note.class, mrpContext);
 
 		final ICompositeQueryFilter<I_AD_Note> filters = queryBuilder.getFilters();
 
@@ -105,8 +104,7 @@ public class MRPNoteDAO implements IMRPNoteDAO
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(I_PP_MRP.Table_Name);
 
 		final IQueryBuilder<I_AD_Note> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Note.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Note.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_AD_Note.COLUMNNAME_Record_ID, PP_MRP_ID)
 				.addOnlyActiveRecordsFilter()

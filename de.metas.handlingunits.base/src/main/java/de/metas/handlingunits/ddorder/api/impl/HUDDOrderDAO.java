@@ -58,8 +58,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 
 		// HU Filter: only those which were not already assigned to a DD_OrderLine
 		{
-			final IQuery<I_DD_OrderLine_HU_Candidate> ddOrderLineHUCandidatesQuery = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class)
-					.setContext(ctx, ITrx.TRXNAME_ThreadInherited)
+			final IQuery<I_DD_OrderLine_HU_Candidate> ddOrderLineHUCandidatesQuery = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class, ctx, ITrx.TRXNAME_ThreadInherited)
 					.addOnlyActiveRecordsFilter()
 					.create();
 			filter.addNotInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_DD_OrderLine_HU_Candidate.COLUMN_M_HU_ID, ddOrderLineHUCandidatesQuery);
@@ -96,8 +95,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class)
-				.setContext(ctx, ITrx.TRXNAME_ThreadInherited)
+		return queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_DD_OrderLine_HU_Candidate.COLUMN_DD_OrderLine_ID, ddOrderLineIds)
 				//
@@ -118,8 +116,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 		//
 		// Create a query to select ALL candidate assignments for given DD_OrderLine
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_DD_OrderLine_HU_Candidate> query = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class)
-				.setContext(ddOrderline)
+		final IQueryBuilder<I_DD_OrderLine_HU_Candidate> query = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class, ddOrderline)
 				.addInArrayFilter(I_DD_OrderLine_HU_Candidate.COLUMN_DD_OrderLine_ID, ddOrderline.getDD_OrderLine_ID());
 
 		// Remove selected assignments
@@ -132,8 +129,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 		Check.assumeNotNull(ddOrder, "ddOrder not null");
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_DD_OrderLine_HU_Candidate> query = queryBL.createQueryBuilder(org.eevolution.model.I_DD_OrderLine.class)
-				.setContext(ddOrder)
+		final IQueryBuilder<I_DD_OrderLine_HU_Candidate> query = queryBL.createQueryBuilder(org.eevolution.model.I_DD_OrderLine.class, ddOrder)
 				.addEqualsFilter(I_DD_OrderLine.COLUMN_DD_Order_ID, ddOrder.getDD_Order_ID())
 				//
 				// Collect all DD_OrderLine_HU_Candidate for our DD_OrderLines
@@ -167,8 +163,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 		//
 		// Create the query to select the lines we want to remove
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_DD_OrderLine_HU_Candidate> query = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class)
-				.setContext(ddOrderline)
+		final IQueryBuilder<I_DD_OrderLine_HU_Candidate> query = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class, ddOrderline)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMN_DD_OrderLine_ID, ddOrderline.getDD_OrderLine_ID())
 				.addInArrayFilter(I_DD_OrderLine_HU_Candidate.COLUMN_M_HU_ID, huIds);

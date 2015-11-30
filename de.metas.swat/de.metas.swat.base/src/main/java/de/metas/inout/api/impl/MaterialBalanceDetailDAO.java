@@ -191,8 +191,7 @@ public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_M_Material_Balance_Detail> queryBuilder = queryBL.createQueryBuilder(I_M_Material_Balance_Detail.class)
-				.setContext(inout)
+		final IQueryBuilder<I_M_Material_Balance_Detail> queryBuilder = queryBL.createQueryBuilder(I_M_Material_Balance_Detail.class, inout)
 				.filterByClientId()
 				.addOnlyActiveRecordsFilter();
 
@@ -207,8 +206,7 @@ public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_M_Material_Balance_Detail> queryBuilder = queryBL.createQueryBuilder(I_M_Material_Balance_Detail.class)
-				.setContext(config)
+		final IQueryBuilder<I_M_Material_Balance_Detail> queryBuilder = queryBL.createQueryBuilder(I_M_Material_Balance_Detail.class, config)
 				.filterByClientId()
 				.addOnlyActiveRecordsFilter();
 

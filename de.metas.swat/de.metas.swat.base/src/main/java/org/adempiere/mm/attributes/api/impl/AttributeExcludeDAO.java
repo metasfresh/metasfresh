@@ -46,8 +46,7 @@ public class AttributeExcludeDAO implements IAttributeExcludeDAO
 			return null;
 		}
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeSetExcludeLine.class)
-				.setContext(attributeSetExclude)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeSetExcludeLine.class, attributeSetExclude)
 				.addEqualsFilter(I_M_AttributeSetExcludeLine.COLUMNNAME_M_AttributeSetExclude_ID, attributeSetExclude.getM_AttributeSetExclude_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -72,8 +71,7 @@ public class AttributeExcludeDAO implements IAttributeExcludeDAO
 			return null;
 		}
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeSetExclude.class)
-				.setContext(attributeSet)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeSetExclude.class, attributeSet)
 				.addEqualsFilter(I_M_AttributeSetExclude.COLUMNNAME_AD_Table_ID, column.getAD_Table_ID())
 				.addEqualsFilter(I_M_AttributeSetExclude.COLUMNNAME_IsSOTrx, isSOTrx)
 				.addEqualsFilter(I_M_AttributeSetExclude.COLUMNNAME_M_AttributeSet_ID, attributeSet.getM_AttributeSet_ID())

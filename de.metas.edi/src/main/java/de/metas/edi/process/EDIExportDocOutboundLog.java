@@ -131,8 +131,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL
-				.createQueryBuilder(I_C_Doc_Outbound_Log.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_C_Doc_Outbound_Log.class, ctx, trxName)
 				.addInArrayFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID,
 						I_C_Invoice.Table_ID
 				// , I_M_InOut.Table_ID

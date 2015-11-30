@@ -10,12 +10,12 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -73,8 +73,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final String trxName)
 	{
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Product_Planning.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_PP_Product_Planning.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_PP_Product_Planning> filters = queryBuilder.getFilters();
 		final IQueryOrderByBuilder<I_PP_Product_Planning> orderBy = queryBuilder.orderBy();
@@ -168,7 +167,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	{
 		Check.assumeNotNull(org, "org not null");
 		Check.assumeNotNull(plant, "plant not null");
-		
+
 		final int adOrgId = org.getAD_Org_ID();
 		final int ppPlantId = plant.getS_Resource_ID();
 		return retrieveWarehousesForPlant(ctx, adOrgId, ppPlantId);
@@ -176,7 +175,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 
 	/**
 	 * Retrieve all warehouses which are directly to our Org and Plant.
-	 * 
+	 *
 	 * @param ctx
 	 * @param adOrgId
 	 * @param ppPlantId
@@ -190,8 +189,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 
 		//
 		// Retrive warehouses which which are directly assigned to Org and Plant
-		return queryBL.createQueryBuilder(I_M_Warehouse.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return queryBL.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Warehouse.COLUMN_AD_Org_ID, adOrgId)
 				.addInArrayFilter(I_M_Warehouse.COLUMN_PP_Plant_ID, null, ppPlantId)

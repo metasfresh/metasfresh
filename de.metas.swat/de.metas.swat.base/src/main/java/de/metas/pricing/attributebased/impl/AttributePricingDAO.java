@@ -104,8 +104,7 @@ public class AttributePricingDAO implements IAttributePricingDAO
 				.addColumn(I_M_ProductPrice_Attribute.COLUMNNAME_SeqNo)
 				.createQueryOrderBy();
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice_Attribute.class)
-				.setContext(productPrice)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice_Attribute.class, productPrice)
 				.filter(compositeFilter)
 				.create()
 				.setOrderBy(orderBy)
@@ -117,8 +116,7 @@ public class AttributePricingDAO implements IAttributePricingDAO
 	{
 		return Services
 				.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ProductPrice_Attribute_Line.class)
-				.setContext(productPriceAttribute)
+				.createQueryBuilder(I_M_ProductPrice_Attribute_Line.class, productPriceAttribute)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ProductPrice_Attribute_Line.COLUMNNAME_M_ProductPrice_Attribute_ID, productPriceAttribute.getM_ProductPrice_Attribute_ID())
 				.create()
@@ -139,8 +137,7 @@ public class AttributePricingDAO implements IAttributePricingDAO
 		}
 
 		final IQueryBuilder<I_M_ProductPrice_Attribute> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ProductPrice_Attribute.class)
-				.setContext(productPrice);
+				.createQueryBuilder(I_M_ProductPrice_Attribute.class, productPrice);
 
 		final ICompositeQueryFilter<I_M_ProductPrice_Attribute> filter = queryBuilder.getFilters();
 		filter.addOnlyActiveRecordsFilter();
@@ -184,8 +181,7 @@ public class AttributePricingDAO implements IAttributePricingDAO
 		// However, if there is just *one* single M_ProductPrice_Attribute, we can safely return that one as the default, even if it does not have the flag set.
 		// It turned out that this is also consistent with the customer's intuition, so it will save us training/explaining effort :-)
 		final I_M_ProductPrice_Attribute strictDefaultSecondTry = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ProductPrice_Attribute.class)
-				.setContext(productPrice)
+				.createQueryBuilder(I_M_ProductPrice_Attribute.class, productPrice)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ProductPrice_Attribute.COLUMNNAME_M_ProductPrice_ID, productPrice.getM_ProductPrice_ID())
 				.create()

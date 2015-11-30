@@ -171,8 +171,7 @@ public class ReceiptScheduleHUDocumentFactory implements IHUDocumentFactory
 
 	private Iterator<I_M_ReceiptSchedule> retrieveReceiptSchedules(final ProcessInfo pi)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ReceiptSchedule.class)
-				.setContext(pi.getCtx(), ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ReceiptSchedule.class, pi.getCtx(), ITrx.TRXNAME_None)
 				// Filter by process info selection
 				.filter(new ProcessInfoSelectionQueryFilter<I_M_ReceiptSchedule>(pi))
 

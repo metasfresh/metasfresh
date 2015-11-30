@@ -54,8 +54,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	@Override
 	public I_PP_Order_BOM retrieveOrderBOM(final I_PP_Order order)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_BOM.class)
-				.setContext(order)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_BOM.class, order)
 				.filter(new EqualsQueryFilter<I_PP_Order_BOM>(I_PP_Order_BOM.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID()))
 				.create()
 				// .setOnlyActiveRecords(true) // we shall have only active records anyway
@@ -73,8 +72,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	{
 		Check.assumeNotNull(orderBOMLineClass, "orderBOMLineClass not null");
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<T> queryBuilder = queryBL.createQueryBuilder(orderBOMLineClass)
-				.setContext(order)
+		final IQueryBuilder<T> queryBuilder = queryBL.createQueryBuilder(orderBOMLineClass, order)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID())
 				.addOnlyActiveRecordsFilter();
 
@@ -115,8 +113,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<T> queryBuilder = queryBL.createQueryBuilder(orderBOMLineClass)
-				.setContext(orderBOMLine)
+		final IQueryBuilder<T> queryBuilder = queryBL.createQueryBuilder(orderBOMLineClass, orderBOMLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, orderBOMLine.getPP_Order_ID())
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_ComponentType, X_PP_Order_BOMLine.COMPONENTTYPE_Variant)
@@ -161,8 +158,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_PP_Order_BOMLine> queryBuilder = queryBL.createQueryBuilder(I_PP_Order_BOMLine.class)
-				.setContext(orderBOMLineAlternative)
+		final IQueryBuilder<I_PP_Order_BOMLine> queryBuilder = queryBL.createQueryBuilder(I_PP_Order_BOMLine.class, orderBOMLineAlternative)
 				.addOnlyActiveRecordsFilter()
 				// Same manufacturing order
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, orderBOMLineAlternative.getPP_Order_ID())
@@ -183,8 +179,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 		Check.assumeNotNull(ppOrder, LiberoException.class, "ppOrder not null");
 		Check.assumeNotNull(product, LiberoException.class, "product not null");
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_BOMLine.class)
-				.setContext(ppOrder)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_BOMLine.class, ppOrder)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.addOnlyActiveRecordsFilter()
@@ -195,8 +190,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	@Override
 	public List<I_PP_Order_BOMLine> retrieveAllOrderBOMLines(final I_PP_Order_BOM orderBOM)
 	{
-		final IQueryBuilder<I_PP_Order_BOMLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_BOMLine.class)
-				.setContext(orderBOM)
+		final IQueryBuilder<I_PP_Order_BOMLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_BOMLine.class, orderBOM)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_PP_Order_BOM_ID, orderBOM.getPP_Order_BOM_ID())
 		// .addOnlyActiveRecordsFilter()
 		;
@@ -212,8 +206,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	public int retrieveNextLineNo(final I_PP_Order order)
 	{
 		final IQueryBuilder<I_PP_Order_BOMLine> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Order_BOMLine.class)
-				.setContext(order);
+				.createQueryBuilder(I_PP_Order_BOMLine.class, order);
 
 		final ICompositeQueryFilter<I_PP_Order_BOMLine> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID());

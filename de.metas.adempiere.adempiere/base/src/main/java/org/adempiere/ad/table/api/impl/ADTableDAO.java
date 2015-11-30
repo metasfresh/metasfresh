@@ -76,8 +76,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 		//
 		// Create queryBuilder with default context (not needed for tables)
-		final IQueryBuilder<I_AD_Column> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Column.class)
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None);
+		final IQueryBuilder<I_AD_Column> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Column.class, Env.getCtx(), ITrx.TRXNAME_None);
 
 		//
 		// Filter by tableName
@@ -147,8 +146,7 @@ public class ADTableDAO implements IADTableDAO
 	public List<I_AD_Table> retrieveAllTables(final Properties ctx, final String trxName)
 	{
 		final IQueryBuilder<I_AD_Table> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Table.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_AD_Table.class, ctx, trxName);
 
 		queryBuilder.orderBy()
 				.addColumn(I_AD_Table.COLUMNNAME_TableName);

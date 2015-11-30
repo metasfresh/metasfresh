@@ -48,8 +48,7 @@ public class HUOrderLineDAO implements IHUOrderLineDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 
-		final IQueryBuilder<I_C_OrderLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_OrderLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class, ctx, trxName)
 				.filter(ActiveRecordQueryFilter.getInstance(I_C_OrderLine.class))
 				.filterByClientId()
 				.filter(new EqualsQueryFilter<I_C_OrderLine>(I_C_OrderLine.COLUMNNAME_C_PackingMaterial_OrderLine_ID, orderLine.getC_OrderLine_ID()));

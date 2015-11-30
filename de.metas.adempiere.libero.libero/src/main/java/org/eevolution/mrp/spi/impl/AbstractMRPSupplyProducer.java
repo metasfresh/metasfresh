@@ -250,8 +250,7 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<ModelType> modelsQuery = queryBL
-				.createQueryBuilder(modelClass)
-				.setContext(mrpContext)
+				.createQueryBuilder(modelClass, mrpContext)
 				.filter(filter);
 
 		final int countDeleted = Services.get(IMRPDocumentDeleteService.class)

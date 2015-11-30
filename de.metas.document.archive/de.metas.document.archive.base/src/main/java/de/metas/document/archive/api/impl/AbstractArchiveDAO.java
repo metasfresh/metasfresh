@@ -10,12 +10,12 @@ package de.metas.document.archive.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -98,9 +98,9 @@ public abstract class AbstractArchiveDAO implements IArchiveDAO
 
 		final Object contextProvider = log;
 
-		final IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class)
+		final IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class, contextProvider)
 				.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMN_C_Doc_Outbound_Log_ID, log.getC_Doc_Outbound_Log_ID());
-		addPDFArchiveLogLineFilters(contextProvider, queryBuilder);
+		addPDFArchiveLogLineFilters(queryBuilder);
 
 		//
 		// We're interested in the latest log line matching PDF Export only
@@ -109,12 +109,11 @@ public abstract class AbstractArchiveDAO implements IArchiveDAO
 	}
 
 	@Override
-	public final void addPDFArchiveLogLineFilters(final Object contextProvider, final IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder)
+	public final void addPDFArchiveLogLineFilters(final IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder)
 	{
-		Check.assumeNotNull(contextProvider, "contextProvider not null");
 		Check.assumeNotNull(queryBuilder, "queryBuilder not null");
 
-		queryBuilder.setContext(contextProvider)
+		queryBuilder
 				.addOnlyActiveRecordsFilter()
 				//
 				// Filter records which actually have an AD_Archive

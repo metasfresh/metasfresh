@@ -81,8 +81,7 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 	@Override
 	public I_M_HU_PackingMaterial retrivePackingMaterialOfProduct(final I_M_Product product)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PackingMaterial.class)
-				.setContext(product)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PackingMaterial.class, product)
 				.filter(new EqualsQueryFilter<I_M_HU_PackingMaterial>(I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID, product.getM_Product_ID()))
 				.create()
 				.setOnlyActiveRecords(true)

@@ -137,8 +137,7 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 						.addSubstringFilter(I_C_ValidCombination.COLUMNNAME_Description, searchStringForFilter, ignoreCase)
 						.addSubstringFilter(I_C_ValidCombination.COLUMNNAME_Combination, searchStringForFilter, ignoreCase);
 
-		final IQuery<I_C_ValidCombination> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_ValidCombination.class)
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+		final IQuery<I_C_ValidCombination> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_ValidCombination.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.filter(filter)

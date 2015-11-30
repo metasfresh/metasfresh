@@ -50,8 +50,7 @@ public class C_Printing_Queue_ResetAggregationKeys extends SvrProcess
 		final IQueryFilter<I_C_Printing_Queue> queryFilter = getProcessInfo().getQueryFilter();
 
 		final Iterator<I_C_Printing_Queue> iterator = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Printing_Queue.class)
-				.setContext(getCtx(), getTrxName())
+				.createQueryBuilder(I_C_Printing_Queue.class, getCtx(), getTrxName())
 				.filter(queryFilter)
 				.orderBy().addColumn(I_C_Printing_Queue.COLUMN_C_Printing_Queue_ID)
 				.endOrderBy()

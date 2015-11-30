@@ -95,8 +95,7 @@ public class C_OrderLine
 	public void unlinkSalesOrderLines(final I_C_OrderLine orderLine)
 	{
 		final List<I_C_OrderLine> referencingOrderLines = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_OrderLine.class)
-				.setContext(orderLine)
+				.createQueryBuilder(I_C_OrderLine.class, orderLine)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Link_OrderLine_ID, orderLine.getC_OrderLine_ID())
 				.create().list(I_C_OrderLine.class);
 		for (final I_C_OrderLine referencingOrderLine : referencingOrderLines)

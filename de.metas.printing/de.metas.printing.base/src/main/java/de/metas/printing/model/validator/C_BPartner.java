@@ -10,12 +10,12 @@ package de.metas.printing.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -80,7 +80,7 @@ public class C_BPartner
 								final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 								// 08958: for the starts, we only update queue items that reference invoices
-								final IQuery<I_C_DocType> invoicedocTypeQuery = queryBL.createQueryBuilder(I_C_DocType.class)
+								final IQuery<I_C_DocType> invoicedocTypeQuery = queryBL.createQueryBuilder(I_C_DocType.class, ctx, ITrx.TRXNAME_ThreadInherited)
 										.addOnlyActiveRecordsFilter()
 										.addInArrayFilter(I_C_DocType.COLUMNNAME_DocBaseType,
 												X_C_DocType.DOCBASETYPE_APCreditMemo,
@@ -89,8 +89,7 @@ public class C_BPartner
 												X_C_DocType.DOCBASETYPE_ARInvoice,
 												X_C_DocType.DOCBASETYPE_ARProFormaInvoice).create();
 
-								final int updatedCount = queryBL.createQueryBuilder(I_C_Printing_Queue.class)
-										.setContext(ctx, ITrx.TRXNAME_ThreadInherited)
+								final int updatedCount = queryBL.createQueryBuilder(I_C_Printing_Queue.class, ctx, ITrx.TRXNAME_ThreadInherited)
 										.addOnlyActiveRecordsFilter()
 										.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_BPartner_ID, bPartner.getC_BPartner_ID())
 										.addEqualsFilter(I_C_Printing_Queue.COLUMN_Processed, false)

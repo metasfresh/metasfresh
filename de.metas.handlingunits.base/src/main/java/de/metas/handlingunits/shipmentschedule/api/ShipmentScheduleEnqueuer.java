@@ -139,8 +139,7 @@ public class ShipmentScheduleEnqueuer
 			final ILock mainLock)
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.setContext(localCtx.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_ShipmentSchedule.class, localCtx.getCtx(), ITrx.TRXNAME_None)
 				.filter(queryFilters);
 
 		queryBuilder.orderBy()

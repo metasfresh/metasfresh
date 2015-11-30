@@ -50,8 +50,7 @@ public class MovementDAO implements IMovementDAO
 		Check.assumeNotNull(movementLineClass, "movementLineClass not null");
 
 		final IQueryBuilder<MovementLineType> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(movementLineClass)
-				.setContext(movement);
+				.createQueryBuilder(movementLineClass, movement);
 
 		queryBuilder.getFilters()
 				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_M_Movement_ID, movement.getM_Movement_ID());

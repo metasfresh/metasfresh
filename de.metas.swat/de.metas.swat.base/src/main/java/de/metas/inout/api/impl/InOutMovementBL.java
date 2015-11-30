@@ -236,8 +236,7 @@ public class InOutMovementBL implements IInOutMovementBL
 		Check.assumeNotNull(inout, "inout not null");
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Movement.class)
-				.setContext(inout)
+				.createQueryBuilder(I_M_Movement.class, inout)
 				.addEqualsFilter(I_M_Movement.COLUMNNAME_M_InOut_ID, inout.getM_InOut_ID())
 				.create()
 				.list(I_M_Movement.class);

@@ -565,8 +565,7 @@ final class ReadPaymentForm
 		}
 
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
 
 		final Iterator<I_C_Invoice_Candidate> invoiceCandidatesIt = invoiceCandDAO.retrieveInvoiceCandidates(queryBuilder);

@@ -66,14 +66,12 @@ import de.metas.invoicecandidate.model.I_M_InOutLine;
 		filters.addOnlyActiveRecordsFilter();
 
 		// if the inout was reversed, and there is no IC yet, don't bother creating one
-		final IQuery<I_M_InOut> inoutQuery = queryBL.createQueryBuilder(I_M_InOut.class)
-				.setContext(ctx, trxName)
+		final IQuery<I_M_InOut> inoutQuery = queryBL.createQueryBuilder(I_M_InOut.class, ctx, trxName)
 				.addNotEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, DocAction.STATUS_Reversed)
 				.create();
 		filters.addInSubQueryFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOut.COLUMNNAME_M_InOut_ID, inoutQuery);
 
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, ctx, trxName)
 				.filter(filters)
 				.filterByClientId();
 		queryBuilder.orderBy()

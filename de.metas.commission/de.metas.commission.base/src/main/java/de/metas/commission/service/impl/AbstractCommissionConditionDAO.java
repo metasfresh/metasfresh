@@ -50,8 +50,7 @@ public abstract class AbstractCommissionConditionDAO implements ICommissionCondi
 				.addEqualsFilter(I_C_AdvCommissionCondition.COLUMNNAME_C_AdvComSystem_ID, cAdvComSystem.getC_AdvComSystem_ID())
 				.addEqualsFilter(I_C_AdvCommissionCondition.COLUMNNAME_IsDefaultForOrphandedSponsors, true);
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_AdvCommissionCondition.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_AdvCommissionCondition.class, ctx, trxName)
 				.filter(filter)
 				.create()
 				.firstOnly(I_C_AdvCommissionCondition.class);

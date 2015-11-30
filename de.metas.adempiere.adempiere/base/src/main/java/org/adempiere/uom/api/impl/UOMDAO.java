@@ -57,8 +57,7 @@ public class UOMDAO implements IUOMDAO
 	public I_C_UOM retrieveByX12DE355(@CacheCtx final Properties ctx, final String x12de355, final boolean throwExIfNull)
 	{
 		final IQueryBuilder<I_C_UOM> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_UOM.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_UOM.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayFilter(I_C_UOM.COLUMNNAME_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System, Env.getAD_Client_ID(ctx))
 				.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, x12de355)
 				.addOnlyActiveRecordsFilter();

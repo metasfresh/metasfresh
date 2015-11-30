@@ -77,8 +77,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		}
 
 		return queryBL
-				.createQueryBuilder(org.compiere.model.I_C_BPartner_Product.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(org.compiere.model.I_C_BPartner_Product.class, ctx, ITrx.TRXNAME_None)
 				.filter(queryFilters)
 				.create()
 				.list(I_C_BPartner_Product.class);
@@ -89,8 +88,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	{
 		Check.assumeNotNull(product, "product not null");
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Product.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_BPartner_Product.class, ctx, ITrx.TRXNAME_None)
 
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true)
@@ -118,8 +116,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	public I_C_BPartner_Product retrieveBPartnerProductAssociation(@CacheCtx final Properties ctx, final int bpartnerId, final int productId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Product.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_BPartner_Product.class, partner)
 				//
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bpartnerId)
@@ -163,8 +160,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.createQueryOrderBy();
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Product.class)
-				.setContext(partner)
+				.createQueryBuilder(I_C_BPartner_Product.class, partner)
 				.addOnlyActiveRecordsFilter()
 				.filter(queryFilters)
 

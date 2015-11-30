@@ -53,8 +53,7 @@ public class ADWindowDAO implements IADWindowDAO
 			final int adWindowId)
 	{
 		final I_AD_Window window = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Window.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Window.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
 				.create()

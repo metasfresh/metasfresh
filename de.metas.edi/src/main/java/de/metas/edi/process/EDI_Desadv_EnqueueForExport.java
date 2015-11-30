@@ -170,8 +170,7 @@ public class EDI_Desadv_EnqueueForExport extends SvrProcess
 	{
 		final IQueryFilter<I_EDI_Desadv> processQueryFilter = getProcessInfo().getQueryFilter();
 
-		final IQueryBuilder<I_EDI_Desadv> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv.class)
-				.setContext(getCtx(), get_TrxName())
+		final IQueryBuilder<I_EDI_Desadv> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv.class, getCtx(), get_TrxName())
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus, X_EDI_Desadv.EDI_EXPORTSTATUS_Error, X_EDI_Desadv.EDI_EXPORTSTATUS_Pending)
 				.filter(processQueryFilter);

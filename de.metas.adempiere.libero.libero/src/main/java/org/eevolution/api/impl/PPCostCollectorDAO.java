@@ -44,8 +44,7 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	public List<I_PP_Cost_Collector> retrieveForOrder(final I_PP_Order order)
 	{
 		Check.assumeNotNull(order, "order not null");
-		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class)
-				.setContext(order)
+		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class, order)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_ID, order.getPP_Order_ID());
 
 		queryBuilder.orderBy()
@@ -57,8 +56,7 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	@Override
 	public List<I_PP_Cost_Collector> retrieveForOrderBOMLine(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class)
-				.setContext(orderBOMLine)
+		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class, orderBOMLine)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_BOMLine_ID, orderBOMLine.getPP_Order_BOMLine_ID());
 
 		queryBuilder.orderBy()
@@ -72,8 +70,7 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	{
 		Check.assumeNotNull(parentCostCollector, "parentCostCollector not null");
 
-		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class)
-				.setContext(parentCostCollector)
+		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class, parentCostCollector)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Cost_Collector_Parent_ID, parentCostCollector.getPP_Cost_Collector_ID());
 
 		queryBuilder.orderBy()
@@ -87,8 +84,7 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	public List<I_M_CostDetail> retrieveCostDetails(final I_PP_Cost_Collector cc)
 	{
 		final IQueryBuilder<I_M_CostDetail> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_CostDetail.class)
-				.setContext(cc)
+				.createQueryBuilder(I_M_CostDetail.class, cc)
 				.addEqualsFilter(I_M_CostDetail.COLUMNNAME_PP_Cost_Collector_ID, cc.getPP_Cost_Collector_ID());
 
 		queryBuilder.orderBy()
@@ -102,8 +98,7 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		return queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
-				.setContext(ppOrder)
+		return queryBL.createQueryBuilder(I_PP_Cost_Collector.class, ppOrder)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_CostCollectorType, X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_DocStatus, X_PP_Cost_Collector.DOCSTATUS_Completed)
@@ -117,8 +112,7 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	public List<I_PP_Cost_Collector> retrieveNotReversedForOrder(final I_PP_Order order)
 	{
 		Check.assumeNotNull(order, "order not null");
-		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class)
-				.setContext(order)
+		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class, order)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_ID, order.getPP_Order_ID())
 				.addInArrayFilter(I_PP_Cost_Collector.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
 

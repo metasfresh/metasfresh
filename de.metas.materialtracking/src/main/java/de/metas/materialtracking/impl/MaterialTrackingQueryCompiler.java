@@ -91,8 +91,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 	{
 		Check.assumeNotNull(queryVO, "queryVO not null");
 
-		final IQueryBuilder<I_M_Material_Tracking> queryBuilder = queryBL.createQueryBuilder(I_M_Material_Tracking.class)
-				.setContext(getCtx(), getTrxName())
+		final IQueryBuilder<I_M_Material_Tracking> queryBuilder = queryBL.createQueryBuilder(I_M_Material_Tracking.class, getCtx(), getTrxName())
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter();
 
@@ -191,8 +190,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 		//
 		// Create M_Material_Tracking_Ref query
 		final IQueryBuilder<I_M_Material_Tracking_Ref> materialTrackingRefQueryBuilder = queryBL
-				.createQueryBuilder(I_M_Material_Tracking_Ref.class)
-				.setContext(getCtx(), getTrxName())
+				.createQueryBuilder(I_M_Material_Tracking_Ref.class, getCtx(), getTrxName())
 				.filter(modelFilters);
 
 		return materialTrackingRefQueryBuilder;
@@ -209,8 +207,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 		//
 		// Create M_Material_Tracking_Ref query
 		final IQueryBuilder<I_M_Material_Tracking_Ref> materialTrackingRefQueryBuilder = queryBL
-				.createQueryBuilder(I_M_Material_Tracking_Ref.class)
-				.setContext(getCtx(), getTrxName())
+				.createQueryBuilder(I_M_Material_Tracking_Ref.class, getCtx(), getTrxName())
 				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_AD_Table_ID, modelTableId)
 				.addInSubQueryFilter(I_M_Material_Tracking_Ref.COLUMNNAME_Record_ID, modelKeyColumnName, modelsQuery.create());
 

@@ -181,18 +181,15 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final int inoutLineTableId = Services.get(IADTableDAO.class).retrieveTableId(org.compiere.model.I_M_InOutLine.Table_Name);
 
-		final IQuery<I_M_InOut> queryShipments = queryBL.createQueryBuilder(I_M_InOut.class)
-				.setContext(contextProvider)
+		final IQuery<I_M_InOut> queryShipments = queryBL.createQueryBuilder(I_M_InOut.class, contextProvider)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
 				.create();
 
-		final IQuery<I_M_InOutLine> queryShipmentLines = queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.setContext(contextProvider)
+		final IQuery<I_M_InOutLine> queryShipmentLines = queryBL.createQueryBuilder(I_M_InOutLine.class, contextProvider)
 				.addInSubQueryFilter(org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOut.COLUMNNAME_M_InOut_ID, queryShipments)
 				.create();
 
-		final IQuery<I_M_HU_Assignment> queryHUAssignments = queryBL.createQueryBuilder(I_M_HU_Assignment.class)
-				.setContext(contextProvider)
+		final IQuery<I_M_HU_Assignment> queryHUAssignments = queryBL.createQueryBuilder(I_M_HU_Assignment.class, contextProvider)
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, inoutLineTableId)
 				.addInSubQueryFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, queryShipmentLines)
 				.create();

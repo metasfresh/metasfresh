@@ -52,8 +52,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_AD_WF_Node> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_WF_Node.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_AD_WF_Node.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_AD_WF_Node> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, adWorkflowId);
@@ -108,8 +107,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_AD_WF_NodeNext> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_WF_NodeNext.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_AD_WF_NodeNext.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_AD_WF_NodeNext> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_AD_WF_NodeNext.COLUMNNAME_AD_WF_Node_ID, adWFNodeId);

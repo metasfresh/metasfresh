@@ -70,11 +70,7 @@ public class OLHandlerDAO implements IOLHandlerDAO
 		// Line must not already have an invoice candidate.
 		{
 			final IQuery<I_C_Invoice_Candidate> noICQuery = queryBL
-					.createQueryBuilder(I_C_Invoice_Candidate.class)
-					.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID,
-							CompareQueryFilter.Operator.Equal,
-							ModelColumnNameValue.forColumnName(I_C_OrderLine.Table_Name, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID))
-					.setContext(ctx, trxName)
+					.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 					.create();
 
 			final ICompositeQueryFilter<I_C_OrderLine> noICFilter = queryBL.createCompositeQueryFilter(I_C_OrderLine.class);
@@ -107,15 +103,13 @@ public class OLHandlerDAO implements IOLHandlerDAO
 			final ICompositeQueryFilter<I_C_Order> orderFilter = queryBL.createCompositeQueryFilter(I_C_Order.class);
 			orderFilter.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, DocAction.ACTION_Complete);
 
-			final IQuery<I_C_DocType> docTypeQuery = queryBL.createQueryBuilder(I_C_DocType.class)
-					.setContext(ctx, trxName)
+			final IQuery<I_C_DocType> docTypeQuery = queryBL.createQueryBuilder(I_C_DocType.class, ctx, trxName)
 					.filter(docTypeFilter)
 					.create();
 
 			orderFilter.addInSubQueryFilter(I_C_Order.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, docTypeQuery);
 
-			final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class)
-					.setContext(ctx, trxName)
+			final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class, ctx, trxName)
 					.filter(orderFilter)
 					.create();
 
@@ -126,8 +120,7 @@ public class OLHandlerDAO implements IOLHandlerDAO
 		// Add additional filters
 		filters.addFilter(additionalFilters); // task 07242
 
-		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class, ctx, trxName)
 				.filter(filters)
 				.filterByClientId();
 

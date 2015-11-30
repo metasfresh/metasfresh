@@ -226,8 +226,7 @@ public class DocFactory implements IDocFactory
 		//
 		// Finds all AD_Table_IDs for tables which are not Views and have a column called "Posted"
 		final List<Integer> tableIds = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Column.class)
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Column.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Column.COLUMN_ColumnName, "Posted")
 				.andCollect(I_AD_Column.COLUMN_AD_Table_ID)

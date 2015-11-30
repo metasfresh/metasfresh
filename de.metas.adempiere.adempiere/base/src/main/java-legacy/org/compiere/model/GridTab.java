@@ -4100,8 +4100,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable
 	{
 		final IQueryFilter<T> gridTabFilter = createCurrentRecordsQueryFilter(modelClass);
 		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(modelClass)
-				.setContext(getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(modelClass, getCtx(), ITrx.TRXNAME_None)
 				.filter(gridTabFilter);
 		return queryBuilder;
 	}

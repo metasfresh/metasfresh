@@ -154,8 +154,7 @@ public class HUFilterPropertiesModel extends AbstractPropertiesPanelModel
 	{
 		final ITerminalContext contextProvider = getTerminalContext();
 
-		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class)
-				.setContext(contextProvider);
+		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, contextProvider);
 
 		for (final HUFilterModel filterModel : _columnNames2Filters.values())
 		{

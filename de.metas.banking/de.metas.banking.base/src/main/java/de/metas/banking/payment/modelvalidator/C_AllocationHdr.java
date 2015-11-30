@@ -76,8 +76,7 @@ public class C_AllocationHdr
 		final Collection<Collection<I_C_PaySelectionLine>> paySelectionLinesGroups = Services.get(IQueryBL.class)
 				//
 				// Get all C_AllocationLines
-				.createQueryBuilder(I_C_AllocationLine.class)
-				.setContext(context)
+				.createQueryBuilder(I_C_AllocationLine.class, context)
 				.addEqualsFilter(I_C_AllocationLine.COLUMN_C_AllocationHdr_ID, allocationHdr.getC_AllocationHdr_ID())
 				//
 				// Collect all invoices from allocation lines

@@ -38,8 +38,7 @@ public class FreshQtyOnHandDAO implements IFreshQtyOnHandDAO
 	public List<I_Fresh_QtyOnHand_Line> retrieveLines(final I_Fresh_QtyOnHand qtyOnHandHeader)
 	{
 		final List<I_Fresh_QtyOnHand_Line> result = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_Fresh_QtyOnHand_Line.class)
-				.setContext(qtyOnHandHeader)
+				.createQueryBuilder(I_Fresh_QtyOnHand_Line.class, qtyOnHandHeader)
 				.addEqualsFilter(I_Fresh_QtyOnHand_Line.COLUMN_Fresh_QtyOnHand_ID, qtyOnHandHeader.getFresh_QtyOnHand_ID())
 				.create()
 				.list();

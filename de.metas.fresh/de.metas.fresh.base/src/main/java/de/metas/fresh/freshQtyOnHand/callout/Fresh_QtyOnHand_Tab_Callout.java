@@ -71,8 +71,7 @@ public class Fresh_QtyOnHand_Tab_Callout extends TabCalloutAdapter
 	private boolean isDateDocAlreadyUsed(final I_Fresh_QtyOnHand freshQtyOnHand, final Timestamp dateDocToUse)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_Fresh_QtyOnHand.class)
-				.setContext(freshQtyOnHand)
+				.createQueryBuilder(I_Fresh_QtyOnHand.class, freshQtyOnHand)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_Fresh_QtyOnHand.COLUMN_DateDoc, dateDocToUse)
 				.create()

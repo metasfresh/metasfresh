@@ -107,8 +107,7 @@ public class TaxDAO implements ITaxDAO
 	@Cached(cacheName = I_C_Tax.Table_Name + "#NoTaxFound")
 	public I_C_Tax retrieveNoTaxFound(@CacheCtx final Properties ctx)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Tax.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Tax.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Tax_ID, noTaxFoundID)
 				.create()
@@ -119,8 +118,7 @@ public class TaxDAO implements ITaxDAO
 	@Cached(cacheName = I_C_TaxCategory.Table_Name + "#NoTaxFound")
 	public I_C_TaxCategory retrieveNoTaxCategoryFound(@CacheCtx final Properties ctx)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, noTaxCategoryFoundID)
 				.create()

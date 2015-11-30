@@ -105,8 +105,7 @@ public class GLJournalLineDAO implements IGLJournalLineDAO
 		Check.assumeNotNull(glJournal, "glJournal not null");
 
 		final Integer lastGroupNo = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_GL_JournalLine.class)
-				.setContext(glJournal)
+				.createQueryBuilder(I_GL_JournalLine.class, glJournal)
 				.addEqualsFilter(I_GL_JournalLine.COLUMN_GL_Journal_ID, glJournal.getGL_Journal_ID())
 				.create()
 				.aggregate(I_GL_JournalLine.COLUMNNAME_GL_JournalLine_Group, IQuery.AGGREGATE_MAX, Integer.class);
@@ -124,8 +123,7 @@ public class GLJournalLineDAO implements IGLJournalLineDAO
 		Check.assumeNotNull(glJournal, "glJournal not null");
 
 		final IQueryBuilder<I_GL_JournalLine> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_GL_JournalLine.class)
-				.setContext(glJournal)
+				.createQueryBuilder(I_GL_JournalLine.class, glJournal)
 				.addEqualsFilter(I_GL_JournalLine.COLUMN_GL_Journal_ID, glJournal.getGL_Journal_ID())
 				.addOnlyActiveRecordsFilter();
 

@@ -83,8 +83,7 @@ public class UserPassword extends SvrProcess
 		log.info("AD_User_ID=" + p_AD_User_ID + " from " + getAD_User_ID());
 
 		final I_AD_User user = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User.class)
-				.setContext(getCtx(), get_TrxName())
+				.createQueryBuilder(I_AD_User.class, getCtx(), get_TrxName())
 				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, p_AD_User_ID)
 				.create()
 				.firstOnly(I_AD_User.class);

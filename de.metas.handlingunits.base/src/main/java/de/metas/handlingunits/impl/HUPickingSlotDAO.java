@@ -48,8 +48,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	@Override
 	public I_M_PickingSlot_HU retrievePickingSlotHU(final de.metas.picking.model.I_M_PickingSlot pickingSlot, final I_M_HU hu)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class)
-				.setContext(pickingSlot)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class, pickingSlot)
 				.filter(new EqualsQueryFilter<I_M_PickingSlot_HU>(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_ID, pickingSlot.getM_PickingSlot_ID()))
 				.filter(new EqualsQueryFilter<I_M_PickingSlot_HU>(I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
 				.create()
@@ -59,8 +58,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	@Override
 	public I_M_PickingSlot_HU retrievePickingSlotHU(final I_M_HU hu)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class)
-				.setContext(hu)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class, hu)
 				.filter(new EqualsQueryFilter<I_M_PickingSlot_HU>(I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
 				.create()
 				.firstOnly(I_M_PickingSlot_HU.class);
@@ -73,14 +71,12 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 				.addColumn(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_HU_ID)
 				.createQueryOrderBy();
 
-		final IQuery<I_M_HU> subQuery = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU.class)
-				.setContext(bPartner)
+		final IQuery<I_M_HU> subQuery = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU.class, bPartner)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU.COLUMN_C_BPartner_ID, bPartner.getC_BPartner_ID())
 				.create();
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class)
-				.setContext(bPartner)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class, bPartner)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, I_M_HU.COLUMNNAME_M_HU_ID, subQuery)
 				.create()
@@ -100,8 +96,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 		final IQuery<I_M_PickingSlot_HU> queryPickingSlotHU = getPickingSlotHUQuery(huPickingSlot);
 
 		final List<I_M_HU> result = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU.class)
-				.setContext(huPickingSlot)
+				.createQueryBuilder(I_M_HU.class, huPickingSlot)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_M_HU.COLUMNNAME_M_HU_ID, I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, queryPickingSlotHU)
 				.create()
@@ -121,8 +116,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	public I_M_PickingSlot retrievePickingSlotForCurrentHU(final I_M_HU hu)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot.class)
-				.setContext(hu)
+				.createQueryBuilder(I_M_PickingSlot.class, hu)
 				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.create()
 				.firstOnly(I_M_PickingSlot.class);
@@ -132,9 +126,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	public I_M_PickingSlot retrievePickingSlotForHU(final I_M_HU hu)
 	{
 		final IQueryBuilder<I_M_PickingSlot> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot.class)
-				.addOnlyActiveRecordsFilter()
-				.setContext(hu);
+				.createQueryBuilder(I_M_PickingSlot.class, hu);
 
 		final ICompositeQueryFilter<I_M_PickingSlot> filters = Services.get(IQueryBL.class).createCompositeQueryFilter(I_M_PickingSlot.class);
 		filters.setJoinOr();
@@ -145,8 +137,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 
 		//
 		// or given HU is in Picking Slot queue
-		final IQuery<I_M_PickingSlot_HU> pickingSlotHUQuery = Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class)
-				.setContext(hu)
+		final IQuery<I_M_PickingSlot_HU> pickingSlotHUQuery = Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class, hu)
 				.addEqualsFilter(I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.create();
 		filters.addInSubQueryFilter(de.metas.picking.model.I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID,
@@ -171,8 +162,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 		//
 		// Filter HUs which are open on Picking Slot
 		{
-			final IQuery<I_M_PickingSlot> pickingSlotsQuery = queryBL.createQueryBuilder(I_M_PickingSlot.class)
-					.setContext(contextProvider)
+			final IQuery<I_M_PickingSlot> pickingSlotsQuery = queryBL.createQueryBuilder(I_M_PickingSlot.class, contextProvider)
 					.addOnlyActiveRecordsFilter()
 					// NOTE: make sure that we are considering only those picking slots where M_HU_ID is set
 					// If not, well, postgresql will be confused and it will look at this query like the virgin to a black cock
@@ -187,8 +177,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 		//
 		// Filter HUs which are in Picking Slot queue
 		{
-			final IQuery<I_M_PickingSlot_HU> pickingSlotsQueueQuery = queryBL.createQueryBuilder(I_M_PickingSlot_HU.class)
-					.setContext(contextProvider)
+			final IQuery<I_M_PickingSlot_HU> pickingSlotsQueueQuery = queryBL.createQueryBuilder(I_M_PickingSlot_HU.class, contextProvider)
 					.addOnlyActiveRecordsFilter()
 					.addNotEqualsFilter(I_M_PickingSlot_HU.COLUMN_M_HU_ID, null) // M_HU_ID IS NOT NULL
 					.create();
@@ -215,8 +204,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	private IQuery<I_M_PickingSlot_HU> getPickingSlotHUQuery(final I_M_PickingSlot pickingSlot)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot_HU.class)
-				.setContext(pickingSlot)
+				.createQueryBuilder(I_M_PickingSlot_HU.class, pickingSlot)
 				.filter(new EqualsQueryFilter<I_M_PickingSlot_HU>(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_ID, pickingSlot.getM_PickingSlot_ID()))
 				.create()
 				.setOnlyActiveRecords(true);
@@ -229,8 +217,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 		Check.assumeNotNull(locator, "locator not null");
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot.class)
-				.setContext(partner)
+				.createQueryBuilder(I_M_PickingSlot.class, partner)
 				.addEqualsFilter(de.metas.picking.model.I_M_PickingSlot.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
 				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_M_Locator_ID, locator.getM_Locator_ID())
 				.create()

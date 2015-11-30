@@ -58,8 +58,7 @@ public class DesadvDAO implements IDesadvDAO
 		Check.assumeNotNull(ctxAware, "Param 'ctxAware' is not null");
 		Check.assumeNotEmpty(poReference, "Param 'poReference' is not emtpy");
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_Desadv.class)
-				.setContext(ctxAware)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_Desadv.class, ctxAware)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv.COLUMN_POReference, poReference)
 				.addEqualsFilter(I_EDI_Desadv.COLUMN_Processed, false)
@@ -73,8 +72,7 @@ public class DesadvDAO implements IDesadvDAO
 	{
 		Check.assumeNotNull(desadv, "Param 'desadv'");
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_DesadvLine.class)
-				.setContext(desadv)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_DesadvLine.class, desadv)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_Line, line)
@@ -105,8 +103,7 @@ public class DesadvDAO implements IDesadvDAO
 
 	private IQuery<I_M_InOut> createAllInOutsQuery(final I_EDI_Desadv desadv)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class)
-				.setContext(desadv)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, desadv)
 				// .addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
 				.create();
@@ -165,8 +162,7 @@ public class DesadvDAO implements IDesadvDAO
 
 	private IQuery<I_M_InOutLine> createAllInOutLinesQuery(final I_EDI_DesadvLine desadvLine)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
-				.setContext(desadvLine)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, desadvLine)
 				// .addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_EDI_DesadvLine_ID, desadvLine.getEDI_DesadvLine_ID())
 				.create();
@@ -174,8 +170,7 @@ public class DesadvDAO implements IDesadvDAO
 
 	private IQuery<I_EDI_DesadvLine> createAllDesadvLinesQuery(final I_EDI_Desadv desadv)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_DesadvLine.class)
-				.setContext(desadv)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_DesadvLine.class, desadv)
 				// .addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
 				.create();
@@ -183,8 +178,7 @@ public class DesadvDAO implements IDesadvDAO
 
 	private IQuery<I_C_Order> createAllOrdersQuery(I_EDI_Desadv desadv)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class)
-				.setContext(desadv)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class, desadv)
 				// .addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
 				.create();
@@ -192,8 +186,7 @@ public class DesadvDAO implements IDesadvDAO
 
 	private IQueryBuilder<I_C_OrderLine> createAllOrderLinesQuery(final I_EDI_DesadvLine desadvLine)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class)
-				.setContext(desadvLine)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class, desadvLine)
 				// .addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_EDI_DesadvLine_ID, desadvLine.getEDI_DesadvLine_ID());
 	}
@@ -216,8 +209,7 @@ public class DesadvDAO implements IDesadvDAO
 
 	private IQueryBuilder<I_EDI_DesadvLine_SSCC> createDesadvLineSSCCsQuery(final I_EDI_DesadvLine desadvLine)
 	{
-		final IQueryBuilder<I_EDI_DesadvLine_SSCC> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_EDI_DesadvLine_SSCC.class)
-				.setContext(desadvLine)
+		final IQueryBuilder<I_EDI_DesadvLine_SSCC> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_EDI_DesadvLine_SSCC.class, desadvLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_DesadvLine_SSCC.COLUMNNAME_EDI_DesadvLine_ID, desadvLine.getEDI_DesadvLine_ID());
 		queryBuilder.orderBy()

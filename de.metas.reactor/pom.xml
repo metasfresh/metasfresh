@@ -14,9 +14,10 @@
 	<modules>
 		<module>../de.metas.assemblies</module>
 		<module>../de.metas.parent</module>
-		
-		<module>../de.metas.scripts.rollout</module>
+
 		<module>../de.metas.migration</module>
+		<module>../de.metas.scripts.rollout</module>
+		
 		<module>../de.metas.util</module>
 		<module>../de.metas.monitoring</module>
 

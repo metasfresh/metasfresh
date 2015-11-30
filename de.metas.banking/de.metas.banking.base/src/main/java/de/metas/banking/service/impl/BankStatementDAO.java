@@ -49,8 +49,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	private IQueryBuilder<I_C_BankStatementLine> retrieveLinesQuery(final I_C_BankStatement bankStatement)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BankStatementLine.class)
-				.setContext(bankStatement)
+				.createQueryBuilder(I_C_BankStatementLine.class, bankStatement)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID, bankStatement.getC_BankStatement_ID())
 				//
@@ -71,8 +70,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	public IQueryBuilder<I_C_BankStatementLine_Ref> retrieveLineReferencesQuery(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BankStatementLine_Ref.class)
-				.setContext(bankStatementLine)
+				.createQueryBuilder(I_C_BankStatementLine_Ref.class, bankStatementLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID, bankStatementLine.getC_BankStatementLine_ID())
 				.orderBy()
@@ -89,8 +87,7 @@ public class BankStatementDAO implements IBankStatementDAO
 
 		//
 		// Check if payment is on any bank statement line reference, processed or not
-		final boolean hasBankStatementLineRefs = queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class)
-				.setContext(payment)
+		final boolean hasBankStatementLineRefs = queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class, payment)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_Payment_ID, paymentId)
 				.create()
@@ -102,8 +99,7 @@ public class BankStatementDAO implements IBankStatementDAO
 
 		//
 		// Check if payment is on any bank statement line, processed or not
-		final boolean hasBankStatementLines = queryBL.createQueryBuilder(I_C_BankStatementLine.class)
-				.setContext(payment)
+		final boolean hasBankStatementLines = queryBL.createQueryBuilder(I_C_BankStatementLine.class, payment)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BankStatementLine.COLUMN_C_Payment_ID, paymentId)
 				.create()

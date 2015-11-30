@@ -52,8 +52,7 @@ public abstract class AbstractInvoiceHistoryDAO implements IInvoiceHistoryDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IContextAware contextProvider = new PlainContextAware(Env.getCtx());
-		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.setContext(contextProvider)
+		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_QtyReserved, 0)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID, productId);

@@ -41,8 +41,7 @@ public class CommissionLockDAO implements ICommissionLockDAO
 	public boolean isLocked(final org.compiere.model.I_C_BPartner bPartner, final Date date)
 	{
 		// @formatter:off
-		final boolean locked = Services.get(IQueryBL.class).createQueryBuilder(I_C_AdvCommissionLock.class)
-				.setContext(bPartner)
+		final boolean locked = Services.get(IQueryBL.class).createQueryBuilder(I_C_AdvCommissionLock.class, bPartner)
 				.addEqualsFilter(I_C_AdvCommissionLock.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
 				.addCompareFilter(I_C_AdvCommissionLock.COLUMNNAME_DateFrom, Operator.LessOrEqual, date)
 				.addCompareFilter(I_C_AdvCommissionLock.COLUMNNAME_DateTo, Operator.GreatherOrEqual, date)

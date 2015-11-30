@@ -55,8 +55,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	{
 		Check.assumeNotNull(paySelection, "Pay selection not null");
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class)
-				.setContext(paySelection)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, paySelection)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelection.getC_PaySelection_ID())
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_Processed, true)
 				.addOnlyActiveRecordsFilter()

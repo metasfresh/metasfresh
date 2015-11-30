@@ -84,8 +84,7 @@ public class RoleDAO implements IRoleDAO
 	public List<I_AD_Role> retrieveRolesForUser(@CacheCtx final Properties ctx, final int adUserId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User_Roles.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_User_Roles.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_User_ID, adUserId)
 				.andCollect(I_AD_User_Roles.COLUMN_AD_Role_ID)
@@ -105,8 +104,7 @@ public class RoleDAO implements IRoleDAO
 		// final Date date = SystemTime.asDate();
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User_Substitute.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_User_Substitute.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addValidFromToMatchesFilter(I_AD_User_Substitute.COLUMN_ValidFrom, I_AD_User_Substitute.COLUMN_ValidTo, date)
 				.addEqualsFilter(I_AD_User_Substitute.COLUMN_Substitute_ID, adUserId)
@@ -135,8 +133,7 @@ public class RoleDAO implements IRoleDAO
 	public List<I_AD_Role_Included> retrieveRoleIncludes(@CacheCtx final Properties ctx, final int adRoleId)
 	{
 		final List<I_AD_Role_Included> roleIncludes = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Role_Included.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Role_Included.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Role_Included.COLUMN_AD_Role_ID, adRoleId)
 				//
@@ -160,8 +157,7 @@ public class RoleDAO implements IRoleDAO
 	public List<I_AD_Role> retrieveAllRolesWithAutoMaintenance(final Properties ctx)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Role.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Role.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Role.COLUMNNAME_IsManual, false)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -172,8 +168,7 @@ public class RoleDAO implements IRoleDAO
 	public List<I_AD_Role> retrieveRolesForClient(final Properties ctx, final int adClientId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Role.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Role.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Role.COLUMNNAME_AD_Client_ID, adClientId)
 				.addOnlyActiveRecordsFilter()
 				.create()

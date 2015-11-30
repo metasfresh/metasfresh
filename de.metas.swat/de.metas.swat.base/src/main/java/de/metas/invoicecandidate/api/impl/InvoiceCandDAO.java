@@ -81,8 +81,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 	@Override
 	public List<I_C_Invoice_Candidate> retrieveIcForIl(final I_C_InvoiceLine invoiceLine)
 	{
-		final IQueryBuilder<I_C_Invoice_Line_Alloc> ilaQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Line_Alloc.class)
-				.setContext(invoiceLine)
+		final IQueryBuilder<I_C_Invoice_Line_Alloc> ilaQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Line_Alloc.class, invoiceLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID());
 
@@ -134,8 +133,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 	@Override
 	public List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(final I_C_Invoice_Candidate invoiceCand)
 	{
-		final IQueryBuilder<I_C_Invoice_Line_Alloc> ilaQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Line_Alloc.class)
-				.setContext(invoiceCand)
+		final IQueryBuilder<I_C_Invoice_Line_Alloc> ilaQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Line_Alloc.class, invoiceCand)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID());
 
@@ -252,8 +250,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 	public void invalidateCandsForBPartner(final I_C_BPartner bPartner)
 	{
 		final int count = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(bPartner)
+				.createQueryBuilder(I_C_Invoice_Candidate.class, bPartner)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID, bPartner.getC_BPartner_ID())
 				//
@@ -301,8 +298,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 
 		//
@@ -610,8 +606,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 		// Create the selection which we will need to update
 		final Properties ctx = Env.getCtx();
 		final IQueryBuilder<I_C_Invoice_Candidate> selectionQueryBuilder = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(selectionId)
 				.addNotEqualsFilter(invoiceCandidateColumnName, value) // skip those which have our value set
 		;
@@ -628,8 +623,7 @@ public class InvoiceCandDAO extends AbstractInvoiceCandDAO
 
 		//
 		// Update our new selection
-		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(ctx, trxName)
+		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(selectionToUpdateId)
 				.create()
 				.updateDirectly()

@@ -149,8 +149,7 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 		final ICompositeQueryFilter<I_M_ReceiptSchedule> filters = createFilter(ctx, warehouseId, bpartnerId, orderId);
 
 		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_ReceiptSchedule.class, ctx, ITrx.TRXNAME_None)
 				.filter(filters);
 
 		// order by

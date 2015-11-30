@@ -354,7 +354,6 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 
 	protected final <T> IQueryBuilder<T> query(final Class<T> modelClass)
 	{
-		return queryBL.createQueryBuilder(modelClass)
-				.setContext(getContext());
+		return queryBL.createQueryBuilder(modelClass, getContext());
 	}
 }

@@ -92,8 +92,7 @@ public class FactAcctSummary extends SvrProcess
 	{
 		final IContextAware context = this;
 		final IQueryBuilder<I_PA_ReportCube> queryBuilder = queryBL
-				.createQueryBuilder(I_PA_ReportCube.class)
-				.setContext(context)
+				.createQueryBuilder(I_PA_ReportCube.class, context)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 

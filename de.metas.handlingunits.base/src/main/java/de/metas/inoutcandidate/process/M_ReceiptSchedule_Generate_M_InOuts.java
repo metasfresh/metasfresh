@@ -127,8 +127,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends SvrProcess
 		// in case we were called from the window, then only process the current selection
 		final IQueryFilter<I_M_ReceiptSchedule> processInfoFilter = getProcessInfo().getQueryFilter();
 
-		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.setContext(getCtx(), ITrx.TRXNAME_None)
+		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class, getCtx(), ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
 				.addOnlyActiveRecordsFilter()
 				.filter(processInfoFilter);

@@ -72,8 +72,7 @@ public class AttributeDAO implements IAttributeDAO
 	public <T extends I_M_Attribute> T retrieveAttributeByValue(@CacheCtx final Properties ctx, final String value, final Class<T> clazz)
 	{
 		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(clazz)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(clazz, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<T> filters = queryBuilder.getFilters();
 		filters.addOnlyActiveRecordsFilter();
@@ -104,8 +103,7 @@ public class AttributeDAO implements IAttributeDAO
 		if (isHighVolumeValuesList(attribute))
 		{
 			return Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_AttributeValue.class)
-					.setContext(attribute)
+					.createQueryBuilder(I_M_AttributeValue.class, attribute)
 					.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attribute.getM_Attribute_ID())
 					.addEqualsFilter(I_M_AttributeValue.COLUMN_Value, value)
 					.create()
@@ -169,8 +167,7 @@ public class AttributeDAO implements IAttributeDAO
 			return Collections.emptyList();
 		}
 
-		final IQueryBuilder<I_M_AttributeInstance> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeInstance.class)
-				.setContext(attributeSetInstance)
+		final IQueryBuilder<I_M_AttributeInstance> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeInstance.class, attributeSetInstance)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstance.getM_AttributeSetInstance_ID());
 
 		queryBuilder.orderBy()
@@ -197,8 +194,7 @@ public class AttributeDAO implements IAttributeDAO
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeInstance.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeInstance.class, ctx, trxName)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstance.getM_AttributeSetInstance_ID())
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
@@ -277,8 +273,7 @@ public class AttributeDAO implements IAttributeDAO
 			@CacheSkipIfNotNull final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter)
 	{
 		final IQueryBuilder<I_M_AttributeValue> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_AttributeValue.class)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(I_M_AttributeValue.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_M_AttributeValue> filters = queryBuilder.getFilters();
 		filters.addOnlyActiveRecordsFilter();
@@ -330,8 +325,7 @@ public class AttributeDAO implements IAttributeDAO
 	Set<String> retrieveAttributeValueSubstitutes(@CacheCtx final Properties ctx, final int attributeValueId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final List<I_M_AttributeValue> attributeValueSubstitutes = queryBL.createQueryBuilder(I_M_AttributeValue_Mapping.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final List<I_M_AttributeValue> attributeValueSubstitutes = queryBL.createQueryBuilder(I_M_AttributeValue_Mapping.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_AttributeValue_Mapping.COLUMN_M_AttributeValue_To_ID, attributeValueId)
 				.andCollect(I_M_AttributeValue_Mapping.COLUMN_M_AttributeValue_ID, I_M_AttributeValue.class)
@@ -354,16 +348,14 @@ public class AttributeDAO implements IAttributeDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQuery<I_M_AttributeUse> attributeUseQuery = queryBL.createQueryBuilder(I_M_AttributeUse.class)
-				.setContext(attributeSet)
+		final IQuery<I_M_AttributeUse> attributeUseQuery = queryBL.createQueryBuilder(I_M_AttributeUse.class, attributeSet)
 				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, attributeSet.getM_AttributeSet_ID())
 				.create();
 		final ICompositeQueryFilter<I_M_Attribute> compositeFilter = queryBL.createCompositeQueryFilter(I_M_Attribute.class);
 		compositeFilter.addEqualsFilter(I_M_Attribute.COLUMNNAME_IsInstanceAttribute, isInstanceAttribute);
 		compositeFilter.addInSubQueryFilter(I_M_Attribute.COLUMNNAME_M_Attribute_ID, I_M_AttributeUse.COLUMNNAME_M_Attribute_ID, attributeUseQuery);
 
-		return queryBL.createQueryBuilder(I_M_Attribute.class)
-				.setContext(attributeSet)
+		return queryBL.createQueryBuilder(I_M_Attribute.class, attributeSet)
 				.filter(compositeFilter)
 				.create()
 				.list(I_M_Attribute.class);
@@ -372,8 +364,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public boolean containsAttribute(final int attributeSetId, final int attributeId, final Object ctxProvider)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeUse.class)
-				.setContext(ctxProvider)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeUse.class, ctxProvider)
 				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, attributeSetId)
 				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
@@ -383,8 +374,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public I_M_Attribute retrieveAttribute(final I_M_AttributeSet as, final int attributeId)
 	{
-		final I_M_AttributeUse attributeUse = Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeUse.class)
-				.setContext(as)
+		final I_M_AttributeUse attributeUse = Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeUse.class, as)
 				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, as.getM_AttributeSet_ID())
 				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
@@ -435,8 +425,7 @@ public class AttributeDAO implements IAttributeDAO
 	public I_M_AttributeSet retrieveNoAttributeSet(@CacheCtx final Properties ctx)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_AttributeSet.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_AttributeSet.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, M_AttributeSet_ID_None)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSet.class);

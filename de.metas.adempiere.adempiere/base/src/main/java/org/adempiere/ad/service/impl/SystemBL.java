@@ -45,8 +45,7 @@ public class SystemBL implements ISystemBL
 	public MSystem get(@CacheCtx final Properties ctx)
 	{
 		// Retrieve AD_System record
-		final I_AD_System system = Services.get(IQueryBL.class).createQueryBuilder(I_AD_System.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final I_AD_System system = Services.get(IQueryBL.class).createQueryBuilder(I_AD_System.class, ctx, ITrx.TRXNAME_None)
 				.create()
 				.firstOnly(I_AD_System.class);
 

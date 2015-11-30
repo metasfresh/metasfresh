@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -70,11 +70,7 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 		// Line must not already have an invoice candidate.
 		{
 			final IQuery<I_C_Invoice_Candidate> noICQuery = queryBL
-					.createQueryBuilder(I_C_Invoice_Candidate.class)
-					.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID,
-							CompareQueryFilter.Operator.Equal,
-							ModelColumnNameValue.forColumnName(I_C_OrderLine.Table_Name, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID))
-					.setContext(ctx, trxName)
+					.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 					.create();
 
 			final ICompositeQueryFilter<I_C_OrderLine> noICFilter = queryBL.createCompositeQueryFilter(I_C_OrderLine.class);
@@ -107,15 +103,13 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 			final ICompositeQueryFilter<I_C_Order> orderFilter = queryBL.createCompositeQueryFilter(I_C_Order.class);
 			orderFilter.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, DocAction.ACTION_Complete);
 
-			final IQuery<I_C_DocType> docTypeQuery = queryBL.createQueryBuilder(I_C_DocType.class)
-					.setContext(ctx, trxName)
+			final IQuery<I_C_DocType> docTypeQuery = queryBL.createQueryBuilder(I_C_DocType.class, ctx, trxName)
 					.filter(docTypeFilter)
 					.create();
 
 			orderFilter.addInSubQueryFilter(I_C_Order.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, docTypeQuery);
 
-			final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class)
-					.setContext(ctx, trxName)
+			final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class, ctx, trxName)
 					.filter(orderFilter)
 					.create();
 
@@ -126,8 +120,7 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 		// Add additional filters
 		filters.addFilter(additionalFilters); // task 07242
 
-		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class, ctx, trxName)
 				.filter(filters)
 				.filterByClientId();
 

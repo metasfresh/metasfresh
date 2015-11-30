@@ -22,16 +22,25 @@
 			<artifactId>fest-swing</artifactId>
 			<version>1.2.1</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.easytesting</groupId>
+					<artifactId>fest-assert</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.easytesting</groupId>
+					<artifactId>fest-util</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>net.jcip</groupId>
+					<artifactId>jcip-annotations</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.easytesting</groupId>
 			<artifactId>fest-assert</artifactId>
 			<version>1.4</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -49,6 +58,10 @@
 				<exclusion>
 					<artifactId>dx</artifactId>
 					<groupId>com.google.android.tools</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>filters</artifactId>
+					<groupId>com.jhlabs</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>

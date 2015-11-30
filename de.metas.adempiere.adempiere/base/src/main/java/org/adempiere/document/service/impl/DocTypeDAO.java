@@ -110,8 +110,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		Check.assumeNotNull(docBaseType, "docBaseType not null");
 
 		final IQueryBuilder<I_C_DocType> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_DocType.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_C_DocType.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_C_DocType> filters = queryBuilder.getFilters();
 		filters.addOnlyActiveRecordsFilter();

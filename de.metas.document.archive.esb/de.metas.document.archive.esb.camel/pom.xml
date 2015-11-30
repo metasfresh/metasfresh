@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
 		<artifactId>de.metas.document.archive.esb</artifactId>
@@ -69,12 +70,6 @@
 			<!-- scope>provided</scope -->
 		</dependency>
 
-		<!-- dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-script</artifactId>
-			<version>${camel.version}</version>
-			<scope>provided</scope>
-		</dependency -->
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-jaxb</artifactId>
@@ -86,6 +81,20 @@
 			<artifactId>camel-cxf</artifactId>
 			<version>${camel.version}</version>
 			<!-- scope>provided</scope -->
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-javamail_1.4_spec</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.xml.bind</groupId>
+					<artifactId>jaxb-impl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
@@ -111,12 +120,14 @@
 			<!--  scope>provided</scope -->
 		</dependency>
 
+		<!-- 
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
 			<version>1.6.1</version>
-			<!--  scope>provided</scope -->
+			<  scope>provided</scope >
 		</dependency>
+		-->
 	</dependencies>
 
 	<build>
@@ -127,12 +138,11 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
-				<version>2.3.6</version>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-					
+
 						<Bundle-Version>${project.version}-${env.BUILD_NUMBER}</Bundle-Version>
 
 						<!-- Include dependent artifacts in our bundle. Don't make it an extra 

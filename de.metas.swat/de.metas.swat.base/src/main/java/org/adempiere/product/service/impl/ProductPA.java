@@ -210,8 +210,7 @@ public class ProductPA implements IProductPA
 			final @CacheTrx String trxName)
 	{
 		final I_M_Product product = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Product.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_M_Product.class, ctx, trxName)
 				.addEqualsFilter(colName, param)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()

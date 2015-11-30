@@ -106,8 +106,7 @@ public class StorageSegmentFromHU extends AbstractStorageSegment
 		//
 		// Extract affected products
 		final List<Integer> productIdsList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Storage.class)
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_HU_Storage.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_HU_ID, huId)
 				.andCollect(I_M_HU_Storage.COLUMN_M_Product_ID)
 				.create()

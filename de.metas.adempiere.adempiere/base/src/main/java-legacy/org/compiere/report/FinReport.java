@@ -263,8 +263,7 @@ public class FinReport extends SvrProcess
 
 			final LpadQueryFilterModifier lpadModifier = new LpadQueryFilterModifier(20, "0");
 			final List<Integer> elementValueIds = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_C_ElementValue.class)
-					.setContext(this)
+					.createQueryBuilder(I_C_ElementValue.class, this)
 					.addCompareFilter(I_C_ElementValue.COLUMNNAME_Value, Operator.GreatherOrEqual, elementValueFrom.getValue(), lpadModifier)
 					.addCompareFilter(I_C_ElementValue.COLUMNNAME_Value, Operator.LessOrEqual, elementValueTo.getValue(), lpadModifier)
 					.create()

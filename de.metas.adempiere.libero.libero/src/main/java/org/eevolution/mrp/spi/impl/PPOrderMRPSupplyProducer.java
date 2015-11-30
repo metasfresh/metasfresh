@@ -234,8 +234,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	{
 		Check.assumeNotNull(orderBOMLine, "orderBOMLine not null");
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_PP_MRP_Alternative> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP_Alternative.class)
-				.setContext(orderBOMLine)
+		final IQueryBuilder<I_PP_MRP_Alternative> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP_Alternative.class, orderBOMLine)
 				.addEqualsFilter(I_PP_MRP_Alternative.COLUMN_PP_Order_BOMLine_ID, orderBOMLine.getPP_Order_BOMLine_ID());
 
 		return queryBuilder.create().firstOnly(I_PP_MRP_Alternative.class);

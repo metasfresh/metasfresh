@@ -263,8 +263,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		final Properties ctx = Env.getCtx();
 		final List<I_AD_User_OrgAccess> orgAccessesList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User_OrgAccess.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_User_OrgAccess.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_User_ID, adUserId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -289,8 +288,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		final Properties ctx = Env.getCtx();
 		final List<I_AD_Role_OrgAccess> orgAccessesList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Role_OrgAccess.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Role_OrgAccess.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Role_OrgAccess.COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -379,8 +377,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		final String COLUMNNAME_IsReadWrite = "IsReadWrite";
 
 		final List<Map<String, Object>> accessesList = Services.get(IQueryBL.class)
-				.createQueryBuilder(accessTableClass)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(accessTableClass, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.filter(aspFilter)
@@ -408,8 +405,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		final Properties ctx = Env.getCtx();
 		final List<I_AD_Table_Access> tableAccessRecords = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Table_Access.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Table_Access.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Table_Access.COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -506,8 +502,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		final Properties ctx = Env.getCtx();
 		final List<I_AD_Column_Access> columnAccessList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Column_Access.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Column_Access.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Column_Access.COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -569,8 +564,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		final Properties ctx = Env.getCtx();
 		final List<I_AD_Record_Access> accessesList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Record_Access.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Record_Access.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.orderBy()

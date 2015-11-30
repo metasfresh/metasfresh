@@ -42,8 +42,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Cached(cacheName = I_M_Warehouse.Table_Name + "#" + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse)
 	public I_M_Warehouse retrieveWarehouseForIssuesOrNull(@CacheCtx final Properties ctx)
 	{
-		final I_M_Warehouse warehouse = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final I_M_Warehouse warehouse = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsIssueWarehouse, true)
 				.addOnlyActiveRecordsFilter()
 				.create()

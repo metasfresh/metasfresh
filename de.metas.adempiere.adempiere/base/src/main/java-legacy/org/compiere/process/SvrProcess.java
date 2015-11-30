@@ -753,8 +753,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		try
 		{
 			Services.get(IQueryBL.class)
-					.createQueryBuilder(I_AD_PInstance.class)
-					.setContext(getCtx(), ITrx.TRXNAME_None) // outside trx
+					.createQueryBuilder(I_AD_PInstance.class, getCtx(), ITrx.TRXNAME_None) // outside trx
 					.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, m_pi.getAD_PInstance_ID())
 					.create()
 					.updateDirectly()
@@ -844,8 +843,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	{
 		final IQueryFilter<T> selectedRecordsQueryFilter = getProcessInfo().getQueryFilter();
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(recordType)
-				.setContext(getCtx(), trxName)
+				.createQueryBuilder(recordType, getCtx(), trxName)
 				.filter(selectedRecordsQueryFilter)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();

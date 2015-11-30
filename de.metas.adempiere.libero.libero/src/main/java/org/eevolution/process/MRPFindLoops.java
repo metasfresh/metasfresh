@@ -102,7 +102,7 @@ public class MRPFindLoops extends SvrProcess
 		}
 		else
 		{
-			final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class).setContext(getCtx(), getTrxName())
+			final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, getCtx(), getTrxName())
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_M_Product.COLUMNNAME_IsSold, true)
 					.addEqualsFilter(I_M_Product.COLUMNNAME_IsPurchased, true);
@@ -119,7 +119,7 @@ public class MRPFindLoops extends SvrProcess
 		}
 		else
 		{
-			final IQueryBuilder<I_S_Resource> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_S_Resource.class).setContext(getCtx(), getTrxName())
+			final IQueryBuilder<I_S_Resource> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_S_Resource.class, getCtx(), getTrxName())
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant);
 			queryBuilder.orderBy().addColumn(I_S_Resource.COLUMNNAME_S_Resource_ID);
@@ -135,7 +135,7 @@ public class MRPFindLoops extends SvrProcess
 		}
 		else
 		{
-			final IQueryBuilder<I_M_Warehouse> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class).setContext(getCtx(), getTrxName())
+			final IQueryBuilder<I_M_Warehouse> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, getCtx(), getTrxName())
 					.addOnlyActiveRecordsFilter();
 			queryBuilder.orderBy().addColumn(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID);
 
@@ -177,7 +177,7 @@ public class MRPFindLoops extends SvrProcess
 	 */
 	private boolean iterate(final int productID, final int resourceID, final int warehouseId, final Tracer tracer)
 	{
-		final I_PP_Product_Planning productPlanning = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Product_Planning.class).setContext(getCtx(), getTrxName())
+		final I_PP_Product_Planning productPlanning = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Product_Planning.class, getCtx(), getTrxName())
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, p_AD_Org_ID, 0, null)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan, true)

@@ -10,12 +10,12 @@ package org.adempiere.facet.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -114,9 +114,9 @@ public class GridTabFacetFilterable<ModelType> implements IFacetFilterable<Model
 		// Initialize the seed query/filter which will be applied all the time.
 		this.gridTabBaseQuery = gridTab.getQuery().deepCopy();
 		this.gridTabBaseQueryFilter = gridTab.createCurrentRecordsQueryFilter(modelClass);
-		
+
 		// Reset current facet category filters,
-		// because in inital state, this facet filterable is not filtered at all by any facet. 
+		// because in inital state, this facet filterable is not filtered at all by any facet.
 		this.facetCategoryFilters = Collections.emptyMap();
 	}
 
@@ -201,18 +201,17 @@ public class GridTabFacetFilterable<ModelType> implements IFacetFilterable<Model
 	@Override
 	public IQueryBuilder<ModelType> createQueryBuilder(final Predicate<IFacetCategory> onlyFacetCategoriesPredicate)
 	{
-		final IQueryBuilder<ModelType> queryBuilder = queryBL.createQueryBuilder(modelClass)
-				.setContext(getCtx(), ITrx.TRXNAME_None);
-		
+		final IQueryBuilder<ModelType> queryBuilder = queryBL.createQueryBuilder(modelClass, getCtx(), ITrx.TRXNAME_None);
+
 		//
 		queryBuilder.filter(gridTabBaseQueryFilter);
-		
+
 		final IQueryFilter<ModelType> facetCategoriesFilter = createFacetCategoriesFilter(onlyFacetCategoriesPredicate);
 		queryBuilder.filter(facetCategoriesFilter);
-		
+
 		return queryBuilder;
 	}
-	
+
 	private final ICompositeQueryFilter<ModelType> createFacetCategoriesFilter(final Predicate<IFacetCategory> onlyFacetCategoriesPredicate)
 	{
 		final ICompositeQueryFilter<ModelType> facetCategoriesFilter = queryBL.createCompositeQueryFilter(modelClass)
@@ -220,7 +219,7 @@ public class GridTabFacetFilterable<ModelType> implements IFacetFilterable<Model
 				.setJoinAnd()
 				// If there is no facet category filters, we accept everything
 				.setDefaultAccept(true);
-		
+
 		for (final Map.Entry<IFacetCategory, IQueryFilter<ModelType>> facetCategory2filter : facetCategoryFilters.entrySet())
 		{
 			final IFacetCategory facetCategory = facetCategory2filter.getKey();
@@ -228,7 +227,7 @@ public class GridTabFacetFilterable<ModelType> implements IFacetFilterable<Model
 			{
 				continue;
 			}
-			
+
 			final IQueryFilter<ModelType> filter = facetCategory2filter.getValue();
 			facetCategoriesFilter.addFilter(filter);
 		}

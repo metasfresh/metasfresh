@@ -164,8 +164,7 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 		Check.assume(packingMaterialProductId > 0, "packingMaterialProductId > 0");
 
 		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.setContext(ctx, ITrx.TRXNAME_ThreadInherited)
+				.createQueryBuilder(I_M_ReceiptSchedule.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_HeaderAggregationKey, headerAggregationKey)
 				// .addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsPackagingMaterial, true) // cannot use it directly because it's a virtual column
@@ -206,8 +205,7 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 
 		//
 		// Retrieve allocations which are about our TU
-		final List<I_M_ReceiptSchedule_Alloc> allocs = queryBL.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class)
-				.setContext(tuHU)
+		final List<I_M_ReceiptSchedule_Alloc> allocs = queryBL.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, tuHU)
 				.addEqualsFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_TU_HU_ID, tuHU.getM_HU_ID())
 				// Only those which are active
 				.addOnlyActiveRecordsFilter()
@@ -238,8 +236,7 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 		// Validate
 		Check.assume(handlingUnitsBL.isVirtual(vhu), "{0} shall be VirtualHU", vhu);
 
-		return queryBL.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class)
-				.setContext(vhu)
+		return queryBL.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, vhu)
 				.addEqualsFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_VHU_ID, vhu.getM_HU_ID())
 				// Only those which are active
 				.addOnlyActiveRecordsFilter()

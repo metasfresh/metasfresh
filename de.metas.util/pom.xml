@@ -18,12 +18,13 @@
 			<artifactId>guava</artifactId>
 			<version>18.0</version>
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>jsr305</artifactId>
 			<version>3.0.0</version>
 		</dependency>
-		
+		 -->
 
 	<!-- the next 3 are for task http://dewiki908/mediawiki/index.php/06952_Async_Problems_%28109152162496%29 -->
 		<dependency>
@@ -34,6 +35,10 @@
 				<exclusion>
 					<groupId>org.javassist</groupId>
 					<artifactId>javassist</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

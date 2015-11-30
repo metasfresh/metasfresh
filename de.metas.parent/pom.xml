@@ -83,6 +83,13 @@
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.11</version>
+				<exclusions>
+					<!-- excluding it to avoid duplicate classes (because we already have hamcrest-all) -->
+					<exclusion>
+						<artifactId>hamcrest-core</artifactId>
+						<groupId>org.hamcrest</groupId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 
 			<dependency>
@@ -101,6 +108,19 @@
 				<groupId>jp.osdn.ocrb</groupId>
 				<artifactId>jp.osdn.ocrb</artifactId>
 				<version>0.2.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>servlet-api</artifactId>
+				<version>2.5</version>
+			</dependency>
+
+			<dependency>
+				<groupId>javax.mail</groupId>
+				<artifactId>mail</artifactId>
+				<!-- Version 1.4.1 would also be available as OSGI bundle for servicemix, see http://repo1.maven.org/maven2/org/apache/servicemix/bundles/org.apache.servicemix.bundles.javax.mail -->
+				<version>1.4.3</version>
 			</dependency>
 
 		</dependencies>
@@ -174,12 +194,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>2.4</version>
+					<version>2.10</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>2.3</version>
+					<version>2.4</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
@@ -228,6 +248,25 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jarsigner-plugin</artifactId>
 					<version>1.3.2</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<!-- note: with 1.4.1 we had this problem:
+					https://issues.apache.org/jira/browse/MASSEMBLY-659
+					https://issues.apache.org/jira/browse/MENFORCER-156
+					... solved in 1.3.1 but aparently came back in 1.4.1 ...
+					-->
+					<version>1.3.1</version>
+					<dependencies>
+						<!-- needed for banDuplicateClasses -->
+						<dependency>
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>extra-enforcer-rules</artifactId>
+							<version>1.0-beta-4</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 
 				<plugin>
@@ -287,6 +326,12 @@
 							</goals>
 						</execution>
 					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>2.4.2</version>
 				</plugin>
 
 				<!-- use jacoco (formerly EclEmma) to measure unit test coverage -->
@@ -401,7 +446,6 @@
 			Note that the source files in java-legacy were not (entirely) created/edited by us and already have their own license header with which we don't want to tamper.
 			-->
 			<plugin>
-
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>
 				<version>1.8</version>
@@ -411,7 +455,8 @@
 						<goals>
 							<goal>update-file-header</goal>
 						</goals>
-						<phase>process-sources</phase>
+						<!-- don't upodate the file haeders. it created too much unwanted changes-->
+						<!-- phase>process-sources</phase -->
 						<configuration>
 							<licenseName>${license.name}</licenseName>
 							<roots>
@@ -419,7 +464,7 @@
 								<root>src/test</root>
 							</roots>
 							<excludes>
-								<!-- the license header might be placed right into the preexisting package info javadoc and introdcue a compiler syntax error -->
+								<!-- the license header might be placed right into the preexisting package-info-javadoc and introdcue a compiler syntax error, so we exclude this -->
 								<exclude>**/package-info.java</exclude>
 								<!-- our only json files are test samples; we don't need to license them, but the license header would cause trouble reading/parsing the json files. that's why we exclude them -->
 								<exclude>**/*.json</exclude>
@@ -504,17 +549,17 @@
 				</configuration>
 			</plugin>
 
-			<!-- task 08834: We shall not leave the decision about plugin-versions to maven.
-				Rationale: we had the case that a build stopped working at a *very* critical moment, 
-				because maven picked a more recent version of the jaxb plugin. 
-				That version didn't support the way, we configured it and failed with an error message.
-				This shall not happen again.
-			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>1.4</version>
+
 				<executions>
+					<!-- task 08834: We shall not leave the decision about plugin-versions to maven.
+						Rationale: we had the case that a build stopped working at a *very* critical moment, 
+						because maven picked a more recent version of the jaxb plugin. 
+						That version didn't support the way, we configured it and failed with an error message.
+						This shall not happen again.
+					-->
 					<execution>
 						<id>enforce-plugin-versions</id>
 						<goals>
@@ -534,6 +579,79 @@
 									<unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin</unCheckedPluginList>
 								</requirePluginVersions>
 							</rules>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>enforce-ban-duplicate-classes</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<banDuplicateClasses>
+									<ignoreClasses>
+										<!-- these are also contained in org.jboss.client:jbossall-client,
+											which we will hopefully get rid of soon	-->
+										<ignoreClass>javax.annotation.*</ignoreClass>
+										<ignoreClass>javax.ejb.*</ignoreClass>
+										<ignoreClass>javax.jms.*</ignoreClass>
+										<ignoreClass>javax.management.j2ee.*</ignoreClass>
+										<ignoreClass>javax.xml.*</ignoreClass>
+										<ignoreClass>javax.transaction.*</ignoreClass>
+										
+										<!-- itext-2.1.7 has two different versions as dependences -->
+										<ignoreClass>org.bouncycastle.*</ignoreClass>
+
+										<ignoreClass>org.apache.*</ignoreClass>
+										<ignoreClass>org.codehaus.*</ignoreClass>
+										<ignoreClass>hidden.org.codehaus.*</ignoreClass>
+										<ignoreClass>org.junit.*</ignoreClass>
+										<ignoreClass>org.w3c.*</ignoreClass>
+										<ignoreClass>org.xml.*</ignoreClass>
+										
+										<!-- this class originates from org.zkoss.calendar:calendar:jar:1.0.0-RC -->
+										<ignoreClass>org.zkoss.calendar.render.CalendarsDefault</ignoreClass>
+		
+										<!-- the following are camel/servicemix related dependencies -->
+										<!--
+										Found in, both are dependencies of mylin-smooks-all
+										  org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
+										  net.sf.opencsv:opencsv:jar:2.1:compile
+										-->
+										<ignoreClass>au.com.bytecode.*</ignoreClass>
+
+										<ignoreClass>com.microsoft.schemas.*</ignoreClass>
+										<ignoreClass>org.etsi.uri.*</ignoreClass>
+										<ignoreClass>org.openxmlformats.schemas.*</ignoreClass>
+										<ignoreClass>org.w3.x2000.*</ignoreClass>
+										
+										<!--
+										Found in:
+										  xmlpull:xmlpull:jar:1.1.3.1:compile
+										  xpp3:xpp3_min:jar:1.1.4c:compile
+										-->
+										<ignoreClass>org.xmlpull.*</ignoreClass>
+										
+										<!--
+										Found in:
+										  org.apache.xmlbeans:xmlbeans:jar:2.3.0:compile
+										  org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:jar:3.12_1:compile
+										-->
+										<ignoreClass>schemaorg_apache_xmlbeans.system.*</ignoreClass>
+										<ignoreClass>repackage.Repackager</ignoreClass>
+										<ignoreClass>repackage.Repackage</ignoreClass>
+										<ignoreClass>repackage.EditBuildScript</ignoreClass>
+										
+										<!--
+										<ignoreClass></ignoreClass>
+										-->
+
+									</ignoreClasses>
+									<findAllDuplicates>true</findAllDuplicates>
+								</banDuplicateClasses>
+							</rules>
+							<fail>true</fail>
 						</configuration>
 					</execution>
 				</executions>

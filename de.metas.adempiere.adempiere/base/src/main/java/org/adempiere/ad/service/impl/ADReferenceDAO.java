@@ -71,8 +71,7 @@ public class ADReferenceDAO implements IADReferenceDAO
 	/* package */Map<String, I_AD_Ref_List> retrieveListValuesMap(@CacheCtx final Properties ctx, final int adReferenceId)
 	{
 		final IQueryBuilder<I_AD_Ref_List> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Ref_List.class)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(I_AD_Ref_List.class, ctx, ITrx.TRXNAME_None);
 
 		queryBuilder.getFilters()
 				.addEqualsFilter(I_AD_Ref_List.COLUMNNAME_AD_Reference_ID, adReferenceId)

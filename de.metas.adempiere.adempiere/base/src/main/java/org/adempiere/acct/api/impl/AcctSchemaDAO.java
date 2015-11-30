@@ -105,16 +105,13 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 		//
 		// Prepare query to retrieve all other accounting schemas that we have
-		final IQuery<I_C_AcctSchema_GL> acctSchemaGLsQuery = queryBL.createQueryBuilder(I_C_AcctSchema_GL.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQuery<I_C_AcctSchema_GL> acctSchemaGLsQuery = queryBL.createQueryBuilder(I_C_AcctSchema_GL.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.create();
-		final IQuery<I_C_AcctSchema_Default> acctSchemaDefaultsQuery = queryBL.createQueryBuilder(I_C_AcctSchema_Default.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQuery<I_C_AcctSchema_Default> acctSchemaDefaultsQuery = queryBL.createQueryBuilder(I_C_AcctSchema_Default.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.create();
-		final IQueryBuilder<I_C_AcctSchema> acctSchemaQueryBuilder = queryBL.createQueryBuilder(I_C_AcctSchema.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_C_AcctSchema> acctSchemaQueryBuilder = queryBL.createQueryBuilder(I_C_AcctSchema.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_C_AcctSchema.COLUMN_C_AcctSchema_ID, I_C_AcctSchema_GL.COLUMN_C_AcctSchema_ID, acctSchemaGLsQuery)
 				.addInSubQueryFilter(I_C_AcctSchema.COLUMN_C_AcctSchema_ID, I_C_AcctSchema_Default.COLUMN_C_AcctSchema_ID, acctSchemaDefaultsQuery);
@@ -210,8 +207,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	private final IQueryBuilder<I_C_AcctSchema_Element> mkDefaultAcctSchemaElementQueryBuilder(final Properties ctx, int acctSchemaId, final String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_C_AcctSchema_Element> queryBuilder = queryBL.createQueryBuilder(I_C_AcctSchema_Element.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_AcctSchema_Element> queryBuilder = queryBL.createQueryBuilder(I_C_AcctSchema_Element.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_ID, acctSchemaId);
 

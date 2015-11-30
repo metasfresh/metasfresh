@@ -62,8 +62,7 @@ public class C_DocLine_Sort
 		final Properties ctx = InterfaceWrapperHelper.getCtx(sort);
 		final String trxName = InterfaceWrapperHelper.getTrxName(sort);
 
-		final IQuery<I_C_DocLine_Sort> activeDocLineSortSubQuery = queryBL.createQueryBuilder(I_C_DocLine_Sort.class)
-				.setContext(ctx, trxName)
+		final IQuery<I_C_DocLine_Sort> activeDocLineSortSubQuery = queryBL.createQueryBuilder(I_C_DocLine_Sort.class, ctx, trxName)
 				.setJoinOr()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DocLine_Sort.COLUMN_C_DocLine_Sort_ID, sort.getC_DocLine_Sort_ID())
@@ -71,8 +70,7 @@ public class C_DocLine_Sort
 
 		//
 		// Header query builder
-		final IQueryBuilder<I_C_DocLine_Sort> docLineQueryBuilder = queryBL.createQueryBuilder(I_C_DocLine_Sort.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_DocLine_Sort> docLineQueryBuilder = queryBL.createQueryBuilder(I_C_DocLine_Sort.class, ctx, trxName)
 				.addInSubQueryFilter(I_C_DocLine_Sort.COLUMN_C_DocLine_Sort_ID, I_C_DocLine_Sort.COLUMN_C_DocLine_Sort_ID, activeDocLineSortSubQuery);
 
 		//
@@ -83,8 +81,7 @@ public class C_DocLine_Sort
 		// DocBaseType
 		docLineQueryBuilder.addEqualsFilter(I_C_DocLine_Sort.COLUMN_DocBaseType, sort.getDocBaseType());
 
-		final IQuery<I_C_BP_DocLine_Sort> activeBPSubQuery = queryBL.createQueryBuilder(I_C_BP_DocLine_Sort.class)
-				.setContext(ctx, trxName)
+		final IQuery<I_C_BP_DocLine_Sort> activeBPSubQuery = queryBL.createQueryBuilder(I_C_BP_DocLine_Sort.class, ctx, trxName)
 				.setJoinOr()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BP_DocLine_Sort.COLUMN_C_DocLine_Sort_ID, sort.getC_DocLine_Sort_ID())

@@ -41,8 +41,7 @@ public class ADFieldDAO implements IADFieldDAO
 		Check.assumeNotNull(adTab, "adTab not null");
 		
 		final IQueryBuilder<I_AD_Field> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Field.class)
-				.setContext(adTab)
+				.createQueryBuilder(I_AD_Field.class, adTab)
 				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, adTab.getAD_Tab_ID());
 
 		queryBuilder.orderBy()

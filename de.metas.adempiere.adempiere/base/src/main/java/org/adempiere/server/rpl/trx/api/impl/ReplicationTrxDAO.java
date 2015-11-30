@@ -44,8 +44,7 @@ public class ReplicationTrxDAO implements IReplicationTrxDAO
 	{
 		//
 		// Build query to filter by name
-		final IQueryBuilder<I_EXP_ReplicationTrx> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_EXP_ReplicationTrx.class)
-				.setContext(ctx, trxName);
+		final IQueryBuilder<I_EXP_ReplicationTrx> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_EXP_ReplicationTrx.class, ctx, trxName);
 		queryBuilder.filter(new EqualsQueryFilter<I_EXP_ReplicationTrx>(I_EXP_ReplicationTrx.COLUMNNAME_Name, replicationTrxName));
 		//
 		// Retrieve first match, or throw exception if multiple transactions were found for the same name (UNIQUE INDEX)
@@ -63,8 +62,7 @@ public class ReplicationTrxDAO implements IReplicationTrxDAO
 		final int tableID = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
 		final IQueryBuilder<I_EXP_ReplicationTrxLine> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_EXP_ReplicationTrxLine.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_EXP_ReplicationTrxLine.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_EXP_ReplicationTrxLine> filters = queryBuilder.getFilters();
 

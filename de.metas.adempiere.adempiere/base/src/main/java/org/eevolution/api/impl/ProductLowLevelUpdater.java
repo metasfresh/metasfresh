@@ -113,8 +113,7 @@ import org.eevolution.api.IProductLowLevelUpdater;
 	private Iterator<I_M_Product> retrieveProductsToUpdate()
 	{
 		final IQueryBuilder<I_M_Product> queryBuilder = queryBL
-				.createQueryBuilder(I_M_Product.class)
-				.setContext(getContext())
+				.createQueryBuilder(I_M_Product.class, getContext())
 				.addOnlyContextClient();
 
 		queryBuilder.orderBy()

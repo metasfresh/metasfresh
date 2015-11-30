@@ -48,8 +48,7 @@ public class MTransactionDAO implements IMTransactionDAO
 	public List<I_M_Transaction> retrieveReferenced(final Object referencedModel)
 	{
 		final IQueryFilter<I_M_Transaction> referencedModelFilter = createReferencedModelQueryFilter(referencedModel);
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Transaction.class)
-				.setContext(referencedModel)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Transaction.class, referencedModel)
 				.filter(referencedModelFilter)
 				.create()
 				.setOnlyActiveRecords(true)
@@ -109,8 +108,7 @@ public class MTransactionDAO implements IMTransactionDAO
 		//
 		;
 
-		final I_M_Transaction reversalTrx = Services.get(IQueryBL.class).createQueryBuilder(I_M_Transaction.class)
-				.setContext(referencedModelReversal)
+		final I_M_Transaction reversalTrx = Services.get(IQueryBL.class).createQueryBuilder(I_M_Transaction.class, referencedModelReversal)
 				.filter(filters)
 				.create()
 				.setOnlyActiveRecords(true)

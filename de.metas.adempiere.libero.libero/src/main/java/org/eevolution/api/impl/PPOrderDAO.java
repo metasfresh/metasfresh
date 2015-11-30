@@ -45,8 +45,7 @@ public class PPOrderDAO implements IPPOrderDAO
 	@Override
 	public I_PP_Order retrieveMakeToOrderForOrderLine(final I_C_OrderLine line)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class)
-				.setContext(line)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class, line)
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_C_OrderLine_MTO_ID, line.getC_OrderLine_ID())
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, line.getM_Product_ID())
 				.create()
@@ -56,8 +55,7 @@ public class PPOrderDAO implements IPPOrderDAO
 	@Override
 	public List<I_PP_Order> retrieveAllForOrderLine(final I_C_OrderLine line)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class)
-				.setContext(line)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class, line)
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_C_OrderLine_ID, line.getC_OrderLine_ID())
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, line.getM_Product_ID())
 				.create()
@@ -91,8 +89,7 @@ public class PPOrderDAO implements IPPOrderDAO
 	@Override
 	public List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(final Properties ctx, final int warehouseId)
 	{
-		final IQueryBuilder<I_PP_Order> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_PP_Order> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class, ctx, ITrx.TRXNAME_None)
 				// For Warehouse
 				.addEqualsFilter(I_PP_Order.COLUMN_M_Warehouse_ID, warehouseId)
 				// Only Releases Manufacturing orders

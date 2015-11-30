@@ -75,8 +75,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 		list.add(defaultRate);
 
 		// All the conversions defined for the product
-		final List<I_C_UOM_Conversion> conversions = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final List<I_C_UOM_Conversion> conversions = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class, ctx, ITrx.TRXNAME_None)
 				.filter(new EqualsQueryFilter<I_C_UOM_Conversion>(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productID))
 				// .filter(new EqualsQueryFilter<I_C_UOM_Conversion>(I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID, product.))
 				.addOnlyActiveRecordsFilter()
@@ -115,8 +114,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	@Override
 	public List<I_C_UOM_Conversion> retrieveGenericConversions(final Properties ctx)
 	{
-		final List<I_C_UOM_Conversion> conversions = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final List<I_C_UOM_Conversion> conversions = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, null)
 				.addOnlyActiveRecordsFilter()
 				.create()

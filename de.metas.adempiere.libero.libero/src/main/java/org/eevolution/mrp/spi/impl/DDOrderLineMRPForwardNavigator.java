@@ -190,8 +190,7 @@ public class DDOrderLineMRPForwardNavigator
 		}
 
 		// Build up a query which will give us the forward DD_Orders of the DD Order which we are currently checking
-		final IQueryBuilder<I_PP_MRP> forwardMRPDemandsQuery = queryBL.createQueryBuilder(I_PP_MRP.class)
-				.setContext(getContext())
+		final IQueryBuilder<I_PP_MRP> forwardMRPDemandsQuery = queryBL.createQueryBuilder(I_PP_MRP.class, getContext())
 				//
 				// Select the MRP supplies of this DD Order Line => i.e. where these products needs to be delivered
 				.addEqualsFilter(I_PP_MRP.COLUMN_DD_OrderLine_ID, ddOrderLineId)

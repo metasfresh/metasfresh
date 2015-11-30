@@ -79,8 +79,7 @@ public class AllocationDAO implements IAllocationDAO
 	public final List<I_C_AllocationLine> retrieveAllocationLines(final org.compiere.model.I_C_Invoice invoice)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_AllocationLine.class)
-				.setContext(invoice)
+				.createQueryBuilder(I_C_AllocationLine.class, invoice)
 				.addEqualsFilter(I_C_AllocationLine.COLUMN_C_Invoice_ID, invoice.getC_Invoice_ID())
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
@@ -95,8 +94,7 @@ public class AllocationDAO implements IAllocationDAO
 	public final List<I_C_AllocationLine> retrieveLines(final I_C_AllocationHdr allocHdr)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_AllocationLine.class)
-				.setContext(allocHdr)
+				.createQueryBuilder(I_C_AllocationLine.class, allocHdr)
 				.addEqualsFilter(I_C_AllocationLine.COLUMN_C_AllocationHdr_ID, allocHdr.getC_AllocationHdr_ID())
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
@@ -111,8 +109,7 @@ public class AllocationDAO implements IAllocationDAO
 	public final List<I_C_Payment> retrieveAvailablePayments(I_C_Invoice invoice)
 	{
 		final IQueryBuilder<I_C_Payment> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Payment.class)
-				.setContext(invoice)
+				.createQueryBuilder(I_C_Payment.class, invoice)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 

@@ -10,12 +10,12 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,8 +56,7 @@ public class DDOrderDAO implements IDDOrderDAO
 		Check.assumeNotNull(ddOrder, "ddOrder not null");
 
 		final IQueryBuilder<I_DD_OrderLine> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_DD_OrderLine.class)
-				.setContext(ddOrder)
+				.createQueryBuilder(I_DD_OrderLine.class, ddOrder)
 				.addEqualsFilter(I_DD_OrderLine.COLUMN_DD_Order_ID, ddOrder.getDD_Order_ID())
 				.addOnlyActiveRecordsFilter();
 
@@ -89,8 +88,7 @@ public class DDOrderDAO implements IDDOrderDAO
 		Check.assumeNotNull(ddOrderLine, "ddOrderLine not null");
 
 		final IQueryBuilder<I_DD_OrderLine_Alternative> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_DD_OrderLine_Alternative.class)
-				.setContext(ddOrderLine)
+				.createQueryBuilder(I_DD_OrderLine_Alternative.class, ddOrderLine)
 				.addEqualsFilter(I_DD_OrderLine_Alternative.COLUMN_DD_OrderLine_ID, ddOrderLine.getDD_OrderLine_ID())
 		// .addOnlyActiveRecordsFilter() // we are retrieving ALL
 		;
@@ -109,7 +107,7 @@ public class DDOrderDAO implements IDDOrderDAO
 		Check.assumeNotNull(ddOrderLine, "ddOrderLine not null");
 
 		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(movementLineClass)
+				.createQueryBuilder(movementLineClass, ddOrderLine)
 				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_DD_OrderLine_ID, ddOrderLine.getDD_OrderLine_ID())
 				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_DD_OrderLine_Alternative_ID, null) // exclude alternatives
 		;
@@ -118,7 +116,9 @@ public class DDOrderDAO implements IDDOrderDAO
 		queryBuilder.orderBy()
 				.addColumn(I_M_MovementLine.COLUMNNAME_M_MovementLine_ID);
 
-		return queryBuilder.create().list(movementLineClass);
+		return queryBuilder
+				.create()
+				.list(movementLineClass);
 	}
 
 	@Override
@@ -232,8 +232,7 @@ public class DDOrderDAO implements IDDOrderDAO
 			logger.log(Level.WARNING, ex.getLocalizedMessage() + " [SKIPPED]", ex);
 			// NOTE: we are returing a query builder which actually does nothing
 			return Services.get(IQueryBL.class)
-					.createQueryBuilder(I_DD_OrderLine.class)
-					.setContext(ppOrder)
+					.createQueryBuilder(I_DD_OrderLine.class, ppOrder)
 					.filter(ConstantQueryFilter.<I_DD_OrderLine> of(false));
 		}
 

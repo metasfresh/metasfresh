@@ -67,8 +67,7 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 		// Background is that the number of candidates with "IsError=Y" might increase during the run.
 
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(AD_PInstance_ID);
 
 		return retrieveInvoiceCandidates(queryBuilder);
@@ -78,8 +77,7 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 	public Iterator<I_C_Invoice_Candidate> retrieveNonProcessed(final PlainContextAware plainContextAware)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(plainContextAware)
+				.createQueryBuilder(I_C_Invoice_Candidate.class, plainContextAware)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 
 		queryBuilder.orderBy()
@@ -182,8 +180,7 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 	public I_C_Invoice_Line_Alloc retrieveIlaForIcAndIl(final I_C_Invoice_Candidate invoiceCand, final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		// @formatter:off
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Line_Alloc.class)
-					.setContext(invoiceCand)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Line_Alloc.class, invoiceCand)
 					.filter(new EqualsQueryFilter<I_C_Invoice_Line_Alloc>(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID()))
 					.filter(new EqualsQueryFilter<I_C_Invoice_Line_Alloc>(I_C_Invoice_Line_Alloc.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID()))
 					.filter(ActiveRecordQueryFilter.getInstance(I_C_Invoice_Line_Alloc.class))
@@ -204,8 +201,7 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 		// FIXME debug to see why c_invoicecandidate_inoutline have duplicates and take the inoutlines from there
 		// for now take it via orderline
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.setContext(ic)
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, ic)
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, ic.getC_OrderLine_ID())
 				.addOnlyActiveRecordsFilter();
 
@@ -222,8 +218,7 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLine(final I_C_OrderLine orderLine)
 	{
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(orderLine)
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class, orderLine)
 				.filter(new EqualsQueryFilter<I_C_Invoice_Candidate>(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID()))
 				.filter(ActiveRecordQueryFilter.getInstance(I_C_Invoice_Candidate.class));
 
@@ -234,8 +229,7 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public boolean existsInvoiceCandidateInOutLinesForInvoiceCandidate(final I_C_Invoice_Candidate ic, final I_M_InOutLine iol)
 	{
-		final IQueryBuilder<I_C_InvoiceCandidate_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
-				.setContext(ic)
+		final IQueryBuilder<I_C_InvoiceCandidate_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, ic)
 				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
 				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, iol.getM_InOutLine_ID())
 				.addOnlyActiveRecordsFilter();
@@ -259,8 +253,7 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 
 	private List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInvoiceCandidate(final I_C_Invoice_Candidate invoiceCandidate, final boolean onlyActive)
 	{
-		final IQueryBuilder<I_C_InvoiceCandidate_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
-				.setContext(invoiceCandidate)
+		final IQueryBuilder<I_C_InvoiceCandidate_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, invoiceCandidate)
 				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidate.getC_Invoice_Candidate_ID());
 
 		if (onlyActive)
@@ -278,8 +271,7 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInOutLineInclInactive(final I_M_InOutLine inOutLine)
 	{
-		final IQueryBuilder<I_C_InvoiceCandidate_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
-				.setContext(inOutLine)
+		final IQueryBuilder<I_C_InvoiceCandidate_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, inOutLine)
 				.filter(new EqualsQueryFilter<I_C_InvoiceCandidate_InOutLine>(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, inOutLine.getM_InOutLine_ID()));
 		queryBuilder.orderBy()
 				.addColumn(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID);
@@ -302,8 +294,7 @@ public abstract class AbstractInvoiceCandDAO implements IInvoiceCandDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, inOutLine.getC_OrderLine_ID());
 
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setContext(inOutLine)
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, inOutLine)
 				.setJoinOr()
 				.filter(iolreferenceFilter)
 				.filter(olReferenceFilter);

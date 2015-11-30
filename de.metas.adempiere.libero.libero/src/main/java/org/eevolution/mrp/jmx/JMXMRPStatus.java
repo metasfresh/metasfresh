@@ -76,8 +76,7 @@ public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 		// Retrieve all AD_Clients
 		final Properties ctx = Env.getCtx();
 		final List<I_AD_Client> adClients = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Client.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Client.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
@@ -146,8 +145,7 @@ public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 		//
 		// Retrieve ALL MRP demands for given DD_Order
 		final List<I_PP_MRP> mrpDemands = queryBL
-				.createQueryBuilder(I_DD_Order.class)
-				.setContext(context)
+				.createQueryBuilder(I_DD_Order.class, context)
 				.addEqualsFilter(I_DD_Order.COLUMN_DocumentNo, ddOrderDocumentNo)
 				.andCollectChildren(I_PP_MRP.COLUMN_DD_Order_ID, I_PP_MRP.class)
 				.addEqualsFilter(I_PP_MRP.COLUMN_TypeMRP, X_PP_MRP.TYPEMRP_Demand)
@@ -178,8 +176,7 @@ public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 
 			if (!collectedDD_Order_IDs.isEmpty())
 			{
-				final List<I_DD_Order> collectedDDOrders = queryBL.createQueryBuilder(I_DD_Order.class)
-						.setContext(context)
+				final List<I_DD_Order> collectedDDOrders = queryBL.createQueryBuilder(I_DD_Order.class, context)
 						.addInArrayFilter(I_DD_Order.COLUMN_DD_Order_ID, collectedDD_Order_IDs)
 						.create()
 						.list();
@@ -210,8 +207,7 @@ public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 		//
 		// Retrieve PP_Order
 		final I_PP_Order ppOrder = queryBL
-				.createQueryBuilder(I_PP_Order.class)
-				.setContext(context)
+				.createQueryBuilder(I_PP_Order.class, context)
 				.addEqualsFilter(I_PP_Order.COLUMN_DocumentNo, ppOrderDocumentNo)
 				.create()
 				.firstOnly(I_PP_Order.class);

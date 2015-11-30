@@ -57,8 +57,7 @@ public class DocLineSortDAO implements IDocLineSortDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_C_DocLine_Sort_Item> queryBuilder = queryBL.createQueryBuilder(I_C_DocLine_Sort_Item.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_DocLine_Sort_Item> queryBuilder = queryBL.createQueryBuilder(I_C_DocLine_Sort_Item.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DocLine_Sort_Item.COLUMN_C_DocLine_Sort_ID, docLineSortId);
 		return queryBuilder.create()

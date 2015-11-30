@@ -176,8 +176,7 @@ public class AbstractCommissionTermDAO implements ICommissionTermDAO
 				.addEqualsFilter(I_C_AdvCommissionTerm.COLUMNNAME_C_AdvCommissionCondition_ID, contractId)
 				.addEqualsFilter(I_C_AdvCommissionTerm.COLUMNNAME_C_AdvComSystem_Type_ID, comSystemTypeId);
 
-		final IQueryBuilder<I_C_AdvCommissionTerm> queryBuilder = queryBL.createQueryBuilder(I_C_AdvCommissionTerm.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_AdvCommissionTerm> queryBuilder = queryBL.createQueryBuilder(I_C_AdvCommissionTerm.class, ctx, trxName)
 				.filter(filter);
 		queryBuilder.orderBy().addColumn(I_C_AdvCommissionTerm.COLUMNNAME_SeqNo);
 
@@ -343,8 +342,7 @@ public class AbstractCommissionTermDAO implements ICommissionTermDAO
 				.setJoinAnd()
 				.addFilter(productFilter);
 
-		final IQueryBuilder<I_C_AdvCommissionTerm> queryBuilder = queryBL.createQueryBuilder(I_C_AdvCommissionTerm.class)
-				.setContext(type)
+		final IQueryBuilder<I_C_AdvCommissionTerm> queryBuilder = queryBL.createQueryBuilder(I_C_AdvCommissionTerm.class, type)
 				.filter(filter);
 		queryBuilder
 				.orderBy()

@@ -58,8 +58,7 @@ public class MDiscountSchemaDAO implements IMDiscountSchemaDAO
 		// Find the discount breaks for the given schema
 		final IQueryBuilder<I_M_DiscountSchemaBreak> queryBuilder =
 				Services.get(IQueryBL.class)
-						.createQueryBuilder(I_M_DiscountSchemaBreak.class)
-						.setContext(ctx, trxName)
+						.createQueryBuilder(I_M_DiscountSchemaBreak.class, ctx, trxName)
 						.addOnlyActiveRecordsFilter()
 						.filterByClientId()
 						.addEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, discountSchemaId);
@@ -92,8 +91,7 @@ public class MDiscountSchemaDAO implements IMDiscountSchemaDAO
 		// Find the discount breaks for the given schema
 		final IQueryBuilder<I_M_DiscountSchemaLine> queryBuilder =
 				Services.get(IQueryBL.class)
-						.createQueryBuilder(I_M_DiscountSchemaLine.class)
-						.setContext(ctx, trxName)
+						.createQueryBuilder(I_M_DiscountSchemaLine.class, ctx, trxName)
 						.addOnlyActiveRecordsFilter()
 						.filterByClientId()
 						.addEqualsFilter(I_M_DiscountSchemaLine.COLUMNNAME_M_DiscountSchema_ID, discountSchemaId);

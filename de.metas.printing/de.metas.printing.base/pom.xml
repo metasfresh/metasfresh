@@ -19,11 +19,6 @@
 	<dependencies>
 	
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<!-- needed because of TestClientUI class -->
 			<groupId>de.metas.adempiere.ait</groupId>
 			<artifactId>de.metas.adempiere.ait</artifactId>

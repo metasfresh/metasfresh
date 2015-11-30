@@ -387,8 +387,7 @@ public class PAttributeInstance extends CDialog
 		}
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_AttributeSetInstance.class)
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_AttributeSetInstance.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_AttributeSetInstance.COLUMN_M_AttributeSetInstance_ID, m_M_AttributeSetInstance_ID)
 				.create()
 				.firstOnlyNotNull(MAttributeSetInstance.class);

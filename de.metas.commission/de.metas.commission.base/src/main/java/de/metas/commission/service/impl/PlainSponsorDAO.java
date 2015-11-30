@@ -73,8 +73,7 @@ public class PlainSponsorDAO extends AbstractSponsorDAO
 				.addCompareFilter(I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, Operator.LessOrEqual, date)
 				.addCompareFilter(I_C_Sponsor_SalesRep.COLUMNNAME_ValidTo, Operator.GreatherOrEqual, date);
 
-		final IQueryBuilder<I_C_Sponsor_SalesRep> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Sponsor_SalesRep.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_Sponsor_SalesRep> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Sponsor_SalesRep.class, ctx, trxName)
 				.filter(filter);
 		queryBuilder.orderBy().addColumn(I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom);
 

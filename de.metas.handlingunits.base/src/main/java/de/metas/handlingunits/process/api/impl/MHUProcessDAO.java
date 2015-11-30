@@ -39,8 +39,7 @@ public class MHUProcessDAO implements IMHUProcessDAO
 	@Override
 	public I_M_HU_Process retrieveHUProcess(final I_AD_Process adProcess)
 	{
-		final IQueryBuilder<I_M_HU_Process> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Process.class)
-				.setContext(adProcess);
+		final IQueryBuilder<I_M_HU_Process> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Process.class, adProcess);
 
 		final ICompositeQueryFilter<I_M_HU_Process> filter = queryBuilder.getFilters();
 		filter.addOnlyActiveRecordsFilter();

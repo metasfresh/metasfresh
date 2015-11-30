@@ -48,8 +48,7 @@ public class QualityInspLagerKonfDAO implements IQualityInspLagerKonfDAO
 				.addColumn(I_M_QualityInsp_LagerKonf_Month_Adj.COLUMN_M_QualityInsp_LagerKonf_Month_Adj_ID)
 						.createQueryOrderBy();
 
-		return queryBL.createQueryBuilder(I_M_QualityInsp_LagerKonf_Month_Adj.class)
-				.setContext(qualityInspLagerKonfVersion)
+		return queryBL.createQueryBuilder(I_M_QualityInsp_LagerKonf_Month_Adj.class, qualityInspLagerKonfVersion)
 				.addEqualsFilter(I_M_QualityInsp_LagerKonf_Month_Adj.COLUMN_M_QualityInsp_LagerKonf_Version_ID, qualityInspLagerKonfVersion.getM_QualityInsp_LagerKonf_Version_ID())
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
@@ -68,8 +67,7 @@ public class QualityInspLagerKonfDAO implements IQualityInspLagerKonfDAO
 				.addColumn(I_M_QualityInsp_LagerKonf_ProcessingFee.COLUMN_M_QualityInsp_LagerKonf_ProcessingFee_ID)
 						.createQueryOrderBy();
 
-		return queryBL.createQueryBuilder(I_M_QualityInsp_LagerKonf_ProcessingFee.class)
-				.setContext(qualityInspLagerKonfVersion)
+		return queryBL.createQueryBuilder(I_M_QualityInsp_LagerKonf_ProcessingFee.class, qualityInspLagerKonfVersion)
 				.addEqualsFilter(I_M_QualityInsp_LagerKonf_ProcessingFee.COLUMN_M_QualityInsp_LagerKonf_Version_ID, qualityInspLagerKonfVersion.getM_QualityInsp_LagerKonf_Version_ID())
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
@@ -88,8 +86,7 @@ public class QualityInspLagerKonfDAO implements IQualityInspLagerKonfDAO
 				.addColumn(I_M_QualityInsp_LagerKonf_AdditionalFee.COLUMN_SeqNo)
 						.createQueryOrderBy();
 
-		return queryBL.createQueryBuilder(I_M_QualityInsp_LagerKonf_AdditionalFee.class)
-				.setContext(qualityInspLagerKonfVersion)
+		return queryBL.createQueryBuilder(I_M_QualityInsp_LagerKonf_AdditionalFee.class, qualityInspLagerKonfVersion)
 				.addEqualsFilter(I_M_QualityInsp_LagerKonf_AdditionalFee.COLUMN_M_QualityInsp_LagerKonf_Version_ID, qualityInspLagerKonfVersion.getM_QualityInsp_LagerKonf_Version_ID())
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()

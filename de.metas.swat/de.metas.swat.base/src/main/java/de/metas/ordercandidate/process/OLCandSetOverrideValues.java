@@ -59,8 +59,7 @@ public class OLCandSetOverrideValues extends SvrProcess
 	{
 		final IQueryFilter<I_C_OLCand> queryFilter = getProcessInfo().getQueryFilter();
 		
-		final IQueryBuilder<I_C_OLCand> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_OLCand.class)
-				.setContext(getCtx(), get_TrxName())
+		final IQueryBuilder<I_C_OLCand> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_OLCand.class, getCtx(), get_TrxName())
 				.filter(queryFilter)
 				.filter(ActiveRecordQueryFilter.getInstance(I_C_OLCand.class));
 		

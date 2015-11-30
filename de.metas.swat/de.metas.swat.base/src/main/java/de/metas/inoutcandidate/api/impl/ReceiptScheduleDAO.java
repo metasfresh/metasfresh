@@ -79,8 +79,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	{
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ReceiptSchedule.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ReceiptSchedule.class, ctx, trxName)
 				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule>(I_M_ReceiptSchedule.COLUMNNAME_AD_Table_ID, adTableId))
 				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule>(I_M_ReceiptSchedule.COLUMNNAME_Record_ID, recordId))
 				.filterByClientId()
@@ -110,8 +109,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(rs);
 
-		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(receiptScheduleAllocClass)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(receiptScheduleAllocClass, ctx, trxName)
 				.addEqualsFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_ID, rs.getM_ReceiptSchedule_ID());
 
 		queryBuilder.orderBy()
@@ -130,8 +128,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public I_M_ReceiptSchedule_Alloc retrieveRsaForRs(final I_M_ReceiptSchedule receiptSchedule, final I_M_InOutLine receiptLine)
 	{
-		final IQueryBuilder<I_M_ReceiptSchedule_Alloc> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ReceiptSchedule_Alloc.class)
-				.setContext(receiptLine)
+		final IQueryBuilder<I_M_ReceiptSchedule_Alloc> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, receiptLine)
 				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule_Alloc>(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedule.getM_ReceiptSchedule_ID()))
 				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule_Alloc>(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID, receiptLine.getM_InOutLine_ID()));
 
@@ -148,8 +145,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	public List<I_M_ReceiptSchedule_Alloc> retrieveRsaForInOutLine(final org.compiere.model.I_M_InOutLine line)
 	{
 		final IQueryBuilder<I_M_ReceiptSchedule_Alloc> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class)
-				.setContext(line)
+				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, line)
 				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule_Alloc>(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID, line.getM_InOutLine_ID()));
 
 		queryBuilder.orderBy()

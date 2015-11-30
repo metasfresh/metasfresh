@@ -94,8 +94,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 			final int adColumnId)
 	{
 		final IQueryBuilder<I_AD_ColumnCallout> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_ColumnCallout.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_ColumnCallout.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID, adColumnId);
 
 		queryBuilder.orderBy()
@@ -110,8 +109,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 	public int retrieveColumnCalloutLastSeqNo(final Properties ctx, final int adColumnId)
 	{
 		final IQueryBuilder<I_AD_ColumnCallout> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_ColumnCallout.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_ColumnCallout.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID, adColumnId);
 
 		final Integer lastSeqNo = queryBuilder.create()

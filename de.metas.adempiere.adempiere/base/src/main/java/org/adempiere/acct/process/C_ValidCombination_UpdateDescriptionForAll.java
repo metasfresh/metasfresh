@@ -77,8 +77,7 @@ public class C_ValidCombination_UpdateDescriptionForAll extends SvrProcess
 	private Iterator<I_C_ValidCombination> retriveAccounts()
 	{
 		final IQueryBuilder<I_C_ValidCombination> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_ValidCombination.class)
-				.setContext(getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_ValidCombination.class, getCtx(), ITrx.TRXNAME_None)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter();
 

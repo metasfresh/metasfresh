@@ -44,8 +44,7 @@ public class POSAccessDAO implements IPOSAccessDAO
 	@Cached
 	public I_C_POS_Profile retrieveProfileByRole(@CacheCtx final Properties ctx, final int adRoleId, @CacheTrx final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_POS_Profile.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_POS_Profile.class, ctx, trxName)
 				.filter(new EqualsQueryFilter<I_C_POS_Profile>(I_C_POS_Profile.COLUMNNAME_AD_Role_ID, adRoleId))
 				.create()
 				.setOnlyActiveRecords(true)
@@ -56,8 +55,7 @@ public class POSAccessDAO implements IPOSAccessDAO
 	@Cached
 	public List<I_C_POS_Profile_Warehouse> retrieveWarehouseProfiles(@CacheCtx final Properties ctx, final int posProfileId, @CacheTrx final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_POS_Profile_Warehouse.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_POS_Profile_Warehouse.class, ctx, trxName)
 				.filter(new EqualsQueryFilter<I_C_POS_Profile_Warehouse>(I_C_POS_Profile_Warehouse.COLUMNNAME_C_POS_Profile_ID, posProfileId))
 				.create()
 				.setOnlyActiveRecords(true)

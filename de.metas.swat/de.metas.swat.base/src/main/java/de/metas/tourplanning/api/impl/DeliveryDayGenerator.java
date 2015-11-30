@@ -227,8 +227,7 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 		final DateTruncQueryFilterModifier dateTruncModifier = DateTruncQueryFilterModifier.forTruncString(TimeUtil.TRUNC_DAY);
 
 		final IQueryBuilder<I_M_DeliveryDay> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_DeliveryDay.class)
-				.setContext(tourVersion)
+				.createQueryBuilder(I_M_DeliveryDay.class, tourVersion)
 				.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GreatherOrEqual, tourVersionRange.getValidFrom(), dateTruncModifier)
 				.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.LessOrEqual, tourVersionRange.getValidTo(), dateTruncModifier)
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_IsManual, false) // not manual entries

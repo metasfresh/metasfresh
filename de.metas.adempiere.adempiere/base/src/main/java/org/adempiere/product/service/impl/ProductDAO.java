@@ -50,8 +50,7 @@ public class ProductDAO implements IProductDAO
 
 		final I_C_AcctSchema schema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx.getCtx());
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_Acct.class)
-				.setContext(ctx)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_Acct.class, ctx)
 				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_C_AcctSchema_ID, schema.getC_AcctSchema_ID())
 				.addOnlyActiveRecordsFilter()
@@ -63,8 +62,7 @@ public class ProductDAO implements IProductDAO
 	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_UPC)
 	public I_M_Product retrieveProductByUPC(@CacheCtx final Properties ctx, final String upc)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, upc)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
@@ -77,8 +75,7 @@ public class ProductDAO implements IProductDAO
 	public I_M_Product retrieveForResourceId(@CacheCtx final Properties ctx, final int resourceId, @CacheTrx final String trxName)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Product.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_M_Product.class, ctx, trxName)
 				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)

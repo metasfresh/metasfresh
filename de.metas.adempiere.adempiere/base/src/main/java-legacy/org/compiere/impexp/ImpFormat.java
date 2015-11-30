@@ -289,8 +289,7 @@ public final class ImpFormat
 	public static ImpFormat load(String name)
 	{
 		final I_AD_ImpFormat impFormatModel = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_ImpFormat.class)
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_ImpFormat.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_ImpFormat.COLUMNNAME_Name, name)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
@@ -321,8 +320,7 @@ public final class ImpFormat
 	private static void loadRows(final ImpFormat format, final int adImpFormatId)
 	{
 		final List<I_AD_ImpFormat_Row> impFormatRows = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_ImpFormat_Row.class)
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_ImpFormat_Row.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_ImpFormat_Row.COLUMNNAME_AD_ImpFormat_ID, adImpFormatId)
 				.addOnlyActiveRecordsFilter()
 				.orderBy()

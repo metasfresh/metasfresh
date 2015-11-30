@@ -14,9 +14,16 @@
 	<dependencies>
 
 		<!-- Required to connect to the jboss-ejb server (always needs to be in the client, not only from eclipse, but in this base module we leave it as "provided") -->
+<!-- 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+-->
+		<dependency>
+			<groupId>de.metas.banking</groupId>
+			<artifactId>de.metas.banking.swingui</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 				

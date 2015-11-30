@@ -56,8 +56,7 @@ public class POSKeyKayoutDAO implements IPOSKeyKayoutDAO
 	List<I_C_POSKey> retrievePOSKeys(@CacheCtx Properties ctx, int posKeyLayoutId, @CacheTrx String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_C_POSKey> queryBuilder = queryBL.createQueryBuilder(I_C_POSKey.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_C_POSKey> queryBuilder = queryBL.createQueryBuilder(I_C_POSKey.class, ctx, trxName)
 				.addEqualsFilter(I_C_POSKey.COLUMNNAME_C_POSKeyLayout_ID, posKeyLayoutId)
 				.addOnlyActiveRecordsFilter();
 

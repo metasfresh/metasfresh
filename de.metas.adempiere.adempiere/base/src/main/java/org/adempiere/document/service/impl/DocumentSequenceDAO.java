@@ -45,8 +45,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 	public DocumentSequenceInfo retriveDocumentSequenceInfo(final String sequenceName, final int adClientId, final int adOrgId)
 	{
 		final IQueryBuilder<I_AD_Sequence> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Sequence.class)
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Sequence.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_IsTableID, false)
 				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_AD_Client_ID, adClientId)

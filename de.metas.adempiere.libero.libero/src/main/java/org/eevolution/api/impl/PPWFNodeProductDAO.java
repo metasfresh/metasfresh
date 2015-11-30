@@ -46,8 +46,7 @@ public class PPWFNodeProductDAO implements IPPWFNodeProductDAO
 	public List<I_PP_WF_Node_Product> retrieveForWFNode(@CacheCtx Properties ctx, int adWFNodeId)
 	{
 		final IQueryBuilder<I_PP_WF_Node_Product> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_WF_Node_Product.class)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(I_PP_WF_Node_Product.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_PP_WF_Node_Product> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_PP_WF_Node_Product.COLUMNNAME_AD_WF_Node_ID, adWFNodeId);

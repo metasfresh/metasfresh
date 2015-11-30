@@ -1429,8 +1429,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public Iterator<I_M_ShipmentSchedule> retrieveForBPartner(final I_C_BPartner bPartner)
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.setContext(bPartner)
+				.createQueryBuilder(I_M_ShipmentSchedule.class, bPartner)
 				.addOnlyActiveRecordsFilter()
 				.addCoalesceEqualsFilter(bPartner.getC_BPartner_ID(), I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID, I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false);
@@ -1469,8 +1468,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// Create the selection which we will need to update
 		final Properties ctx = Env.getCtx();
 		final IQueryBuilder<I_M_ShipmentSchedule> selectionQueryBuilder = queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(I_M_ShipmentSchedule.class, ctx, trxName)
 				.setOnlySelection(selectionId)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false) // do not touch the processed shipment schedules
 		;
@@ -1488,8 +1486,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		//
 		// Update our new selection
-		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.setContext(ctx, trxName)
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class, ctx, trxName)
 				.setOnlySelection(selectionToUpdateId)
 				.create()
 				.updateDirectly()
@@ -1549,9 +1546,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public IQueryBuilder<I_M_ShipmentSchedule> createQueryForShipmentScheduleSelection(final Properties ctx, final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter)
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				// NOTE: we are creating the selection out of transaction because we would also want to lock it, and locks are working out of transaction.
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_ShipmentSchedule.class, ctx, ITrx.TRXNAME_None)
 				.filter(userSelectionFilter)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
 				.addOnlyActiveRecordsFilter()

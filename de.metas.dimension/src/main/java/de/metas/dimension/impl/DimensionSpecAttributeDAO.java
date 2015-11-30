@@ -41,8 +41,7 @@ public class DimensionSpecAttributeDAO implements IDimensionSpecAttributeDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		return queryBL.createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class)
-				.setContext(dimensionSpec)
+		return queryBL.createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class, dimensionSpec)
 				.addEqualsFilter(I_DIM_Dimension_Spec_Attribute.COLUMNNAME_DIM_Dimension_Spec_ID, dimensionSpec.getDIM_Dimension_Spec_ID())
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_DIM_Dimension_Spec_Attribute.COLUMN_M_Attribute_ID, I_M_Attribute.class)

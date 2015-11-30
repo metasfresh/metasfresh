@@ -223,8 +223,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
 		final IQueryBuilder<I_C_Queue_Element> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Queue_Element.class)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(I_C_Queue_Element.class, ctx, trxName);
 
 		// All Queue elements for given work-package
 		queryBuilder.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_C_Queue_WorkPackage_ID, workPackage.getC_Queue_WorkPackage_ID());
@@ -262,8 +261,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 		final IQuery<I_C_Queue_Element> elementsQuery = elementsQueryBuilder.create();
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(clazz)
-				.setContext(ctx, trxName)
+				.createQueryBuilder(clazz, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(keyColumnName, I_C_Queue_Element.COLUMNNAME_Record_ID, elementsQuery);
 	}

@@ -267,8 +267,7 @@ public final class CostDimension
 		final POInfo poInfo = POInfo.getPOInfo(ctx, tableName);
 
 		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(clazz)
-				.setContext(ctx, trxName);
+				.createQueryBuilder(clazz, ctx, trxName);
 
 		queryBuilder.addEqualsFilter(COLUMNNAME_AD_Client_ID, this.AD_Client_ID);
 		queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, this.M_Product_ID);

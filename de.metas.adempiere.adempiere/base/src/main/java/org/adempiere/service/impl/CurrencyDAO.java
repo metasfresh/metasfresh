@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.adempiere.service.impl;
 
@@ -27,12 +27,12 @@ import org.compiere.util.CCache;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -88,13 +88,12 @@ public class CurrencyDAO implements ICurrencyDAO
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_C_Currency> queryBuilder = queryBL.createQueryBuilder(I_C_Currency.class);
+		final IQueryBuilder<I_C_Currency> queryBuilder = queryBL.createQueryBuilder(I_C_Currency.class, ctx, ITrx.TRXNAME_None);
 
 		// ordering by value to make it easier for the user to browse the logging.
 		final IQueryOrderBy orderBy = queryBuilder.orderBy().addColumn(I_C_Currency.COLUMNNAME_ISO_Code).createQueryOrderBy();
 
 		retValue = queryBuilder
-				.setContext(ctx, ITrx.TRXNAME_None)
 				.filter(new EqualsQueryFilter<I_C_Currency>(I_C_Currency.COLUMNNAME_ISO_Code, ISOCode))
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -103,7 +102,7 @@ public class CurrencyDAO implements ICurrencyDAO
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 				.firstOnly(I_C_Currency.class);
 
-		
+
 		// Save
 		if (retValue != null)
 		{

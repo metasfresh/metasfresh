@@ -175,9 +175,7 @@ public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
 		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter = getProcessInfo().getQueryFilter();
 
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				// NOTE: we are creating the selection out of transaction because we would also want to lock it, and locks are working out of transaction.
-				.setContext(getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)
 				.filter(userSelectionFilter)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()

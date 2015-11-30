@@ -189,8 +189,7 @@ public class MAttribute extends X_M_Attribute
 		}
 		
 		final I_M_AttributeInstance attributeInstance = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_AttributeInstance.class)
-				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.createQueryBuilder(I_M_AttributeInstance.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, getM_Attribute_ID())
 				.addOnlyActiveRecordsFilter() // inactive M_AttributeInstances shouldn't occur, but e.g. we could deactivate certain records via DB-updates under certain situations.

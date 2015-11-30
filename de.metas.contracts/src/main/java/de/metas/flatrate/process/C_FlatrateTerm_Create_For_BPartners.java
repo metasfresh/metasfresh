@@ -10,12 +10,12 @@ package de.metas.flatrate.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -96,20 +96,20 @@ public class C_FlatrateTerm_Create_For_BPartners extends SvrProcess
 		final IQueryFilter<I_C_BPartner> selectedPartners = getProcessInfo().getQueryFilter();
 
 // @formatter:off
-// 		we also select partners that are neither Vendors nor Customers. We leave it to the business logic to decide if each partner can get a term or not	
+// 		we also select partners that are neither Vendors nor Customers. We leave it to the business logic to decide if each partner can get a term or not
 //		final ICompositeQueryFilter<I_C_BPartner> customerOrVendorFilter = Services.get(IQueryBL.class).createCompositeQueryFilter(I_C_BPartner.class)
 //				.setJoinOr()
 //				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
 //				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsVendor, true);
 // @formatter:on
 
-		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class);
+		final IQueryBuilder<I_C_BPartner> queryBuilder =
+				queryBL.createQueryBuilder(I_C_BPartner.class, getCtx(), ITrx.TRXNAME_ThreadInherited);
 
 		// ordering by value to make it easier for the user to browse the logging.
 		final IQueryOrderBy orderBy = queryBuilder.orderBy().addColumn(I_C_BPartner.COLUMNNAME_Value).createQueryOrderBy();
 
 		final Iterator<I_C_BPartner> it = queryBuilder
-				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.filter(selectedPartners)
 				// .filter(customerOrVendorFilter)
 				.addOnlyActiveRecordsFilter()

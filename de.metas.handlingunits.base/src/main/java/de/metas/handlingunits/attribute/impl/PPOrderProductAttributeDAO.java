@@ -44,8 +44,7 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		return queryBL.createQueryBuilder(I_PP_Order_ProductAttribute.class)
-				.setContext(ppOrder)
+		return queryBL.createQueryBuilder(I_PP_Order_ProductAttribute.class, ppOrder)
 				.filter(new EqualsQueryFilter<I_PP_Order_ProductAttribute>(I_PP_Order_ProductAttribute.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID()))
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -78,8 +77,7 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		queryBL.createQueryBuilder(I_PP_Order_ProductAttribute.class)
-				.setContext(costCollector)
+		queryBL.createQueryBuilder(I_PP_Order_ProductAttribute.class, costCollector)
 				.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_PP_Cost_Collector_ID, costCollector.getPP_Cost_Collector_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()

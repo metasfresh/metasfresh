@@ -385,8 +385,7 @@ public class PriceListDAO implements IPriceListDAO
 			final Date dateDay,
 			@CacheTrx final String trxName)
 	{
-		final IQueryBuilder<I_M_PriceList_Version> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class)
-				.setContext(ctx, trxName)
+		final IQueryBuilder<I_M_PriceList_Version> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class, ctx, trxName)
 				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceListId)
 				.addCompareFilter(
 						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
@@ -448,8 +447,7 @@ public class PriceListDAO implements IPriceListDAO
 			final int productId,
 			@CacheTrx final String trxName)
 	{
-		final I_M_ProductPrice result = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class)
-				.setContext(ctx, trxName)
+		final I_M_ProductPrice result = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class, ctx, trxName)
 				.addEqualsFilter(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_Product_ID, productId)
 				.addEqualsFilter(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId)
 				.addOnlyActiveRecordsFilter()
@@ -472,8 +470,7 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		Check.assumeNotNull(plv, "Param 'plv' not null");
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class)
-				.setContext(plv)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class, plv)
 				.addEqualsFilter(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, plv.getM_PriceList_Version_ID())
 				.addOnlyActiveRecordsFilter();
 	}
@@ -481,8 +478,7 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public Iterator<I_M_ProductPrice> retrieveAllProductPricesOrderedBySeqNOandProductName(final I_M_PriceList_Version plv)
 	{
-		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class)
-				.setContext(plv)
+		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class, plv)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, plv.getM_PriceList_Version_ID());
 
@@ -498,8 +494,7 @@ public class PriceListDAO implements IPriceListDAO
 	public Iterator<I_M_PriceList> retrievePriceLists(final I_M_PricingSystem pricingSystem, final I_C_Country country, final boolean isSOTrx)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_M_PriceList> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class)
-				.setContext(pricingSystem)
+		final IQueryBuilder<I_M_PriceList> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class, pricingSystem)
 				.addOnlyActiveRecordsFilter();
 
 		final ICompositeQueryFilter<I_M_PriceList> filters = queryBL.<I_M_PriceList> createCompositeQueryFilter(I_M_PriceList.class);
@@ -524,8 +519,7 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public I_M_PriceList_Version retrieveLastVersion(final I_M_PriceList priceList, final Timestamp date)
 	{
-		final IQueryBuilder<I_M_PriceList_Version> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class)
-				.setContext(priceList)
+		final IQueryBuilder<I_M_PriceList_Version> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class, priceList)
 				// Same pricelist
 				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceList.getM_PriceList_ID())
 				// valid from must be befoire the date we need it
@@ -558,8 +552,7 @@ public class PriceListDAO implements IPriceListDAO
 		}
 		if (dsl.getM_Product_Category_ID() > 0)
 		{
-			final IQuery<I_M_Product> productQuery = queryBL.createQueryBuilder(I_M_Product.class)
-					.setContext(dsl)
+			final IQuery<I_M_Product> productQuery = queryBL.createQueryBuilder(I_M_Product.class, dsl)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, dsl.getM_Product_Category_ID())
 					.create();

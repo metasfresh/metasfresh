@@ -133,8 +133,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_C_Print_Job_Detail> queryBuilder = queryBL.createQueryBuilder(I_C_Print_Job_Detail.class)
-				.setContext(jobLine)
+		final IQueryBuilder<I_C_Print_Job_Detail> queryBuilder = queryBL.createQueryBuilder(I_C_Print_Job_Detail.class, jobLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Print_Job_Detail.COLUMNNAME_C_Print_Job_Line_ID, jobLine.getC_Print_Job_Line_ID());
 
@@ -195,8 +194,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	@Override
 	public I_AD_Printer_Config retrievePrinterConfig(final IContextAware ctx, String hostKey, int userToPrintId)
 	{
-		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Printer_Config.class)
-				.setContext(ctx)
+		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Printer_Config.class, ctx)
 				.addOnlyActiveRecordsFilter();
 
 		if (!Check.isEmpty(hostKey, true))
@@ -255,8 +253,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	private IQueryBuilder<I_C_Printing_Queue_Recipient> retrievePrintingQueueRecipientsQuery(final I_C_Printing_Queue item)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_C_Printing_Queue_Recipient.class)
-				.setContext(item)
+		return queryBL.createQueryBuilder(I_C_Printing_Queue_Recipient.class, item)
 				// .addOnlyActiveRecordsFilter() // we must retrieve ALL; the caller shall decide
 				.addEqualsFilter(I_C_Printing_Queue_Recipient.COLUMN_C_Printing_Queue_ID, item.getC_Printing_Queue_ID())
 				//
@@ -300,8 +297,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	@Override
 	public final I_AD_Print_Clients retrievePrintClientsEntry(final Properties ctx, final String hostKey)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Print_Clients.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Print_Clients.class, ctx, ITrx.TRXNAME_None)
 				// .addOnlyContextClient(ctx) // task 08022: AD_Print_Clients always have AD_Client_ID=0
 				.addEqualsFilter(I_AD_Print_Clients.COLUMNNAME_HostKey, hostKey)
 				.addOnlyActiveRecordsFilter()
@@ -318,8 +314,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		Check.assume(mediaSize != null, "Param 'mediaSize' is not null");
 
 		final String mediaSizeName = mediaSize.getMediaSizeName().toString();
-		final I_AD_PrinterHW_MediaSize result = Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrinterHW_MediaSize.class)
-				.setContext(hwPrinter)
+		final I_AD_PrinterHW_MediaSize result = Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrinterHW_MediaSize.class, hwPrinter)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_PrinterHW_MediaSize.COLUMN_AD_PrinterHW_ID, hwPrinter.getAD_PrinterHW_ID())
 				.addEqualsFilter(I_AD_PrinterHW_MediaSize.COLUMN_Name, mediaSizeName)

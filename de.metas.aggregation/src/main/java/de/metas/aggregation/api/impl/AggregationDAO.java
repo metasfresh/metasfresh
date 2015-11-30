@@ -83,8 +83,7 @@ public class AggregationDAO implements IAggregationDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_C_Aggregation> queryBuilder = queryBL.createQueryBuilder(I_C_Aggregation.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_C_Aggregation> queryBuilder = queryBL.createQueryBuilder(I_C_Aggregation.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Aggregation.COLUMN_AD_Table_ID, tableId);
 
@@ -134,8 +133,7 @@ public class AggregationDAO implements IAggregationDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_C_AggregationItem> queryBuilder = queryBL
-				.createQueryBuilder(I_C_AggregationItem.class)
-				.setContext(aggregation)
+				.createQueryBuilder(I_C_AggregationItem.class, aggregation)
 				.addEqualsFilter(I_C_AggregationItem.COLUMN_C_Aggregation_ID, aggregation.getC_Aggregation_ID())
 		// .addOnlyActiveRecordsFilter() // NOTE: we are retrieving all
 		;

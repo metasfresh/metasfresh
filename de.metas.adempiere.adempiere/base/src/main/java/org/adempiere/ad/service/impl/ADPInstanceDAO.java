@@ -59,8 +59,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		}
 
 		final IQueryBuilder<I_AD_PInstance_Para> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_PInstance_Para.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_PInstance_Para.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_PInstance_Para.COLUMNNAME_AD_PInstance_ID, adPInstanceId);
 

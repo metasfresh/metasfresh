@@ -47,16 +47,6 @@
 		</dependency>
 
 		<dependency>
-			<!--
-			TODO: consider including only de.metas.banking.base here and include de.metas.banking.swingui on de.metas.endcustomer.*.swingui.
-			NOTE: i've postponed this task because i don't want to affect the "allInOne" archive and the RUN_Adempiere launchers.
-			-->
-			<groupId>de.metas.banking</groupId>
-			<artifactId>de.metas.banking.swingui</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.dimension</groupId>
 			<artifactId>de.metas.dimension</artifactId>
 			<version>${project.version}</version>
@@ -221,7 +211,6 @@
 	</dependencies>
 
 	<build>
-
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>

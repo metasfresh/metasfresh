@@ -588,8 +588,7 @@ public abstract class AbstractCommissionInstanceDAO implements ICommissionInstan
 				.addEqualsFilter(IAdvComInstance.COLUMNNAME_C_Sponsor_SalesRep_ID, salesRepSponsor.getC_Sponsor_ID())
 				.addFilter(new ReferencingPOFilter<IAdvComInstance>(poLine));
 
-		final IQueryBuilder<IAdvComInstance> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(IAdvComInstance.class)
-				.setContext(poLine)
+		final IQueryBuilder<IAdvComInstance> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(IAdvComInstance.class, poLine)
 				.filter(salesRepFilter)
 				.filterByClientId();
 

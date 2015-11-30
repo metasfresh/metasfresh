@@ -67,8 +67,7 @@ public class PPWorkflowDAO implements IPPWorkflowDAO
 	{
 
 		final IQueryBuilder<I_AD_Workflow> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Workflow.class)
-				.setContext(ctx, ITrx.TRXNAME_None);
+				.createQueryBuilder(I_AD_Workflow.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_AD_Workflow> filters = queryBuilder.getFilters();
 		filters.addEqualsFilter(I_AD_Workflow.COLUMNNAME_Value, productValue);

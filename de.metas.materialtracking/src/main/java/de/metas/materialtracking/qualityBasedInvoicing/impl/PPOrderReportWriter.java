@@ -111,8 +111,7 @@ public class PPOrderReportWriter
 	{
 		final I_PP_Order ppOrder = getPP_Order();
 
-		queryBL.createQueryBuilder(I_PP_Order_Report.class)
-		.setContext(getContext())
+		queryBL.createQueryBuilder(I_PP_Order_Report.class, getContext())
 		.addEqualsFilter(org.eevolution.model.I_PP_Order_Report.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
 		.create() // create query
 		.delete(); // delete matching records

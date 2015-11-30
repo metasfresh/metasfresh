@@ -70,8 +70,7 @@ public class HUInOutDAO implements IHUInOutDAO
 
 	private final IQuery<I_M_InOutLine> retrievePackingMaterialLinesQuery(final I_M_InOut inOut)
 	{
-		final IQueryBuilder<de.metas.handlingunits.model.I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(de.metas.handlingunits.model.I_M_InOutLine.class)
-				.setContext(inOut)
+		final IQueryBuilder<de.metas.handlingunits.model.I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(de.metas.handlingunits.model.I_M_InOutLine.class, inOut)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_IsPackagingMaterial, true);

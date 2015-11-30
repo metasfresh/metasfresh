@@ -55,8 +55,7 @@ public class MatchInvDAO implements IMatchInvDAO
 	public IQueryBuilder<I_M_MatchInv> retrieveForInvoiceLineQuery(final I_C_InvoiceLine il)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_MatchInv.class)
-				.setContext(il)
+				.createQueryBuilder(I_M_MatchInv.class, il)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, il.getC_InvoiceLine_ID())
 				.addOnlyActiveRecordsFilter()
 				//
@@ -70,8 +69,7 @@ public class MatchInvDAO implements IMatchInvDAO
 	@Override
 	public List<I_M_MatchInv> retrieveForInOutLine(final I_M_InOutLine iol)
 	{
-		final IQueryBuilder<I_M_MatchInv> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class)
-				.setContext(iol)
+		final IQueryBuilder<I_M_MatchInv> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, iol)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOutLine_ID, iol.getM_InOutLine_ID())
 				.addOnlyActiveRecordsFilter();
 
@@ -86,8 +84,7 @@ public class MatchInvDAO implements IMatchInvDAO
 	@Override
 	public List<I_M_MatchInv> retrieveForInOut(final I_M_InOut inout)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
-				.setContext(inout)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, inout)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inout.getM_InOut_ID())
 				// .addOnlyActiveRecordsFilter() // all of them because maybe we want to delete them
 				//
@@ -104,8 +101,7 @@ public class MatchInvDAO implements IMatchInvDAO
 	@Override
 	public BigDecimal retrieveQtyInvoiced(final I_M_InOutLine iol)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class)
-				.setContext(iol)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, iol)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOutLine_ID, iol.getM_InOutLine_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -115,8 +111,7 @@ public class MatchInvDAO implements IMatchInvDAO
 	@Override
 	public BigDecimal retrieveQtyMatched(final I_C_InvoiceLine invoiceLine)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class)
-				.setContext(invoiceLine)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, invoiceLine)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -133,8 +128,7 @@ public class MatchInvDAO implements IMatchInvDAO
 		Check.assumeNotNull(inoutLine, "inoutLine not null");
 		final int inoutLineId = inoutLine.getM_InOutLine_ID();
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class)
-				.setContext(ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, ctx, trxName)
 				.addEqualsFilter(I_M_MatchInv.COLUMN_C_InvoiceLine_ID, invoiceLineId)
 				.addEqualsFilter(I_M_MatchInv.COLUMN_M_InOutLine_ID, inoutLineId)
 				.addOnlyActiveRecordsFilter()

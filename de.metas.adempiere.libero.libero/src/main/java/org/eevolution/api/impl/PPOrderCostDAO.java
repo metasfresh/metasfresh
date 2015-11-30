@@ -42,8 +42,7 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 	 */
 	public List<I_PP_Order_Cost> retrieveAllOrderCosts(final I_PP_Order order)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Cost.class)
-				.setContext(order)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Cost.class, order)
 				.addEqualsFilter(I_PP_Order_Cost.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID())
 				.create()
 				// .setOnlyActiveRecords(true) // NOTE: we need to retrieve ALL costs

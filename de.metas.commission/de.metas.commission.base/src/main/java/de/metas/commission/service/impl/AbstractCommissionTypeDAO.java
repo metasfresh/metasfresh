@@ -77,8 +77,7 @@ public class AbstractCommissionTypeDAO implements ICommissionTypeDAO
 	@Override
 	public List<I_C_AdvComSystem_Type> retrieveSystemTypesForCommissionType(final I_C_AdvCommissionType type)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_AdvComSystem_Type.class)
-				.setContext(type)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_AdvComSystem_Type.class, type)
 				.filter(new EqualsQueryFilter<I_C_AdvComSystem_Type>(I_C_AdvComSystem_Type.COLUMNNAME_C_AdvCommissionType_ID, type.getC_AdvCommissionType_ID()))
 				.create()
 				.list(I_C_AdvComSystem_Type.class);

@@ -1447,8 +1447,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.addSetColumnValue(org.adempiere.model.I_C_Invoice_Detail.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID())
 				.addSetColumnValue(org.adempiere.model.I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceLine.getC_Invoice_ID());
 		queryBL
-				.createQueryBuilder(I_C_Invoice_Detail.class)
-				.setContext(ila)
+				.createQueryBuilder(I_C_Invoice_Detail.class, ila)
 				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID())
 				.create()
 				.updateDirectly(queryUpdater);

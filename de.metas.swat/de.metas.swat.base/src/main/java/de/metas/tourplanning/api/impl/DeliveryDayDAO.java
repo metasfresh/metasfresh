@@ -102,8 +102,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 	public I_M_DeliveryDay retrieveDeliveryDay(final IContextAware context, final IDeliveryDayQueryParams params)
 	{
 		final IQueryBuilder<I_M_DeliveryDay> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_DeliveryDay.class)
-				.setContext(context)
+				.createQueryBuilder(I_M_DeliveryDay.class, context)
 				.filter(createDeliveryDayMatcher(params));
 
 		final Timestamp calculationTime = params.getCalculationTime();
@@ -135,8 +134,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 		Check.assumeNotNull(tourInstance, "tourInstance not null");
 
 		final IQueryBuilder<I_M_DeliveryDay> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_DeliveryDay.class)
-				.setContext(tourInstance)
+				.createQueryBuilder(I_M_DeliveryDay.class, tourInstance)
 				// .addOnlyActiveRecordsFilter() // get all
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_M_Tour_Instance_ID, tourInstance.getM_Tour_Instance_ID());
 
@@ -165,8 +163,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_M_DeliveryDay> queryBuilder = queryBL.createQueryBuilder(I_M_DeliveryDay.class)
-				.setContext(tour)
+		final IQueryBuilder<I_M_DeliveryDay> queryBuilder = queryBL.createQueryBuilder(I_M_DeliveryDay.class, tour)
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_M_Tour_ID, tour.getM_Tour_ID())
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, deliveryDate, DateTruncQueryFilterModifier.DAY)
 				.addOnlyActiveRecordsFilter();
@@ -189,8 +186,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 		final int recordId = deliveryDayAllocable.getRecord_ID();
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_DeliveryDay_Alloc.class)
-				.setContext(context)
+				.createQueryBuilder(I_M_DeliveryDay_Alloc.class, context)
 				.addEqualsFilter(I_M_DeliveryDay_Alloc.COLUMN_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_M_DeliveryDay_Alloc.COLUMN_Record_ID, recordId)
 				.addOnlyActiveRecordsFilter()
@@ -204,8 +200,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 		Check.assumeNotNull(deliveryDay, "deliveryDay not null");
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_DeliveryDay_Alloc.class)
-				.setContext(deliveryDay)
+				.createQueryBuilder(I_M_DeliveryDay_Alloc.class, deliveryDay)
 				.addEqualsFilter(I_M_DeliveryDay_Alloc.COLUMN_M_DeliveryDay_ID, deliveryDay.getM_DeliveryDay_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
