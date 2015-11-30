@@ -488,12 +488,10 @@ public class Doc_AllocationHdr extends Doc
 				if (isDiscountExpense)
 				{
 					fl = fact.createLine(line, account, getC_Currency_ID(), taxDiscountAmt_CMAdjusted, null);
-					discountAmtSourceAndAcct.addAmtSource(fl.getAmtSourceDr()).addAmtAcct(fl.getAmtAcctDr());
 				}
 				else
 				{
 					fl = fact.createLine(line, account, getC_Currency_ID(), null, taxDiscountAmt_CMAdjusted.negate());
-					discountAmtSourceAndAcct.addAmtSource(fl.getAmtSourceCr()).addAmtAcct(fl.getAmtAcctCr());
 				}
 				if (fl != null)
 				{
@@ -503,6 +501,8 @@ public class Doc_AllocationHdr extends Doc
 						fl.setAD_Org_ID(payment.getAD_Org_ID());
 						fl.setC_BPartner_ID(payment.getC_BPartner_ID());
 					}
+					
+					discountAmtSourceAndAcct.add(fl.getAmtSourceAndAcctDrOrCr());
 				}
 			}
 		}
