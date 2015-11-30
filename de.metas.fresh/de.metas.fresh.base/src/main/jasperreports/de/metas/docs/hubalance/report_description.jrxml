@@ -48,7 +48,7 @@ WHERE
 				<textFieldExpression><![CDATA[$P{StartDate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9b901965-c28d-45e7-8b66-6e6bd0af0a9c" key="textField-11" x="37" y="127" width="133" height="13">
+				<reportElement uuid="6ef315de-f03f-4dd2-8d05-6e72b3ce1b5e" key="textField-11" x="37" y="127" width="133" height="13">
 					<printWhenExpression><![CDATA[new Boolean($F{value} != null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
@@ -57,7 +57,7 @@ WHERE
 				<textFieldExpression><![CDATA[$R{from}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0f201510-1ea1-42d0-84cf-a0dca6088d79" key="textField-6" x="37" y="114" width="133" height="13" forecolor="#000000"/>
+				<reportElement uuid="7cf154c3-4c1c-4d44-ab9c-fb3c56ba6c35" key="textField-6" x="37" y="114" width="133" height="13" forecolor="#000000"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -77,14 +77,14 @@ WHERE
 				<textFieldExpression><![CDATA[$F{now}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="bf9320f9-8439-4c69-97e4-d7dac64a08c0" key="textField-5" x="363" y="152" width="89" height="13"/>
+				<reportElement uuid="b0cec862-9647-4feb-a0f4-7db9fc0c21c1" key="textField-5" x="363" y="152" width="89" height="13"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="eed9d8d3-7bb9-48ee-b07e-a5e0fa43ae97" key="textField-11" x="37" y="152" width="133" height="13">
+				<reportElement uuid="1b4a5d6d-3b83-4d70-a8ea-47916c800489" key="textField-11" x="37" y="152" width="133" height="13">
 					<printWhenExpression><![CDATA[new Boolean($F{value} != null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
@@ -123,7 +123,7 @@ WHERE
 				<textFieldExpression><![CDATA[$P{EndDate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9cf34097-cc5e-430e-a886-8ef832dbb1f1" key="textField-11" x="37" y="139" width="133" height="13">
+				<reportElement uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db" key="textField-11" x="37" y="139" width="133" height="13">
 					<printWhenExpression><![CDATA[new Boolean($F{value} != null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
