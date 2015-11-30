@@ -26,13 +26,13 @@ package de.metas.activity.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.ModelValidator;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.product.acct.api.IProductAcctDAO;
 
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine
@@ -48,7 +48,7 @@ public class C_OrderLine
 		}
 		
 		final I_M_Product product = orderLine.getM_Product();
-		final I_M_Product_Acct productAcct = Services.get(IProductDAO.class).retrieveM_Product_AcctOrNull(product);
+		final I_M_Product_Acct productAcct = Services.get(IProductAcctDAO.class).retrieveProductAcctOrNull(product);
 		final de.metas.adempiere.model.I_M_Product productEx = InterfaceWrapperHelper.create(product, de.metas.adempiere.model.I_M_Product.class);
 		// Unrelated bug: isDiverse no longer set.
 		orderLine.setIsDiverse(productEx.isDiverse());

@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.ProductAcctType;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCostDetail;
@@ -344,7 +345,7 @@ public class Doc_PPCostCollector extends Doc
 		return facts;
 	}
 	
-	protected Fact createVariance(MAcctSchema as, int VarianceAcctType)
+	protected Fact createVariance(MAcctSchema as, ProductAcctType VarianceAcctType)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		final MProduct product = m_cc.getM_Product();

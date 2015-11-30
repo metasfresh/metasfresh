@@ -26,14 +26,12 @@ package org.compiere.acct;
  */
 
 
-import java.util.HashMap;
-
+import org.adempiere.acct.api.ProductAcctType;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCostElement;
 import org.compiere.model.PO;
 import org.compiere.model.ProductCost;
-import org.compiere.model.X_M_Product_Acct;
 import org.compiere.util.DB;
 import org.eevolution.exceptions.LiberoException;
 
@@ -43,23 +41,6 @@ import org.eevolution.exceptions.LiberoException;
  */
 public class DocLine_CostCollector extends DocLine
 {
-	private static final HashMap<Integer, String> s_acctName = new HashMap<Integer, String>();
-	static
-	{
-		s_acctName.put(ProductCost.ACCTTYPE_P_WorkInProcess, X_M_Product_Acct.COLUMNNAME_P_WIP_Acct);
-		s_acctName.put(ProductCost.ACCTTYPE_P_MethodChangeVariance, X_M_Product_Acct.COLUMNNAME_P_MethodChangeVariance_Acct);
-		s_acctName.put(ProductCost.ACCTTYPE_P_UsageVariance, X_M_Product_Acct.COLUMNNAME_P_UsageVariance_Acct);
-		s_acctName.put(ProductCost.ACCTTYPE_P_RateVariance, X_M_Product_Acct.COLUMNNAME_P_RateVariance_Acct);
-		s_acctName.put(ProductCost.ACCTTYPE_P_MixVariance, X_M_Product_Acct.COLUMNNAME_P_MixVariance_Acct);
-		s_acctName.put(ProductCost.ACCTTYPE_P_FloorStock, X_M_Product_Acct.COLUMNNAME_P_FloorStock_Acct);
-		s_acctName.put(ProductCost.ACCTTYPE_P_CostOfProduction, X_M_Product_Acct.COLUMNNAME_P_CostOfProduction_Acct);
-		s_acctName.put(ProductCost.ACCTTYPE_P_Labor, X_M_Product_Acct.COLUMNNAME_P_Labor_Acct);
-		s_acctName.put(ProductCost.ACCTTYPE_P_Burden, X_M_Product_Acct.COLUMNNAME_P_Burden_Acct);	
-		s_acctName.put(ProductCost.ACCTTYPE_P_OutsideProcessing, X_M_Product_Acct.COLUMNNAME_P_OutsideProcessing_Acct);
-		s_acctName.put(ProductCost.ACCTTYPE_P_Overhead, X_M_Product_Acct.COLUMNNAME_P_Overhead_Acct);	
-		s_acctName.put(ProductCost.ACCTTYPE_P_Scrap, X_M_Product_Acct.COLUMNNAME_P_Scrap_Acct);
-	}
-	
 	public DocLine_CostCollector(PO po, Doc doc)
 	{
 		super(po, doc);
@@ -68,7 +49,7 @@ public class DocLine_CostCollector extends DocLine
 	public MAccount getAccount(MAcctSchema as, MCostElement element)
 	{
 		String costElementType = element.getCostElementType();
-		int acctType;
+		final ProductAcctType acctType;
 		if (MCostElement.COSTELEMENTTYPE_Material.equals(costElementType))
 		{
 			acctType = ProductCost.ACCTTYPE_P_Asset;
@@ -97,10 +78,10 @@ public class DocLine_CostCollector extends DocLine
 	}
 
 	@Override
-	public MAccount getAccount(int AcctType, MAcctSchema as)
+	public MAccount getAccount(final ProductAcctType AcctType, final MAcctSchema as)
 	{
-		String acctName = s_acctName.get(AcctType);
-		if (getM_Product_ID() == 0 || acctName == null)
+		final String acctName = AcctType == null ? null : AcctType.getColumnName();
+		if (getM_Product_ID() <= 0 || acctName == null)
 		{
 			return super.getAccount(AcctType, as);
 		}

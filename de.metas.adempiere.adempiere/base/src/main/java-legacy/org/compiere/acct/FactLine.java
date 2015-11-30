@@ -344,14 +344,17 @@ final class FactLine extends X_Fact_Acct
 		final BigDecimal errorMarginTolerated = NumberUtils.getErrorMarginForScale(8); // use a reasonable tolerance
 		if (amtRoundingError.compareTo(errorMarginTolerated) > 0)
 		{
-			final PostingException ex = new PostingException("Precision fixed for " + amountName + ": " + amt + " -> " + amtRounded)
-					.setC_AcctSchema(m_acctSchema)
-					.setDocument(getDoc())
-					.setDocLine(getDocLine())
-					.setFactLine(this)
-					.setParameter("Rounding error", amtRoundingError)
-					.setParameter("Rounding error (tolerated)", errorMarginTolerated);
-			log.log(Level.FINE, ex.getLocalizedMessage(), ex);
+			if (log.isLoggable(Level.FINE))
+			{
+				final PostingException ex = new PostingException("Precision fixed for " + amountName + ": " + amt + " -> " + amtRounded)
+						.setC_AcctSchema(m_acctSchema)
+						.setDocument(getDoc())
+						.setDocLine(getDocLine())
+						.setFactLine(this)
+						.setParameter("Rounding error", amtRoundingError)
+						.setParameter("Rounding error (tolerated)", errorMarginTolerated);
+				log.log(Level.FINE, ex.getLocalizedMessage(), ex);
+			}
 		}
 		
 		return amtRounded;

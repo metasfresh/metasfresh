@@ -1,4 +1,9 @@
-package org.adempiere.product.service;
+package org.adempiere.acct.api;
+
+import java.util.Properties;
+
+import org.adempiere.util.ISingletonService;
+import org.compiere.model.MAccount;
 
 /*
  * #%L
@@ -22,23 +27,9 @@ package org.adempiere.product.service;
  * #L%
  */
 
-
-import java.util.Properties;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-
-public interface IProductDAO extends ISingletonService
+public interface IAccountDAO extends ISingletonService
 {
-	I_M_Product retrieveProductByUPC(Properties ctx, String upc);
-	
-	I_M_Product retrieveForResourceId(final Properties ctx, final int resourceId, final String trxName);
 
-	/**
-	 * 
-	 * @param ctx
-	 * @return default product category; never returns null
-	 */
-	I_M_Product_Category retrieveDefaultProductCategory(Properties ctx);
+	MAccount retrieveAccountById(Properties ctx, int validCombinationId);
+
 }

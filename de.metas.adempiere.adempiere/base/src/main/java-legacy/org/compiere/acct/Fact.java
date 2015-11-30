@@ -29,12 +29,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MDistribution;
 import org.compiere.model.MDistributionLine;
-import org.compiere.model.MElementValue;
 import org.compiere.model.MFactAcct;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -557,11 +557,18 @@ public final class Fact
 		BigDecimal PLamount = Env.ZERO;
 		FactLine PLline = null;
 
+		//
 		// Find line biggest BalanceSheet or P&L line
-		for (int i = 0; i < m_lines.size(); i++)
+		final int acctCurrencyId = getAcctSchema().getC_Currency_ID();
+		for (final FactLine l : m_lines)
 		{
-			FactLine l = m_lines.get(i);
-			BigDecimal amt = l.getAcctBalance().abs();
+			// Consider only the lines which are in foreign currency
+			if (l.getC_Currency_ID() == acctCurrencyId)
+			{
+				continue;
+			}
+			
+			final BigDecimal amt = l.getAcctBalance().abs();
 			if (l.isBalanceSheet() && amt.compareTo(BSamount) > 0)
 			{
 				BSamount = amt;
@@ -639,24 +646,27 @@ public final class Fact
 	public boolean checkAccounts()
 	{
 		// no lines -> nothing to distribute
-		if (m_lines.size() == 0)
+		if (m_lines.isEmpty())
+		{
 			return true;
+		}
 
 		// For all fact lines
 		for (int i = 0; i < m_lines.size(); i++)
 		{
-			FactLine line = m_lines.get(i);
-			MAccount account = line.getAccount();
+			final FactLine line = m_lines.get(i);
+			
+			final MAccount account = line.getAccount();
 			if (account == null)
 			{
 				log.warning("No Account for " + line);
 				return false;
 			}
-			MElementValue ev = account.getAccount();
+			
+			final I_C_ElementValue ev = account.getAccount();
 			if (ev == null)
 			{
-				log.warning("No Element Value for " + account
-						+ ": " + line);
+				log.warning("No Element Value for " + account + ": " + line);
 				return false;
 			}
 			if (ev.isSummary())

@@ -17,15 +17,16 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
 
+import org.adempiere.acct.api.IAccountDAO;
+import org.adempiere.acct.api.ProductAcctType;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.product.acct.api.IProductAcctDAO;
 
 /**
  * Product Cost Model. Summarizes Info in MCost
@@ -35,6 +36,11 @@ import org.compiere.util.Env;
  */
 public class ProductCost
 {
+	// services
+	private static final transient CLogger log = CLogger.getCLogger(ProductCost.class);
+	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+
 	/**
 	 * Constructor
 	 *
@@ -47,26 +53,30 @@ public class ProductCost
 	{
 		super();
 		m_M_Product_ID = M_Product_ID;
-		if (m_M_Product_ID != 0)
+		if (m_M_Product_ID > 0)
+		{
 			m_product = MProduct.get(ctx, M_Product_ID);
+		}
+		else
+		{
+			m_product = null;
+		}
+		
 		m_M_AttributeSetInstance_ID = M_AttributeSetInstance_ID;
 		m_trxName = trxName;
 	}	// ProductCost
 
 	/** The ID */
-	private int m_M_Product_ID = 0;
+	private final int m_M_Product_ID;
 	/** ASI */
-	private int m_M_AttributeSetInstance_ID = 0;
+	private final int m_M_AttributeSetInstance_ID;
 	/** The Product */
-	private MProduct m_product = null;
+	private final MProduct m_product;
 	/** Transaction */
-	private String m_trxName = null;
+	private final String m_trxName;
 
 	private int m_C_UOM_ID = 0;
 	private BigDecimal m_qty = Env.ZERO;
-
-	/** Logger */
-	private static CLogger log = CLogger.getCLogger(ProductCost.class);
 
 	/**
 	 * Get Product
@@ -119,49 +129,49 @@ public class ProductCost
 	}   // setQty
 
 	/** Product Revenue Acct */
-	public static final int ACCTTYPE_P_Revenue = 1;
+	public static final ProductAcctType ACCTTYPE_P_Revenue = ProductAcctType.Revenue;
 	/** Product Expense Acct */
-	public static final int ACCTTYPE_P_Expense = 2;
+	public static final ProductAcctType ACCTTYPE_P_Expense = ProductAcctType.Expense;
 	/** Product Asset Acct */
-	public static final int ACCTTYPE_P_Asset = 3;
+	public static final ProductAcctType ACCTTYPE_P_Asset = ProductAcctType.Asset;
 	/** Product COGS Acct */
-	public static final int ACCTTYPE_P_Cogs = 4;
+	public static final ProductAcctType ACCTTYPE_P_Cogs = ProductAcctType.Cogs;
 	/** Purchase Price Variance */
-	public static final int ACCTTYPE_P_PPV = 5;
+	public static final ProductAcctType ACCTTYPE_P_PPV = ProductAcctType.PPV;
 	/** Invoice Price Variance */
-	public static final int ACCTTYPE_P_IPV = 6;
+	public static final ProductAcctType ACCTTYPE_P_IPV = ProductAcctType.IPV;
 	/** Trade Discount Revenue */
-	public static final int ACCTTYPE_P_TDiscountRec = 7;
+	public static final ProductAcctType ACCTTYPE_P_TDiscountRec = ProductAcctType.TDiscountRec;
 	/** Trade Discount Costs */
-	public static final int ACCTTYPE_P_TDiscountGrant = 8;
+	public static final ProductAcctType ACCTTYPE_P_TDiscountGrant = ProductAcctType.TDiscountGrant;
 	/** Cost Adjustment */
-	public static final int ACCTTYPE_P_CostAdjustment = 9;
+	public static final ProductAcctType ACCTTYPE_P_CostAdjustment = ProductAcctType.CostAdjustment;
 	/** Inventory Clearing */
-	public static final int ACCTTYPE_P_InventoryClearing = 10;
+	public static final ProductAcctType ACCTTYPE_P_InventoryClearing = ProductAcctType.InventoryClearing;
 	/** Work in Process */
-	public static final int ACCTTYPE_P_WorkInProcess = 11;
+	public static final ProductAcctType ACCTTYPE_P_WorkInProcess = ProductAcctType.WorkInProcess;
 	/** Method Change Variance */
-	public static final int ACCTTYPE_P_MethodChangeVariance = 12;
+	public static final ProductAcctType ACCTTYPE_P_MethodChangeVariance = ProductAcctType.MethodChangeVariance;
 	/** Material Usage Variance */
-	public static final int ACCTTYPE_P_UsageVariance = 13;
+	public static final ProductAcctType ACCTTYPE_P_UsageVariance = ProductAcctType.UsageVariance;
 	/** Material Rate Variance */
-	public static final int ACCTTYPE_P_RateVariance = 14;
+	public static final ProductAcctType ACCTTYPE_P_RateVariance = ProductAcctType.RateVariance;
 	/** Mix Variance */
-	public static final int ACCTTYPE_P_MixVariance = 15;
+	public static final ProductAcctType ACCTTYPE_P_MixVariance = ProductAcctType.MixVariance;
 	/** Floor Stock */
-	public static final int ACCTTYPE_P_FloorStock = 16;
+	public static final ProductAcctType ACCTTYPE_P_FloorStock = ProductAcctType.FloorStock;
 	/** Cost Production */
-	public static final int ACCTTYPE_P_CostOfProduction = 17;
+	public static final ProductAcctType ACCTTYPE_P_CostOfProduction = ProductAcctType.CostOfProduction;
 	/** Labor */
-	public static final int ACCTTYPE_P_Labor = 18;
+	public static final ProductAcctType ACCTTYPE_P_Labor = ProductAcctType.Labor;
 	/** Burden */
-	public static final int ACCTTYPE_P_Burden = 19;
+	public static final ProductAcctType ACCTTYPE_P_Burden = ProductAcctType.Burden;
 	/** Outside Processing */
-	public static final int ACCTTYPE_P_OutsideProcessing = 20;
+	public static final ProductAcctType ACCTTYPE_P_OutsideProcessing = ProductAcctType.OutsideProcessing;
 	/** Outside Overhead */
-	public static final int ACCTTYPE_P_Overhead = 21;
+	public static final ProductAcctType ACCTTYPE_P_Overhead = ProductAcctType.Overhead;
 	/** Outside Processing */
-	public static final int ACCTTYPE_P_Scrap = 22;
+	public static final ProductAcctType ACCTTYPE_P_Scrap = ProductAcctType.Scrap;
 
 	/**
 	 * Line Account from Product
@@ -170,51 +180,22 @@ public class ProductCost
 	 * @param as Accounting Schema
 	 * @return Requested Product Account
 	 */
-	public MAccount getAccount(int AcctType, MAcctSchema as)
+	public MAccount getAccount(final ProductAcctType acctType, final MAcctSchema as)
 	{
-		if (AcctType < 1 || AcctType > 22)
-			return null;
-
 		// No Product - get Default from Product Category
-		if (m_M_Product_ID == 0)
-			return getAccountDefault(AcctType, as);
+		if (m_M_Product_ID <= 0)
+		{
+			return getAccountDefault(acctType, as);
+		}
 
-		String sql = "SELECT P_Revenue_Acct, P_Expense_Acct, P_Asset_Acct, P_Cogs_Acct, "	// 1..4
-				+ "P_PurchasePriceVariance_Acct, P_InvoicePriceVariance_Acct, "	// 5..6
-				+ "P_TradeDiscountRec_Acct, P_TradeDiscountGrant_Acct,"			// 7..8
-				+ "P_CostAdjustment_Acct, P_InventoryClearing_Acct,"			// 9..10
-				+ "P_WIP_Acct,P_MethodChangeVariance_Acct,P_UsageVariance_Acct,"		// 11.12.13
-				+ "P_RateVariance_Acct,P_MixVariance_Acct,P_FloorStock_Acct," 					// 14.15.16
-				+ "P_CostOfProduction_Acct,P_Labor_Acct,P_Burden_Acct,P_OutsideProcessing_Acct,"	// 17.18,19,20
-				+ "P_Overhead_Acct,P_Scrap_Acct "											// 21,22
-				+ "FROM M_Product_Acct "
-				+ "WHERE M_Product_ID=? AND C_AcctSchema_ID=?";
-		//
-		int validCombination_ID = 0;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		final I_M_Product_Acct productAcct = productAcctDAO.retrieveProductAcctOrNull(as, m_M_Product_ID);
+		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(productAcct, acctType.getColumnName());
+		if(validCombinationId == null || validCombinationId <= 0)
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, m_M_Product_ID);
-			pstmt.setInt(2, as.getC_AcctSchema_ID());
-			rs = pstmt.executeQuery();
-			if (rs.next())
-				validCombination_ID = rs.getInt(AcctType);
-		}
-		catch (SQLException e)
-		{
-			log.log(Level.SEVERE, sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		if (validCombination_ID == 0)
 			return null;
-		return MAccount.get(as.getCtx(), validCombination_ID);
+		}
+		
+		return accountDAO.retrieveAccountById(as.getCtx(), validCombinationId);
 	}   // getAccount
 
 	/**
@@ -224,48 +205,16 @@ public class ProductCost
 	 * @param as accounting schema
 	 * @return Requested Product Account
 	 */
-	public MAccount getAccountDefault(int AcctType, MAcctSchema as)
+	private final MAccount getAccountDefault(final ProductAcctType acctType, final MAcctSchema as)
 	{
-		if (AcctType < 1 || AcctType > 22)
+		final I_M_Product_Category_Acct pcAcct = productAcctDAO.retrieveDefaultProductCategoryAcct(as);
+		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(pcAcct, acctType.getColumnName());
+		if(validCombinationId == null || validCombinationId <= 0)
+		{
 			return null;
-
-		String sql = "SELECT P_Revenue_Acct, P_Expense_Acct, P_Asset_Acct, P_Cogs_Acct, "
-				+ "P_PurchasePriceVariance_Acct, P_InvoicePriceVariance_Acct, "
-				+ "P_TradeDiscountRec_Acct, P_TradeDiscountGrant_Acct, "
-				+ "P_CostAdjustment_Acct, P_InventoryClearing_Acct, "
-				+ "P_WIP_Acct,P_MethodChangeVariance_Acct,P_UsageVariance_Acct,"		// 11.12.13
-				+ "P_RateVariance_Acct,P_MixVariance_Acct,P_FloorStock_Acct," 					// 14.15.16
-				+ "P_CostOfProduction_Acct,P_Labor_Acct,P_Burden_Acct,P_OutsideProcessing_Acct,"		// 17.18,19,20
-				+ "P_Overhead_Acct,P_Scrap_Acct "											// 21,22
-				+ "FROM M_Product_Category pc, M_Product_Category_Acct pca "
-				+ "WHERE pc.M_Product_Category_ID=pca.M_Product_Category_ID"
-				+ " AND pca.C_AcctSchema_ID=? "
-				+ "ORDER BY pc.IsDefault DESC, pc.Created";
-		//
-		int validCombination_ID = 0;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, as.getC_AcctSchema_ID());
-			rs = pstmt.executeQuery();
-			if (rs.next())
-				validCombination_ID = rs.getInt(AcctType);
 		}
-		catch (SQLException e)
-		{
-			log.log(Level.SEVERE, sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		if (validCombination_ID == 0)
-			return null;
-		return MAccount.get(as.getCtx(), validCombination_ID);
+		
+		return accountDAO.retrieveAccountById(as.getCtx(), validCombinationId);
 	}   // getAccountDefault
 
 	/**************************************************************************
@@ -313,9 +262,10 @@ public class ProductCost
 	 *
 	 * @return info
 	 */
+	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("ProductCost[");
+		StringBuilder sb = new StringBuilder("ProductCost[");
 		sb.append("M_Product_ID=").append(m_M_Product_ID)
 				.append(",M_AttributeSetInstance_ID").append(m_M_AttributeSetInstance_ID)
 				.append(",Qty=").append(m_qty)

@@ -22,42 +22,24 @@ package org.adempiere.product.service.impl;
  * #L%
  */
 
-
 import java.util.Properties;
 
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IContextAware;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.product.service.IProductDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Acct;
+import org.compiere.model.I_M_Product_Category;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 
 public class ProductDAO implements IProductDAO
 {
-
-	@Override
-	public I_M_Product_Acct retrieveM_Product_AcctOrNull(final I_M_Product product)
-	{
-		final IContextAware ctx = InterfaceWrapperHelper.getContextAware(product);
-
-		final I_C_AcctSchema schema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx.getCtx());
-
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_Acct.class, ctx)
-				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
-				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_C_AcctSchema_ID, schema.getC_AcctSchema_ID())
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.firstOnly(I_M_Product_Acct.class);
-	}
-
 	@Override
 	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_UPC)
 	public I_M_Product retrieveProductByUPC(@CacheCtx final Properties ctx, final String upc)
@@ -82,4 +64,22 @@ public class ProductDAO implements IProductDAO
 				.create()
 				.firstOnly(I_M_Product.class);
 	}
+
+	@Override
+	@Cached(cacheName = I_M_Product_Category.Table_Name + "#Default")
+	public I_M_Product_Category retrieveDefaultProductCategory(@CacheCtx final Properties ctx)
+	{
+		final I_M_Product_Category pc = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product_Category.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.orderBy()
+				.addColumn(I_M_Product_Category.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+				.endOrderBy()
+				.create()
+				.first(I_M_Product_Category.class);
+		Check.assumeNotNull(pc, "default product category shall exist");
+		return pc;
+	}
+
 }

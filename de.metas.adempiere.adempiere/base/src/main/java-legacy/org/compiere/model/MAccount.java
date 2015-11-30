@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.acct.api.IAccountBL;
+import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.impl.AccountDimensionVO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -343,11 +344,12 @@ public class MAccount extends X_C_ValidCombination
 	 * @param ctx context
 	 * @param C_ValidCombination_ID combination
 	 * @return Account
+	 * @deprecated Please use {@link IAccountDAO#retrieveAccountById(Properties, int)}
 	 */
+	@Deprecated
 	public static MAccount get(Properties ctx, int C_ValidCombination_ID)
 	{
-		// Maybe later cache
-		return new MAccount(ctx, C_ValidCombination_ID, ITrx.TRXNAME_None);
+		return Services.get(IAccountDAO.class).retrieveAccountById(ctx, C_ValidCombination_ID);
 	}   // getAccount
 
 	/**

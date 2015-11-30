@@ -22,14 +22,18 @@ package de.metas.product.acct.api;
  * #L%
  */
 
+import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Acct;
+import org.compiere.model.I_M_Product_Category_Acct;
 
 /**
  * @author al
@@ -50,4 +54,24 @@ public interface IProductAcctDAO extends ISingletonService
 	 * @throws AdempiereException if more than one records are found
 	 */
 	I_C_Activity retrieveActivityForAcct(IContextAware contextProvider, I_AD_Org org, I_M_Product product) throws AdempiereException;
+
+	I_M_Product_Acct retrieveProductAcctOrNull(Properties ctx, int acctSchemaId, int productId);
+
+	I_M_Product_Acct retrieveProductAcctOrNull(I_C_AcctSchema acctSchema, int productId);
+
+	I_M_Product_Acct retrieveProductAcctOrNull(I_M_Product product);
+
+	/**
+	 * 
+	 * @param ctx
+	 * @param acctSchemaId
+	 * @return default product category accounting; never returns null
+	 */
+	I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(Properties ctx, int acctSchemaId);
+
+	/**
+	 * @param acctSchema
+	 * @return default product category accounting; never returns null
+	 */
+	I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(I_C_AcctSchema acctSchema);
 }

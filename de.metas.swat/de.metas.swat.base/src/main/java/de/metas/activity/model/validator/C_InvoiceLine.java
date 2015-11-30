@@ -25,13 +25,13 @@ package de.metas.activity.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.product.service.IProductDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.product.acct.api.IProductAcctDAO;
 
 @Validator(I_C_InvoiceLine.class)
 public class C_InvoiceLine
@@ -51,7 +51,7 @@ public class C_InvoiceLine
 		}
 
 		final I_M_Product product = invoiceLine.getM_Product();
-		final I_M_Product_Acct productAcct = Services.get(IProductDAO.class).retrieveM_Product_AcctOrNull(product);
+		final I_M_Product_Acct productAcct = Services.get(IProductAcctDAO.class).retrieveProductAcctOrNull(product);
 		if (productAcct != null)
 		{
 			invoiceLine.setC_Activity_ID(productAcct.getC_Activity_ID());

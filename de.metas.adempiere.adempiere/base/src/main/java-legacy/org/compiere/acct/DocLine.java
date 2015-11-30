@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.adempiere.acct.api.ProductAcctType;
 import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
@@ -370,15 +371,14 @@ public class DocLine
 	 *
 	 * @param diff difference (to be subtracted)
 	 */
-	protected void setLineNetAmtDifference(BigDecimal diff)
+	protected void setLineNetAmtDifference(final BigDecimal diff)
 	{
-		String msg = "Diff=" + diff
-				+ " - LineNetAmt=" + m_LineNetAmt;
+		final BigDecimal lineNetAmtOld = m_LineNetAmt;
 		m_LineNetAmt = m_LineNetAmt.subtract(diff);
 		m_DiscountAmt = m_ListAmt.subtract(m_LineNetAmt);
 		setAmount(m_ListAmt, m_DiscountAmt);
-		msg += " -> " + m_LineNetAmt;
-		log.fine(msg);
+		
+		log.warning("Diff=" + diff + " - LineNetAmt=" + lineNetAmtOld + " -> " + m_LineNetAmt + " - " + this);
 	}	// setLineNetAmtDifference
 
 	/**************************************************************************
@@ -474,7 +474,7 @@ public class DocLine
 	 * @return Requested Product Account
 	 */
 	@OverridingMethodsMustInvokeSuper
-	public MAccount getAccount(int AcctType, MAcctSchema as)
+	public MAccount getAccount(ProductAcctType AcctType, MAcctSchema as)
 	{
 		if (getM_Product_ID() <= 0 && getC_Charge_ID() > 0)
 		{
@@ -509,13 +509,13 @@ public class DocLine
 	 */
 	@SuppressWarnings("unused")
 	@Deprecated
-	private final MAccount getAccount_DE(int AcctType, MAcctSchema as)
+	private final MAccount getAccount_DE(final ProductAcctType AcctType, MAcctSchema as)
 	{
 		// Charge Account
 		// CHANGED: taxdependant receipts account
 		// metas-mo: if charge, SOTrx and ACCTTYPE_P_Revenue, then use the tax revenue.
 		// Otherwise, use getChargeAccount as before
-		if (getM_Product_ID() == 0 && getC_Charge_ID() != 0)
+		if (getM_Product_ID() <= 0 && getC_Charge_ID() != 0)
 		{
 			final MAccount acct;
 			if (!m_doc.isSOTrx())
@@ -703,9 +703,9 @@ public class DocLine
 	}   // getM_Product_ID
 
 	/**
-	 * Is this an Item Product (vs. not a Service, a charge)
+	 * Is this an stockable item Product (vs. not a Service, a charge)
 	 *
-	 * @return true if product
+	 * @return true if we have a stockable product
 	 */
 	public final boolean isItem()
 	{
@@ -718,8 +718,12 @@ public class DocLine
 			final I_M_Product product = MProduct.get(getCtx(), getM_Product_ID());
 			final IProductBL productBL = Services.get(IProductBL.class);
 
-			if (product.getM_Product_ID() == getM_Product_ID() && productBL.isItem(product))
+			// NOTE: we are considering the product as Item only if it's stockable.
+			// Before changing this logic, pls evaluate the Doc_Invoice which is booking on P_InventoryClearing account when the product is stockable
+			if (product.getM_Product_ID() == getM_Product_ID() && productBL.isStocked(product))
+			{
 				m_isItem = Boolean.TRUE;
+			}
 		}
 		return m_isItem.booleanValue();
 	}	// isItem

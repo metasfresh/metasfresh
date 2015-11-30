@@ -22,16 +22,25 @@ package de.metas.product.acct.api.impl;
  * #L%
  */
 
+import java.util.Properties;
+
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.product.service.IProductDAO;
 import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.I_M_Product_Category_Acct;
 
+import de.metas.adempiere.util.CacheCtx;
 import de.metas.product.acct.api.IProductAcctDAO;
 
 /**
@@ -50,14 +59,8 @@ public class ProductAcctDAO implements IProductAcctDAO
 		{
 			return null;
 		}
-		final I_M_Product_Acct acctInfo =
-				Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_Acct.class, contextProvider)
-						.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchema.getC_AcctSchema_ID())
-						.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
-						.addOnlyActiveRecordsFilter()
-						.create()
-						.firstOnly(I_M_Product_Acct.class);
 
+		final I_M_Product_Acct acctInfo = retrieveProductAcctOrNull(contextProvider.getCtx(), acctSchema.getC_AcctSchema_ID(), product.getM_Product_ID());
 		if (acctInfo == null)
 		{
 			return null;
@@ -66,4 +69,59 @@ public class ProductAcctDAO implements IProductAcctDAO
 		final I_C_Activity activity = acctInfo.getC_Activity();
 		return activity;
 	}
+
+	@Override
+	@Cached(cacheName = I_M_Product_Acct.Table_Name)
+	public I_M_Product_Acct retrieveProductAcctOrNull(@CacheCtx final Properties ctx, final int acctSchemaId, final int productId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product_Acct.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_M_Product_ID, productId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly(I_M_Product_Acct.class);
+	}
+
+	@Override
+	public I_M_Product_Acct retrieveProductAcctOrNull(I_C_AcctSchema acctSchema, final int productId)
+	{		
+		final Properties ctx = InterfaceWrapperHelper.getCtx(acctSchema);
+		final int acctSchemaId = acctSchema.getC_AcctSchema_ID();
+		return retrieveProductAcctOrNull(ctx, acctSchemaId, productId);
+	}
+
+	@Override
+	public I_M_Product_Acct retrieveProductAcctOrNull(final I_M_Product product)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
+
+		final I_C_AcctSchema schema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx);
+
+		return retrieveProductAcctOrNull(ctx, schema.getC_AcctSchema_ID(), product.getM_Product_ID());
+	}
+
+	@Override
+	@Cached(cacheName = I_M_Product_Category_Acct.Table_Name + "#Default")
+	public I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(@CacheCtx final Properties ctx, final int acctSchemaId)
+	{
+		final I_M_Product_Category pc = Services.get(IProductDAO.class).retrieveDefaultProductCategory(ctx);
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product_Category_Acct.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_M_Product_Category_ID, pc.getM_Product_Category_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnlyNotNull(I_M_Product_Category_Acct.class);
+	}
+
+	@Override
+	public I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(final I_C_AcctSchema acctSchema)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(acctSchema);
+		final int acctSchemaId = acctSchema.getC_AcctSchema_ID();
+		return retrieveDefaultProductCategoryAcct(ctx, acctSchemaId);
+	}
+
 }

@@ -25,13 +25,13 @@ package de.metas.activity.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.product.service.IProductDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.product.acct.api.IProductAcctDAO;
 
 
 
@@ -49,7 +49,7 @@ public class M_InOutLine
 		}
 		
 		final I_M_Product product = inOutLine.getM_Product();
-		final I_M_Product_Acct productAcct = Services.get(IProductDAO.class).retrieveM_Product_AcctOrNull(product);
+		final I_M_Product_Acct productAcct = Services.get(IProductAcctDAO.class).retrieveProductAcctOrNull(product);
 		if (null != productAcct)
 		{
 			inOutLine.setC_Activity_ID(productAcct.getC_Activity_ID());

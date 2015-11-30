@@ -585,15 +585,21 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	 * 	@param whereClause starting with AND
 	 * 	@return lines
 	 */
-	private MInvoiceLine[] getLines (String whereClause)
+	private MInvoiceLine[] getLines (final String whereClause)
 	{
 		String whereClauseFinal = "C_Invoice_ID=? ";
 		if (whereClause != null)
 			whereClauseFinal += whereClause;
-		List<MInvoiceLine> list = new Query(getCtx(), MInvoiceLine.Table_Name, whereClauseFinal, get_TrxName())
+		final List<MInvoiceLine> list = new Query(getCtx(), MInvoiceLine.Table_Name, whereClauseFinal, get_TrxName())
 										.setParameters(new Object[]{getC_Invoice_ID()})
 										.setOrderBy(MInvoiceLine.COLUMNNAME_Line)
 										.list();
+		// optimization: link the C_Invoice
+		for (final I_C_InvoiceLine invoiceLine : list)
+		{
+			invoiceLine.setC_Invoice(this);
+		}
+		
 		return list.toArray(new MInvoiceLine[list.size()]);
 	}	//	getLines
 

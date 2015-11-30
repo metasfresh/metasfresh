@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
+import org.adempiere.acct.api.ProductAcctType;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
@@ -61,6 +62,7 @@ public class Doc_ProjectIssue extends Doc
 	 *  Load Document Details
 	 *  @return error message or null
 	 */
+	@Override
 	protected String loadDocumentDetails()
 	{
 		setC_Currency_ID(NO_CURRENCY);
@@ -83,6 +85,7 @@ public class Doc_ProjectIssue extends Doc
 	 * 	Get DocumentNo
 	 *	@return document no
 	 */
+	@Override
 	public String getDocumentNo ()
 	{
 		MProject p = m_issue.getParent();
@@ -95,6 +98,7 @@ public class Doc_ProjectIssue extends Doc
 	 *  Get Balance
 	 *  @return Zero (always balanced)
 	 */
+	@Override
 	public BigDecimal getBalance()
 	{
 		BigDecimal retValue = Env.ZERO;
@@ -113,6 +117,7 @@ public class Doc_ProjectIssue extends Doc
 	 *  @param as accounting schema
 	 *  @return Fact
 	 */
+	@Override
 	public ArrayList<Fact> createFacts (MAcctSchema as)
 	{
 		//  create Fact Header
@@ -137,22 +142,27 @@ public class Doc_ProjectIssue extends Doc
 			cost = m_line.getProductCosts(as, getAD_Org_ID(), false);
 		
 		//  Project         DR
-		int acctType = ACCTTYPE_ProjectWIP;
-		if (MProject.PROJECTCATEGORY_AssetProject.equals(ProjectCategory))
-			acctType = ACCTTYPE_ProjectAsset;
-		dr = fact.createLine(m_line,
-			getAccount(acctType, as), as.getC_Currency_ID(), cost, null);
-		dr.setQty(m_line.getQty().negate());
+		{
+			int acctType = ACCTTYPE_ProjectWIP;
+			if (MProject.PROJECTCATEGORY_AssetProject.equals(ProjectCategory))
+				acctType = ACCTTYPE_ProjectAsset;
+			dr = fact.createLine(m_line,
+				getAccount(acctType, as), as.getC_Currency_ID(), cost, null);
+			dr.setQty(m_line.getQty().negate());
+		}
 		
 		//  Inventory               CR
-		acctType = ProductCost.ACCTTYPE_P_Asset;
-		if (product.isService())
-			acctType = ProductCost.ACCTTYPE_P_Expense;
-		cr = fact.createLine(m_line,
-			m_line.getAccount(acctType, as),
-			as.getC_Currency_ID(), null, cost);
-		cr.setM_Locator_ID(m_line.getM_Locator_ID());
-		cr.setLocationFromLocator(m_line.getM_Locator_ID(), true);	// from Loc
+		{
+			ProductAcctType acctType = ProductCost.ACCTTYPE_P_Asset;
+			if (product.isService())
+				acctType = ProductCost.ACCTTYPE_P_Expense;
+			cr = fact.createLine(m_line,
+				m_line.getAccount(acctType, as),
+				as.getC_Currency_ID(), null, cost);
+			cr.setM_Locator_ID(m_line.getM_Locator_ID());
+			cr.setLocationFromLocator(m_line.getM_Locator_ID(), true);	// from Loc
+		}
+		
 		//
 		ArrayList<Fact> facts = new ArrayList<Fact>();
 		facts.add(fact);

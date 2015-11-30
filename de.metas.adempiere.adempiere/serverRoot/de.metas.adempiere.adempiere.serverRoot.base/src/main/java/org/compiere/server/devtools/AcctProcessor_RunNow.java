@@ -31,6 +31,8 @@ import org.compiere.model.MAcctProcessor;
 import org.compiere.server.AcctProcessor;
 import org.compiere.util.Env;
 
+import com.google.common.base.Stopwatch;
+
 /**
  * Helper class used by developer to manually start AcctProcessor or to compute the costs.
  * 
@@ -57,7 +59,7 @@ public class AcctProcessor_RunNow
 		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 0);
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 0);
 
-		final long sleepMS = 30 * 1000;
+		final long sleepMS = 10 * 1000;
 
 		while (true)
 		{
@@ -65,9 +67,11 @@ public class AcctProcessor_RunNow
 			{
 				final AcctProcessor acctProcessor = new AcctProcessor(acctProcessorModel);
 				acctProcessor.setInitialNapSeconds(0);
-				System.out.println("Running " + acctProcessor);
+				System.out.println("\n\nRunning " + acctProcessor);
+				final Stopwatch duration = Stopwatch.createStarted();
 				acctProcessor.runNow();
 				System.out.println("Done " + acctProcessor + ": " + acctProcessor.getServerInfo());
+				System.out.println("Duration: " + duration);
 				// acctProcessor.start();
 				// acctProcessor.join();
 			}

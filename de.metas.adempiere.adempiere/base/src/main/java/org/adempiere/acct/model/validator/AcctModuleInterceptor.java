@@ -31,6 +31,9 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
+import org.compiere.model.I_M_Product_Acct;
+import org.compiere.model.I_M_Product_Category_Acct;
+import org.compiere.model.MAccount;
 import org.compiere.util.CacheMgt;
 
 /**
@@ -70,5 +73,9 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_Period.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_PeriodControl.Table_Name);
+		
+		cacheMgt.enableRemoteCacheInvalidationForTableName(MAccount.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Product_Acct.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Product_Category_Acct.Table_Name);
 	}
 }

@@ -263,8 +263,7 @@ public class Doc_MatchInv extends Doc
 		BigDecimal LineNetAmt = getInvoiceLineNetAmt();
 
 		final BigDecimal invoiceQtyMultiplier = getQty()
-				.divide(getQtyInvoiced(), 12, BigDecimal.ROUND_HALF_UP)
-				.abs();
+				.divide(getQtyInvoiced(), 12, BigDecimal.ROUND_HALF_UP);
 
 		if (invoiceQtyMultiplier.compareTo(Env.ONE) != 0)
 		{

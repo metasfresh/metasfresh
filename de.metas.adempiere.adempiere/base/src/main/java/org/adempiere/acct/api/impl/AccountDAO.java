@@ -1,4 +1,13 @@
-package org.adempiere.product.service;
+package org.adempiere.acct.api.impl;
+
+import java.util.Properties;
+
+import org.adempiere.acct.api.IAccountDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.MAccount;
+
+import de.metas.adempiere.util.CacheCtx;
 
 /*
  * #%L
@@ -22,23 +31,16 @@ package org.adempiere.product.service;
  * #L%
  */
 
-
-import java.util.Properties;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-
-public interface IProductDAO extends ISingletonService
+public class AccountDAO implements IAccountDAO
 {
-	I_M_Product retrieveProductByUPC(Properties ctx, String upc);
-	
-	I_M_Product retrieveForResourceId(final Properties ctx, final int resourceId, final String trxName);
-
-	/**
-	 * 
-	 * @param ctx
-	 * @return default product category; never returns null
-	 */
-	I_M_Product_Category retrieveDefaultProductCategory(Properties ctx);
+	@Override
+	@Cached(cacheName = MAccount.Table_Name)
+	public MAccount retrieveAccountById(@CacheCtx final Properties ctx, final int validCombinationId)
+	{
+		if (validCombinationId <= 0)
+		{
+			return null;
+		}
+		return new MAccount(ctx, validCombinationId, ITrx.TRXNAME_None);
+	}
 }
