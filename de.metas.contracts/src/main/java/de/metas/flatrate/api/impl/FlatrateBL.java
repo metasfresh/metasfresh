@@ -1599,10 +1599,8 @@ public class FlatrateBL implements IFlatrateBL
 			final I_C_Flatrate_Conditions contract,
 			final Timestamp startDate,
 			final I_AD_User userInCharge,
-			final ILoggable loggable)
+			final org.compiere.model.I_M_Product product)
 	{
-		Check.assumeNotNull(loggable, "Param 'loggable' is not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
 
@@ -1627,12 +1625,31 @@ public class FlatrateBL implements IFlatrateBL
 			notCreatedReason.append(" has no billTo location;");
 			dontCreateTerm = true;
 		}
-		if (!flatrateDB.retrieveTerms(bPartner, contract).isEmpty())
+
+		if (product == null)
 		{
-			notCreatedReason.append(" already has a term;");
-			dontCreateTerm = true;
+			if (!flatrateDB.retrieveTerms(bPartner, contract).isEmpty())
+			{
+				notCreatedReason.append(" already has a term;");
+				dontCreateTerm = true;
+			}
+		}
+		else
+		{
+			if (!flatrateDB.retrieveTerms(ctx,
+					bPartner.getC_BPartner_ID(),
+					null,
+					product.getM_Product_Category_ID(),
+					product.getM_Product_ID(),
+					-1,
+					trxName).isEmpty())
+			{
+				notCreatedReason.append(" already has a term;");
+				dontCreateTerm = true;
+			}
 		}
 
+		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
 		if (dontCreateTerm)
 		{
 			loggable.addLog("BPartner " + bPartner.getValue() + ": not created because: " + notCreatedReason.toString());

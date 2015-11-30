@@ -36,6 +36,7 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 	private int productId = -1;
 	private int bpartnerId = -1;
 	private Boolean processed = null;
+	private Boolean completeFlatrateTerm = null;
 	private List<?> withLinkedDocuments = null;
 	private OnMoreThanOneFound onMoreThanOneFound = OnMoreThanOneFound.ThrowException;
 
@@ -46,6 +47,7 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 				+ "productId=" + productId
 				+ ", bpartnerId=" + bpartnerId
 				+ ", processed=" + processed
+				+ ", completeFlatrateTerm" + completeFlatrateTerm
 				+ ", withLinkedDocuments=" + withLinkedDocuments
 				+ ", onMoreThanOneFound=" + onMoreThanOneFound
 				+ "]";
@@ -117,5 +119,18 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 	public OnMoreThanOneFound getOnMoreThanOneFound()
 	{
 		return onMoreThanOneFound;
+	}
+
+	@Override
+	public void setCompleteFlatrateTerm(Boolean completeFlatrateTerm)
+	{
+		this.completeFlatrateTerm = completeFlatrateTerm;
+		
+	}
+
+	@Override
+	public Boolean getCompleteFlatrateTerm()
+	{
+		return completeFlatrateTerm;
 	}
 }

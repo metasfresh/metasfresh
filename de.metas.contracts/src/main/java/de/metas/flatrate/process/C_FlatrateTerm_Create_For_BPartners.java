@@ -22,38 +22,26 @@ package de.metas.flatrate.process;
  * #L%
  */
 
-
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
-import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.apache.commons.collections4.IteratorUtils;
+import org.adempiere.util.api.IParams;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
-import org.compiere.util.TrxRunnable;
 
-import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 
-public class C_FlatrateTerm_Create_For_BPartners extends SvrProcess
+public class C_FlatrateTerm_Create_For_BPartners extends C_FlatrateTerm_Create
 {
-
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private int p_flatrateconditionsID;
 
@@ -64,45 +52,27 @@ public class C_FlatrateTerm_Create_For_BPartners extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParameter();
+		final IParams para = getParameterAsIParams();
 
-		for (int i = 0; i < para.length; i++)
-		{
-			final String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
-			else if (name.equals(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID))
-			{
-				p_flatrateconditionsID = ((BigDecimal)para[i].getParameter()).intValue();
-			}
-			else if (name.equals(I_C_Flatrate_Term.COLUMNNAME_AD_User_InCharge_ID))
-			{
-				p_adUserInChargeId = ((BigDecimal)para[i].getParameter()).intValue();
-			}
-			else if (name.equals(I_C_Flatrate_Term.COLUMNNAME_StartDate))
-			{
-				p_startDate = (Timestamp)para[i].getParameter();
-			}
-			else
-			{
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
-			}
-		}
+		p_flatrateconditionsID = para.getParameterAsInt(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID);
+		p_adUserInChargeId = para.getParameterAsInt(I_C_Flatrate_Term.COLUMNNAME_AD_User_InCharge_ID);
+		p_startDate = para.getParameterAsTimestamp(I_C_Flatrate_Term.COLUMNNAME_StartDate);
+
+		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.create(getCtx(), p_flatrateconditionsID, I_C_Flatrate_Conditions.class, getTrxName());
+
+		final I_AD_User userInCharge = p_adUserInChargeId > 0 ? InterfaceWrapperHelper.create(getCtx(), p_adUserInChargeId, I_AD_User.class, getTrxName()) : null;
+
+		setConditions(conditions);
+		setUserInCharge(userInCharge);
+		setStartDate(p_startDate);
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	public Iterator<I_C_BPartner> getBPartners()
 	{
 		final IQueryFilter<I_C_BPartner> selectedPartners = getProcessInfo().getQueryFilter();
 
-// @formatter:off
-// 		we also select partners that are neither Vendors nor Customers. We leave it to the business logic to decide if each partner can get a term or not
-//		final ICompositeQueryFilter<I_C_BPartner> customerOrVendorFilter = Services.get(IQueryBL.class).createCompositeQueryFilter(I_C_BPartner.class)
-//				.setJoinOr()
-//				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
-//				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsVendor, true);
-// @formatter:on
-
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_BPartner> queryBuilder =
 				queryBL.createQueryBuilder(I_C_BPartner.class, getCtx(), ITrx.TRXNAME_ThreadInherited);
 
@@ -119,33 +89,6 @@ public class C_FlatrateTerm_Create_For_BPartners extends SvrProcess
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 				.iterate(I_C_BPartner.class);
 
-		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.create(getCtx(), p_flatrateconditionsID, I_C_Flatrate_Conditions.class, ITrx.TRXNAME_None);
-
-		final I_AD_User userInCharge;
-		if (p_adUserInChargeId > 0)
-		{
-			userInCharge = InterfaceWrapperHelper.create(getCtx(), p_adUserInChargeId, I_AD_User.class, get_TrxName());
-		}
-		else
-		{
-			userInCharge = null;
-		}
-
-		for (final I_C_BPartner bp : IteratorUtils.asIterable(it))
-		{
-			// create each term in its own transaction
-			Services.get(ITrxManager.class).run(new TrxRunnable()
-			{
-				@Override
-				public void run(String localTrxName) throws Exception
-				{
-					// no need to set 'localTrxName' to out bp, because we loaded the bp with ITrx.TRXNAME_ThreadInherited
-					flatrateBL.createTerm(bp, conditions, p_startDate, userInCharge,
-							C_FlatrateTerm_Create_For_BPartners.this // the loggable
-							);
-				}
-			});
-		}
-		return "@Success@";
+		return it;
 	}
 }

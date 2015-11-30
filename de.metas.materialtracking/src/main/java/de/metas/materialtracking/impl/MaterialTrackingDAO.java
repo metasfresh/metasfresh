@@ -22,6 +22,7 @@ package de.metas.materialtracking.impl;
  * #L%
  */
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -30,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
@@ -40,9 +42,12 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.IMaterialTrackingQuery.OnMoreThanOneFound;
+import de.metas.materialtracking.ch.lagerkonf.interfaces.I_C_Flatrate_Conditions;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
@@ -285,5 +290,38 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 		throw new AdempiereException("Inspection order was not found for material tracking"
 				+ "\n @PP_Order_ID: " + ppOrder
 				+ "\n @M_Material_Tracking_ID@: " + materialTracking);
+	}
+	@Override
+	public List<I_C_Flatrate_Term> retrieveC_Flatrate_Terms_For_MaterialTracking(final de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking materialTracking)
+	{
+		final int partnerID = materialTracking.getC_BPartner_ID();
+		final int productID = materialTracking.getM_Product_ID();
+		final I_M_QualityInsp_LagerKonf_Version lagerKonfVersion = materialTracking.getM_QualityInsp_LagerKonf_Version();
+		final int lagerKonfID = lagerKonfVersion == null ? -1 : lagerKonfVersion.getM_QualityInsp_LagerKonf_ID();
+		final Timestamp startDate = materialTracking.getValidFrom();
+		final Timestamp endDate = materialTracking.getValidTo();
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_C_Flatrate_Term> flatrateTerms = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class, materialTracking)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_M_QualityInsp_LagerKonf_ID, lagerKonfID)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, partnerID)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, productID)
+				.addOnlyActiveRecordsFilter();
+		if (startDate != null)
+		{
+			flatrateTerms.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LessOrEqual, startDate);
+		}
+
+		if (endDate != null)
+		{
+			flatrateTerms.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GreatherOrEqual, endDate);
+		}
+
+		return flatrateTerms.create()
+				.list(I_C_Flatrate_Term.class);
+
 	}
 }

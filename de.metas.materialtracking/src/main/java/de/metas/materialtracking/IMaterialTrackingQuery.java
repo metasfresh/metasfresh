@@ -44,6 +44,14 @@ public interface IMaterialTrackingQuery
 	void setProcessed(Boolean processed);
 
 	Boolean getProcessed();
+	
+	/**
+	 * Set this parameter on true if you want to only retrieve the material tracking entries with completed flatrate terms
+	 * ATM, if set on false, it will work as if not set.
+	 * @param completeFlatrateTerm
+	 */
+	void setCompleteFlatrateTerm(Boolean completeFlatrateTerm);
+	Boolean getCompleteFlatrateTerm();
 
 	/**
 	 * Retrieve only those material trackings which are linked to given documents.
