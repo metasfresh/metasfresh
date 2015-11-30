@@ -130,8 +130,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 	{
 		//
 		// Try C_InvoiceLine->C_Invoice_Line_Alloc->C_Invoice_Candidate->C_InvoiceCandidate_InOutLine->M_InOutLine
-		final List<I_M_InOutLine> inoutLines = queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
-				.setContext(il)
+		final List<I_M_InOutLine> inoutLines = queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class, il)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID, il.getC_InvoiceLine_ID())
 				//
@@ -202,8 +201,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 	{
 		//
 		// Try M_InOutLine_ID->C_InvoiceCandidate_InOutLine->C_Invoice_Candidate->C_Invoice_Line_Alloc->C_InvoiceLine
-		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
-				.setContext(inoutLine)
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, inoutLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID, inoutLine.getM_InOutLine_ID())
 				//

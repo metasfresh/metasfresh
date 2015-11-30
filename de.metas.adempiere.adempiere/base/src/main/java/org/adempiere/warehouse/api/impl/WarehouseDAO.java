@@ -145,8 +145,7 @@ public class WarehouseDAO implements IWarehouseDAO
 				//
 				;
 
-		return queryBL.createQueryBuilder(I_M_Warehouse.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return queryBL.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.filter(filterWarehouseRouting)

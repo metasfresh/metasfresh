@@ -29,8 +29,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.xml.bind.DatatypeConverter;
 
-import org.apache.commons.codec.binary.Base64;
 import org.compiere.model.MUser;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -126,8 +126,8 @@ public class ServerMonitorFilter implements Filter
 		try
 		{
 			String userInfo = authorization.substring(6).trim();
-			Base64 decoder = new Base64();
-			String namePassword = new String(decoder.decode(userInfo.getBytes()));
+			final String namePassword = DatatypeConverter.printBase64Binary(userInfo.getBytes());
+			
 			// log.fine("checkAuthorization - Name:Password=" + namePassword);
 			int index = namePassword.indexOf(':');
 			String name = namePassword.substring(0, index);

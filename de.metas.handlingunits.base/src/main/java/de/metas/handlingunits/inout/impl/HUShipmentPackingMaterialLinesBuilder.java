@@ -303,8 +303,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	/** @return default LU PI to be used when using manual packing materials; it also can be <code>null</code> */
 	private final I_M_HU_PI retrieveDefaultManualLU(final Properties ctx)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_HU_PI.COLUMN_M_HU_PI_ID, 1000006) // FIXME: hardcoded EUR-Tauschpalette Holz
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()

@@ -98,15 +98,13 @@ public class M_MatchInv_CreateMissing extends SvrProcess
 
 	private Iterator<I_C_InvoiceLine> retrieveAllInvoiceLines()
 	{
-		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter();
 
 		// Filter only relevant invoices
 		{
-			final IQuery<I_C_Invoice> invoiceQuery = queryBL.createQueryBuilder(I_C_Invoice.class)
-					.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+			final IQuery<I_C_Invoice> invoiceQuery = queryBL.createQueryBuilder(I_C_Invoice.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.addOnlyActiveRecordsFilter()
 					.addInArrayFilter(I_C_Invoice.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
 					.create();
@@ -118,8 +116,7 @@ public class M_MatchInv_CreateMissing extends SvrProcess
 
 		// Skip invoices that already have M_MatchInv records
 		{
-			final IQuery<I_M_MatchInv> matchInvQuery = queryBL.createQueryBuilder(I_M_MatchInv.class)
-					.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+			final IQuery<I_M_MatchInv> matchInvQuery = queryBL.createQueryBuilder(I_M_MatchInv.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.addOnlyActiveRecordsFilter()
 					.create();
 

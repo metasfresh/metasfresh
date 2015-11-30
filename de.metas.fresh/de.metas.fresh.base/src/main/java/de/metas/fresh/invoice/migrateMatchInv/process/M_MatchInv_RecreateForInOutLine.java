@@ -98,15 +98,13 @@ public class M_MatchInv_RecreateForInOutLine extends SvrProcess
 
 	private Iterator<I_M_InOutLine> retrieveAllInOutLines()
 	{
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter();
 
 		// Filter only relevant inouts
 		{
-			final IQueryBuilder<I_M_InOut> inoutQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
-					.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+			final IQueryBuilder<I_M_InOut> inoutQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.addOnlyActiveRecordsFilter();
 
 			// Relevant DocStatus

@@ -43,7 +43,6 @@ import org.compiere.util.Msg;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.model.I_M_PriceList;
-import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /**
@@ -442,7 +441,7 @@ public class RequisitionPOCreate extends SvrProcess
 			final List<Object> params = new ArrayList<Object>();
 			params.add(rLine.getM_Product_ID());
 			final IQueryFilter<org.compiere.model.I_C_BPartner_Product> orderFilter = new TypedSqlQueryFilter<>(sql, params);
-			final List<I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, orderFilter);
+			final List<de.metas.interfaces.I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, orderFilter);
 	
 			if (partnerProducts.size() > 0)
 			{

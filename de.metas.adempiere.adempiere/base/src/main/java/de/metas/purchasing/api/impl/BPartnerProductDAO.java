@@ -116,7 +116,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	public I_C_BPartner_Product retrieveBPartnerProductAssociation(@CacheCtx final Properties ctx, final int bpartnerId, final int productId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Product.class, partner)
+				.createQueryBuilder(I_C_BPartner_Product.class, ctx, ITrx.TRXNAME_None)
 				//
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bpartnerId)

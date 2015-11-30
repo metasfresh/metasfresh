@@ -63,8 +63,7 @@ public class M_ProductPrice
 		if(productPrice.getSeqNo() <= 0)
 		{
 			final int lastSeqNo = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_ProductPrice.class)
-					.setContext(productPrice)
+					.createQueryBuilder(I_M_ProductPrice.class, productPrice)
 					.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, productPrice.getM_PriceList_Version_ID())
 					.addNotEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID, productPrice.getM_ProductPrice_ID())
 					.create()

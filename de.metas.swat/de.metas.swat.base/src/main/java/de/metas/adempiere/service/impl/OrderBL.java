@@ -962,8 +962,7 @@ public class OrderBL implements IOrderBL
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryAggregateBuilder<org.compiere.model.I_C_OrderLine, org.compiere.model.I_C_Order> aggregateOnOrder = queryBL
-				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
-				.setContext(order)
+				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, false)

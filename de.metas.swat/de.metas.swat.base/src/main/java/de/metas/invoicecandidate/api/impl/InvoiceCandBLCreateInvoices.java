@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,9 +58,7 @@ import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.MPriceList;
@@ -75,6 +72,7 @@ import org.compiere.util.TrxRunnable2;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.IMatchInvBL;
 import de.metas.invoicecandidate.api.IAggregationEngine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -107,6 +105,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
 	private final transient IMsgDAO msgDAO = Services.get(IMsgDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 
 	//
 	// Parameters
@@ -208,17 +207,17 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// We are preventing lines renumbering if there is at least one invoice with a fixed LineNo set (which actually comes from invoice candidate).
 			invoiceBL.renumberLines(lines, 10);
 
-			//task 08926: on invoice creation
+			// task 08926: on invoice creation
 			final List<I_C_Invoice_Candidate> allCands = new ArrayList<I_C_Invoice_Candidate>();
 
-			for(final IInvoiceCandAggregate aggregated: header.getLines())
+			for (final IInvoiceCandAggregate aggregated : header.getLines())
 			{
 				allCands.addAll(aggregated.getAllCands());
 			}
 
-			if(!allCands.isEmpty())
+			if (!allCands.isEmpty())
 			{
-				 invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
+				invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
 			}
 
 			//
@@ -396,9 +395,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						errorCandidates, errorException,
 						trxName);
 
-				// task 08927: we already do the ILAs in here, so we won't need to update them again. 
+				// task 08927: we already do the ILAs in here, so we won't need to update them again.
 				InvoiceCandBL.DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete.setValue(invoice, Boolean.TRUE);
-				
+
 				trxManager.run(trxName, genLines);
 				createdLines.addAll(genLines.getCreatedLines());
 			}
@@ -593,7 +592,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				else
 				{
 					// without a product, we have no internal UOM, so we can't do any conversions
-					invoiceLine.setQtyInvoiced(qtyToInvoice); 
+					invoiceLine.setQtyInvoiced(qtyToInvoice);
 					invoiceLine.setQtyInvoicedInPriceUOM(qtyToInvoice);
 					invoiceLine.setQtyEntered(qtyToInvoice);
 				}
@@ -691,7 +690,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			// Create ASI
 			final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.create(getCtx(), I_M_AttributeSetInstance.class, getTrxName());
-			asi.setM_AttributeSet_ID(IAttributeDAO.M_AttributeSet_ID_None); 
+			asi.setM_AttributeSet_ID(IAttributeDAO.M_AttributeSet_ID_None);
 			InterfaceWrapperHelper.save(asi);
 
 			// Create one Attribute Instance for each invoice line attribute
@@ -699,7 +698,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				createAttributeInstance(asi, invoiceLineAttribute);
 			}
-			
+
 			return asi;
 		}
 

@@ -100,15 +100,13 @@ public class M_MatchInv_RecreateForInvoiceLine extends SvrProcess
 
 	private Iterator<I_C_InvoiceLine> retrieveAllInvoiceLines()
 	{
-		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter();
 
 		// Filter only relevant invoices
 		{
-			final IQueryBuilder<I_C_Invoice> invoiceQueryBuilder = queryBL.createQueryBuilder(I_C_Invoice.class)
-					.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+			final IQueryBuilder<I_C_Invoice> invoiceQueryBuilder = queryBL.createQueryBuilder(I_C_Invoice.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.addOnlyActiveRecordsFilter();
 
 			// Relevant DocStatus

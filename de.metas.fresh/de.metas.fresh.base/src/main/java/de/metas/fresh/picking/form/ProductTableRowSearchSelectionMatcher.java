@@ -119,8 +119,8 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final List<I_EDI_M_Product_Lookup_UPC_v> upcProductCandidates = queryBL.createQueryBuilder(I_EDI_M_Product_Lookup_UPC_v.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final List<I_EDI_M_Product_Lookup_UPC_v> upcProductCandidates = 
+				queryBL.createQueryBuilder(I_EDI_M_Product_Lookup_UPC_v.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_M_Product_Lookup_UPC_v.COLUMNNAME_UPC, barcode)
 				.addEqualsFilter(I_EDI_M_Product_Lookup_UPC_v.COLUMNNAME_UsedForCustomer, true)
@@ -154,8 +154,7 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 		upcOrValueFilter.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode);
 		upcOrValueFilter.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode);
 
-		final I_M_Product product = queryBL.createQueryBuilder(I_M_Product.class)
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final I_M_Product product = queryBL.createQueryBuilder(I_M_Product.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.filter(upcOrValueFilter)
