@@ -10,18 +10,17 @@ package de.metas.flatrate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -33,10 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.document.service.IDocumentPA;
@@ -1169,11 +1164,8 @@ public class FlatrateBL implements IFlatrateBL
 			final boolean forceComplete,
 			final I_C_OrderLine ol)
 	{
-		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.NESTED, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
-		final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);
+
 		Services.get(ITrxManager.class).run(
-				trxName,
-				trxRunConfig,
 				new TrxRunnable()
 				{
 					@Override
@@ -1252,7 +1244,7 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setDeliveryRule(currentTerm.getDeliveryRule());
 			nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
 			nextTerm.setPriceActual(currentTerm.getPriceActual());
-//			nextTerm.setC_UOM_ID(currentTerm.getC_UOM_ID());  term is a virtual column
+			// nextTerm.setC_UOM_ID(currentTerm.getC_UOM_ID()); term is a virtual column
 			nextTerm.setC_Currency_ID(currentTerm.getC_Currency_ID());
 
 			InterfaceWrapperHelper.save(nextTerm);

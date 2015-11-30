@@ -408,7 +408,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 		for (final I_C_Invoice_Candidate ic : referencedRecordKey2IC.values())
 		{
-			invoiceCandBL.invalidateUsingHandler(ic);
+			final Object model = TableRecordCacheLocal.getReferencedValue(ic, Object.class);
+			createInvoiceCandidateHandler(ic).invalidateCandidatesFor(model);
 		}
 	}
 

@@ -13,18 +13,17 @@ package de.metas.handlingunits.client.terminal.pporder.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -34,6 +33,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
@@ -51,6 +51,8 @@ import org.eevolution.model.X_M_Warehouse_Routing;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.client.terminal.pporder.api.IHUIssueFiltering;
+import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.materialtracking.model.IMaterialTrackingAware;
 
 /**
  * @author cg
@@ -124,12 +126,27 @@ public class HUIssueFiltering implements IHUIssueFiltering
 			productIds.add(orderBOMLine.getM_Product_ID());
 		}
 
-		return handlingUnitsDAO
+		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO
 				.createHUQueryBuilder()
 				.setContext(ppOrder)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithProductIds(productIds)
 				.addOnlyInWarehouseId(warehouseId);
+
+		// if the ppOrder is already associated to a material tracking, then don't allow the user to add others
+		final IMaterialTrackingAware materialTrackingAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(ppOrder, IMaterialTrackingAware.class);
+		if (materialTrackingAware != null && materialTrackingAware.getM_Material_Tracking_ID() > 0)
+		{
+			final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
+			final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrder);
+
+			huQueryBuilder.addOnlyWithAttribute(
+					materialTrackingAttributeBL.getMaterialTrackingAttribute(ctx),
+					Integer.toString(materialTrackingAware.getM_Material_Tracking_ID())
+					);
+		}
+
+		return huQueryBuilder;
 	}
 
 	@Override

@@ -49,7 +49,7 @@ SELECT
 	acctBalance(l_ElementValue_ID, 0, 1) AS l_Multiplicator
 
 FROM
-	de_metas_endcustomer_fresh_reports.Direct_Costing_selection2 s
+	de_metas_endcustomer_fresh_reports.Direct_Costing_selection_Remainings s
 	LEFT OUTER JOIN (
 		SELECT
 			Account_ID,

@@ -10,12 +10,12 @@ package de.metas.adempiere.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,19 +23,12 @@ package de.metas.adempiere.modelvalidator;
  */
 
 
-import java.util.List;
-
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.I_AD_RelationType;
-import org.adempiere.model.MRelation;
-import org.adempiere.model.MRelationType;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MClient;
 import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
@@ -50,15 +43,14 @@ import org.compiere.model.X_C_DocType;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.modelvalidator.SwatValidator;
-import de.metas.purchasing.model.MMPurchaseSchedule;
 
 /**
  * Makes sure that the IsDropShip checkbox in various tables is consistent with the selected warehouse and other dropship related settings.
- * 
+ *
  * Note: This model validator is not registered by {@link SwatValidator}, because we want the option to disable it without code change if required
- * 
+ *
  * @author ts
- * 
+ *
  */
 public class ProhibitInconsistentDropshipValues implements ModelValidator
 {
@@ -81,11 +73,13 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 
 	private int ad_Client_ID = -1;
 
+	@Override
 	public int getAD_Client_ID()
 	{
 		return ad_Client_ID;
 	}
 
+	@Override
 	public final void initialize(final ModelValidationEngine engine, final MClient client)
 	{
 		if (client != null)
@@ -98,18 +92,21 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 		engine.addModelChange(I_M_InOut.Table_Name, this);
 	}
 
+	@Override
 	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		// nothing to do
 		return null;
 	}
 
+	@Override
 	public String docValidate(final PO po, final int timing)
 	{
 		// nothing to do
 		return null;
 	}
 
+	@Override
 	public String modelChange(final PO po, int type)
 	{
 		if (type != TYPE_BEFORE_CHANGE && type != TYPE_BEFORE_NEW)
@@ -300,59 +297,62 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 			final boolean isPOorderline = !parentOrder.isSOTrx();
 			if (isPOorderline)
 			{
-				final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ol.getCtx(), MMPurchaseSchedule.RELTYPE_SO_LINE_PO_LINE_INT_NAME, ol.get_TrxName());
-				final List<MOrderLine> soOls = MRelation.retrieveDestinations(ol.getCtx(), relType, ol, ol.get_TrxName());
-				for (final MOrderLine soOl : soOls)
-				{
-					final MOrder parent = soOl.getParent();
-
-					//
-					// in case the parent is not set (shall not happen) we need this to avoid NPE.
-					final String parentDocumentNumber = getParentDocNoToUse(parent);
-
-					if (soOl.getM_Warehouse_ID() != ol.getM_Warehouse_ID())
-					{
-						throw new AdempiereException(Services.get(IMsgBL.class).getMsg(ol.getCtx(),
-								ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_WAREHOUSE_6P,
-								new Object[] {
-										parentOrder.getDocumentNo(), ol.getLine(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(ol).getName(),
-										parentDocumentNumber, soOl.getLine(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(soOl).getName()
-								}));
-					}
-
-					if (hasDropshipWarehouse && soOl.getC_BPartner_Location_ID() != ol.getC_BPartner_Location_ID())
-					{
-						throw new AdempiereException(Services.get(IMsgBL.class).getMsg(ol.getCtx(),
-								ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_B_PARTNER_LOCATION_6P,
-								new Object[] {
-										parentOrder.getDocumentNo(),
-										ol.getLine(),
-										ol.getC_BPartner_Location_ID() > 0 ? ol.getC_BPartner_Location().getName() : "<NULL>",
-										parentDocumentNumber,
-										soOl.getLine(),
-										soOl.getC_BPartner_Location_ID() > 0 ? soOl.getC_BPartner_Location().getName() : "<NULL>",
-								}));
-					}
-
-					if (soOl.getM_Product_ID() != ol.getM_Product_ID() || soOl.getM_AttributeSetInstance_ID() != ol.getM_AttributeSetInstance_ID())
-					{
-						if (soOl.getM_AttributeSetInstance_ID() != 0)
-						{
-							throw new AdempiereException(Services.get(IMsgBL.class).getMsg(ol.getCtx(),
-									ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_PRODUCT_8P,
-									new Object[] {
-											parentOrder.getDocumentNo(),
-											ol.getLine(),
-											ol.getM_Product_ID() > 0 ? ol.getM_Product().getValue() : "<NULL>",
-											ol.getM_AttributeSetInstance_ID(),
-											parentDocumentNumber,
-											soOl.getLine(),
-											soOl.getM_Product_ID() > 0 ? soOl.getM_Product().getValue() : "<NULL>",
-											soOl.getM_AttributeSetInstance_ID()
-									}));
-						}
-					}
-				}
+				// this relType somehow doesn't exist anymore. we comment this out..maybe the logic can be an inspiration when we approach this topic once again.
+				// @formatter:off
+//				final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ol.getCtx(), MMPurchaseSchedule.RELTYPE_SO_LINE_PO_LINE_INT_NAME, ol.get_TrxName());
+//				final List<MOrderLine> soOls = MRelation.retrieveDestinations(ol.getCtx(), relType, ol, ol.get_TrxName());
+//				for (final MOrderLine soOl : soOls)
+//				{
+//					final MOrder parent = soOl.getParent();
+//
+//					//
+//					// in case the parent is not set (shall not happen) we need this to avoid NPE.
+//					final String parentDocumentNumber = getParentDocNoToUse(parent);
+//
+//					if (soOl.getM_Warehouse_ID() != ol.getM_Warehouse_ID())
+//					{
+//						throw new AdempiereException(Services.get(IMsgBL.class).getMsg(ol.getCtx(),
+//								ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_WAREHOUSE_6P,
+//								new Object[] {
+//										parentOrder.getDocumentNo(), ol.getLine(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(ol).getName(),
+//										parentDocumentNumber, soOl.getLine(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(soOl).getName()
+//								}));
+//					}
+//
+//					if (hasDropshipWarehouse && soOl.getC_BPartner_Location_ID() != ol.getC_BPartner_Location_ID())
+//					{
+//						throw new AdempiereException(Services.get(IMsgBL.class).getMsg(ol.getCtx(),
+//								ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_B_PARTNER_LOCATION_6P,
+//								new Object[] {
+//										parentOrder.getDocumentNo(),
+//										ol.getLine(),
+//										ol.getC_BPartner_Location_ID() > 0 ? ol.getC_BPartner_Location().getName() : "<NULL>",
+//										parentDocumentNumber,
+//										soOl.getLine(),
+//										soOl.getC_BPartner_Location_ID() > 0 ? soOl.getC_BPartner_Location().getName() : "<NULL>",
+//								}));
+//					}
+//
+//					if (soOl.getM_Product_ID() != ol.getM_Product_ID() || soOl.getM_AttributeSetInstance_ID() != ol.getM_AttributeSetInstance_ID())
+//					{
+//						if (soOl.getM_AttributeSetInstance_ID() != 0)
+//						{
+//							throw new AdempiereException(Services.get(IMsgBL.class).getMsg(ol.getCtx(),
+//									ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_PRODUCT_8P,
+//									new Object[] {
+//											parentOrder.getDocumentNo(),
+//											ol.getLine(),
+//											ol.getM_Product_ID() > 0 ? ol.getM_Product().getValue() : "<NULL>",
+//											ol.getM_AttributeSetInstance_ID(),
+//											parentDocumentNumber,
+//											soOl.getLine(),
+//											soOl.getM_Product_ID() > 0 ? soOl.getM_Product().getValue() : "<NULL>",
+//											soOl.getM_AttributeSetInstance_ID()
+//									}));
+//						}
+//					}
+//				}
+				// @formatter:on
 			}
 		}
 		return null;

@@ -10,20 +10,21 @@ package de.metas.handlingunits.materialtracking.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.eevolution.model.I_PP_Order;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -35,11 +36,12 @@ import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.model.I_PP_Order;
 
 /**
  * Links a PP_Order to the <code>M_Material_Tracking</code> of the <code>PP_Order_BOMLine</code>'s HU.<br>
  * Intended to be called when a HU is issued to a PP_Order.
- * 
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -87,7 +89,19 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 
 		//
 		// Assign PP_Order to material tracking
-		final I_PP_Order ppOrder = ppOrderBOMLine.getPP_Order();
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(ppOrderBOMLine.getPP_Order(), I_PP_Order.class);
+		if (ppOrder.getM_Material_Tracking_ID() <= 0)
+		{
+			ppOrder.setM_Material_Tracking(materialTracking);
+			InterfaceWrapperHelper.save(ppOrder);
+		}
+		else
+		{
+			// this should be preserved in HUIssueFiltering, so we don't need a nice user-friendly message
+			Check.errorIf(ppOrder.getM_Material_Tracking_ID() != materialTracking.getM_Material_Tracking_ID(),
+					"ppOrder {0} is already assinged to materialtracking {1} and therefore cannot be additionally assigned to materialtracking {2}",
+					ppOrder,ppOrder.getM_Material_Tracking(), materialTracking);
+		}
 
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()

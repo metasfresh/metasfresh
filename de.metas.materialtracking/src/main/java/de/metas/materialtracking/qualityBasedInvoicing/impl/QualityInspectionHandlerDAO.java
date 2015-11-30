@@ -114,7 +114,14 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 
 		// get the tracking's config and set its C_DocType
 		final IQualityBasedConfig config = Services.get(IQualityBasedSpiProviderService.class).getQualityBasedConfigProvider().provideConfigFor(materialTracking);
-		ic.setC_DocTypeInvoice_ID(config.getC_DocTypeInvoice_DownPayment_ID());
+		if (config.getOverallNumberOfInvoicings() > 1)
+		{
+			ic.setC_DocTypeInvoice_ID(config.getC_DocTypeInvoice_DownPayment_ID());
+		}
+		else
+		{
+			ic.setC_DocTypeInvoice_ID(config.getC_DocTypeInvoice_FinalSettlement_ID());
+		}
 
 		// get the original IC via M_Material_Tracking_Refs
 		final List<I_M_Material_Tracking_Ref> icMaterialTrackingRefs = Services.get(IMaterialTrackingDAO.class).retrieveMaterialTrackingRefForType(materialTracking, I_C_Invoice_Candidate.class);

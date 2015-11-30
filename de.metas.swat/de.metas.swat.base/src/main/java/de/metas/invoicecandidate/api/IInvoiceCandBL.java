@@ -13,12 +13,12 @@ package de.metas.invoicecandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -82,7 +82,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Start generating invoices
-	 * 
+	 *
 	 * @return invoice generator
 	 */
 	IInvoiceGenerator generateInvoices();
@@ -111,11 +111,11 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Checks if given invoice candadidate is eligible for invoicing.
-	 * 
+	 *
 	 * It checks: Processed, IsError, DateToInvoice (if not <code>ignoreInvoiceSchedule</code>).
-	 * 
+	 *
 	 * NOTE: This method is called both when invoice candidates are enqueued for invoicing and during the actual invoicing.
-	 * 
+	 *
 	 * @param ic
 	 * @param ignoreInvoiceSchedule
 	 * @param loggable <b>may not be null</b>. Use {@link org.adempiere.util.NullLoggable} if you don't have any other loggable.
@@ -212,7 +212,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * See {@link #isChangedByUpdateProcess(I_C_Invoice_Candidate)}.
-	 * 
+	 *
 	 * @param candidate
 	 * @param value
 	 */
@@ -300,7 +300,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * See {@link #setError(I_C_Invoice_Candidate, String, I_AD_Note)}
-	 * 
+	 *
 	 * @param ic
 	 * @param errorMsg
 	 * @param note
@@ -318,9 +318,9 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <li>QualityDiscountPercent_Override to <code>null</code>, if <code>QualityDiscountPercent</code> was changed
 	 * <li>IsInDispute to <code>true</code> if <code>QualityDiscountPercent</code> was changed and the new value is <b>not</b> zero.
 	 * </ul>
-	 * 
+	 *
 	 * NOTE: this method is NOT saving the invoice candidate.
-	 * 
+	 *
 	 * @param ic
 	 * @task 06502
 	 */
@@ -328,7 +328,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Retrieve tax override if set, C_Tax otherwise
-	 * 
+	 *
 	 * @param candidate
 	 * @return tax override if set, C_Tax otherwise; never return null
 	 */
@@ -336,7 +336,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Get quality percent override if set, quality percent otherwise. Never returns <code>null</code>.
-	 * 
+	 *
 	 * @param candidate
 	 * @return
 	 */
@@ -344,7 +344,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * If the given <code>candidate</code> has a currency, it shall return the currency's precision. Otherwise, it shall return <code>2</code> as fallback.
-	 * 
+	 *
 	 * @param candidate
 	 * @return
 	 */
@@ -352,28 +352,21 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
-	 * 
+	 *
 	 * Only for Sales orders.
-	 * 
+	 *
 	 * Candidate will not be saved.
-	 * 
+	 *
 	 * @param candidate
 	 */
 	void updatePOReferenceFromOrder(I_C_Invoice_Candidate candidate);
 
 	/**
 	 * For the given invoice candidate, make sure that itself and all candidates partner are invalidated, <b>if</b> the partner has a certain invoice schedule.
-	 * 
+	 *
 	 * @param ic
 	 */
 	void invalidateForPartnerIfInvoiceRuleDemandsIt(I_C_Invoice_Candidate ic);
-
-	/**
-	 * For the given invoice candidate, make sure that itself and all candidates which reference the same PO are invalidated, by invoking the invoice candidate's handler.
-	 * 
-	 * @param ic
-	 */
-	void invalidateUsingHandler(I_C_Invoice_Candidate ic);
 
 	/** @return today date (without time!) to be used by invoicing BLs */
 	Timestamp getToday();
@@ -384,9 +377,9 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Set the QualityDiscountPercent_Override based on the QualityIssuePercentage from the discount schema
 	 * If the value does not exist, leave the field on null
-	 * 
+	 *
 	 * Note: ic not saved
-	 * 
+	 *
 	 * @param ic
 	 * @param instances
 	 */
@@ -394,7 +387,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Precision is take from the current pricelist of the partner. If it is not found, it is taken from the currency as fallback
-	 * 
+	 *
 	 * @param ic
 	 * @return
 	 */

@@ -38,7 +38,6 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -122,7 +121,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -1050,31 +1048,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			{
 				// we need to invalidate all the partner's ICs *if* there is an overall invoiceable sum-amount from which on the ICs shall be invoiced
 				invoiceCandDAO.invalidateCandsForBPartnerInvoiceRule(ic.getBill_BPartner());
-			}
-		}
-	}
-
-	@Override
-	public void invalidateUsingHandler(final I_C_Invoice_Candidate ic)
-	{
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		final IInvoiceCandidateHandlerBL handlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-
-		// Note: we don't invalidate the 'ic' directly, but we call the framework to do the invalidation.
-		// This is because certain SPI implementations might have to invalidate further candidates besides 'ic'
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-
-		// invalidating all candidates that related to the PO that is referenced by 'ic'
-		if (ic.getAD_Table_ID() > 0)
-		{
-			final String tableName = adTableDAO.retrieveTableName(ic.getAD_Table_ID());
-
-			// 3112 note that manually created candidates don't refer any PO (i.e. tableName==null) and
-			// we don't have to use the handler to find further candidates that need invalidation.
-			for (final IInvoiceCandidateHandler handler : handlerBL.retrieveImplementationsForTable(ctx, tableName))
-			{
-				final Object referencedValue = TableRecordCacheLocal.getReferencedValue(ic, Object.class);
-				handler.invalidateCandidatesFor(referencedValue);
 			}
 		}
 	}
