@@ -113,20 +113,6 @@
 			<version>2.0</version>
 		</dependency>
 
-		<!-- Required by class de.metas.rpl.spi.impl.TopicRplExportProcessor -->
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-pool</artifactId>
-			<version>5.5.1</version>
-			<exclusions>
-				<!-- we have our own version (1.7.2 currently) -->
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 		<!-- unit testing dependencies -->
 		<dependency>
 			<groupId>org.easymock</groupId>

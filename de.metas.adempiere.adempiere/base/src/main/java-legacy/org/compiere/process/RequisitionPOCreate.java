@@ -27,7 +27,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.NoVendorForProductException;
 import org.adempiere.util.Services;
-import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MCharge;
@@ -41,6 +40,7 @@ import org.compiere.model.Query;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
+import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.interfaces.I_C_BPartner_Product;
@@ -96,7 +96,7 @@ public class RequisitionPOCreate extends SvrProcess
 	/** Order Line			*/
 	private MOrderLine	m_orderLine = null;
 	/** Orders Cache : (C_BPartner_ID, DateRequired, M_PriceList_ID) -> MOrder */
-	private HashMap<MultiKey, MOrder> m_cacheOrders = new HashMap<MultiKey, MOrder>();
+	private HashMap<ArrayKey, MOrder> m_cacheOrders = new HashMap<ArrayKey, MOrder>();
 	
 	/**
 	 *  Prepare - e.g., get Parameters.
@@ -355,7 +355,7 @@ public class RequisitionPOCreate extends SvrProcess
 			M_PriceList_ID = 0;
 		}
 		
-		MultiKey key = new MultiKey(C_BPartner_ID, DateRequired, M_PriceList_ID);
+		ArrayKey key = new ArrayKey(C_BPartner_ID, DateRequired, M_PriceList_ID);
 		m_order = m_cacheOrders.get(key);
 		if (m_order == null)
 		{
@@ -437,7 +437,7 @@ public class RequisitionPOCreate extends SvrProcess
 			C_BPartner_ID = 0; // reset partner, since the one form line is not vendor
 			// Find Strategic Vendor for Product
 			
-			// task 05914: start			
+			// task 05914: start
 			final String sql = I_C_BPartner_Product.COLUMNNAME_M_Product_ID + " = ? ";
 			final List<Object> params = new ArrayList<Object>();
 			params.add(rLine.getM_Product_ID());

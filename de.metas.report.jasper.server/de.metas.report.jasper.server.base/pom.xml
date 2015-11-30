@@ -22,12 +22,17 @@
 			<artifactId>commons-vfs2</artifactId>
 			<version>2.0</version>
 		</dependency>
+		<!--
+		This dependency is required when we choose to ge the jasper-files via http, 
+		but note that this cause performance problems and even hangings of the report servlet.
+		So it's generally not a good idea. 
+		Instead, just configure the system to get the jasper files from the local file system		
 		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
-			<version>3.0.1</version>
+			<version>3.1</version>
 		</dependency>
-
+		-->
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>

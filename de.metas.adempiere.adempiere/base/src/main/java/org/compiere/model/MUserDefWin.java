@@ -27,9 +27,9 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
+import org.compiere.util.Util.ArrayKey;
 
 /**
  * Window Customization
@@ -44,7 +44,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 	private static final long serialVersionUID = 4180714433818623955L;
 
 	/** Static Cache : Window,Role,User -> array of window customizations */
-	private static final CCache<MultiKey, MUserDefWin[]> s_cache = new CCache<MultiKey, MUserDefWin[]>(Table_Name, 20, 0);
+	private static final CCache<ArrayKey, MUserDefWin[]> s_cache = new CCache<ArrayKey, MUserDefWin[]>(Table_Name, 20, 0);
 	/** No Windows (i.e. empty array) */
 	private static final MUserDefWin[] NoWindows = new MUserDefWin[]{};
 
@@ -66,7 +66,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 		final int AD_Role_ID= Env.getAD_Role_ID(ctx);
 
 		// Try from cache
-		final MultiKey key = new MultiKey(AD_Window_ID, AD_Client_ID, AD_Org_ID, AD_User_ID, AD_Role_ID);
+		final ArrayKey key = new ArrayKey(AD_Window_ID, AD_Client_ID, AD_Org_ID, AD_User_ID, AD_Role_ID);
 		MUserDefWin[] arr = s_cache.get(key);
 		if (arr != null)
 		{

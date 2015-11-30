@@ -36,7 +36,6 @@ import java.util.regex.Matcher;
 
 import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
-import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Cash;
@@ -64,6 +63,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_HR_Process;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -81,7 +81,7 @@ public class LettersValidator implements ModelValidator
 {
 	private int m_AD_Client_ID = -1;
 
-	private static Map<MultiKey, Set<MADBoilerPlateVar>> s_cacheVars = new HashMap<MultiKey, Set<MADBoilerPlateVar>>();
+	private static Map<ArrayKey, Set<MADBoilerPlateVar>> s_cacheVars = new HashMap<ArrayKey, Set<MADBoilerPlateVar>>();
 
 	@Override
 	public int getAD_Client_ID()
@@ -109,7 +109,7 @@ public class LettersValidator implements ModelValidator
 			if (tableName == null)
 				continue;
 
-			final MultiKey key = new MultiKey(timing.getAD_Client_ID(), tableName, dt.getC_DocType_ID(), timing.getEvalTime());
+			final ArrayKey key = new ArrayKey(timing.getAD_Client_ID(), tableName, dt.getC_DocType_ID(), timing.getEvalTime());
 			Set<MADBoilerPlateVar> list = s_cacheVars.get(key);
 			if (list == null)
 			{
@@ -231,7 +231,7 @@ public class LettersValidator implements ModelValidator
 		String tableName = po.get_TableName();
 		int C_DocType_ID = getC_DocType_ID(po);
 		String evalTime = getEvalTime(timing);
-		MultiKey key = new MultiKey(AD_Client_ID, tableName, C_DocType_ID, evalTime);
+		ArrayKey key = new ArrayKey(AD_Client_ID, tableName, C_DocType_ID, evalTime);
 
 		Set<MADBoilerPlateVar> vars = s_cacheVars.get(key);
 		if (vars == null)

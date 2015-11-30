@@ -34,7 +34,6 @@ import java.util.Map;
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.Lookup;
@@ -47,6 +46,7 @@ import org.compiere.model.POInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+import org.compiere.util.Util.ArrayKey;
 
 /**
  * @author tsa
@@ -80,16 +80,16 @@ public class AD_Window_Sync extends SvrProcess
 
 	private static class IdPairMap
 	{
-		private Map<MultiKey, IdPair> map = new HashMap<MultiKey, IdPair>();
+		private Map<ArrayKey, IdPair> map = new HashMap<ArrayKey, IdPair>();
 		public void put(String tableName, int idOld, int idNew)
 		{
 			IdPair pair = new IdPair(tableName, idOld, idNew);
-			MultiKey key = new MultiKey(tableName, idOld);
+			ArrayKey key = new ArrayKey(tableName, idOld);
 			map.put(key, pair);
 		}
 		public IdPair getIdPair(String tableName, int idOld)
 		{
-			MultiKey key = new MultiKey(tableName, idOld);
+			ArrayKey key = new ArrayKey(tableName, idOld);
 			return map.get(key);
 		}
 		public boolean hasNewId(String tableName, int idOld)

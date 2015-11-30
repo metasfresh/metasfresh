@@ -16,27 +16,25 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.ByteArrayInputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.apache.commons.net.ftp.FTPClient;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 /**
  * 	Media Server Model
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MMediaServer.java,v 1.3 2006/07/30 00:51:05 jjanke Exp $
  */
 public class MMediaServer extends X_CM_Media_Server
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1065424104545571149L;
 
@@ -82,11 +80,11 @@ public class MMediaServer extends X_CM_Media_Server
 		list.toArray (retValue);
 		return retValue;
 	}	//	getMediaServer
-	
+
 	/**	Logger	*/
 	private static CLogger s_log = CLogger.getCLogger (MMediaServer.class);
-	
-	
+
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -101,14 +99,14 @@ public class MMediaServer extends X_CM_Media_Server
 	/**
 	 * 	Load Constructor
 	 *	@param ctx context
-	 *	@param rs request 
+	 *	@param rs request
 	 *	@param trxName transaction
 	 */
 	public MMediaServer (Properties ctx, ResultSet rs, String trxName)
 	{
 		super (ctx, rs, trxName);
 	}	//	MMediaServer
-	
+
 	/**
 	 * 	(Re-)Deploy all media
 	 * 	@param media array of media to deploy
@@ -116,88 +114,92 @@ public class MMediaServer extends X_CM_Media_Server
 	 */
 	public boolean deploy (MMedia[] media)
 	{
-		// Check whether the host is our example localhost, we will not deploy locally, but this is no error
-		if (this.getIP_Address().equals("127.0.0.1") || this.getName().equals("localhost")) {
-			log.warning("You have not defined your own server, we will not really deploy to localhost!");
-			return true;
-		}
-
-		FTPClient ftp = new FTPClient();
-		try
-		{
-			ftp.connect (getIP_Address());
-			if (ftp.login (getUserName(), getPassword()))
-				log.info("Connected to " + getIP_Address() + " as " + getUserName());
-			else
-			{
-				log.warning("Could NOT connect to " + getIP_Address() + " as " + getUserName());
-				return false;
-			}
-		}
-		catch (Exception e)
-		{
-			log.log(Level.WARNING, "Could NOT connect to " + getIP_Address() 
-				+ " as " + getUserName(), e);
-			return false;
-		}
-
-		boolean success = true;
-		String cmd = null;
-		//	List the files in the directory
-		try
-		{
-			cmd = "cwd";
-			ftp.changeWorkingDirectory (getFolder());
-			//
-			cmd = "list";
-			String[] fileNames = ftp.listNames();
-			log.log(Level.FINE, "Number of files in " + getFolder() + ": " + fileNames.length);
-			
-			/*
-			FTPFile[] files = ftp.listFiles();
-			log.config("Number of files in " + getFolder() + ": " + files.length);
-			for (int i = 0; i < files.length; i++)
-				log.fine(files[i].getTimestamp() + " \t" + files[i].getName());*/
-			//
-			cmd = "bin";
-			ftp.setFileType(FTPClient.BINARY_FILE_TYPE);
-			//
-			for (int i = 0; i < media.length; i++)
-			{
-				if (!media[i].isSummary()) {
-					log.log(Level.INFO, " Deploying Media Item:" + media[i].get_ID() + media[i].getExtension());
-					MImage thisImage = media[i].getImage();
-		
-					// Open the file and output streams
-					byte[] buffer = thisImage.getData();
-					ByteArrayInputStream is = new ByteArrayInputStream(buffer);
-
-					String fileName = media[i].get_ID() + media[i].getExtension();
-					cmd = "put " + fileName;
-					ftp.storeFile(fileName, is);
-					is.close();
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			log.log(Level.WARNING, cmd, e);
-			success = false;
-		}
-		//	Logout from the FTP Server and disconnect
-		try
-		{
-			cmd = "logout";
-			ftp.logout();
-			cmd = "disconnect";
-			ftp.disconnect();
-		}
-		catch (Exception e)
-		{
-			log.log(Level.WARNING, cmd, e);
-		}
-		ftp = null;
-		return success;
+		// i don't want an outdated commons-net version in our dependencies just so that this unused feature compiles without errors
+		throw new UnsupportedOperationException("This method is currently not implemented");
+// @formatter:off
+//		// Check whether the host is our example localhost, we will not deploy locally, but this is no error
+//		if (this.getIP_Address().equals("127.0.0.1") || this.getName().equals("localhost")) {
+//			log.warning("You have not defined your own server, we will not really deploy to localhost!");
+//			return true;
+//		}
+//
+//		FTPClient ftp = new FTPClient();
+//		try
+//		{
+//			ftp.connect (getIP_Address());
+//			if (ftp.login (getUserName(), getPassword()))
+//				log.info("Connected to " + getIP_Address() + " as " + getUserName());
+//			else
+//			{
+//				log.warning("Could NOT connect to " + getIP_Address() + " as " + getUserName());
+//				return false;
+//			}
+//		}
+//		catch (Exception e)
+//		{
+//			log.log(Level.WARNING, "Could NOT connect to " + getIP_Address()
+//				+ " as " + getUserName(), e);
+//			return false;
+//		}
+//
+//		boolean success = true;
+//		String cmd = null;
+//		//	List the files in the directory
+//		try
+//		{
+//			cmd = "cwd";
+//			ftp.changeWorkingDirectory (getFolder());
+//			//
+//			cmd = "list";
+//			String[] fileNames = ftp.listNames();
+//			log.log(Level.FINE, "Number of files in " + getFolder() + ": " + fileNames.length);
+//
+//			/*
+//			FTPFile[] files = ftp.listFiles();
+//			log.config("Number of files in " + getFolder() + ": " + files.length);
+//			for (int i = 0; i < files.length; i++)
+//				log.fine(files[i].getTimestamp() + " \t" + files[i].getName());*/
+//			//
+//			cmd = "bin";
+//			ftp.setFileType(FTPClient.BINARY_FILE_TYPE);
+//			//
+//			for (int i = 0; i < media.length; i++)
+//			{
+//				if (!media[i].isSummary()) {
+//					log.log(Level.INFO, " Deploying Media Item:" + media[i].get_ID() + media[i].getExtension());
+//					MImage thisImage = media[i].getImage();
+//
+//					// Open the file and output streams
+//					byte[] buffer = thisImage.getData();
+//					ByteArrayInputStream is = new ByteArrayInputStream(buffer);
+//
+//					String fileName = media[i].get_ID() + media[i].getExtension();
+//					cmd = "put " + fileName;
+//					ftp.storeFile(fileName, is);
+//					is.close();
+//				}
+//			}
+//		}
+//		catch (Exception e)
+//		{
+//			log.log(Level.WARNING, cmd, e);
+//			success = false;
+//		}
+//		//	Logout from the FTP Server and disconnect
+//		try
+//		{
+//			cmd = "logout";
+//			ftp.logout();
+//			cmd = "disconnect";
+//			ftp.disconnect();
+//		}
+//		catch (Exception e)
+//		{
+//			log.log(Level.WARNING, cmd, e);
+//		}
+//		ftp = null;
+//		return success;
+// @formatter:on
 	}	//	deploy
-	
+
 }	//	MMediaServer

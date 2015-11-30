@@ -25,12 +25,13 @@
 <!-- <version>1.5.11</version>  -->
 		</dependency>
 
+<!-- 
 		<dependency>
 			<groupId>xml-apis</groupId>
 			<artifactId>xml-apis</artifactId>
 			<version>2.0.0</version>
 		</dependency>
-
+ -->
 		<!-- Adempiere -->
 
 		<dependency>
@@ -109,7 +110,7 @@
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-core</artifactId>
-			<version>5.5.1</version>
+			<version>5.7.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.activemq</groupId>
@@ -206,21 +207,10 @@
 		</dependency>
 
 		<dependency>
-			<groupId>commons-net</groupId>
-			<artifactId>commons-net</artifactId>
-			<version>1.4.0</version>
-		</dependency>
-
-		<dependency>
 			<groupId>it.sauronsoftware.cron4j</groupId>
 			<artifactId>cron4j</artifactId>
 			<version>2.2.5</version>
 		</dependency>
-
-		<!-- Payment -->
-		<!-- unused according to maven dependency:analyze <dependency> <groupId>com.paypal</groupId> 
-			<artifactId>payflow</artifactId> <version>1.0</version> </dependency> -->
-
 		<dependency>
 			<groupId>com.verisign</groupId>
 			<artifactId>payment</artifactId>

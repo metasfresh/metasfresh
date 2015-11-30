@@ -10,24 +10,24 @@ package de.metas.flatrate.invoicecandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,11 +36,9 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.flatrate.api.IContractsDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
@@ -69,13 +67,13 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 	{
 		return false;
 	}
-	
+
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically(Object model)
 	{
 		return false;
 	}
-	
+
 	/**
 	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have a <code>C_OrderLine_Term_ID</code>.
 	 */
@@ -189,8 +187,7 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 		// 07442 activity and tax
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
 
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, term.getM_Product_ID(), I_M_Product.class, trxName);
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), product);
+		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), term.getM_Product());
 
 		ic.setC_Activity(activity);
 
@@ -302,7 +299,7 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 	 * <li>QtyOrdered: if the term is already canceled, then the given <code>ic</code>'s <code>QtyInvoiced</code>. Otherwise the term's <code>PlannedQtyPerUnit</code>.
 	 * <li>C_Order_ID: untouched
 	 * </ul>
-	 * 
+	 *
 	 * @see IInvoiceCandidateHandler#setOrderedData(I_C_Invoice_Candidate)
 	 */
 	@Override
@@ -330,13 +327,7 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		Check.assume(ic.getAD_Table_ID() == adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name), "{0} has AD_Table_ID={1}", ic, adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name));
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
-
-		final I_C_Flatrate_Term term =
-				InterfaceWrapperHelper.create(
-						MTable.get(ctx, ic.getAD_Table_ID()).getPO(ic.getRecord_ID(), trxName),
-						I_C_Flatrate_Term.class);
+		final I_C_Flatrate_Term term = TableRecordCacheLocal.getReferencedValue(ic, I_C_Flatrate_Term.class);
 		return term;
 	}
 
@@ -346,7 +337,7 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 	 * <li>DeliveryDate := DateOrdered
 	 * <li>M_InOut_ID: untouched
 	 * </ul>
-	 * 
+	 *
 	 * @see IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate)
 	 */
 	@Override

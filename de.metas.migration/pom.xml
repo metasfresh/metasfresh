@@ -5,7 +5,6 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<!-- TODO: for now this is the most suitable -->
 		<version>1.0_IT-SNAPSHOT</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>

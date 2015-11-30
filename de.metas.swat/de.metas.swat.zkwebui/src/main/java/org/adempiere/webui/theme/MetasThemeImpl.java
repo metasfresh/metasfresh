@@ -37,7 +37,6 @@ import javax.servlet.ServletRequest;
 
 import org.adempiere.model.POWrapper;
 import org.adempiere.util.proxy.Cached;
-import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.MImage;
 import org.compiere.model.MOrgInfo;
@@ -45,6 +44,7 @@ import org.compiere.model.Query;
 import org.compiere.util.CCache;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.compiere.util.Util.ArrayKey;
 import org.zkoss.image.AImage;
 import org.zkoss.image.Image;
 import org.zkoss.zk.ui.Execution;
@@ -60,7 +60,7 @@ public class MetasThemeImpl extends DefaultThemeImpl
 {
 	private final CLogger log = CLogger.getCLogger(getClass());
 
-	private final CCache<MultiKey, Object> logoCache = new CCache<MultiKey, Object>(I_AD_OrgInfo.Table_Name + "_LogoCache", 10, 0);
+	private final CCache<ArrayKey, Object> logoCache = new CCache<ArrayKey, Object>(I_AD_OrgInfo.Table_Name + "_LogoCache", 10, 0);
 	private final static Object NullImage = new Object();
 
 	@Override
@@ -74,7 +74,7 @@ public class MetasThemeImpl extends DefaultThemeImpl
 	{
 		final int AD_Org_ID = Env.getAD_Org_ID(Env.getCtx());
 		final String domainName = getDomainName();
-		final MultiKey key = new MultiKey(AD_Org_ID, domainName, "large");
+		final ArrayKey key = new ArrayKey(AD_Org_ID, domainName, "large");
 		Object image = logoCache.get(key);
 		if (image != null)
 		{
@@ -108,7 +108,7 @@ public class MetasThemeImpl extends DefaultThemeImpl
 	{
 		final int AD_Org_ID = Env.getAD_Org_ID(Env.getCtx());
 		final String domainName = getDomainName();
-		final MultiKey key = new MultiKey(AD_Org_ID, domainName, "small");
+		final ArrayKey key = new ArrayKey(AD_Org_ID, domainName, "small");
 		Object image = logoCache.get(key);
 		if (image != null)
 		{

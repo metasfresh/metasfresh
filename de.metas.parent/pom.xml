@@ -62,6 +62,39 @@
 				<version>${jasperreports.version}</version>
 			</dependency>
 
+			<!-- these two are dependencies of jasperreports 4.6.0, 
+				 and they don't converge to consistent versions within the jasperreport-4.6.0 dependency tree  -->
+			<dependency>
+				<groupId>xml-apis</groupId>
+				<artifactId>xml-apis</artifactId>
+				<version>1.3.04</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>1.8.3</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>1.6</version>
+			</dependency>
+			
+			
+			<!-- jasperreport-4.6.0 has version 1.9.4 of jackson-mapper-asl and jackson-core-asl in its tree, but we prefer the later version
+			-->
+			<dependency>
+				<groupId>org.codehaus.jackson</groupId>
+				<artifactId>jackson-mapper-asl</artifactId>
+				<version>1.9.10</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.jackson</groupId>
+				<artifactId>jackson-core-asl</artifactId>
+				<version>1.9.10</version>
+			</dependency>
+
 			<!-- IMPORTANT: when using these dependencies, declared jmockit and hamcrest before junit !-->
 			<!--  Use 1.9 (not 1.10) to avoid the following error when running jmokit with EclEmma:
 				java.lang.LinkageError: loader (instance of  sun/misc/Launcher$AppClassLoader): attempted  duplicate class definition for name: "...Test$1"
@@ -69,7 +102,7 @@
 			<dependency>
 				<groupId>org.jmockit</groupId>
 				<artifactId>jmockit</artifactId>
-				<version>1.9</version>
+				<version>1.20</version>
 			</dependency>
 
 			<dependency>
@@ -553,20 +586,15 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
 
-				<executions>
-					<!-- task 08834: We shall not leave the decision about plugin-versions to maven.
-						Rationale: we had the case that a build stopped working at a *very* critical moment, 
-						because maven picked a more recent version of the jaxb plugin. 
-						That version didn't support the way, we configured it and failed with an error message.
-						This shall not happen again.
-					-->
-					<execution>
-						<id>enforce-plugin-versions</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
+
 						<configuration>
 							<rules>
+								<!-- task 08834: We shall not leave the decision about plugin-versions to maven.
+									Rationale: we had the case that a build stopped working at a *very* critical moment, 
+									because maven picked a more recent version of the jaxb plugin. 
+									That version didn't support the way, we configured it and failed with an error message.
+									This shall not happen again.
+								-->
 								<requirePluginVersions>
 									<message>!! We need to have the plugin version under control to avoid build failures due to maven releasing a new plugin version !!</message>
 									<banLatest>true</banLatest>
@@ -578,30 +606,22 @@
 									</additionalPlugins>
 									<unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin</unCheckedPluginList>
 								</requirePluginVersions>
-							</rules>
-						</configuration>
-					</execution>
 
-					<execution>
-						<id>enforce-ban-duplicate-classes</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
+								<!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
+								<dependencyConvergence />
 								<banDuplicateClasses>
 									<ignoreClasses>
-										<!-- these are also contained in org.jboss.client:jbossall-client,
-											which we will hopefully get rid of soon	-->
+																		
+										<!-- itext-2.1.7 has two different versions as dependences -->
+										<ignoreClass>org.bouncycastle.*</ignoreClass>
+
+										<!-- org.jboss.client:jbossall-client and partially geronimo specs-->
 										<ignoreClass>javax.annotation.*</ignoreClass>
 										<ignoreClass>javax.ejb.*</ignoreClass>
 										<ignoreClass>javax.jms.*</ignoreClass>
 										<ignoreClass>javax.management.j2ee.*</ignoreClass>
 										<ignoreClass>javax.xml.*</ignoreClass>
 										<ignoreClass>javax.transaction.*</ignoreClass>
-										
-										<!-- itext-2.1.7 has two different versions as dependences -->
-										<ignoreClass>org.bouncycastle.*</ignoreClass>
 
 										<ignoreClass>org.apache.*</ignoreClass>
 										<ignoreClass>org.codehaus.*</ignoreClass>
@@ -642,17 +662,38 @@
 										<ignoreClass>repackage.Repackager</ignoreClass>
 										<ignoreClass>repackage.Repackage</ignoreClass>
 										<ignoreClass>repackage.EditBuildScript</ignoreClass>
-										
 										<!--
 										<ignoreClass></ignoreClass>
 										-->
 
 									</ignoreClasses>
+
+									<dependencies>
+										<!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM ("JUnit classes in JMockit jar") for background info
+										note: doesn't work, see more general rule further up
+										-->
+										<dependency>
+											<artifactId>jmockit</artifactId>
+											<ignoreClasses>
+												<ignoreClass>org.junit.runner.Runner</ignoreClass>
+											</ignoreClasses>
+										</dependency>
+				
+									</dependencies>
+
 									<findAllDuplicates>true</findAllDuplicates>
 								</banDuplicateClasses>
 							</rules>
 							<fail>true</fail>
 						</configuration>
+						
+				<executions>
+					<execution>
+						<id>enforce</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+		
 					</execution>
 				</executions>
 			</plugin>

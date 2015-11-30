@@ -801,17 +801,18 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			@Override
 			public int compare(final I_C_InvoiceLine line1, final I_C_InvoiceLine line2)
 			{
+
 				final I_M_InOutLine iol1 = line1.getM_InOutLine();
 				final I_M_InOutLine iol2 = line2.getM_InOutLine();
-				if (Util.same(iol1, iol2))
+				if (Util.same(line1.getM_InOutLine_ID(), line2.getM_InOutLine_ID()))
 				{
 					return line1.getLine() - line2.getLine(); // keep IL order
 				}
-				else if (iol1 == null)
+				else if (line1.getM_InOutLine_ID() <= 0 || iol1 == null)
 				{
 					return 1; // second line not null, put it first
 				}
-				else if (iol2 == null)
+				else if (line2.getM_InOutLine_ID() <= 0 || iol2 == null)
 				{
 					return -1; // first line not null, put it first
 				}

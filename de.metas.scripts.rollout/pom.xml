@@ -6,8 +6,8 @@
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
 		<version>1.0_IT-SNAPSHOT</version>
-	<relativePath>../de.metas.parent/pom.xml</relativePath>
-</parent>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
 
 	<groupId>de.metas.scripts.rollout</groupId>
 	<artifactId>de.metas.scripts.rollout</artifactId>
@@ -19,47 +19,33 @@
 			<groupId>de.metas.migration</groupId>
 			<artifactId>de.metas.migration.cli</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+			<!-- we want just the all-in-one-jar..additional stuff only makes the banDuplicateClasses enforcer rule nervous -->
+				<exclusion>
+					<artifactId>de.metas.migration.base</artifactId>
+					<groupId>de.metas.migration</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>commons-cli</artifactId>
+					<groupId>commons-cli</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>logback-classic</artifactId>
+					<groupId>ch.qos.logback</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
 		
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-
-				<executions>
-					<execution>
-						<id>enforce-ban-duplicate-classes</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<banDuplicateClasses>
-									<dependencies>
-										<!-- 
-											do not check this dependency, because the allInOne-jar contains 
-											all the classes that are also its dependencies 
-										-->
-										<dependency>
-											<groupId>de.metas.migration</groupId>
-											<artifactId>de.metas.migration.cli</artifactId>
-											<ignoreClasses>
-												<ignoreClass>*</ignoreClass>
-											</ignoreClasses>
-										</dependency>
-									</dependencies>
-									<findAllDuplicates>true</findAllDuplicates>
-								</banDuplicateClasses>
-							</rules>
-							<fail>true</fail>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			
+
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>

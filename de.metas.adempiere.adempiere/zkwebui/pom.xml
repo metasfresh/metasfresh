@@ -34,13 +34,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- dependency>
-			<groupId>org.adempiere.jasper</groupId>
-			<artifactId>jasperreports-lib</artifactId>
-			<version>${adempiere.version}</version>
-			<scope>provided</scope>
-		</dependency -->
-
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
@@ -147,15 +140,6 @@
 					<artifactId>zk</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>net.sf.jasperreports</groupId>
-			<artifactId>jasperreports</artifactId>
-			<!--
-			<version>3.7.3</version>
-			-->
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
