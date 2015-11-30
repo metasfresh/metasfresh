@@ -66,12 +66,6 @@ UPDATE AD_Column SET IsAlwaysUpdateable='Y',Updated=TO_TIMESTAMP('2015-11-17 12:
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2015-11-17 12:00:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552845
 ;
 
--- 17.11.2015 12:00
--- URL zum Konzept
-UPDATE M_PriceList_Version SET Processed='N' WHERE Processed IS NULL
-;
-
-
 COMMIT;
 
 -- 17.11.2015 11:24
@@ -92,3 +86,11 @@ INSERT INTO t_alter_column values('m_pricelist_version','Processed','CHAR(1)',nu
 -- URL zum Konzept
 INSERT INTO t_alter_column values('m_pricelist_version','Processed',null,'NOT NULL',null)
 ;
+
+COMMIT;
+
+-- 17.11.2015 12:00
+-- URL zum Konzept
+UPDATE M_PriceList_Version SET Processed='N' WHERE Processed IS NULL
+;
+
