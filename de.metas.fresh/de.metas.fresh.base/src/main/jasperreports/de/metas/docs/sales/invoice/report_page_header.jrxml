@@ -28,11 +28,11 @@ WHERE
 	<field name="dateinvoiced" class="java.sql.Timestamp"/>
 	<field name="printname" class="java.lang.String"/>
 	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
 $P{ad_language}.equals("fr_CH")?"Date":
 $P{ad_language}.equals("it_CH")?"Datum":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
 $P{ad_language}.equals("fr_CH")?"Date":
 $P{ad_language}.equals("it_CH")?"Datum":
 ""]]></initialValueExpression>

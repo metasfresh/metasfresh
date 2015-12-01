@@ -79,31 +79,31 @@ WHERE
 		<initialValueExpression><![CDATA["Auftragsbestätigung"]]></initialValueExpression>
 	</variable>
 	<variable name="BP_Value" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner-Nr.":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Geschäftspartner-Nr.":
 $P{ad_language}.equals("fr_CH")?"N° du partenaire":
 $P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner-Nr.":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Geschäftspartner-Nr.":
 $P{ad_language}.equals("fr_CH")?"N° du partenaire":
 $P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
 $P{ad_language}.equals("fr_CH")?"Date":
 $P{ad_language}.equals("it_CH")?"Datum":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
 $P{ad_language}.equals("fr_CH")?"Date":
 $P{ad_language}.equals("it_CH")?"Datum":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="POReference" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Referenz":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Referenz":
 $P{ad_language}.equals("fr_CH")?"Référence":
 $P{ad_language}.equals("it_CH")?"Referenz":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Referenz":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Referenz":
 $P{ad_language}.equals("fr_CH")?"Référence":
 $P{ad_language}.equals("it_CH")?"Referenz":
 ""]]></initialValueExpression>

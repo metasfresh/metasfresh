@@ -35,111 +35,111 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
 	<variable name="Unit" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Einheit":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Einheit":
 $P{ad_language}.equals("fr_CH")?"Unité":
 $P{ad_language}.equals("it_CH")?"Einheit":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Einheit":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Einheit":
 $P{ad_language}.equals("fr_CH")?"Unité":
 $P{ad_language}.equals("it_CH")?"Einheit":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Attributes" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Merkmale":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Merkmale":
 $P{ad_language}.equals("fr_CH")?"Spécifications":
 $P{ad_language}.equals("it_CH")?"Merkmale":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Merkmale":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Merkmale":
 $P{ad_language}.equals("fr_CH")?"Spécifications":
 $P{ad_language}.equals("it_CH")?"Merkmale":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Amount" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Betrag":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Betrag":
 $P{ad_language}.equals("fr_CH")?"Montant":
 $P{ad_language}.equals("it_CH")?"Betrag":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Betrag":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Betrag":
 $P{ad_language}.equals("fr_CH")?"Montant":
 $P{ad_language}.equals("it_CH")?"Betrag":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="SubTotal" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Zwischensumme":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Zwischensumme":
 $P{ad_language}.equals("fr_CH")?"Sous-total":
 $P{ad_language}.equals("it_CH")?"Zwischensumme":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Zwischensumme":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Zwischensumme":
 $P{ad_language}.equals("fr_CH")?"Sous-total":
 $P{ad_language}.equals("it_CH")?"Zwischensumme":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Carry" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Übertrag":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Übertrag":
 $P{ad_language}.equals("fr_CH")?"Report":
 $P{ad_language}.equals("it_CH")?"Übertrag":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Übertrag":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Übertrag":
 $P{ad_language}.equals("fr_CH")?"Report":
 $P{ad_language}.equals("it_CH")?"Übertrag":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Price" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Preis":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Preis":
 $P{ad_language}.equals("fr_CH")?"Prix":
 $P{ad_language}.equals("it_CH")?"Preis":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Preis":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Preis":
 $P{ad_language}.equals("fr_CH")?"Prix":
 $P{ad_language}.equals("it_CH")?"Preis":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Pack_Inst" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Packvorschrift":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Packvorschrift":
 $P{ad_language}.equals("fr_CH")?"Conditionnement":
 $P{ad_language}.equals("it_CH")?"Packvorschrift":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Packvorschrift":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Packvorschrift":
 $P{ad_language}.equals("fr_CH")?"Conditionnement":
 $P{ad_language}.equals("it_CH")?"Packvorschrift":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Quantity" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Menge":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Menge":
 $P{ad_language}.equals("fr_CH")?"Quantité":
 $P{ad_language}.equals("it_CH")?"Menge":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Menge":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Menge":
 $P{ad_language}.equals("fr_CH")?"Quantité":
 $P{ad_language}.equals("it_CH")?"Menge":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="HUQuantity" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Anzahl":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Anzahl":
 $P{ad_language}.equals("fr_CH")?"Nombre":
 $P{ad_language}.equals("it_CH")?"Anzahl":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Anzahl":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Anzahl":
 $P{ad_language}.equals("fr_CH")?"Nombre":
 $P{ad_language}.equals("it_CH")?"Anzahl":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Article" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Artikel":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Artikel":
 $P{ad_language}.equals("fr_CH")?"Article":
 $P{ad_language}.equals("it_CH")?"Artikel":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Artikel":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Artikel":
 $P{ad_language}.equals("fr_CH")?"Article":
 $P{ad_language}.equals("it_CH")?"Artikel":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="TotalAmount" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Total":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Total":
 $P{ad_language}.equals("fr_CH")?"Total":
 $P{ad_language}.equals("it_CH")?"Total":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Total":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Total":
 $P{ad_language}.equals("fr_CH")?"Total":
 $P{ad_language}.equals("it_CH")?"Total":
 ""]]></initialValueExpression>

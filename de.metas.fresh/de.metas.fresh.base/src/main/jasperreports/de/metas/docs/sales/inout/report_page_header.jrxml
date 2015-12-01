@@ -30,11 +30,11 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 	<field name="sr_email" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
 	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
 $P{ad_language}.equals("fr_CH")?"Date":
 $P{ad_language}.equals("it_CH")?"Datum":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
 $P{ad_language}.equals("fr_CH")?"Date":
 $P{ad_language}.equals("it_CH")?"Datum":
 ""]]></initialValueExpression>

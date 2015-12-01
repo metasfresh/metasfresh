@@ -25,11 +25,11 @@ WHERE
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<variable name="Page" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Seite":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Seite":
 $P{ad_language}.equals("fr_CH")?"Page":
 $P{ad_language}.equals("it_CH")?"Seite":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Seite":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Seite":
 $P{ad_language}.equals("fr_CH")?"Page":
 $P{ad_language}.equals("it_CH")?"Seite":
 ""]]></initialValueExpression>

@@ -42,38 +42,38 @@ WHERE
 	<field name="datetobefetched" class="java.sql.Timestamp"/>
 	<field name="username" class="java.lang.String"/>
 	<variable name="DocType" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Fahrauftrag":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Fahrauftrag":
 $P{ad_language}.equals("fr_CH")?"Fahrauftrag":
 $P{ad_language}.equals("it_CH")?"Fahrauftrag":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Tour" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Tour":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Tour":
 $P{ad_language}.equals("fr_CH")?"Tour":
 $P{ad_language}.equals("it_CH")?"Tour":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Date" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
 $P{ad_language}.equals("fr_CH")?"Datum":
 $P{ad_language}.equals("it_CH")?"Datum":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="SalesRep" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Ansprechpartner":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Ansprechpartner":
 $P{ad_language}.equals("fr_CH")?"Ansprechpartner":
 $P{ad_language}.equals("it_CH")?"Ansprechpartner":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="PickupDate" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Abholdatum und -zeit":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Abholdatum und -zeit":
 $P{ad_language}.equals("fr_CH")?"Abholdatum und -zeit":
 $P{ad_language}.equals("it_CH")?"Abholdatum und -zeit":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="PickupLocation" class="java.lang.String">
 		<variableExpression><![CDATA[]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Abholort":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Abholort":
 $P{ad_language}.equals("fr_CH")?"Abholort":
 $P{ad_language}.equals("it_CH")?"Abholort":
 ""]]></initialValueExpression>

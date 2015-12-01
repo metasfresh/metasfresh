@@ -63,41 +63,41 @@ WHERE
 	<field name="sr_email" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
 	<variable name="BP_Value" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner-Nr.":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Geschäftspartner-Nr.":
 $P{ad_language}.equals("fr_CH")?"N° du partenaire":
 $P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner-Nr.":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Geschäftspartner-Nr.":
 $P{ad_language}.equals("fr_CH")?"N° du partenaire":
 $P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
 $P{ad_language}.equals("fr_CH")?"Date":
 $P{ad_language}.equals("it_CH")?"Datum":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
 $P{ad_language}.equals("fr_CH")?"Date":
 $P{ad_language}.equals("it_CH")?"Datum":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="Reference" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Externe Belegnummer":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Externe Belegnummer":
 $P{ad_language}.equals("fr_CH")?"Référence":
 $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Externe Belegnummer":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Externe Belegnummer":
 $P{ad_language}.equals("fr_CH")?"Référence":
 $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="VAT_ID" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"UID Nr. ":
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"UID Nr. ":
 $P{ad_language}.equals("fr_CH")?"ID-TVA ":
 $P{ad_language}.equals("it_CH")?"UID Nr. ":
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"UID Nr. ":
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"UID Nr. ":
 $P{ad_language}.equals("fr_CH")?"ID-TVA ":
 $P{ad_language}.equals("it_CH")?"UID Nr. ":
 ""]]></initialValueExpression>

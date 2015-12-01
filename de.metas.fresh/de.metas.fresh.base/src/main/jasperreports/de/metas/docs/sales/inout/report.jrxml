@@ -32,7 +32,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 	<field name="ad_language" class="java.lang.String"/>
 	<field name="ishidepackingmaterialinshipmentprint" class="java.lang.String"/>
 	<variable name="Page" class="java.lang.String">
-		<variableExpression><![CDATA[$F{ad_language}.equals("de_CH")?"Seite":
+		<variableExpression><![CDATA[$F{ad_language}.startsWith("de")?"Seite":
 $F{ad_language}.equals("fr_CH")?"Page":
 $F{ad_language}.equals("it_CH")?"Seite":
 ""]]></variableExpression>

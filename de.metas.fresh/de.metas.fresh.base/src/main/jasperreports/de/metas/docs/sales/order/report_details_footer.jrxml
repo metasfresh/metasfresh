@@ -131,17 +131,17 @@ ORDER BY
 	<field name="tag" class="java.lang.String"/>
 	<field name="position" class="java.lang.Integer"/>
 	<variable name="PaymentCond" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH") ? "Zahlungsbedingungen" :
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de") ? "Zahlungsbedingungen" :
 $P{ad_language}.equals("fr_CH") ? "Conditions de paiement" :
 $P{ad_language}.equals("it_CH") ? "Zahlungsbedingungen" :
 ""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH") ? "Zahlungsbedingungen" :
+		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de") ? "Zahlungsbedingungen" :
 $P{ad_language}.equals("fr_CH") ? "Conditions de paiement" :
 $P{ad_language}.equals("it_CH") ? "Zahlungsbedingungen" :
 ""]]></initialValueExpression>
 	</variable>
 	<variable name="PaymentRule" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH") ? "Zahlungsweise" :
+		<variableExpression><![CDATA[$P{ad_language}.startsWith("de") ? "Zahlungsweise" :
 $P{ad_language}.equals("fr_CH") ? "forme de paiement" :
 $P{ad_language}.equals("it_CH") ? "Zahlungsweise" :
 ""]]></variableExpression>
