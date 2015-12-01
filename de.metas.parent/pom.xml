@@ -74,7 +74,7 @@
 				<artifactId>commons-beanutils</artifactId>
 				<version>1.8.3</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
@@ -585,115 +585,110 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-
-
-						<configuration>
-							<rules>
+				<configuration>
+					<rules>
 								<!-- task 08834: We shall not leave the decision about plugin-versions to maven.
 									Rationale: we had the case that a build stopped working at a *very* critical moment, 
 									because maven picked a more recent version of the jaxb plugin. 
 									That version didn't support the way, we configured it and failed with an error message.
 									This shall not happen again.
 								-->
-								<requirePluginVersions>
-									<message>!! We need to have the plugin version under control to avoid build failures due to maven releasing a new plugin version !!</message>
-									<banLatest>true</banLatest>
-									<banRelease>true</banRelease>
-									<banSnapshots>true</banSnapshots>
-									<phases>clean,deploy,site</phases>
-									<additionalPlugins>
-										<additionalPlugin>org.apache.maven.plugins:maven-reactor-plugin</additionalPlugin>
-									</additionalPlugins>
-									<unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin</unCheckedPluginList>
-								</requirePluginVersions>
+						<requirePluginVersions>
+							<message>!! We need to have the plugin version under control to avoid build failures due to maven releasing a new plugin version !!</message>
+							<banLatest>true</banLatest>
+							<banRelease>true</banRelease>
+							<banSnapshots>true</banSnapshots>
+							<phases>clean,deploy,site</phases>
+							<additionalPlugins>
+								<additionalPlugin>org.apache.maven.plugins:maven-reactor-plugin</additionalPlugin>
+							</additionalPlugins>
+							<unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin</unCheckedPluginList>
+						</requirePluginVersions>
 
-								<!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
-								<dependencyConvergence />
-								<banDuplicateClasses>
-									<ignoreClasses>
+						<!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
+						<dependencyConvergence />
+						<banDuplicateClasses>
+							<ignoreClasses>
 																		
 										<!-- itext-2.1.7 has two different versions as dependences -->
-										<ignoreClass>org.bouncycastle.*</ignoreClass>
+								<ignoreClass>org.bouncycastle.*</ignoreClass>
 
 										<!-- org.jboss.client:jbossall-client and partially geronimo specs-->
-										<ignoreClass>javax.annotation.*</ignoreClass>
-										<ignoreClass>javax.ejb.*</ignoreClass>
-										<ignoreClass>javax.jms.*</ignoreClass>
-										<ignoreClass>javax.management.j2ee.*</ignoreClass>
-										<ignoreClass>javax.xml.*</ignoreClass>
-										<ignoreClass>javax.transaction.*</ignoreClass>
+								<ignoreClass>javax.annotation.*</ignoreClass>
+								<ignoreClass>javax.ejb.*</ignoreClass>
+								<ignoreClass>javax.jms.*</ignoreClass>
+								<ignoreClass>javax.management.j2ee.*</ignoreClass>
+								<ignoreClass>javax.xml.*</ignoreClass>
+								<ignoreClass>javax.transaction.*</ignoreClass>
 
-										<ignoreClass>org.apache.*</ignoreClass>
-										<ignoreClass>org.codehaus.*</ignoreClass>
-										<ignoreClass>hidden.org.codehaus.*</ignoreClass>
-										<ignoreClass>org.junit.*</ignoreClass>
-										<ignoreClass>org.w3c.*</ignoreClass>
-										<ignoreClass>org.xml.*</ignoreClass>
+								<ignoreClass>org.apache.*</ignoreClass>
+								<ignoreClass>org.codehaus.*</ignoreClass>
+								<ignoreClass>hidden.org.codehaus.*</ignoreClass>
+								<ignoreClass>org.junit.*</ignoreClass>
+								<ignoreClass>org.w3c.*</ignoreClass>
+								<ignoreClass>org.xml.*</ignoreClass>
 										
-										<!-- this class originates from org.zkoss.calendar:calendar:jar:1.0.0-RC -->
-										<ignoreClass>org.zkoss.calendar.render.CalendarsDefault</ignoreClass>
+								<!-- this class originates from org.zkoss.calendar:calendar:jar:1.0.0-RC -->
+								<ignoreClass>org.zkoss.calendar.render.CalendarsDefault</ignoreClass>
 		
-										<!-- the following are camel/servicemix related dependencies -->
-										<!--
-										Found in, both are dependencies of mylin-smooks-all
-										  org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
-										  net.sf.opencsv:opencsv:jar:2.1:compile
-										-->
-										<ignoreClass>au.com.bytecode.*</ignoreClass>
+								<!-- the following are camel/servicemix related dependencies -->
+								<!--
+								Found in, both are dependencies of mylin-smooks-all
+									  org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
+									  net.sf.opencsv:opencsv:jar:2.1:compile
+								-->
+								<ignoreClass>au.com.bytecode.*</ignoreClass>
 
-										<ignoreClass>com.microsoft.schemas.*</ignoreClass>
-										<ignoreClass>org.etsi.uri.*</ignoreClass>
-										<ignoreClass>org.openxmlformats.schemas.*</ignoreClass>
-										<ignoreClass>org.w3.x2000.*</ignoreClass>
+								<ignoreClass>com.microsoft.schemas.*</ignoreClass>
+								<ignoreClass>org.etsi.uri.*</ignoreClass>
+								<ignoreClass>org.openxmlformats.schemas.*</ignoreClass>
+								<ignoreClass>org.w3.x2000.*</ignoreClass>
 										
-										<!--
-										Found in:
-										  xmlpull:xmlpull:jar:1.1.3.1:compile
-										  xpp3:xpp3_min:jar:1.1.4c:compile
-										-->
-										<ignoreClass>org.xmlpull.*</ignoreClass>
+								<!--
+								Found in:
+								  xmlpull:xmlpull:jar:1.1.3.1:compile
+								  xpp3:xpp3_min:jar:1.1.4c:compile
+								-->
+								<ignoreClass>org.xmlpull.*</ignoreClass>
 										
 										<!--
 										Found in:
 										  org.apache.xmlbeans:xmlbeans:jar:2.3.0:compile
 										  org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:jar:3.12_1:compile
 										-->
-										<ignoreClass>schemaorg_apache_xmlbeans.system.*</ignoreClass>
-										<ignoreClass>repackage.Repackager</ignoreClass>
-										<ignoreClass>repackage.Repackage</ignoreClass>
-										<ignoreClass>repackage.EditBuildScript</ignoreClass>
+								<ignoreClass>schemaorg_apache_xmlbeans.system.*</ignoreClass>
+								<ignoreClass>repackage.Repackager</ignoreClass>
+								<ignoreClass>repackage.Repackage</ignoreClass>
+								<ignoreClass>repackage.EditBuildScript</ignoreClass>
 										<!--
 										<ignoreClass></ignoreClass>
 										-->
 
+							</ignoreClasses>
+
+							<dependencies>
+								<!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM ("JUnit classes in JMockit jar") for background info -->
+								<dependency>
+									<artifactId>jmockit</artifactId>
+									<ignoreClasses>
+										<ignoreClass>org.junit.runner.Runner</ignoreClass>
 									</ignoreClasses>
+								</dependency>
 
-									<dependencies>
-										<!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM ("JUnit classes in JMockit jar") for background info
-										note: doesn't work, see more general rule further up
-										-->
-										<dependency>
-											<artifactId>jmockit</artifactId>
-											<ignoreClasses>
-												<ignoreClass>org.junit.runner.Runner</ignoreClass>
-											</ignoreClasses>
-										</dependency>
-				
-									</dependencies>
+							</dependencies>
 
-									<findAllDuplicates>true</findAllDuplicates>
-								</banDuplicateClasses>
-							</rules>
-							<fail>true</fail>
-						</configuration>
-						
+							<findAllDuplicates>true</findAllDuplicates>
+						</banDuplicateClasses>
+					</rules>
+					<fail>true</fail>
+				</configuration>
+
 				<executions>
 					<execution>
 						<id>enforce</id>
 						<goals>
 							<goal>enforce</goal>
 						</goals>
-		
 					</execution>
 				</executions>
 			</plugin>

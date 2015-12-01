@@ -1,6 +1,5 @@
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -23,6 +22,68 @@
 		<module>de.metas.endcustomer.mf15.dist</module>
 	</modules>
 
-	<dependencies/>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
 
+				<configuration>
+					<rules>
+						<banDuplicateClasses>
+							<dependencies>
+								<!-- 
+									do not check this dependency, because the endcustomer allInOne-jar contains 
+									all the classes that are also its dependencies 
+								-->
+								<dependency>
+									<groupId>de.metas.endcustomer.mf15</groupId>
+									<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+									<ignoreClasses>
+										<ignoreClass>*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+								<dependency>
+									<groupId>de.metas.migration</groupId>
+									<artifactId>de.metas.migration.cli</artifactId>
+									<ignoreClasses>
+										<ignoreClass>*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+								
+								<!-- 
+								Needed to avoid
+								Duplicate classes found:
+
+								  Found in:
+								    de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.serverRoot.base:jar:1.0_IT-SNAPSHOT:compile
+								    de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.serverRoot.base:jar:1.0_IT-SNAPSHOT:compile
+								..and also
+								  Found in:
+								    de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.serverRoot.ejb:jar:1.0_IT-SNAPSHOT:compile
+								    de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.serverRoot.ejb:jar:1.0_IT-SNAPSHOT:compile
+								..aand
+								  Found in:
+								 	de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.zkwebui:jar:1.0_IT-SNAPSHOT:compile
+								  	de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.zkwebui:jar:1.0_IT-SNAPSHOT:compile
+																								    
+								..this might or might not be a bug in banDuplicateClasses, but at least, i don't yet see the point
+    							-->
+								<dependency>
+									<artifactId>de.metas.adempiere.adempiere.*</artifactId>
+									<ignoreClasses>
+										<ignoreClass>*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+
+							</dependencies>
+							<findAllDuplicates>true</findAllDuplicates>
+						</banDuplicateClasses>
+					</rules>
+					<fail>true</fail>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	
 </project>
