@@ -46,6 +46,7 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
+import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MAcctSchema;
@@ -358,7 +359,11 @@ public class Login
 				.append(" WHERE (u.Login=? OR u.EMail=?)")		// #3,4
 				// US362: Login using email address (2010070610000359) - added EMail=?
 				.append(" AND u.IsActive='Y' AND u.issystemuser='Y'")
-				.append(" AND EXISTS (SELECT 1 FROM AD_Client c WHERE u.AD_Client_ID=c.AD_Client_ID AND c.IsActive='Y')");
+				.append(" AND EXISTS (SELECT 1 FROM AD_Client c WHERE u.AD_Client_ID=c.AD_Client_ID AND c.IsActive='Y')")
+
+				.append(" ORDER BY ")
+				.append(I_AD_Role.COLUMNNAME_SeqNo + " NULLS LAST,")
+				.append(I_AD_Role.COLUMNNAME_AD_Role_ID);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
