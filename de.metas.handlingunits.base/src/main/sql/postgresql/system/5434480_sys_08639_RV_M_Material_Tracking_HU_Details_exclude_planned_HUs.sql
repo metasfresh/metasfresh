@@ -1,4 +1,3 @@
-DROP VIEW IF EXISTS RV_M_Material_Tracking_HU_Details;
 
 CREATE OR REPLACE VIEW RV_M_Material_Tracking_HU_Details AS
 SELECT
