@@ -22,7 +22,6 @@ package de.metas.payment.process;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
@@ -33,6 +32,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -81,6 +81,11 @@ public class C_Payment_DiscountAllocation_Process extends SvrProcess
 	{
 		final IRangeAwareParams params = getParameterAsIParams();
 		p_OpenAmt = params.getParameterAsBigDecimal(PARAM_OpenAmt);
+		if(p_OpenAmt==null)
+		{
+			throw new FillMandatoryException(PARAM_OpenAmt);
+		}
+
 		p_PaymentDateFrom = params.getParameterAsTimestamp(PARAM_PaymentDate);
 		p_PaymentDateTo = params.getParameter_ToAsTimestamp(PARAM_PaymentDate);
 		p_isSOTrx = params.getParameterAsBool(PARAM_IsSOTrx);
@@ -123,7 +128,7 @@ public class C_Payment_DiscountAllocation_Process extends SvrProcess
 			return;
 		}
 		// also skip the payment if there is nothing allocated yet! We only want to complete *partial* allocations
-		if(paymentDAO.getAllocatedAmt(payment).signum()==0)
+		if (paymentDAO.getAllocatedAmt(payment).signum() == 0)
 		{
 			counterSkipped.incrementAndGet();
 			return;

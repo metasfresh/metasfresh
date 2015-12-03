@@ -54,7 +54,7 @@ import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 
 /**
  * Payment Model. - retrieve and create payments for invoice
- * 
+ *
  * <pre>
  *  Event chain
  *  - Payment inserted
@@ -66,16 +66,16 @@ import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
  *              Update C_BPartner Open Item Amount
  *      update invoice (IsPaid)
  *      link invoice-payment if batch
- * 
+ *
  *  Lifeline:
  *  -   Created by VPayment or directly
  *  -   When changed in VPayment
  *      - old payment is reversed
  *      - new payment created
- * 
+ *
  *  When Payment is posed, the Allocation is made
  * </pre>
- * 
+ *
  * @author Jorg Janke
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 1948157 ] Is necessary the reference for document reverse
  * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962 <li>FR [ 1866214 ]
@@ -90,7 +90,7 @@ public final class MPayment extends X_C_Payment
 {
 
 	/**
-     * 
+     *
      */
 	private static final long serialVersionUID = 5273805787122033169L;
 
@@ -118,7 +118,7 @@ public final class MPayment extends X_C_Payment
 
 	/**************************************************************************
 	 * Default Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param C_Payment_ID payment to load, (0 create new payment)
 	 * @param trxName trx name
@@ -163,7 +163,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set record
 	 * @param trxName transaction
@@ -247,7 +247,7 @@ public final class MPayment extends X_C_Payment
 	 * Set ACH BankAccount Info
 	 *
 	 * @param preparedPayment
-	 * 
+	 *
 	 * @return true if valid
 	 */
 	public boolean setBankACH(MPaySelectionCheck preparedPayment)
@@ -375,7 +375,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Set Bank Account Details. Look up Routing No & Bank Acct No
-	 * 
+	 *
 	 * @param C_BP_BankAccount_ID bank account
 	 */
 	public void setBankAccountDetails(int C_BP_BankAccount_ID)
@@ -436,7 +436,7 @@ public final class MPayment extends X_C_Payment
 
 	/**************************************************************************
 	 * Process Payment
-	 * 
+	 *
 	 * @return true if approved
 	 */
 	public boolean processOnline()
@@ -641,7 +641,7 @@ public final class MPayment extends X_C_Payment
 	/**
 	 * Get Allocated Amt in Payment Currency
 	 *
-	 * @return amount or null. metas: null is returned when there are no allocations
+	 * @return amount, never <code>null</code>, even if there are no allocations
 	 */
 	public BigDecimal getAllocatedAmt()
 	{
@@ -660,7 +660,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Set Allocated Flag for payments
-	 * 
+	 *
 	 * @param ctx context
 	 * @param C_BPartner_ID if 0 all
 	 * @param trxName trx
@@ -725,7 +725,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Set BankAccount and PaymentProcessor
-	 * 
+	 *
 	 * @return true if found
 	 */
 	public boolean setPaymentProcessor()
@@ -735,7 +735,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Set BankAccount and PaymentProcessor
-	 * 
+	 *
 	 * @param tender TenderType see TENDER_
 	 * @param CCType CC Type see CC_
 	 * @return true if found
@@ -834,7 +834,7 @@ public final class MPayment extends X_C_Payment
 
 	/**************************************************************************
 	 * Credit Card Number
-	 * 
+	 *
 	 * @param CreditCardNumber CreditCard Number
 	 */
 	@Override
@@ -850,7 +850,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Verification Code
-	 * 
+	 *
 	 * @param newCreditCardVV CC verification
 	 */
 	@Override
@@ -866,7 +866,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Two Digit CreditCard MM
-	 * 
+	 *
 	 * @param CreditCardExpMM Exp month
 	 */
 	@Override
@@ -880,7 +880,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Two digit CreditCard YY (til 2020)
-	 * 
+	 *
 	 * @param newCreditCardExpYY 2 or 4 digit year
 	 */
 	@Override
@@ -894,7 +894,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * CreditCard Exp MMYY
-	 * 
+	 *
 	 * @param mmyy Exp in form of mmyy
 	 * @return true if valid
 	 */
@@ -913,7 +913,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * CreditCard Exp MMYY
-	 * 
+	 *
 	 * @param delimiter / - or null
 	 * @return Exp
 	 */
@@ -939,7 +939,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * MICR
-	 * 
+	 *
 	 * @param MICR MICR
 	 */
 	@Override
@@ -950,7 +950,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Routing No
-	 * 
+	 *
 	 * @param RoutingNo Routing No
 	 */
 	@Override
@@ -961,7 +961,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Bank Account No
-	 * 
+	 *
 	 * @param AccountNo AccountNo
 	 */
 	@Override
@@ -972,7 +972,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Check No
-	 * 
+	 *
 	 * @param CheckNo Check No
 	 */
 	@Override
@@ -1078,7 +1078,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Set Payment Amount
-	 * 
+	 *
 	 * @param PayAmt Pay Amt
 	 */
 	@Override
@@ -1105,7 +1105,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Discount Amt
-	 * 
+	 *
 	 * @param DiscountAmt Discount
 	 */
 	@Override
@@ -1116,7 +1116,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * WriteOff Amt
-	 * 
+	 *
 	 * @param WriteOffAmt WriteOff
 	 */
 	@Override
@@ -1127,7 +1127,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * OverUnder Amt
-	 * 
+	 *
 	 * @param OverUnderAmt OverUnder
 	 */
 	@Override
@@ -1139,7 +1139,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Tax Amt
-	 * 
+	 *
 	 * @param TaxAmt Tax
 	 */
 	@Override
@@ -1231,7 +1231,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Set Doc Type
-	 * 
+	 *
 	 * @param isReceipt is receipt
 	 */
 	public void setC_DocType_ID(boolean isReceipt)
@@ -1290,7 +1290,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Verify Document Type with Invoice
-	 * 
+	 *
 	 * @param pAllocs
 	 * @return true if ok
 	 */
@@ -1483,7 +1483,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Verify Payment Allocate is ignored (must not exists) if the payment header has charge/invoice/order
-	 * 
+	 *
 	 * @param pAllocs
 	 * @return true if ok
 	 */
@@ -1499,7 +1499,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Verify Payment Allocate Sum must be equal to the Payment Amount
-	 * 
+	 *
 	 * @param pAllocs
 	 * @return true if ok
 	 */
@@ -1548,7 +1548,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Get Name of Credit Card
-	 * 
+	 *
 	 * @param CreditCardType credit card type
 	 * @return Name
 	 */
@@ -1589,7 +1589,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Get Pay Amt
-	 * 
+	 *
 	 * @param absolute if true the absolute amount (i.e. negative if payment)
 	 * @return amount
 	 */
@@ -1632,7 +1632,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1645,7 +1645,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Invalidate Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1658,7 +1658,7 @@ public final class MPayment extends X_C_Payment
 
 	/**************************************************************************
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -1781,7 +1781,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Approve Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1794,7 +1794,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Reject Approval
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1807,7 +1807,7 @@ public final class MPayment extends X_C_Payment
 
 	/**************************************************************************
 	 * Complete Document
-	 * 
+	 *
 	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
 	@Override
@@ -1969,7 +1969,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Create Counter Document
-	 * 
+	 *
 	 * @return payment
 	 */
 	private MPayment createCounterDoc()
@@ -2133,7 +2133,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Allocate single AP/AR Invoice
-	 * 
+	 *
 	 * @return true if allocated
 	 */
 	private boolean allocateInvoice()
@@ -2159,7 +2159,7 @@ public final class MPayment extends X_C_Payment
 
 		// we're not yet there :-(
 //		// @formatter:off
-//		final I_C_AllocationHdr alloc = 
+//		final I_C_AllocationHdr alloc =
 //				Services.get(IAllocationBL.class).newBuilder(this)
 //					.setAD_Org_ID(getAD_Org_ID())
 //					.setDateTrx(getDateTrx())
@@ -2211,7 +2211,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Allocate Payment Selection
-	 * 
+	 *
 	 * @return true if allocated
 	 */
 	private boolean allocatePaySelection()
@@ -2354,7 +2354,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Void Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2378,7 +2378,7 @@ public final class MPayment extends X_C_Payment
 			return false;
 		}
 
-		// 
+		//
 		// Make sure the payment was not already reconciled
 		if (isReconciled())
 		{
@@ -2420,7 +2420,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Close Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2441,7 +2441,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Reverse Correction
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2461,13 +2461,13 @@ public final class MPayment extends X_C_Payment
 			dateAcct = new Timestamp(System.currentTimeMillis());
 		}
 
-		// 
+		//
 		// Make sure the payment was not already reconciled
 		if (isReconciled())
 		{
 			throw new AdempiereException("@void.payment@");
 		}
-		
+
 		// Create Reversal
 		MPayment reversal = new MPayment(getCtx(), 0, get_TrxName());
 		copyValues(this, reversal);
@@ -2573,7 +2573,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Reverse Accrual - none
-	 * 
+	 *
 	 * @return false, not supported
 	 */
 	@Override
@@ -2596,7 +2596,7 @@ public final class MPayment extends X_C_Payment
 
 	/**
 	 * Re-activate
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override

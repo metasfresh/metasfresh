@@ -10,18 +10,17 @@ package de.metas.payment.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -44,11 +43,11 @@ public class PaymentDAO extends AbstractPaymentDAO
 		final BigDecimal amt = DB.getSQLValueBDEx(trxName, sql, payment.getC_Payment_ID());
 
 		// Return zero if null (shall not happen)
-		if(amt == null)
+		if (amt == null)
 		{
 			return BigDecimal.ZERO;
 		}
-		
+
 		return amt;
 	}
 
@@ -85,8 +84,13 @@ public class PaymentDAO extends AbstractPaymentDAO
 						+ "WHERE al.C_Payment_ID=?"
 						+ "   AND ah.IsActive='Y' AND al.IsActive='Y'";
 
-		return DB.getSQLValueBD(trxName,
+		final BigDecimal sqlValueBD = DB.getSQLValueBD(trxName,
 				sql,
 				payment.getC_Payment_ID());
+		if (sqlValueBD == null)
+		{
+			return BigDecimal.ZERO;
+		}
+		return sqlValueBD;
 	}
 }

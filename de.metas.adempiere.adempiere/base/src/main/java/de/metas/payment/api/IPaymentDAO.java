@@ -10,12 +10,12 @@ package de.metas.payment.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,7 +50,7 @@ public interface IPaymentDAO extends ISingletonService
 
 	/**
 	 * Return a list of active, processed lines in {@link I_C_PaySelection}
-	 * 
+	 *
 	 * @param paySelection
 	 * @return
 	 */
@@ -58,7 +58,7 @@ public interface IPaymentDAO extends ISingletonService
 
 	/**
 	 * retrieve payment allocations for specific payment
-	 * 
+	 *
 	 * @param payment
 	 * @return
 	 */
@@ -68,9 +68,9 @@ public interface IPaymentDAO extends ISingletonService
 	 * Get the allocated amount for the given payment.<br>
 	 * If the payment references a C_Charge, then only return the pay-amount.
 	 * Otherwise, return the amount plus payment-writeOff-amount from C_AllocationLines which reference the payment.
-	 * 
+	 *
 	 * @param payment
-	 * @return
+	 * @return never return <code>null</code>, even if there are no allocations
 	 */
 	BigDecimal getAllocatedAmt(I_C_Payment payment);
 }
