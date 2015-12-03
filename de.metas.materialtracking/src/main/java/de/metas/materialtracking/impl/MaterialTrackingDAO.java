@@ -77,20 +77,11 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 		}
 		else if (onMoreThanOneFound == OnMoreThanOneFound.ReturnNull)
 		{
-			final List<I_M_Material_Tracking> materialTrackings = query.list();
-			if (materialTrackings.isEmpty())
-			{
-				return null;
-			}
-			else if (materialTrackings.size() == 1)
-			{
-				return materialTrackings.get(0);
-			}
-			else
-			// materialTrackings.size() > 1
-			{
-				return null;
-			}
+			return query.firstOnlyOrNull(I_M_Material_Tracking.class);
+		}
+		else if (onMoreThanOneFound == OnMoreThanOneFound.ReturnFirst)
+		{
+			return query.first(I_M_Material_Tracking.class);
 		}
 		else
 		{

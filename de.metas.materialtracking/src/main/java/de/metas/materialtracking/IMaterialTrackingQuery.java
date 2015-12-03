@@ -10,12 +10,12 @@ package de.metas.materialtracking;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,7 @@ public interface IMaterialTrackingQuery
 	{
 		ThrowException,
 		ReturnNull,
+		ReturnFirst
 	}
 
 	void setM_Product_ID(int productId);
@@ -44,7 +45,7 @@ public interface IMaterialTrackingQuery
 	void setProcessed(Boolean processed);
 
 	Boolean getProcessed();
-	
+
 	/**
 	 * Set this parameter on true if you want to only retrieve the material tracking entries with completed flatrate terms
 	 * ATM, if set on false, it will work as if not set.

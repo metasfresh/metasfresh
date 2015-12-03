@@ -10,12 +10,12 @@ package de.metas.materialtracking.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -77,8 +77,8 @@ public class C_Order extends MaterialTrackableDocumentByASIInterceptor<I_C_Order
 
 	/**
 	 * @param document
-	 * 
-	 * In case the Bestellung has a partner and product of one line belonging to a complete material tracking and that material tracking is not set into ASI, show an error message.
+	 *
+	 *            In case the Bestellung has a partner and product of one line belonging to a complete material tracking and that material tracking is not set into ASI, show an error message.
 	 */
 	@DocValidate(
 			timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
@@ -99,24 +99,24 @@ public class C_Order extends MaterialTrackableDocumentByASIInterceptor<I_C_Order
 		{
 			String msg;
 
-			I_M_Material_Tracking materialTracking = getMaterialTrackingFromDocumentLineASI(line);
-			if (materialTracking != null)
+			if (getMaterialTrackingFromDocumentLineASI(line) != null)
 			{
-				continue;
+				continue; // a tracking is set, nothing to do
 			}
 
-			IMaterialTrackingQuery queryVO = materialTrackingDao.createMaterialTrackingQuery();
+			final IMaterialTrackingQuery queryVO = materialTrackingDao.createMaterialTrackingQuery();
 			queryVO.setCompleteFlatrateTerm(true);
+			queryVO.setProcessed(false);
 			queryVO.setC_BPartner_ID(partner.getC_BPartner_ID());
 			queryVO.setM_Product_ID(line.getM_Product_ID());
-		
-			// throw the exception if there is more than one material tracking found.
-			queryVO.setOnMoreThanOneFound(OnMoreThanOneFound.ThrowException);
 
-			materialTracking = materialTrackingDao.retrieveMaterialTracking(ctx, queryVO);
+			// there can be many trackings for the given product and partner (different parcels), which is not a problem for this verification
+			queryVO.setOnMoreThanOneFound(OnMoreThanOneFound.ReturnFirst);
+
+			final I_M_Material_Tracking materialTracking = materialTrackingDao.retrieveMaterialTracking(ctx, queryVO);
 			if (materialTracking == null)
 			{
-				continue;
+				continue; // there is no tracking that could be selected, nothing to do
 			}
 
 			msg = Services.get(IMsgBL.class).getMsg(ctx, MSG_M_Material_Tracking_Set_In_Orderline, new Object[] { document.getDocumentNo(), line.getLine() });
