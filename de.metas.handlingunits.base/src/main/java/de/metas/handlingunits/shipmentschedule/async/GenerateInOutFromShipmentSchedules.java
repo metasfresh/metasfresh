@@ -32,7 +32,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
@@ -41,7 +40,6 @@ import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
@@ -49,7 +47,6 @@ import org.compiere.process.DocAction;
 import org.compiere.util.CLogger;
 
 import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
@@ -80,11 +77,9 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 
 /**
- * Generate Shipments from given shipment schedules. This implementation performs two distinct jobs:
- * <ul>
- * <li>enqueues shipment schedules into the async queue. This usually happens on the user/UI site, in a synchronous manner. See {@link #createWorkpackages(Properties, IQueryFilter, boolean, boolean)}.
- * <li>processes enqueued work packages. This usually happens on the server site, in an asynchronous manner. See {@link #processWorkPackage(I_C_Queue_WorkPackage, String)}.
- * </ul>
+ * Generate Shipments from given shipment schedules by processing enqueued work packages.<br>
+ * This usually happens on the server site, in an asynchronous manner.<br>
+ * See {@link #processWorkPackage(I_C_Queue_WorkPackage, String)}.
  *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary
@@ -117,18 +112,16 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final ILoggable loggable = Services.get(IWorkPackageBL.class).createLoggable(workpackage);
-
 		try
 		{
-			processWorkPackage0(workpackage, loggable, localTrxName);
+			processWorkPackage0(workpackage, localTrxName);
 		}
 		catch (final DBDeadLockDetectedException e)
 		{
 			// task 08999: if there is a deadlock, retry in five seconds
 			final int retryms = 5000;
 			final String msg = "Deadlock detected; Will retry in " + retryms + " ms. Deadlock-Message: " + e.getMessage();
-			loggable.addLog(msg);
+			getLoggable().addLog(msg);
 			throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(msg, retryms, e);
 		}
 
@@ -140,13 +133,13 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 * 
 	 * @task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
 	 */
+	@Override
 	public ILatchStragegy getLatchStrategy()
 	{
 		return CreateShipmentLatch.INSTANCE;
 	}
 
 	private void processWorkPackage0(final I_C_Queue_WorkPackage workpackage,
-			final ILoggable loggable,
 			final String localTrxName)
 	{
 		// Create candidates
@@ -155,7 +148,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
 			// throw new AdempiereException("No eligible candidates were found");
-			loggable.addLog("No eligible candidates were found");
+			getLoggable().addLog("No eligible candidates were found");
 		}
 
 		//
@@ -200,6 +193,15 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				continue;
 			}
 
+			// task 08959: skip invalid schedules, check again in 10 seconds
+			// the system will eventually have updated them for us.
+			// Note that this way, the sched might differ from what 
+			// the user selected, but on the other hand, if a user enqueued invalid records, they shouldn't be too surprised.
+			if (schedule.isToRecompute())
+			{
+				throw WorkpackageSkipRequestException.createWithTimeout("Shipment schedule flagged to be recomputed: " + schedule, 10000);
+			}
+
 			final List<IShipmentScheduleWithHU> scheduleCandidates = createCandidates(schedule);
 			candidates.addAll(scheduleCandidates);
 		}
@@ -225,26 +227,13 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		{
 			return false;
 		}
-
-		// ts: don't skip them: we are doing forced delivery only
-		// FIXME: this is a temporary solution
-		if (HUConstants.isfresh_QuickShipment())
-		{
-			// //
-			// // Skip invalid schedules
-			// if (schedule.isToRecompute())
-			// {
-			// throw new WorkpackageSkipRequestException("Shipment schedule flagged to be recomputed: " + schedule);
-			// }
-		}
-
 		return true;
 	}
 
 	private Iterator<I_M_ShipmentSchedule> retriveShipmentSchedules(final I_C_Queue_WorkPackage workpackage, final String trxName)
 	{
 		final boolean skipAlreadyProcessedItems = false; // yes, we want items whose queue packages were already processed! This is a workaround, but we need it that way.
-		// Background: otherwise, after we did a partial delivery on a shipment schedule, we can deliver the rest, because the sched is already witing a processed work package.
+		// Background: otherwise, after we did a partial delivery on a shipment schedule, we cannot deliver the rest, because the sched is already within a processed work package.
 		// Note that it's the customer's declared responsibility to to verify the shipments
 		// FIXME: find a better solution. If nothing else, then "split" the undelivered remainder of a partially delivered schedule off into a new schedule (we do that with ICs too).
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queueDAO.createElementsQueryBuilder(workpackage, I_M_ShipmentSchedule.class, skipAlreadyProcessedItems, trxName);
@@ -355,7 +344,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final boolean isUseQtyPicked = getParameters().getParameterAsBool(PARAM_IsUseQtyPicked);
 
-		if (HUConstants.isfresh_QuickShipment() && !isUseQtyPicked)
+		if (HUConstants.isQuickShipment() && !isUseQtyPicked)
 		{
 			return;
 		}

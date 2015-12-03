@@ -10,18 +10,17 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
@@ -96,7 +95,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	/**
 	 * Order by clause used to fetch {@link I_M_ShipmentSchedule}s.
-	 * 
+	 *
 	 * NOTE: this ordering is VERY important because that's the order in which QtyOnHand will be alocated too.
 	 */
 	private static final String ORDER_CLAUSE = "\n ORDER BY " //
@@ -245,7 +244,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	/**
 	 * Marks shipment schedule records with a given product-id for update by {@link IShipmentScheduleUpdater#updateShipmentSchedule(int, int, int, String)}. This is done by creating
 	 * M_ShipmentSchedule_Recompute-records which point to the schedule records in question.
-	 * 
+	 *
 	 * Note: It's not a problem if multiple clients execute this INSERT concurrently.
 	 */
 	private static final String SQL_RECOMPUTE_1P =
@@ -261,7 +260,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	/**
 	 * Marks shipment schedule records starting at a given date for update by {@link IShipmentScheduleUpdater#updateShipmentSchedule(int, int, int, String)}. This is done by creating
 	 * M_ShipmentSchedule_Recompute-records which point to the schedule records in question.
-	 * 
+	 *
 	 * Note: It's not a problem if multiple clients execute this INSERT concurrently.
 	 */
 	private static final String SQL_RECOMPUTE_DELIVERYDATE_1P = //
@@ -361,10 +360,10 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	/**
-	 * 
+	 *
 	 * @param orderLineId
 	 * @param trxName may be <code>null</code>.
-	 * 
+	 *
 	 * @return <code>null</code> if no {@link MMShipmentSchedule} exists for the given orderLineId.
 	 * @throws IllegalArgumentException if <code>orderLineId</code> is below 1
 	 */
@@ -463,8 +462,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 							"FROM (" +
 							"	SELECT s.M_ShipmentSchedule_ID " +
 							"	FROM M_ShipmentSchedule s " +
-							"		LEFT JOIN T_Lock l ON l.Record_ID=s.M_ShipmentSchedule_ID AND l.AD_Table_ID=get_table_id('M_ShipmentSchedule') " +
-							"	WHERE l.Record_ID Is NULL " +
+							// task 08959: also retrieve locked records. The async processor is expected to wait until they are updated.
+							// "		LEFT JOIN T_Lock l ON l.Record_ID=s.M_ShipmentSchedule_ID AND l.AD_Table_ID=get_table_id('M_ShipmentSchedule') " +
+							// "	WHERE l.Record_ID Is NULL " +
 							") data " +
 							" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID ";
 
@@ -851,7 +851,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	/**
 	 * Build {@link I_M_ShipmentSchedule} where clause based on given segment.
-	 * 
+	 *
 	 * @param ssAlias {@link I_M_ShipmentSchedule#Table_Name}'s alias
 	 * @param storageSegment
 	 * @param sqlParams output SQL parameters
@@ -956,12 +956,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	/**
 	 * Build SQL where clause for given storage attribute segments.
-	 * 
+	 *
 	 * We assume following table aliases
 	 * <ul>
 	 * <li>ai - alias for {@link I_M_AttributeInstance#Table_Name}
 	 * </ul>
-	 * 
+	 *
 	 * @param attributeSegments
 	 * @param sqlParams
 	 * @return where clause or <code>null</code>
@@ -999,12 +999,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	/**
 	 * Build SQL where clause for given storage attribute segment.
-	 * 
+	 *
 	 * We assume following table aliases
 	 * <ul>
 	 * <li>ai - alias for {@link I_M_AttributeInstance#Table_Name}
 	 * </ul>
-	 * 
+	 *
 	 * @param attributeSegment
 	 * @param sqlParams
 	 * @return where clause or <code>null</code>
@@ -1225,7 +1225,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	/**
 	 * Filter and return only those {@link OlAndSched} objects which were locked for shipment run (i.e. {@link OlAndSched#isAvailForShipmentRun()} is true).
-	 * 
+	 *
 	 * @param allOlsAndScheds
 	 * @return {@link OlAndSched} which are available for shipment run
 	 */
@@ -1445,9 +1445,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	/**
 	 * Mass-update a given shipment schedule column.
-	 * 
+	 *
 	 * If there were any changes and the invalidate parameter is on true, those shipment schedules will be invalidated.
-	 * 
+	 *
 	 * @param inoutCandidateColumnName {@link I_M_ShipmentSchedule}'s column to update
 	 * @param value value to set (you can also use {@link ModelColumnNameValue})
 	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
