@@ -142,6 +142,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	public synchronized final boolean startProcess(final Properties ctx, final ProcessInfo pi, final ITrx trx)
 	{
 		Check.assumeNotNull(pi, "ProcessInfo not null");
+		pi.setClassName(getClass().getName()); // make sure that we have the correct className in place. We need it to get the ProcessClassInfo
 
 		// Preparation
 		m_ctx = Env.coalesce(ctx);

@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
@@ -40,7 +41,7 @@ public class ProcessInfoUtil
 	/**	Logger							*/
 	private static CLogger		s_log = CLogger.getCLogger (ProcessInfoUtil.class);
 
-	
+
 	/**************************************************************************
 	 *	Query PInstance for result.
 	 *  Fill Summary and success in ProcessInfo
@@ -49,7 +50,7 @@ public class ProcessInfoUtil
 	public static void setSummaryFromDB (ProcessInfo pi)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		
+
 		//
 		int sleepTime = 2000;	//	2 secomds
 		int noRetry = 5;        //  10 seconds total
@@ -67,7 +68,7 @@ public class ProcessInfoUtil
 			for (int noTry = 0; noTry < noRetry; noTry++)
 			{
 				DB.setParameters(pstmt, sqlParams);
-				
+
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
@@ -117,7 +118,7 @@ public class ProcessInfoUtil
 		{
 			DB.close(rs, pstmt);
 		}
-		
+
 		pi.setSummary (msgBL.getMsg(Env.getCtx(), "Timeout"), true);
 	}	//	setSummaryFromDB
 
@@ -167,7 +168,14 @@ public class ProcessInfoUtil
 	//		s_log.log(Level.WARNING,"saveLogToDB - not saved - AD_PInstance_ID==0");
 			return;
 		}
-		
+
+		if (Adempiere.isUnitTestMode())
+		{
+			// don't try this is we aren't actually connected
+			pi.setLogList(null);
+			return;
+		}
+
 		final String sql = "INSERT INTO " + I_AD_PInstance_Log.Table_Name
 				+ " (AD_PInstance_ID, Log_ID, P_Date, P_ID, P_Number, P_Msg)"
 				+ " VALUES (?, ?, ?, ?, ?, ?)";
@@ -189,7 +197,7 @@ public class ProcessInfoUtil
 				DB.setParameters(pstmt, sqlParams);
 				pstmt.addBatch();
 			}
-			
+
 			pstmt.executeBatch();
 
 		}
@@ -203,7 +211,7 @@ public class ProcessInfoUtil
 			DB.close(pstmt);
 			pstmt = null;
 		}
-		
+
 		// Reset the logs list in ProcessInfo, otherwise log entries could be saved twice
 		pi.setLogList(null);
 	}   //  saveLogToDB
