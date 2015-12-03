@@ -10,24 +10,24 @@ package de.metas.allocation.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,6 +36,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
@@ -43,6 +44,8 @@ import org.compiere.model.X_C_Payment;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.adempiere.util.CacheCtx;
+import de.metas.adempiere.util.CacheTrx;
 import de.metas.allocation.api.IAllocationDAO;
 
 public class AllocationDAO implements IAllocationDAO
@@ -93,11 +96,42 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public final List<I_C_AllocationLine> retrieveLines(final I_C_AllocationHdr allocHdr)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_AllocationLine.class, allocHdr)
-				.addEqualsFilter(I_C_AllocationLine.COLUMN_C_AllocationHdr_ID, allocHdr.getC_AllocationHdr_ID())
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
+		final int allocationHdrId = allocHdr.getC_AllocationHdr_ID();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(allocHdr);
+		final String trxName = InterfaceWrapperHelper.getTrxName(allocHdr);
+
+		final boolean retrieveAll = false;
+		return retrieveLines(ctx, allocationHdrId, retrieveAll, trxName);
+	}
+
+	@Override
+	public final List<I_C_AllocationLine> retrieveAllLines(final I_C_AllocationHdr allocHdr)
+	{
+		final int allocationHdrId = allocHdr.getC_AllocationHdr_ID();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(allocHdr);
+		final String trxName = InterfaceWrapperHelper.getTrxName(allocHdr);
+
+		final boolean retrieveAll = true;
+		return retrieveLines(ctx, allocationHdrId, retrieveAll, trxName);
+	}
+
+	@Cached(cacheName = I_C_AllocationLine.Table_Name + "#By#" + I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID+"#retrieveAll")
+	/* package */ List<I_C_AllocationLine> retrieveLines(final @CacheCtx Properties ctx,
+			final int allocationHdrId,
+			final boolean retrieveAll,
+			final @CacheTrx String trxName)
+	{
+		final IQueryBuilder<I_C_AllocationLine> builder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
+				.addEqualsFilter(I_C_AllocationLine.COLUMN_C_AllocationHdr_ID, allocationHdrId);
+
+		if(!retrieveAll)
+		{
+			builder
+			.addOnlyActiveRecordsFilter()
+			.addOnlyContextClient();
+		}
+		return builder
 				.orderBy()
 				.addColumn(I_C_AllocationLine.COLUMN_C_AllocationLine_ID)
 				.endOrderBy()
@@ -138,7 +172,7 @@ public class AllocationDAO implements IAllocationDAO
 	{
 		final int invoiceId = invoice.getC_Invoice_ID();
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-		
+
 		return retrieveAllocatedAmt(invoiceId, trxName);
 	}
 

@@ -10,12 +10,12 @@ package de.metas.allocation.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,8 +39,15 @@ public interface IAllocationDAO extends ISingletonService
 	List<I_C_AllocationLine> retrieveLines(I_C_AllocationHdr allocHdr);
 
 	/**
+	 *
+	 * @param allocHdr
+	 * @return all lines, also inactive ones, and no matter which AD_Client_ID
+	 */
+	List<I_C_AllocationLine> retrieveAllLines(I_C_AllocationHdr allocHdr);
+
+	/**
 	 * Checks all the completed C_Payments with a "matching" doctype for the invoice and IsAutoAllocateAvailableAmt='Y' AND IsAllocated='N' for the partner given as param.
-	 * 
+	 *
 	 * @param invoice
 	 * @return
 	 * @task 04193
@@ -49,7 +56,7 @@ public interface IAllocationDAO extends ISingletonService
 
 	/**
 	 * Retrieves that part of the given <code>invoice</code>'s <code>GrandTotal</code> that has not yet been allocated.
-	 * 
+	 *
 	 * @param invoice the invoice for which we retrive the open amount
 	 * @param creditMemoAdjusted if <code>true</code> and <code>invoice</code> is a credit memo, then the open amount is negated.
 	 * @return
@@ -58,7 +65,7 @@ public interface IAllocationDAO extends ISingletonService
 
 	/**
 	 * Retrieves that part of the given <code>invoice</code>'s <code>GrandTotal</code> that has already been allocated.
-	 * 
+	 *
 	 * @param invoice
 	 * @return
 	 */
@@ -66,7 +73,7 @@ public interface IAllocationDAO extends ISingletonService
 
 	/**
 	 * Similar to {@link #retrieveAllocatedAmt(org.compiere.model.I_C_Invoice)}, but excludes those allocations from the sum that are related to the given <code>C_Payment_ID</code>s.
-	 * 
+	 *
 	 * @param invoice
 	 * @param paymentIDsToIgnore may be <code>null</code> or empty.
 	 * @return
@@ -75,7 +82,7 @@ public interface IAllocationDAO extends ISingletonService
 
 	/**
 	 * retriev allocation lines for specified invoice
-	 * 
+	 *
 	 * @param invoice
 	 * @return
 	 */
