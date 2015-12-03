@@ -21,6 +21,7 @@ import it.sauronsoftware.cron4j.SchedulingPattern;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -63,7 +64,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnableAdapter;
 
 /**
@@ -94,15 +94,16 @@ public class Scheduler extends AdempiereServer
 	private StringBuffer m_summary = new StringBuffer();
 
 	/** last outcome; stored in the scheduler log. */
-	private boolean m_success = true;
+	private boolean m_success = false;
 
 	/** Transaction */
-	private Trx m_trx = null;
+	private ITrx m_trx = null;
 
 	//
 	// Cron4J scheduling
 	private it.sauronsoftware.cron4j.Scheduler cronScheduler;
 	private Predictor predictor;
+	private int m_pInstanceID;
 
 	/**
 	 * Sets AD_Scheduler.Status and save the record
@@ -147,7 +148,9 @@ public class Scheduler extends AdempiereServer
 		pLog.setAD_Scheduler_ID(m_model.getAD_Scheduler_ID());
 		pLog.setSummary(m_summary.toString());
 		pLog.setIsError(!m_success);
+		pLog.setAD_PInstance_ID(m_pInstanceID);
 		pLog.setReference("#" + String.valueOf(p_runCount) + " - " + TimeUtil.formatElapsed(new Timestamp(p_startWork)));
+
 		InterfaceWrapperHelper.save(pLog);
 
 		m_summary = new StringBuffer();
@@ -166,7 +169,7 @@ public class Scheduler extends AdempiereServer
 		m_summary = new StringBuffer(m_model.toString()).append(" - ");
 
 		// Prepare a ctx for the report/process - BF [1966880]
-		final Properties schedulerCtx = createSchedulerCtx();
+		final Properties schedulerCtx = createSchedulerCtxForDoWork();
 
 		try (final IAutoCloseable contextRestorer = Env.switchContext(schedulerCtx))
 		{
@@ -197,35 +200,31 @@ public class Scheduler extends AdempiereServer
 					// HOTFIX for 06520: we are actually disabling OpenTrx timeout. That's the main cause of the issue described in this task
 					DB.getConstraints().setTrxTimeoutSecs(0, true); // secs=NoTimeout, logOnly=true
 
-					String trxNamePrefix = "Scheduler_" + process.getValue();
-					m_trx = Trx.get(Trx.createTrxName(trxNamePrefix), true);
+					final ProcessInfo pi = createProcessInfo(process);
+					m_pInstanceID = pi.getAD_PInstance_ID();
+
+					setupTrxForDoWork(process, pi);
+
 					if (process.isReport())
 					{
-						m_summary.append(runReport(process));
+						m_summary.append(runReport(pi, process));
 					}
 					else
 					{
-						m_summary.append(runProcess(process));
+						m_summary.append(runProcess(pi, process));
 					}
-					m_trx.commit(true);
+
+					commitTrxForDoWork();
 				}
 				catch (final Exception e)
 				{
-					if (m_trx != null)
-					{
-						m_trx.rollback();
-					}
+					rollBacktrxForDoWork();
 					log.log(Level.WARNING, "Failed processing: " + process.toString(), e);
 					m_summary.append(e.toString());
 				}
 				finally
 				{
-					if (m_trx != null)
-					{
-						m_trx.close();
-					}
-					m_trx = null;
-
+					closeTrxForDoWork();
 					DB.restoreConstraints();
 				}
 			}
@@ -241,7 +240,7 @@ public class Scheduler extends AdempiereServer
 
 	}	// doWork
 
-	private final Properties createSchedulerCtx()
+	private final Properties createSchedulerCtxForDoWork()
 	{
 		final Properties schedulerCtx = Env.newTemporaryCtx();
 
@@ -299,6 +298,53 @@ public class Scheduler extends AdempiereServer
 		return schedulerCtx;
 	}
 
+	private void setupTrxForDoWork(final MProcess process,
+			final ProcessInfo pi)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		if (pi.getProcessClassInfo().isRunDoItOutOfTransaction())
+		{
+			m_trx = ITrx.TRX_None;
+		}
+		else
+		{
+			final String trxNamePrefix = "Scheduler_" + process.getValue();
+			m_trx = trxManager.getTrx(trxManager.createTrxName(trxNamePrefix, true));
+		}
+	}
+
+	private void commitTrxForDoWork() throws SQLException
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		if (!trxManager.isNull(m_trx))
+		{
+			m_trx.commit(true);
+		}
+	}
+
+	private void rollBacktrxForDoWork()
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		if (!trxManager.isNull(m_trx))
+		{
+			m_trx.rollback();
+		}
+	}
+
+	private void closeTrxForDoWork()
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		if (!trxManager.isNull(m_trx))
+		{
+			m_trx.close();
+		}
+		m_trx = ITrx.TRX_None;
+	}
+
 	/**
 	 * Run Report
 	 *
@@ -306,7 +352,7 @@ public class Scheduler extends AdempiereServer
 	 * @return summary
 	 * @throws Exception
 	 */
-	private String runReport(final MProcess process) throws Exception
+	private String runReport(final ProcessInfo pi, final MProcess process) throws Exception
 	{
 		log.info(process.toString());
 		if (!process.isReport() || process.getAD_ReportView_ID() == 0)
@@ -315,7 +361,6 @@ public class Scheduler extends AdempiereServer
 		}
 
 		// Process
-		final ProcessInfo pi = createProcessInfo(process);
 		if (!process.processIt(pi, m_trx) && pi.getClassName() != null)
 		{
 			return "Process failed: (" + pi.getClassName() + ") " + pi.getSummary();
@@ -358,11 +403,9 @@ public class Scheduler extends AdempiereServer
 	 * @return summary
 	 * @throws Exception
 	 */
-	private String runProcess(final MProcess process) throws Exception
+	private String runProcess(final ProcessInfo pi, final MProcess process) throws Exception
 	{
 		log.info(process.toString());
-
-		final ProcessInfo pi = createProcessInfo(process);
 
 		final boolean ok = process.processIt(pi, m_trx);
 		ProcessInfoUtil.setLogFromDB(pi);
@@ -376,13 +419,12 @@ public class Scheduler extends AdempiereServer
 		// metas: c.ghita@metas.ro: end
 
 		m_success = ok; // stored it, so we can persist it in the scheduler log
-
 		return pi.getSummary();
 	}	// runProcess
 
 	/**
 	 * Creates and setup the {@link ProcessInfo}.
-	 * 
+	 *
 	 * @param process
 	 * @see org.compiere.wf.MWFActivity.performWork(Trx)
 	 */
@@ -396,6 +438,7 @@ public class Scheduler extends AdempiereServer
 		fillParameter(pInstance);
 
 		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID(), AD_Table_ID, Record_ID);
+		pi.setClassName(process.getClassname());
 		pi.setCtx(ctx);
 		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
 		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
@@ -408,7 +451,7 @@ public class Scheduler extends AdempiereServer
 	/**
 	 * metas: c.ghita@metas.ro
 	 * method for run a task
-	 * 
+	 *
 	 * @param task
 	 * @return
 	 */
@@ -576,7 +619,7 @@ public class Scheduler extends AdempiereServer
 	/**
 	 * metas: c.ghita@metas.ro
 	 * notify trough mail in case of abnormal termination
-	 * 
+	 *
 	 * @param ok
 	 * @param from
 	 * @param subject
@@ -606,7 +649,9 @@ public class Scheduler extends AdempiereServer
 
 				if (email)
 				{
+					@SuppressWarnings("deprecation") // here we would need to replicate the deprecated method's code, so we call it instead
 					final MClient client = MClient.get(m_model.getCtx(), m_model.getAD_Client_ID());
+
 					final File attachment = null;
 					client.sendEMail(from, user, subject, summary + " " + logInfo, attachment);
 				}
@@ -636,7 +681,9 @@ public class Scheduler extends AdempiereServer
 
 					if (email)
 					{
+						@SuppressWarnings("deprecation") // here we would need to replicate the deprecated method's code, so we call it instead
 						final MClient client = MClient.get(m_model.getCtx(), m_model.getAD_Client_ID());
+
 						client.sendEMail(from, user, subject, summary + " " + logInfo, null);
 					}
 					if (notice)

@@ -10,12 +10,12 @@ package de.metas.payment.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -97,12 +96,10 @@ public class C_Payment_DiscountAllocation_Process extends SvrProcess
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-
 		final Iterator<I_C_Payment> iterator = createIterator();
-
 		if (!iterator.hasNext())
 		{
-			throw new AdempiereException("@NoSelection@");
+			addLog("@NoSelection@");
 		}
 
 		while (iterator.hasNext())
@@ -119,7 +116,7 @@ public class C_Payment_DiscountAllocation_Process extends SvrProcess
 	{
 		final BigDecimal paymentOpenAmt = paymentDAO.getAvailableAmount(payment);
 
-		// Skip this payment if the open amount is above given limit 
+		// Skip this payment if the open amount is above given limit
 		if (paymentOpenAmt.abs().compareTo(p_OpenAmt.abs()) > 0)
 		{
 			counterSkipped.incrementAndGet();
@@ -133,7 +130,7 @@ public class C_Payment_DiscountAllocation_Process extends SvrProcess
 		}
 
 		final BigDecimal amtToWriteOff = paymentOpenAmt;
-		
+
 		trxManager.run(new TrxRunnableAdapter()
 		{
 			@Override
@@ -144,12 +141,12 @@ public class C_Payment_DiscountAllocation_Process extends SvrProcess
 				// Make sure the payment was fully allocated
 				InterfaceWrapperHelper.refresh(payment, localTrxName);
 				Check.errorIf(!payment.isAllocated(), "C_Payment {0} still has isAllocated='N' after having created {1} with paymentWriteOffAmt={2}", payment, allocationHdr, amtToWriteOff);
-				
+
 				// Log the success and increase the counter
 				addLog("@Processed@: @C_Payment_ID@ " + payment.getDocumentNo() + "; @PaymentWriteOffAmt@=" + amtToWriteOff);
 				counterProcessed.incrementAndGet();
 			}
-			
+
 			@Override
 			public boolean doCatch(Throwable e) throws Throwable
 			{

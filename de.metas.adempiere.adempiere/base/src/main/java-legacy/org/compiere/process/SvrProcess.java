@@ -27,8 +27,6 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -49,19 +47,14 @@ import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutableReference;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MPInstance;
 import org.compiere.model.PO;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.reflections.ReflectionUtils;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 /**
  * Server Process base class.
@@ -105,7 +98,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 	/** Logger */
 	protected final CLogger log = CLogger.getCLogger(getClass());
-	private static final transient CLogger s_log = CLogger.getCLogger(SvrProcess.class);
+	static final transient CLogger s_log = CLogger.getCLogger(SvrProcess.class);
 
 	/** Is the Object locked */
 	private boolean m_locked = false;
@@ -159,17 +152,17 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		m_trx = ITrx.TRX_None;
 
 		boolean success = false;
-		try(final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(this))
+		try (final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(this))
 		{
 			lock();
 
 			//
 			// Prepare out of transaction, if needed
-			final ProcessClassInfo processClassInfo = getProcessClassInfo();
+			final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
 			boolean prepareExecuted = false;
 			if (processClassInfo.isRunPrepareOutOfTransaction())
 			{
-				assertOutOfTransaction(trx); // make sure we were asked to run out of transaction
+				assertOutOfTransaction(trx, "prepare"); // make sure we were asked to run out of transaction
 				prepareExecuted = true;
 				prepare();
 			}
@@ -180,11 +173,10 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			boolean doItExecuted = false;
 			if (processClassInfo.isRunDoItOutOfTransaction())
 			{
-				assertOutOfTransaction(trx); // make sure we were asked to run out of transaction
+				assertOutOfTransaction(trx, "run"); // make sure we were asked to run out of transaction
 				doItExecuted = true;
 				doItResult = doIt();
 			}
-
 
 			//
 			// Prepare and doIt in transaction, if not already executed
@@ -197,7 +189,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 					prepareExecuted = true;
 					prepare();
 				}
-				if(!doItExecuted)
+				if (!doItExecuted)
 				{
 					doItExecuted = true;
 					doItResult = doIt();
@@ -238,19 +230,19 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 *
 	 * @param trx
 	 */
-	private final void assertOutOfTransaction(final ITrx trx)
+	private final void assertOutOfTransaction(final ITrx trx, final String stage)
 	{
 		// Make sure we are really running out-of-transaction
 		if (!trxManager.isNull(trx))
 		{
-			throw new IllegalStateException("Process wants to prepare out-of-transaction but we are already in transaction."
+			throw new IllegalStateException("Process wants to " + stage + " out-of-transaction but we are already in transaction."
 					+ "\n Process: " + getClass()
 					+ "\n Trx: " + trx);
 		}
 		final String threadInheritedTrxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
 		if (!trxManager.isNull(threadInheritedTrxName))
 		{
-			throw new IllegalStateException("Process wants to prepare out-of-transaction but we are running in a thread inherited transaction."
+			throw new IllegalStateException("Process wants to " + stage + " out-of-transaction but we are running in a thread inherited transaction."
 					+ "\n Process: " + getClass()
 					+ "\n Thread inherited transaction: " + threadInheritedTrxName);
 		}
@@ -854,14 +846,6 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	}
 
 	/**
-	 * @return process class info or {@link ProcessClassInfo#NULL} in case of failure
-	 */
-	private ProcessClassInfo getProcessClassInfo()
-	{
-		return ProcessClassInfo.of(getClass());
-	}
-
-	/**
 	 * Used to annotate that {@link SvrProcess#prepare()} or {@link SvrProcess#doIt()} shall be executed out of transaction.
 	 *
 	 * If {@link SvrProcess#doIt()} is annotated then {@link SvrProcess#prepare()} will be executed out of transaction too.
@@ -872,144 +856,6 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	@Target({ ElementType.METHOD, ElementType.TYPE })
 	protected @interface RunOutOfTrx
 	{
-	}
-
-	/**
-	 * Contains informations about the process class.
-	 *
-	 * This instance will be build by introspecting a particular process class and fetching it's annotations.
-	 *
-	 * To create a new instance, call {@link #of(Class)} builder.
-	 *
-	 * @author tsa
-	 */
-	private static final class ProcessClassInfo
-	{
-		/**
-		 * @return process class info or {@link #NULL} in case of failure
-		 */
-		public static final ProcessClassInfo of(final Class<?> processClass)
-		{
-			try
-			{
-				return processClassInfoCache.get(processClass);
-			}
-			catch (ExecutionException e)
-			{
-				// shall never happen
-				s_log.log(Level.SEVERE, "Failed fetching ProcessClassInfo from cache for " + processClass, e);
-			}
-			return ProcessClassInfo.NULL;
-		}
-
-		/** "Process class" to {@link ProcessClassInfo} cache */
-		private static final LoadingCache<Class<?>, ProcessClassInfo> processClassInfoCache = CacheBuilder.newBuilder()
-				.weakKeys() // to prevent ClassLoader memory leaks nightmare
-				.build(new CacheLoader<Class<?>, ProcessClassInfo>()
-				{
-					@Override
-					public ProcessClassInfo load(final Class<?> processClass) throws Exception
-					{
-						return createProcessClassInfo(processClass);
-					}
-				});
-
-		/**
-		 * Introspect given process class and return info.
-		 *
-		 * @param processClass
-		 * @return process class info or {@link #NULL} in case of failure.
-		 */
-		static final ProcessClassInfo createProcessClassInfo(final Class<?> processClass)
-		{
-			try
-			{
-				boolean runPrepareOutOfTransaction = isRunOutOfTrx(processClass, void.class, "prepare");
-				final boolean runDoItOutOfTransaction = isRunOutOfTrx(processClass, String.class, "doIt");
-				if(runDoItOutOfTransaction)
-				{
-					runPrepareOutOfTransaction = true;
-				}
-
-				return new ProcessClassInfo(runPrepareOutOfTransaction, runDoItOutOfTransaction);
-			}
-			catch (Throwable e)
-			{
-				s_log.log(Level.SEVERE, "Failed introspecting process class info: " + processClass + ". Fallback to defaults: " + NULL, e);
-				return NULL;
-			}
-		}
-
-		private static final boolean isRunOutOfTrx(final Class<?> processClass, final Class<?> returnType, final String methodName)
-		{
-			// Get all methods with given format,
-			// from given processClass and it's super classes,
-			// ordered by methods of processClass first, methods from super classes after
-			@SuppressWarnings("unchecked")
-			final Set<Method> methods = ReflectionUtils.getAllMethods(processClass
-					, ReflectionUtils.withName(methodName)
-					, ReflectionUtils.withParameters()
-					, ReflectionUtils.withReturnType(returnType));
-
-			// No methods of given format were found. This can be problematic because we assume given method is declared somewhere.
-			if (methods.isEmpty())
-			{
-				throw new IllegalStateException("Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types");
-			}
-
-			// Iterate all methods and return on first RunOutOfTrx annotation found.
-			for (final Method method : methods)
-			{
-				final RunOutOfTrx runOutOfTrxAnnotation = method.getAnnotation(RunOutOfTrx.class);
-				if(runOutOfTrxAnnotation != null)
-				{
-					return true;
-				}
-			}
-
-			// Fallback: no RunOutOfTrx annotation found
-			return false;
-		}
-
-		public static final ProcessClassInfo NULL = new ProcessClassInfo();
-
-		private final boolean runPrepareOutOfTransaction;
-		private final boolean runDoItOutOfTransaction;
-		// NOTE: NEVER EVER store the process class as field because we want to have a weak reference to it to prevent ClassLoader memory leaks nightmare.
-		// Remember that we are caching this object.
-
-		/** null constructor */
-		ProcessClassInfo()
-		{
-			super();
-			runPrepareOutOfTransaction = false;
-			runDoItOutOfTransaction = false;
-		}
-
-		ProcessClassInfo(final boolean runPrepareOutOfTransaction, final boolean runDoItOutOfTransaction)
-		{
-			super();
-			this.runPrepareOutOfTransaction = runPrepareOutOfTransaction;
-			this.runDoItOutOfTransaction = runDoItOutOfTransaction;
-		}
-
-		@Override
-		public String toString()
-		{
-			return ObjectUtils.toString(this);
-		}
-
-		/** @return <code>true</code> if we shall run {@link SvrProcess#prepare()} method out of transaction */
-		public boolean isRunPrepareOutOfTransaction()
-		{
-			return runPrepareOutOfTransaction;
-		}
-
-		/** @return <code>true</code> if we shall run {@link SvrProcess#doIt()} method out of transaction */
-		public boolean isRunDoItOutOfTransaction()
-		{
-			return runDoItOutOfTransaction;
-		}
 	}
 
 	/**

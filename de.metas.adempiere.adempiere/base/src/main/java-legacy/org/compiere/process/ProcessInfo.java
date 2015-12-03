@@ -58,7 +58,7 @@ public class ProcessInfo implements Serializable
 {
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param Title Title
 	 * @param AD_Process_ID AD_Process_ID
 	 * @param Table_ID AD_Table_ID
@@ -83,7 +83,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param Title Title
 	 * @param AD_Process_ID AD_Process_ID
 	 * */
@@ -156,7 +156,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * String representation
-	 * 
+	 *
 	 * @return String representation
 	 */
 	@Override
@@ -188,7 +188,7 @@ public class ProcessInfo implements Serializable
 	{
 		return Env.coalesce(ctx);
 	}
-	
+
 	public void setCtx(final Properties ctx)
 	{
 		this.ctx = ctx;
@@ -196,7 +196,7 @@ public class ProcessInfo implements Serializable
 
 	/**************************************************************************
 	 * Set Summary
-	 * 
+	 *
 	 * @param summary summary (will be translated)
 	 */
 	public void setSummary(String summary)
@@ -206,7 +206,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getSummary
-	 * 
+	 *
 	 * @return String
 	 */
 	public String getSummary()
@@ -216,7 +216,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setSummary
-	 * 
+	 *
 	 * @param translatedSummary String
 	 * @param error boolean
 	 */
@@ -228,7 +228,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method addSummary
-	 * 
+	 *
 	 * @param additionalSummary String
 	 */
 	public void addSummary(String additionalSummary)
@@ -238,7 +238,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setError
-	 * 
+	 *
 	 * @param error boolean
 	 */
 	public void setError(boolean error)
@@ -248,7 +248,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method isError
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public boolean isError()
@@ -258,7 +258,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Batch
-	 * 
+	 *
 	 * @param batch true if batch processing
 	 */
 	public void setIsBatch(boolean batch)
@@ -278,7 +278,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Timeout
-	 * 
+	 *
 	 * @param timeout true still running
 	 */
 	public void setIsTimeout(boolean timeout)
@@ -298,7 +298,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Set Log of Process.
-	 * 
+	 *
 	 * <pre>
 	 *  - Translated Process Message
 	 *  - List of log entries
@@ -365,7 +365,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getAD_PInstance_ID
-	 * 
+	 *
 	 * @return int
 	 */
 	public int getAD_PInstance_ID()
@@ -375,7 +375,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setAD_PInstance_ID
-	 * 
+	 *
 	 * @param AD_PInstance_ID int
 	 */
 	public void setAD_PInstance_ID(int AD_PInstance_ID)
@@ -385,7 +385,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getAD_Process_ID
-	 * 
+	 *
 	 * @return int
 	 */
 	public int getAD_Process_ID()
@@ -395,7 +395,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setAD_Process_ID
-	 * 
+	 *
 	 * @param AD_Process_ID int
 	 */
 	public void setAD_Process_ID(int AD_Process_ID)
@@ -405,7 +405,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getClassName
-	 * 
+	 *
 	 * @return String or null
 	 */
 	public String getClassName()
@@ -415,7 +415,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setClassName
-	 * 
+	 *
 	 * @param ClassName String
 	 */
 	public void setClassName(String ClassName)
@@ -427,7 +427,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getTransientObject
-	 * 
+	 *
 	 * @return Object
 	 */
 	public Object getTransientObject()
@@ -437,7 +437,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setTransientObject
-	 * 
+	 *
 	 * @param TransientObject Object
 	 */
 	public void setTransientObject(Object TransientObject)
@@ -447,7 +447,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getSerializableObject
-	 * 
+	 *
 	 * @return Serializable
 	 */
 	public Serializable getSerializableObject()
@@ -457,7 +457,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setSerializableObject
-	 * 
+	 *
 	 * @param SerializableObject Serializable
 	 */
 	public void setSerializableObject(Serializable SerializableObject)
@@ -467,7 +467,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getEstSeconds
-	 * 
+	 *
 	 * @return int
 	 */
 	public int getEstSeconds()
@@ -477,7 +477,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setEstSeconds
-	 * 
+	 *
 	 * @param EstSeconds int
 	 */
 	public void setEstSeconds(int EstSeconds)
@@ -496,7 +496,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getTable_ID
-	 * 
+	 *
 	 * @return int
 	 */
 	public int getTable_ID()
@@ -506,7 +506,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setTable_ID
-	 * 
+	 *
 	 * @param AD_Table_ID int
 	 */
 	public void setTable_ID(int AD_Table_ID)
@@ -528,7 +528,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getRecord_ID
-	 * 
+	 *
 	 * @return int
 	 */
 	public int getRecord_ID()
@@ -538,17 +538,17 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setRecord_ID
-	 * 
+	 *
 	 * @param Record_ID int
 	 */
 	public void setRecord_ID(int Record_ID)
 	{
 		m_Record_ID = Record_ID;
 	}
-	
+
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
-	 * 
+	 *
 	 * @param modelClass
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
@@ -557,10 +557,10 @@ public class ProcessInfo implements Serializable
 	{
 		return getRecord(modelClass, getTrxName());
 	}
-	
+
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
-	 * 
+	 *
 	 * @param modelClass
 	 * @param trxName transaction to be used when loading the record
 	 * @return record; never returns null
@@ -593,7 +593,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
-	 * 
+	 *
 	 * @param modelClass
 	 * @param trxName
 	 * @return record or {@link Optional#absent()} if record does not exist or it does not match given <code>modelClass</code>
@@ -629,7 +629,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getTitle
-	 * 
+	 *
 	 * @return String
 	 */
 	public String getTitle()
@@ -639,7 +639,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setTitle
-	 * 
+	 *
 	 * @param Title String
 	 */
 	public void setTitle(String Title)
@@ -649,7 +649,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setAD_Client_ID
-	 * 
+	 *
 	 * @param AD_Client_ID int
 	 */
 	public void setAD_Client_ID(int AD_Client_ID)
@@ -659,7 +659,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getAD_Client_ID
-	 * 
+	 *
 	 * @return Integer
 	 */
 	public Integer getAD_Client_ID()
@@ -669,7 +669,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setAD_User_ID
-	 * 
+	 *
 	 * @param AD_User_ID int
 	 */
 	public void setAD_User_ID(int AD_User_ID)
@@ -679,7 +679,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getAD_User_ID
-	 * 
+	 *
 	 * @return Integer
 	 */
 	public Integer getAD_User_ID()
@@ -689,7 +689,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Get Process Parameters.
-	 * 
+	 *
 	 * If they were not already set, they will be loaded from database.
 	 *
 	 * @return Parameter Array
@@ -712,12 +712,12 @@ public class ProcessInfo implements Serializable
 	{
 		return new ProcessParams(getParameter());
 	}
-	
+
 	/**
 	 * Set Parameters.
-	 * 
+	 *
 	 * NOTE: calling this method will override current existing paramters (if any) and it will prevent them to be loaded from database.
-	 * 
+	 *
 	 * @param parameter Parameter Array
 	 */
 	public void setParameter(final ProcessInfoParameter[] parameter)
@@ -769,7 +769,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getLogs
-	 * 
+	 *
 	 * @return ProcessInfoLog[]
 	 */
 	public ProcessInfoLog[] getLogs()
@@ -783,7 +783,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getIDs
-	 * 
+	 *
 	 * @return int[]
 	 */
 	public int[] getIDs()
@@ -798,7 +798,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getLogList
-	 * 
+	 *
 	 * @return ArrayList
 	 */
 	public ArrayList<ProcessInfoLog> getLogList()
@@ -808,7 +808,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setLogList
-	 * 
+	 *
 	 * @param logs ArrayList
 	 */
 	public void setLogList(ArrayList<ProcessInfoLog> logs)
@@ -818,7 +818,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Get transaction name for this process
-	 * 
+	 *
 	 * @return String
 	 */
 	public String getTransactionName()
@@ -828,7 +828,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Get database transaction name for this process
-	 * 
+	 *
 	 * @return String
 	 */
 	@Override
@@ -839,7 +839,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Set transaction name from this process
-	 * 
+	 *
 	 * @param trxName
 	 */
 	public void setTransactionName(String trxName)
@@ -850,7 +850,7 @@ public class ProcessInfo implements Serializable
 	/**
 	 * Set print preview flag, only relevant if this is a reporting process.
 	 * A <code>false</code> parameter can be overridden by the {@link Ini#P_PRINTPREVIEW} property
-	 * 
+	 *
 	 * @param b
 	 */
 	public void setPrintPreview(boolean b)
@@ -860,7 +860,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Is print preview instead of direct print ? Only relevant if this is a reporting process
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public boolean isPrintPreview()
@@ -870,7 +870,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Is this a reporting process ?
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public boolean isReportingProcess()
@@ -880,7 +880,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Set is this a reporting process
-	 * 
+	 *
 	 * @param f
 	 */
 	public void setReportingProcess(boolean f)
@@ -891,7 +891,7 @@ public class ProcessInfo implements Serializable
 	// FR 1906632
 	/**
 	 * Set PDF file generate to Jasper Report
-	 * 
+	 *
 	 * @param PDF File
 	 */
 	public void setPDFReport(File f)
@@ -901,7 +901,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Get PDF file generate to Jasper Report
-	 * 
+	 *
 	 * @param f
 	 */
 	public File getPDFReport()
@@ -915,7 +915,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method getAD_Org_ID
-	 * 
+	 *
 	 * @return Integer
 	 */
 	// metas: c.ghita@metas.ro
@@ -930,7 +930,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Method setAD_Org_ID
-	 * 
+	 *
 	 * @param AD_Org_ID int
 	 */
 	// metas: c.ghita@metas.ro
@@ -945,7 +945,7 @@ public class ProcessInfo implements Serializable
 	// 03152
 	/**
 	 * If the process has failed with a Throwable, that Throwable can be retrieved using this getter.
-	 * 
+	 *
 	 * @return
 	 */
 	public Throwable getThrowable()
@@ -972,7 +972,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Set Parent's WindowNo
-	 * 
+	 *
 	 * @param windowNo
 	 */
 	public void setWindowNo(final int windowNo)
@@ -984,7 +984,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Set Parent's TabNo
-	 * 
+	 *
 	 * @param tabNo
 	 * @return
 	 */
@@ -1013,7 +1013,7 @@ public class ProcessInfo implements Serializable
 	}
 
 	/**
-	 * 
+	 *
 	 * @return a query filter for the current m_whereClause
 	 * @task 03685
 	 */
@@ -1040,7 +1040,7 @@ public class ProcessInfo implements Serializable
 	private Language reportLanguage = null;
 
 	/**
-	 * 
+	 *
 	 * @return language used to reports; could BE <code>null</code>
 	 */
 	public Language getReportLanguage()
@@ -1050,7 +1050,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Sets language to be used in reports.
-	 * 
+	 *
 	 * @param reportLanguage
 	 */
 	public void setReportLanguage(final Language reportLanguage)
@@ -1078,9 +1078,9 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Same as {@link #getGridTabSymmaryInfo()} but the value will be cased to given class.
-	 * 
+	 *
 	 * If that is not possible or the underlying object is null then null will be returned.
-	 * 
+	 *
 	 * @param gridTabSummaryInfoClass
 	 */
 	public final <T extends IGridTabSummaryInfo> T getGridTabSummaryInfoOrNull(Class<T> gridTabSummaryInfoClass)
@@ -1093,6 +1093,28 @@ public class ProcessInfo implements Serializable
 		}
 
 		return null;
+	}
+
+	/**
+	 *
+	 * @return the {@link ProcessClassInfo} for this instance's <code>className</code> (see {@link #getClassName()}) or {@link ProcessClassInfo#NULL} if this instance has no classname or the
+	 *         instance's classname's class can't be loaded.
+	 */
+	public ProcessClassInfo getProcessClassInfo()
+	{
+		Class<?> processClass = null;
+		if (!Check.isEmpty(m_ClassName))
+		{
+			try
+			{
+				processClass = Class.forName(m_ClassName);
+			}
+			catch (ClassNotFoundException e)
+			{
+				// nothing
+			}
+		}
+		return ProcessClassInfo.of(processClass);
 	}
 
 }   // ProcessInfo

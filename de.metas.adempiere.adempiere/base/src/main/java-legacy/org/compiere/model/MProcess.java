@@ -34,7 +34,7 @@ import org.compiere.util.Trx;
  *
  *  @author Jorg Janke
  *  @version $Id: MProcess.java,v 1.4 2006/07/30 00:58:04 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  * 			<li>BF [ 1757523 ] Server Processes are using Server's context
  * 			<li>FR [ 2214883 ] Remove SQL code and Replace for Query
@@ -42,7 +42,7 @@ import org.compiere.util.Trx;
 public class MProcess extends X_AD_Process
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2404724380401712390L;
 
@@ -59,8 +59,8 @@ public class MProcess extends X_AD_Process
 		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, AD_Process_ID, I_AD_Process.class, ITrx.TRXNAME_None);
 		return LegacyAdapters.convertToPO(process);
 	}	//	get
-	
-	
+
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -132,9 +132,9 @@ public class MProcess extends X_AD_Process
 		}
 		return null;
 	}	//	getParameter
-	
-	
-	
+
+
+
 	/**
 	 * 	String Representation
 	 *	@return info
@@ -155,12 +155,12 @@ public class MProcess extends X_AD_Process
 	 *	@param trx transaction
 	 *	@return true if OK
 	 */
-	public boolean processIt (ProcessInfo pi, Trx trx)
+	public boolean processIt (ProcessInfo pi, ITrx trx)
 	{
 		if (pi.getAD_PInstance_ID() == 0)
 		{
 			final MPInstance pInstance = new MPInstance (this, pi);
-			
+
 			//	Lock
 			pInstance.setIsProcessing(true);
 			pInstance.saveEx();
@@ -190,7 +190,7 @@ public class MProcess extends X_AD_Process
 				log.warning(msg);
 			}
 		}
-		
+
 		return ok;
 	}	//	process
 
@@ -203,7 +203,7 @@ public class MProcess extends X_AD_Process
 		String Classname = getClassname();
 		return (Classname != null && Classname.length() > 0);
 	}	//	is JavaProcess
-	
+
 	/**
 	 *  Start Database Process
 	 *  @param ProcedureName PL/SQL procedure name
@@ -211,12 +211,12 @@ public class MProcess extends X_AD_Process
 	 *	see ProcessCtl.startProcess
 	 *  @return true if success
 	 */
-	private boolean startProcess (String ProcedureName, ProcessInfo processInfo, Trx trx)
+	private boolean startProcess (String ProcedureName, ProcessInfo processInfo, ITrx trx)
 	{
 		int AD_PInstance_ID = processInfo.getAD_PInstance_ID();
 		//  execute on this thread/connection
 		log.info(ProcedureName + "(" + AD_PInstance_ID + ")");
-		
+
 		return ProcessUtil.startDatabaseProcedure(processInfo, ProcedureName, trx);
 	}   //  startProcess
 
@@ -234,14 +234,14 @@ public class MProcess extends X_AD_Process
 	 *  @return     true if success
 	 *	see ProcessCtl.startClass
 	 */
-	private boolean startClass (ProcessInfo pi, Trx trx)
+	private boolean startClass (ProcessInfo pi, ITrx trx)
 	{
 		log.info(pi.getClassName());
-		
+
 		return ProcessUtil.startJavaProcess(getCtx(), pi, trx);
 	}   //  startClass
 
-	
+
 	/**
 	 * 	Is it a Workflow
 	 *	@return true if Workflow
@@ -250,8 +250,8 @@ public class MProcess extends X_AD_Process
 	{
 		return getAD_Workflow_ID() > 0;
 	}	//	isWorkflow
-	
-	
+
+
 	/**
 	 * 	Update Statistics
 	 *	@param seconds sec
@@ -261,8 +261,8 @@ public class MProcess extends X_AD_Process
 		setStatistic_Count(getStatistic_Count() + 1);
 		setStatistic_Seconds(getStatistic_Seconds() + seconds);
 	}	//	addStatistics
-	
-	
+
+
 	/**
 	 * 	After Save
 	 *	@param newRecord new
@@ -277,7 +277,7 @@ public class MProcess extends X_AD_Process
 			// Add to all automatic roles ... handled elsewhere
 		}
 		//	Menu/Workflow
-		else if (is_ValueChanged("IsActive") || is_ValueChanged("Name") 
+		else if (is_ValueChanged("IsActive") || is_ValueChanged("Name")
 			|| is_ValueChanged("Description") || is_ValueChanged("Help"))
 		{
 			MMenu[] menues = MMenu.get(getCtx(), "AD_Process_ID=" + getAD_Process_ID(), get_TrxName());
@@ -310,7 +310,7 @@ public class MProcess extends X_AD_Process
 		}
 		return success;
 	}	//	afterSave
-	
+
 	/**
 	 * Grant independence to GenerateModel from AD_Process_ID
 	 * @param value
@@ -322,14 +322,14 @@ public class MProcess extends X_AD_Process
 		int retValue = DB.getSQLValueEx(trxName, "SELECT AD_Process_ID FROM AD_Process WHERE Value=?", value);
 		return retValue;
 	}
-	
+
 	/**
 	 * Copy settings from another process
 	 * overwrites existing data
 	 * (including translations)
 	 * and saves.
 	 * Not overwritten: name, value, entitytype
-	 * @param source 
+	 * @param source
 	 */
 	public void copyFrom (MProcess source)
 	{
@@ -350,10 +350,10 @@ public class MProcess extends X_AD_Process
 		setJasperReport(source.getJasperReport());
 		setProcedureName(source.getProcedureName());
 		setShowHelp(source.getShowHelp());
-		
+
 		saveEx();
-		
-		// copy parameters 
+
+		// copy parameters
 		// TODO? Perhaps should delete existing first?
 		MProcessPara[] parameters = source.getParameters();
 		for ( MProcessPara sourcePara : parameters )
@@ -374,7 +374,7 @@ public class MProcess extends X_AD_Process
 		if (pi.getAD_PInstance_ID() == 0)
 		{
 			final MPInstance pInstance = new MPInstance (this, pi);
-			
+
 			//	Lock
 			pInstance.setIsProcessing(true);
 			pInstance.save();
@@ -404,10 +404,10 @@ public class MProcess extends X_AD_Process
 				log.warning(msg);
 			}
 		}
-		
+
 		return ok;
 	}	//	processItWithoutTrxClose
-	
+
 	/**
 	 *  Start Java Class (sync) without closing the given transaction.
 	 *      instanciate the class implementing the interface ProcessCall.
@@ -427,5 +427,5 @@ public class MProcess extends X_AD_Process
 		return ProcessUtil.startJavaProcessWithoutTrxClose(getCtx(), pi, trx);
 	}   //  startClassWithoutTrxClose
 
-	
+
 }	//	MProcess

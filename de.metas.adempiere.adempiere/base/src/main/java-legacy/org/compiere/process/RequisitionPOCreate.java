@@ -440,8 +440,8 @@ public class RequisitionPOCreate extends SvrProcess
 			final String sql = I_C_BPartner_Product.COLUMNNAME_M_Product_ID + " = ? ";
 			final List<Object> params = new ArrayList<Object>();
 			params.add(rLine.getM_Product_ID());
-			final IQueryFilter<org.compiere.model.I_C_BPartner_Product> orderFilter = new TypedSqlQueryFilter<>(sql, params);
-			final List<de.metas.interfaces.I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, orderFilter);
+			final IQueryFilter<I_C_BPartner_Product> orderFilter = new TypedSqlQueryFilter<I_C_BPartner_Product>(sql, params);
+			final List<I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, orderFilter);
 	
 			if (partnerProducts.size() > 0)
 			{
