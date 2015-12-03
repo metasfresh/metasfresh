@@ -1,26 +1,26 @@
 /**********************************************************************
- * This file is part of Adempiere ERP Bazaar                          * 
- * http://www.adempiere.org                                           * 
- *                                                                    * 
- * Copyright (C) Trifon Trifonov.                                     * 
- * Copyright (C) Contributors                                         * 
- *                                                                    * 
- * This program is free software; you can redistribute it and/or      * 
- * modify it under the terms of the GNU General Public License        * 
- * as published by the Free Software Foundation; either version 2     * 
- * of the License, or (at your option) any later version.             * 
- *                                                                    * 
- * This program is distributed in the hope that it will be useful,    * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of     * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the       * 
- * GNU General Public License for more details.                       * 
- *                                                                    * 
- * You should have received a copy of the GNU General Public License  * 
- * along with this program; if not, write to the Free Software        * 
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,         * 
- * MA 02110-1301, USA.                                                * 
- *                                                                    * 
- * Contributors:                                                      * 
+ * This file is part of Adempiere ERP Bazaar                          *
+ * http://www.adempiere.org                                           *
+ *                                                                    *
+ * Copyright (C) Trifon Trifonov.                                     *
+ * Copyright (C) Contributors                                         *
+ *                                                                    *
+ * This program is free software; you can redistribute it and/or      *
+ * modify it under the terms of the GNU General Public License        *
+ * as published by the Free Software Foundation; either version 2     *
+ * of the License, or (at your option) any later version.             *
+ *                                                                    *
+ * This program is distributed in the hope that it will be useful,    *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of     *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the       *
+ * GNU General Public License for more details.                       *
+ *                                                                    *
+ * You should have received a copy of the GNU General Public License  *
+ * along with this program; if not, write to the Free Software        *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,         *
+ * MA 02110-1301, USA.                                                *
+ *                                                                    *
+ * Contributors:                                                      *
  *  - Trifon Trifonov (trifonnt@users.sourceforge.net)                *
  *                                                                    *
  * Sponsors:                                                          *
@@ -115,12 +115,12 @@ import de.metas.monitoring.api.IMonitoringBL;
 
 /**
  * Default XML importer
- * 
+ *
  * @author Trifon N. Trifonov
  * @author Antonio Cañaveral, e-Evolution <li>[ 2195016 ] Implementation delete records messages <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332
  * @author victor.perez@e-evolution.com, e-Evolution <li>[ 2195090 ] Stabilization of replication <li>https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2936561&group_id=176962 <li>BF
  *         [2947622] The replication ID (Primary Key) is not working <li>https://sourceforge.net/tracker/?func=detail&aid=2947622&group_id=176962&atid=879332
- * 
+ *
  */
 public class ImportHelper implements IImportHelper
 {
@@ -639,7 +639,7 @@ public class ImportHelper implements IImportHelper
 
 	/**
 	 * Get the value from format
-	 * 
+	 *
 	 * @param line
 	 * @param po
 	 * @param rootElement
@@ -817,7 +817,7 @@ public class ImportHelper implements IImportHelper
 	}
 
 	/**
-	 * 
+	 *
 	 * @param value
 	 * @param line
 	 * @param po
@@ -1002,6 +1002,7 @@ public class ImportHelper implements IImportHelper
 
 		final String whereClause = I_AD_Client.COLUMNNAME_Value + "= ? ";
 		final int adClientId = new Query(ctx, I_AD_Client.Table_Name, whereClause, trxName)
+				.setOnlyActiveRecords(true)
 				.setParameters(value)
 				.firstIdOnly();
 
@@ -1011,7 +1012,7 @@ public class ImportHelper implements IImportHelper
 
 	/**
 	 * This Method gets the PO record associated with the created ReplicationTrxLine from the exportFormat
-	 * 
+	 *
 	 * @param result
 	 * @param expFormat
 	 * @param rootElement
@@ -1336,6 +1337,7 @@ public class ImportHelper implements IImportHelper
 					.addParameter("Value", lookupValues)
 					.addParameter("MasterPO", masterPO != null ? masterPO : "NULL");
 
+			// further up, this exception might be caught and resolved by getSingleDefaultPO()
 			throw lookupEx;
 		}
 		else if (lookupValues.isEmpty()) // Means that is a new record
@@ -1410,7 +1412,7 @@ public class ImportHelper implements IImportHelper
 	 * Currently always returns <code>true</code>. The original intention was to return <code>true</code> only if the PO can be linked to the ReplicationTrx. The problem there is that we often use
 	 * <i>nested</i> lookup-EXP-Formats that are based on a view and therefore can't be linked to the replication-trx. Example: we look up the C_BPartner_Location for a C_OLCand using a view-based
 	 * lookup format. And inside that view-based lookup format, we use another view-based lookup format to look up the BPL's C_BPArtner.
-	 * 
+	 *
 	 * @param doLookup
 	 * @param lookupTableName
 	 * @return <code>true</code>
@@ -1432,7 +1434,7 @@ public class ImportHelper implements IImportHelper
 	/**
 	 * @param availableValues
 	 * @return single default value
-	 * 
+	 *
 	 * @throws ReplicationException if none or more default values were found
 	 */
 	private PO getSingleDefaultPO(final List<PO> availableValues, final I_EXP_FormatLine line) throws ReplicationException
@@ -1444,6 +1446,10 @@ public class ImportHelper implements IImportHelper
 		PO defaultValue = null;
 		for (final PO lookupValue : availableValues)
 		{
+			if(!lookupValue.isActive())
+			{
+				continue; // shouldn't be the case, but just to make sure..
+			}
 			final int id = lookupValue.get_ID();
 
 			final String tableName = targetTableAndColumn.getTableName();
@@ -1474,13 +1480,13 @@ public class ImportHelper implements IImportHelper
 	 * <p>
 	 * If the given <code>formatLine</code> has a <code>DateFormat</code>, then we use that format to parse the given <code>value</code> using {@link SimpleDateFormat}. Otherwise, we use
 	 * {@link DatatypeConverter#parseDateTime(String)} to do the parsing.
-	 * 
+	 *
 	 * Note that this method assumes that
 	 * <ul>
 	 * <li>none of the given parameters is <code>null</code></li>
 	 * <li>the given column is a "Date" column, i.e. <code>DisplayType.isDate()</code> will return <code>true</code></li>
 	 * </ul>
-	 * 
+	 *
 	 * @param value
 	 * @param column
 	 * @param formatLine
@@ -1551,7 +1557,7 @@ public class ImportHelper implements IImportHelper
 	private static final Pattern REGEXP_YesNo = Pattern.compile("[YN]");
 
 	/**
-	 * 
+	 *
 	 * @param value
 	 * @return "Y" or "N"
 	 */

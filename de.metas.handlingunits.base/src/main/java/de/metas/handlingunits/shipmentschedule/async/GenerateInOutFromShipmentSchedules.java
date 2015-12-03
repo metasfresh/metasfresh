@@ -75,11 +75,13 @@ import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPicke
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 
 /**
  * Generate Shipments from given shipment schedules by processing enqueued work packages.<br>
  * This usually happens on the server site, in an asynchronous manner.<br>
  * See {@link #processWorkPackage(I_C_Queue_WorkPackage, String)}.
+ * Note: the enqeueing part is done by {@link de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer ShipmentScheduleEnqueuer}.
  *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary
@@ -92,6 +94,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	//
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	//
@@ -147,8 +150,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		if (candidates.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
-			// throw new AdempiereException("No eligible candidates were found");
-			getLoggable().addLog("No eligible candidates were found");
+			getLoggable().addLog("No unprocessed candidates were found");
 		}
 
 		//
@@ -166,6 +168,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		{
 			shipmentDocDocAction = null; // let the document as it is, don't complete it
 		}
+
 		final boolean createPackingLines = true; // task 08138: the packing lines shall be created directly, and shall be user-editable.
 		final boolean manualPackingMaterial = true;
 		shipmentGenerator.generateInOuts(ctx, candidates.iterator(), shipmentDocDocAction, createPackingLines, manualPackingMaterial, localTrxName);
@@ -195,11 +198,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 			// task 08959: skip invalid schedules, check again in 10 seconds
 			// the system will eventually have updated them for us.
-			// Note that this way, the sched might differ from what 
+			// Note that this way, the sched might differ from what
 			// the user selected, but on the other hand, if a user enqueued invalid records, they shouldn't be too surprised.
-			if (schedule.isToRecompute())
+			if (shipmentSchedulePA.isInvalid(schedule))
 			{
-				throw WorkpackageSkipRequestException.createWithTimeout("Shipment schedule flagged to be recomputed: " + schedule, 10000);
+				throw WorkpackageSkipRequestException.createWithTimeout("Shipment schedule needs to be updated first: " + schedule, 10000);
 			}
 
 			final List<IShipmentScheduleWithHU> scheduleCandidates = createCandidates(schedule);
@@ -258,9 +261,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 */
 	private List<IShipmentScheduleWithHU> createCandidates(final I_M_ShipmentSchedule schedule)
 	{
-
 		//
-		// Load all QtyPicked records
+		// Load all QtyPicked records that have no InOutLine yet
 		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
 
 		if (qtyPickedRecords.isEmpty())
@@ -268,7 +270,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			final boolean isUseQtyPicked = getParameters().getParameterAsBool(PARAM_IsUseQtyPicked);
 			if (isUseQtyPicked)
 			{
-				//
+				// the parameter insists that we use qtyPicked records, but there aren't any
+				// => nothing to do, basically
+
 				// If we got no qty picked records just because they were already delivered,
 				// don't fail this workpackage but just log the issue (task 09048)
 				final boolean wereDelivered = shipmentScheduleAllocDAO.retrievePickedAndDeliveredRecordsQuery(schedule).create().match();
@@ -282,9 +286,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				throw new AdempiereException(errorMsg);
 			}
 
-			//
-			// If there are no picked qtys for given shipment schedule, we will ship as is (without any handling units)
-			// NOTE: this shall not happen because createLUs() method was already created needed LUs
+			// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
 			final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
 			final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(schedule, qtyToDeliver);
 			return Collections.singletonList(candidate);

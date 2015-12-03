@@ -10,18 +10,17 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.compiere.model.X_C_Order.DELIVERYRULE_Availability;
 import static org.compiere.model.X_C_Order.DELIVERYRULE_CompleteLine;
@@ -58,6 +57,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.product.service.IProductBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.api.IMsgBL;
@@ -223,9 +223,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			shipmentScheduleDeliveryDayBL.updateDeliveryDayInfo(olAndSched.getSched());
 
 			// task 09358: ol.qtyReserved should be as correct as QtyOrdered and QtyDelivered, but in some cases isn't. this here is a workaround to the problem
-			//sched.setQtyReserved(ol.getQtyReserved());
-			sched.setQtyReserved(BigDecimal.ZERO.max(ol.getQtyOrdered().subtract(ol.getQtyDelivered()))); 
-			
+			// sched.setQtyReserved(ol.getQtyReserved());
+			sched.setQtyReserved(BigDecimal.ZERO.max(ol.getQtyOrdered().subtract(ol.getQtyDelivered())));
+
 			sched.setQtyDelivered(ol.getQtyDelivered());
 
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -298,11 +298,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 						if (alloc.getQtyPicked().signum() != 0)
 						{
-							final AdempiereException ex = new AdempiereException("Found QtyPicked record with non-zero qty even if the shipment schedule has QtyDelivered=0"
+							final String msg = "Found QtyPicked record with non-zero qty even if the shipment schedule has QtyDelivered=0"
 									+ "\n M_ShipmentSchedule_ID = " + sched.getM_ShipmentSchedule_ID()
-									+ "\n QtyPicked = " + alloc.getQtyPicked()
-									);
+									+ "\n QtyPicked = " + alloc.getQtyPicked();
+							ILoggable.THREADLOCAL.getLoggable().addLog(msg);
+
+							final AdempiereException ex = new AdempiereException(msg);
 							logger.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+
 							continue;
 						}
 						InterfaceWrapperHelper.delete(alloc);
@@ -427,7 +430,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
 				final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(sched);
-				
+
 				// task 07884-IT1: even if the rule is force: if there is an unconfirmed qty, then *don't* deliver it again
 				sched.setQtyToDeliver(mkQtyToDeliver(qtyOrdered, sched.getQtyPickList()));
 			}
@@ -553,7 +556,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
 			final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(sched);
-			
+
 			// Comments & lines w/o product & services
 			if ((product == null || !productBL.isStocked(product))
 					&& (qtyOrdered.signum() == 0 // comments
@@ -783,7 +786,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			inOutPA.setLineQty(inoutLine, qty); // Correct UOM
 
 			// 05292 : Propagate ASI to InOutLine
-			// task 08811: no need to clone the ASI. The ASI won't be altered and the inoutLine won't be saved anyways. 
+			// task 08811: no need to clone the ASI. The ASI won't be altered and the inoutLine won't be saved anyways.
 			inoutLine.setM_AttributeSetInstance_ID(sched.getM_AttributeSetInstance_ID());
 			logger.fine(inoutLine.toString());
 
@@ -1047,9 +1050,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final BigDecimal qtyOrderedOld = shipmentSchedule.getQtyOrdered(); // going to return it in the end
 
 		final BigDecimal qtyOrderedToSet = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(shipmentSchedule);
-		
+
 		shipmentSchedule.setQtyOrdered(qtyOrderedToSet);
-		
+
 		// Return the old value
 		return qtyOrderedOld;
 	}
@@ -1062,7 +1065,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		return deliveryViaRule;
 	}
-	
+
 	@Override
 	public I_M_InOut createInOut(
 			final Properties ctx,

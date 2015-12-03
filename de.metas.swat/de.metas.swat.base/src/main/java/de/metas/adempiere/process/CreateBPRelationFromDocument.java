@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.process;
 
@@ -13,18 +13,17 @@ package de.metas.adempiere.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
@@ -37,12 +36,12 @@ import org.compiere.process.SvrProcess;
 
 /**
  * Create BP relation from document.
- * 
+ *
  * @author tsa
- * @see http 
+ * @see http
  *      ://dewiki908/mediawiki/index.php/US1010:_unterschiedliche_Liefer-_und_Rechnungsempf%C3%A4nger_im_Auftragskopf_
  *      %282010122110000025%29
- * 
+ *
  */
 public class CreateBPRelationFromDocument extends SvrProcess
 {
@@ -67,27 +66,45 @@ public class CreateBPRelationFromDocument extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParameter())
 		{
-			String name = para.getParameterName();
+			final String name = para.getParameterName();
 			if (para.getParameter() == null)
+			{
 				;
+			}
 			else if (name.equals(PARAM_C_BPartner_ID))
+			{
 				p_C_BPartner_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(PARAM_C_BPartner_Location_ID))
+			{
 				p_C_BPartner_Location_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(PARAM_C_BPartnerRelation_ID))
+			{
 				p_C_BPartnerRelation_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(PARAM_C_BPartnerRelation_Location_ID))
+			{
 				p_C_BPartnerRelation_Location_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(PARAM_IsBillTo))
+			{
 				p_IsBillTo = para.getParameterAsBoolean();
+			}
 			else if (name.equals(PARAM_IsPayFrom))
+			{
 				p_IsPayFrom = para.getParameterAsBoolean();
+			}
 			else if (name.equals(PARAM_IsRemitTo))
+			{
 				p_IsRemitTo = para.getParameterAsBoolean();
+			}
 			else if (name.equals(PARAM_IsShipTo))
+			{
 				p_IsShipTo = para.getParameterAsBoolean();
+			}
 		}
 	}
 
@@ -112,13 +129,17 @@ public class CreateBPRelationFromDocument extends SvrProcess
 		return "OK";
 	}
 
-	private void updateOrder(I_C_BP_Relation rel, int orderId)
+	private void updateOrder(final I_C_BP_Relation rel, final int orderId)
 	{
 		I_C_Order order = null;
 		if (orderId > 0)
+		{
 			order = POWrapper.create(getCtx(), orderId, I_C_Order.class, get_TrxName());
+		}
 		if (order == null)
+		{
 			throw new AdempiereException("@NotFound@ @C_Order_ID@");
+		}
 
 		if (order.isProcessed())
 		{
@@ -126,8 +147,8 @@ public class CreateBPRelationFromDocument extends SvrProcess
 			return;
 		}
 
-		if ((rel.isBillTo() && order.isSOTrx())
-				|| (rel.isPayFrom() && !order.isSOTrx()))
+		if (rel.isBillTo() && order.isSOTrx()
+				|| rel.isPayFrom() && !order.isSOTrx())
 		{
 			// never modify Order's C_BPartner_ID and C_BPartner_Location_ID fields:
 			// order.setC_BPartner_ID(rel.getC_BPartner_ID());
@@ -140,7 +161,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 		POWrapper.save(order);
 	}
 
-	private I_C_BP_Relation findRelation(int bpartnerId, int bpLocationId, int bpRelationId, int locRelationId, boolean create)
+	private I_C_BP_Relation findRelation(final int bpartnerId, final int bpLocationId, final int bpRelationId, final int locRelationId, final boolean create)
 	{
 		if (bpartnerId == bpRelationId)
 		{
@@ -159,7 +180,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 					.setOnlyActiveRecords(true)
 					.firstOnly(I_C_BP_Relation.class);
 		}
-		catch (DBMoreThenOneRecordsFoundException e)
+		catch (final DBMoreThenOneRecordsFoundException e)
 		{
 			log.warning("More then one relation found for bpartnerId=" + bpartnerId + "bpLocationId=" + bpLocationId + ", bpRelationId=" + bpRelationId + ", locRelationId=" + locRelationId);
 			relation = null;
@@ -177,44 +198,46 @@ public class CreateBPRelationFromDocument extends SvrProcess
 		return relation;
 	}
 
-	private void setName(I_C_BP_Relation rel)
+	private void setName(final I_C_BP_Relation rel)
 	{
 		final StringBuffer name = new StringBuffer();
 
-		String nameFrom = rel.getC_BPartner().getName();
+		final String nameFrom = rel.getC_BPartner().getName();
 		name.append(nameFrom);
 
 		if (rel.getC_BPartner_Location_ID() > 0)
 		{
-			String locFrom = rel.getC_BPartner_Location().getName();
+			final String locFrom = rel.getC_BPartner_Location().getName();
 			name.append("(").append(locFrom).append(")");
 		}
 
 		name.append("->");
 
-		String nameTo = rel.getC_BPartnerRelation().getName();
+		final String nameTo = rel.getC_BPartnerRelation().getName();
 		name.append(nameTo);
 
 		if (rel.getC_BPartnerRelation_Location_ID() > 0)
 		{
-			String locTo = rel.getC_BPartnerRelation_Location().getName();
+			final String locTo = rel.getC_BPartnerRelation_Location().getName();
 			name.append("(").append(locTo).append(")");
 		}
 		rel.setName(name.toString());
 		makeUniqueName(rel);
 	}
 
-	private void makeUniqueName(I_C_BP_Relation rel)
+	private void makeUniqueName(final I_C_BP_Relation rel)
 	{
 		int cnt = 1;
 		while (cnt < 100)
 		{
 			final StringBuffer nameCurrent = new StringBuffer(rel.getName());
 			if (cnt > 1)
+			{
 				nameCurrent.append(" (").append(cnt).append(")");
+			}
 			final String whereClause = I_C_BP_Relation.COLUMNNAME_Name + "=?"
 					+ " AND " + I_C_BP_Relation.COLUMNNAME_C_BP_Relation_ID + "<>?";
-			boolean match = new Query(getCtx(), I_C_BP_Relation.Table_Name, whereClause, get_TrxName())
+			final boolean match = new Query(getCtx(), I_C_BP_Relation.Table_Name, whereClause, get_TrxName())
 					.setParameters(nameCurrent.toString(), rel.getC_BP_Relation_ID())
 					.setClient_ID()
 					.match();

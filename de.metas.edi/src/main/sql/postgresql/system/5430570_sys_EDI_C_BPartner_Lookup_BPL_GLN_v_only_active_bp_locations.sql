@@ -1,4 +1,4 @@
-﻿-- View: EDI_C_BPartner_Lookup_BPL_GLN_v
+-- View: EDI_C_BPartner_Lookup_BPL_GLN_v
 
 DROP VIEW IF EXISTS EDI_C_BPartner_Lookup_BPL_GLN_v;
 

@@ -10,18 +10,17 @@ package de.metas.handlingunits.shipmentschedule.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -129,8 +128,9 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	boolean isHUAllocation(I_M_ShipmentSchedule_QtyPicked qtyPickedRecord);
 
 	/**
-	 * Set QtyTU and M_HU_PI_Item_Product values based on override: If override not null, set it in the effective. Otherwise, replace effective with original values. Also, set the correct packing
-	 * description based on the current value of M_HU_PI_Item_Product
+	 * Set QtyTU and M_HU_PI_Item_Product values based on override: If override not null, set it in the effective.<br>
+	 * Otherwise, replace effective with original values.<br>
+	 * Also, set the correct packing description based on the current value of M_HU_PI_Item_Product
 	 *
 	 * @param shipmentSchedule
 	 */

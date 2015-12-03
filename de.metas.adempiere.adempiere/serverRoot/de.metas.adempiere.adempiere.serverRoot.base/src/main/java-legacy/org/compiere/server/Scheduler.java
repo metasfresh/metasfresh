@@ -162,7 +162,6 @@ public class Scheduler extends AdempiereServer
 	@Override
 	protected void doWork()
 	{
-
 		// metas us1030 updating staus
 		setSchedulerStatus(X_AD_Scheduler.STATUS_Running, false); // saveLogs=false
 

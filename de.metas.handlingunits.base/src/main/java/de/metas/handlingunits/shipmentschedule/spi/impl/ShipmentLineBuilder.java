@@ -10,18 +10,17 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -37,6 +36,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
@@ -224,8 +224,12 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 		Check.assume(canAdd(candidate), "candidate {0} can be added to shipment line builder", candidate);
 
 		final I_M_ShipmentSchedule sched = candidate.getM_ShipmentSchedule();
-		final BigDecimal qtyToAdd = candidate.getQtyPicked();
 
+		final BigDecimal qtyToAdd = candidate.getQtyPicked();
+		if (qtyToAdd.signum() <= 0)
+		{
+			ILoggable.THREADLOCAL.getLoggable().addLog("IShipmentScheduleWithHU {0} has QtyPicked={1}", candidate, qtyToAdd);
+		}
 		movementQty = movementQty.add(qtyToAdd); // NOTE: we assume qtyToAdd is in stocking UOM
 
 		final I_C_UOM qtyToAddUOM = shipmentScheduleBL.getC_UOM(sched); // OK: shall be the stocking UOM, i.e. the UOM of QtyPicked
