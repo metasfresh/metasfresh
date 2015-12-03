@@ -63,7 +63,7 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 
 		// Ordered and invoiced quantities must differ
 		filters.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyInvoiced,
-				CompareQueryFilter.Operator.NotEqual,
+				CompareQueryFilter.Operator.NOT_EQUAL,
 				ModelColumnNameValue.forColumnName(I_C_OrderLine.COLUMNNAME_QtyOrdered));
 
 		//

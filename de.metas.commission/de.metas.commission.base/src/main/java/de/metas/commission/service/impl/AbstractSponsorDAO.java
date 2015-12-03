@@ -633,12 +633,12 @@ public abstract class AbstractSponsorDAO implements ISponsorDAO
 				.addEqualsFilter(I_C_Sponsor_SalesRep.COLUMNNAME_SponsorSalesRepType, X_C_Sponsor_SalesRep.SPONSORSALESREPTYPE_Hierarchie);
 
 		final IQueryFilter<I_C_Sponsor_SalesRep> validFromFilter = queryBL.createCompositeQueryFilter(I_C_Sponsor_SalesRep.class)
-				.addCompareFilter(I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, Operator.GreatherOrEqual, validFrom)
-				.addCompareFilter(I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, Operator.LessOrEqual, validTo);
+				.addCompareFilter(I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, Operator.GREATER_OR_EQUAL, validFrom)
+				.addCompareFilter(I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, validTo);
 
 		final IQueryFilter<I_C_Sponsor_SalesRep> validToFilter = queryBL.createCompositeQueryFilter(I_C_Sponsor_SalesRep.class)
-				.addCompareFilter(I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, Operator.LessOrEqual, validFrom)
-				.addCompareFilter(I_C_Sponsor_SalesRep.COLUMNNAME_ValidTo, Operator.GreatherOrEqual, validFrom);
+				.addCompareFilter(I_C_Sponsor_SalesRep.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, validFrom)
+				.addCompareFilter(I_C_Sponsor_SalesRep.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, validFrom);
 
 		final IQueryFilter<I_C_Sponsor_SalesRep> validFilter = queryBL.createCompositeQueryFilter(I_C_Sponsor_SalesRep.class)
 				.addFilter(validFromFilter)

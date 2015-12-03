@@ -228,8 +228,8 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 
 		final IQueryBuilder<I_M_DeliveryDay> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_DeliveryDay.class, tourVersion)
-				.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GreatherOrEqual, tourVersionRange.getValidFrom(), dateTruncModifier)
-				.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.LessOrEqual, tourVersionRange.getValidTo(), dateTruncModifier)
+				.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GREATER_OR_EQUAL, tourVersionRange.getValidFrom(), dateTruncModifier)
+				.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.LESS_OR_EQUAL, tourVersionRange.getValidTo(), dateTruncModifier)
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_IsManual, false) // not manual entries
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_M_Tour_ID, tourVersion.getM_Tour_ID());
 

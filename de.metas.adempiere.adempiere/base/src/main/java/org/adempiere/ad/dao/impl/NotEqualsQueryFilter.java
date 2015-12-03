@@ -27,6 +27,6 @@ public class NotEqualsQueryFilter<T> extends CompareQueryFilter<T>
 {
 	public NotEqualsQueryFilter(String columnName, Object value)
 	{
-		super(columnName, Operator.NotEqual, value);
+		super(columnName, Operator.NOT_EQUAL, value);
 	}
 }

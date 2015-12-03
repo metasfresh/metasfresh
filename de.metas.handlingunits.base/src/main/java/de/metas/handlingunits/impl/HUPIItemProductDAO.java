@@ -298,15 +298,15 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		if (date != null)
 		{
 			final IQueryFilter<I_M_HU_PI_Item_Product> validDateFromFilter = queryBL.<I_M_HU_PI_Item_Product> createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Operator.LessOrEqual, date);
+					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date);
 			filters.addFilter(validDateFromFilter);
 
 			final IQueryFilter<I_M_HU_PI_Item_Product> validDateToFilter = queryBL.<I_M_HU_PI_Item_Product> createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 					.setJoinOr()
-					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.GreatherOrEqual, date)
+					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, date)
 					// a PLV must have a ValidFrom, but has no ValidTo.
 					// For this reason, ValidTo is not mandatory here neither
-					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.Equal, null);
+					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.EQUAL, null);
 			filters.addFilter(validDateToFilter);
 		}
 

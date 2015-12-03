@@ -493,7 +493,7 @@ public class PriceListDAO implements IPriceListDAO
 				// valid from must be before the date we need it
 				.addCompareFilter(
 						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
-						CompareQueryFilter.Operator.LessOrEqual,
+						CompareQueryFilter.Operator.LESS_OR_EQUAL,
 						new Timestamp(date.getTime()),
 						DateTruncQueryFilterModifier.DAY)
 
@@ -523,7 +523,7 @@ public class PriceListDAO implements IPriceListDAO
 	public I_M_PriceList_Version retrieveNextVersionOrNull(final I_M_PriceList_Version plv)
 	{
 		// we want the PLV with the lowest ValidFrom that is just greater than plv's
-		final Operator validFromOperator = Operator.Greather;
+		final Operator validFromOperator = Operator.GREATER;
 		final boolean orderAscending = true;
 
 		return retrievePreviousOrNext(plv, validFromOperator, orderAscending);
@@ -533,7 +533,7 @@ public class PriceListDAO implements IPriceListDAO
 	public I_M_PriceList_Version retrievePreviousVersionOrNull(final I_M_PriceList_Version plv)
 	{
 		// we want the PLV with the highest ValidFrom that is just less than plv's
-		final Operator validFromOperator = Operator.Less;
+		final Operator validFromOperator = Operator.LESS;
 		final boolean orderAscending = false; // i.e. descending
 		return retrievePreviousOrNext(plv, validFromOperator, orderAscending);
 	}

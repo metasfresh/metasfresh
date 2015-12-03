@@ -118,7 +118,7 @@ public abstract class AbstractArchiveDAO implements IArchiveDAO
 				//
 				// Filter records which actually have an AD_Archive
 				//
-				.addCompareFilter(I_C_Doc_Outbound_Log_Line.COLUMN_AD_Archive_ID, Operator.Greather, 0)
+				.addCompareFilter(I_C_Doc_Outbound_Log_Line.COLUMN_AD_Archive_ID, Operator.GREATER, 0)
 				//
 				// Filter the ones with PDF export
 				//

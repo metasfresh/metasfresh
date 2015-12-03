@@ -131,12 +131,12 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 			if (datePromised_From != null)
 			{
 				orderQueryBuilder
-						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.GreatherOrEqual, datePromised_From, dateTruncModifier);
+						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.GREATER_OR_EQUAL, datePromised_From, dateTruncModifier);
 			}
 			if (datePromised_To != null)
 			{
 				orderQueryBuilder
-						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.LessOrEqual, datePromised_To, dateTruncModifier);
+						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.LESS_OR_EQUAL, datePromised_To, dateTruncModifier);
 			}
 		}
 
@@ -163,7 +163,7 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 		final IQueryBuilder<I_C_OrderLine> orderLineQueryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class, order)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
-				.addCompareFilter(purchaseQtySource, Operator.Greather, BigDecimal.ZERO)
+				.addCompareFilter(purchaseQtySource, Operator.GREATER, BigDecimal.ZERO)
 				.filter(additionalFilters);
 
 		if (!allowMultiplePOOrders)

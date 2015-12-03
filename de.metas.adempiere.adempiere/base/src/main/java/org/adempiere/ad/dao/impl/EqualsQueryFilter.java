@@ -35,7 +35,7 @@ public class EqualsQueryFilter<T> extends CompareQueryFilter<T>
 {
 	public EqualsQueryFilter(final String columnName, final Object value, final IQueryFilterModifier modifier)
 	{
-		super(columnName, Operator.Equal, value, modifier);
+		super(columnName, Operator.EQUAL, value, modifier);
 	}
 
 	public EqualsQueryFilter(final String columnName, final Object value)

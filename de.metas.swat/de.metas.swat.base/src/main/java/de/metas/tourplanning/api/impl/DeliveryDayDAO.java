@@ -76,7 +76,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_C_BPartner_Location_ID, params.getC_BPartner_Location_ID())
 				//
 				// DeliveryDateTimeMax <= given DeliveryDate
-				.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDateTimeMax, Operator.LessOrEqual, params.getDeliveryDate())
+				.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDateTimeMax, Operator.LESS_OR_EQUAL, params.getDeliveryDate())
 				//
 				// IsToBeFetched flag shall match
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_IsToBeFetched, params.isToBeFetched());
@@ -86,7 +86,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 
 		if (calculationTime != null)
 		{
-			filter.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDateTimeMax, Operator.GreatherOrEqual, calculationTime);
+			filter.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDateTimeMax, Operator.GREATER_OR_EQUAL, calculationTime);
 		}
 
 		final Boolean processed = params.getProcessed();

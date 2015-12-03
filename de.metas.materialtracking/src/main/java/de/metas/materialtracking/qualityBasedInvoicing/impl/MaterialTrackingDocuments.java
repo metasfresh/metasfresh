@@ -260,12 +260,12 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 			final ICompositeQueryFilter<I_M_InOut> inOutFilter = queryBL.createCompositeQueryFilter(I_M_InOut.class)
 					.addOnlyActiveRecordsFilter()
 					.addInArrayFilter(I_M_InOut.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
-					.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.GreatherOrEqual, plv.getValidFrom());
+					.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.GREATER_OR_EQUAL, plv.getValidFrom());
 
 			final I_M_PriceList_Version nextPLV = Services.get(IPriceListDAO.class).retrieveNextVersionOrNull(plv);
 			if (nextPLV != null)
 			{
-				inOutFilter.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.Less, nextPLV.getValidFrom());
+				inOutFilter.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.LESS, nextPLV.getValidFrom());
 			}
 
 			final Iterator<I_M_InOutLine> inOutLines = queryBL.createQueryBuilder(I_M_InOut.class, plv)

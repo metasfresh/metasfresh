@@ -125,7 +125,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 		final Boolean completeFlatrateTerm = queryVO.getCompleteFlatrateTerm();
 		if(completeFlatrateTerm != null && completeFlatrateTerm.booleanValue() == true)
 		{
-			queryBuilder.addCompareFilter(I_M_Material_Tracking.COLUMN_C_Flatrate_Term_ID, Operator.NotEqual, null)
+			queryBuilder.addCompareFilter(I_M_Material_Tracking.COLUMN_C_Flatrate_Term_ID, Operator.NOT_EQUAL, null)
 			.andCollect(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Flatrate_Term.class)
 			.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
 			.addOnlyActiveRecordsFilter()

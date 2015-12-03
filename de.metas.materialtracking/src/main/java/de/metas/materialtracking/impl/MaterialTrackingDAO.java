@@ -303,12 +303,12 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 				.addOnlyActiveRecordsFilter();
 		if (startDate != null)
 		{
-			flatrateTerms.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LessOrEqual, startDate);
+			flatrateTerms.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, startDate);
 		}
 
 		if (endDate != null)
 		{
-			flatrateTerms.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GreatherOrEqual, endDate);
+			flatrateTerms.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, endDate);
 		}
 
 		return flatrateTerms.create()

@@ -119,7 +119,7 @@ public class SubstringFilter<T> extends CompareQueryFilter<T>
 	/* package */SubstringFilter(final String columnName, final String substring, final boolean ignoreCase)
 	{
 		super(columnName,
-				ignoreCase ? Operator.ContainsSubstringIgnoreCase : Operator.ContainsSubstring,
+				ignoreCase ? Operator.CONTRAINS_SUBSTRING_IGNORECASE : Operator.CONTAINS_SUBSTRING,
 				substring,
 				new SubstringQueryFilterModifier(ignoreCase));
 

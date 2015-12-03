@@ -215,7 +215,7 @@ public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 			queryBuilder.addEqualsFilter(I_M_Material_Balance_Detail.COLUMNNAME_M_Material_Balance_Config_ID, config.getM_Material_Balance_Config_ID());
 		}
 
-		queryBuilder.addCompareFilter(I_M_Material_Balance_Detail.COLUMNNAME_MovementDate, Operator.Less, resetDate);
+		queryBuilder.addCompareFilter(I_M_Material_Balance_Detail.COLUMNNAME_MovementDate, Operator.LESS, resetDate);
 
 		return queryBuilder
 				.create()

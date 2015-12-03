@@ -179,11 +179,11 @@ public class C_Payment_DiscountAllocation_Process extends SvrProcess
 		}
 		if (p_PaymentDateFrom != null)
 		{
-			queryBuilder.addCompareFilter(I_C_Payment.COLUMNNAME_DateTrx, Operator.GreatherOrEqual, p_PaymentDateFrom);
+			queryBuilder.addCompareFilter(I_C_Payment.COLUMNNAME_DateTrx, Operator.GREATER_OR_EQUAL, p_PaymentDateFrom);
 		}
 		if (p_PaymentDateTo != null)
 		{
-			queryBuilder.addCompareFilter(I_C_Payment.COLUMNNAME_DateTrx, Operator.LessOrEqual, p_PaymentDateTo);
+			queryBuilder.addCompareFilter(I_C_Payment.COLUMNNAME_DateTrx, Operator.LESS_OR_EQUAL, p_PaymentDateTo);
 		}
 
 		return queryBuilder

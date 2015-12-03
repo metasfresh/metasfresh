@@ -186,11 +186,11 @@ public class C_Invoice_DiscountAllocation_Process extends SvrProcess
 		}
 		if (p_DateInvoicedFrom != null)
 		{
-			queryBuilder.addCompareFilter(PARAM_DateInvoiced, Operator.GreatherOrEqual, p_DateInvoicedFrom);
+			queryBuilder.addCompareFilter(PARAM_DateInvoiced, Operator.GREATER_OR_EQUAL, p_DateInvoicedFrom);
 		}
 		if (p_DateInvoicedTo != null)
 		{
-			queryBuilder.addCompareFilter(PARAM_DateInvoiced, Operator.LessOrEqual, p_DateInvoicedTo);
+			queryBuilder.addCompareFilter(PARAM_DateInvoiced, Operator.LESS_OR_EQUAL, p_DateInvoicedTo);
 		}
 
 		return queryBuilder

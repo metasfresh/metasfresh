@@ -95,7 +95,7 @@ public class WorkpackageCleanupStaleEntries
 				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMN_Processed, false)
 				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMN_IsReadyForProcessing, false)
 				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_C_Queue_WorkPackage.COLUMN_Updated, Operator.LessOrEqual, staleDateFrom)
+				.addCompareFilter(I_C_Queue_WorkPackage.COLUMN_Updated, Operator.LESS_OR_EQUAL, staleDateFrom)
 				.create()
 				//
 				// Mass-update them: deactivate, flag them as IsError, set error message

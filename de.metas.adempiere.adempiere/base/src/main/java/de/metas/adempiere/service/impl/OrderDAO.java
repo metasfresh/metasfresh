@@ -83,8 +83,8 @@ public class OrderDAO extends AbstractOrderDAO
 						.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
 
 						// DatePromised between DeliveryDateTime and DeliveryDateTimeMax
-						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.LessOrEqual, deliveryDateTimeMax)
-						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.GreatherOrEqual, deliveryDateTime)
+						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.LESS_OR_EQUAL, deliveryDateTimeMax)
+						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.GREATER_OR_EQUAL, deliveryDateTime)
 						
 						.addOnlyActiveRecordsFilter();
 

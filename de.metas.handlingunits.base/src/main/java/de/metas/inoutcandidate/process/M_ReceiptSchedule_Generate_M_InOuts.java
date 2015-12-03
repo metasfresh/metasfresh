@@ -137,11 +137,11 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends SvrProcess
 		}
 		if (dateFrom != null)
 		{
-			queryBuilder.addCompareFilter(I_M_ReceiptSchedule.COLUMNNAME_DateOrdered, Operator.GreatherOrEqual, dateFrom);
+			queryBuilder.addCompareFilter(I_M_ReceiptSchedule.COLUMNNAME_DateOrdered, Operator.GREATER_OR_EQUAL, dateFrom);
 		}
 		if (dateTo != null)
 		{
-			queryBuilder.addCompareFilter(I_M_ReceiptSchedule.COLUMNNAME_DateOrdered, Operator.LessOrEqual, dateTo);
+			queryBuilder.addCompareFilter(I_M_ReceiptSchedule.COLUMNNAME_DateOrdered, Operator.LESS_OR_EQUAL, dateTo);
 		}
 
 		// return them roughly chronologically

@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,18 +36,18 @@ import org.adempiere.util.Check;
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 	/**
-	 * Comparation operator
+	 * Comparison operator
 	 */
 	public static enum Operator
 	{
-		Equal("="),
-		NotEqual("<>"),
-		Less("<"),
-		LessOrEqual("<="),
-		Greather(">"),
-		GreatherOrEqual(">="),
-		ContainsSubstring("LIKE"),
-		ContainsSubstringIgnoreCase("ILIKE");
+		EQUAL("="),
+		NOT_EQUAL("<>"),
+		LESS("<"),
+		LESS_OR_EQUAL("<="),
+		GREATER(">"),
+		GREATER_OR_EQUAL(">="),
+		CONTAINS_SUBSTRING("LIKE"),
+		CONTRAINS_SUBSTRING_IGNORECASE("ILIKE");
 
 		private final String sql;
 
@@ -140,7 +140,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		final Object operand2Value = getModelValue(model, operand2);
 		final Object operand2ValuePrepared = operand2Modifier.convertValue(IQueryFilterModifier.COLUMNNAME_Constant, operand2Value, model);
 
-		if (Operator.ContainsSubstring == operator || Operator.ContainsSubstringIgnoreCase == operator)
+		if (Operator.CONTAINS_SUBSTRING == operator || Operator.CONTRAINS_SUBSTRING_IGNORECASE == operator)
 		{
 			if (operand1ValuePrepared instanceof String && operand2ValuePrepared instanceof String)
 			{
@@ -154,27 +154,27 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 		final int cmp = compareValues(operand1ValuePrepared, operand2ValuePrepared);
 		final Operator operator = getOperator();
-		if (Operator.Equal == operator)
+		if (Operator.EQUAL == operator)
 		{
 			return cmp == 0;
 		}
-		else if (Operator.Less == operator)
+		else if (Operator.LESS == operator)
 		{
 			return cmp < 0;
 		}
-		else if (Operator.LessOrEqual == operator)
+		else if (Operator.LESS_OR_EQUAL == operator)
 		{
 			return cmp <= 0;
 		}
-		else if (Operator.Greather == operator)
+		else if (Operator.GREATER == operator)
 		{
 			return cmp > 0;
 		}
-		else if (Operator.GreatherOrEqual == operator)
+		else if (Operator.GREATER_OR_EQUAL == operator)
 		{
 			return cmp >= 0;
 		}
-		else if (Operator.NotEqual == operator)
+		else if (Operator.NOT_EQUAL == operator)
 		{
 			return cmp != 0;
 		}
@@ -265,12 +265,12 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		sqlParams = new ArrayList<Object>();
 		final String operand2Sql = operand2 == null ? null : operand2Modifier.getValueSql(operand2, sqlParams);
 
-		if (operand2 == null && Operator.Equal == operator)
+		if (operand2 == null && Operator.EQUAL == operator)
 		{
 			sqlWhereClause = operand1ColumnName + " IS NULL";
 			sqlParams = Collections.emptyList();
 		}
-		else if (operand2 == null && Operator.NotEqual == operator)
+		else if (operand2 == null && Operator.NOT_EQUAL == operator)
 		{
 			sqlWhereClause = operand1ColumnName + " IS NOT NULL";
 			sqlParams = Collections.emptyList();
@@ -283,7 +283,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		// Corner case: we are asked for Operand1 <> SomeValue
 		// => we need to create an SQL which is also taking care about the NULL value
 		// i.e. (Operand1 <> SomeValue OR Operand1 IS NULL)
-		if (operand2 != null && Operator.NotEqual == operator)
+		if (operand2 != null && Operator.NOT_EQUAL == operator)
 		{
 			sqlWhereClause = "(" + sqlWhereClause
 					+ " OR " + operand1ColumnSql + " IS NULL"

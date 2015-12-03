@@ -232,8 +232,8 @@ public class ADInfoWindowDAO implements IADInfoWindowDAO
 	{
 		final IQueryBuilder<I_AD_InfoWindow> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_InfoWindow.class, ctx, ITrx.TRXNAME_None)
-				.addCompareFilter(I_AD_InfoWindow.COLUMNNAME_AD_InfoWindow_ID, CompareQueryFilter.Operator.NotEqual, 540008) // FIXME: hardcoded "Info Partner"
-				.addCompareFilter(I_AD_InfoWindow.COLUMNNAME_AD_InfoWindow_ID, CompareQueryFilter.Operator.NotEqual, 540009) // FIXME: hardcoded "Info Product"
+				.addCompareFilter(I_AD_InfoWindow.COLUMNNAME_AD_InfoWindow_ID, CompareQueryFilter.Operator.NOT_EQUAL, 540008) // FIXME: hardcoded "Info Partner"
+				.addCompareFilter(I_AD_InfoWindow.COLUMNNAME_AD_InfoWindow_ID, CompareQueryFilter.Operator.NOT_EQUAL, 540009) // FIXME: hardcoded "Info Product"
 				.addEqualsFilter(I_AD_InfoWindow.COLUMNNAME_IsActive, true)
 				.addEqualsFilter(I_AD_InfoWindow.COLUMNNAME_ShowInMenu, true);
 

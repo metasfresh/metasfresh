@@ -218,7 +218,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 		final Date datePromisedMax = getDatePromisedMax();
 		if (datePromisedMax != null)
 		{
-			filters.addCompareFilter(I_PP_MRP.COLUMNNAME_DatePromised, Operator.LessOrEqual, datePromisedMax);
+			filters.addCompareFilter(I_PP_MRP.COLUMNNAME_DatePromised, Operator.LESS_OR_EQUAL, datePromisedMax);
 		}
 
 		//

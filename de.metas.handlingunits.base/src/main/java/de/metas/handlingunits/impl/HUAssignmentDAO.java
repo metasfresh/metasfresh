@@ -317,7 +317,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.createQueryBuilder(I_M_HU_Assignment.class, luAssignment)
 				.addOnlyActiveRecordsFilter() // only active assignments are counted
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId) // for same kind of model
-				.addCompareFilter(I_M_HU_Assignment.COLUMN_Record_ID, Operator.Less, recordId) // on a model which was created before ours
+				.addCompareFilter(I_M_HU_Assignment.COLUMN_Record_ID, Operator.LESS, recordId) // on a model which was created before ours
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, luHUId) // for our LU
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_VHU_ID, luAssignment.getVHU_ID()) // 08564 : also check the vhu
 				//

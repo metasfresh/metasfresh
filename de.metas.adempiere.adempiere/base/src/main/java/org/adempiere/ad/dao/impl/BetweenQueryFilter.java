@@ -47,8 +47,8 @@ import org.adempiere.model.ModelColumn;
 
 		filter = new CompositeQueryFilter<T>(tableName);
 		filter.setJoinAnd();
-		filter.addCompareFilter(columnName, Operator.GreatherOrEqual, valueFrom, modifier);
-		filter.addCompareFilter(columnName, Operator.LessOrEqual, valueTo, modifier);
+		filter.addCompareFilter(columnName, Operator.GREATER_OR_EQUAL, valueFrom, modifier);
+		filter.addCompareFilter(columnName, Operator.LESS_OR_EQUAL, valueTo, modifier);
 	}
 
 	public BetweenQueryFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo)
@@ -62,8 +62,8 @@ import org.adempiere.model.ModelColumn;
 
 		filter = new CompositeQueryFilter<T>(column.getModelClass());
 		filter.setJoinAnd();
-		filter.addCompareFilter(column, Operator.GreatherOrEqual, valueFrom, modifier);
-		filter.addCompareFilter(column, Operator.LessOrEqual, valueTo, modifier);
+		filter.addCompareFilter(column, Operator.GREATER_OR_EQUAL, valueFrom, modifier);
+		filter.addCompareFilter(column, Operator.LESS_OR_EQUAL, valueTo, modifier);
 	}
 
 	@Override

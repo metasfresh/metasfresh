@@ -96,11 +96,11 @@ public class TourDAO implements ITourDAO
 
 		if (validFrom != null)
 		{
-			queryBuilder.addCompareFilter(I_M_TourVersion.COLUMNNAME_ValidFrom, Operator.GreatherOrEqual, validFrom);
+			queryBuilder.addCompareFilter(I_M_TourVersion.COLUMNNAME_ValidFrom, Operator.GREATER_OR_EQUAL, validFrom);
 		}
 		if (validTo != null)
 		{
-			queryBuilder.addCompareFilter(I_M_TourVersion.COLUMNNAME_ValidFrom, Operator.LessOrEqual, validTo);
+			queryBuilder.addCompareFilter(I_M_TourVersion.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, validTo);
 		}
 
 		return queryBuilder;
