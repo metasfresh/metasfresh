@@ -202,6 +202,16 @@
 			</dependency>
 
 			<dependency>
+				<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+				<groupId>de.metas.adempiere.adempiere</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>de.metas.adempiere.adempiere.client</artifactId>
+				<groupId>de.metas.adempiere.adempiere</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
 				<groupId>de.metas.adempiere.adempiere</groupId>
 				<version>${project.version}</version>
