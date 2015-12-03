@@ -32,35 +32,50 @@ public interface I_C_Flatrate_Matching
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
-	/** Get Mandant.
-	  * Mandant für diese Installation.
-	  */
+	/**
+	 * Get Mandant.
+	 * Mandant für diese Installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Matching, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Matching, org.compiere.model.I_AD_Client>(I_C_Flatrate_Matching.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Set Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -69,17 +84,27 @@ public interface I_C_Flatrate_Matching
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Kosten.
-	  * Zusätzliche Kosten
-	  */
+	/**
+	 * Set Kosten.
+	 * Zusätzliche Kosten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Charge_ID (int C_Charge_ID);
 
-	/** Get Kosten.
-	  * Zusätzliche Kosten
-	  */
+	/**
+	 * Get Kosten.
+	 * Zusätzliche Kosten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Charge_ID();
 
-	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException;
+	public org.compiere.model.I_C_Charge getC_Charge();
 
 	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge);
 
@@ -88,13 +113,25 @@ public interface I_C_Flatrate_Matching
     /** Column name C_Charge_ID */
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
-	/** Set Vertragsbedingungen	  */
+	/**
+	 * Set Vertragsbedingungen.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID);
 
-	/** Get Vertragsbedingungen	  */
+	/**
+	 * Get Vertragsbedingungen.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Flatrate_Conditions_ID();
 
-	public de.metas.flatrate.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions() throws RuntimeException;
+	public de.metas.flatrate.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions();
 
 	public void setC_Flatrate_Conditions(de.metas.flatrate.model.I_C_Flatrate_Conditions C_Flatrate_Conditions);
 
@@ -103,10 +140,22 @@ public interface I_C_Flatrate_Matching
     /** Column name C_Flatrate_Conditions_ID */
     public static final String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
-	/** Set Zuordnungszeile	  */
+	/**
+	 * Set Zuordnungszeile.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Flatrate_Matching_ID (int C_Flatrate_Matching_ID);
 
-	/** Get Zuordnungszeile	  */
+	/**
+	 * Get Zuordnungszeile.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Flatrate_Matching_ID();
 
     /** Column definition for C_Flatrate_Matching_ID */
@@ -114,17 +163,27 @@ public interface I_C_Flatrate_Matching
     /** Column name C_Flatrate_Matching_ID */
     public static final String COLUMNNAME_C_Flatrate_Matching_ID = "C_Flatrate_Matching_ID";
 
-	/** Set Vertragsverlängerung/-übergang.
-	  * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
-	  */
+	/**
+	 * Set Vertragsverlängerung/-übergang.
+	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID);
 
-	/** Get Vertragsverlängerung/-übergang.
-	  * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
-	  */
+	/**
+	 * Get Vertragsverlängerung/-übergang.
+	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Flatrate_Transition_ID();
 
-	public de.metas.flatrate.model.I_C_Flatrate_Transition getC_Flatrate_Transition() throws RuntimeException;
+	public de.metas.flatrate.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
 
 	public void setC_Flatrate_Transition(de.metas.flatrate.model.I_C_Flatrate_Transition C_Flatrate_Transition);
 
@@ -133,9 +192,14 @@ public interface I_C_Flatrate_Matching
     /** Column name C_Flatrate_Transition_ID */
     public static final String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
-	/** Get Erstellt.
-	  * Datum, an dem dieser Eintrag erstellt wurde
-	  */
+	/**
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
@@ -143,9 +207,14 @@ public interface I_C_Flatrate_Matching
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Erstellt durch.
-	  * Nutzer, der diesen Eintrag erstellt hat
-	  */
+	/**
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
@@ -153,14 +222,24 @@ public interface I_C_Flatrate_Matching
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Set Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
+	/**
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsActive (boolean IsActive);
 
-	/** Get Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
+	/**
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isActive();
 
     /** Column definition for IsActive */
@@ -168,17 +247,27 @@ public interface I_C_Flatrate_Matching
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Preissystem.
-	  * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
+	/**
+	 * Set Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setM_PricingSystem_ID (int M_PricingSystem_ID);
 
-	/** Get Preissystem.
-	  * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
+	/**
+	 * Get Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getM_PricingSystem_ID();
 
-	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException;
+	public org.compiere.model.I_M_PricingSystem getM_PricingSystem();
 
 	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem);
 
@@ -187,17 +276,27 @@ public interface I_C_Flatrate_Matching
     /** Column name M_PricingSystem_ID */
     public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
-	/** Set Produkt-Kategorie.
-	  * Kategorie eines Produktes, dass dem Vertrag unterliegt
-	  */
+	/**
+	 * Set Produkt-Kategorie.
+	 * Kategorie eines Produktes, dass dem Vertrag unterliegt
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setM_Product_Category_Matching_ID (int M_Product_Category_Matching_ID);
 
-	/** Get Produkt-Kategorie.
-	  * Kategorie eines Produktes, dass dem Vertrag unterliegt
-	  */
+	/**
+	 * Get Produkt-Kategorie.
+	 * Kategorie eines Produktes, dass dem Vertrag unterliegt
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getM_Product_Category_Matching_ID();
 
-	public org.compiere.model.I_M_Product_Category getM_Product_Category_Matching() throws RuntimeException;
+	public org.compiere.model.I_M_Product_Category getM_Product_Category_Matching();
 
 	public void setM_Product_Category_Matching(org.compiere.model.I_M_Product_Category M_Product_Category_Matching);
 
@@ -206,17 +305,27 @@ public interface I_C_Flatrate_Matching
     /** Column name M_Product_Category_Matching_ID */
     public static final String COLUMNNAME_M_Product_Category_Matching_ID = "M_Product_Category_Matching_ID";
 
-	/** Set Produkt.
-	  * Produkt, Leistung, Artikel
-	  */
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setM_Product_ID (int M_Product_ID);
 
-	/** Get Produkt.
-	  * Produkt, Leistung, Artikel
-	  */
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
+	public org.compiere.model.I_M_Product getM_Product();
 
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
@@ -225,10 +334,22 @@ public interface I_C_Flatrate_Matching
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
-	/** Set Liefermenge pro Abolieferung	  */
+	/**
+	 * Set Liefermenge pro Abolieferung.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setQtyPerDelivery (java.math.BigDecimal QtyPerDelivery);
 
-	/** Get Liefermenge pro Abolieferung	  */
+	/**
+	 * Get Liefermenge pro Abolieferung.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.math.BigDecimal getQtyPerDelivery();
 
     /** Column definition for QtyPerDelivery */
@@ -236,16 +357,26 @@ public interface I_C_Flatrate_Matching
     /** Column name QtyPerDelivery */
     public static final String COLUMNNAME_QtyPerDelivery = "QtyPerDelivery";
 
-	/** Set Reihenfolge.
-	  * Zur Bestimmung der Reihenfolge der Einträge;
+	/**
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
  die kleinste Zahl kommt zuerst
-	  */
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setSeqNo (int SeqNo);
 
-	/** Get Reihenfolge.
-	  * Zur Bestimmung der Reihenfolge der Einträge;
+	/**
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
  die kleinste Zahl kommt zuerst
-	  */
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getSeqNo();
 
     /** Column definition for SeqNo */
@@ -253,9 +384,14 @@ public interface I_C_Flatrate_Matching
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
 
-	/** Get Aktualisiert.
-	  * Datum, an dem dieser Eintrag aktualisiert wurde
-	  */
+	/**
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
@@ -263,9 +399,14 @@ public interface I_C_Flatrate_Matching
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Aktualisiert durch.
-	  * Nutzer, der diesen Eintrag aktualisiert hat
-	  */
+	/**
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */

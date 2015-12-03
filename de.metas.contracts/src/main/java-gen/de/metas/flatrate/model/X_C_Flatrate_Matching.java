@@ -32,7 +32,7 @@ public class X_C_Flatrate_Matching extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 984452128L;
+	private static final long serialVersionUID = 379932115L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Matching (Properties ctx, int C_Flatrate_Matching_ID, String trxName)
@@ -43,7 +43,6 @@ public class X_C_Flatrate_Matching extends org.compiere.model.PO implements I_C_
 			setC_Flatrate_Conditions_ID (0);
 			setC_Flatrate_Matching_ID (0);
 			setC_Flatrate_Transition_ID (0);
-			setM_PricingSystem_ID (0);
 			setM_Product_Category_Matching_ID (0);
 			setQtyPerDelivery (Env.ZERO);
 // 1
@@ -65,14 +64,6 @@ public class X_C_Flatrate_Matching extends org.compiere.model.PO implements I_C_
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_Flatrate_Matching[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override

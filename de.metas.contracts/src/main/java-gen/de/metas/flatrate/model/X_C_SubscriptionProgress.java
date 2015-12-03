@@ -32,7 +32,7 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 599967584L;
+	private static final long serialVersionUID = -922125746L;
 
     /** Standard Constructor */
     public X_C_SubscriptionProgress (Properties ctx, int C_SubscriptionProgress_ID, String trxName)
@@ -69,14 +69,6 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
       return poi;
     }
 
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_SubscriptionProgress[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
 	@Override
 	public de.metas.flatrate.model.I_C_Flatrate_Term getC_Flatrate_Term() throws RuntimeException
 	{
@@ -106,6 +98,28 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	public int getC_Flatrate_Term_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Term_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Abo-Verlauf.
+		@param C_SubscriptionProgress_ID Abo-Verlauf	  */
+	@Override
+	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID)
+	{
+		if (C_SubscriptionProgress_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_SubscriptionProgress_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_SubscriptionProgress_ID, Integer.valueOf(C_SubscriptionProgress_ID));
+	}
+
+	/** Get Abo-Verlauf.
+		@return Abo-Verlauf	  */
+	@Override
+	public int getC_SubscriptionProgress_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_SubscriptionProgress_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -145,28 +159,6 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	public java.lang.String getContractStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ContractStatus);
-	}
-
-	/** Set Abo-Verlauf.
-		@param C_SubscriptionProgress_ID Abo-Verlauf	  */
-	@Override
-	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID)
-	{
-		if (C_SubscriptionProgress_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_SubscriptionProgress_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_SubscriptionProgress_ID, Integer.valueOf(C_SubscriptionProgress_ID));
-	}
-
-	/** Get Abo-Verlauf.
-		@return Abo-Verlauf	  */
-	@Override
-	public int getC_SubscriptionProgress_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_SubscriptionProgress_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	@Override

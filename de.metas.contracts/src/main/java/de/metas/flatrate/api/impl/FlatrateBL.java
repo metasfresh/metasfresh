@@ -83,7 +83,7 @@ import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.flatrate.api.IFlatrateBL;
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.api.ISubscriptionBL;
 import de.metas.flatrate.interfaces.I_C_OrderLine;
 import de.metas.flatrate.invoicecandidate.spi.impl.FlatrateDataEntryHandler;
@@ -129,7 +129,7 @@ public class FlatrateBL implements IFlatrateBL
 	private static final String MSG_TERM_NEW_COMPLETED_0P = "FlatrateTerm_New_Completed_Term";
 	private static final String MSG_TERM_NO_NEW_0P = "FlatrateTerm_No_New_Term";
 
-	private final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+	private final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -142,7 +142,7 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
 
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 		final I_C_Flatrate_Term term = dataEntry.getC_Flatrate_Term();
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
@@ -743,7 +743,7 @@ public class FlatrateBL implements IFlatrateBL
 			final I_C_UOM uom,
 			final List<String> errors)
 	{
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(flatrateTerm);
 		final String trxName = InterfaceWrapperHelper.getTrxName(flatrateTerm);
@@ -840,7 +840,7 @@ public class FlatrateBL implements IFlatrateBL
 			final SvrProcess logReceiver,
 			final String trxName)
 	{
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 		final List<I_M_Product> products = flatrateDB.retrieveHoldingFeeProducts(flatrateTerm.getC_Flatrate_Conditions());
 
@@ -895,7 +895,7 @@ public class FlatrateBL implements IFlatrateBL
 		int counter = 0;
 
 		final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 		final List<I_C_UOM> uoms = flatrateDB.retrieveUOMs(ctx, flatrateTerm, trxName);
 

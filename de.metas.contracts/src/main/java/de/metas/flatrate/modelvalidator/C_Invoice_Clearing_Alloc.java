@@ -31,7 +31,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
@@ -59,7 +59,7 @@ public class C_Invoice_Clearing_Alloc
 	private I_C_Flatrate_DataEntry retrieveDataEntry(final I_C_Invoice_Candidate invoiceCand, final I_C_Flatrate_Term term)
 	{
 		final List<I_C_Flatrate_DataEntry> entries =
-				Services.get(IFlatrateDB.class).retrieveEntries(null, // I_C_Flatrate_Conditions
+				Services.get(IFlatrateDAO.class).retrieveEntries(null, // I_C_Flatrate_Conditions
 						term,
 						invoiceCand.getDateOrdered(),
 						X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased,

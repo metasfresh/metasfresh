@@ -30,7 +30,7 @@ public class X_C_Invoice_Clearing_Alloc extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1194651660L;
+	private static final long serialVersionUID = -2048207167L;
 
     /** Standard Constructor */
     public X_C_Invoice_Clearing_Alloc (Properties ctx, int C_Invoice_Clearing_Alloc_ID, String trxName)
@@ -57,14 +57,6 @@ public class X_C_Invoice_Clearing_Alloc extends org.compiere.model.PO implements
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_Invoice_Clearing_Alloc[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -136,6 +128,40 @@ public class X_C_Invoice_Clearing_Alloc extends org.compiere.model.PO implements
 	}
 
 	@Override
+	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Cand_ToClear() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_Cand_ToClear_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
+	}
+
+	@Override
+	public void setC_Invoice_Cand_ToClear(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Cand_ToClear)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Invoice_Cand_ToClear_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class, C_Invoice_Cand_ToClear);
+	}
+
+	/** Set Zu verrechnender Rechn-Kand..
+		@param C_Invoice_Cand_ToClear_ID Zu verrechnender Rechn-Kand.	  */
+	@Override
+	public void setC_Invoice_Cand_ToClear_ID (int C_Invoice_Cand_ToClear_ID)
+	{
+		if (C_Invoice_Cand_ToClear_ID < 1) 
+			set_Value (COLUMNNAME_C_Invoice_Cand_ToClear_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Invoice_Cand_ToClear_ID, Integer.valueOf(C_Invoice_Cand_ToClear_ID));
+	}
+
+	/** Get Zu verrechnender Rechn-Kand..
+		@return Zu verrechnender Rechn-Kand.	  */
+	@Override
+	public int getC_Invoice_Cand_ToClear_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Cand_ToClear_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
@@ -167,40 +193,6 @@ public class X_C_Invoice_Clearing_Alloc extends org.compiere.model.PO implements
 	public int getC_Invoice_Candidate_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Cand_ToClear() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Invoice_Cand_ToClear_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
-	}
-
-	@Override
-	public void setC_Invoice_Cand_ToClear(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Cand_ToClear)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Invoice_Cand_ToClear_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class, C_Invoice_Cand_ToClear);
-	}
-
-	/** Set Zu verrechnender Rechn-Kand..
-		@param C_Invoice_Cand_ToClear_ID Zu verrechnender Rechn-Kand.	  */
-	@Override
-	public void setC_Invoice_Cand_ToClear_ID (int C_Invoice_Cand_ToClear_ID)
-	{
-		if (C_Invoice_Cand_ToClear_ID < 1) 
-			set_Value (COLUMNNAME_C_Invoice_Cand_ToClear_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Invoice_Cand_ToClear_ID, Integer.valueOf(C_Invoice_Cand_ToClear_ID));
-	}
-
-	/** Get Zu verrechnender Rechn-Kand..
-		@return Zu verrechnender Rechn-Kand.	  */
-	@Override
-	public int getC_Invoice_Cand_ToClear_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Cand_ToClear_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

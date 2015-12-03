@@ -34,7 +34,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.inout.spi.IMaterialBalanceConfigMatcher;
 
@@ -50,7 +50,7 @@ public class FlatrateMaterialBalanceConfigMatcher implements IMaterialBalanceCon
 	public boolean matches(final I_M_InOutLine inoutLine)
 	{
 		// Services
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 		
 		//header
 		final I_M_InOut inout = inoutLine.getM_InOut();

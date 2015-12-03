@@ -32,35 +32,50 @@ public interface I_C_Flatrate_Data
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
     /** Load Meta Data */
 
-	/** Get Mandant.
-	  * Mandant für diese Installation.
-	  */
+	/**
+	 * Get Mandant.
+	 * Mandant für diese Installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, org.compiere.model.I_AD_Client>(I_C_Flatrate_Data.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Set Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -69,17 +84,27 @@ public interface I_C_Flatrate_Data
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Geschäftspartner.
-	  * Bezeichnet einen Geschäftspartner
-	  */
+	/**
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_BPartner_ID (int C_BPartner_ID);
 
-	/** Get Geschäftspartner.
-	  * Bezeichnet einen Geschäftspartner
-	  */
+	/**
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException;
+	public org.compiere.model.I_C_BPartner getC_BPartner();
 
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
@@ -88,21 +113,22 @@ public interface I_C_Flatrate_Data
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
-	/** Set C_Flatrate_DataEntry_IncludedTab	  */
-	public void setC_Flatrate_DataEntry_IncludedT (java.lang.String C_Flatrate_DataEntry_IncludedT);
-
-	/** Get C_Flatrate_DataEntry_IncludedTab	  */
-	public java.lang.String getC_Flatrate_DataEntry_IncludedT();
-
-    /** Column definition for C_Flatrate_DataEntry_IncludedT */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_C_Flatrate_DataEntry_IncludedT = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "C_Flatrate_DataEntry_IncludedT", null);
-    /** Column name C_Flatrate_DataEntry_IncludedT */
-    public static final String COLUMNNAME_C_Flatrate_DataEntry_IncludedT = "C_Flatrate_DataEntry_IncludedT";
-
-	/** Set Datenerfassung	  */
+	/**
+	 * Set Datenerfassung.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Flatrate_Data_ID (int C_Flatrate_Data_ID);
 
-	/** Get Datenerfassung	  */
+	/**
+	 * Get Datenerfassung.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Flatrate_Data_ID();
 
     /** Column definition for C_Flatrate_Data_ID */
@@ -110,9 +136,37 @@ public interface I_C_Flatrate_Data
     /** Column name C_Flatrate_Data_ID */
     public static final String COLUMNNAME_C_Flatrate_Data_ID = "C_Flatrate_Data_ID";
 
-	/** Get Erstellt.
-	  * Datum, an dem dieser Eintrag erstellt wurde
-	  */
+	/**
+	 * Set C_Flatrate_DataEntry_IncludedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Flatrate_DataEntry_IncludedT (java.lang.String C_Flatrate_DataEntry_IncludedT);
+
+	/**
+	 * Get C_Flatrate_DataEntry_IncludedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getC_Flatrate_DataEntry_IncludedT();
+
+    /** Column definition for C_Flatrate_DataEntry_IncludedT */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_C_Flatrate_DataEntry_IncludedT = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "C_Flatrate_DataEntry_IncludedT", null);
+    /** Column name C_Flatrate_DataEntry_IncludedT */
+    public static final String COLUMNNAME_C_Flatrate_DataEntry_IncludedT = "C_Flatrate_DataEntry_IncludedT";
+
+	/**
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
@@ -120,9 +174,14 @@ public interface I_C_Flatrate_Data
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Erstellt durch.
-	  * Nutzer, der diesen Eintrag erstellt hat
-	  */
+	/**
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
@@ -130,14 +189,24 @@ public interface I_C_Flatrate_Data
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Set Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
+	/**
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsActive (boolean IsActive);
 
-	/** Get Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
+	/**
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isActive();
 
     /** Column definition for IsActive */
@@ -145,14 +214,24 @@ public interface I_C_Flatrate_Data
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Verarbeitet.
-	  * Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setProcessed (boolean Processed);
 
-	/** Get Verarbeitet.
-	  * Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isProcessed();
 
     /** Column definition for Processed */
@@ -160,9 +239,14 @@ public interface I_C_Flatrate_Data
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
-	/** Get Aktualisiert.
-	  * Datum, an dem dieser Eintrag aktualisiert wurde
-	  */
+	/**
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
@@ -170,9 +254,14 @@ public interface I_C_Flatrate_Data
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Aktualisiert durch.
-	  * Nutzer, der diesen Eintrag aktualisiert hat
-	  */
+	/**
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */

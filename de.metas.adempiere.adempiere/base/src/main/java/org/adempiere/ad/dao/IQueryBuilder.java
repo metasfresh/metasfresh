@@ -129,7 +129,7 @@ public interface IQueryBuilder<T>
 	<V> IQueryBuilder<T> addInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 
 	/**
-	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitivelly expected).
+	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
 	 *
 	 * @param column
 	 * @param values
@@ -138,7 +138,7 @@ public interface IQueryBuilder<T>
 	<V> IQueryBuilder<T> addNotInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 
 	/**
-	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitivelly expected).
+	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
 	 *
 	 * @param columnName
 	 * @param values

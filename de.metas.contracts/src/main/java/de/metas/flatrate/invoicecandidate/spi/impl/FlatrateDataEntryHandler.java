@@ -31,7 +31,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -107,7 +107,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	@Override
 	public int getAD_User_InCharge_ID(final I_C_Invoice_Candidate ic)
 	{
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 		final I_C_Flatrate_DataEntry dataEntry = flatrateDB.retrieveDataEntryOrNull(ic);
 		Check.assume(dataEntry != null, ic + " is referenced by a C_Flatrate_DataEntry record");

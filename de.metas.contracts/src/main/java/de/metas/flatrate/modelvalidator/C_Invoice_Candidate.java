@@ -34,7 +34,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
@@ -51,7 +51,7 @@ public class C_Invoice_Candidate implements ModelValidator
 
 	private int m_AD_Client_ID = -1;
 
-	private final IFlatrateDB flatrateDAO = Services.get(IFlatrateDB.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	@Override
 	public int getAD_Client_ID()

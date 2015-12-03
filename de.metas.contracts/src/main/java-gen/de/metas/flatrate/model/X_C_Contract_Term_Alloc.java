@@ -30,7 +30,7 @@ public class X_C_Contract_Term_Alloc extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1718237237L;
+	private static final long serialVersionUID = 1984956474L;
 
     /** Standard Constructor */
     public X_C_Contract_Term_Alloc (Properties ctx, int C_Contract_Term_Alloc_ID, String trxName)
@@ -57,14 +57,6 @@ public class X_C_Contract_Term_Alloc extends org.compiere.model.PO implements I_
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_Contract_Term_Alloc[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -203,10 +195,10 @@ public class X_C_Contract_Term_Alloc extends org.compiere.model.PO implements I_
 	public static final String DOCSTATUS_Drafted = "DR";
 	/** Completed = CO */
 	public static final String DOCSTATUS_Completed = "CO";
-	/** Genehmigt = AP */
-	public static final String DOCSTATUS_Genehmigt = "AP";
-	/** Nicht genehmigt = NA */
-	public static final String DOCSTATUS_NichtGenehmigt = "NA";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
 	/** Voided = VO */
 	public static final String DOCSTATUS_Voided = "VO";
 	/** Invalid = IN */
@@ -215,14 +207,14 @@ public class X_C_Contract_Term_Alloc extends org.compiere.model.PO implements I_
 	public static final String DOCSTATUS_Reversed = "RE";
 	/** Closed = CL */
 	public static final String DOCSTATUS_Closed = "CL";
-	/** Unbekannt = ?? */
-	public static final String DOCSTATUS_Unbekannt = "??";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
 	/** InProgress = IP */
 	public static final String DOCSTATUS_InProgress = "IP";
-	/** Warten auf Zahlung = WP */
-	public static final String DOCSTATUS_WartenAufZahlung = "WP";
-	/** Warten auf Bestätigung = WC */
-	public static final String DOCSTATUS_WartenAufBestaetigung = "WC";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
 		@param DocStatus 
 		The current status of the document

@@ -40,7 +40,7 @@ import org.compiere.model.PO;
 import org.compiere.util.Msg;
 
 import de.metas.flatrate.api.IFlatrateBL;
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
@@ -102,7 +102,7 @@ public class FlatrateDataEntryValidator implements ModelValidator
 			}
 
 			final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-			final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+			final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 			if (type == TYPE_BEFORE_NEW || type == TYPE_BEFORE_CHANGE)
 			{
@@ -205,7 +205,7 @@ public class FlatrateDataEntryValidator implements ModelValidator
 			//
 			// notes:
 
-			final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+			final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 			if (X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()))
 			{
@@ -250,7 +250,7 @@ public class FlatrateDataEntryValidator implements ModelValidator
 		}
 
 		final I_C_Flatrate_Term flatrateTerm = dataEntry.getC_Flatrate_Term();
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 		//
 		// if it's an invoicing data entry, make sure that there is no correction entry yet

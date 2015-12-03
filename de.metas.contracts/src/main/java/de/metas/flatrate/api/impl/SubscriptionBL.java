@@ -65,7 +65,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.flatrate.Contracts_Constants;
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.api.ISubscriptionBL;
 import de.metas.flatrate.api.ISubscriptionDAO;
 import de.metas.flatrate.interfaces.I_C_BPartner;
@@ -345,7 +345,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDropShip_Location_ID(olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(olCand));
 		newTerm.setDropShip_User_ID(olCandEffectiveValuesBL.getDropShip_User_Effective_ID(olCand));
 
-		I_C_Flatrate_Data existingData = Services.get(IFlatrateDB.class).retriveOrCreateFlatrateData(bill_BPartner);
+		I_C_Flatrate_Data existingData = Services.get(IFlatrateDAO.class).retriveOrCreateFlatrateData(bill_BPartner);
 
 		newTerm.setC_Flatrate_Data(existingData);
 

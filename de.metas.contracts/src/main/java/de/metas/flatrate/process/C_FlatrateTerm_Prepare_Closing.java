@@ -43,7 +43,7 @@ import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 
 import de.metas.flatrate.api.IFlatrateBL;
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
@@ -66,7 +66,7 @@ public class C_FlatrateTerm_Prepare_Closing extends SvrProcess
 		final I_C_Flatrate_Term flatrateTerm =
 				POWrapper.create(ctx, getRecord_ID(), I_C_Flatrate_Term.class, trxName);
 
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 		final Timestamp dateFrom;
 		final List<I_C_Flatrate_DataEntry> existingCorrEntries =

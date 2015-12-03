@@ -10,12 +10,12 @@ package de.metas.flatrate.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,10 +37,10 @@ import org.compiere.util.Msg;
 
 public class MCFlatrateTransition extends X_C_Flatrate_Transition implements DocAction
 {
-	
+
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5338632310970646067L;
 	/** Process Message */
@@ -66,7 +66,7 @@ public class MCFlatrateTransition extends X_C_Flatrate_Transition implements Doc
 
 	/**
 	 * Close Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -101,8 +101,8 @@ public class MCFlatrateTransition extends X_C_Flatrate_Transition implements Doc
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
-		
-		
+
+
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
 		{
@@ -111,7 +111,7 @@ public class MCFlatrateTransition extends X_C_Flatrate_Transition implements Doc
 		}
 
 		setProcessed(true);
-		setDocAction(DOCACTION_Reaktivieren);
+		setDocAction(DOCACTION_Re_Activate);
 		return DocAction.STATUS_Completed;
 	}
 
@@ -173,7 +173,7 @@ public class MCFlatrateTransition extends X_C_Flatrate_Transition implements Doc
 
 	/**
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -196,7 +196,7 @@ public class MCFlatrateTransition extends X_C_Flatrate_Transition implements Doc
 
 	/**************************************************************************
 	 * Process document
-	 * 
+	 *
 	 * @param processAction
 	 *            document action
 	 * @return true if performed
@@ -271,7 +271,7 @@ public class MCFlatrateTransition extends X_C_Flatrate_Transition implements Doc
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override

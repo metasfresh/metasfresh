@@ -34,7 +34,7 @@ import org.compiere.model.I_C_Year;
 
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.service.impl.TriggerUIBL.ModelValidator;
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
 
 @Validator(I_C_Period.class)
@@ -53,7 +53,7 @@ public class C_Period
 
 		final I_C_Calendar calendar = year.getC_Calendar();
 
-		final List<I_C_Flatrate_Transition> transitions = Services.get(IFlatrateDB.class).retrieveTransitionsForCalendar(calendar);
+		final List<I_C_Flatrate_Transition> transitions = Services.get(IFlatrateDAO.class).retrieveTransitionsForCalendar(calendar);
 
 		if (transitions.isEmpty())
 		{

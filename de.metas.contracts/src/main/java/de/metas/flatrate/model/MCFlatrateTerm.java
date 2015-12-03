@@ -10,12 +10,12 @@ package de.metas.flatrate.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,7 @@ import org.compiere.util.Msg;
 public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5991467188908320233L;
 
@@ -66,7 +66,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 
 	/**
 	 * Close Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -117,7 +117,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 		}
 
 		setProcessed(true);
-		setDocAction(DOCACTION_Reaktivieren);
+		setDocAction(DOCACTION_Re_Activate);
 		return DocAction.STATUS_Completed;
 	}
 
@@ -173,7 +173,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 
 	/**
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -196,7 +196,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 
 	/**************************************************************************
 	 * Process document
-	 * 
+	 *
 	 * @param processAction
 	 *            document action
 	 * @return true if performed
@@ -271,7 +271,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override

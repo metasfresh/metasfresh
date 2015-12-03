@@ -38,7 +38,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Matching;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
@@ -63,7 +63,7 @@ public class C_FlatrateTerm_Create_For_BPartners extends C_FlatrateTerm_Create
 
 		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.create(getCtx(), p_flatrateconditionsID, I_C_Flatrate_Conditions.class, getTrxName());
 
-		final List<I_C_Flatrate_Matching> matchings = Services.get(IFlatrateDB.class).retrieveFlatrateMatchings(conditions);
+		final List<I_C_Flatrate_Matching> matchings = Services.get(IFlatrateDAO.class).retrieveFlatrateMatchings(conditions);
 		if (matchings.size() == 1 && matchings.get(0).getM_Product_ID() > 0)
 		{
 			// this is the case for quality-based contracts

@@ -53,7 +53,7 @@ import org.compiere.util.Msg;
 
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.flatrate.api.IFlatrateBL;
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.api.ISubscriptionBL;
 import de.metas.flatrate.api.ISubscriptionDAO;
 import de.metas.flatrate.interfaces.I_C_DocType;
@@ -219,7 +219,7 @@ public class C_Flatrate_Term
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void updateFlatrateData(final I_C_Flatrate_Term term)
 	{
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 		final I_C_Flatrate_Data flatrateData = term.getC_Flatrate_Data();
 		final List<I_C_Flatrate_Term> terms = flatrateDB.retrieveTerms(flatrateData);
@@ -425,7 +425,7 @@ public class C_Flatrate_Term
 		}
 		else
 		{
-			final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+			final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 			final List<I_C_Flatrate_DataEntry> entries = flatrateDB.retrieveDataEntries(term, null, null);
 
 			for (final I_C_Flatrate_DataEntry entry : entries)

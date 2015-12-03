@@ -31,7 +31,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.interfaces.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
@@ -74,7 +74,7 @@ public class InOutCandFlatrateListener implements IInOutCandHandlerListener
 
 		final I_C_Order o = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
 
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 		final List<I_C_Flatrate_Term> termsForOl =
 				flatrateDB.retrieveTerms(ctx, o.getBill_BPartner_ID(), o.getDateOrdered(), ol.getM_Product().getM_Product_Category_ID(), ol.getM_Product_ID(), ol.getC_Charge_ID(), trxName);
 

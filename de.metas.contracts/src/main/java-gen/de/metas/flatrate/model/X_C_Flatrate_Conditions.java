@@ -32,7 +32,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1413402183L;
+	private static final long serialVersionUID = -388839260L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
@@ -64,9 +64,9 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 // Y
 			setIsSimulation (false);
 // N
+			setM_Product_Flatrate_ID (0);
 			setMargin_Max (Env.ZERO);
 			setMargin_Min (Env.ZERO);
-			setM_Product_Flatrate_ID (0);
 			setName (null);
 			setProcessed (false);
 // N
@@ -94,14 +94,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_Flatrate_Conditions[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** Set Vertragsbedingungen.
@@ -178,35 +170,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	/** 
-	 * ClearingAmtBaseOn AD_Reference_ID=540278
-	 * Reference name: ClearingAmtBaseOn
-	 */
-	public static final int CLEARINGAMTBASEON_AD_Reference_ID=540278;
-	/** Produktpreis = ProductPrice */
-	public static final String CLEARINGAMTBASEON_Produktpreis = "ProductPrice";
-	/** Pauschalenpreis = FlatrateAmount */
-	public static final String CLEARINGAMTBASEON_Pauschalenpreis = "FlatrateAmount";
-	/** Set Basis für Verrechnungs-Zahlbetrag.
-		@param ClearingAmtBaseOn 
-		Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
-	  */
-	@Override
-	public void setClearingAmtBaseOn (java.lang.String ClearingAmtBaseOn)
-	{
-
-		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
-	}
-
-	/** Get Basis für Verrechnungs-Zahlbetrag.
-		@return Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
-	  */
-	@Override
-	public java.lang.String getClearingAmtBaseOn () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ClearingAmtBaseOn);
-	}
-
 	@Override
 	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
 	{
@@ -245,38 +208,67 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	/** 
+	 * ClearingAmtBaseOn AD_Reference_ID=540278
+	 * Reference name: ClearingAmtBaseOn
+	 */
+	public static final int CLEARINGAMTBASEON_AD_Reference_ID=540278;
+	/** Produktpreis = ProductPrice */
+	public static final String CLEARINGAMTBASEON_Produktpreis = "ProductPrice";
+	/** Pauschalenpreis = FlatrateAmount */
+	public static final String CLEARINGAMTBASEON_Pauschalenpreis = "FlatrateAmount";
+	/** Set Basis für Verrechnungs-Zahlbetrag.
+		@param ClearingAmtBaseOn 
+		Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
+	  */
+	@Override
+	public void setClearingAmtBaseOn (java.lang.String ClearingAmtBaseOn)
+	{
+
+		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
+	}
+
+	/** Get Basis für Verrechnungs-Zahlbetrag.
+		@return Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
+	  */
+	@Override
+	public java.lang.String getClearingAmtBaseOn () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ClearingAmtBaseOn);
+	}
+
+	/** 
 	 * DocAction AD_Reference_ID=135
 	 * Reference name: _Document Action
 	 */
 	public static final int DOCACTION_AD_Reference_ID=135;
 	/** Complete = CO */
 	public static final String DOCACTION_Complete = "CO";
-	/** Genehmigen = AP */
-	public static final String DOCACTION_Genehmigen = "AP";
-	/** Ablehnen = RJ */
-	public static final String DOCACTION_Ablehnen = "RJ";
-	/** Buchen = PO */
-	public static final String DOCACTION_Buchen = "PO";
+	/** Approve = AP */
+	public static final String DOCACTION_Approve = "AP";
+	/** Reject = RJ */
+	public static final String DOCACTION_Reject = "RJ";
+	/** Post = PO */
+	public static final String DOCACTION_Post = "PO";
 	/** Void = VO */
 	public static final String DOCACTION_Void = "VO";
 	/** Close = CL */
 	public static final String DOCACTION_Close = "CL";
-	/** Stornieren - Korrektur = RC */
-	public static final String DOCACTION_Stornieren_Korrektur = "RC";
-	/** Rückbuchung = RA */
-	public static final String DOCACTION_Rueckbuchung = "RA";
-	/** Annulieren = IN */
-	public static final String DOCACTION_Annulieren = "IN";
-	/** Reaktivieren = RE */
-	public static final String DOCACTION_Reaktivieren = "RE";
+	/** Reverse_Correct = RC */
+	public static final String DOCACTION_Reverse_Correct = "RC";
+	/** Reverse_Accrual = RA */
+	public static final String DOCACTION_Reverse_Accrual = "RA";
+	/** Invalidate = IN */
+	public static final String DOCACTION_Invalidate = "IN";
+	/** Re_Activate = RE */
+	public static final String DOCACTION_Re_Activate = "RE";
 	/** None = -- */
 	public static final String DOCACTION_None = "--";
 	/** Prepare = PR */
 	public static final String DOCACTION_Prepare = "PR";
-	/** Entsperren = XL */
-	public static final String DOCACTION_Entsperren = "XL";
-	/** Warten und fertigstellen = WC */
-	public static final String DOCACTION_WartenUndFertigstellen = "WC";
+	/** Unlock = XL */
+	public static final String DOCACTION_Unlock = "XL";
+	/** WaitComplete = WC */
+	public static final String DOCACTION_WaitComplete = "WC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		Der zukünftige Status des Belegs
@@ -306,10 +298,10 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String DOCSTATUS_Drafted = "DR";
 	/** Completed = CO */
 	public static final String DOCSTATUS_Completed = "CO";
-	/** Genehmigt = AP */
-	public static final String DOCSTATUS_Genehmigt = "AP";
-	/** Nicht genehmigt = NA */
-	public static final String DOCSTATUS_NichtGenehmigt = "NA";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
 	/** Voided = VO */
 	public static final String DOCSTATUS_Voided = "VO";
 	/** Invalid = IN */
@@ -318,14 +310,14 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String DOCSTATUS_Reversed = "RE";
 	/** Closed = CL */
 	public static final String DOCSTATUS_Closed = "CL";
-	/** Unbekannt = ?? */
-	public static final String DOCSTATUS_Unbekannt = "??";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
 	/** InProgress = IP */
 	public static final String DOCSTATUS_InProgress = "IP";
-	/** Warten auf Zahlung = WP */
-	public static final String DOCSTATUS_WartenAufZahlung = "WP";
-	/** Warten auf Bestätigung = WC */
-	public static final String DOCSTATUS_WartenAufBestaetigung = "WC";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
 		@param DocStatus 
 		The current status of the document
@@ -578,44 +570,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return false;
 	}
 
-	/** Set Korridor - Überschreitung.
-		@param Margin_Max Korridor - Überschreitung	  */
-	@Override
-	public void setMargin_Max (java.math.BigDecimal Margin_Max)
-	{
-		set_Value (COLUMNNAME_Margin_Max, Margin_Max);
-	}
-
-	/** Get Korridor - Überschreitung.
-		@return Korridor - Überschreitung	  */
-	@Override
-	public java.math.BigDecimal getMargin_Max () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Max);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Korridor - Unterschreitung.
-		@param Margin_Min Korridor - Unterschreitung	  */
-	@Override
-	public void setMargin_Min (java.math.BigDecimal Margin_Min)
-	{
-		set_Value (COLUMNNAME_Margin_Min, Margin_Min);
-	}
-
-	/** Get Korridor - Unterschreitung.
-		@return Korridor - Unterschreitung	  */
-	@Override
-	public java.math.BigDecimal getMargin_Min () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Min);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
 	@Override
 	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
 	{
@@ -764,6 +718,44 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
+	/** Set Korridor - Überschreitung.
+		@param Margin_Max Korridor - Überschreitung	  */
+	@Override
+	public void setMargin_Max (java.math.BigDecimal Margin_Max)
+	{
+		set_Value (COLUMNNAME_Margin_Max, Margin_Max);
+	}
+
+	/** Get Korridor - Überschreitung.
+		@return Korridor - Überschreitung	  */
+	@Override
+	public java.math.BigDecimal getMargin_Max () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Max);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Korridor - Unterschreitung.
+		@param Margin_Min Korridor - Unterschreitung	  */
+	@Override
+	public void setMargin_Min (java.math.BigDecimal Margin_Min)
+	{
+		set_Value (COLUMNNAME_Margin_Min, Margin_Min);
+	}
+
+	/** Get Korridor - Unterschreitung.
+		@return Korridor - Unterschreitung	  */
+	@Override
+	public java.math.BigDecimal getMargin_Min () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Min);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -871,6 +863,8 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_Abonnement = "Subscr";
 	/** Leergutverwaltung = Refundable */
 	public static final String TYPE_CONDITIONS_Leergutverwaltung = "Refundable";
+	/** QualityBasedInvoicing = QualityBsd */
+	public static final String TYPE_CONDITIONS_QualityBasedInvoicing = "QualityBsd";
 	/** Set Vertragsart.
 		@param Type_Conditions Vertragsart	  */
 	@Override

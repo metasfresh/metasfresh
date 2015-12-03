@@ -44,7 +44,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
-public interface IFlatrateDB extends ISingletonService
+public interface IFlatrateDAO extends ISingletonService
 {
 	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Flatrate_DataEntry dataEntry);
 

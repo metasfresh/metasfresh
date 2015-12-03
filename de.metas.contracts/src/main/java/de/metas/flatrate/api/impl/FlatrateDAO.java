@@ -33,6 +33,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,11 +42,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.Query;
+import org.compiere.process.DocAction;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -54,7 +57,7 @@ import org.compiere.util.TrxRunnable;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Data;
 import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
@@ -64,14 +67,13 @@ import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.flatrate.model.X_C_Flatrate_Conditions;
 import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
-import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
-public class FlatrateDB implements IFlatrateDB
+public class FlatrateDAO implements IFlatrateDAO
 {
 
 	private static final String MSP_DATA_ENTRY_ERROR_INVOICE_CAND_PROCESSED_3P = "DataEntry_Error_InvoiceCand_Processed";
-	private static final CLogger logger = CLogger.getCLogger(FlatrateDB.class);
+	private static final CLogger logger = CLogger.getCLogger(FlatrateDAO.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -102,40 +104,38 @@ public class FlatrateDB implements IFlatrateDB
 			final int c_Charge_ID,
 			final @CacheTrx String trxName)
 	{
-		final String wc =
-				I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + " IN ( "
-						+ "   SELECT t." + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID
-						+ "   FROM " + I_C_Flatrate_Term.Table_Name + " t "
-						+ "     JOIN " + I_C_Flatrate_Conditions.Table_Name + " c "
-						+ "       ON c." + I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID + "=t." + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID
-						+ "     JOIN " + I_C_Flatrate_Matching.Table_Name + " m "
-						+ "       ON m." + I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID + "=t." + I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID
-						+ "   WHERE "
-						+ "   t." + I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID + "=? AND "
-						+ "   t." + I_C_Flatrate_Term.COLUMNNAME_DocStatus + "='" + X_C_Flatrate_Term.DOCSTATUS_Completed + "' AND "
-						+ "   t." + I_C_Flatrate_Term.COLUMNNAME_StartDate + "<=? AND "
-						+ "   t." + I_C_Flatrate_Term.COLUMNNAME_EndDate + ">=? AND "
-						+ "   c." + I_C_Flatrate_Conditions.COLUMNNAME_DocStatus + "='CO' AND "
-						+ "   c." + I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions
-						+ " NOT IN ('" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement + "', '" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr + "') AND "
-						+ "   COALESCE (m." + I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID + ",0) IN (0,?) AND "
-						+ "   COALESCE (m." + I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID + ",0) IN (0,?) AND "
-						+ "   COALESCE (m." + I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID + ",0) IN (0,?) "
-						+ "   )";
+		final IQueryBuilder<I_C_Flatrate_Matching> matchingQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter();
+		if (m_Product_Category_ID > 0)
+		{
+			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, null, m_Product_Category_ID);
+		}
+		if (m_Product_ID > 0)
+		{
+			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, null, m_Product_ID);
+		}
+		if (c_Charge_ID > 0)
+		{
+			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID, null, c_Charge_ID);
+		}
 
-		return new Query(ctx, I_C_Flatrate_Term.Table_Name, wc, trxName)
-				.setParameters(
-						bill_BPartner_ID,
-						dateOrdered,
-						dateOrdered,
-						m_Product_Category_ID,
-						m_Product_ID,
-						c_Charge_ID
-				)
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
-				.list(I_C_Flatrate_Term.class);
+		final IQuery<I_C_Flatrate_Conditions> fcQuery = matchingQueryBuilder
+				.andCollect(I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class)
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
+				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement)
+				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr)
+				.create();
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bill_BPartner_ID)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LessOrEqual, dateOrdered)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GreatherOrEqual, dateOrdered)
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, fcQuery)
+				.orderBy().addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID).endOrderBy()
+				.create()
+				.list();
 	}
 
 	@Override
@@ -494,7 +494,7 @@ public class FlatrateDB implements IFlatrateDB
 	{
 		final List<I_C_Flatrate_DataEntry> result = new ArrayList<I_C_Flatrate_DataEntry>();
 
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 		final List<I_C_Flatrate_DataEntry> entriesToCorrect = flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
 
 		for (final I_C_Flatrate_DataEntry entryToCorrect : entriesToCorrect)
@@ -554,7 +554,7 @@ public class FlatrateDB implements IFlatrateDB
 			{
 				continue;
 			}
-			Check.errorIf(result != null, "We can have only one non-sim term for {0}, but we have the following terms with at least two non-sim: {1}" + ic, terms);
+			Check.errorIf(result != null, "We can have only one non-sim term for {0}, but we have the following terms with at least two being non-sim: {1}", ic, terms);
 			result = term;
 		}
 		return result;

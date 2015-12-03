@@ -32,35 +32,50 @@ public interface I_C_Flatrate_Transition
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
-	/** Get Mandant.
-	  * Mandant für diese Installation.
-	  */
+	/**
+	 * Get Mandant.
+	 * Mandant für diese Installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Transition, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Transition, org.compiere.model.I_AD_Client>(I_C_Flatrate_Transition.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Set Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -69,17 +84,27 @@ public interface I_C_Flatrate_Transition
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Abrechnungs-/Lieferkalender.
-	  * Bezeichnung des Kalenders, der die Abrechnungs- bzw. bei Abonnements die Lieferperioden (z.B. Monate) definiert
-	  */
+	/**
+	 * Set Abrechnungs-/Lieferkalender.
+	 * Bezeichnung des Kalenders, der die Abrechnungs- bzw. bei Abonnements die Lieferperioden (z.B. Monate) definiert
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Calendar_Contract_ID (int C_Calendar_Contract_ID);
 
-	/** Get Abrechnungs-/Lieferkalender.
-	  * Bezeichnung des Kalenders, der die Abrechnungs- bzw. bei Abonnements die Lieferperioden (z.B. Monate) definiert
-	  */
+	/**
+	 * Get Abrechnungs-/Lieferkalender.
+	 * Bezeichnung des Kalenders, der die Abrechnungs- bzw. bei Abonnements die Lieferperioden (z.B. Monate) definiert
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Calendar_Contract_ID();
 
-	public org.compiere.model.I_C_Calendar getC_Calendar_Contract() throws RuntimeException;
+	public org.compiere.model.I_C_Calendar getC_Calendar_Contract();
 
 	public void setC_Calendar_Contract(org.compiere.model.I_C_Calendar C_Calendar_Contract);
 
@@ -88,17 +113,27 @@ public interface I_C_Flatrate_Transition
     /** Column name C_Calendar_Contract_ID */
     public static final String COLUMNNAME_C_Calendar_Contract_ID = "C_Calendar_Contract_ID";
 
-	/** Set Nächste Vertragsbedingungen.
-	  * Auswahl der Vertragsbedingungen, die bei einer Vertragsverlängerung in der folgenden Vertragsperide anzuwenden sind
-	  */
+	/**
+	 * Set Nächste Vertragsbedingungen.
+	 * Auswahl der Vertragsbedingungen, die bei einer Vertragsverlängerung in der folgenden Vertragsperide anzuwenden sind
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Flatrate_Conditions_Next_ID (int C_Flatrate_Conditions_Next_ID);
 
-	/** Get Nächste Vertragsbedingungen.
-	  * Auswahl der Vertragsbedingungen, die bei einer Vertragsverlängerung in der folgenden Vertragsperide anzuwenden sind
-	  */
+	/**
+	 * Get Nächste Vertragsbedingungen.
+	 * Auswahl der Vertragsbedingungen, die bei einer Vertragsverlängerung in der folgenden Vertragsperide anzuwenden sind
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Flatrate_Conditions_Next_ID();
 
-	public de.metas.flatrate.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions_Next() throws RuntimeException;
+	public de.metas.flatrate.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions_Next();
 
 	public void setC_Flatrate_Conditions_Next(de.metas.flatrate.model.I_C_Flatrate_Conditions C_Flatrate_Conditions_Next);
 
@@ -107,14 +142,24 @@ public interface I_C_Flatrate_Transition
     /** Column name C_Flatrate_Conditions_Next_ID */
     public static final String COLUMNNAME_C_Flatrate_Conditions_Next_ID = "C_Flatrate_Conditions_Next_ID";
 
-	/** Set Vertragsverlängerung/-übergang.
-	  * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
-	  */
+	/**
+	 * Set Vertragsverlängerung/-übergang.
+	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID);
 
-	/** Get Vertragsverlängerung/-übergang.
-	  * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
-	  */
+	/**
+	 * Get Vertragsverlängerung/-übergang.
+	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Flatrate_Transition_ID();
 
     /** Column definition for C_Flatrate_Transition_ID */
@@ -122,9 +167,14 @@ public interface I_C_Flatrate_Transition
     /** Column name C_Flatrate_Transition_ID */
     public static final String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
-	/** Get Erstellt.
-	  * Datum, an dem dieser Eintrag erstellt wurde
-	  */
+	/**
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
@@ -132,9 +182,14 @@ public interface I_C_Flatrate_Transition
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Erstellt durch.
-	  * Nutzer, der diesen Eintrag erstellt hat
-	  */
+	/**
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
@@ -142,10 +197,22 @@ public interface I_C_Flatrate_Transition
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Set Lieferintervall	  */
+	/**
+	 * Set Lieferintervall.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setDeliveryInterval (int DeliveryInterval);
 
-	/** Get Lieferintervall	  */
+	/**
+	 * Get Lieferintervall.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getDeliveryInterval();
 
     /** Column definition for DeliveryInterval */
@@ -153,10 +220,22 @@ public interface I_C_Flatrate_Transition
     /** Column name DeliveryInterval */
     public static final String COLUMNNAME_DeliveryInterval = "DeliveryInterval";
 
-	/** Set Einheit des Lieferintervalls	  */
+	/**
+	 * Set Einheit des Lieferintervalls.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setDeliveryIntervalUnit (java.lang.String DeliveryIntervalUnit);
 
-	/** Get Einheit des Lieferintervalls	  */
+	/**
+	 * Get Einheit des Lieferintervalls.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDeliveryIntervalUnit();
 
     /** Column definition for DeliveryIntervalUnit */
@@ -164,10 +243,22 @@ public interface I_C_Flatrate_Transition
     /** Column name DeliveryIntervalUnit */
     public static final String COLUMNNAME_DeliveryIntervalUnit = "DeliveryIntervalUnit";
 
-	/** Set Beschreibung	  */
+	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setDescription (java.lang.String Description);
 
-	/** Get Beschreibung	  */
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDescription();
 
     /** Column definition for Description */
@@ -175,14 +266,24 @@ public interface I_C_Flatrate_Transition
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
-	/** Set Belegverarbeitung.
-	  * Der zukünftige Status des Belegs
-	  */
+	/**
+	 * Set Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setDocAction (java.lang.String DocAction);
 
-	/** Get Belegverarbeitung.
-	  * Der zukünftige Status des Belegs
-	  */
+	/**
+	 * Get Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDocAction();
 
     /** Column definition for DocAction */
@@ -190,14 +291,24 @@ public interface I_C_Flatrate_Transition
     /** Column name DocAction */
     public static final String COLUMNNAME_DocAction = "DocAction";
 
-	/** Set Belegstatus.
-	  * The current status of the document
-	  */
+	/**
+	 * Set Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setDocStatus (java.lang.String DocStatus);
 
-	/** Get Belegstatus.
-	  * The current status of the document
-	  */
+	/**
+	 * Get Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDocStatus();
 
     /** Column definition for DocStatus */
@@ -205,10 +316,22 @@ public interface I_C_Flatrate_Transition
     /** Column name DocStatus */
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
-	/** Set Endet mit Kalenderjahr	  */
+	/**
+	 * Set Endet mit Kalenderjahr.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setEndsWithCalendarYear (boolean EndsWithCalendarYear);
 
-	/** Get Endet mit Kalenderjahr	  */
+	/**
+	 * Get Endet mit Kalenderjahr.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isEndsWithCalendarYear();
 
     /** Column definition for EndsWithCalendarYear */
@@ -216,14 +339,24 @@ public interface I_C_Flatrate_Transition
     /** Column name EndsWithCalendarYear */
     public static final String COLUMNNAME_EndsWithCalendarYear = "EndsWithCalendarYear";
 
-	/** Set Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
+	/**
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsActive (boolean IsActive);
 
-	/** Get Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
+	/**
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isActive();
 
     /** Column definition for IsActive */
@@ -231,14 +364,24 @@ public interface I_C_Flatrate_Transition
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Neue Vertragslaufzeit autom. Fertigstellen.
-	  * Legt fest, ob das System die automatisch neu erzeugte Vertragsperiode sofort fertigstellen soll.
-	  */
+	/**
+	 * Set Neue Vertragslaufzeit autom. Fertigstellen.
+	 * Legt fest, ob das System die automatisch neu erzeugte Vertragsperiode sofort fertigstellen soll.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsAutoCompleteNewTerm (boolean IsAutoCompleteNewTerm);
 
-	/** Get Neue Vertragslaufzeit autom. Fertigstellen.
-	  * Legt fest, ob das System die automatisch neu erzeugte Vertragsperiode sofort fertigstellen soll.
-	  */
+	/**
+	 * Get Neue Vertragslaufzeit autom. Fertigstellen.
+	 * Legt fest, ob das System die automatisch neu erzeugte Vertragsperiode sofort fertigstellen soll.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isAutoCompleteNewTerm();
 
     /** Column definition for IsAutoCompleteNewTerm */
@@ -246,14 +389,24 @@ public interface I_C_Flatrate_Transition
     /** Column name IsAutoCompleteNewTerm */
     public static final String COLUMNNAME_IsAutoCompleteNewTerm = "IsAutoCompleteNewTerm";
 
-	/** Set Vertrag autom. verlängern.
-	  * Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
-	  */
+	/**
+	 * Set Vertrag autom. verlängern.
+	 * Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsAutoRenew (boolean IsAutoRenew);
 
-	/** Get Vertrag autom. verlängern.
-	  * Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
-	  */
+	/**
+	 * Get Vertrag autom. verlängern.
+	 * Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isAutoRenew();
 
     /** Column definition for IsAutoRenew */
@@ -261,10 +414,22 @@ public interface I_C_Flatrate_Transition
     /** Column name IsAutoRenew */
     public static final String COLUMNNAME_IsAutoRenew = "IsAutoRenew";
 
-	/** Set Betreuer Informieren	  */
+	/**
+	 * Set Betreuer Informieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsNotifyUserInCharge (boolean IsNotifyUserInCharge);
 
-	/** Get Betreuer Informieren	  */
+	/**
+	 * Get Betreuer Informieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isNotifyUserInCharge();
 
     /** Column definition for IsNotifyUserInCharge */
@@ -272,14 +437,24 @@ public interface I_C_Flatrate_Transition
     /** Column name IsNotifyUserInCharge */
     public static final String COLUMNNAME_IsNotifyUserInCharge = "IsNotifyUserInCharge";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
+	/**
+	 * Set Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setName (java.lang.String Name);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
+	/**
+	 * Get Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getName();
 
     /** Column definition for Name */
@@ -287,14 +462,24 @@ public interface I_C_Flatrate_Transition
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
-	/** Set Verarbeitet.
-	  * Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setProcessed (boolean Processed);
 
-	/** Get Verarbeitet.
-	  * Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isProcessed();
 
     /** Column definition for Processed */
@@ -302,10 +487,22 @@ public interface I_C_Flatrate_Transition
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
-	/** Set Process Now	  */
+	/**
+	 * Set Process Now.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setProcessing (boolean Processing);
 
-	/** Get Process Now	  */
+	/**
+	 * Get Process Now.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isProcessing();
 
     /** Column definition for Processing */
@@ -313,10 +510,22 @@ public interface I_C_Flatrate_Transition
     /** Column name Processing */
     public static final String COLUMNNAME_Processing = "Processing";
 
-	/** Set Vertragslaufzeit	  */
+	/**
+	 * Set Vertragslaufzeit.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setTermDuration (int TermDuration);
 
-	/** Get Vertragslaufzeit	  */
+	/**
+	 * Get Vertragslaufzeit.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getTermDuration();
 
     /** Column definition for TermDuration */
@@ -324,10 +533,22 @@ public interface I_C_Flatrate_Transition
     /** Column name TermDuration */
     public static final String COLUMNNAME_TermDuration = "TermDuration";
 
-	/** Set Einheit der Vertragslaufzeit	  */
+	/**
+	 * Set Einheit der Vertragslaufzeit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setTermDurationUnit (java.lang.String TermDurationUnit);
 
-	/** Get Einheit der Vertragslaufzeit	  */
+	/**
+	 * Get Einheit der Vertragslaufzeit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getTermDurationUnit();
 
     /** Column definition for TermDurationUnit */
@@ -335,14 +556,24 @@ public interface I_C_Flatrate_Transition
     /** Column name TermDurationUnit */
     public static final String COLUMNNAME_TermDurationUnit = "TermDurationUnit";
 
-	/** Set Ablauffrist.
-	  * Zeit vor Vertragsablauf, zu der bestimmte Aktionen durchgeführt werden sollen.
-	  */
+	/**
+	 * Set Ablauffrist.
+	 * Zeit vor Vertragsablauf, zu der bestimmte Aktionen durchgeführt werden sollen.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setTermOfNotice (int TermOfNotice);
 
-	/** Get Ablauffrist.
-	  * Zeit vor Vertragsablauf, zu der bestimmte Aktionen durchgeführt werden sollen.
-	  */
+	/**
+	 * Get Ablauffrist.
+	 * Zeit vor Vertragsablauf, zu der bestimmte Aktionen durchgeführt werden sollen.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getTermOfNotice();
 
     /** Column definition for TermOfNotice */
@@ -350,10 +581,22 @@ public interface I_C_Flatrate_Transition
     /** Column name TermOfNotice */
     public static final String COLUMNNAME_TermOfNotice = "TermOfNotice";
 
-	/** Set Einheit der Kündigungsfrist	  */
+	/**
+	 * Set Einheit der Kündigungsfrist.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setTermOfNoticeUnit (java.lang.String TermOfNoticeUnit);
 
-	/** Get Einheit der Kündigungsfrist	  */
+	/**
+	 * Get Einheit der Kündigungsfrist.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getTermOfNoticeUnit();
 
     /** Column definition for TermOfNoticeUnit */
@@ -361,9 +604,14 @@ public interface I_C_Flatrate_Transition
     /** Column name TermOfNoticeUnit */
     public static final String COLUMNNAME_TermOfNoticeUnit = "TermOfNoticeUnit";
 
-	/** Get Aktualisiert.
-	  * Datum, an dem dieser Eintrag aktualisiert wurde
-	  */
+	/**
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
@@ -371,9 +619,14 @@ public interface I_C_Flatrate_Transition
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Aktualisiert durch.
-	  * Nutzer, der diesen Eintrag aktualisiert hat
-	  */
+	/**
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */

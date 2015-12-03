@@ -32,35 +32,50 @@ public interface I_C_Contract_Term_Alloc
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
-	/** Get Mandant.
-	  * Mandant für diese Installation.
-	  */
+	/**
+	 * Get Mandant.
+	 * Mandant für diese Installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_Client>(I_C_Contract_Term_Alloc.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Set Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -69,17 +84,27 @@ public interface I_C_Contract_Term_Alloc
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Prozess-Instanz.
-	  * Instanz eines Prozesses
-	  */
+	/**
+	 * Set Prozess-Instanz.
+	 * Instanz eines Prozesses
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_PInstance_ID (int AD_PInstance_ID);
 
-	/** Get Prozess-Instanz.
-	  * Instanz eines Prozesses
-	  */
+	/**
+	 * Get Prozess-Instanz.
+	 * Instanz eines Prozesses
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_PInstance_ID();
 
-	public org.compiere.model.I_AD_PInstance getAD_PInstance() throws RuntimeException;
+	public org.compiere.model.I_AD_PInstance getAD_PInstance();
 
 	public void setAD_PInstance(org.compiere.model.I_AD_PInstance AD_PInstance);
 
@@ -88,10 +113,22 @@ public interface I_C_Contract_Term_Alloc
     /** Column name AD_PInstance_ID */
     public static final String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
-	/** Set Auftragskandidat - Laufender Vertrag	  */
+	/**
+	 * Set Auftragskandidat - Laufender Vertrag.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Contract_Term_Alloc_ID (int C_Contract_Term_Alloc_ID);
 
-	/** Get Auftragskandidat - Laufender Vertrag	  */
+	/**
+	 * Get Auftragskandidat - Laufender Vertrag.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Contract_Term_Alloc_ID();
 
     /** Column definition for C_Contract_Term_Alloc_ID */
@@ -99,13 +136,25 @@ public interface I_C_Contract_Term_Alloc
     /** Column name C_Contract_Term_Alloc_ID */
     public static final String COLUMNNAME_C_Contract_Term_Alloc_ID = "C_Contract_Term_Alloc_ID";
 
-	/** Set Pauschale - Vertragsperiode	  */
+	/**
+	 * Set Pauschale - Vertragsperiode.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
 
-	/** Get Pauschale - Vertragsperiode	  */
+	/**
+	 * Get Pauschale - Vertragsperiode.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Flatrate_Term_ID();
 
-	public de.metas.flatrate.model.I_C_Flatrate_Term getC_Flatrate_Term() throws RuntimeException;
+	public de.metas.flatrate.model.I_C_Flatrate_Term getC_Flatrate_Term();
 
 	public void setC_Flatrate_Term(de.metas.flatrate.model.I_C_Flatrate_Term C_Flatrate_Term);
 
@@ -114,13 +163,25 @@ public interface I_C_Contract_Term_Alloc
     /** Column name C_Flatrate_Term_ID */
     public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
-	/** Set Auftragskandidat	  */
+	/**
+	 * Set Auftragskandidat.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_OLCand_ID (int C_OLCand_ID);
 
-	/** Get Auftragskandidat	  */
+	/**
+	 * Get Auftragskandidat.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_OLCand_ID();
 
-	public de.metas.ordercandidate.model.I_C_OLCand getC_OLCand() throws RuntimeException;
+	public de.metas.ordercandidate.model.I_C_OLCand getC_OLCand();
 
 	public void setC_OLCand(de.metas.ordercandidate.model.I_C_OLCand C_OLCand);
 
@@ -129,9 +190,14 @@ public interface I_C_Contract_Term_Alloc
     /** Column name C_OLCand_ID */
     public static final String COLUMNNAME_C_OLCand_ID = "C_OLCand_ID";
 
-	/** Get Erstellt.
-	  * Datum, an dem dieser Eintrag erstellt wurde
-	  */
+	/**
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
@@ -139,9 +205,14 @@ public interface I_C_Contract_Term_Alloc
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Erstellt durch.
-	  * Nutzer, der diesen Eintrag erstellt hat
-	  */
+	/**
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
@@ -149,14 +220,24 @@ public interface I_C_Contract_Term_Alloc
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Set Belegstatus.
-	  * The current status of the document
-	  */
+	/**
+	 * Set Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public void setDocStatus (java.lang.String DocStatus);
 
-	/** Get Belegstatus.
-	  * The current status of the document
-	  */
+	/**
+	 * Get Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public java.lang.String getDocStatus();
 
     /** Column definition for DocStatus */
@@ -164,14 +245,24 @@ public interface I_C_Contract_Term_Alloc
     /** Column name DocStatus */
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
-	/** Set Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
+	/**
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsActive (boolean IsActive);
 
-	/** Get Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
+	/**
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isActive();
 
     /** Column definition for IsActive */
@@ -179,9 +270,14 @@ public interface I_C_Contract_Term_Alloc
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Get Aktualisiert.
-	  * Datum, an dem dieser Eintrag aktualisiert wurde
-	  */
+	/**
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
@@ -189,9 +285,14 @@ public interface I_C_Contract_Term_Alloc
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Aktualisiert durch.
-	  * Nutzer, der diesen Eintrag aktualisiert hat
-	  */
+	/**
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */

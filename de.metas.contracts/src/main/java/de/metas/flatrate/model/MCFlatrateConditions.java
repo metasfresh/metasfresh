@@ -10,12 +10,12 @@ package de.metas.flatrate.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,15 +38,15 @@ import org.compiere.util.Msg;
 public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements DocAction
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -6423880921308525801L;
-	
+
 	/** Process Message */
 	private String m_processMsg = null;
 	/** Just Prepared Flag */
 	private boolean m_justPrepared = false;
-	
+
 	public MCFlatrateConditions(Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
 	{
 		super(ctx, C_Flatrate_Conditions_ID, trxName);
@@ -65,7 +65,7 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 
 	/**
 	 * Close Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -76,7 +76,7 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
 			return false;
-		
+
 		// After Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
@@ -101,7 +101,7 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
-		
+
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
 		{
@@ -110,7 +110,7 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 		}
 
 		setProcessed(true);
-		setDocAction(DOCACTION_Reaktivieren);
+		setDocAction(DOCACTION_Re_Activate);
 		return DocAction.STATUS_Completed;
 	}
 
@@ -166,7 +166,7 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 
 	/**
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -184,13 +184,13 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		
+
 		return DocAction.STATUS_InProgress;
 	} // prepareIt
 
 	/**************************************************************************
 	 * Process document
-	 * 
+	 *
 	 * @param processAction
 	 *            document action
 	 * @return true if performed
@@ -265,7 +265,7 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -287,5 +287,5 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 	{
 		return 0;
 	}
-	
+
 }

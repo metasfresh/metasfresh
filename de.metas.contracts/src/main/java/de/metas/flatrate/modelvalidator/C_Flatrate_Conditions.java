@@ -37,7 +37,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Matching;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
@@ -88,7 +88,7 @@ public class C_Flatrate_Conditions
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void beforeComplete(final I_C_Flatrate_Conditions cond)
 	{
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 		if (!X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement.equals(cond.getType_Conditions()))
 		{
 			// 03660 for subscriptions, we don't strictly require mappings anymore,
@@ -121,7 +121,7 @@ public class C_Flatrate_Conditions
 	public void beforeReactivate(final I_C_Flatrate_Conditions cond)
 	{
 		// check if the conditions are already used somewhere
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 		final List<I_C_Flatrate_Term> terms = flatrateDB.retrieveTerms(cond);
 		if (!terms.isEmpty())
 		{

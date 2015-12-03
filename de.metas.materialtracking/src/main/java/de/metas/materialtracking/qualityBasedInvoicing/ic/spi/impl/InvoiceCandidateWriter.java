@@ -44,7 +44,7 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.flatrate.api.IFlatrateDB;
+import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -175,7 +175,7 @@ public class InvoiceCandidateWriter
 
 		ILoggable.THREADLOCAL.getLoggableOr(ILoggable.NULL).addLog(newIc ? "Created new IC " : "Updated existing IC " + invoiceCandidate);
 
-		final IFlatrateDB flatrateDB = Services.get(IFlatrateDB.class);
+		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 		//
 		// delete/recreate Invoice Clearing Allocation

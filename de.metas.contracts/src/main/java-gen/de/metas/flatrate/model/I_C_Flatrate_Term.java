@@ -32,35 +32,50 @@ public interface I_C_Flatrate_Term
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
     /** Load Meta Data */
 
-	/** Get Mandant.
-	  * Mandant für diese Installation.
-	  */
+	/**
+	 * Get Mandant.
+	 * Mandant für diese Installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_Client>(I_C_Flatrate_Term.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Set Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -69,13 +84,25 @@ public interface I_C_Flatrate_Term
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Verarbeitung zum Laufzeitende	  */
+	/**
+	 * Set Verarbeitung zum Laufzeitende.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_PInstance_EndOfTerm_ID (int AD_PInstance_EndOfTerm_ID);
 
-	/** Get Verarbeitung zum Laufzeitende	  */
+	/**
+	 * Get Verarbeitung zum Laufzeitende.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_PInstance_EndOfTerm_ID();
 
-	public org.compiere.model.I_AD_PInstance getAD_PInstance_EndOfTerm() throws RuntimeException;
+	public org.compiere.model.I_AD_PInstance getAD_PInstance_EndOfTerm();
 
 	public void setAD_PInstance_EndOfTerm(org.compiere.model.I_AD_PInstance AD_PInstance_EndOfTerm);
 
@@ -84,17 +111,27 @@ public interface I_C_Flatrate_Term
     /** Column name AD_PInstance_EndOfTerm_ID */
     public static final String COLUMNNAME_AD_PInstance_EndOfTerm_ID = "AD_PInstance_EndOfTerm_ID";
 
-	/** Set Betreuer.
-	  * Person, die bei einem fachlichen Problem vom System informiert wird.
-	  */
+	/**
+	 * Set Betreuer.
+	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
 
-	/** Get Betreuer.
-	  * Person, die bei einem fachlichen Problem vom System informiert wird.
-	  */
+	/**
+	 * Get Betreuer.
+	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_User_InCharge_ID();
 
-	public org.compiere.model.I_AD_User getAD_User_InCharge() throws RuntimeException;
+	public org.compiere.model.I_AD_User getAD_User_InCharge();
 
 	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge);
 
@@ -103,17 +140,27 @@ public interface I_C_Flatrate_Term
     /** Column name AD_User_InCharge_ID */
     public static final String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
 
-	/** Set Rechnungspartner.
-	  * Geschäftspartners für die Rechnungsstellung
-	  */
+	/**
+	 * Set Rechnungspartner.
+	 * Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setBill_BPartner_ID (int Bill_BPartner_ID);
 
-	/** Get Rechnungspartner.
-	  * Geschäftspartners für die Rechnungsstellung
-	  */
+	/**
+	 * Get Rechnungspartner.
+	 * Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getBill_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getBill_BPartner() throws RuntimeException;
+	public org.compiere.model.I_C_BPartner getBill_BPartner();
 
 	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner);
 
@@ -122,17 +169,27 @@ public interface I_C_Flatrate_Term
     /** Column name Bill_BPartner_ID */
     public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
-	/** Set Rechnungsstandort.
-	  * Standort des Geschäftspartners für die Rechnungsstellung
-	  */
+	/**
+	 * Set Rechnungsstandort.
+	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setBill_Location_ID (int Bill_Location_ID);
 
-	/** Get Rechnungsstandort.
-	  * Standort des Geschäftspartners für die Rechnungsstellung
-	  */
+	/**
+	 * Get Rechnungsstandort.
+	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getBill_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getBill_Location() throws RuntimeException;
+	public org.compiere.model.I_C_BPartner_Location getBill_Location();
 
 	public void setBill_Location(org.compiere.model.I_C_BPartner_Location Bill_Location);
 
@@ -141,17 +198,27 @@ public interface I_C_Flatrate_Term
     /** Column name Bill_Location_ID */
     public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
-	/** Set Rechnungskontakt.
-	  * Ansprechpartner des Geschäftspartners für die Rechnungsstellung
-	  */
+	/**
+	 * Set Rechnungskontakt.
+	 * Ansprechpartner des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setBill_User_ID (int Bill_User_ID);
 
-	/** Get Rechnungskontakt.
-	  * Ansprechpartner des Geschäftspartners für die Rechnungsstellung
-	  */
+	/**
+	 * Get Rechnungskontakt.
+	 * Ansprechpartner des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getBill_User_ID();
 
-	public org.compiere.model.I_AD_User getBill_User() throws RuntimeException;
+	public org.compiere.model.I_AD_User getBill_User();
 
 	public void setBill_User(org.compiere.model.I_AD_User Bill_User);
 
@@ -160,17 +227,27 @@ public interface I_C_Flatrate_Term
     /** Column name Bill_User_ID */
     public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
-	/** Set Währung.
-	  * Die Währung für diesen Eintrag
-	  */
+	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Currency_ID (int C_Currency_ID);
 
-	/** Get Währung.
-	  * Die Währung für diesen Eintrag
-	  */
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException;
+	public org.compiere.model.I_C_Currency getC_Currency();
 
 	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
 
@@ -179,13 +256,25 @@ public interface I_C_Flatrate_Term
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
-	/** Set Vertragsbedingungen	  */
+	/**
+	 * Set Vertragsbedingungen.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID);
 
-	/** Get Vertragsbedingungen	  */
+	/**
+	 * Get Vertragsbedingungen.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Flatrate_Conditions_ID();
 
-	public de.metas.flatrate.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions() throws RuntimeException;
+	public de.metas.flatrate.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions();
 
 	public void setC_Flatrate_Conditions(de.metas.flatrate.model.I_C_Flatrate_Conditions C_Flatrate_Conditions);
 
@@ -194,13 +283,25 @@ public interface I_C_Flatrate_Term
     /** Column name C_Flatrate_Conditions_ID */
     public static final String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
-	/** Set Datenerfassung	  */
+	/**
+	 * Set Datenerfassung.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Flatrate_Data_ID (int C_Flatrate_Data_ID);
 
-	/** Get Datenerfassung	  */
+	/**
+	 * Get Datenerfassung.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Flatrate_Data_ID();
 
-	public de.metas.flatrate.model.I_C_Flatrate_Data getC_Flatrate_Data() throws RuntimeException;
+	public de.metas.flatrate.model.I_C_Flatrate_Data getC_Flatrate_Data();
 
 	public void setC_Flatrate_Data(de.metas.flatrate.model.I_C_Flatrate_Data C_Flatrate_Data);
 
@@ -209,10 +310,22 @@ public interface I_C_Flatrate_Term
     /** Column name C_Flatrate_Data_ID */
     public static final String COLUMNNAME_C_Flatrate_Data_ID = "C_Flatrate_Data_ID";
 
-	/** Set Pauschale - Vertragsperiode	  */
+	/**
+	 * Set Pauschale - Vertragsperiode.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
 
-	/** Get Pauschale - Vertragsperiode	  */
+	/**
+	 * Get Pauschale - Vertragsperiode.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_Flatrate_Term_ID();
 
     /** Column definition for C_Flatrate_Term_ID */
@@ -220,32 +333,27 @@ public interface I_C_Flatrate_Term
     /** Column name C_Flatrate_Term_ID */
     public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
-	/** Set Nachfolgende Vertragsperiode	  */
-	public void setC_FlatrateTerm_Next_ID (int C_FlatrateTerm_Next_ID);
-
-	/** Get Nachfolgende Vertragsperiode	  */
-	public int getC_FlatrateTerm_Next_ID();
-
-	public de.metas.flatrate.model.I_C_Flatrate_Term getC_FlatrateTerm_Next() throws RuntimeException;
-
-	public void setC_FlatrateTerm_Next(de.metas.flatrate.model.I_C_Flatrate_Term C_FlatrateTerm_Next);
-
-    /** Column definition for C_FlatrateTerm_Next_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Term> COLUMN_C_FlatrateTerm_Next_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Term>(I_C_Flatrate_Term.class, "C_FlatrateTerm_Next_ID", de.metas.flatrate.model.I_C_Flatrate_Term.class);
-    /** Column name C_FlatrateTerm_Next_ID */
-    public static final String COLUMNNAME_C_FlatrateTerm_Next_ID = "C_FlatrateTerm_Next_ID";
-
-	/** Set Vertragsverlängerung/-übergang.
-	  * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
-	  */
+	/**
+	 * Set Vertragsverlängerung/-übergang.
+	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID);
 
-	/** Get Vertragsverlängerung/-übergang.
-	  * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
-	  */
+	/**
+	 * Get Vertragsverlängerung/-übergang.
+	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public int getC_Flatrate_Transition_ID();
 
-	public de.metas.flatrate.model.I_C_Flatrate_Transition getC_Flatrate_Transition() throws RuntimeException;
+	public de.metas.flatrate.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
 
 	public void setC_Flatrate_Transition(de.metas.flatrate.model.I_C_Flatrate_Transition C_Flatrate_Transition);
 
@@ -254,96 +362,54 @@ public interface I_C_Flatrate_Term
     /** Column name C_Flatrate_Transition_ID */
     public static final String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
-	/** Set Ändern oder Kündigen	  */
-	public void setChangeOrCancelTerm (java.lang.String ChangeOrCancelTerm);
+	/**
+	 * Set Nachfolgende Vertragsperiode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_FlatrateTerm_Next_ID (int C_FlatrateTerm_Next_ID);
 
-	/** Get Ändern oder Kündigen	  */
-	public java.lang.String getChangeOrCancelTerm();
+	/**
+	 * Get Nachfolgende Vertragsperiode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_FlatrateTerm_Next_ID();
 
-    /** Column definition for ChangeOrCancelTerm */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ChangeOrCancelTerm = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "ChangeOrCancelTerm", null);
-    /** Column name ChangeOrCancelTerm */
-    public static final String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
+	public de.metas.flatrate.model.I_C_Flatrate_Term getC_FlatrateTerm_Next();
 
-	/** Set Vertrags-Status	  */
-	public void setContractStatus (java.lang.String ContractStatus);
+	public void setC_FlatrateTerm_Next(de.metas.flatrate.model.I_C_Flatrate_Term C_FlatrateTerm_Next);
 
-	/** Get Vertrags-Status	  */
-	public java.lang.String getContractStatus();
+    /** Column definition for C_FlatrateTerm_Next_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Term> COLUMN_C_FlatrateTerm_Next_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Term>(I_C_Flatrate_Term.class, "C_FlatrateTerm_Next_ID", de.metas.flatrate.model.I_C_Flatrate_Term.class);
+    /** Column name C_FlatrateTerm_Next_ID */
+    public static final String COLUMNNAME_C_FlatrateTerm_Next_ID = "C_FlatrateTerm_Next_ID";
 
-    /** Column definition for ContractStatus */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractStatus = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "ContractStatus", null);
-    /** Column name ContractStatus */
-    public static final String COLUMNNAME_ContractStatus = "ContractStatus";
-
-	/** Set Änderungs-Auftragszeile.
-	  * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	  */
-	public void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID);
-
-	/** Get Änderungs-Auftragszeile.
-	  * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	  */
-	public int getC_OrderLine_TermChange_ID();
-
-	public org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange() throws RuntimeException;
-
-	public void setC_OrderLine_TermChange(org.compiere.model.I_C_OrderLine C_OrderLine_TermChange);
-
-    /** Column definition for C_OrderLine_TermChange_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_TermChange_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_TermChange_ID", org.compiere.model.I_C_OrderLine.class);
-    /** Column name C_OrderLine_TermChange_ID */
-    public static final String COLUMNNAME_C_OrderLine_TermChange_ID = "C_OrderLine_TermChange_ID";
-
-	/** Set Vertrags-Auftragszeile.
-	  * Auftragszeile, mit der der Vertrag abgeschlossen wurde
-	  */
-	public void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID);
-
-	/** Get Vertrags-Auftragszeile.
-	  * Auftragszeile, mit der der Vertrag abgeschlossen wurde
-	  */
-	public int getC_OrderLine_Term_ID();
-
-	public org.compiere.model.I_C_OrderLine getC_OrderLine_Term() throws RuntimeException;
-
-	public void setC_OrderLine_Term(org.compiere.model.I_C_OrderLine C_OrderLine_Term);
-
-    /** Column definition for C_OrderLine_Term_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_Term_ID", org.compiere.model.I_C_OrderLine.class);
-    /** Column name C_OrderLine_Term_ID */
-    public static final String COLUMNNAME_C_OrderLine_Term_ID = "C_OrderLine_Term_ID";
-
-	/** Set Änderungs-Auftrag.
-	  * Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	  */
-	public void setC_Order_TermChange_ID (int C_Order_TermChange_ID);
-
-	/** Get Änderungs-Auftrag.
-	  * Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	  */
-	public int getC_Order_TermChange_ID();
-
-	public org.compiere.model.I_C_Order getC_Order_TermChange() throws RuntimeException;
-
-	public void setC_Order_TermChange(org.compiere.model.I_C_Order C_Order_TermChange);
-
-    /** Column definition for C_Order_TermChange_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_TermChange_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order>(I_C_Flatrate_Term.class, "C_Order_TermChange_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_Order_TermChange_ID */
-    public static final String COLUMNNAME_C_Order_TermChange_ID = "C_Order_TermChange_ID";
-
-	/** Set Vertrags-Auftrag.
-	  * Auftrag, mit der der Vertrag abgeschlossen wurde
-	  */
+	/**
+	 * Set Vertrags-Auftrag.
+	 * Auftrag, mit der der Vertrag abgeschlossen wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public void setC_Order_Term_ID (int C_Order_Term_ID);
 
-	/** Get Vertrags-Auftrag.
-	  * Auftrag, mit der der Vertrag abgeschlossen wurde
-	  */
+	/**
+	 * Get Vertrags-Auftrag.
+	 * Auftrag, mit der der Vertrag abgeschlossen wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public int getC_Order_Term_ID();
 
-	public org.compiere.model.I_C_Order getC_Order_Term() throws RuntimeException;
+	public org.compiere.model.I_C_Order getC_Order_Term();
 
 	public void setC_Order_Term(org.compiere.model.I_C_Order C_Order_Term);
 
@@ -352,37 +418,114 @@ public interface I_C_Flatrate_Term
     /** Column name C_Order_Term_ID */
     public static final String COLUMNNAME_C_Order_Term_ID = "C_Order_Term_ID";
 
-	/** Get Erstellt.
-	  * Datum, an dem dieser Eintrag erstellt wurde
-	  */
-	public java.sql.Timestamp getCreated();
+	/**
+	 * Set Änderungs-Auftrag.
+	 * Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public void setC_Order_TermChange_ID (int C_Order_TermChange_ID);
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	/**
+	 * Get Änderungs-Auftrag.
+	 * Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getC_Order_TermChange_ID();
 
-	/** Get Erstellt durch.
-	  * Nutzer, der diesen Eintrag erstellt hat
-	  */
-	public int getCreatedBy();
+	public org.compiere.model.I_C_Order getC_Order_TermChange();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_User>(I_C_Flatrate_Term.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	public void setC_Order_TermChange(org.compiere.model.I_C_Order C_Order_TermChange);
 
-	/** Set Maßeinheit.
-	  * Maßeinheit
-	  */
+    /** Column definition for C_Order_TermChange_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_TermChange_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order>(I_C_Flatrate_Term.class, "C_Order_TermChange_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_Order_TermChange_ID */
+    public static final String COLUMNNAME_C_Order_TermChange_ID = "C_Order_TermChange_ID";
+
+	/**
+	 * Set Vertrags-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID);
+
+	/**
+	 * Get Vertrags-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderLine_Term_ID();
+
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_Term();
+
+	public void setC_OrderLine_Term(org.compiere.model.I_C_OrderLine C_OrderLine_Term);
+
+    /** Column definition for C_OrderLine_Term_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_Term_ID", org.compiere.model.I_C_OrderLine.class);
+    /** Column name C_OrderLine_Term_ID */
+    public static final String COLUMNNAME_C_OrderLine_Term_ID = "C_OrderLine_Term_ID";
+
+	/**
+	 * Set Änderungs-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID);
+
+	/**
+	 * Get Änderungs-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderLine_TermChange_ID();
+
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange();
+
+	public void setC_OrderLine_TermChange(org.compiere.model.I_C_OrderLine C_OrderLine_TermChange);
+
+    /** Column definition for C_OrderLine_TermChange_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_TermChange_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_TermChange_ID", org.compiere.model.I_C_OrderLine.class);
+    /** Column name C_OrderLine_TermChange_ID */
+    public static final String COLUMNNAME_C_OrderLine_TermChange_ID = "C_OrderLine_TermChange_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public void setC_UOM_ID (int C_UOM_ID);
 
-	/** Get Maßeinheit.
-	  * Maßeinheit
-	  */
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public int getC_UOM_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException;
+	public org.compiere.model.I_C_UOM getC_UOM();
 
 	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
@@ -391,14 +534,100 @@ public interface I_C_Flatrate_Term
     /** Column name C_UOM_ID */
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
-	/** Set Lieferart.
-	  * Definiert die zeitliche Steuerung von Lieferungen
-	  */
+	/**
+	 * Set Ändern oder Kündigen.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setChangeOrCancelTerm (java.lang.String ChangeOrCancelTerm);
+
+	/**
+	 * Get Ändern oder Kündigen.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getChangeOrCancelTerm();
+
+    /** Column definition for ChangeOrCancelTerm */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ChangeOrCancelTerm = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "ChangeOrCancelTerm", null);
+    /** Column name ChangeOrCancelTerm */
+    public static final String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
+
+	/**
+	 * Set Vertrags-Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setContractStatus (java.lang.String ContractStatus);
+
+	/**
+	 * Get Vertrags-Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getContractStatus();
+
+    /** Column definition for ContractStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractStatus = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "ContractStatus", null);
+    /** Column name ContractStatus */
+    public static final String COLUMNNAME_ContractStatus = "ContractStatus";
+
+	/**
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_User>(I_C_Flatrate_Term.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Lieferart.
+	 * Definiert die zeitliche Steuerung von Lieferungen
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setDeliveryRule (java.lang.String DeliveryRule);
 
-	/** Get Lieferart.
-	  * Definiert die zeitliche Steuerung von Lieferungen
-	  */
+	/**
+	 * Get Lieferart.
+	 * Definiert die zeitliche Steuerung von Lieferungen
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDeliveryRule();
 
     /** Column definition for DeliveryRule */
@@ -406,14 +635,24 @@ public interface I_C_Flatrate_Term
     /** Column name DeliveryRule */
     public static final String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
-	/** Set Lieferung.
-	  * Wie der Auftrag geliefert wird
-	  */
+	/**
+	 * Set Lieferung.
+	 * Wie der Auftrag geliefert wird
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setDeliveryViaRule (java.lang.String DeliveryViaRule);
 
-	/** Get Lieferung.
-	  * Wie der Auftrag geliefert wird
-	  */
+	/**
+	 * Get Lieferung.
+	 * Wie der Auftrag geliefert wird
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDeliveryViaRule();
 
     /** Column definition for DeliveryViaRule */
@@ -421,14 +660,24 @@ public interface I_C_Flatrate_Term
     /** Column name DeliveryViaRule */
     public static final String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
 
-	/** Set Belegverarbeitung.
-	  * Der zukünftige Status des Belegs
-	  */
+	/**
+	 * Set Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setDocAction (java.lang.String DocAction);
 
-	/** Get Belegverarbeitung.
-	  * Der zukünftige Status des Belegs
-	  */
+	/**
+	 * Get Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDocAction();
 
     /** Column definition for DocAction */
@@ -436,14 +685,24 @@ public interface I_C_Flatrate_Term
     /** Column name DocAction */
     public static final String COLUMNNAME_DocAction = "DocAction";
 
-	/** Set Belegstatus.
-	  * Derzeitiger Status des Belegs
-	  */
+	/**
+	 * Set Belegstatus.
+	 * Derzeitiger Status des Belegs
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setDocStatus (java.lang.String DocStatus);
 
-	/** Get Belegstatus.
-	  * Derzeitiger Status des Belegs
-	  */
+	/**
+	 * Get Belegstatus.
+	 * Derzeitiger Status des Belegs
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDocStatus();
 
     /** Column definition for DocStatus */
@@ -451,17 +710,27 @@ public interface I_C_Flatrate_Term
     /** Column name DocStatus */
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
-	/** Set Streckengeschäft-Kunde.
-	  * Business Partner to ship to
-	  */
+	/**
+	 * Set Streckengeschäft-Kunde.
+	 * Business Partner to ship to
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
 
-	/** Get Streckengeschäft-Kunde.
-	  * Business Partner to ship to
-	  */
+	/**
+	 * Get Streckengeschäft-Kunde.
+	 * Business Partner to ship to
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getDropShip_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getDropShip_BPartner() throws RuntimeException;
+	public org.compiere.model.I_C_BPartner getDropShip_BPartner();
 
 	public void setDropShip_BPartner(org.compiere.model.I_C_BPartner DropShip_BPartner);
 
@@ -470,17 +739,27 @@ public interface I_C_Flatrate_Term
     /** Column name DropShip_BPartner_ID */
     public static final String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
 
-	/** Set Streckengeschäft-Ort.
-	  * Business Partner Location for shipping to
-	  */
+	/**
+	 * Set Streckengeschäft-Ort.
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setDropShip_Location_ID (int DropShip_Location_ID);
 
-	/** Get Streckengeschäft-Ort.
-	  * Business Partner Location for shipping to
-	  */
+	/**
+	 * Get Streckengeschäft-Ort.
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getDropShip_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getDropShip_Location() throws RuntimeException;
+	public org.compiere.model.I_C_BPartner_Location getDropShip_Location();
 
 	public void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
 
@@ -489,17 +768,27 @@ public interface I_C_Flatrate_Term
     /** Column name DropShip_Location_ID */
     public static final String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
-	/** Set Streckengeschäft-Ansprechpartner.
-	  * Business Partner Contact for drop shipment
-	  */
+	/**
+	 * Set Streckengeschäft-Ansprechpartner.
+	 * Business Partner Contact for drop shipment
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setDropShip_User_ID (int DropShip_User_ID);
 
-	/** Get Streckengeschäft-Ansprechpartner.
-	  * Business Partner Contact for drop shipment
-	  */
+	/**
+	 * Get Streckengeschäft-Ansprechpartner.
+	 * Business Partner Contact for drop shipment
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getDropShip_User_ID();
 
-	public org.compiere.model.I_AD_User getDropShip_User() throws RuntimeException;
+	public org.compiere.model.I_AD_User getDropShip_User();
 
 	public void setDropShip_User(org.compiere.model.I_AD_User DropShip_User);
 
@@ -508,14 +797,24 @@ public interface I_C_Flatrate_Term
     /** Column name DropShip_User_ID */
     public static final String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
 
-	/** Set Enddatum.
-	  * Last effective date (inclusive)
-	  */
+	/**
+	 * Set Enddatum.
+	 * Last effective date (inclusive)
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setEndDate (java.sql.Timestamp EndDate);
 
-	/** Get Enddatum.
-	  * Last effective date (inclusive)
-	  */
+	/**
+	 * Get Enddatum.
+	 * Last effective date (inclusive)
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getEndDate();
 
     /** Column definition for EndDate */
@@ -523,10 +822,22 @@ public interface I_C_Flatrate_Term
     /** Column name EndDate */
     public static final String COLUMNNAME_EndDate = "EndDate";
 
-	/** Set Vertrag jetzt verlängern	  */
+	/**
+	 * Set Vertrag jetzt verlängern.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setExtendTerm (java.lang.String ExtendTerm);
 
-	/** Get Vertrag jetzt verlängern	  */
+	/**
+	 * Get Vertrag jetzt verlängern.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getExtendTerm();
 
     /** Column definition for ExtendTerm */
@@ -534,14 +845,24 @@ public interface I_C_Flatrate_Term
     /** Column name ExtendTerm */
     public static final String COLUMNNAME_ExtendTerm = "ExtendTerm";
 
-	/** Set Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
+	/**
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsActive (boolean IsActive);
 
-	/** Get Aktiv.
-	  * Der Eintrag ist im System aktiv
-	  */
+	/**
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isActive();
 
     /** Column definition for IsActive */
@@ -549,14 +870,24 @@ public interface I_C_Flatrate_Term
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Vertrag autom. verlängern.
-	  * Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
-	  */
+	/**
+	 * Set Vertrag autom. verlängern.
+	 * Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsAutoRenew (boolean IsAutoRenew);
 
-	/** Get Vertrag autom. verlängern.
-	  * Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
-	  */
+	/**
+	 * Get Vertrag autom. verlängern.
+	 * Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isAutoRenew();
 
     /** Column definition for IsAutoRenew */
@@ -564,14 +895,24 @@ public interface I_C_Flatrate_Term
     /** Column name IsAutoRenew */
     public static final String COLUMNNAME_IsAutoRenew = "IsAutoRenew";
 
-	/** Set Gegenüberstellung mit erbr. Leist..
-	  * Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
-	  */
+	/**
+	 * Set Gegenüberstellung mit erbr. Leist..
+	 * Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public void setIsClosingWithActualSum (boolean IsClosingWithActualSum);
 
-	/** Get Gegenüberstellung mit erbr. Leist..
-	  * Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
-	  */
+	/**
+	 * Get Gegenüberstellung mit erbr. Leist..
+	 * Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public boolean isClosingWithActualSum();
 
     /** Column definition for IsClosingWithActualSum */
@@ -579,14 +920,24 @@ public interface I_C_Flatrate_Term
     /** Column name IsClosingWithActualSum */
     public static final String COLUMNNAME_IsClosingWithActualSum = "IsClosingWithActualSum";
 
-	/** Set Abschlusskorrektur vorsehen.
-	  * Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
-	  */
+	/**
+	 * Set Abschlusskorrektur vorsehen.
+	 * Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public void setIsClosingWithCorrectionSum (boolean IsClosingWithCorrectionSum);
 
-	/** Get Abschlusskorrektur vorsehen.
-	  * Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
-	  */
+	/**
+	 * Get Abschlusskorrektur vorsehen.
+	 * Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public boolean isClosingWithCorrectionSum();
 
     /** Column definition for IsClosingWithCorrectionSum */
@@ -594,14 +945,24 @@ public interface I_C_Flatrate_Term
     /** Column name IsClosingWithCorrectionSum */
     public static final String COLUMNNAME_IsClosingWithCorrectionSum = "IsClosingWithCorrectionSum";
 
-	/** Set AB bei neuer Vertragslaufzeit.
-	  * Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
-	  */
+	/**
+	 * Set AB bei neuer Vertragslaufzeit.
+	 * Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public void setIsNewTermCreatesOrder (boolean IsNewTermCreatesOrder);
 
-	/** Get AB bei neuer Vertragslaufzeit.
-	  * Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
-	  */
+	/**
+	 * Get AB bei neuer Vertragslaufzeit.
+	 * Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public boolean isNewTermCreatesOrder();
 
     /** Column definition for IsNewTermCreatesOrder */
@@ -609,10 +970,22 @@ public interface I_C_Flatrate_Term
     /** Column name IsNewTermCreatesOrder */
     public static final String COLUMNNAME_IsNewTermCreatesOrder = "IsNewTermCreatesOrder";
 
-	/** Set Portofrei	  */
+	/**
+	 * Set Portofrei.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsPostageFree (boolean IsPostageFree);
 
-	/** Get Portofrei	  */
+	/**
+	 * Get Portofrei.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isPostageFree();
 
     /** Column definition for IsPostageFree */
@@ -620,10 +993,22 @@ public interface I_C_Flatrate_Term
     /** Column name IsPostageFree */
     public static final String COLUMNNAME_IsPostageFree = "IsPostageFree";
 
-	/** Set Planspiel	  */
+	/**
+	 * Set Planspiel.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsSimulation (boolean IsSimulation);
 
-	/** Get Planspiel	  */
+	/**
+	 * Get Planspiel.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isSimulation();
 
     /** Column definition for IsSimulation */
@@ -631,17 +1016,27 @@ public interface I_C_Flatrate_Term
     /** Column name IsSimulation */
     public static final String COLUMNNAME_IsSimulation = "IsSimulation";
 
-	/** Set Preissystem.
-	  * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
+	/**
+	 * Set Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setM_PricingSystem_ID (int M_PricingSystem_ID);
 
-	/** Get Preissystem.
-	  * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
+	/**
+	 * Get Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getM_PricingSystem_ID();
 
-	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException;
+	public org.compiere.model.I_M_PricingSystem getM_PricingSystem();
 
 	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem);
 
@@ -650,17 +1045,27 @@ public interface I_C_Flatrate_Term
     /** Column name M_PricingSystem_ID */
     public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
-	/** Set Produkt.
-	  * Produkt, Leistung, Artikel
-	  */
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setM_Product_ID (int M_Product_ID);
 
-	/** Get Produkt.
-	  * Produkt, Leistung, Artikel
-	  */
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
+	public org.compiere.model.I_M_Product getM_Product();
 
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
@@ -669,14 +1074,24 @@ public interface I_C_Flatrate_Term
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
-	/** Set Notiz.
-	  * Optional weitere Information für ein Dokument
-	  */
+	/**
+	 * Set Notiz.
+	 * Optional weitere Information für ein Dokument
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setNote (java.lang.String Note);
 
-	/** Get Notiz.
-	  * Optional weitere Information für ein Dokument
-	  */
+	/**
+	 * Get Notiz.
+	 * Optional weitere Information für ein Dokument
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getNote();
 
     /** Column definition for Note */
@@ -684,14 +1099,24 @@ public interface I_C_Flatrate_Term
     /** Column name Note */
     public static final String COLUMNNAME_Note = "Note";
 
-	/** Set Kündigungs/Benachrichtigungsfrist.
-	  * Datum vor Ende der Vertragslaufzeit, an dem der laufende Vertrag automatisch verlängert oder aber der Betreuer informiert wird.
-	  */
+	/**
+	 * Set Kündigungs/Benachrichtigungsfrist.
+	 * Datum vor Ende der Vertragslaufzeit, an dem der laufende Vertrag automatisch verlängert oder aber der Betreuer informiert wird.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setNoticeDate (java.sql.Timestamp NoticeDate);
 
-	/** Get Kündigungs/Benachrichtigungsfrist.
-	  * Datum vor Ende der Vertragslaufzeit, an dem der laufende Vertrag automatisch verlängert oder aber der Betreuer informiert wird.
-	  */
+	/**
+	 * Get Kündigungs/Benachrichtigungsfrist.
+	 * Datum vor Ende der Vertragslaufzeit, an dem der laufende Vertrag automatisch verlängert oder aber der Betreuer informiert wird.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getNoticeDate();
 
     /** Column definition for NoticeDate */
@@ -699,14 +1124,24 @@ public interface I_C_Flatrate_Term
     /** Column name NoticeDate */
     public static final String COLUMNNAME_NoticeDate = "NoticeDate";
 
-	/** Set Planmenge pro Maßeinheit.
-	  * Geplante Menge der zu erbringenden Leistung (z.B. zu liefernde Teile), pro pauschal abzurechnender Einheit (z.B. Pflegetag).
-	  */
+	/**
+	 * Set Planmenge pro Maßeinheit.
+	 * Geplante Menge der zu erbringenden Leistung (z.B. zu liefernde Teile), pro pauschal abzurechnender Einheit (z.B. Pflegetag).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setPlannedQtyPerUnit (java.math.BigDecimal PlannedQtyPerUnit);
 
-	/** Get Planmenge pro Maßeinheit.
-	  * Geplante Menge der zu erbringenden Leistung (z.B. zu liefernde Teile), pro pauschal abzurechnender Einheit (z.B. Pflegetag).
-	  */
+	/**
+	 * Get Planmenge pro Maßeinheit.
+	 * Geplante Menge der zu erbringenden Leistung (z.B. zu liefernde Teile), pro pauschal abzurechnender Einheit (z.B. Pflegetag).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.math.BigDecimal getPlannedQtyPerUnit();
 
     /** Column definition for PlannedQtyPerUnit */
@@ -714,14 +1149,24 @@ public interface I_C_Flatrate_Term
     /** Column name PlannedQtyPerUnit */
     public static final String COLUMNNAME_PlannedQtyPerUnit = "PlannedQtyPerUnit";
 
-	/** Set Abschlusskorrektur vorbereiten.
-	  * Prozess zum erstellen eines Abrechnungs-Korrektur-Datensatzes und/oder eines Abrechnungs-Verrechnungs-Datensatzes
-	  */
+	/**
+	 * Set Abschlusskorrektur vorbereiten.
+	 * Prozess zum erstellen eines Abrechnungs-Korrektur-Datensatzes und/oder eines Abrechnungs-Verrechnungs-Datensatzes
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setPrepareClosing (java.lang.String PrepareClosing);
 
-	/** Get Abschlusskorrektur vorbereiten.
-	  * Prozess zum erstellen eines Abrechnungs-Korrektur-Datensatzes und/oder eines Abrechnungs-Verrechnungs-Datensatzes
-	  */
+	/**
+	 * Get Abschlusskorrektur vorbereiten.
+	 * Prozess zum erstellen eines Abrechnungs-Korrektur-Datensatzes und/oder eines Abrechnungs-Verrechnungs-Datensatzes
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getPrepareClosing();
 
     /** Column definition for PrepareClosing */
@@ -729,14 +1174,24 @@ public interface I_C_Flatrate_Term
     /** Column name PrepareClosing */
     public static final String COLUMNNAME_PrepareClosing = "PrepareClosing";
 
-	/** Set Einzelpreis.
-	  * Effektiver Preis
-	  */
+	/**
+	 * Set Einzelpreis.
+	 * Effektiver Preis
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setPriceActual (java.math.BigDecimal PriceActual);
 
-	/** Get Einzelpreis.
-	  * Effektiver Preis
-	  */
+	/**
+	 * Get Einzelpreis.
+	 * Effektiver Preis
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.math.BigDecimal getPriceActual();
 
     /** Column definition for PriceActual */
@@ -744,14 +1199,24 @@ public interface I_C_Flatrate_Term
     /** Column name PriceActual */
     public static final String COLUMNNAME_PriceActual = "PriceActual";
 
-	/** Set Verarbeitet.
-	  * Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setProcessed (boolean Processed);
 
-	/** Get Verarbeitet.
-	  * Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public boolean isProcessed();
 
     /** Column definition for Processed */
@@ -759,10 +1224,22 @@ public interface I_C_Flatrate_Term
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
-	/** Set Process Now	  */
+	/**
+	 * Set Process Now.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setProcessing (boolean Processing);
 
-	/** Get Process Now	  */
+	/**
+	 * Get Process Now.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isProcessing();
 
     /** Column definition for Processing */
@@ -770,14 +1247,24 @@ public interface I_C_Flatrate_Term
     /** Column name Processing */
     public static final String COLUMNNAME_Processing = "Processing";
 
-	/** Set Anfangsdatum.
-	  * First effective day (inclusive)
-	  */
+	/**
+	 * Set Anfangsdatum.
+	 * First effective day (inclusive)
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setStartDate (java.sql.Timestamp StartDate);
 
-	/** Get Anfangsdatum.
-	  * First effective day (inclusive)
-	  */
+	/**
+	 * Get Anfangsdatum.
+	 * First effective day (inclusive)
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getStartDate();
 
     /** Column definition for StartDate */
@@ -785,10 +1272,22 @@ public interface I_C_Flatrate_Term
     /** Column name StartDate */
     public static final String COLUMNNAME_StartDate = "StartDate";
 
-	/** Set Vertragsart	  */
+	/**
+	 * Set Vertragsart.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setType_Conditions (java.lang.String Type_Conditions);
 
-	/** Get Vertragsart	  */
+	/**
+	 * Get Vertragsart.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getType_Conditions();
 
     /** Column definition for Type_Conditions */
@@ -796,14 +1295,24 @@ public interface I_C_Flatrate_Term
     /** Column name Type_Conditions */
     public static final String COLUMNNAME_Type_Conditions = "Type_Conditions";
 
-	/** Set Verrechnungsart.
-	  * Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
-	  */
+	/**
+	 * Set Verrechnungsart.
+	 * Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public void setType_Flatrate (java.lang.String Type_Flatrate);
 
-	/** Get Verrechnungsart.
-	  * Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
-	  */
+	/**
+	 * Get Verrechnungsart.
+	 * Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public java.lang.String getType_Flatrate();
 
     /** Column definition for Type_Flatrate */
@@ -811,14 +1320,24 @@ public interface I_C_Flatrate_Term
     /** Column name Type_Flatrate */
     public static final String COLUMNNAME_Type_Flatrate = "Type_Flatrate";
 
-	/** Set Einheiten-Typ.
-	  * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	  */
+	/**
+	 * Set Einheiten-Typ.
+	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public void setUOMType (java.lang.String UOMType);
 
-	/** Get Einheiten-Typ.
-	  * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	  */
+	/**
+	 * Get Einheiten-Typ.
+	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
 	public java.lang.String getUOMType();
 
     /** Column definition for UOMType */
@@ -826,9 +1345,14 @@ public interface I_C_Flatrate_Term
     /** Column name UOMType */
     public static final String COLUMNNAME_UOMType = "UOMType";
 
-	/** Get Aktualisiert.
-	  * Datum, an dem dieser Eintrag aktualisiert wurde
-	  */
+	/**
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
@@ -836,9 +1360,14 @@ public interface I_C_Flatrate_Term
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Aktualisiert durch.
-	  * Nutzer, der diesen Eintrag aktualisiert hat
-	  */
+	/**
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */

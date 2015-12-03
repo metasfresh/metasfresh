@@ -30,7 +30,7 @@ public class X_C_Contract_Change extends org.compiere.model.PO implements I_C_Co
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 731798926L;
+	private static final long serialVersionUID = -1658746325L;
 
     /** Standard Constructor */
     public X_C_Contract_Change (Properties ctx, int C_Contract_Change_ID, String trxName)
@@ -59,14 +59,6 @@ public class X_C_Contract_Change extends org.compiere.model.PO implements I_C_Co
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_Contract_Change[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** 
