@@ -178,39 +178,42 @@
 			 or maybe we are misregarding other best practices..
 		    -->
 			<dependency>
-				<groupId>de.metas.swat</groupId>
-				<artifactId>de.metas.swat.zkwebui</artifactId>
+				<artifactId>de.metas.commission.client</artifactId>
+				<groupId>de.metas.commission</groupId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
-				<groupId>de.metas.adempiere.adempiere</groupId>
-				<artifactId>de.metas.adempiere.adempiere.zkwebui</artifactId>
+				<groupId>de.metas.commission</groupId>
+				<artifactId>de.metas.commission.zkwebui</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
-			<dependency>
-				<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-				<groupId>de.metas.adempiere.adempiere</groupId>
-				<version>${project.version}</version>
-			</dependency>
-
-			<dependency>
-				<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-				<groupId>de.metas.adempiere.adempiere</groupId>
-				<version>${project.version}</version>
-				<scope>test</scope>
-			</dependency>
-
+			
 			<dependency>
 				<artifactId>de.metas.document.archive.base</artifactId>
 				<groupId>de.metas.document.archive</groupId>
 				<version>${project.version}</version>
 			</dependency>
+			
+			<dependency>
+				<groupId>de.metas.swat</groupId>
+				<artifactId>de.metas.swat.zkwebui</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.metas.swat</groupId>
+				<artifactId>de.metas.swat.ait</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<dependency>
 				<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 				<groupId>de.metas.adempiere.adempiere</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+				<groupId>de.metas.adempiere.adempiere</groupId>
+				<classifier>tests</classifier>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
