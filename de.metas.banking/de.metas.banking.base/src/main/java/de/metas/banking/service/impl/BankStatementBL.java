@@ -24,8 +24,10 @@ package de.metas.banking.service.impl;
 
 
 import java.math.BigDecimal;
+import java.util.Properties;
 import java.util.logging.Level;
 
+import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.currency.ICurrencyConversionContext;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -38,6 +40,8 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
+import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
@@ -237,4 +241,18 @@ public class BankStatementBL implements IBankStatementBL
 
 		bankStatement.setEndingBalance(endingBalance);
 	}
+	
+	@Override
+	public void unpost(final I_C_BankStatement bankStatement)
+	{
+		// Make sure the period is open
+		final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
+		MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+
+		Services.get(IFactAcctDAO.class).deleteForDocument(bankStatement);
+		
+		bankStatement.setPosted(false);
+		InterfaceWrapperHelper.save(bankStatement);
+	}
+
 }

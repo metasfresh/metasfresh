@@ -22,7 +22,6 @@ package de.metas.banking.service;
  * #L%
  */
 
-
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BankStatement;
@@ -86,5 +85,12 @@ public interface IBankStatementBL extends ISingletonService
 	 * @param bankStatement
 	 */
 	void updateEndingBalance(I_C_BankStatement bankStatement);
+
+	/**
+	 * Un-post given bank statement.
+	 * 
+	 * @param bankStatement
+	 */
+	void unpost(I_C_BankStatement bankStatement);
 
 }

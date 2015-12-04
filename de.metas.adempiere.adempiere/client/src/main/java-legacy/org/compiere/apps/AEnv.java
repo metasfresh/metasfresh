@@ -1185,6 +1185,17 @@ public final class AEnv
 	 */
 	public static Window getWindow(final Component comp)
 	{
+		return getParentComponent(comp, Window.class);
+	}
+
+	/**
+	 * 
+	 * @param comp
+	 * @param parentType
+	 * @return parent component which implements given type
+	 */
+	public static final <T> T getParentComponent(final Component comp, final Class<T> parentType)
+	{
 		if (comp == null)
 		{
 			return null;
@@ -1193,9 +1204,11 @@ public final class AEnv
 		Component c = comp;
 		while (c != null)
 		{
-			if (c instanceof Window)
+			if (parentType.isAssignableFrom(c.getClass()))
 			{
-				return (Window)c;
+				@SuppressWarnings("unchecked")
+				final T retValue = (T)c;
+				return retValue;
 			}
 			c = c.getParent();
 		}

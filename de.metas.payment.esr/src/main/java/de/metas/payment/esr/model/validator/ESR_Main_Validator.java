@@ -28,6 +28,8 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
+import de.metas.banking.bankstatement.match.api.IPaymentBatchFactory;
+import de.metas.banking.bankstatement.match.spi.impl.ESRPaymentBatchProvider;
 import de.metas.banking.payment.IPaymentStringParserFactory;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
@@ -74,5 +76,9 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 		// Register ESR Payment Parsers
 		Services.get(IPaymentStringParserFactory.class).registerParser(ESRRegularLineParser.TYPE, ESRRegularLineParser.instance);
 		Services.get(IPaymentStringParserFactory.class).registerParser(ESRCreaLogixStringParser.TYPE, ESRCreaLogixStringParser.instance);
+		
+		//
+		// Payment batch provider for Bank Statement matching
+		Services.get(IPaymentBatchFactory.class).addPaymentBatchProvider(new ESRPaymentBatchProvider());
 	}
 }

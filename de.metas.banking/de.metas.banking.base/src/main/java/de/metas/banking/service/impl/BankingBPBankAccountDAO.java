@@ -23,11 +23,17 @@ package de.metas.banking.service.impl;
  */
 
 
+import java.util.Properties;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Bank;
 
 import de.metas.banking.service.IBankingBPBankAccountDAO;
 import de.metas.interfaces.I_C_BP_BankAccount;
@@ -50,4 +56,19 @@ public class BankingBPBankAccountDAO implements IBankingBPBankAccountDAO
 		return queryBuilder.create()
 				.first();
 	}
+	
+
+	@Override
+	public IQueryFilter<org.compiere.model.I_C_BP_BankAccount> createBankAccountsExcludingCashFilter(final Properties ctx)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQuery<I_C_Bank> banksQuery = queryBL.createQueryBuilder(I_C_Bank.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Bank.COLUMNNAME_IsCashBank, false)
+				.create();
+
+		return queryBL.createCompositeQueryFilter(org.compiere.model.I_C_BP_BankAccount.class)
+				.addInSubQueryFilter(I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID, I_C_Bank.COLUMNNAME_C_Bank_ID, banksQuery);
+	}
+
 }

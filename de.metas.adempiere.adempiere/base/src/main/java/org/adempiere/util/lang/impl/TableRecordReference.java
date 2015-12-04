@@ -49,6 +49,16 @@ import org.compiere.util.HashcodeBuilder;
  */
 public final class TableRecordReference implements ITableRecordReference
 {
+	public static final ITableRecordReference of(final Object model)
+	{
+		Check.assumeNotNull(model, "model not null");
+		if (model instanceof ITableRecordReference)
+		{
+			return (ITableRecordReference)model;
+		}
+		return new TableRecordReference(model);
+	}
+	
 	private final int adTableId;
 	private final String tableName;
 	private final int recordId;

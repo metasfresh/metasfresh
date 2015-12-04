@@ -22,7 +22,6 @@ package de.metas.banking.payment.impl;
  * #L%
  */
 
-
 import static org.compiere.model.I_C_PaySelectionCheck.COLUMNNAME_C_PaySelection_ID;
 import static org.compiere.model.I_C_PaySelectionCheck.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_PaySelectionCheck.Table_Name;
@@ -122,7 +121,6 @@ public class PaySelectionDAO implements IPaySelectionDAO
 
 	}
 
-
 	@Override
 	public boolean isPaySelectionLineMatchInvoice(final I_C_PaySelection paySelection, final I_C_Invoice invoice)
 	{
@@ -207,5 +205,31 @@ public class PaySelectionDAO implements IPaySelectionDAO
 		return queryBuilder
 				.create()
 				.list();
+	}
+
+	@Override
+	public I_C_PaySelection retrievePaySelection(final org.compiere.model.I_C_Payment payment)
+	{
+		Check.assumeNotNull(payment, "payment not null");
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, payment)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID, payment.getC_Payment_ID())
+				//
+				// Collect pay selection
+				.andCollect(I_C_PaySelectionLine.COLUMN_C_PaySelection_ID)
+				.addEqualsFilter(I_C_PaySelection.COLUMN_Processed, true)
+				//
+				.create()
+				.firstOnlyOrNull(I_C_PaySelection.class);
+	}
+
+	@Override
+	public de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLineForPayment(final I_C_PaySelection paySelection, final int paymentId)
+	{
+		return createQueryBuilder(paySelection)
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID, paymentId)
+				.create()
+				.firstOnly(de.metas.banking.model.I_C_PaySelectionLine.class);
 	}
 }

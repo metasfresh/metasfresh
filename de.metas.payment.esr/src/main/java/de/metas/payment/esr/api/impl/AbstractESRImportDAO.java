@@ -38,6 +38,7 @@ import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -182,4 +183,18 @@ public abstract class AbstractESRImportDAO implements IESRImportDAO
 				.list(I_ESR_ImportLine.class);
 	}
 
+	@Override
+	public I_ESR_Import retrieveESRImportForPayment(I_C_Payment payment)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_ESR_ImportLine.class, payment)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ESR_ImportLine.COLUMN_C_Payment_ID, payment.getC_Payment_ID())
+				//
+				.andCollect(I_ESR_ImportLine.COLUMN_ESR_Import_ID)
+				.addEqualsFilter(I_ESR_Import.COLUMN_Processed, true)
+				//
+				.create()
+				.firstOnlyOrNull(I_ESR_Import.class);
+	}
 }

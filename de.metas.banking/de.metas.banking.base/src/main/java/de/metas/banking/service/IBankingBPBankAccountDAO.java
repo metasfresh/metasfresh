@@ -22,10 +22,13 @@ package de.metas.banking.service;
  * #L%
  */
 
+import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
+import de.metas.banking.model.I_C_Bank;
 import de.metas.interfaces.I_C_BP_BankAccount;
 
 /**
@@ -40,4 +43,11 @@ public interface IBankingBPBankAccountDAO extends ISingletonService
 	 * @return default bank account for given partner
 	 */
 	I_C_BP_BankAccount retrieveDefaultBankAccount(I_C_BPartner partner);
+
+	/**
+	 * @param ctx
+	 * @return query filter used to filter out the cash bank accounts
+	 * @see I_C_Bank#isCashBank()
+	 */
+	IQueryFilter<org.compiere.model.I_C_BP_BankAccount> createBankAccountsExcludingCashFilter(Properties ctx);
 }

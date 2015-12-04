@@ -17,6 +17,7 @@
 package org.compiere.apps;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -29,6 +30,7 @@ import java.awt.event.MouseListener;
 import java.util.logging.Level;
 
 import javax.swing.JPanel;
+import javax.swing.RootPaneContainer;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
@@ -52,6 +54,23 @@ public class AGlassPane extends JPanel implements MouseListener, ActionListener
 	 * 
 	 */
 	private static final long serialVersionUID = 618724937492933184L;
+	
+	public static AGlassPane getGlassPane(final Component comp)
+	{
+		final RootPaneContainer rootPaneContainer = AEnv.getParentComponent(comp, RootPaneContainer.class);
+		if(rootPaneContainer == null)
+		{
+			return null;
+		}
+		final Component glassPane = rootPaneContainer.getGlassPane();
+		if(!(glassPane instanceof AGlassPane))
+		{
+			return null;
+		}
+		
+		final AGlassPane aGlassPane = (AGlassPane)glassPane;
+		return aGlassPane;
+	}
 
 	// services
 	private static final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -127,7 +146,6 @@ public class AGlassPane extends JPanel implements MouseListener, ActionListener
 	{
 		return m_message;
 	}   //  getMessage
-
 	
 	/**************************************************************************
 	 *  Set and start Busy Counter if over 2 seconds

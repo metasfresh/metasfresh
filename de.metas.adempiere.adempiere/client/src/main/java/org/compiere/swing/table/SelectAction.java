@@ -33,9 +33,9 @@ class SelectAction extends AbstractManageSelectableRowsAction
 {
 	private static final long serialVersionUID = 1L;
 
-	public SelectAction(final AnnotatedJXTable table)
+	public SelectAction()
 	{
-		super("Button.SelectAll", table);
+		super("Button.SelectAll");
 	}
 
 	@Override

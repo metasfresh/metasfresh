@@ -120,6 +120,11 @@ public class ListComboBoxModel<E> extends AbstractListModel<E> implements ComboB
 
 	public boolean addAll(Collection<? extends E> c)
 	{
+		if(c == null || c.isEmpty())
+		{
+			return false;
+		}
+		
 		final int sizeBeforeAdd = list.size();
 		final boolean added = list.addAll(c);
 		final int sizeAfterAdd = list.size();
@@ -137,6 +142,19 @@ public class ListComboBoxModel<E> extends AbstractListModel<E> implements ComboB
 		return added;
 	}
 	
+	/**
+	 * @param item
+     * @return <tt>true</tt> if the element was added
+	 */
+	public boolean addIfAbsent(final E item)
+	{
+		if (list.contains(item))
+		{
+			return false;
+		}
+		return add(item);
+	}
+	
 	public int size()
 	{
 		return list.size();
@@ -145,5 +163,23 @@ public class ListComboBoxModel<E> extends AbstractListModel<E> implements ComboB
 	public E get(final int index)
 	{
 		return list.get(index);
+	}
+	
+	public void clear()
+	{
+		if (list.isEmpty())
+		{
+			return;
+		}
+		
+		final int sizeBeforeClear = list.size();
+		list.clear();
+		fireIntervalRemoved(this, 0, sizeBeforeClear - 1);
+	}
+	
+	public void set(final Collection<E> items)
+	{
+		clear();
+		addAll(items);
 	}
 }

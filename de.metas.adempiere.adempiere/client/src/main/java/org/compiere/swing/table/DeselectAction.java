@@ -33,9 +33,9 @@ public class DeselectAction extends AbstractManageSelectableRowsAction
 {
 	private static final long serialVersionUID = 1L;
 
-	public DeselectAction(final AnnotatedJXTable table)
+	public DeselectAction()
 	{
-		super("Button.UnselectAll", table);
+		super("Button.UnselectAll");
 	}
 
 	@Override

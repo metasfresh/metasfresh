@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
@@ -38,6 +39,7 @@ import javax.swing.table.TableModel;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
+import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
@@ -299,6 +301,9 @@ public class AnnotatedTableModel<ModelType> extends AbstractTableModel
 		return FluentIterable.from(rows);
 	}
 
+	/**
+	 * Remove all rows
+	 */
 	public final void removeRows()
 	{
 		if (rows.isEmpty())
@@ -495,6 +500,30 @@ public class AnnotatedTableModel<ModelType> extends AbstractTableModel
 			fireTableRowsDeleted(row, row);
 		}
 	}
+	
+	public final void removeRows(final Iterable<ModelType> rowsToRemove)
+	{
+		if (rowsToRemove == null)
+		{
+			return;
+		}
+		
+		for (final ModelType rowToRemove : rowsToRemove)
+		{
+			removeRow(rowToRemove);
+		}
+	}
+	
+	public final void removeRow(final ModelType rowToRemove)
+	{
+		if (rowToRemove == null)
+		{
+			return;
+		}
+		
+		final int rowIndex = getRowIndex(rowToRemove);
+		removeRows(rowIndex);
+	}
 
 	/**
 	 * Replace a row of data at the <code>row</code> location in the model. Notification of the row being replaced will be generated.
@@ -641,5 +670,40 @@ public class AnnotatedTableModel<ModelType> extends AbstractTableModel
 	protected Color getCellForegroundColor(final int modelRowIndex, final int modelColumnIndex)
 	{
 		return null;
+	}
+	
+	public List<ModelType> getSelectedRows(final ListSelectionModel selectionModel, final Function<Integer, Integer> convertRowIndexToModel)
+	{
+		final int rowMinView = selectionModel.getMinSelectionIndex();
+		final int rowMaxView = selectionModel.getMaxSelectionIndex();
+		if (rowMinView < 0 || rowMaxView < 0)
+		{
+			return ImmutableList.of();
+		}
+		
+		final ImmutableList.Builder<ModelType> selection = ImmutableList.builder(); 
+		for (int rowView = rowMinView; rowView <= rowMaxView; rowView++)
+		{
+			if (selectionModel.isSelectedIndex(rowView))
+			{
+				final int rowModel = convertRowIndexToModel.apply(rowView);
+				selection.add(getRow(rowModel));
+			}
+		}
+		
+		return selection.build();
+	}
+	
+	public ModelType getSelectedRow(final ListSelectionModel selectionModel, final Function<Integer, Integer> convertRowIndexToModel)
+	{
+		final int rowIndexView = selectionModel.getMinSelectionIndex();
+		if (rowIndexView < 0)
+		{
+			return null;
+		}
+		
+		final int rowIndexModel = convertRowIndexToModel.apply(rowIndexView);
+		
+		return getRow(rowIndexModel);
 	}
 }

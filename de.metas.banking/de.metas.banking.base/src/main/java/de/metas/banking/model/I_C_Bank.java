@@ -32,7 +32,9 @@ public interface I_C_Bank extends org.compiere.model.I_C_Bank
 {
 	public static final String COLUMNNAME_IsCashBank = "IsCashBank";
 
+	@Override
 	public boolean isCashBank();
 
+	@Override
 	public void setIsCashBank(boolean IsCashBank);
 }

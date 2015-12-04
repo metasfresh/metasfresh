@@ -26,9 +26,7 @@ package org.compiere.swing.table;
 import java.awt.event.ActionEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.AbstractAction;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.TableModel;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -45,16 +43,13 @@ import org.compiere.util.Env;
  * @author tsa
  *
  */
-public abstract class AbstractManageSelectableRowsAction extends AbstractAction
+public abstract class AbstractManageSelectableRowsAction extends AnnotatedTableAction
 {
 	private static final long serialVersionUID = 1L;
 
-	private final AnnotatedJXTable _table;
-
-	public AbstractManageSelectableRowsAction(final String nameADMessage, final AnnotatedJXTable table)
+	public AbstractManageSelectableRowsAction(final String nameADMessage)
 	{
 		super(Services.get(IMsgBL.class).translate(Env.getCtx(), nameADMessage));
-		this._table = table;
 	}
 
 	/** @return true if there is something to do on given row and so this action shall be enabled */
@@ -63,38 +58,7 @@ public abstract class AbstractManageSelectableRowsAction extends AbstractAction
 	/** Execute the action of given row */
 	protected abstract void executeActionOnRow(final SelectableRowAdapter row);
 
-	protected final AnnotatedJXTable getTable()
-	{
-		return _table;
-	}
-
-	protected final AnnotatedTableModel<?> getTableModelOrNull()
-	{
-		final AnnotatedJXTable table = getTable();
-		if (table == null)
-		{
-			return null;
-		}
-		final TableModel tableModel = table.getModel();
-		if (tableModel instanceof AnnotatedTableModel<?>)
-		{
-			return (AnnotatedTableModel<?>)tableModel;
-		}
-
-		return null;
-	}
-
-	protected final ListSelectionModel getSelectionModelOrNull()
-	{
-		final AnnotatedJXTable table = getTable();
-		if (table == null)
-		{
-			return null;
-		}
-		final ListSelectionModel selectionModel = table.getSelectionModel();
-		return selectionModel;
-	}
-
+	@Override
 	public final void updateBeforeDisplaying()
 	{
 		final AtomicBoolean actionEnabled = new AtomicBoolean(false);

@@ -22,23 +22,42 @@ package org.compiere.swing.table;
  * #L%
  */
 
-
 import javax.swing.JComponent;
 
 import org.jdesktop.swingx.JXTable;
 
-class AnnotatedJXTable extends JXTable
+import com.google.common.base.Function;
+
+public class AnnotatedJXTable extends JXTable
 {
 	private static final long serialVersionUID = 1L;
+	private Function<Integer, Integer> convertRowIndexToModelFunction;
 
-	public AnnotatedJXTable()
+	AnnotatedJXTable()
 	{
 		super();
 	}
-	
+
 	@Override
 	protected final JComponent createDefaultColumnControl()
 	{
 		return new AnnotatedColumnControlButton(this);
+	}
+
+	public final Function<Integer, Integer> getConvertRowIndexToModelFunction()
+	{
+		if (convertRowIndexToModelFunction == null)
+		{
+			convertRowIndexToModelFunction = new Function<Integer, Integer>()
+			{
+				@Override
+				public Integer apply(final Integer viewRowIndex)
+				{
+					return convertRowIndexToModel(viewRowIndex);
+				}
+			};
+		}
+		return convertRowIndexToModelFunction;
+
 	}
 }

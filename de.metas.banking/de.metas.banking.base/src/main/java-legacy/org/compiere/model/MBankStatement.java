@@ -164,6 +164,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 *
 	 * @param processed processed
 	 */
+	@Override
 	public void setProcessed(boolean processed)
 	{
 		super.setProcessed(processed);
@@ -178,20 +179,11 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	}	// setProcessed
 
 	/**
-	 * Get Document No
-	 *
-	 * @return name
-	 */
-	public String getDocumentNo()
-	{
-		return getName();
-	}	// getDocumentNo
-
-	/**
 	 * Get Document Info
 	 *
 	 * @return document info (untranslated)
 	 */
+	@Override
 	public String getDocumentInfo()
 	{
 		return getC_BP_BankAccount().getA_Name() + " " + getDocumentNo();
@@ -202,6 +194,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 *
 	 * @return File or null
 	 */
+	@Override
 	public File createPDF()
 	{
 		try
@@ -236,6 +229,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 * @param processAction document action
 	 * @return true if performed
 	 */
+	@Override
 	public boolean processIt(String processAction)
 	{
 		m_processMsg = null;
@@ -253,6 +247,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 * 
 	 * @return true if success
 	 */
+	@Override
 	public boolean unlockIt()
 	{
 		log.info("unlockIt - " + toString());
@@ -265,6 +260,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 * 
 	 * @return true if success
 	 */
+	@Override
 	public boolean invalidateIt()
 	{
 		log.info("invalidateIt - " + toString());
@@ -277,6 +273,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 * 
 	 * @return new status (In Progress or Invalid)
 	 */
+	@Override
 	public String prepareIt()
 	{
 		log.info(toString());
@@ -325,6 +322,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 * 
 	 * @return true if success
 	 */
+	@Override
 	public boolean approveIt()
 	{
 		log.info("approveIt - " + toString());
@@ -337,6 +335,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 * 
 	 * @return true if success
 	 */
+	@Override
 	public boolean rejectIt()
 	{
 		log.info("rejectIt - " + toString());
@@ -349,6 +348,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 * 
 	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
+	@Override
 	public String completeIt()
 	{
 		// Re-Check
@@ -427,6 +427,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 * 
 	 * @return false
 	 */
+	@Override
 	public boolean voidIt()
 	{
 		log.info(toString());
@@ -524,6 +525,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 * 
 	 * @return true if success
 	 */
+	@Override
 	public boolean closeIt()
 	{
 		log.info("closeIt - " + toString());
@@ -568,6 +570,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 * 
 	 * @return false because it's not supported
 	 */
+	@Override
 	public boolean reverseAccrualIt()
 	{
 		log.info("reverseAccrualIt - " + toString());
@@ -589,6 +592,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 * 
 	 * @return false
 	 */
+	@Override
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
@@ -609,6 +613,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 *
 	 * @return Summary of Document
 	 */
+	@Override
 	public String getSummary()
 	{
 		StringBuffer sb = new StringBuffer();
@@ -628,6 +633,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 *
 	 * @return clear text error message
 	 */
+	@Override
 	public String getProcessMsg()
 	{
 		return m_processMsg;
@@ -638,6 +644,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 *
 	 * @return AD_User_ID
 	 */
+	@Override
 	public int getDoc_User_ID()
 	{
 		return getUpdatedBy();
@@ -648,6 +655,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 *
 	 * @return amount
 	 */
+	@Override
 	public BigDecimal getApprovalAmt()
 	{
 		return getStatementDifference();
@@ -658,6 +666,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	 *
 	 * @return C_Currency_ID
 	 */
+	@Override
 	public int getC_Currency_ID()
 	{
 		// MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID());

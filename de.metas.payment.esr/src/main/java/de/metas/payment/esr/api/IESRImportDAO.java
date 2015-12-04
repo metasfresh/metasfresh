@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
@@ -97,4 +98,5 @@ public interface IESRImportDAO extends ISingletonService
 	 */
 	List<I_ESR_ImportLine> fetchLinesForBankStatementLineRef(I_C_BankStatementLine_Ref lineRef);
 
+	I_ESR_Import retrieveESRImportForPayment(final I_C_Payment payment);
 }

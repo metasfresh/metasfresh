@@ -702,6 +702,10 @@ public class InterfaceWrapperHelper
 		{
 			return POJOWrapper.getWrapper(model).getId();
 		}
+		else if (model instanceof ITableRecordReference)
+		{
+			return ((ITableRecordReference)model).getRecord_ID();
+		}
 		else
 		{
 			throw new AdempiereException("Not supported model " + model + " (class:" + model.getClass() + ")");
