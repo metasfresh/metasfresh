@@ -65,6 +65,9 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 		return true;
 	}
 
+	/**
+	 * @see M_InOutLine_Handler#getModelForInvoiceCandidateGenerateScheduling(Object)
+	 */
 	@Override
 	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)
 	{

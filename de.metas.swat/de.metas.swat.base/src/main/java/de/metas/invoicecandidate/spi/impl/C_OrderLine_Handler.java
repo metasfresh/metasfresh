@@ -72,6 +72,19 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		return false;
 	};
 
+	/**
+	 * @see C_Order_Handler#expandRequest(InvoiceCandidateGenerateRequest)
+	 */
+	@Override
+	public Object getModelForInvoiceCandidateGenerateScheduling(final Object model)
+	{
+		//
+		// Retrieve order
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		return order;
+	}
+
 	@Override
 	public Iterator<I_C_OrderLine> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
 	{

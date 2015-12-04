@@ -64,6 +64,8 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 
 	/**
 	 * Loads the request's order's order lines and returns a line of order line requests. the given request is not part of the returned list.
+	 * 
+	 * @see C_OrderLine_Handler#getModelForInvoiceCandidateGenerateScheduling(Object)
 	 */
 	@Override
 	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)

@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
@@ -77,6 +76,13 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	 * @return generated invoice candidates
 	 */
 	List<I_C_Invoice_Candidate> createMissingCandidatesFor(Object model);
+
+	/**
+	 * Schedule invoice candidates generation for given model (asynchronously).
+	 * 
+	 * @param model
+	 */
+	void scheduleCreateMissingCandidatesFor(Object model);
 
 	void setNetAmtToInvoice(I_C_Invoice_Candidate ic);
 

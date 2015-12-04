@@ -94,6 +94,19 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return false;
 	}
 
+	/**
+	 * @see M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)
+	 */
+	@Override
+	public Object getModelForInvoiceCandidateGenerateScheduling(final Object model)
+	{
+		//
+		// Retrieve inout
+		final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
+		final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
+		return inout;
+	}
+
 	@Override
 	public Iterator<I_M_InOutLine> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
 	{

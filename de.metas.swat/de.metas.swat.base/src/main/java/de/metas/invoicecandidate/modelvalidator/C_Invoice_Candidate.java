@@ -25,6 +25,7 @@ package de.metas.invoicecandidate.modelvalidator;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -42,6 +43,7 @@ import org.compiere.util.CLogger;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
@@ -306,6 +308,31 @@ public class C_Invoice_Candidate
 			iol.setIsInvoiceCandidate(false);
 			InterfaceWrapperHelper.save(iol);
 		}
+	}
+	
+	/**
+	 * After an invoice candidate was deleted, schedule the recreation of it.
+	 * 
+	 * @param ic
+	 * 
+	 * @task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	public void scheduleRecreate(final I_C_Invoice_Candidate ic)
+	{
+		//
+		// Get linked model
+		final Object model = TableRecordCacheLocal.getReferencedValue(ic, Object.class);
+		if(model == null)
+		{
+			// Record is missing. It might be because the model was deleted.
+			// => nothing to do
+			return;
+		}
+
+		//
+		// Schedule IC generation
+		Services.get(IInvoiceCandidateHandlerBL.class).scheduleCreateMissingCandidatesFor(model);
 	}
 
 	/**

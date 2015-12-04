@@ -79,11 +79,6 @@ public final class InvoiceCandidateGenerateRequest
 		return handler;
 	}
 
-	public Object getModel()
-	{
-		return model;
-	}
-
 	public <T> T getModel(final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(model, modelClass);

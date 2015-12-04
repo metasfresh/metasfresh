@@ -196,6 +196,13 @@
 			</dependency>
 
 			<dependency>
+				<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+				<groupId>de.metas.adempiere.adempiere</groupId>
+				<version>${project.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
 				<artifactId>de.metas.document.archive.base</artifactId>
 				<groupId>de.metas.document.archive</groupId>
 				<version>${project.version}</version>

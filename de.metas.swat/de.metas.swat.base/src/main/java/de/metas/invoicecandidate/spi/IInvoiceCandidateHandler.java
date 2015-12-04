@@ -50,6 +50,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  */
 public interface IInvoiceCandidateHandler
 {
+	/** Which action shall be performed when an invoice candidate invalidation was requested */
 	public enum OnInvalidateForModelAction
 	{
 		REVALIDATE,
@@ -61,6 +62,9 @@ public interface IInvoiceCandidateHandler
 		RECREATE_ASYNC
 	}
 
+	/**
+	 * @return which action shall be performed when an invoice candidate invalidation was requested
+	 */
 	OnInvalidateForModelAction getOnInvalidateForModelAction();
 
 	/**
@@ -78,7 +82,7 @@ public interface IInvoiceCandidateHandler
 	 * @param model
 	 * @return true if the invoice candidates shall be automatically generated for given model.
 	 */
-	boolean isCreateMissingCandidatesAutomatically(final Object model);
+	boolean isCreateMissingCandidatesAutomatically(Object model);
 
 	/** @return {@link DocTimingType} when to create the missing invoice candidates automatically; shall never return null. */
 	DocTimingType getAutomaticallyCreateMissingCandidatesDocTiming();
@@ -104,7 +108,15 @@ public interface IInvoiceCandidateHandler
 	 * @param request initial request
 	 * @return actual requests to be used. never returns null
 	 */
-	List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request);
+	List<InvoiceCandidateGenerateRequest> expandRequest(InvoiceCandidateGenerateRequest request);
+
+	/**
+	 * Gets the model to be used when invoice candidate generation is scheduled.
+	 *
+	 * @param model (of {@link #getSourceTable()} type)
+	 * @return model to be used for IC generation scheduling.
+	 */
+	Object getModelForInvoiceCandidateGenerateScheduling(Object model);
 
 	/**
 	 * Creates missing candidates for the given model.
@@ -120,7 +132,7 @@ public interface IInvoiceCandidateHandler
 	 * @param request
 	 * @return result containing invoice candidates that were created
 	 */
-	InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request);
+	InvoiceCandidateGenerateResult createCandidatesFor(InvoiceCandidateGenerateRequest request);
 
 	/**
 	 * Invalidates invoice candidates for the given model.

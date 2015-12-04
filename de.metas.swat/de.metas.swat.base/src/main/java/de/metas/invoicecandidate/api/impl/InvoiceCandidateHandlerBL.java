@@ -153,6 +153,31 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		return createInvoiceCandidates(ctx, icCandHandlers, model, trxName);
 	}
 
+	@Override
+	public void scheduleCreateMissingCandidatesFor(final Object model)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
+		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+
+		final List<IInvoiceCandidateHandler> handlersForTable = retrieveImplementationsForTable(ctx, tableName);
+		for (final IInvoiceCandidateHandler handler : handlersForTable)
+		{
+			scheduleCreateMissingCandidatesFor(model, handler);
+		}
+	}
+
+	/**
+	 * Schedule invoice candidates generation for given model (asynchronously).
+	 * 
+	 * @param model
+	 * @param handler
+	 */
+	private final void scheduleCreateMissingCandidatesFor(final Object model, final IInvoiceCandidateHandler handler)
+	{
+		final Object modelToSchedule = handler.getModelForInvoiceCandidateGenerateScheduling(model);
+		CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(modelToSchedule);
+	}
+
 	/**
 	 * This method does the actual invoice creation by calling the given <code>creatorRecords</code>. Note that each <code>creatorRecord</code> is called multiple times, until it returns the empty
 	 * list. That way it is possible to for a creator to create only a limited number of invoice candidates at a time and thus avoid memory issues.
@@ -452,7 +477,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	public void invalidateCandidatesFor(final Object model)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final String tableName = InterfaceWrapperHelper.getTableName(model.getClass());
+		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 
 		final List<IInvoiceCandidateHandler> handlersForTable = retrieveImplementationsForTable(ctx, tableName);
 		for (final IInvoiceCandidateHandler handler : handlersForTable)
@@ -461,13 +486,14 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			switch (onInvalidateForModelAction)
 			{
 				case RECREATE_ASYNC:
-					CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(model);
+					scheduleCreateMissingCandidatesFor(model, handler);
 					break;
 				case REVALIDATE:
 					handler.invalidateCandidatesFor(model);
 					break;
 				default:
 					// nothing
+					logger.log(Level.WARNING, "Got no OnInvalidateForModelAction for " + model + ". Doing nothing.");
 					break;
 			}
 		}

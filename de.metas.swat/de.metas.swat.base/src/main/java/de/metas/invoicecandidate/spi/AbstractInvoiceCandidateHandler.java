@@ -71,6 +71,12 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	{
 		return ImmutableList.of(request);
 	}
+	
+	@Override
+	public Object getModelForInvoiceCandidateGenerateScheduling(final Object model)
+	{
+		return model;
+	}
 
 	/**
 	 * Sets NetAmtToInvoice = PriceActual * QtyToInvoice - DiscountAmt, rounded to currency precision.
