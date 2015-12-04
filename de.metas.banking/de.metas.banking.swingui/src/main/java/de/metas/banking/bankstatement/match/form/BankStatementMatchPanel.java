@@ -24,7 +24,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
-import org.compiere.apps.ConfirmPanel.ConfirmPanelListener;
+import org.compiere.apps.ConfirmPanelListener;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
@@ -88,7 +88,10 @@ class BankStatementMatchPanel extends CPanel
 	private final transient NumberFormat amountFormat = DisplayType.getNumberFormat(DisplayType.Amount);
 
 	private final QueryPanel queryPanel = new QueryPanel();
-	private final ConfirmPanel confirmPanel = new ConfirmPanel(true); // withCancelButton=true
+	private final ConfirmPanel confirmPanel = ConfirmPanel
+			.builder()
+			.withCancelButton(true)
+			.build(); 
 	private final AnnotatedTableModel<IBankStatementLine> bankStatementLinesTableModel = new AnnotatedTableModel<>(IBankStatementLine.class);
 	private final AnnotatedJXTable bankStatementLinesTable;
 	private final AnnotatedTableModel<IPayment> paymentsTableModel = new AnnotatedTableModel<>(IPayment.class);
