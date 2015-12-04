@@ -75,7 +75,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	private boolean _updateOverrideValues = false; // default: don't override the overrides because we assume at they are user entered
 
 	/**
-	 * @see HUConstants#isfresh_QuickShipment()
+	 * @see HUConstants#isQuickShipment()
 	 */
 	private boolean _manualLUCollected;
 
@@ -217,7 +217,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	 *
 	 * @param inoutLine
 	 * @return
-	 * @see HUConstants#isfresh_QuickShipment()
+	 * @see HUConstants#isQuickShipment()
 	 */
 	private final boolean isManualPackingMaterials(final I_M_InOutLine inoutLine)
 	{

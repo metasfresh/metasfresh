@@ -81,12 +81,12 @@ public final class HUConstants
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/08214_Fix_shipment_schedule_performances
 	 */
-	private static final boolean DEFAULT_fresh_QuickShipment = true;
-	private static final String SYSCONFIG_fresh_QuickShipment = "de.metas.handlingunits.HUConstants.Fresh_QuickShipment";
+	private static final boolean DEFAULT_QuickShipment = true;
+	private static final String SYSCONFIG_QuickShipment = "de.metas.handlingunits.HUConstants.Fresh_QuickShipment";
 
-	public static final boolean isfresh_QuickShipment()
+	public static final boolean isQuickShipment()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_fresh_QuickShipment, DEFAULT_fresh_QuickShipment);
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_QuickShipment, DEFAULT_QuickShipment);
 	}
 
 	/**
