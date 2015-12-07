@@ -70,14 +70,6 @@ public class JasperEngine
 	// services
 	private final transient CLogger log = CLogger.getCLogger(getClass());
 
-	static
-	{
-		System.setProperty("javax.xml.parsers.SAXParserFactory", "org.apache.xerces.jaxp.SAXParserFactoryImpl");
-		System.setProperty("org.xml.sax.driver", "org.apache.xerces.parsers.SAXParser");
-	}
-
-	// private MAttachment attachment;
-
 	/**
 	 * Retrieves the server's direct database connection.
 	 * 

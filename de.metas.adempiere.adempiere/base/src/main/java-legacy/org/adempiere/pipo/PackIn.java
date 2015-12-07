@@ -121,8 +121,6 @@ public class PackIn extends SvrProcess {
 		}
 		try {
 			log.info("starting");
-			System.setProperty("javax.xml.parsers.SAXParserFactory",
-					"org.apache.xerces.jaxp.SAXParserFactoryImpl");
 			PackInHandler handler = new PackInHandler();
 			handler.set_TrxName(trxName);
 			handler.setCtx(ctx);
