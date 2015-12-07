@@ -10,18 +10,17 @@ package de.metas.payment.sepa.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -70,13 +69,11 @@ public class PaymentBL implements IPaymentBL
 	{
 		Check.assumeNotNull(line, "Line not null");
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
-		final String trxName = InterfaceWrapperHelper.getTrxName(line);
-
 		final I_C_Invoice sourceInvoice = line.getC_Invoice();
-		Check.assumeNotNull(sourceInvoice, "Source invoice not null");
+		final I_C_BPartner bpartner = line.getC_BPartner();
+		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.create(line.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
 
-		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.create(ctx, line.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class, trxName);
+		Check.assumeNotNull(sourceInvoice, "Source invoice not null");
 
 		final I_SEPA_Export_Line exportLine = InterfaceWrapperHelper.newInstance(I_SEPA_Export_Line.class, line);
 
@@ -86,7 +83,7 @@ public class PaymentBL implements IPaymentBL
 		exportLine.setAmt(line.getPayAmt());
 		exportLine.setC_BP_BankAccount(bpBankAccount); // 07789: also setting the BP bank account so the following model validator(s) can more easily see evaluate what it is.
 		exportLine.setC_Currency(bpBankAccount.getC_Currency());
-		exportLine.setC_BPartner(sourceInvoice.getC_BPartner());
+		exportLine.setC_BPartner(bpartner);
 		exportLine.setDescription(sourceInvoice.getDescription());
 
 		exportLine.setIBAN(toNullOrRemoveSpaces(bpBankAccount.getIBAN()));
@@ -99,7 +96,6 @@ public class PaymentBL implements IPaymentBL
 		{
 			exportLine.setSwiftCode(toNullOrRemoveSpaces(bpBankAccount.getC_Bank().getSwiftCode()));
 		}
-		exportLine.setSEPA_MandateRefNo(sourceInvoice.getC_BPartner().getName());
 
 		exportLine.setStructuredRemittanceInfo(line.getReference()); // task 07789
 

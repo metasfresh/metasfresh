@@ -10,18 +10,17 @@ package de.metas.payment.sepa.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -97,9 +96,8 @@ import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.payment.sepa.spi.ISEPAMarshaller;
 
 /**
- * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is <a href=
- * "http://www.six-interbank-clearing.com/dam/downloads/de/standardization/iso/swiss_recommendations/implementation_guidelines_ct/standardization_isopayments_iso_20022_ch_implementation_guidelines_ct.pdf"
- * >here</a>.
+ * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is
+ * <a href=http://www.six-interbank-clearing.com/en/home/standardization/iso-payments/customer-bank/implementation-guidelines.html">here</a>.
  * <p>
  * Important note:<b>This is a partial implementation!!</b> The above-mentioned document specifies 9 different mayment modes ("Zahlarten") for different business case, ranging from scanned ESR-String,
  * domestic transaction to "dowhat you want, it's the banks problem" arbitrary currencies and ways to specify the accounts and banks</b>
@@ -189,6 +187,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		}
 	}
 
+	@Override
 	public void marshal(final I_SEPA_Export sepaDocument, final OutputStream out)
 	{
 		Check.assumeNotNull(sepaDocument, "sepaDocument not null");
@@ -523,14 +522,22 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			final PartyIdentification32CHName cdtr = new PartyIdentification32CHName();
 			cdtTrfTxInf.setCdtr(cdtr);
 
-			cdtr.setNm(line.getSEPA_MandateRefNo());
+			;
+
+			// Note: since old age we use SEPA_MandateRefNo for the creditor's name (I don't remember why)
+			// task 09617: prefer C_BP_BankAccount.A_Name if available; keep SEPA_MandateRefNo, because setting it as "cdtr/name" might be a best practice
+			cdtr.setNm(
+					getFirstNonEmpty(
+							line.getSEPA_MandateRefNo(),
+							line.getC_BP_BankAccount().getA_Name(),
+							line.getC_BPartner().getName()));
 
 			// task 08655: also provide the creditor's address
 			final Properties ctx = InterfaceWrapperHelper.getCtx(line);
 			final I_C_BPartner_Location billToLocation = Services.get(IBPartnerDAO.class).retrieveBillToLocation(ctx, line.getC_BPartner_ID(), true, ITrx.TRXNAME_None);
 			if (billToLocation != null)
 			{
-				cdtr.setPstlAdr(createPstlAdr(billToLocation.getC_Location()));
+				cdtr.setPstlAdr(createPstlAdr(line.getC_BP_BankAccount(), billToLocation.getC_Location()));
 			}
 		}
 
@@ -601,53 +608,78 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		return cdtTrfTxInf;
 	}
 
+	private String getFirstNonEmpty(final String... values)
+	{
+		for (final String value : values)
+		{
+			if (!Check.isEmpty(value, true))
+			{
+				return value.trim();
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * @task 08655
-	 * @TODO: extract the core part into a general address-BL (also move the unbti tests along); also handle the case of number-first (like e.g. in france)
+	 * @TODO: extract the core part into a general address-BL (also move the unit tests along); also handle the case of number-first (like e.g. in france)
 	 */
 	/* package */PostalAddress6CH createPstlAdr(final I_C_Location location)
 	{
 		final PostalAddress6CH pstlAdr = new PostalAddress6CH();
 
-		if (!Check.isEmpty(location.getAddress1(), true))
-		{
-			final String streetAndnumber = location.getAddress1();
+		splitStreetAndNumber(location.getAddress1(), pstlAdr);
 
-			final Pattern pattern = Pattern.compile(REGEXP_STREET_AND_NUMER_SPLIT);
-			final Matcher matcher = pattern.matcher(streetAndnumber);
-			if (matcher.matches())
-			{
-				final String street = matcher.group(1);
-				final String number = matcher.group(2);
-				if (!Check.isEmpty(street, true))
-				{
-					pstlAdr.setStrtNm(street.trim());
-				}
-				if (!Check.isEmpty(number, true))
-				{
-					pstlAdr.setBldgNb(number.trim());
-				}
-			}
-		}
-		if (!Check.isEmpty(location.getPostal(), true))
-		{
-			pstlAdr.setPstCd(location.getPostal().trim());
-		}
-		if (!Check.isEmpty(location.getCity(), true))
-		{
-			pstlAdr.setTwnNm(location.getCity().trim());
-		}
-		if (!Check.isEmpty(location.getC_Country().getName(), true))
-		{
-			pstlAdr.setCtry(location.getC_Country().getName().trim()); // note: C_Location.C_Country is a mandatory column
-		}
+		pstlAdr.setPstCd(getFirstNonEmpty(location.getPostal()));
+		pstlAdr.setTwnNm(getFirstNonEmpty(location.getCity()));
+		pstlAdr.setCtry(getFirstNonEmpty(location.getC_Country().getName())); // note: C_Location.C_Country is a mandatory column
+
 		return pstlAdr;
+	}
+
+	private PostalAddress6CH createPstlAdr(final org.compiere.model.I_C_BP_BankAccount bpBankAccount,
+			final I_C_Location location)
+	{
+		final PostalAddress6CH pstlAdr = createPstlAdr(location);
+		if (bpBankAccount == null)
+		{
+			return pstlAdr;
+		}
+		splitStreetAndNumber(bpBankAccount.getA_Street(), pstlAdr);
+
+		pstlAdr.setPstCd(getFirstNonEmpty(bpBankAccount.getA_Zip(), pstlAdr.getPstCd()));
+		pstlAdr.setTwnNm(getFirstNonEmpty(bpBankAccount.getA_City(), pstlAdr.getTwnNm()));
+		pstlAdr.setCtry(getFirstNonEmpty(bpBankAccount.getA_Country(), pstlAdr.getCtry()));
+
+		return pstlAdr;
+	}
+
+	private void splitStreetAndNumber(final String streetAndNumber,
+			final PostalAddress6CH pstlAdr)
+	{
+		if (Check.isEmpty(streetAndNumber, true))
+		{
+			return;
+		}
+
+		final Pattern pattern = Pattern.compile(REGEXP_STREET_AND_NUMER_SPLIT);
+		final Matcher matcher = pattern.matcher(streetAndNumber);
+		if (!matcher.matches())
+		{
+			return;
+		}
+
+		final String street = matcher.group(1);
+		final String number = matcher.group(2);
+
+		pstlAdr.setStrtNm(getFirstNonEmpty(street));
+		pstlAdr.setBldgNb(getFirstNonEmpty(number));
 	}
 
 	/**
 	 * for IBANs that start with "CH" or "LI", this method extracts the swizz Banking code and returns it. If the given <code>iban</code> is <code>null</code>, emtpy of not "CH"/"LI", it returns
 	 * <code>null</code>.
-	 * 
+	 *
 	 * @param iban
 	 * @return
 	 * @see <a href="http://www.swissiban.com/de.htm">http://www.swissiban.com/de.htm</a> for what it does (it's simple).
@@ -667,14 +699,16 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		final int bcEndIdx = 9;
 		final String ibanToUse = iban.replaceAll(" ", "");
 
-		Check.errorIf(ibanToUse.length() < bcEndIdx, SepaMarshallerException.class, "Given IBAN {0} for line {1} is to short. Pls verify that it's actually an IBAN at all",
+		Check.errorIf(ibanToUse.length() < bcEndIdx,
+				SepaMarshallerException.class,
+				"Given IBAN {0} for line {1} is to short. Pls verify that it's actually an IBAN at all",
 				iban, createInfo(line));
 		return ibanToUse.substring(bcStartIdx, bcEndIdx);
 	}
 
 	/**
 	 * Returns true if the given IBAN is supposed to contain a swizz bank code (BC). This can be assumes if the given IBAN (stripped from spaces) starts with either "CH" or "LI".
-	 * 
+	 *
 	 * @param iban
 	 * @return
 	 */

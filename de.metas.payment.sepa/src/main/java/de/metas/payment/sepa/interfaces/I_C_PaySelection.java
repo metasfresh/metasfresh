@@ -1,8 +1,12 @@
-package de.metas.adempiere.model;
+package de.metas.payment.sepa.interfaces;
+
+import java.sql.Timestamp;
+
+import org.compiere.model.I_AD_User;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.payment.sepa
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -10,40 +14,30 @@ package de.metas.adempiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-
-/**
- *
- * @author ts
- * @deprecated use {@link de.metas.interfaces.I_C_BPartner} instead.
- */
-@Deprecated
-public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
+public interface I_C_PaySelection extends org.compiere.model.I_C_PaySelection
 {
+	// @formatter:off
+	String COLUMNNAME_LastExport = "LastExport";
+	Timestamp getLastExport();
+	void setLastExport(Timestamp LastExport);
+	// @formatter:on
 
-	public static final String M_PRICELIST_ID = "M_PriceList_ID";
-
-	@Override
-	int getM_PriceList_ID();
-
-	public static final String PO_PRICELIST_ID = "PO_PriceList_ID";
-
-	@Override
-	int getPO_PriceList_ID();
-
-	public boolean isCompany();
-
-	public void setIsCompany(boolean IsCompany);
+	// @formatter:off
+	String COLUMNNAME_LastExportBy = "LastExportBy";
+	I_AD_User getLastExportBy();
+	int getLastExportBy_ID();
+	void setLastExportBy_ID(int LastExportBy_ID);
+	// @formatter:on
 }

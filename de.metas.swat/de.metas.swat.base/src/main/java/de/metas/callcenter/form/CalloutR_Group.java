@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.callcenter.form;
 
@@ -13,12 +13,12 @@ package de.metas.callcenter.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,11 +44,11 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_Group;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_C_BPartner;
 import de.metas.callcenter.model.MRGroupProspect;
+import de.metas.interfaces.I_C_BPartner;
 
 /**
- * 
+ *
  * @author Teo Sarca, teo.sarca@gmail.com
  */
 public class CalloutR_Group extends CalloutEngine
@@ -158,7 +158,7 @@ public class CalloutR_Group extends CalloutEngine
 
 	/**
 	 * Refresh all included tabs
-	 * 
+	 *
 	 * @param mTab
 	 *            parent tab
 	 */
