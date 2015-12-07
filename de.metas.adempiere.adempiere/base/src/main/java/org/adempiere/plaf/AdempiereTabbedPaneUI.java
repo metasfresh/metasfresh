@@ -292,44 +292,6 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 	}
 
 	@Override
-	protected void installListeners()
-	{
-		super.installListeners();
-		// if the layout policy is the SCROLL_TAB_LAYOUT, the super class
-		// will install the mouse listener on tabPane instead of
-		// tabScroller#tabPanel and there is no way to prevent this.
-		// That's why the mouse listener must be removed from tabPane and
-		// added to tabScroller#tabPanel when the scroll tab layout is enabled.
-		// This applies only to JDK 1.4!!!
-		if ((mouseListener != null) && (LookUtils.IS_JAVA_1_4))
-		{
-			if (scrollableTabLayoutEnabled())
-			{
-				tabPane.removeMouseListener(mouseListener);
-				tabScroller.tabPanel.addMouseListener(mouseListener);
-			}
-		}
-	}
-
-	@Override
-	protected void uninstallListeners()
-	{
-		if ((mouseListener != null) && (LookUtils.IS_JAVA_1_4))
-		{
-			if (scrollableTabLayoutEnabled())
-			{ // SCROLL_TAB_LAYOUT
-				tabScroller.tabPanel.removeMouseListener(mouseListener);
-			}
-			else
-			{ // WRAP_TAB_LAYOUT
-				tabPane.removeMouseListener(mouseListener);
-			}
-			mouseListener = null;
-		}
-		super.uninstallListeners();
-	}
-
-	@Override
 	protected void installKeyboardActions()
 	{
 		super.installKeyboardActions();
