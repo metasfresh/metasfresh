@@ -21,7 +21,6 @@ import it.sauronsoftware.cron4j.SchedulingPattern;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -31,6 +30,7 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
@@ -60,7 +60,6 @@ import org.compiere.model.X_AD_Scheduler;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoUtil;
-import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -96,14 +95,13 @@ public class Scheduler extends AdempiereServer
 	/** last outcome; stored in the scheduler log. */
 	private boolean m_success = false;
 
-	/** Transaction */
-	private ITrx m_trx = null;
-
 	//
 	// Cron4J scheduling
 	private it.sauronsoftware.cron4j.Scheduler cronScheduler;
 	private Predictor predictor;
-	private int m_pInstanceID;
+	
+	/** AD_PInstance_ID of current/last executed process/report */ 
+	private int m_AD_PInstance_ID = -1;
 
 	/**
 	 * Sets AD_Scheduler.Status and save the record
@@ -148,8 +146,12 @@ public class Scheduler extends AdempiereServer
 		pLog.setAD_Scheduler_ID(m_model.getAD_Scheduler_ID());
 		pLog.setSummary(m_summary.toString());
 		pLog.setIsError(!m_success);
-		pLog.setAD_PInstance_ID(m_pInstanceID);
 		pLog.setReference("#" + String.valueOf(p_runCount) + " - " + TimeUtil.formatElapsed(new Timestamp(p_startWork)));
+		
+		if (m_AD_PInstance_ID > 0)
+		{
+			pLog.setAD_PInstance_ID(m_AD_PInstance_ID);
+		}
 
 		InterfaceWrapperHelper.save(pLog);
 
@@ -190,41 +192,52 @@ public class Scheduler extends AdempiereServer
 					throw new AdempiereException("@NotFound@ @AD_Process_ID@");
 				}
 
+				//
+				// Create process info
 				// metas-ts using process with scheduler-ctx
 				final MProcess process = new MProcess(schedulerCtx, m_model.getAD_Process_ID(), ITrx.TRXNAME_None);
 
-				DB.saveConstraints();
-				try
+				final ProcessInfo pi = createProcessInfo(process);
+				m_AD_PInstance_ID = pi.getAD_PInstance_ID();
+
+				//
+				// Create process runner
+				final TrxRunnableAdapter processRunner = new TrxRunnableAdapter()
 				{
-					// HOTFIX for 06520: we are actually disabling OpenTrx timeout. That's the main cause of the issue described in this task
-					DB.getConstraints().setTrxTimeoutSecs(0, true); // secs=NoTimeout, logOnly=true
-
-					final ProcessInfo pi = createProcessInfo(process);
-					m_pInstanceID = pi.getAD_PInstance_ID();
-
-					setupTrxForDoWork(process, pi);
-
-					if (process.isReport())
+					@Override
+					public void run(final String localTrxName) throws Exception
 					{
-						m_summary.append(runReport(pi, process));
+						final String result;
+						if (process.isReport())
+						{
+							result = runReport(pi, process);
+						}
+						else
+						{
+							result = runProcess(pi, process);
+						}
+						m_summary.append(result);
 					}
-					else
+					
+					@Override
+					public boolean doCatch(final Throwable e) throws Throwable
 					{
-						m_summary.append(runProcess(pi, process));
+						log.log(Level.WARNING, "Failed running process/report: " + process, e);
+						m_summary.append(e.toString());
+						return ROLLBACK;
 					}
+				};
 
-					commitTrxForDoWork();
-				}
-				catch (final Exception e)
+				//
+				// Execute the process runner
+				final ITrxManager trxManager = Services.get(ITrxManager.class);
+				if (pi.getProcessClassInfo().isRunDoItOutOfTransaction())
 				{
-					rollBacktrxForDoWork();
-					log.log(Level.WARNING, "Failed processing: " + process.toString(), e);
-					m_summary.append(e.toString());
+					trxManager.runOutOfTransaction(processRunner);
 				}
-				finally
+				else
 				{
-					closeTrxForDoWork();
-					DB.restoreConstraints();
+					trxManager.run(processRunner);
 				}
 			}
 			else
@@ -296,52 +309,12 @@ public class Scheduler extends AdempiereServer
 
 		return schedulerCtx;
 	}
-
-	private void setupTrxForDoWork(final MProcess process,
-			final ProcessInfo pi)
+	
+	private final ITrx getThreadInheritedTrx()
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-		if (pi.getProcessClassInfo().isRunDoItOutOfTransaction())
-		{
-			m_trx = ITrx.TRX_None;
-		}
-		else
-		{
-			final String trxNamePrefix = "Scheduler_" + process.getValue();
-			m_trx = trxManager.getTrx(trxManager.createTrxName(trxNamePrefix, true));
-		}
-	}
-
-	private void commitTrxForDoWork() throws SQLException
-	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-		if (!trxManager.isNull(m_trx))
-		{
-			m_trx.commit(true);
-		}
-	}
-
-	private void rollBacktrxForDoWork()
-	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-		if (!trxManager.isNull(m_trx))
-		{
-			m_trx.rollback();
-		}
-	}
-
-	private void closeTrxForDoWork()
-	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-		if (!trxManager.isNull(m_trx))
-		{
-			m_trx.close();
-		}
-		m_trx = ITrx.TRX_None;
+		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		return trx;
 	}
 
 	/**
@@ -353,14 +326,16 @@ public class Scheduler extends AdempiereServer
 	 */
 	private String runReport(final ProcessInfo pi, final MProcess process) throws Exception
 	{
-		log.info(process.toString());
+		log.log(Level.INFO, "{0}", process);
+		
 		if (!process.isReport() || process.getAD_ReportView_ID() == 0)
 		{
 			return "Not a Report AD_Process_ID=" + process.getAD_Process_ID() + " - " + process.getName();
 		}
 
 		// Process
-		if (!process.processIt(pi, m_trx) && pi.getClassName() != null)
+		final ITrx trx = getThreadInheritedTrx();
+		if (!process.processIt(pi, trx) && pi.getClassName() != null)
 		{
 			return "Process failed: (" + pi.getClassName() + ") " + pi.getSummary();
 		}
@@ -378,14 +353,15 @@ public class Scheduler extends AdempiereServer
 		final Integer[] userIDs = m_model.getRecipientAD_User_IDs();
 		for (int i = 0; i < userIDs.length; i++)
 		{
-			final MNote note = new MNote(ctx, AD_Message_ID, userIDs[i].intValue(), m_trx.getTrxName());
+			final MNote note = new MNote(ctx, AD_Message_ID, userIDs[i].intValue(), ITrx.TRXNAME_ThreadInherited);
 			note.setClientOrg(pi.getAD_Client_ID(), pi.getAD_Org_ID());
 			note.setTextMsg(m_model.getName());
 			note.setDescription(m_model.getDescription());
 			note.setRecord(pi.getTable_ID(), pi.getRecord_ID());
 			note.save();
+			
 			// Attachment
-			final MAttachment attachment = new MAttachment(ctx, I_AD_Note.Table_ID, note.getAD_Note_ID(), m_trx.getTrxName());
+			final MAttachment attachment = new MAttachment(ctx, I_AD_Note.Table_ID, note.getAD_Note_ID(), ITrx.TRXNAME_ThreadInherited);
 			attachment.setClientOrg(pi.getAD_Client_ID(), pi.getAD_Org_ID());
 			attachment.addEntry(report);
 			attachment.setTextMsg(m_model.getName());
@@ -402,11 +378,12 @@ public class Scheduler extends AdempiereServer
 	 * @return summary
 	 * @throws Exception
 	 */
-	private String runProcess(final ProcessInfo pi, final MProcess process) throws Exception
+	private final String runProcess(final ProcessInfo pi, final MProcess process) throws Exception
 	{
-		log.info(process.toString());
+		log.log(Level.INFO, "{0}", process);
 
-		final boolean ok = process.processIt(pi, m_trx);
+		final ITrx trx = getThreadInheritedTrx();
+		final boolean ok = process.processIt(pi, trx);
 		ProcessInfoUtil.setLogFromDB(pi);
 
 		// notify supervisor if error

@@ -561,7 +561,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			restoreThreadLocalTrxName = true;
 			threadLocalTrx.set(trxNameToUse);
 
-			final TrxRunnable2 runnable2 = runnable instanceof TrxRunnable2 ? (TrxRunnable2)runnable : new TrxRunnable2Wrapper(runnable);
+			final TrxRunnable2 runnable2 = TrxRunnable2Wrapper.wrapIfNeeded(runnable);
 			run0(runnable2, cfg, trxNameToUse);
 
 		}
@@ -722,7 +722,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			} // end rollback
 
 			//
-			// Propagate the catched exception, no matter what, even if we were called with OnRunnableFail.DONT_ROLLBACK
+			// Propagate the caught exception, no matter what, even if we were called with OnRunnableFail.DONT_ROLLBACK
 			if (exceptionToThrow != null)
 			{
 				throw AdempiereException.wrapIfNeeded(exceptionToThrow);
@@ -775,6 +775,73 @@ public abstract class AbstractTrxManager implements ITrxManager
 					}
 				}
 				savepoint = null;
+			}
+		}
+	}
+	
+	@Override
+	public void runOutOfTransaction(final TrxRunnable r)
+	{
+		Check.assumeNotNull(r, "TrxRunnable not null");
+		final TrxRunnable2 runnable = TrxRunnable2Wrapper.wrapIfNeeded(r);
+
+		//
+		// Set thread inherited trxName to NULL.
+		// It will be restored later, in this method.
+		final String trxNameBackup = setThreadInheritedTrxName(ITrx.TRXNAME_None);
+		
+		Throwable exceptionToThrow = null; // set in "catch" block; used in finally block to add more suppressed exceptions if needed.
+		try
+		{
+			runnable.run(ITrx.TRXNAME_None);
+		}
+		catch (final Throwable runException)
+		{
+			//
+			// Call custom exception handler to advice us what to do
+			exceptionToThrow = runException;
+			boolean rollback = true;
+			try
+			{
+				rollback = runnable.doCatch(runException);
+				exceptionToThrow = null;
+			}
+			catch (final Throwable doCatchException)
+			{
+				exceptionToThrow = doCatchException;
+				rollback = true;
+			}
+
+			// Rollback
+			// NOTE: we don't care about the rollback flag because there is nothing we can do about it
+			if (rollback && exceptionToThrow == null)
+			{
+				logger.log(Level.WARNING, "Possible issue: running out of transaction, rollback was asked, there is no exception to throw => data created by runnable {0} will not be actually rolled back", runnable);
+			}
+			
+			//
+			// Propagate the caught exception, no matter what, even if we were called with OnRunnableFail.DONT_ROLLBACK
+			if (exceptionToThrow != null)
+			{
+				throw AdempiereException.wrapIfNeeded(exceptionToThrow);
+			}
+		}
+		finally
+		{
+			try
+			{
+				runnable.doFinally();
+			}
+			catch (Throwable doFinallyException)
+			{
+				// Propagate the doFinallyException only if we are not currently throwing another exception.
+				// If we are currently throwing another exception, we suppress this one.
+				AdempiereException.suppressOrThrow(doFinallyException, exceptionToThrow);
+			}
+			finally
+			{
+				// Restore the thread inherited transaction name
+				setThreadInheritedTrxName(trxNameBackup);
 			}
 		}
 	}

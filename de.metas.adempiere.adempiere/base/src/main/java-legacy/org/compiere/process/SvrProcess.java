@@ -292,8 +292,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		// Make sure we have our transaction set on thread level
 		// It will be restored on endTrx();
 		{
-			final String threadInheritedTrxNameBkp = trxManager.getThreadInheritedTrxName();
-			trxManager.setThreadInheritedTrxName(m_trx.getTrxName());
+			final String threadInheritedTrxNameBkp = trxManager.setThreadInheritedTrxName(m_trx.getTrxName());
 			this.m_trxNameThreadInheritedBackup = ImmutableReference.valueOf(threadInheritedTrxNameBkp);
 		}
 	}

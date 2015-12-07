@@ -193,6 +193,13 @@ public interface ITrxManager extends ISingletonService
 	void run(String trxName, ITrxRunConfig cfg, TrxRunnable runnable);
 
 	/**
+	 * Convenient method to execute the given runnable, but out of transaction (i.e. NO transaction management will be involved).
+	 * 
+	 * @param r runnable
+	 */
+	void runOutOfTransaction(TrxRunnable r);
+
+	/**
 	 * Commit transaction for given <code>trxName</code>.
 	 *
 	 * @param trxName

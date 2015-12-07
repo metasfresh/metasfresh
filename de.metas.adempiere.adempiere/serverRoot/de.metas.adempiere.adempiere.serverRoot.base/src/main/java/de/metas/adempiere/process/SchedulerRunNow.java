@@ -48,8 +48,9 @@ public class SchedulerRunNow extends SvrProcess
 			p_AD_Scheduler_ID = getRecord_ID();
 		}
 	}
-
+	
 	@Override
+	// NOTE: always run out of transaction and let the scheduler manage the transaction
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{

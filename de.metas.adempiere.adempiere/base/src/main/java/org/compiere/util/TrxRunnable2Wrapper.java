@@ -36,9 +36,19 @@ import org.adempiere.util.Check;
  */
 public final class TrxRunnable2Wrapper implements TrxRunnable2
 {
+	public static final TrxRunnable2 wrapIfNeeded(final TrxRunnable runnable)
+	{
+		if (runnable == null)
+		{
+			return null;
+		}
+		final TrxRunnable2 runnable2 = runnable instanceof TrxRunnable2 ? (TrxRunnable2)runnable : new TrxRunnable2Wrapper(runnable);
+		return runnable2;
+	}
+	
 	private final TrxRunnable runnable;
 
-	public TrxRunnable2Wrapper(TrxRunnable r)
+	private TrxRunnable2Wrapper(TrxRunnable r)
 	{
 		super();
 
