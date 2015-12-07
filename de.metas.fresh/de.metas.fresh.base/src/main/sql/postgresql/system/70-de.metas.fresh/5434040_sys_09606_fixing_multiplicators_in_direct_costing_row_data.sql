@@ -66,5 +66,3 @@ ORDER BY
 $BODY$
 LANGUAGE sql STABLE
 ;
-
-
