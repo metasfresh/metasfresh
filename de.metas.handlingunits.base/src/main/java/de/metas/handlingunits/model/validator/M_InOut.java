@@ -10,19 +10,19 @@ package de.metas.handlingunits.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -31,6 +31,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
@@ -46,7 +47,9 @@ import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.inout.IInOutDAO;
 
 @Validator(I_M_InOut.class)
 public class M_InOut
@@ -193,6 +196,38 @@ public class M_InOut
 		}
 
 		Services.get(IHUPackageBL.class).unassignShipmentFromPackages(shipment);
+	}
+
+	/**
+	 * Note: the reverse-timings are only fired on the M_InOut that is actually reversed (and not on the reversal).
+	 *
+	 * @param inout
+	 * @task http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
+	public void updateReversedQtys(final I_M_InOut inout)
+	{
+
+		final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+		final I_M_InOut reversal = inout.getReversal();
+
+		// shall never happen
+		if (reversal == null)
+		{
+			return;
+		}
+
+		final List<I_M_InOutLine> reversalLines = inoutDao.retrieveLines(reversal, I_M_InOutLine.class);
+		for (final I_M_InOutLine reversalLine : reversalLines)
+		{
+			final BigDecimal qtyTuReversed = reversalLine.getQtyEnteredTU().negate();
+
+			reversalLine.setQtyTU_Override(qtyTuReversed);
+			reversalLine.setQtyEnteredTU(qtyTuReversed);
+
+			InterfaceWrapperHelper.save(reversalLine);
+		}
+
 	}
 
 }
