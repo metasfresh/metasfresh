@@ -53,6 +53,7 @@
 
 	</properties>
 
+
 	<dependencyManagement>
 		<dependencies>
 
@@ -187,13 +188,13 @@
 				<artifactId>de.metas.commission.zkwebui</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<artifactId>de.metas.document.archive.base</artifactId>
 				<groupId>de.metas.document.archive</groupId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>de.metas.swat</groupId>
 				<artifactId>de.metas.swat.zkwebui</artifactId>
@@ -202,6 +203,12 @@
 			<dependency>
 				<groupId>de.metas.swat</groupId>
 				<artifactId>de.metas.swat.ait</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>de.metas.storage</groupId>
+				<artifactId>de.metas.storage</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -234,6 +241,12 @@
 			<dependency>
 				<artifactId>de.metas.adempiere.adempiere.zkwebui</artifactId>
 				<groupId>de.metas.adempiere.adempiere</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>de.metas.util</artifactId>
+				<groupId>de.metas.util</groupId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -393,65 +406,6 @@
 				</plugin>
 
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>jasperreports-maven-plugin</artifactId>
-					<version>1.0-beta-2</version>
-					<dependencies>
-
-						<dependency>
-							<groupId>org.codehaus.mojo</groupId>
-							<artifactId>jasperreports-maven-plugin</artifactId>
-							<version>1.0-beta-2</version>
-							<exclusions>
-								<exclusion>
-									<groupId>jasperreports</groupId>
-									<artifactId>jasperreports</artifactId>
-								</exclusion>
-							</exclusions>
-						</dependency>
-						<dependency>
-							<groupId>net.sf.jasperreports</groupId>
-							<artifactId>jasperreports</artifactId>
-							<version>${jasperreports.version}</version>
-						</dependency>
-
-						<!-- required to support groovy expressions in jrxml files -->
-						<dependency>
-							<groupId>org.codehaus.groovy</groupId>
-							<artifactId>groovy-all</artifactId>
-							<version>1.6.5</version>
-						</dependency>
-
-						<!-- required to compile reports with barcodes -->
-						<dependency>
-							<groupId>net.sf.barcode4j</groupId>
-							<artifactId>barcode4j-fop-ext-complete</artifactId>
-							<version>2.0</version>
-							<type>jar</type>
-							<scope>compile</scope>
-						</dependency>
-
-						<!-- Should fix this error: Execution default of goal org.codehaus.mojo:jasperreports-maven-plugin:1.0-beta-2:compile-reports 
-							failed: A required class was missing while executing org.codehaus.mojo:jasperreports-maven-plugin:1.0-beta-2:compile-reports: 
-							org/apache/log4j/Layout -->
-						<dependency>
-							<groupId>log4j</groupId>
-							<artifactId>log4j</artifactId>
-							<version>1.2.14</version>
-						</dependency>
-
-					</dependencies>
-
-					<executions>
-						<execution>
-							<goals>
-								<goal>compile-reports</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-
-				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-shade-plugin</artifactId>
 					<version>2.4.2</version>
@@ -474,25 +428,6 @@
 					<configuration>
 						<lifecycleMappingMetadata>
 							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											jasperreports-maven-plugin
-										</artifactId>
-										<versionRange>
-											[1.0-beta-2,)
-										</versionRange>
-										<goals>
-											<goal>compile-reports</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore />
-									</action>
-								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
@@ -540,6 +475,19 @@
 										<goals>
 											<goal>update-file-header</goal>
 											<goal>update-project-license</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>com.alexnederlof</groupId>
+										<artifactId>jasperreports-plugin</artifactId>
+										<versionRange>[2.0,)</versionRange>
+										<goals>
+											<goal>jasper</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
@@ -970,41 +918,28 @@
 					</plugin>
 
 					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>jasperreports-maven-plugin</artifactId>
-						<configuration>
-							<outputDirectory>${project.build.directory}/jasper</outputDirectory>
-						</configuration>
+						<!-- task 09644: using more recent plugin; also see https://github.com/alexnederlof/Jasper-report-maven-plugin -->
+						<groupId>com.alexnederlof</groupId>
+						<artifactId>jasperreports-plugin</artifactId>
+						<version>2.0</version>
 						<executions>
 							<execution>
+								<phase>process-sources</phase>
 								<goals>
-									<goal>compile-reports</goal>
+									<goal>jasper</goal>
 								</goals>
 							</execution>
 						</executions>
-						<dependencies>
-            				<!--note this dependency must be repeated here to pick up correct xml validation -->
-							<dependency>
-								<groupId>net.sf.jasperreports</groupId>
-								<artifactId>jasperreports</artifactId>
-								<version>${jasperreports.version}</version>
-							</dependency>
-							
-							<!-- 
-							Adding spring-core and spring-beans to fix "java.lang.NoClassDefFoundError: org/springframework/core/io/Resource"
-							when running the jrc
-							-->
-							<dependency>
-								<groupId>org.springframework</groupId>
-								<artifactId>spring-core</artifactId>
-								<version>3.0.6.RELEASE</version>
-							</dependency>
-							<dependency>
-								<groupId>org.springframework</groupId>
-								<artifactId>spring-beans</artifactId>
-								<version>3.0.6.RELEASE</version>
-							</dependency>
-						</dependencies>
+						<configuration>
+                			<!-- These are the default configurations: -->
+							<compiler>net.sf.jasperreports.engine.design.JRJdtCompiler</compiler>
+							<sourceDirectory>src/main/jasperreports</sourceDirectory>
+							<outputDirectory>${project.build.directory}/jasper</outputDirectory>
+							<outputFileExt>.jasper</outputFileExt>
+							<xmlValidation>true</xmlValidation>
+							<verbose>false</verbose>
+							<numberOfThreads>4</numberOfThreads>
+						</configuration>
 					</plugin>
 
 					<plugin>

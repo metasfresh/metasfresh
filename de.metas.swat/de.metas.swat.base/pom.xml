@@ -22,12 +22,10 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${project.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -35,13 +33,11 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.client</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.storage</groupId>
 			<artifactId>de.metas.storage</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- 07058: Libero (Distribution Network) dependency will be used for warehouse association between OrderLine and ReceiptSchedule warehouses -->
@@ -80,7 +76,6 @@
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -133,7 +128,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
 
 	</dependencies>
 
