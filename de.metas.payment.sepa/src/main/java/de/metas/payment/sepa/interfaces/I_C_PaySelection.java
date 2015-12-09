@@ -35,7 +35,7 @@ public interface I_C_PaySelection extends org.compiere.model.I_C_PaySelection
 	// @formatter:on
 
 	// @formatter:off
-	String COLUMNNAME_LastExportBy = "LastExportBy";
+	String COLUMNNAME_LastExportBy_ID = "LastExportBy_ID";
 	I_AD_User getLastExportBy();
 	int getLastExportBy_ID();
 	void setLastExportBy_ID(int LastExportBy_ID);
