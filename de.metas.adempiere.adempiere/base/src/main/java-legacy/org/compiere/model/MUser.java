@@ -55,7 +55,7 @@ import de.metas.adempiere.model.I_AD_User;
  *
  *  @author Jorg Janke
  *  @version $Id: MUser.java,v 1.3 2006/07/30 00:58:18 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  * 			<li>FR [ 2788430 ] MUser.getOfBPartner add trxName parameter
  * 				https://sourceforge.net/tracker/index.php?func=detail&aid=2788430&group_id=176962&atid=879335
@@ -63,7 +63,7 @@ import de.metas.adempiere.model.I_AD_User;
 public class MUser extends X_AD_User
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1399447378628744412L;
 
@@ -80,7 +80,7 @@ public class MUser extends X_AD_User
 	{
 		return getOfBPartner(ctx, C_BPartner_ID, null);
 	}
-	
+
 	/**
 	 * Get active Users of BPartner
 	 * @param ctx
@@ -95,7 +95,7 @@ public class MUser extends X_AD_User
 		.setOnlyActiveRecords(true)
 		.setOrderBy(MUser.COLUMNNAME_AD_User_ID) // metas: tsa: make sure we have same order every time
 		.list();
-		
+
 		MUser[] retValue = new MUser[list.size ()];
 		list.toArray (retValue);
 		return retValue;
@@ -123,7 +123,7 @@ public class MUser extends X_AD_User
 			rs = pstmt.executeQuery ();
 			while (rs.next ())
 				list.add(new MUser(ctx, rs, null));
-		} 
+		}
 		catch (Exception e)
 		{
 			s_log.log(Level.SEVERE, sql, e);
@@ -132,7 +132,7 @@ public class MUser extends X_AD_User
 		{
 			DB.close(rs, pstmt);
 		}
-		
+
 		MUser[] retValue = new MUser[list.size ()];
 		list.toArray (retValue);
 		return retValue;
@@ -178,9 +178,9 @@ public class MUser extends X_AD_User
 			return null;
 		}
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		
+
 		MUser retValue = null;
-		/* TODO: Implement same validation as in Login.java - 
+		/* TODO: Implement same validation as in Login.java -
 		 * about (SELECT IsEncrypted FROM AD_Column WHERE AD_Column_ID=417)='N') */
 		String sql = "SELECT * FROM AD_User "
 			+ "WHERE Name=? AND (Password=? OR Password=?) AND IsActive='Y' AND AD_Client_ID=?";
@@ -214,7 +214,7 @@ public class MUser extends X_AD_User
 		}
 		return retValue;
 	}	//	get
-	
+
 	/**
 	 *  Get Name of AD_User
 	 *  @param  AD_User_ID   System User
@@ -246,7 +246,7 @@ public class MUser extends X_AD_User
 		return name;
 	}	//	getNameOfUser
 
-	
+
 	/**
 	 * 	User is SalesRep
 	 *	@param AD_User_ID user
@@ -262,11 +262,11 @@ public class MUser extends X_AD_User
 		int no = DB.getSQLValue(null, sql, AD_User_ID);
 		return no == AD_User_ID;
 	}	//	isSalesRep
-	
+
 	/**	Static Logger			*/
 	private static CLogger	s_log	= CLogger.getCLogger (MUser.class);
-	
-	
+
+
 	/**************************************************************************
 	 * 	Default Constructor
 	 *	@param ctx context
@@ -280,7 +280,7 @@ public class MUser extends X_AD_User
 		{
 			setIsFullBPAccess (true);
 			setNotificationType(NOTIFICATIONTYPE_EMail);
-		}		
+		}
 	}	//	MUser
 
 	/**
@@ -310,7 +310,7 @@ public class MUser extends X_AD_User
 
 	/** User Access Rights				*/
 	private List<I_AD_UserBPAccess>	m_bpAccess = null;
-	
+
 	/** Is Administrator */
 	private final Supplier<Boolean> m_isAdministratorSupplier = Suppliers.memoize(new Supplier<Boolean>()
 	{
@@ -339,7 +339,7 @@ public class MUser extends X_AD_User
 					});
 		}
 	});
-		
+
 	/**
 	 * 	Get Value - 7 bit lower case alpha numerics max length 8
 	 *	@return value
@@ -387,7 +387,7 @@ public class MUser extends X_AD_User
 			result = result.substring (0, 8);
 		super.setValue(result);
 	}	//	setValue
-	
+
 	/**
 	 * 	Clean Value
 	 *	@param value value
@@ -407,7 +407,7 @@ public class MUser extends X_AD_User
 		}
 		return sb.toString ();
 	}	//	cleanValue
-	
+
 	/**
 	 * 	Get First Name
 	 *	@return first name
@@ -416,7 +416,7 @@ public class MUser extends X_AD_User
 	{
 		return getName (getName(), true);
 	}	//	getFirstName
-	
+
 	/**
 	 * 	Get Last Name
 	 *	@return first name
@@ -439,8 +439,8 @@ public class MUser extends X_AD_User
 		String first = null;
 		String last = null;
 		//	Janke, Jorg R - Jorg R Janke
-		//	double names not handled gracefully nor titles 
-		//	nor (former) aristrocratic world de/la/von 
+		//	double names not handled gracefully nor titles
+		//	nor (former) aristrocratic world de/la/von
 		boolean lastFirst = name.indexOf(',') != -1;
 		StringTokenizer st = null;
 		if (lastFirst)
@@ -475,8 +475,8 @@ public class MUser extends X_AD_User
 			return "";
 		return last.trim();
 	}	//	getName
-	
-	
+
+
 	/**
 	 * 	Add to Description
 	 *	@param description description to be added
@@ -491,8 +491,8 @@ public class MUser extends X_AD_User
 		else
 			setDescription (descr + " - " + description);
 	}	//	addDescription
-	
-	
+
+
 	/**
 	 * 	String Representation
 	 *	@return Info
@@ -529,7 +529,7 @@ public class MUser extends X_AD_User
 		super.setEMail (EMail);
 		setEMailVerifyDate (null);
 	}	//	setEMail
-	
+
 	/**
 	 * 	Convert EMail
 	 *	@return Valid Internet Address
@@ -567,7 +567,7 @@ public class MUser extends X_AD_User
 		/*
                 if (true)
 			return null;
-		
+
 		Hashtable<String,String> env = new Hashtable<String,String>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
 	//	env.put(Context.PROVIDER_URL, "dns://admin.adempiere.org");
@@ -582,7 +582,7 @@ public class MUser extends X_AD_User
 			{
 				System.out.println(en.next());
 			}
-			
+
 		}
 		catch (Exception e)
 		{
@@ -592,7 +592,7 @@ public class MUser extends X_AD_User
 		return null;
                 */
 	}	//	validateEmail
-	
+
 	/**
 	 * 	Is the email valid
 	 * 	@return return true if email is valid (artificial check)
@@ -601,7 +601,7 @@ public class MUser extends X_AD_User
 	{
 		return validateEmail(getInternetAddress()) != null;
 	}	//	isEMailValid
-	
+
 	/**
 	 * 	Could we send an email
 	 * 	@return true if EMail Uwer/PW exists
@@ -624,11 +624,11 @@ public class MUser extends X_AD_User
 	 */
 	public String getEMailVerifyCode()
 	{
-		long code = getAD_User_ID() 
+		long code = getAD_User_ID()
 			+ getName().hashCode();
 		return "C" + String.valueOf(Math.abs(code)) + "C";
 	}	//	getEMailValidationCode
-	
+
 	/**
 	 * 	Check & Set EMail Validation Code.
 	 *	@param code code
@@ -637,8 +637,8 @@ public class MUser extends X_AD_User
 	 */
 	public boolean setEMailVerifyCode (String code, String info)
 	{
-		boolean ok = code != null 
-			&& code.equals(getEMailVerifyCode()); 
+		boolean ok = code != null
+			&& code.equals(getEMailVerifyCode());
 		if (ok)
 			setEMailVerifyDate(new Timestamp(System.currentTimeMillis()));
 		else
@@ -646,7 +646,7 @@ public class MUser extends X_AD_User
 		setEMailVerify(info);
 		return ok;
 	}	//	setEMailValidationCode
-	
+
 	/**
 	 * 	Is EMail Verified by response
 	 *	@return true if verified
@@ -655,32 +655,10 @@ public class MUser extends X_AD_User
 	{
 		//	UPDATE AD_User SET EMailVerifyDate=now(), EMailVerify='Direct' WHERE AD_User_ID=1
 		return getEMailVerifyDate() != null
-			&& getEMailVerify() != null 
-			&& getEMailVerify().length() > 0; 
+			&& getEMailVerify() != null
+			&& getEMailVerify().length() > 0;
 	}	//	isEMailVerified
-	
-	/**
-	 * 	Get Notification via EMail
-	 *	@return true if email
-	 */
-	public boolean isNotificationEMail()
-	{
-		String s = getNotificationType();
-		return s == null || NOTIFICATIONTYPE_EMail.equals(s)
-				|| NOTIFICATIONTYPE_EMailPlusNotice.equals(s);
-	}	//	isNotificationEMail
-	
-	/**
-	 * 	Get Notification via Note
-	 *	@return true if note
-	 */
-	public boolean isNotificationNote()
-	{
-		String s = getNotificationType();
-		return s != null && (NOTIFICATIONTYPE_Notice.equals(s)
-							|| NOTIFICATIONTYPE_EMailPlusNotice.equals(s));
-	}	//	isNotificationNote
-	
+
 	/**
 	 * 	Is User an Administrator?
 	 *	@return true id Admin
@@ -709,7 +687,7 @@ public class MUser extends X_AD_User
 		}
 		return false;
 	}	//	hasBPAccess
-	
+
 	/**
 	 * 	Get active BP Access records
 	 *	@param requery requery
@@ -721,18 +699,18 @@ public class MUser extends X_AD_User
 		{
 			return m_bpAccess;
 		}
-		
+
 		m_bpAccess = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_UserBPAccess.class, getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_UserBPAccess.COLUMNNAME_AD_User_ID, getAD_User_ID())
 				.create()
 				.list();
-		
+
 		return m_bpAccess;
 	}	//	getBPAccess
-	
-	
+
+
 	/**
 	 * 	Before Save
 	 *	@param newRecord new
@@ -748,8 +726,8 @@ public class MUser extends X_AD_User
 			setValue(super.getValue());
 		return true;
 	}	//	beforeSave
-	
-	
+
+
 	/**
 	 * 	Test
 	 *	@param args ignored
@@ -764,7 +742,7 @@ public class MUser extends X_AD_User
 		{
 			e.printStackTrace();
 		}
-		
+
 	//	org.compiere.Adempiere.startupClient();
 	//	System.out.println ( MUser.get(Env.getCtx(), "SuperUser", "22") );
 	}	//	main	/* */

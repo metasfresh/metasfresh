@@ -10,12 +10,12 @@ package de.metas.printing.client;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,7 @@ import de.metas.printing.client.util.Util;
 
 /**
  * Reads the config properties from a file which is determined by "config" system property.
- * 
+ *
  * @author tsa
  *
  */
@@ -46,7 +46,7 @@ public class ConfigFileContext implements IContext
 		super();
 
 		String configFilename = System.getProperty("config");
-		
+
 		// Fallback: use config.properties
 		if (configFilename == null || configFilename.trim().isEmpty())
 		{
@@ -65,7 +65,7 @@ public class ConfigFileContext implements IContext
 		}
 		catch (final IOException e)
 		{
-			throw new RuntimeException("Failed loading config file: " + configFilename, e);
+			throw new RuntimeException("Failed loading config file: " + configFilename+", start client with -Dconfig=<filename> so specify a particualr file", e);
 		}
 		finally
 		{

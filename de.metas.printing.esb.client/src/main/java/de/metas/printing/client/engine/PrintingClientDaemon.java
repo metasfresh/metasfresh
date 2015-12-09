@@ -10,18 +10,17 @@ package de.metas.printing.client.engine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,7 +49,7 @@ public class PrintingClientDaemon implements Runnable
 	private final IPrintConnectionEndpoint connection;
 	private final PrintingEngine printingEngine;
 
-	private AtomicBoolean stop = new AtomicBoolean(false);
+	private final AtomicBoolean stop = new AtomicBoolean(false);
 
 	public PrintingClientDaemon()
 	{
@@ -58,14 +57,14 @@ public class PrintingClientDaemon implements Runnable
 
 		final Context ctx = Context.getContext();
 
-		this.pollInterval = ctx.getPropertyAsInt(CTX_PollIntervalMs, DEFAULT_PollIntervalMs);
+		pollInterval = ctx.getPropertyAsInt(CTX_PollIntervalMs, DEFAULT_PollIntervalMs);
 		if (pollInterval <= 0)
 		{
 			throw new RuntimeException("Invalid " + CTX_PollIntervalMs + " value: " + pollInterval);
 		}
 
-		this.connection = ctx.getInstance(Context.CTX_PrintConnectionEndpoint, IPrintConnectionEndpoint.class);
-		this.printingEngine = PrintingEngine.get();
+		connection = ctx.getInstance(Context.CTX_PrintConnectionEndpoint, IPrintConnectionEndpoint.class);
+		printingEngine = PrintingEngine.get();
 	}
 
 	@Override
@@ -80,7 +79,7 @@ public class PrintingClientDaemon implements Runnable
 			final PrinterHWList printerHWList = PrintingEngine.get().createPrinterHW();
 			connection.addPrinterHW(printerHWList);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			// 04044: until we found the real error, don't show to the user
 			// final IUserInterface ui = Context.getContext().getInstance(Context.CTX_UserInterface, IUserInterface.class);
@@ -106,18 +105,17 @@ public class PrintingClientDaemon implements Runnable
 
 				runOnce();
 			}
-			catch (InterruptedException e)
+			catch (final InterruptedException e)
 			{
 				log.info("Interrupted signal received. Stopping daemon.");
 				return;
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				// 04044: log error but continue
 				// until we found the real error, don't show to the user
 				// final IUserInterface ui = Context.getContext().getInstance(Context.CTX_UserInterface, IUserInterface.class);
 				// ui.showError("Error", e);
-
 				logException("poll for print package", e);
 			}
 		}
@@ -211,7 +209,7 @@ public class PrintingClientDaemon implements Runnable
 
 	/**
 	 * Gets runnable's name, to be used as Thread name.
-	 * 
+	 *
 	 * @return runnable's name
 	 */
 	public String getName()

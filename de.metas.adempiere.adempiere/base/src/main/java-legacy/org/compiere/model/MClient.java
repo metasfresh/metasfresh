@@ -39,7 +39,7 @@ import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
-import de.metas.adempiere.service.IMailBL;
+import de.metas.notification.IMailBL;
 
 /**
  *  Client Model

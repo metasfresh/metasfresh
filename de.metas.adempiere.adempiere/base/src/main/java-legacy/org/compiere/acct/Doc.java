@@ -38,6 +38,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ICurrencyConversionBL;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -70,51 +71,51 @@ import org.compiere.util.TrxRunnable2;
  *  ------------------  ------------------------------
  *  C_Invoice:          ARI, ARC, ARF, API, APC
  *      Doc_Invoice     318 - has C_DocType_ID
- * 
+ *
  *  C_Payment:          ARP, APP
  *      Doc_Payment     335 - has C_DocType_ID
- * 
+ *
  *  C_Order:            SOO, POO,  POR (Requisition)
  *      Doc_Order       259 - has C_DocType_ID
- * 
+ *
  *  M_InOut:            MMS, MMR
  *      Doc_InOut       319 - DocType derived
- * 
+ *
  *  M_Inventory:        MMI
  *      Doc_Inventory   321 - DocType fixed
- * 
+ *
  *  M_Movement:         MMM
  *      Doc_Movement    323 - DocType fixed
- * 
+ *
  *  M_Production:       MMP
  *      Doc_Production  325 - DocType fixed
- *      
+ *
  * M_Production:        MMO
  *      Doc_CostCollector  330 - DocType fixed
- * 
+ *
  *  C_BankStatement:    CMB
  *      Doc_Bank        392 - DocType fixed
- * 
+ *
  *  C_Cash:             CMC
  *      Doc_Cash        407 - DocType fixed
- * 
+ *
  *  C_Allocation:       CMA
  *      Doc_Allocation  390 - DocType fixed
- * 
+ *
  *  GL_Journal:         GLJ
  *      Doc_GLJournal   224 = has C_DocType_ID
- * 
+ *
  *  Matching Invoice    MXI
  *      M_MatchInv      472 - DocType fixed
- * 
+ *
  *  Matching PO         MXP
  *      M_MatchPO       473 - DocType fixed
- * 
+ *
  * Project Issue		PJI
  * 	C_ProjectIssue	623 - DocType fixed
  *
  * </pre>
- * 
+ *
  * @author Jorg Janke
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 2520591 ] Support multiples calendar for Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
@@ -122,7 +123,10 @@ import org.compiere.util.TrxRunnable2;
  */
 public abstract class Doc
 {
+	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
+
 	// services
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	protected final transient ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -305,7 +309,7 @@ public abstract class Doc
 	// protected String p_Status = null;
 	/**
 	 * Error Message (legacy)
-	 * 
+	 *
 	 * Please use {@link #newPostingException()} instead
 	 */
 	@Deprecated
@@ -373,7 +377,7 @@ public abstract class Doc
 
 	/**
 	 * Post Document.
-	 * 
+	 *
 	 * <pre>
 	 *  - try to lock document (Processed='Y' (AND Processing='N' AND Posted='N'))
 	 * 		- if not ok - return false
@@ -383,7 +387,7 @@ public abstract class Doc
 	 *              - commits Fact lines and Document & sets Processing = 'N'
 	 *              - if error - create Note
 	 * </pre>
-	 * 
+	 *
 	 * @param force if true ignore that locked
 	 * @param repost if true ignore that already posted
 	 * @return null if posted error otherwise
@@ -439,7 +443,12 @@ public abstract class Doc
 			{
 				final PostingException postingException = newPostingException(e);
 				error.setValue(postingException);
-				createErrorNote(postingException);
+
+				final boolean createNote = sysConfigBL.getBooleanValue(SYSCONFIG_CREATE_NOTE_ON_ERROR, false, p_po.getAD_Client_ID(), p_po.getAD_Org_ID());
+				if (createNote)
+				{
+					createErrorNote(postingException);
+				}
 				log.log(postingException.getLogLevel(), postingException.getLocalizedMessage(), postingException);
 
 				return true; // rollack, but don't throw the error
@@ -626,7 +635,7 @@ public abstract class Doc
 
 	/**
 	 * Posting logic for Accounting Schema
-	 * 
+	 *
 	 * @param acctSchema Accounting Schema
 	 */
 	private final void postLogic(final MAcctSchema acctSchema)
@@ -772,7 +781,7 @@ public abstract class Doc
 	private final void setTrxName(final String trxName)
 	{
 		this.m_trxName = trxName;
-		
+
 		// NOTE: we are also updating PO's trxName because there are some retrieval methods which could depend on PO's trxName.
 		// Our am is not to allow changing and saving the PO.
 		if (p_po != null)
@@ -783,7 +792,7 @@ public abstract class Doc
 
 	/**
 	 * Lock document
-	 * 
+	 *
 	 * @param force force posting
 	 * @param repost true if is document re-posting; i.e. it will assume the document was not already posted
 	 * @throws AdempiereException in case of failure
@@ -859,7 +868,7 @@ public abstract class Doc
 
 	/**************************************************************************
 	 * Load Document Type and GL Info. Set p_DocumentType and p_GL_Category_ID
-	 * 
+	 *
 	 * @return document type
 	 */
 	protected final String getDocumentType()
@@ -978,7 +987,7 @@ public abstract class Doc
 
 	/**************************************************************************
 	 * Is the Source Document Balanced
-	 * 
+	 *
 	 * @return true if (source) balanced
 	 */
 	private final boolean isBalanced()
@@ -997,7 +1006,7 @@ public abstract class Doc
 
 	/**
 	 * Is Document convertible to currency and Conversion Type
-	 * 
+	 *
 	 * @param acctSchema accounting schema
 	 * @return true, if convertible to accounting currency
 	 */
@@ -1098,7 +1107,7 @@ public abstract class Doc
 
 	/**
 	 * Is Period Open
-	 * 
+	 *
 	 * @return true if period is open
 	 */
 	private final boolean isPeriodOpen()
@@ -1142,7 +1151,7 @@ public abstract class Doc
 
 	/**
 	 * Set the Amount
-	 * 
+	 *
 	 * @param AmtType see AMTTYPE_*
 	 * @param amt Amount
 	 */
@@ -1158,7 +1167,7 @@ public abstract class Doc
 
 	/**
 	 * Get Amount with index 0
-	 * 
+	 *
 	 * @return Amount (primary document amount)
 	 */
 	protected final BigDecimal getAmount()
@@ -1168,7 +1177,7 @@ public abstract class Doc
 
 	/**
 	 * Set Quantity
-	 * 
+	 *
 	 * @param qty Quantity
 	 */
 	protected final void setQty(BigDecimal qty)
@@ -1178,7 +1187,7 @@ public abstract class Doc
 
 	/**
 	 * Get Quantity
-	 * 
+	 *
 	 * @return Quantity
 	 */
 	protected final BigDecimal getQty()
@@ -1262,7 +1271,7 @@ public abstract class Doc
 
 	/**
 	 * Get the Valid Combination id for Accounting Schema
-	 * 
+	 *
 	 * @param AcctType see ACCTTYPE_*
 	 * @param as accounting schema
 	 * @return C_ValidCombination_ID
@@ -1494,7 +1503,7 @@ public abstract class Doc
 
 	/**
 	 * Get the account for Accounting Schema
-	 * 
+	 *
 	 * @param AcctType see ACCTTYPE_*
 	 * @param as accounting schema
 	 * @return Account or <code>null</code>
@@ -1511,7 +1520,7 @@ public abstract class Doc
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return String
 	 */
 	@Override
@@ -1557,12 +1566,12 @@ public abstract class Doc
 		m_DocumentNo = (String)p_po.get_Value(index);
 		return m_DocumentNo;
 	}	// getDocumentNo
-	
+
 	public final String getDocStatus()
 	{
 		return m_DocStatus;
 	}
-	
+
 	/**
 	 * Get Description
 	 *
@@ -1650,7 +1659,7 @@ public abstract class Doc
 		}
 		return 0;
 	}	// getC_ConversionType_ID
-	
+
 	/**
 	 * Get Currency Precision
 	 *
@@ -1665,7 +1674,6 @@ public abstract class Doc
 		}
 		return m_precision;
 	}	// getPrecision
-
 
 	/**
 	 * Get GL_Category_ID
@@ -1851,7 +1859,7 @@ public abstract class Doc
 
 	/**
 	 * Get C_BP_BankAccount_ID if it was previously set using {@link #setC_BP_BankAccount_ID(int)}, or attempts to get it from our <code>p_po</code> (document record).
-	 * 
+	 *
 	 * @return BankAccount
 	 */
 	final int getC_BP_BankAccount_ID()
@@ -1886,7 +1894,7 @@ public abstract class Doc
 	}	// setC_BP_BankAccount_ID
 
 	/**
-	 * 
+	 *
 	 * @return bank account or <code>null</code>
 	 */
 	protected final I_C_BP_BankAccount getC_BP_BankAccount()
@@ -2231,21 +2239,21 @@ public abstract class Doc
 
 	/**
 	 * Load Document Details
-	 * 
+	 *
 	 * @return error message or null
 	 */
 	protected abstract String loadDocumentDetails();
 
 	/**
 	 * Get Source Currency Balance - subtracts line (and tax) amounts from total - no rounding
-	 * 
+	 *
 	 * @return positive amount, if total header is bigger than lines
 	 */
 	protected abstract BigDecimal getBalance();
 
 	/**
 	 * Create Facts (the accounting logic)
-	 * 
+	 *
 	 * @param as accounting schema
 	 * @return Facts
 	 */
@@ -2292,7 +2300,7 @@ public abstract class Doc
 
 	/**
 	 * Checks {@link #p_Error} status and in case is not empty, it will throw an error.
-	 * 
+	 *
 	 * This method is used to support the legacy {@link #p_Error} field.
 	 */
 	private final void throwPostingExpectionIfError()
@@ -2366,12 +2374,12 @@ public abstract class Doc
 
 	/**
 	 * Post immediate given list of documents.
-	 * 
+	 *
 	 * NOTE:
 	 * <ul>
 	 * <li>this method won't fail if any of the documents's posting is failing, because we don't want to prevent the main document posting because of this
 	 * </ul>
-	 * 
+	 *
 	 * @param documentModels
 	 */
 	protected final void postDependingDocuments(final List<?> documentModels)

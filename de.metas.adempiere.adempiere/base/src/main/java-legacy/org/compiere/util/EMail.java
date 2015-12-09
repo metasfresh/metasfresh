@@ -51,7 +51,7 @@ import org.compiere.model.MClient;
 
 import com.sun.mail.smtp.SMTPMessage;
 
-import de.metas.adempiere.service.IMailBL;
+import de.metas.notification.IMailBL;
 
 /**
  * EMail Object. Resources: http://java.sun.com/products/javamail/index.html http://java.sun.com/products/javamail/FAQ.html

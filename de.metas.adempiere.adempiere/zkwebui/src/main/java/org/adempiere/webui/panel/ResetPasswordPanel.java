@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.adempiere.webui.panel;
 
@@ -13,12 +13,12 @@ package org.adempiere.webui.panel;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,8 +31,10 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.component.ConfirmPanel;
@@ -41,7 +43,6 @@ import org.adempiere.webui.component.Window;
 import org.adempiere.webui.theme.ITheme;
 import org.adempiere.webui.window.LoginWindow;
 import org.compiere.util.Msg;
-import org.compiere.util.Util;
 import org.zkoss.zhtml.Div;
 import org.zkoss.zhtml.Table;
 import org.zkoss.zhtml.Td;
@@ -61,12 +62,12 @@ import de.metas.adempiere.model.I_AD_User;
 
 /**
  * @author ab
- * 
+ *
  */
 public class ResetPasswordPanel extends Window implements EventListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8818276034234180658L;
 
@@ -279,7 +280,7 @@ public class ResetPasswordPanel extends Window implements EventListener
 
 	public void setResetCode(String accountPasswordResetCode)
 	{
-		if (Util.isEmpty(accountPasswordResetCode))
+		if (Check.isEmpty(accountPasswordResetCode))
 		{
 			throw new WrongValueException(Msg.translate(ctx, MSG_InvalidAccountPasswordResetCodeError));
 		}
@@ -303,7 +304,7 @@ public class ResetPasswordPanel extends Window implements EventListener
 		if (comp == txtNewPassword)
 		{
 			String password = value == null ? "" : value.toString();
-			if (Util.isEmpty(password, true))
+			if (Check.isEmpty(password, true))
 			{
 				throw new WrongValueException(comp, MZul.EMPTY_NOT_ALLOWED);
 			}
@@ -312,7 +313,7 @@ public class ResetPasswordPanel extends Window implements EventListener
 		else if (comp == txtRetypePassword)
 		{
 			String password2 = value == null ? "" : value.toString();
-			if (Util.isEmpty(password2, true))
+			if (Check.isEmpty(password2, true))
 			{
 				throw new WrongValueException(comp, MZul.EMPTY_NOT_ALLOWED);
 			}
@@ -343,7 +344,10 @@ public class ResetPasswordPanel extends Window implements EventListener
 
 		int old_user_id = user.getAD_User_ID();
 		final String password = txtRetypePassword.getText();
-		user = Services.get(IUserBL.class).resetPassword(ctx, old_user_id, passwordResetCode, password);
+		final IUserBL userBL = Services.get(IUserBL.class);
+		user = InterfaceWrapperHelper.create(
+				userBL.resetPassword(ctx, old_user_id, passwordResetCode, password),
+				I_AD_User.class);
 
 		Executions.sendRedirect("index.zul");
 	}

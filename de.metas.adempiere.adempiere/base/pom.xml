@@ -1,6 +1,5 @@
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -154,16 +153,9 @@
 			<artifactId>ojdbc6</artifactId>
 			<version>11.2.0.1.0</version>
 		</dependency>
-		<!-- unused according to maven dependency:analyze <dependency> <groupId>mysql</groupId> 
-			<artifactId>mysql-connector-java</artifactId> <version>5.1.17</version> </dependency> 
-			<dependency> <groupId>c3p0</groupId> <artifactId>c3p0-oracle-thin-extras</artifactId> 
-			<version>0.9.0.2</version> </dependency> -->
+
 		<!-- Scripting support -->
 
-		<!-- unused according to maven dependency:analyze moved to adempiere-client 
-			<dependency> <groupId>org.codehaus.groovy</groupId> <artifactId>groovy-all</artifactId> 
-			<version>1.5.1</version> </dependency> <dependency> <groupId>org.codehaus.groovy</groupId> 
-			<artifactId>groovy-engine</artifactId> <version>1.5.1</version> </dependency> -->
 		<!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/model/Scriptlet.java -->
 		<dependency>
 			<groupId>org.beanshell</groupId>
@@ -171,16 +163,7 @@
 			<version>2.0b5</version>
 		</dependency>
 
-		<!-- unused according to maven dependency:analyze <dependency> <groupId>org.beanshell</groupId> 
-			<artifactId>bsh-engine</artifactId> <version>2.0b5</version> <type>jar</type> 
-			</dependency> <dependency> <groupId>org.python</groupId> <artifactId>jython</artifactId> 
-			<version>2.2.1</version> </dependency> <dependency> <groupId>org.python</groupId> 
-			<artifactId>jython-engine</artifactId> <version>2.2.1</version> </dependency> -->
 		<!-- Swing -->
-
-				<!-- unused according to maven dependency:analyze movbed to adempiere-client 
-			<dependency> <groupId>com.miglayout</groupId> <artifactId>miglayout</artifactId> 
-			<version>3.7.1</version> </dependency> -->
 		<dependency>
 			<groupId>com.jgoodies</groupId>
 			<artifactId>jgoodies-looks</artifactId>

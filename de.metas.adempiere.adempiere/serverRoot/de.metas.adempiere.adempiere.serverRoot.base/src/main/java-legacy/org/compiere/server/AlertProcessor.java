@@ -27,6 +27,8 @@ import java.util.Collection;
 import java.util.logging.Level;
 
 import org.adempiere.impexp.ArrayExcelExporter;
+import org.adempiere.user.api.IUserBL;
+import org.adempiere.util.Services;
 import org.compiere.model.MAlert;
 import org.compiere.model.MAlertProcessor;
 import org.compiere.model.MAlertProcessorLog;
@@ -47,10 +49,10 @@ import org.compiere.util.ValueNamePair;
 
 /**
  *	Alert Processor
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: AlertProcessor.java,v 1.4 2006/07/30 00:53:33 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 			<li>FR [ 1894573 ] Alert Processor Improvements
  * 			<li>FR [ 2453882 ] Alert Processor : attached file name improvement
@@ -65,7 +67,7 @@ public class AlertProcessor extends AdempiereServer
 	 */
 	public AlertProcessor (MAlertProcessor model)
 	{
-		super (model, 180);		//	3 minute delay 
+		super (model, 180);		//	3 minute delay
 		m_model = model;
 		m_client = MClient.get(model.getCtx(), model.getAD_Client_ID());
 	}	//	AlertProcessor
@@ -108,7 +110,7 @@ public class AlertProcessor extends AdempiereServer
 		m_summary.append("Logs deleted=").append(no);
 		//
 		MAlertProcessorLog pLog = new MAlertProcessorLog(m_model, m_summary.toString());
-		pLog.setReference("#" + String.valueOf(p_runCount) 
+		pLog.setReference("#" + String.valueOf(p_runCount)
 			+ " - " + TimeUtil.formatElapsed(new Timestamp(p_startWork)));
 		pLog.setTextMsg(m_errors.toString());
 		pLog.save();
@@ -137,12 +139,12 @@ public class AlertProcessor extends AdempiereServer
 			if (i > 0)
 				message.append(Env.NL);
 			String trxName = null;		//	assume r/o
-			
+
 			MAlertRule rule = rules[i];
 			if (!rule.isValid())
 				continue;
 			log.fine("" + rule);
-			
+
 			//	Pre
 			String sql = rule.getPreProcessing();
 			if (sql != null && sql.length() > 0)
@@ -159,7 +161,7 @@ public class AlertProcessor extends AdempiereServer
 					break;
 				}
 			}	//	Pre
-			
+
 			//	The processing
 			sql = rule.getSql(true);
 			try
@@ -201,7 +203,7 @@ public class AlertProcessor extends AdempiereServer
 					break;
 				}
 			}	//	Post
-			
+
 			/**	Trx				*/
 			if (trxName != null)
 			{
@@ -213,7 +215,7 @@ public class AlertProcessor extends AdempiereServer
 				}
 			}
 		}	//	 for all rules
-		
+
 		//	Update header if error
 		if (!valid)
 		{
@@ -221,49 +223,52 @@ public class AlertProcessor extends AdempiereServer
 			alert.save();
 			return false;
 		}
-		
+
 		//	Nothing to report
 		if (!processed)
 		{
 			m_summary.append(alert.getName()).append("=No Result - ");
 			return true;
 		}
-		
+
 		//
 		// Report footer - Date Generated
 		DateFormat df = DisplayType.getDateFormat(DisplayType.DateTime);
 		message.append("\n\n");
 		message.append(Msg.translate(getCtx(), "Date")).append(" : ")
 				.append(df.format(new Timestamp(System.currentTimeMillis())));
-		
+
 		Collection<Integer> users = alert.getRecipientUsers();
 		int countMail = notifyUsers(users, alert.getAlertSubject(), message.toString(), attachments);
-		
+
 		m_summary.append(alert.getName()).append(" (EMails+Notes=").append(countMail).append(") - ");
 		return valid;
 	}	//	processAlert
-	
+
 	/**
 	 * Notify users
 	 * @param users AD_User_ID list
 	 * @param subject email subject
 	 * @param message email message
-	 * @param attachments 
+	 * @param attachments
 	 * @return how many email were sent
 	 */
 	private int notifyUsers(Collection<Integer> users, String subject, String message, Collection<File> attachments)
 	{
 		int countMail = 0;
-		for (int user_id : users) {
+		for (int user_id : users)
+		{
+			final IUserBL userBL = Services.get(IUserBL.class);
+
 			MUser user = MUser.get(getCtx(), user_id);
-			if (user.isNotificationEMail()) {
+			if (userBL.isNotificationEMail(user)) {
 				if (m_client.sendEMailAttachments (user_id, subject, message, attachments))
 				{
 					countMail++;
 				}
 			}
 
-			if (user.isNotificationNote()) {
+			if (userBL.isNotificationNote(user)) {
 				Trx trx = null;
 				try {
 					trx = Trx.get(Trx.createTrxName("AP_NU"), true);
@@ -292,7 +297,7 @@ public class AlertProcessor extends AdempiereServer
 		}
 		return countMail;
 	}
-	
+
 	/**
 	 * Get Alert Data
 	 * @param sql
@@ -344,17 +349,17 @@ public class AlertProcessor extends AdempiereServer
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		
+
 		//	Error occurred
 		if (error != null)
-			throw new Exception ("(" + sql + ") " + Env.NL 
+			throw new Exception ("(" + sql + ") " + Env.NL
 				+ error.getLocalizedMessage());
-		
+
 		return data;
 	}	//	getData
-	
+
 	/**
-	 * Get Plain Text Report (old functionality) 
+	 * Get Plain Text Report (old functionality)
 	 * @param rule (ignored)
 	 * @param sql sql select
 	 * @param trxName transaction
@@ -363,6 +368,7 @@ public class AlertProcessor extends AdempiereServer
 	 * @throws Exception
 	 * @deprecated
 	 */
+	@Deprecated
 	private String getPlainTextReport(MAlertRule rule, String sql, String trxName, Collection<File> attachments)
 	throws Exception
 	{
@@ -401,12 +407,12 @@ public class AlertProcessor extends AdempiereServer
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		
+
 		//	Error occurred
 		if (error != null)
-			throw new Exception ("(" + sql + ") " + Env.NL 
+			throw new Exception ("(" + sql + ") " + Env.NL
 				+ error.getLocalizedMessage());
-		
+
 		return result.toString();
 	}
 
@@ -434,7 +440,7 @@ public class AlertProcessor extends AdempiereServer
 		String msg = rule.getName() + " (@SeeAttachment@ "+file.getName()+")"+Env.NL;
 		return Msg.parseTranslation(Env.getCtx(), msg);
 	}
-	
+
 	/**
 	 * 	Get Server Info
 	 *	@return info

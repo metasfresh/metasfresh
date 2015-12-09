@@ -10,12 +10,12 @@ package de.metas.printing.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,9 +57,9 @@ import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
 
 /**
  * Printing base - Main Validator
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class Main extends AbstractModuleInterceptor
 {
@@ -117,6 +117,7 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new AD_PrinterTray_Matching(), client);
 		engine.addModelValidator(new C_BPartner(), client); // task 08958
 
+		engine.addModelValidator(new C_Print_Job_Instructions(), client);
 		engine.addModelValidator(new C_Printing_Queue(), client);
 		engine.addModelValidator(new C_Printing_Queue_Recipient(), client);
 
@@ -132,7 +133,7 @@ public class Main extends AbstractModuleInterceptor
 		// callouts
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 
-		// task 09417 
+		// task 09417
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.printing.callout.C_Doc_Outbound_Config.instance);
 	}
 
@@ -145,6 +146,6 @@ public class Main extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Config.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Matching.Table_Name);
 	}
-	
-	
+
+
 }

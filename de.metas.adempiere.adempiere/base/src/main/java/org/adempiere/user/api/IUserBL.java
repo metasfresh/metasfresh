@@ -26,8 +26,9 @@ package org.adempiere.user.api;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_User;
 
-import de.metas.adempiere.model.I_AD_User;
+
 
 public interface IUserBL extends ISingletonService
 {
@@ -57,4 +58,20 @@ public interface IUserBL extends ISingletonService
 	boolean isEmployee(final org.compiere.model.I_AD_User user);
 	
 	String buildContactName(final String firstName, final String lastName);
+
+	/**
+	 * Get Notification via EMail
+	 *
+	 * @return true if email
+	 */
+	boolean isNotificationEMail(I_AD_User user);
+
+	/**
+	 * Get Notification via <code>AD_Note</code>
+	 *
+	 * @return true if note
+	 */
+	boolean isNotificationNote(I_AD_User user);
+
+	boolean isNotifyUserIncharge(I_AD_User recipient);
 }

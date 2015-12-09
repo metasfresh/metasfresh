@@ -38,22 +38,23 @@ import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MMailText;
+import org.compiere.model.X_AD_User;
 import org.compiere.util.CLogger;
 import org.compiere.util.EMail;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_Client;
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.service.IMailBL;
+import de.metas.notification.IMailBL;
 
 public class UserBL implements IUserBL
 {
 	private static final transient CLogger logger = CLogger.getCLogger(UserBL.class);
 
 	private final String passwordCharset = "0123456789";
-	private int passwordLength = 6;
+	private final int passwordLength = 6;
 
 	/**
 	 * @see org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_OrgCompiereUtilLogin
@@ -69,10 +70,10 @@ public class UserBL implements IUserBL
 	public String generatePassword()
 	{
 		final Random rand = new Random(System.currentTimeMillis());
-		StringBuffer sb = new StringBuffer();
+		final StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < passwordLength; i++)
 		{
-			int pos = rand.nextInt(passwordCharset.length());
+			final int pos = rand.nextInt(passwordCharset.length());
 			sb.append(passwordCharset.charAt(pos));
 		}
 		return sb.toString();
@@ -178,7 +179,7 @@ public class UserBL implements IUserBL
 		{
 			digest = MessageDigest.getInstance("MD5");
 		}
-		catch (NoSuchAlgorithmException e)
+		catch (final NoSuchAlgorithmException e)
 		{
 			throw new AdempiereException(e);
 		}
@@ -195,7 +196,8 @@ public class UserBL implements IUserBL
 
 		//
 		// Update user
-		user.setPasswordResetCode(passwordResetCode);
+		final de.metas.adempiere.model.I_AD_User userExt = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
+		userExt.setPasswordResetCode(passwordResetCode);
 		InterfaceWrapperHelper.save(user);
 
 		return passwordResetCode;
@@ -206,7 +208,12 @@ public class UserBL implements IUserBL
 	{
 		Check.assumeNotNull(passwordResetCode, "passwordResetCode not null");
 
-		final I_AD_User user = Services.get(IUserDAO.class).retrieveUserByPasswordResetCode(ctx, passwordResetCode);
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+
+		final de.metas.adempiere.model.I_AD_User user = InterfaceWrapperHelper.create(
+				userDAO.retrieveUserByPasswordResetCode(ctx, passwordResetCode),
+				de.metas.adempiere.model.I_AD_User.class);
+
 		if (user == null)
 		{
 			throw new AdempiereException("@PasswordResetCodeNoLongerValid@");
@@ -228,7 +235,7 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public boolean isEmployee(org.compiere.model.I_AD_User user)
+	public boolean isEmployee(final org.compiere.model.I_AD_User user)
 	{
 		if (user == null)
 		{
@@ -264,5 +271,28 @@ public class UserBL implements IUserBL
 		}
 
 		return contactName.toString();
+	}
+
+	@Override
+	public boolean isNotificationEMail(final I_AD_User user)
+	{
+		final String s = user.getNotificationType();
+		return s == null || X_AD_User.NOTIFICATIONTYPE_EMail.equals(s)
+				|| X_AD_User.NOTIFICATIONTYPE_EMailPlusNotice.equals(s);
+	}
+
+
+	@Override
+	public boolean isNotificationNote(final I_AD_User user)
+	{
+		final String s = user.getNotificationType();
+		return s != null && (X_AD_User.NOTIFICATIONTYPE_Notice.equals(s)
+				|| X_AD_User.NOTIFICATIONTYPE_EMailPlusNotice.equals(s));
+	}
+
+	@Override
+	public boolean isNotifyUserIncharge(I_AD_User user)
+	{
+		return de.metas.adempiere.model.I_AD_User.NOTIFICATIONTYPE_NotifyUserInCharge.equals(user.getNotificationType());
 	}
 }

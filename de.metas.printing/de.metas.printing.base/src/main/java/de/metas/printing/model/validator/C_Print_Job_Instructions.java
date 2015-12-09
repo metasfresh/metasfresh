@@ -10,18 +10,17 @@ package de.metas.printing.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,12 +29,15 @@ import java.util.Set;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 
+import de.metas.notification.INotificationBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_C_Print_Job_Detail;
@@ -47,9 +49,12 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 @Validator(I_C_Print_Job_Instructions.class)
 public class C_Print_Job_Instructions
 {
+	private static final String MSG_CLIENT_REPORTS_PRINT_ERROR = "de.metas.printing.C_Print_Job_Instructions.ClientReportsPrintError";
+	private static final String SYSCONFIG_NOTIFY_PRINT_RECEIVER_ON_ERROR = "de.metas.printing.C_Print_Job_Instructions.NotifyPrintReceiverOnError";
+
 	/**
 	 * Create Document Outbound only if Status column just changed to Done
-	 * 
+	 *
 	 * @param jobInstructions
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }
@@ -67,6 +72,32 @@ public class C_Print_Job_Instructions
 		for (final I_C_Print_Job_Line line : IteratorUtils.asIterable(lines))
 		{
 			logDocOutbound(line, userToPrint);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }
+			, ifColumnsChanged = I_C_Print_Job_Instructions.COLUMNNAME_Status)
+	public void createNotice(final I_C_Print_Job_Instructions jobInstructions)
+	{
+		if (!X_C_Print_Job_Instructions.STATUS_Error.equals(jobInstructions.getStatus()))
+		{
+			return;
+		}
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final INotificationBL notificationBL = Services.get(INotificationBL.class);
+
+		final boolean notifyUser = sysConfigBL.getBooleanValue(SYSCONFIG_NOTIFY_PRINT_RECEIVER_ON_ERROR,
+				false, // default
+				jobInstructions.getAD_Client_ID(),
+				jobInstructions.getAD_Org_ID());
+		if (notifyUser)
+		{
+			notificationBL.notifyUser(
+					jobInstructions.getAD_User_ToPrint(),
+					MSG_CLIENT_REPORTS_PRINT_ERROR,
+					jobInstructions.getErrorMsg(),
+					TableRecordReference.of(jobInstructions));
 		}
 	}
 

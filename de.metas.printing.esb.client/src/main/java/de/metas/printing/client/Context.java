@@ -10,18 +10,17 @@ package de.metas.printing.client;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +47,14 @@ public class Context implements IContext
 	public static final String CTX_Login_Username = CTX_ROOT + ".login.username";
 	public static final String CTX_Login_Password = CTX_ROOT + ".login.password";
 	public static final String CTX_Login_HostKey = CTX_ROOT + ".login.hostkey";
+
+	// task 09618 begin
+	public static final String CTX_Testing_AlwaysReturnError = CTX_ROOT + ".testing.alwaysReportError";
+	public static final String DEFAULT_AlwaysReturnError = Boolean.FALSE.toString();
+
+	public static final String CTX_Testing_ErrorMessage = CTX_ROOT + ".testing.errorMessage";
+	public static final String DEFAULT_ErrorMessage = "Testing: Client returns 'ERROR' for testing purposes";
+	// task 09618 end
 
 	/**
 	 * Used to get the {@link IUserInterface}
@@ -155,7 +162,7 @@ public class Context implements IContext
 	}
 
 	/**
-	 * 
+	 *
 	 * @param name
 	 * @param interfaceClazz
 	 * @return instance of given class/interface; never returns <code>null</code>

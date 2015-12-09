@@ -35,9 +35,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Note;
@@ -48,7 +50,6 @@ import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_AD_SchedulerLog;
 import org.compiere.model.I_AD_Task;
 import org.compiere.model.MAttachment;
-import org.compiere.model.MClient;
 import org.compiere.model.MNote;
 import org.compiere.model.MPInstance;
 import org.compiere.model.MProcess;
@@ -65,6 +66,9 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 
+import de.metas.adempiere.model.I_AD_User;
+import de.metas.notification.INotificationBL;
+
 /**
  * Scheduler
  *
@@ -73,6 +77,20 @@ import org.compiere.util.TrxRunnableAdapter;
  */
 public class Scheduler extends AdempiereServer
 {
+	private static final String SYSCONFIG_NOTIFY_ON_NOT_OK = "org.compiere.server.Scheduler.notifyOnNotOK";
+
+	private static final String SYSCONFIG_NOTIFY_ON_OK = "org.compiere.server.Scheduler.notifyOnOK";
+
+	/**
+	 * <code>AD_Message_ID = 441</code>.
+	 */
+	private static final String MSG_PROCESS_OK = "ProcessOK";
+
+	/**
+	 * <code>AD_Message_ID=442</code>.
+	 */
+	private static final String MSG_PROCESS_RUN_ERROR = "ProcessRunError";
+
 	/**
 	 * Scheduler
 	 *
@@ -99,8 +117,8 @@ public class Scheduler extends AdempiereServer
 	// Cron4J scheduling
 	private it.sauronsoftware.cron4j.Scheduler cronScheduler;
 	private Predictor predictor;
-	
-	/** AD_PInstance_ID of current/last executed process/report */ 
+
+	/** AD_PInstance_ID of current/last executed process/report */
 	private int m_AD_PInstance_ID = -1;
 
 	/**
@@ -147,7 +165,7 @@ public class Scheduler extends AdempiereServer
 		pLog.setSummary(m_summary.toString());
 		pLog.setIsError(!m_success);
 		pLog.setReference("#" + String.valueOf(p_runCount) + " - " + TimeUtil.formatElapsed(new Timestamp(p_startWork)));
-		
+
 		if (m_AD_PInstance_ID > 0)
 		{
 			pLog.setAD_PInstance_ID(m_AD_PInstance_ID);
@@ -218,7 +236,7 @@ public class Scheduler extends AdempiereServer
 						}
 						m_summary.append(result);
 					}
-					
+
 					@Override
 					public boolean doCatch(final Throwable e) throws Throwable
 					{
@@ -309,7 +327,7 @@ public class Scheduler extends AdempiereServer
 
 		return schedulerCtx;
 	}
-	
+
 	private final ITrx getThreadInheritedTrx()
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -327,7 +345,7 @@ public class Scheduler extends AdempiereServer
 	private String runReport(final ProcessInfo pi, final MProcess process) throws Exception
 	{
 		log.log(Level.INFO, "{0}", process);
-		
+
 		if (!process.isReport() || process.getAD_ReportView_ID() == 0)
 		{
 			return "Not a Report AD_Process_ID=" + process.getAD_Process_ID() + " - " + process.getName();
@@ -359,7 +377,7 @@ public class Scheduler extends AdempiereServer
 			note.setDescription(m_model.getDescription());
 			note.setRecord(pi.getTable_ID(), pi.getRecord_ID());
 			note.save();
-			
+
 			// Attachment
 			final MAttachment attachment = new MAttachment(ctx, I_AD_Note.Table_ID, note.getAD_Note_ID(), ITrx.TRXNAME_ThreadInherited);
 			attachment.setClientOrg(pi.getAD_Client_ID(), pi.getAD_Org_ID());
@@ -389,8 +407,14 @@ public class Scheduler extends AdempiereServer
 		// notify supervisor if error
 		// metas: c.ghita@metas.ro: start
 		final MUser from = new MUser(pi.getCtx(), pi.getAD_User_ID(), ITrx.TRXNAME_None);
-		notify(ok, from, process.getName(), pi.getSummary(), pi.getLogInfo(),
-				Services.get(IADTableDAO.class).retrieveTableId(I_AD_PInstance.Table_Name),
+		final int adPInstanceTableID = Services.get(IADTableDAO.class).retrieveTableId(I_AD_PInstance.Table_Name);
+
+		notify(ok,
+				from,
+				process.getName(),
+				pi.getSummary(),
+				pi.getLogInfo(),
+				adPInstanceTableID,
 				pi.getAD_PInstance_ID());
 		// metas: c.ghita@metas.ro: end
 
@@ -436,8 +460,14 @@ public class Scheduler extends AdempiereServer
 		final String summary = task.execute() + task.getTask().getErrorLog();
 		final Integer exitValue = task.getTask().getExitValue();
 		final boolean ok = exitValue != 0 ? false : true;
-		notify(ok, null, task.getName(), summary, "",
-				Services.get(IADTableDAO.class).retrieveTableId(I_AD_Task.Table_Name),
+		final int adTaskTableID = Services.get(IADTableDAO.class).retrieveTableId(I_AD_Task.Table_Name);
+
+		notify(ok,
+				null, // user-from
+				task.getName(), // subject
+				summary,
+				"",
+				adTaskTableID,
 				task.get_ID());
 		return summary;
 	}
@@ -605,74 +635,45 @@ public class Scheduler extends AdempiereServer
 	 * @param Record_ID
 	 */
 
-	private void notify(final boolean ok, final MUser from, final String subject, final String summary, final String logInfo,
-			final int AD_Table_ID, final int Record_ID)
+	private void notify(final boolean ok,
+			final MUser from,
+			final String subject,
+			final String summary,
+			final String logInfo,
+			final int AD_Table_ID,
+			final int Record_ID)
 	{
 		final Properties ctx = getCtx();
 
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+
 		// notify supervisor if error
-		if (!ok)
+		final INotificationBL notificationBL = Services.get(INotificationBL.class);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		final int adClientID = Env.getAD_Client_ID(ctx);
+		final int adOrgID = Env.getAD_Org_ID(ctx);
+		if (!ok &&
+				sysConfigBL.getBooleanValue(SYSCONFIG_NOTIFY_ON_NOT_OK, false, adClientID, adOrgID))
 		{
 			final int supervisorId = m_model.getSupervisor_ID();
 			if (supervisorId > 0)
 			{
-				final MUser user = new MUser(ctx, supervisorId, ITrx.TRXNAME_None);
-				final boolean email = user.isNotificationEMail();
-				final boolean notice = user.isNotificationNote();
-
-				// if (email || notice)
-				// ProcessInfoUtil.setLogFromDB(pi);
-
-				if (email)
-				{
-					@SuppressWarnings("deprecation") // here we would need to replicate the deprecated method's code, so we call it instead
-					final MClient client = MClient.get(m_model.getCtx(), m_model.getAD_Client_ID());
-
-					final File attachment = null;
-					client.sendEMail(from, user, subject, summary + " " + logInfo, attachment);
-				}
-				if (notice)
-				{
-					final int AD_Message_ID = 442; // TODO: HARDCODED: ProcessRunError
-					final MNote note = new MNote(ctx, AD_Message_ID, supervisorId, ITrx.TRXNAME_None);
-					note.setClientOrg(m_model.getAD_Client_ID(), m_model.getAD_Org_ID());
-					note.setTextMsg(summary);
-					// note.setDescription();
-					note.setRecord(AD_Table_ID, Record_ID);
-					note.save();
-				}
+				final I_AD_User recipient = userDAO.retrieveUser(ctx, supervisorId);
+				notificationBL.notifyUser(recipient, MSG_PROCESS_RUN_ERROR, summary + " " + logInfo,
+						new TableRecordReference(AD_Table_ID, Record_ID));
 			}
 		}
-		else
+		else if (sysConfigBL.getBooleanValue(SYSCONFIG_NOTIFY_ON_OK, false, adClientID, adOrgID))
 		{
 			final Integer[] userIDs = m_model.getRecipientAD_User_IDs();
 			if (userIDs.length > 0)
 			{
-				// ProcessInfoUtil.setLogFromDB(pi);
 				for (int i = 0; i < userIDs.length; i++)
 				{
-					final MUser user = new MUser(ctx, userIDs[i].intValue(), null);
-					final boolean email = user.isNotificationEMail();
-					final boolean notice = user.isNotificationNote();
-
-					if (email)
-					{
-						@SuppressWarnings("deprecation") // here we would need to replicate the deprecated method's code, so we call it instead
-						final MClient client = MClient.get(m_model.getCtx(), m_model.getAD_Client_ID());
-
-						client.sendEMail(from, user, subject, summary + " " + logInfo, null);
-					}
-					if (notice)
-					{
-						final int AD_Message_ID = 441; // TODO: HARDCODED: ProcessOK
-						final MNote note = new MNote(ctx,
-								AD_Message_ID, userIDs[i].intValue(), null);
-						note.setClientOrg(m_model.getAD_Client_ID(), m_model.getAD_Org_ID());
-						note.setTextMsg(summary);
-						// note.setDescription();
-						note.setRecord(AD_Table_ID, Record_ID);
-						note.save();
-					}
+					final I_AD_User recipient = userDAO.retrieveUser(ctx, userIDs[i]);
+					notificationBL.notifyUser(recipient, MSG_PROCESS_OK, summary + " " + logInfo,
+							new TableRecordReference(AD_Table_ID, Record_ID));
 				}
 			}
 		}

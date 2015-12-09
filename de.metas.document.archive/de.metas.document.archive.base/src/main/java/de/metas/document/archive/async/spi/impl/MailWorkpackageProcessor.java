@@ -42,8 +42,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.process.DocAction;
 import org.compiere.util.EMail;
 
-import de.metas.adempiere.service.IMailBL;
-import de.metas.adempiere.service.IMailBL.IMailbox;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -52,6 +50,8 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.notification.IMailBL;
+import de.metas.notification.IMailBL.IMailbox;
 
 /**
  * Workpackage processor for mails

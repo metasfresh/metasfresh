@@ -10,18 +10,17 @@ package de.metas.printing.client.engine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.print.Book;
 import java.awt.print.PageFormat;
@@ -210,6 +209,16 @@ public class PrintingEngine
 		catch (final PrinterException e)
 		{
 			throw new RuntimeException(e.getLocalizedMessage(), e);
+		}
+
+		// task 09618: allow us to configure the client to return an error even if everything went OK, so we can test
+		final String alwaysReturnError = Context.getContext().getProperty(Context.CTX_Testing_AlwaysReturnError, Context.DEFAULT_AlwaysReturnError);
+		if (Boolean.parseBoolean(alwaysReturnError))
+		{
+			logger.log(Level.INFO, "{0} is true, so we report an error, despite the print was OK", Context.CTX_Testing_AlwaysReturnError);
+
+			final String errorMsg = Context.getContext().getProperty(Context.CTX_Testing_ErrorMessage, Context.DEFAULT_ErrorMessage);
+			throw new RuntimeException(errorMsg);
 		}
 	}
 

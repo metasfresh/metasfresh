@@ -1,7 +1,7 @@
 /**
- * 
+ *
  */
-package de.metas.adempiere.process;
+package de.metas.notification.process;
 
 /*
  * #%L
@@ -13,36 +13,41 @@ package de.metas.adempiere.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
+import org.adempiere.service.IClientDAO;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailConfig;
-import org.compiere.model.MClient;
-import org.compiere.model.MUser;
+import org.compiere.model.I_AD_User;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.EMail;
 
-import de.metas.adempiere.service.IMailBL;
-import de.metas.adempiere.service.IMailBL.IMailbox;
+import de.metas.notification.IMailBL;
+import de.metas.notification.IMailBL.IMailbox;
 
 /**
  * @author tsa
- * 
+ *
  */
 public class EMailConfigTest extends SvrProcess
 {
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IMailBL mailBL = Services.get(IMailBL.class);
+	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
+
 	public static final String PARA_AD_Client_ID = I_AD_MailConfig.COLUMNNAME_AD_Client_ID;
 	public static final String PARA_AD_Org_ID = I_AD_MailConfig.COLUMNNAME_AD_Org_ID;
 	public static final String PARA_AD_Process_ID = I_AD_MailConfig.COLUMNNAME_AD_Process_ID;
@@ -66,29 +71,49 @@ public class EMailConfigTest extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParameter())
 		{
-			String name = para.getParameterName();
+			final String name = para.getParameterName();
 			if (para.getParameter() == null)
+			{
 				;
+			}
 			else if (name.equals(PARA_AD_Client_ID))
+			{
 				p_AD_Client_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(PARA_AD_Org_ID))
+			{
 				p_AD_Org_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(PARA_AD_Process_ID))
+			{
 				p_AD_Process_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(PARA_CustomType))
+			{
 				p_CustomType = (String)para.getParameter();
+			}
 			else if (name.equals(PARA_From_User_ID))
+			{
 				p_From_User_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(PARA_EMail_To))
+			{
 				p_EMail_To = (String)para.getParameter();
+			}
 			else if (name.equals(PARA_Subject))
+			{
 				p_Subject = (String)para.getParameter();
+			}
 			else if (name.equals(PARA_Message))
+			{
 				p_Message = (String)para.getParameter();
+			}
 			else if (name.equals(PARA_IsHtml))
+			{
 				p_IsHtml = para.getParameterAsBoolean();
+			}
 		}
 	}
 
@@ -103,18 +128,23 @@ public class EMailConfigTest extends SvrProcess
 		return "Done";
 	}
 
-	public MUser getFrom_User()
+	public I_AD_User getFrom_User()
 	{
 		if (p_From_User_ID > 0)
-			return MUser.get(getCtx(), p_From_User_ID);
+		{
+
+			return userDAO.retrieveUser(getCtx(), p_From_User_ID);
+		}
 		else
+		{
 			return null;
+		}
 	}
 
 	private void testSend()
 	{
-		final IMailBL mailBL = Services.get(IMailBL.class);
-		final MClient client = MClient.get(getCtx(), p_AD_Client_ID);
+		final I_AD_Client client = clientDAO.retriveClient(getCtx(), p_AD_Client_ID);
+
 		final IMailbox mailbox = mailBL.findMailBox(client, p_AD_Org_ID, p_AD_Process_ID, p_CustomType, getFrom_User());
 		addLog("Using configuration: " + mailbox);
 
@@ -122,7 +152,7 @@ public class EMailConfigTest extends SvrProcess
 				p_Subject, p_Message, p_IsHtml);
 		addLog("EMail: " + email);
 
-		String msg = email.send();
+		final String msg = email.send();
 		if (!EMail.SENT_OK.equals(msg))
 		{
 			addLog("Send error: " + msg);

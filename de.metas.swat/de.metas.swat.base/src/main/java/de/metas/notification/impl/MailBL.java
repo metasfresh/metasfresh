@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.adempiere.service.impl;
+package de.metas.notification.impl;
 
 /*
  * #%L
@@ -13,12 +13,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,7 +51,7 @@ import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-import de.metas.adempiere.service.IMailBL;
+import de.metas.notification.IMailBL;
 
 /**
  * @author Cristina Ghita, Metas.RO
@@ -268,10 +268,8 @@ public class MailBL implements IMailBL
 			String message,
 			final boolean html)
 	{
-		if (Check.isEmpty(to, true))
-		{
-			throw new AdempiereException("No To address");
-		}
+		Check.assumeNotEmpty(to, "Param 'to' is not empty");
+		Check.assumeNotNull(mailbox, "Param 'mailbox' is not null");
 
 		if (mailbox.getEmail() == null
 				|| mailbox.getUsername() == null
