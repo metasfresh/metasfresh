@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.compiere.grid.ed;
 
@@ -13,12 +13,12 @@ package org.compiere.grid.ed;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,12 +41,14 @@ import java.util.logging.Level;
 import javax.swing.text.JTextComponent;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.db.DBConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.apps.search.FieldAutoCompleter;
 import org.compiere.model.MColumn;
 import org.compiere.model.MLookupFactory;
@@ -61,9 +63,9 @@ import org.compiere.util.ValueNamePair;
 import de.metas.autocomplete.model.I_AD_Table;
 
 /**
- * 
+ *
  * @author teo_sarca
- * 
+ *
  */
 /* package */class VLookupAutoCompleter extends FieldAutoCompleter
 {
@@ -130,7 +132,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 				}
 				hidePopup();
 			}
-			
+
 			@Override
 			public void focusGained(FocusEvent e)
 			{
@@ -141,6 +143,8 @@ import de.metas.autocomplete.model.I_AD_Table;
 
 	private static VLookupAutoCompleterValidationRule createAutoCompleterValidationRule(final MTable table, final MLookupInfo lookupInfo)
 	{
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
 		final String tableName = table.getTableName();
 
 		//
@@ -154,7 +158,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 						&& (c.isIdentifier() || c.isSelectionColumn()))
 				{
 					searchColumns.add(c.getColumnName());
-					if (c.isVirtualColumn())
+					if (adTableDAO.isVirtualColumn(c))
 					{
 						searchColumnsSQL.add(c.getColumnSQL());
 					}

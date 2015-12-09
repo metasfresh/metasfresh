@@ -10,18 +10,17 @@ package org.compiere.apps.search;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -62,6 +61,8 @@ import org.adempiere.util.StringUtils;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
+import com.jgoodies.looks.Options;
+
 /**
  * @author Santhosh Kumar T - santhosh@in.fiorano.com <li>Initial contribution - http ://www.jroller.com/santhosh/date/20050620#file_path_autocompletion
  * @author Teo Sarca <li>added timed triggering <li>refactored <li>friendly database lookup
@@ -92,13 +93,13 @@ public abstract class FieldAutoCompleter implements MouseListener
 
 	private final Timer timer = new Timer(PopupDelayMillis,
 			new ActionListener()
-	{
-		@Override
-		public void actionPerformed(final ActionEvent e)
-		{
-			showPopup();
-		}
-	});
+			{
+				@Override
+				public void actionPerformed(final ActionEvent e)
+				{
+					showPopup();
+				}
+			});
 
 	public FieldAutoCompleter(final JTextComponent comp)
 	{
@@ -185,7 +186,7 @@ public abstract class FieldAutoCompleter implements MouseListener
 			else
 			{
 				completer
-				.acceptedListItem(completer.listBox.getSelectedValue());
+						.acceptedListItem(completer.listBox.getSelectedValue());
 			}
 		}
 	};
@@ -238,7 +239,7 @@ public abstract class FieldAutoCompleter implements MouseListener
 		}
 		log.finest("showPopup");
 
-		// task 07068: only invoke later if we aren't in the EDT to start with
+		// task 07068: only invoke later if we are not in the EDT to start with
 		if (SwingUtilities.isEventDispatchThread())
 		{
 			showPopUpInCurrentThread();
@@ -268,8 +269,8 @@ public abstract class FieldAutoCompleter implements MouseListener
 			{
 				textBox.getDocument().addDocumentListener(documentListener);
 			}
-			textBox.registerKeyboardAction(acceptAction, KeyStroke
-					.getKeyStroke(KeyEvent.VK_ENTER, 0),
+			textBox.registerKeyboardAction(acceptAction,
+					KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
 					JComponent.WHEN_FOCUSED);
 			final int size = listBox.getModel().getSize();
 			listBox.setVisibleRowCount(size < 10 ? size : 10);
@@ -293,12 +294,21 @@ public abstract class FieldAutoCompleter implements MouseListener
 		{
 			popup.setVisible(false);
 		}
+
+		// task 09642: when the textBox gains the focus, we don't want its content to be marked, because the user wants to continue typing without deleting what was typed so far.
+		// note: in case we abandon jgoodies, we'll need to check the behavior of the other L&F and make sure with config or customer FoucListeners, that it is the same.
+		textBox.putClientProperty(Options.SELECT_ON_FOCUS_GAIN_KEY, Boolean.FALSE);
 		textBox.requestFocus();
 	}
 
 	protected void hidePopup()
 	{
 		popup.setVisible(false);
+
+		// task 09642: restore the default behavior or selecting all the text when the field gains focus
+		// note: i considered changing the client property right after having called textBox.requestFocus(), right in showPopUpInCurrentThread(),
+		// but i'm concerned that it might become effective event before the focus is actually gained, due to some multithreading-stuff
+		textBox.putClientProperty(Options.SELECT_ON_FOCUS_GAIN_KEY, Boolean.TRUE);
 	}
 
 	static Action showAction = new AbstractAction()
@@ -309,8 +319,8 @@ public abstract class FieldAutoCompleter implements MouseListener
 		public void actionPerformed(final ActionEvent e)
 		{
 			final JComponent tf = (JComponent)e.getSource();
-			final FieldAutoCompleter completer = (FieldAutoCompleter)tf
-					.getClientProperty(AUTOCOMPLETER);
+			final FieldAutoCompleter completer = (FieldAutoCompleter)tf.getClientProperty(AUTOCOMPLETER);
+
 			if (tf.isEnabled() && completer.isEnabled())
 			{
 				if (completer.popup.isVisible())
@@ -486,7 +496,7 @@ public abstract class FieldAutoCompleter implements MouseListener
 				pstmt = null;
 			}
 		}
-		
+
 		listBox.setListData(list.toArray());
 
 		// if there is no items on the list return false, to not show the pop-up

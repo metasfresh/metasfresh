@@ -165,8 +165,14 @@
 
 		<!-- Swing -->
 		<dependency>
+			<!-- currently needed in base because the also have the PLAF stuff in base -->
 			<groupId>com.jgoodies</groupId>
 			<artifactId>jgoodies-looks</artifactId>
+			<!-- more recent versions of jgoodies (including 2.7.0) might trigger 
+			"09642 Auftrag product autocomplete - previous field input is marked on autocomplete popup (107363971713)"
+			to solve the respective problem, make sure to explicitly set the component's clientProperty 
+			Options.SELECT_ON_FOCUS_GAIN_KEY to true or false, as required in the particualr case
+			-->
 			<version>2.7.0</version>
 		</dependency>
 
