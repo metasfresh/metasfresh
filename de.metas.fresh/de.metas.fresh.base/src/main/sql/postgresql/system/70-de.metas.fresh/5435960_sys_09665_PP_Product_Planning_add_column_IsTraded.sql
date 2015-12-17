@@ -95,11 +95,6 @@ UPDATE AD_Field SET Name='Wird produziert', Description=NULL, Help=NULL WHERE AD
 UPDATE AD_PrintFormatItem pi SET PrintName='Wird produziert', Name='Wird produziert' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=542424)
 ;
 
--- 17.12.2015 09:16
--- URL zum Konzept
-INSERT INTO t_alter_column values('pp_product_planning','IsTraded','CHAR(1)',null,'NULL')
-;
-
 -- 17.12.2015 09:18
 -- URL zum Konzept
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,552944,556495,0,53030,0,TO_TIMESTAMP('2015-12-17 09:18:29','YYYY-MM-DD HH24:MI:SS'),100,'Legt fest, ob mit dem bestreffenden Produkt gehandelt wird. ',0,'de.metas.fresh','Falls ja, dann wird bei der Bestellkontrolle für das jeweils hinterlegte Lager zur jeweiligen auftragsposition ein Eintrag erstellt',0,'Y','Y','Y','Y','N','N','N','N','Y','Wird gehandelt',105,175,0,TO_TIMESTAMP('2015-12-17 09:18:29','YYYY-MM-DD HH24:MI:SS'),100)
@@ -121,5 +116,11 @@ COMMIT;
 -- 17.12.2015 09:15
 -- URL zum Konzept
 ALTER TABLE PP_Product_Planning ADD IsTraded CHAR(1) DEFAULT NULL 
+;
+
+
+-- 17.12.2015 09:16
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pp_product_planning','IsTraded','CHAR(1)',null,'NULL')
 ;
 
