@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -34,7 +18,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -36718417L;
+	private static final long serialVersionUID = -1677576635L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -44,8 +28,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
         {
 			setAllowConsolidateInOut (true);
 // Y
-			setC_BPartner_ID (0);
 			setC_BP_Group_ID (0);
+			setC_BPartner_ID (0);
 			setIsCustomer (false);
 			setIsEmployee (false);
 			setIsOneTime (false);
@@ -160,6 +144,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		@param AD_OrgBP_ID 
 		The Business Partner is another Organization for explicit Inter-Org transactions
 	  */
+	@Override
 	public void setAD_OrgBP_ID (int AD_OrgBP_ID)
 	{
 		if (AD_OrgBP_ID < 1) 
@@ -171,7 +156,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/** Get Linked Organization.
 		@return The Business Partner is another Organization for explicit Inter-Org transactions
 	  */
-	public int getAD_OrgBP_ID()
+	@Override
+	public int getAD_OrgBP_ID () 
 	{
 		final Integer ii;
 		final Object value = get_Value(COLUMNNAME_AD_OrgBP_ID);
@@ -239,31 +225,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public org.compiere.model.I_C_BP_Group getC_BP_Group() throws RuntimeException
 	{
@@ -296,6 +257,31 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getC_BP_Group_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Identifies a Business Partner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Identifies a Business Partner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -412,22 +398,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
-	/** Set Firmenname.
-		@param CompanyName Firmenname	  */
-	@Override
-	public void setCompanyName (java.lang.String CompanyName)
-	{
-		set_Value (COLUMNNAME_CompanyName, CompanyName);
-	}
-
-	/** Get Firmenname.
-		@return Firmenname	  */
-	@Override
-	public java.lang.String getCompanyName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CompanyName);
-	}
-
 	@Override
 	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
 	{
@@ -465,22 +435,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
-	/** Set Auftrag anlegen.
-		@param CreateSO Auftrag anlegen	  */
-	@Override
-	public void setCreateSO (java.lang.String CreateSO)
-	{
-		set_Value (COLUMNNAME_CreateSO, CreateSO);
-	}
-
-	/** Get Auftrag anlegen.
-		@return Auftrag anlegen	  */
-	@Override
-	public java.lang.String getCreateSO () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreateSO);
-	}
-
 	@Override
 	public org.eevolution.model.I_C_TaxGroup getC_TaxGroup() throws RuntimeException
 	{
@@ -513,6 +467,38 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Firmenname.
+		@param CompanyName Firmenname	  */
+	@Override
+	public void setCompanyName (java.lang.String CompanyName)
+	{
+		set_Value (COLUMNNAME_CompanyName, CompanyName);
+	}
+
+	/** Get Firmenname.
+		@return Firmenname	  */
+	@Override
+	public java.lang.String getCompanyName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CompanyName);
+	}
+
+	/** Set Auftrag anlegen.
+		@param CreateSO Auftrag anlegen	  */
+	@Override
+	public void setCreateSO (java.lang.String CreateSO)
+	{
+		set_Value (COLUMNNAME_CreateSO, CreateSO);
+	}
+
+	/** Get Auftrag anlegen.
+		@return Auftrag anlegen	  */
+	@Override
+	public java.lang.String getCreateSO () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CreateSO);
 	}
 
 	/** 
@@ -1190,6 +1176,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Lastname);
 	}
 
+	@Override
+	public org.compiere.model.I_AD_Image getLogo() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Logo_ID, org.compiere.model.I_AD_Image.class);
+	}
+
+	@Override
+	public void setLogo(org.compiere.model.I_AD_Image Logo)
+	{
+		set_ValueFromPO(COLUMNNAME_Logo_ID, org.compiere.model.I_AD_Image.class, Logo);
+	}
+
 	/** Set Logo.
 		@param Logo_ID Logo	  */
 	@Override
@@ -1357,35 +1355,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
-	/** 
-	 * MRP_Exclude AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String MRP_EXCLUDE_Yes = "Y";
-	/** No = N */
-	public static final String MRP_EXCLUDE_No = "N";
-	/** Set Exclude from MRP.
-		@param MRP_Exclude 
-		Exclude from MRP calculation
-	  */
-	@Override
-	public void setMRP_Exclude (java.lang.String MRP_Exclude)
-	{
-
-		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
-	}
-
-	/** Get Exclude from MRP.
-		@return Exclude from MRP calculation
-	  */
-	@Override
-	public java.lang.String getMRP_Exclude () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_MRP_Exclude);
-	}
-
 	@Override
 	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
 	{
@@ -1421,6 +1390,35 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * MRP_Exclude AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String MRP_EXCLUDE_Yes = "Y";
+	/** No = N */
+	public static final String MRP_EXCLUDE_No = "N";
+	/** Set Exclude from MRP.
+		@param MRP_Exclude 
+		Exclude from MRP calculation
+	  */
+	@Override
+	public void setMRP_Exclude (java.lang.String MRP_Exclude)
+	{
+
+		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
+	}
+
+	/** Get Exclude from MRP.
+		@return Exclude from MRP calculation
+	  */
+	@Override
+	public java.lang.String getMRP_Exclude () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MRP_Exclude);
 	}
 
 	/** Set NAICS/SIC.
@@ -2008,43 +2006,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return bd;
 	}
 
-	/** 
-	 * SOCreditStatus AD_Reference_ID=289
-	 * Reference name: C_BPartner SOCreditStatus
-	 */
-	public static final int SOCREDITSTATUS_AD_Reference_ID=289;
-	/** Credit Stop = S */
-	public static final String SOCREDITSTATUS_CreditStop = "S";
-	/** Credit Hold = H */
-	public static final String SOCREDITSTATUS_CreditHold = "H";
-	/** Credit Watch = W */
-	public static final String SOCREDITSTATUS_CreditWatch = "W";
-	/** No Credit Check = X */
-	public static final String SOCREDITSTATUS_NoCreditCheck = "X";
-	/** Credit OK = O */
-	public static final String SOCREDITSTATUS_CreditOK = "O";
-	/** Nur eine Rechnung = I */
-	public static final String SOCREDITSTATUS_NurEineRechnung = "I";
-	/** Set Kreditstatus.
-		@param SOCreditStatus 
-		Business Partner Credit Status
-	  */
-	@Override
-	public void setSOCreditStatus (java.lang.String SOCreditStatus)
-	{
-
-		set_Value (COLUMNNAME_SOCreditStatus, SOCreditStatus);
-	}
-
-	/** Get Kreditstatus.
-		@return Business Partner Credit Status
-	  */
-	@Override
-	public java.lang.String getSOCreditStatus () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_SOCreditStatus);
-	}
-
 	/** Set Kredit gewährt.
 		@param SO_CreditUsed 
 		Current open balance
@@ -2137,6 +2098,43 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getSO_TargetDocTypeReason () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SO_TargetDocTypeReason);
+	}
+
+	/** 
+	 * SOCreditStatus AD_Reference_ID=289
+	 * Reference name: C_BPartner SOCreditStatus
+	 */
+	public static final int SOCREDITSTATUS_AD_Reference_ID=289;
+	/** CreditStop = S */
+	public static final String SOCREDITSTATUS_CreditStop = "S";
+	/** CreditHold = H */
+	public static final String SOCREDITSTATUS_CreditHold = "H";
+	/** CreditWatch = W */
+	public static final String SOCREDITSTATUS_CreditWatch = "W";
+	/** NoCreditCheck = X */
+	public static final String SOCREDITSTATUS_NoCreditCheck = "X";
+	/** CreditOK = O */
+	public static final String SOCREDITSTATUS_CreditOK = "O";
+	/** NurEineRechnung = I */
+	public static final String SOCREDITSTATUS_NurEineRechnung = "I";
+	/** Set Kreditstatus.
+		@param SOCreditStatus 
+		Business Partner Credit Status
+	  */
+	@Override
+	public void setSOCreditStatus (java.lang.String SOCreditStatus)
+	{
+
+		set_Value (COLUMNNAME_SOCreditStatus, SOCreditStatus);
+	}
+
+	/** Get Kreditstatus.
+		@return Business Partner Credit Status
+	  */
+	@Override
+	public java.lang.String getSOCreditStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SOCreditStatus);
 	}
 
 	/** Set Steuer-ID.

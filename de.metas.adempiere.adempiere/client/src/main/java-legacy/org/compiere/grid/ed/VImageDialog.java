@@ -22,16 +22,17 @@ import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingConstants;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.MImage;
@@ -39,174 +40,228 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
+import org.compiere.util.Util;
+
+import de.metas.adempiere.form.IClientUI;
 
 /**
- *  Image Dialog
+ * Image Dialog
  *
- *  @author   Jorg Janke
- *  @version  $Id: VImageDialog.java,v 1.4 2006/07/30 00:51:28 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: VImageDialog.java,v 1.4 2006/07/30 00:51:28 jjanke Exp $
  */
 public class VImageDialog extends CDialog
-	implements ActionListener
+		implements ActionListener
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2630060904081520523L;
 
-	/**
-	 *  Constructor
-	 *  @param owner
-	 *  @param mImage
-	 */
-	public VImageDialog (Frame owner, MImage mImage)
-	{
-		super (owner, Msg.translate(Env.getCtx(), "AD_Image_ID"), true);
-		log.info("MImage=" + mImage);
-		m_mImage = mImage;
-		try
-		{
-			jbInit();
-		}
-		catch(Exception ex)
-		{
-			log.log(Level.SEVERE, "", ex);
-		}
-		//  load data
-		if (m_mImage == null)
-			m_mImage = MImage.get (Env.getCtx(), 0);
-		fileButton.setText(m_mImage.getName());
-		imageLabel.setIcon(m_mImage.getIcon());
-		AEnv.positionCenterWindow(owner, this);
-	}   //  VImageDialog
+	// services
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final transient IClientUI clientUI = Services.get(IClientUI.class);
 
-	/**  Image Model            */
-	private MImage      m_mImage = null;
-	/**	Logger					*/
-	private static CLogger log = CLogger.getCLogger(VImageDialog.class);
+	private final int windowNo;
+	/** Image Model */
+	private MImage m_mImage = null;
+	private boolean canceled = true;
 
-	/** */
-	private CPanel mainPanel = new CPanel();
-	private BorderLayout mainLayout = new BorderLayout();
-	private CPanel parameterPanel = new CPanel();
-	private CLabel fileLabel = new CLabel();
-	private CButton fileButton = new CButton();
-	private CLabel imageLabel = new CLabel();
-	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
+	//
+	// UI
+	private final CButton fileButton = new CButton();
+	private final CLabel imagePreviewLabel = new CLabel();
+	private final ConfirmPanel confirmPanel = ConfirmPanel.builder()
+			.withResetButton(true)
+			.build();
 
 	/**
-	 *  Static Init
-	 *  @throws Exception
+	 * Constructor
+	 *
+	 * @param owner
+	 * @param mImage
 	 */
-	void jbInit() throws Exception
+	public VImageDialog(final Frame owner, final int windowNo, final MImage mImage)
 	{
-		mainPanel.setLayout(mainLayout);
-		fileLabel.setText(Msg.getMsg(Env.getCtx(), "SelectFile"));
-		fileButton.setText("-");
-		imageLabel.setBackground(Color.white);
-		imageLabel.setBorder(BorderFactory.createRaisedBevelBorder());
-	//	imageLabel.setPreferredSize(new Dimension(50, 50));
-		imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		getContentPane().add(mainPanel);
-		mainPanel.add(parameterPanel, BorderLayout.NORTH);
-		parameterPanel.add(fileLabel, null);
-		parameterPanel.add(fileButton, null);
-		mainPanel.add(imageLabel, BorderLayout.CENTER);
-		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
+		super(owner, "", true);
+
+		this.windowNo = windowNo;
+
+		jbInit();
+
 		//
-		fileButton.addActionListener(this);
-		confirmPanel.setActionListener(this);
-	}   //  jbInit
+		// Load data
+		m_mImage = new MImage(Env.getCtx(), 0, ITrx.TRXNAME_None);
+		if (mImage != null)
+		{
+			// Copy the image in a new object because AD_Image objects shall be handled as value objects
+			InterfaceWrapperHelper.copyValues(mImage, m_mImage);
+			m_mImage = new MImage(Env.getCtx(), 0, ITrx.TRXNAME_None);
+		}
+
+		fileButton.setText(m_mImage.getName());
+		imagePreviewLabel.setIcon(m_mImage.getIcon());
+
+		//
+		// Show window
+		AEnv.positionCenterWindow(owner, this);
+	}   // VImageDialog
 
 	/**
-	 *  ActionListener
-	 *  @param e
+	 * Static Init
+	 */
+	void jbInit()
+	{
+		setTitle(msgBL.translate(Env.getCtx(), "AD_Image_ID"));
+
+		final CPanel mainPanel = new CPanel();
+		mainPanel.setLayout(new BorderLayout());
+		setContentPane(mainPanel);
+
+		//
+		// Top: File label & button
+		{
+			final CLabel fileLabel = new CLabel();
+			fileLabel.setText(msgBL.getMsg(Env.getCtx(), "SelectFile"));
+			fileButton.setText("-");
+			fileButton.addActionListener(this);
+
+			imagePreviewLabel.setBackground(Color.white);
+			imagePreviewLabel.setBorder(BorderFactory.createRaisedBevelBorder());
+			imagePreviewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+			final CPanel parameterPanel = new CPanel();
+			parameterPanel.add(fileLabel, null);
+			parameterPanel.add(fileButton, null);
+			mainPanel.add(parameterPanel, BorderLayout.NORTH);
+		}
+
+		//
+		// Center: image preview
+		{
+			mainPanel.add(imagePreviewLabel, BorderLayout.CENTER);
+		}
+
+		// Bottom
+		{
+			confirmPanel.getOKButton().setEnabled(false);
+			mainPanel.add(confirmPanel, BorderLayout.SOUTH);
+			confirmPanel.setActionListener(this);
+		}
+	}   // jbInit
+
+	private int getWindowNo()
+	{
+		return windowNo;
+	}
+
+	/**
+	 * ActionListener
+	 *
+	 * @param e
 	 */
 	@Override
-	public void actionPerformed (ActionEvent e)
+	public void actionPerformed(final ActionEvent e)
 	{
 		if (e.getSource() == fileButton)
+		{
 			cmd_file();
-
-		else if (e.getActionCommand().equals(ConfirmPanel.A_OK))
+		}
+		//
+		// OK: caller shall take the new image
+		else if (ConfirmPanel.A_OK.equals(e.getActionCommand()))
 		{
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			if (m_mImage.save())
+			try
+			{
+				InterfaceWrapperHelper.save(m_mImage);
+				canceled = false;
 				dispose();
-			else
+			}
+			catch (final Exception ex)
+			{
+				clientUI.error(getWindowNo(), ex);
+			}
+			finally
+			{
 				setCursor(Cursor.getDefaultCursor());
+			}
 		}
-
-		else if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
+		//
+		// Reset: caller shall reset the field value
+		else if (ConfirmPanel.A_RESET.equals(e.getActionCommand()))
 		{
-			m_mImage = null;	//	reset
+			m_mImage = null;	// reset
+			canceled = false;
 			dispose();
 		}
-	}   //  actionPerformed
+	}   // actionPerformed
 
 	/**
-	 *  Load file & display
+	 * Load file & display
 	 */
 	private void cmd_file()
 	{
-		//  Show File Open Dialog
-		JFileChooser jfc = new JFileChooser();
+		// Show File Open Dialog
+		final JFileChooser jfc = new JFileChooser();
 		jfc.setMultiSelectionEnabled(false);
 		jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		jfc.showOpenDialog(this);
 
-		//  Get File Name
-		File imageFile = jfc.getSelectedFile();
+		// Get File Name
+		final File imageFile = jfc.getSelectedFile();
 		if (imageFile == null || imageFile.isDirectory() || !imageFile.exists())
+		{
 			return;
+		}
+		final String fileName = imageFile.getAbsolutePath();
 
-		String fileName = imageFile.getAbsolutePath();
-		byte[] data = null;
-		
-		//  See if we can load & display it
+		//
+		// See if we can load & display it
+		final byte[] data;
+		final ImageIcon image;
 		try
 		{
-			FileInputStream fis = new FileInputStream(imageFile);
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			byte[] buffer = new byte[1024*8];   //  8kB
-			int length = -1;
-			while ((length = fis.read(buffer)) != -1)
-				os.write(buffer, 0, length);
-			fis.close();
-			data = os.toByteArray();
-			os.close();
-			//
-			ImageIcon image = new ImageIcon (data, fileName);
-			imageLabel.setIcon(image);
+			data = Util.readBytes(imageFile);
+			image = new ImageIcon(data, fileName);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			log.log(Level.WARNING, "load image", e);
+			clientUI.error(getWindowNo(), e);
 			return;
 		}
 
-		//  OK
+		//
+		// Update UI
 		fileButton.setText(imageFile.getAbsolutePath());
+		imagePreviewLabel.setIcon(image);
+		confirmPanel.getOKButton().setEnabled(true);
 		pack();
 
-		//  Save info
+		// Save info
 		m_mImage.setName(fileName);
 		m_mImage.setImageURL(fileName);
 		m_mImage.setBinaryData(data);
-	}   //  cmd_file
+	}   // cmd_file
 
 	/**
-	 * 	Get Image ID
-	 *	@return ID or 0
+	 * Get Image ID
+	 *
+	 * @return ID or -1
 	 */
 	public int getAD_Image_ID()
 	{
-		if (m_mImage != null)
+		if (m_mImage != null && m_mImage.getAD_Image_ID() > 0)
+		{
 			return m_mImage.getAD_Image_ID();
-		return 0;
-	}	//	getAD_Image_ID
-	
-}   //  VImageDialog
+		}
+		return -1;
+	}
+
+	/**
+	 * @return true if the window was canceled and the caller shall ignore the result
+	 */
+	public boolean isCanceled()
+	{
+		return canceled;
+	}
+
+}   // VImageDialog

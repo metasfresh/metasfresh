@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
@@ -40,12 +41,14 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.Lookup;
+import org.compiere.model.Null;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
@@ -72,6 +75,7 @@ public class ProcessParameterPanelModel
 	private final List<GridField> gridFieldsAll = new ArrayList<GridField>();
 
 	private IDisplayValueProvider displayValueProvider = null;
+	private final ISvrProcessDefaultParametersProvider defaultsProvider;
 
 
 	/**
@@ -89,8 +93,42 @@ public class ProcessParameterPanelModel
 		this.windowNo = pi.getWindowNo();
 		this.tabNo = pi.getTabNo();
 		this.processId = pi.getAD_Process_ID();
+		
+		this.defaultsProvider = createSvrProcessDefaultParametersProviderOrNull(pi.getClassName());
 
 		createFields();
+	}
+	
+	private static final ISvrProcessDefaultParametersProvider createSvrProcessDefaultParametersProviderOrNull(final String classname)
+	{
+		if (Check.isEmpty(classname, true))
+		{
+			return null;
+		}
+		
+		try
+		{
+			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+			if (classLoader == null)
+			{
+				classLoader = ProcessParameterPanelModel.class.getClassLoader();
+			}
+
+			final Class<?> processClass = classLoader.loadClass(classname);
+			if (!ISvrProcessDefaultParametersProvider.class.isAssignableFrom(processClass))
+			{
+				return null;
+			}
+			
+			final ISvrProcessDefaultParametersProvider defaultsProvider = (ISvrProcessDefaultParametersProvider)processClass.newInstance();
+			return defaultsProvider;
+			
+		}
+		catch (Throwable e)
+		{
+			log.log(Level.SEVERE, "Failed instantiating class: " + classname, e);
+			return null;
+		}
 	}
 	
 	public Properties getCtx()
@@ -235,8 +273,26 @@ public class ProcessParameterPanelModel
 
 	private void setDefaultValue(final GridField gridField)
 	{
-		final Object defaultValue = gridField.getDefault();
-		setFieldValue(gridField, defaultValue);
+		Object defaultValue = null;
+		if (defaultsProvider != null)
+		{
+			final String parameterName = gridField.getColumnName();
+			try
+			{
+				defaultValue = defaultsProvider.getParameterDefaultValue(parameterName);
+			}
+			catch (Exception e)
+			{
+				// ignore the error, but log it
+				log.log(Level.SEVERE, "Failed retrieving the parameters default value from defaults provider: ParameterName=" + parameterName + ", Provider=" + defaultsProvider, e);
+			}
+		}
+		if (defaultValue == null)
+		{
+			defaultValue = gridField.getDefault();
+		}
+		
+		setFieldValue(gridField, defaultValue == Null.NULL ? null : defaultValue);
 	}
 
 	public void setDisplayValueProvider(final IDisplayValueProvider displayValueProvider)

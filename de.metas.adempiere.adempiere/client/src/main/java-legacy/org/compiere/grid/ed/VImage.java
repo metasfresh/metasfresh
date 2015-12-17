@@ -25,10 +25,14 @@ import java.util.logging.Level;
 
 import javax.swing.JButton;
 
+import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.MImage;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+
+import de.metas.adempiere.form.IClientUI;
 
 /**
  *  Image Display of AD_Iamge_ID
@@ -37,7 +41,8 @@ import org.compiere.util.Env;
  *  @version $Id: VImage.java,v 1.6 2006/07/30 00:51:28 jjanke Exp $
  */
 public class VImage extends JButton
-	implements VEditor, ActionListener
+	implements VEditor
+	//, ActionListener
 {
 	/**
 	 * 
@@ -49,12 +54,23 @@ public class VImage extends JButton
 	 *  @param columnName column name
 	 *  @param WindowNo window no
 	 */
-	public VImage (String columnName, int WindowNo)
+	public VImage (final String columnName, final int WindowNo)
 	{
 		super("-");
 		m_columnName = columnName;
 		m_WindowNo = WindowNo;
-		super.addActionListener(this);
+		
+		addActionListener(new ActionListener()
+		{
+			
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				onButtonPressed();
+			}
+		});
+		
+		setBackground(false);
 	}   //  VImage
 
 	/**
@@ -67,16 +83,17 @@ public class VImage extends JButton
 	}   //  dispose
 
 	/** WindowNo                */
-	private int     m_WindowNo;
+	private final int m_WindowNo;
 	/** The Image Model         */
 	private MImage  m_mImage = null;
 	/** Mandatory flag          */
 	private boolean m_mandatory = false;
+	private boolean readWrite = true;
 	/** Column Name             */
-	private String	m_columnName = "AD_Image_ID";
+	private final String m_columnName;
 	private boolean displayImagePreview = true; // default=true, backward compatibility
 	/**	Logger			*/
-	private static CLogger log = CLogger.getCLogger(VImage.class);
+	private static final transient CLogger log = CLogger.getCLogger(VImage.class);
 
 	/**
 	 * Sets if the loaded image shall be displayed on button, as an icon.
@@ -182,8 +199,13 @@ public class VImage extends JButton
 	@Override
 	public void setReadWrite (boolean rw)
 	{
-		if (isEnabled() != rw)
-			setEnabled (rw);
+		if (this.readWrite == rw)
+		{
+			return;
+		}
+		
+		setEnabled(rw);
+		setBackground(false);
 	}   //  setReadWrite
 
 	/**
@@ -193,7 +215,7 @@ public class VImage extends JButton
 	@Override
 	public boolean isReadWrite()
 	{
-		return super.isEnabled();
+		return readWrite;
 	}   //  getReadWrite
 
 	/**
@@ -201,9 +223,15 @@ public class VImage extends JButton
 	 *  @param mandatory
 	 */
 	@Override
-	public void setMandatory (boolean mandatory)
+	public void setMandatory (final boolean mandatory)
 	{
+		if (this.m_mandatory == mandatory)
+		{
+			return;
+		}
+		
 		m_mandatory = mandatory;
+		setBackground(false);
 	}   //  setMandatory
 
 	/**
@@ -223,23 +251,24 @@ public class VImage extends JButton
 	@Override
 	public void setBackground(Color color)
 	{
-	}   //  setBackground
+	}
 
 	/**
-	 *  Set Background - nop
-	 */
-	public void setBackground()
-	{
-	}   //  setBackground
-
-	/**
-	 *  Set Background - nop
+	 *  Set Background
 	 *  @param error
 	 */
 	@Override
 	public void setBackground(boolean error)
 	{
-	}   //  setBackground
+		if (error)
+			super.setBackground(AdempierePLAF.getFieldBackground_Error());
+		else if (!isReadWrite())
+			super.setBackground(AdempierePLAF.getFieldBackground_Inactive());
+		else if (isMandatory())
+			super.setBackground(AdempierePLAF.getFieldBackground_Mandatory());
+		else
+			super.setBackground(AdempierePLAF.getFieldBackground_Normal());
+	}
 
 	/**
 	 *  Property Change
@@ -259,27 +288,38 @@ public class VImage extends JButton
 	}   //  propertyChange
 
 	/**
-	 *  ActionListener - start dialog and set value
-	 *  @param e
+	 *  Start dialog and set value
 	 */
-	@Override
-	public void actionPerformed (ActionEvent e)
+	private final void onButtonPressed()
 	{
-		VImageDialog vid = new VImageDialog(Env.getWindow(m_WindowNo), m_mImage);
-		vid.setVisible(true);
-		int AD_Image_ID = vid.getAD_Image_ID();
-		Integer newValue = null;
-		if (AD_Image_ID != 0)
-			newValue = new Integer (AD_Image_ID);
-		//
-		m_mImage = null;	//	force reload
-		setValue(newValue);	//	set explicitly
-		//
 		try
 		{
-			fireVetoableChange(m_columnName, null, newValue);
+			// Show the dialog
+			final VImageDialog vid = new VImageDialog(Env.getWindow(m_WindowNo), m_WindowNo, m_mImage);
+			vid.setVisible(true);
+
+			// Do nothing if user canceled (i.e. closed the window)
+			if (vid.isCanceled())
+			{
+				return;
+			}
+			
+			final int AD_Image_ID = vid.getAD_Image_ID();
+			final Integer newValue = AD_Image_ID > 0 ? AD_Image_ID : null;
+			//
+			m_mImage = null;	//	force reload
+			setValue(newValue);	//	set explicitly
+			//
+			try
+			{
+				fireVetoableChange(m_columnName, null, newValue);
+			}
+			catch (PropertyVetoException pve)	{}
 		}
-		catch (PropertyVetoException pve)	{}
+		catch (Exception e)
+		{
+			Services.get(IClientUI.class).error(m_WindowNo, e);
+		}
 	}   //  actionPerformed
 
 	//	Field for Value Preference

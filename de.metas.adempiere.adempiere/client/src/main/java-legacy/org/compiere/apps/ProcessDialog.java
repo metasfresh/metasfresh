@@ -99,6 +99,7 @@ public class ProcessDialog extends CFrame
 
 	private final int m_AD_Process_ID;
 	private String _processName;
+	private String _processClassname;
 	private final int m_WindowNo;
 	private final int _adUserId;
 	private final int _adClientId;
@@ -324,6 +325,7 @@ public class ProcessDialog extends CFrame
 		this.m_IsReport = processTrl.isReport();
 		this.m_ShowHelp = processTrl.getShowHelp();
 		this._allowProcessReRun = processTrl.isAllowProcessReRun();
+		this._processClassname = processTrl.getClassname();
 
 		//
 		// Build the top message (Process description and help).
@@ -383,6 +385,7 @@ public class ProcessDialog extends CFrame
 		pi.setWindowNo(m_WindowNo);
 		pi.setAD_User_ID(_adUserId);
 		pi.setAD_Client_ID(_adClientId);
+		pi.setClassName(_processClassname);
 		return pi;
 	}
 

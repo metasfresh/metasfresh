@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.process.ISvrProcessDefaultParametersProvider;
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -62,6 +63,7 @@ import com.google.common.annotations.VisibleForTesting;
  * Also see
  * <ul>
  * <li> {@link ISvrProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
+ * <li> {@link ISvrProcessDefaultParametersProvider} if you want to provide some default values for parameters, when the UI parameters dialog is loaded
  * <li> {@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
  * </ul>
  *
