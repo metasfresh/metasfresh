@@ -1,6 +1,8 @@
 package de.metas.async.spi;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -112,10 +114,11 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	/**
 	 * Extracts the model to be enqueued to internal {@link IWorkPackageBuilder}.
 	 * 
+	 * @param collector
 	 * @param item
 	 * @return model to be enqueued or <code>null</code> if no model shall be enqueued.
 	 */
-	protected abstract Object extractModelToEnqueueFromItem(final ItemType item);
+	protected abstract Object extractModelToEnqueueFromItem(final Collector collector, final ItemType item);
 
 	/** @return true if the workpackage shall be enqueued even if there are no models collected to it. */
 	protected boolean isEnqueueWorkpackageWhenNoModelsEnqueued()
@@ -124,7 +127,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	}
 
 	/** Factory which creates Scheduler instances which are collecting the items on transaction level. */
-	private final TrxOnCommitCollectorFactory<Scheduler, ItemType> scheduleFactory = new TrxOnCommitCollectorFactory<Scheduler, ItemType>()
+	private final TrxOnCommitCollectorFactory<Collector, ItemType> scheduleFactory = new TrxOnCommitCollectorFactory<Collector, ItemType>()
 	{
 		@Override
 		protected String getTrxProperyName()
@@ -139,38 +142,40 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		}
 
 		@Override
-		protected Scheduler newCollector(final ItemType firstItem)
+		protected Collector newCollector(final ItemType firstItem)
 		{
 			final Properties ctx = WorkpackagesOnCommitSchedulerTemplate.this.extractCtxFromItem(firstItem);
-			return new Scheduler(ctx);
+			final Collector collector = new Collector(ctx);
+			return collector;
 		}
 
 		@Override
-		protected void collectItem(final Scheduler collector, final ItemType item)
+		protected void collectItem(final Collector collector, final ItemType item)
 		{
 			collector.addItem(item);
 		}
 
 		@Override
-		protected void processCollector(final Scheduler collector)
+		protected void processCollector(final Collector collector)
 		{
 			collector.createAndSubmitWorkpackage();
 		}
 	};
 
 	/**
-	 * Scheduler class responsible to collecting items and enqueuing a workpackage which will process the collected items.
+	 * Collector class responsible to collecting items and enqueuing a workpackage which will process the collected items.
 	 * 
 	 * @author metas-dev <dev@metas-fresh.com>
 	 */
-	private final class Scheduler
+	protected final class Collector
 	{
 		private final Properties ctx;
 		private final LinkedHashSet<Object> models = new LinkedHashSet<>();
+		private final Map<String, Object> parameters = new LinkedHashMap<>();
 
 		private boolean processed = false;
 
-		private Scheduler(final Properties ctx)
+		private Collector(final Properties ctx)
 		{
 			super();
 			this.ctx = ctx;
@@ -187,11 +192,11 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			this.processed = true;
 		}
 
-		public Scheduler addItem(final ItemType item)
+		public final Collector addItem(final ItemType item)
 		{
 			assertNotProcessed();
 
-			final Object model = WorkpackagesOnCommitSchedulerTemplate.this.extractModelToEnqueueFromItem(item);
+			final Object model = WorkpackagesOnCommitSchedulerTemplate.this.extractModelToEnqueueFromItem(this, item);
 			if (model != null)
 			{
 				models.add(model);
@@ -199,7 +204,24 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			return this;
 		}
 
-		public void createAndSubmitWorkpackage()
+		public final Collector setParameter(final String parameterName, final Object parameterValue)
+		{
+			assertNotProcessed();
+			Check.assumeNotEmpty(parameterName, "parameterName not empty");
+
+			parameters.put(parameterName, parameterValue);
+
+			return this;
+		}
+
+		public final <ParameterType> ParameterType getParameter(final String parameterName)
+		{
+			@SuppressWarnings("unchecked")
+			final ParameterType parameterValue = (ParameterType)parameters.get(parameterName);
+			return parameterValue;
+		}
+
+		public final void createAndSubmitWorkpackage()
 		{
 			markAsProcessed();
 
@@ -213,7 +235,16 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 					.newBlock()
 					.setContext(ctx)
 					.newWorkpackage()
+					//
+					// Workpackage Parameters
+					.parameters()
+					.setParameters(parameters)
+					.end()
+					//
+					// Workpackage elements
 					.addElements(models)
+					//
+					// Build & enqueue
 					.build();
 		}
 	}

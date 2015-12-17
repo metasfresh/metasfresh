@@ -188,19 +188,11 @@ import de.metas.lock.api.ILockCommand;
 
 		//
 		// Add the model to elements to enqueue
-		final ITableRecordReference record;
-		if (model instanceof ITableRecordReference)
-		{
-			record = (ITableRecordReference)model;
-		}
-		else
-		{
-			record = new TableRecordReference(model);
-		}
+		final ITableRecordReference record = TableRecordReference.of(model);
 		elements.add(record);
 
 		//
-		// Enque record to be locked when the workpackage is built
+		// Enqueue record to be locked when the workpackage is built
 		final ILockCommand locker = getElementsLockerOrNull();
 		if (locker != null)
 		{

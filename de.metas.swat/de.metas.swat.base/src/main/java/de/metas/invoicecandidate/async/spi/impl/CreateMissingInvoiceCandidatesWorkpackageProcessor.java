@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.async.api.IQueueDAO;
@@ -103,9 +104,9 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 		}
 
 		@Override
-		protected Object extractModelToEnqueueFromItem(final Object item)
+		protected Object extractModelToEnqueueFromItem(final Collector collector, final Object item)
 		{
-			return new TableRecordReference(item);
+			return TableRecordReference.of(item);
 		}
 	};
 
@@ -119,10 +120,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	{
 		final ILoggable loggable = getLoggable();
 
-		// make sure that the code in the thread knows..
-		// this avoids the effort of invalidating candidates over and over by different model validators etc
-		invoiceCandBL.setUpdateProcessInProgress(true);
-		try
+		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
 			for (final Object model : models)
@@ -135,10 +133,6 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 		{
 			// One of the models could not be locked => postpone processing this workpackage
 			throw WorkpackageSkipRequestException.createWithThrowable("Skip processing because: " + e.getLocalizedMessage(), e);
-		}
-		finally
-		{
-			invoiceCandBL.setUpdateProcessInProgress(false);
 		}
 
 		return Result.SUCCESS;

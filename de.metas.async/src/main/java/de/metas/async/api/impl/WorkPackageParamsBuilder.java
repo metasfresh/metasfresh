@@ -10,18 +10,17 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +41,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 {
 	// services
 	private final transient IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
-	
+
 	private final IWorkPackageBuilder _parentBuilder;
 	private I_C_Queue_WorkPackage _workpackage;
 	// private final Map<String, I_C_Queue_WorkPackage_Param> parameterName2param = new HashMap<>();
@@ -54,7 +53,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 	/* package */WorkPackageParamsBuilder(final IWorkPackageBuilder parentBuilder)
 	{
 		super();
-		this._parentBuilder = parentBuilder;
+		_parentBuilder = parentBuilder;
 	}
 
 	@Override
@@ -107,7 +106,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 	/* package */void setC_Queue_WorkPackage(final I_C_Queue_WorkPackage workpackage)
 	{
 		assertNotBuilt();
-		this._workpackage = workpackage;
+		_workpackage = workpackage;
 	}
 
 	private final I_C_Queue_WorkPackage getC_Queue_WorkPackage()
@@ -123,6 +122,28 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 		Check.assumeNotEmpty(parameterName, "parameterName not empty");
 
 		parameterName2valueMap.put(parameterName, parameterValue);
+
+		return this;
+	}
+
+	@Override
+	public IWorkPackageParamsBuilder setParameters(final Map<String, ? extends Object> parameters)
+	{
+		assertNotBuilt();
+
+		if (parameters == null || parameters.isEmpty())
+		{
+			return this;
+		}
+
+		for (final Map.Entry<String, ? extends Object> param : parameters.entrySet())
+		{
+			final String parameterName = param.getKey();
+			Check.assumeNotEmpty(parameterName, "parameterName not empty");
+
+			final Object parameterValue = param.getValue();
+			parameterName2valueMap.put(parameterName, parameterValue);
+		}
 
 		return this;
 	}

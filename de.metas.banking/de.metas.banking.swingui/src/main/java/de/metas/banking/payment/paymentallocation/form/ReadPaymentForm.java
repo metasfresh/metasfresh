@@ -539,8 +539,9 @@ final class ReadPaymentForm
 				// Re-validate all invoice candidates involved
 				invoiceCandBL.updateInvalid()
 						.setContext(ctx, localTrxName)
-						.setManagedTrx(true)
-						.update(candidates);
+						.setTaggedWithAnyTag()
+						.setOnlyC_Invoice_Candidates(candidates)
+						.update();
 			}
 		});
 

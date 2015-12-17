@@ -24,6 +24,7 @@ package de.metas.materialtracking;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 
@@ -86,4 +87,11 @@ public interface IMaterialTrackingBL extends ISingletonService
 	 * @return <code>true</code> if there was a <code>M_MaterialTracking_Ref</code> to delete.
 	 */
 	boolean unlinkModelFromMaterialTracking(Object model, I_M_Material_Tracking materialTracking);
+
+	/**
+	 * This method deletes the already existing lines and creates new ones based on the given {@link I_M_Material_Tracking_Report}
+	 * 
+	 * @param report
+	 */
+	void createOrUpdateMaterialTrackingReportLines(I_M_Material_Tracking_Report report);
 }

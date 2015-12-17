@@ -215,6 +215,14 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 		return isStatusOneOf(document,
 				DocumentEngine.STATUS_Completed);
 	}
+	
+	
+	@Override
+	public boolean isStatusClosed(Object document)
+	{
+		return isStatusOneOf(document,
+				DocumentEngine.STATUS_Closed);
+	}
 
 	@Override
 	public boolean isStatusCompletedOrClosed(Object document)

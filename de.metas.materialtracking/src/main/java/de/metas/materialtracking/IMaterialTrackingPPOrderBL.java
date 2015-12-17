@@ -22,6 +22,7 @@ package de.metas.materialtracking;
  * #L%
  */
 
+import java.sql.Timestamp;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
@@ -48,5 +49,12 @@ public interface IMaterialTrackingPPOrderBL extends ISingletonService
 	 * @return filter used to keep only Quality Inspection manufacturing orders
 	 */
 	IQueryFilter<I_PP_Order> getQualityInspectionFilter();
+
+	/**
+	 * task 09546: I moved this method here because the date of Production of a PP_Order might be needed in different places.
+	 *
+	 * @return production date; never return null
+	 */
+	Timestamp getDateOfProduction(I_PP_Order ppOrder);
 
 }

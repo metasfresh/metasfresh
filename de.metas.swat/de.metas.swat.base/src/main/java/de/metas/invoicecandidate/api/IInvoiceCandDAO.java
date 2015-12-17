@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_PInstance;
@@ -72,22 +73,27 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_Invoice_Candidate> fetchInvoiceCandidates(Properties ctx, String tableName, int recordId, String trxName);
 
 	/**
-	 * Returns those invoice candidates that have been tagged to be recomputed/updated by the given <code>adPinstance</code>.
+	 * Returns those invoice candidates that have been tagged to be recomputed/updated by the given <code>recomputeTag</code>.
 	 *
 	 * This method ALWAYS return non-manual candidates first in the list.
 	 *
-	 * @param adPinstance
+	 * @param recomputeTag
 	 * @param trxName
 	 * @return
 	 *
 	 * @see #tagRecomputeMarkers(I_AD_PInstance, String)
 	 */
-	Iterator<I_C_Invoice_Candidate> fetchInvalidInvoiceCandidates(Properties ctx, int AD_Pinstance_ID, String trxName);
+	Iterator<I_C_Invoice_Candidate> fetchInvalidInvoiceCandidates(Properties ctx, InvoiceCandRecomputeTag recomputeTag, String trxName);
+
+	/**
+	 * @return new unique recompute tag
+	 */
+	InvoiceCandRecomputeTag generateNewRecomputeTag();
 
 	/** @return new tagger used to tag invoice candidates which were scheduled to be recomputed. */
 	IInvoiceCandRecomputeTagger tagToRecompute();
 
-	void deleteRecomputeMarkers(int AD_PInstance_ID, String trxName);
+	boolean hasInvalidInvoiceCandidatesForTag(final InvoiceCandRecomputeTag tag);
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 
@@ -97,7 +103,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	I_C_Invoice_Line_Alloc retrieveIlaForIcAndIl(I_C_Invoice_Candidate invoiceCand, org.compiere.model.I_C_InvoiceLine invoiceLine);
 
-	List<I_C_Invoice_Candidate> retrieveForBillPartner(I_C_BPartner bPartner);
+	List<I_C_Invoice_Candidate> retrieveForBillPartner(I_C_BPartner bpartner);
 
 	/**
 	 * Loads those invoice candidates
@@ -121,6 +127,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	Iterator<I_C_Invoice_Candidate> retrieveForHeaderAggregationKey(Properties ctx, String headerAggregationKey, String trxName);
 
 	/**
+	 * Invalidates the invoice candidates identified by given query.
+	 * 
+	 * @param icQueryBuilder
+	 */
+	void invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
+
+	/**
 	 * Invalidates just the given candidate.
 	 *
 	 * @param ic
@@ -142,6 +155,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Invalidates all candidates that have the same <code>(AD_Table_ID, Record_ID)</code> reference.
 	 *
 	 * @param ic
+	 * @throws AdempiereException if the invoice candidate does not have the AD_Table_ID/Record_ID set
 	 */
 	void invalidateCandsWithSameReference(I_C_Invoice_Candidate ic);
 
@@ -159,16 +173,16 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Invalidates all ICs that have the given <code>Bill_BPartner_ID</code> and have their effective invoice rule set to <code>KundenintervallNachLieferung</code>.
 	 *
-	 * @param bPartner
+	 * @param bpartner
 	 */
-	void invalidateCandsForBPartnerInvoiceRule(I_C_BPartner bPartner);
+	void invalidateCandsForBPartnerInvoiceRule(I_C_BPartner bpartner);
 
 	/**
 	 * Invalidates all ICs that have the given <code>Bill_BPartner_ID</code>.
 	 *
-	 * @param bPartner
+	 * @param bpartner
 	 */
-	void invalidateCandsForBPartner(I_C_BPartner bPartner);
+	void invalidateCandsForBPartner(I_C_BPartner bpartner);
 
 	// @Deprecated
 	// void invalidateCandsForBPartnerAllowConsolidate(I_C_BPartner bPartner);
@@ -266,13 +280,24 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInOutLineInclInactive(I_M_InOutLine inOutLine);
 
 	/**
-	 * Retrieves those invoice candidates that belong to the given <code>inOutLine</code> by either referencing it directly via <code>(AD_Table_ID, Record_ID)</code> or by referencing the inOutLine's
-	 * order line record.
+	 * Retrieves those invoice candidates that belong to the given <code>inOutLine</code>.
 	 *
 	 * @param inOutLine
-	 * @return
+	 * @see #retrieveInvoiceCandidatesForInOutLineQuery(I_M_InOutLine)
 	 */
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLine(I_M_InOutLine inOutLine);
+
+	/**
+	 * Retrieves those invoice candidates that belong to the given <code>inOutLine</code> by:
+	 * <ul>
+	 * <li>referencing it directly via <code>(AD_Table_ID, Record_ID)</code>
+	 * <li>referencing it directly via inout line's order line (if any)
+	 * <li>or by referencing the inOutLine's order line record.
+	 * </ul>
+	 *
+	 * @param inOutLine
+	 */
+	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLineQuery(I_M_InOutLine inoutLine);
 
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLine(I_C_OrderLine orderLine);
 
@@ -329,5 +354,16 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	int deleteInvoiceDetails(I_C_Invoice_Candidate ic);
 
+	/**
+	 * Deletes given invoice candidate AND it will advice the framework to avoid scheduling a re-create.
+	 *
+	 * @param ic
+	 */
+	void deleteAndAvoidRecreateScheduling(I_C_Invoice_Candidate ic);
 
+	/**
+	 * @param ic invoice candidate
+	 * @return true if re-create scheduling shall be avoided for given invoice candidate
+	 */
+	boolean isAvoidRecreate(I_C_Invoice_Candidate ic);
 }

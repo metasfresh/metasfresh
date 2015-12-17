@@ -40,6 +40,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
@@ -156,4 +157,14 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @task 08255
 	 */
 	BigDecimal updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
+	
+	/**
+	 * Registers <code>ShipmentScheduleQtyUpdateListener</code> for given table name.
+	 *
+	 * This listener will be called when an update on delivery quantity is needed in shipmentSchedule
+	 *
+	 * @param tableName
+	 * @param listener
+	 */
+	void addShipmentScheduleQtyUpdateListener(final IShipmentScheduleQtyUpdateListener listener);
 }

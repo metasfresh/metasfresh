@@ -26,6 +26,7 @@ package de.metas.handlingunits.model.validator;
 import java.math.BigDecimal;
 import java.util.Collections;
 
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -44,10 +45,20 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.spi.impl.HUShipmentScheduleQtyUpdateListener;
 
 @Interceptor(I_M_ShipmentSchedule.class)
 public class M_ShipmentSchedule
 {
+	@Init
+	public void init()
+	{
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		
+		// task 08959 register the HU qty update listener
+		shipmentScheduleBL.addShipmentScheduleQtyUpdateListener(HUShipmentScheduleQtyUpdateListener.instance);
+	}
+	
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void updateFromOrderline(final I_M_ShipmentSchedule shipmentSchedule)
 	{
@@ -70,26 +81,6 @@ public class M_ShipmentSchedule
 		shipmentSchedule.setPackDescription(packDescription);
 
 		updateLUTUQtys(shipmentSchedule, orderLine);
-	}
-
-	/**
-	 * If the given schedule was updated by
-	 * {@link IShipmentScheduleBL#updateSchedules(java.util.Properties, java.util.List, boolean, java.sql.Timestamp, org.adempiere.inout.util.CachedObjects, String)}, then this method also updates the
-	 * schedule's LU and TU quantities.
-	 *
-	 * @param shipmentSchedule
-	 * @task 08298
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE })
-	public void updateHUDeliveryQuantities(final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-
-		if (shipmentScheduleBL.isChangedByUpdateProcess(shipmentSchedule))
-		{
-			huShipmentScheduleBL.updateHUDeliveryQuantities(shipmentSchedule);
-		}
 	}
 
 	private void updateLUTUQtys(final I_M_ShipmentSchedule shipmentSchedule, final I_C_OrderLine fromOrderLine)

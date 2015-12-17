@@ -256,7 +256,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 				continue;
 			}
 
-			final ITableRecordReference record = new TableRecordReference(model);
+			final ITableRecordReference record = TableRecordReference.of(model);
 			records.add(record);
 		}
 

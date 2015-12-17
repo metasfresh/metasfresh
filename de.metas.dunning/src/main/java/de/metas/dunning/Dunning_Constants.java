@@ -22,7 +22,11 @@ package de.metas.dunning;
  * #L%
  */
 
-
+/**
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public final class Dunning_Constants
 {
 	private Dunning_Constants()

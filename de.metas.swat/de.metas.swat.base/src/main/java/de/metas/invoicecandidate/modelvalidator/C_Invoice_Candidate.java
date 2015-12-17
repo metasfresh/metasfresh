@@ -24,6 +24,7 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import java.math.BigDecimal;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -44,6 +45,7 @@ import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
@@ -54,7 +56,7 @@ import de.metas.tax.api.ITaxDAO;
 @Validator(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
 {
-	private static final CLogger logger = CLogger.getCLogger(C_Invoice_Candidate.class);
+	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
 
 	final String METHODNAME_setHeaderAggregationKey = de.metas.invoicecandidate.callout.InvoiceCandidate.class.getName()
 			+ "." + de.metas.invoicecandidate.callout.InvoiceCandidate.METHODNAME_setHeaderAggregationKey;
@@ -248,11 +250,23 @@ public class C_Invoice_Candidate
 
 		if (invoiceCandBL.isUpdateProcessInProgress())
 		{
-			logger.fine("Change was performed by scheduler process. No need to invalidate");
+			logger.log(Level.FINE, "Change was performed by scheduler process. No need to invalidate: {0}", ic);
 			return;
 		}
 
-		Services.get(IInvoiceCandDAO.class).invalidateCandsWithSameReference(ic);
+		//
+		// Invalidate invoice candidate(s)
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		// Case: the IC is not linked to any particular record => invalidate just this one
+		if (ic.getAD_Table_ID() <= 0 || ic.getRecord_ID() <= 0)
+		{
+			invoiceCandDAO.invalidateCand(ic);
+		}
+		// Case: the IC is linked to a record => invalidate all ICs (including this one) which links to that record
+		else
+		{
+			invoiceCandDAO.invalidateCandsWithSameReference(ic);
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -320,6 +334,14 @@ public class C_Invoice_Candidate
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void scheduleRecreate(final I_C_Invoice_Candidate ic)
 	{
+		//
+		// Skip recreation scheduling if we were asked to avoid that
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		if(invoiceCandDAO.isAvoidRecreate(ic))
+		{
+			return;
+		}
+		
 		//
 		// Get linked model
 		final Object model = TableRecordCacheLocal.getReferencedValue(ic, Object.class);

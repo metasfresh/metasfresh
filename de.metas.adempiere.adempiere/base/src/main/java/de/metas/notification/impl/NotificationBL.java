@@ -20,6 +20,7 @@ import org.compiere.util.EMail;
 import org.compiere.util.Env;
 
 import de.metas.notification.IMailBL;
+import de.metas.notification.IMailBL.IMailbox;
 import de.metas.notification.INotificationBL;
 
 /*
@@ -67,13 +68,24 @@ public class NotificationBL implements INotificationBL
 
 		if (userBL.isNotifyUserIncharge(recipient))
 		{
-			final de.metas.adempiere.model.I_AD_User userIncharge = InterfaceWrapperHelper.create(recipient, de.metas.adempiere.model.I_AD_User.class);
-			Check.errorUnless(userIds.add(userIncharge.getAD_User_ID()), "loop");
+			final I_AD_User userIncharge =
+					InterfaceWrapperHelper.create(recipient, de.metas.adempiere.model.I_AD_User.class)
+							.getAD_User_InCharge();
+			Check.errorUnless(userIds.add(userIncharge.getAD_User_ID()), "Detected a cycle in the AD_User.AD_User_InCharge_IDs. The AD_User_IDs in question are {0}", userIds);
 			notifyUser0(userIncharge, adMessage, messageText, referencedRecord, userIds);
 		}
 		if (userBL.isNotificationEMail(recipient))
 		{
-			sendMail(recipient, adMessage, messageText, referencedRecord);
+			try
+			{
+				sendMail(recipient, adMessage, messageText, referencedRecord);
+			}
+			catch (Exception e)
+			{
+				final String messageText2 = "An attempt to mail the following text failed with " + e.getClass() + ": " + e.getLocalizedMessage() + ":\n"
+						+ messageText;
+				createNotice(recipient, adMessage, messageText2, referencedRecord);
+			}
 		}
 		if (userBL.isNotificationNote(recipient))
 		{
@@ -91,6 +103,7 @@ public class NotificationBL implements INotificationBL
 		final int adMessageID = msgDAO.retrieveMessageId(adMessage);
 
 		final I_AD_Note note = InterfaceWrapperHelper.newInstance(I_AD_Note.class, recipient);
+		note.setAD_User(recipient);
 		note.setAD_Message_ID(adMessageID);
 		note.setAD_Org_ID(recipient.getAD_Org_ID());
 		note.setTextMsg(messageText);
@@ -116,14 +129,18 @@ public class NotificationBL implements INotificationBL
 		final I_AD_Client adClient = clientDAO.retriveClient(ctx, sender.getAD_Client_ID());
 		final String subject = msgBL.getMsg(ctx, adMessage);
 
-		mailBL.findMailBox(adClient, sender.getAD_Org_ID(), 0, null, sender);
+		final IMailbox mailBox = mailBL.findMailBox(adClient, sender.getAD_Org_ID(),
+				0, // AD_Process_ID
+				null, // customType
+				sender);
+		Check.assumeNotNull(mailBox, "IMailbox for adClient={0}, sender={1}", adClient, sender);
 
 		final StringBuilder mailBody = new StringBuilder();
 		mailBody.append("\n" + messageText + "\n");
 		mailBody.append(msgBL.parseTranslation(ctx, "@" + referencedRecord.getTableName() + "_ID@: "));
 		mailBody.append(referencedRecord.getRecord_ID());
 
-		final EMail mail = mailBL.createEMail(ctx, null, recipient.getEMail(), subject, mailBody.toString(), false);
+		final EMail mail = mailBL.createEMail(ctx, mailBox, recipient.getEMail(), subject, mailBody.toString(), false);
 		mailBL.send(mail);
 	}
 

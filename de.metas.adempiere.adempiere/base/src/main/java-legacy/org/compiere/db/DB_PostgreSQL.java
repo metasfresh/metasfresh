@@ -1099,4 +1099,10 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 		return String.valueOf(pgBackendPID);
 	}
+	
+	@Override
+	public String getRowIdSql(final String tableName)
+	{
+		return "oid";
+	}
 }   // DB_PostgreSQL

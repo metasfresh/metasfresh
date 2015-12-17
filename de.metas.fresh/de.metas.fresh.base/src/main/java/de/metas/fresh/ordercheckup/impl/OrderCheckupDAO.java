@@ -10,12 +10,12 @@ package de.metas.fresh.ordercheckup.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,6 +24,7 @@ package de.metas.fresh.ordercheckup.impl;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -32,26 +33,34 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
+import de.metas.fresh.ordercheckup.model.I_PP_Product_Planning;
 
 public class OrderCheckupDAO implements IOrderCheckupDAO
 {
 	@Override
-	public I_PP_Product_Planning retrieveManufacturingProductPlanningOrNull(final I_C_OrderLine orderLine)
+	public I_PP_Product_Planning retrieveProductPlanningOrNull(final I_C_OrderLine orderLine)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ICompositeQueryFilter<I_PP_Product_Planning> manufacturedOrTraded = queryBL.createCompositeQueryFilter(I_PP_Product_Planning.class)
+				.setJoinOr()
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsManufactured, X_PP_Product_Planning.ISMANUFACTURED_Yes)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsTraded, I_PP_Product_Planning.ISTRADED_Yes);
+
 		final I_PP_Product_Planning productPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class, orderLine)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_Product_Planning.COLUMN_M_Product_ID, orderLine.getM_Product_ID())
-				.addInArrayFilter(I_PP_Product_Planning.COLUMN_AD_Org_ID, orderLine.getAD_Org_ID(), 0)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMN_IsManufactured, X_PP_Product_Planning.ISMANUFACTURED_Yes)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, orderLine.getM_Product_ID())
+				.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orderLine.getAD_Org_ID(), 0)
+				.filter(manufacturedOrTraded)
 				.orderBy()
-				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last) // specific org first
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_IsManufactured, Direction.Descending, Nulls.Last) // 'Y' first, NULL last
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_IsTraded, Direction.Descending, Nulls.Last) // 'Y' first, NULL last
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				.create()
@@ -63,7 +72,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 	@Override
 	public I_M_Warehouse retrieveManufacturingWarehouseOrNull(final I_C_OrderLine orderLine)
 	{
-		final I_PP_Product_Planning productPlanning = retrieveManufacturingProductPlanningOrNull(orderLine);
+		final I_PP_Product_Planning productPlanning = retrieveProductPlanningOrNull(orderLine);
 		if (productPlanning == null
 				|| productPlanning.getM_Warehouse_ID() < 0)
 		{

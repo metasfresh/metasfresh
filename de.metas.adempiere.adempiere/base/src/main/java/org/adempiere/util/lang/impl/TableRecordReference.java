@@ -49,16 +49,36 @@ import org.compiere.util.HashcodeBuilder;
  */
 public final class TableRecordReference implements ITableRecordReference
 {
+	/**
+	 * Creates an {@link ITableRecordReference}.
+	 * 
+	 * @param model model interface or {@link ITableRecordReference}; null is NOT allowed
+	 * @return {@link ITableRecordReference}; never returns null
+	 */
 	public static final ITableRecordReference of(final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
 		if (model instanceof ITableRecordReference)
 		{
 			return (ITableRecordReference)model;
 		}
 		return new TableRecordReference(model);
 	}
-	
+
+	/**
+	 * Same as {@link #of(Object)} but in case <code>model</code> is null then it will return null.
+	 * 
+	 * @param model
+	 * @return {@link ITableRecordReference} or null
+	 */
+	public static final ITableRecordReference ofOrNull(final Object model)
+	{
+		if (model == null)
+		{
+			return null;
+		}
+		return of(model);
+	}
+
 	private final int adTableId;
 	private final String tableName;
 	private final int recordId;
@@ -92,7 +112,7 @@ public final class TableRecordReference implements ITableRecordReference
 		this.recordId = recordId;
 	}
 
-	public TableRecordReference(final Object model)
+	private TableRecordReference(final Object model)
 	{
 		super();
 

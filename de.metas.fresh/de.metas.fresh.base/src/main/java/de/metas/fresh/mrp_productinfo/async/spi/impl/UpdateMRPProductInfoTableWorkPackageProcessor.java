@@ -59,7 +59,7 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 		}
 
 		@Override
-		protected Object extractModelToEnqueueFromItem(final IMRPProductInfoSelector item)
+		protected Object extractModelToEnqueueFromItem(final Collector collector, final IMRPProductInfoSelector item)
 		{
 			return item.getModel();
 		}

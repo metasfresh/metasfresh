@@ -10,12 +10,12 @@ package de.metas.materialtracking.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,11 +43,11 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingListener;
 import de.metas.materialtracking.MTLinkRequest;
+import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 
@@ -153,12 +153,11 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 			createUpdateASIAndLink(orderLine, materialTracking);
 			addLog(msgBL.parseTranslation(getCtx(), "@Processed@: @C_OrderLine_ID@ @Line@ " + p_Line));
 
-			final List<I_C_Invoice_Candidate> icsToDelete = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLine(orderLine);
-			for (final I_C_Invoice_Candidate icToDelete : icsToDelete)
-			{
-				addLog(msgBL.parseTranslation(getCtx(), "@Deleted@: @C_Invoice_Candidate_ID@ " + icToDelete));
-				InterfaceWrapperHelper.delete(icToDelete);
-			}
+			final List<I_C_Invoice_Candidate> icsToDelete =
+					InterfaceWrapperHelper.createList(
+							invoiceCandDAO.retrieveInvoiceCandidatesForOrderLine(orderLine),
+							I_C_Invoice_Candidate.class);
+			deleteOrUpdate(icsToDelete, materialTracking);
 		}
 		//
 		// receipt schedules
@@ -179,9 +178,9 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 			{
 				updateInOutLine(inOutLine.getM_PackingMaterial_InOutLine(), materialTracking);
 			}
-			 else
+			else
 			{
-				// fallback: if we don't have an explicitly referenced package line, 
+				// fallback: if we don't have an explicitly referenced package line,
 				// then iterate all package lines and change those which have same tracking ID as the current inOut line.
 				// note: i don't think there can be more than one such line, but if there is, it shall not be this processe's problem.
 				final List<I_M_InOutLine> packageInOutLines = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, orderLine)
@@ -196,9 +195,34 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 					updateInOutLine(packageInOutLine, materialTracking);
 				}
 			}
-			
+
 			// update the actual inout line
 			updateInOutLine(inOutLine, materialTracking);
+		}
+	}
+
+	/**
+	 * Deletes if not yet invoiced, just updates the M_MAterialTRracking_ID otherwise.
+	 *
+	 * @param ics
+	 * @param materialTracking
+	 */
+	private void deleteOrUpdate(final List<I_C_Invoice_Candidate> ics,
+			final I_M_Material_Tracking materialTracking)
+	{
+		for (final I_C_Invoice_Candidate ic : ics)
+		{
+			if (ic.isProcessed() || ic.getQtyInvoiced().signum() != 0)
+			{
+				ic.setM_Material_Tracking(materialTracking);
+				InterfaceWrapperHelper.save(ic);
+				addLog(msgBL.parseTranslation(getCtx(), "@Updated@: @C_Invoice_Candidate_ID@ " + ic));
+			}
+			else
+			{
+				InterfaceWrapperHelper.delete(ic);
+				addLog(msgBL.parseTranslation(getCtx(), "@Deleted@: @C_Invoice_Candidate_ID@ " + ic));
+			}
 		}
 	}
 
@@ -208,12 +232,10 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 
 		addLog(msgBL.parseTranslation(getCtx(), "@Processed@: @M_InOut_ID@ " + inOutLine.getM_InOut().getDocumentNo() + " @Line@ " + inOutLine.getLine()));
 
-		final List<I_C_Invoice_Candidate> icsToDelete = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(inOutLine);
-		for (final I_C_Invoice_Candidate icToDelete : icsToDelete)
-		{
-			addLog(msgBL.parseTranslation(getCtx(), "@Deleted@: @C_Invoice_Candidate_ID@ " + icToDelete));
-			InterfaceWrapperHelper.delete(icToDelete);
-		}
+		final List<I_C_Invoice_Candidate> ics = InterfaceWrapperHelper.createList(
+				invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(inOutLine),
+				I_C_Invoice_Candidate.class);
+		deleteOrUpdate(ics, materialTracking);
 	}
 
 	private void createUpdateASIAndLink(final Object documentLine,

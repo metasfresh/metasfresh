@@ -122,6 +122,11 @@ public class PlainTrx extends AbstractTrx
 
 		return true;
 	}
+	
+	public boolean hasActiveSavepoints()
+	{
+		return !activeSavepoints.isEmpty();
+	}
 
 	@Override
 	protected boolean rollbackNative(final boolean throwException) throws SQLException

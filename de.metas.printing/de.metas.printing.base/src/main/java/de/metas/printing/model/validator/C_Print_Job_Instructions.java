@@ -24,13 +24,23 @@ package de.metas.printing.model.validator;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.ITaskExecutorService;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
@@ -49,8 +59,14 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 @Validator(I_C_Print_Job_Instructions.class)
 public class C_Print_Job_Instructions
 {
+
 	private static final String MSG_CLIENT_REPORTS_PRINT_ERROR = "de.metas.printing.C_Print_Job_Instructions.ClientReportsPrintError";
+	private static final String MSG_CLIENT_PRINT_TIMEOUT = "de.metas.printing.C_Print_Job_Instructions.ClientStatusTimeOut";
+	private static final String MSG_CLIENT_PRINT_TIMEOUT_DETAILS = "de.metas.printing.C_Print_Job_Instructions.ClientStatusTimeOutDetails";
+
 	private static final String SYSCONFIG_NOTIFY_PRINT_RECEIVER_ON_ERROR = "de.metas.printing.C_Print_Job_Instructions.NotifyPrintReceiverOnError";
+	private static final String SYSCONFIG_NOTIFY_PRINT_RECEIVER_SEND_TIMEOUT_SECONDS = "de.metas.printing.C_Print_Job_Instructions.NotifyPrintReceiverOnSendTimeoutSeconds";
+	private static final String SYSCONFIG_NOTIFY_PRINT_RECEIVER_PENDING_TIMEOUT_SECONDS = "de.metas.printing.C_Print_Job_Instructions.NotifyPrintReceiverOnPendingTimeoutSeconds";
 
 	/**
 	 * Create Document Outbound only if Status column just changed to Done
@@ -77,7 +93,7 @@ public class C_Print_Job_Instructions
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }
 			, ifColumnsChanged = I_C_Print_Job_Instructions.COLUMNNAME_Status)
-	public void createNotice(final I_C_Print_Job_Instructions jobInstructions)
+	public void createNoticeOnError(final I_C_Print_Job_Instructions jobInstructions)
 	{
 		if (!X_C_Print_Job_Instructions.STATUS_Error.equals(jobInstructions.getStatus()))
 		{
@@ -93,12 +109,146 @@ public class C_Print_Job_Instructions
 				jobInstructions.getAD_Org_ID());
 		if (notifyUser)
 		{
-			notificationBL.notifyUser(
-					jobInstructions.getAD_User_ToPrint(),
-					MSG_CLIENT_REPORTS_PRINT_ERROR,
-					jobInstructions.getErrorMsg(),
-					TableRecordReference.of(jobInstructions));
+			// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
+			final ITrxManager trxManager = Services.get(ITrxManager.class);
+			final String trxName = InterfaceWrapperHelper.getTrxName(jobInstructions);
+			trxManager.getTrxListenerManagerOrAutoCommit(trxName)
+					.registerListener(new TrxListenerAdapter()
+					{
+						@Override
+						public void afterCommit(final ITrx trx)
+						{
+							notificationBL.notifyUser(
+									jobInstructions.getAD_User_ToPrint(),
+									MSG_CLIENT_REPORTS_PRINT_ERROR,
+									jobInstructions.getErrorMsg(),
+									TableRecordReference.of(jobInstructions));
+						}
+					});
+
 		}
+	}
+
+	/**
+	 * If the status of the given <code>jobInstructions</code> is "pending" or send", this method can check via {@link ITaskExecutorService#schedule(Callable, int, TimeUnit, String)} whether the
+	 * status is unchanged after <code>n</code> seconds or not.
+	 * <p>
+	 * The goal is to notify users about timeout problems with the printing client.
+	 *
+	 * @param jobInstructions
+	 * @task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
+	 */
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW,
+			ModelValidator.TYPE_AFTER_NEW_REPLICATION,
+			ModelValidator.TYPE_AFTER_CHANGE,
+			ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }
+			, ifColumnsChanged = I_C_Print_Job_Instructions.COLUMNNAME_Status)
+	public void scheduleCheckForStatustimeout(final I_C_Print_Job_Instructions jobInstructions)
+	{
+		final String sysconfigName;
+		if (X_C_Print_Job_Instructions.STATUS_Pending.equals(jobInstructions.getStatus()))
+		{
+			sysconfigName = SYSCONFIG_NOTIFY_PRINT_RECEIVER_PENDING_TIMEOUT_SECONDS;
+		}
+		else if (X_C_Print_Job_Instructions.STATUS_Send.equals(jobInstructions.getStatus()))
+		{
+			sysconfigName = SYSCONFIG_NOTIFY_PRINT_RECEIVER_SEND_TIMEOUT_SECONDS;
+		}
+		else
+		{
+			return; // nothing to do
+		}
+
+		scheduleTimeoutCheck(jobInstructions, sysconfigName);
+	}
+
+	/**
+	 * Checks the given <code>sysConfigName</code> for a timeout value <code>n</code>. If the value is greater than zero, it scheduled a job to be run in <code>n</code> seconds. When the scheduled job
+	 * is executed, it will check if the status of the given <code>jobInstructions</code> is still unchanged.<br>
+	 * If that is the case, the print-receiver will be notified, because in this case something is wrong with the printing client.<br>
+	 * If the integer value of the given <code>sysConfigName</code> is less or equal to zero, then the method does nothing.
+	 *
+	 * @param jobInstructions
+	 * @param sysconfigName
+	 * @task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
+	 */
+	private void scheduleTimeoutCheck(final I_C_Print_Job_Instructions jobInstructions,
+			final String sysconfigName)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		final int printTimeOutSeconds = sysConfigBL.getIntValue(sysconfigName,
+				-1, // default
+				jobInstructions.getAD_Client_ID(),
+				jobInstructions.getAD_Org_ID());
+
+		if (printTimeOutSeconds <= 0)
+		{
+			return; // nothing to do
+		}
+
+		final int printJobInstructionsID = jobInstructions.getC_Print_Job_Instructions_ID();
+		final int userToPrintID = jobInstructions.getAD_User_ToPrint_ID();
+		final String status = jobInstructions.getStatus();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
+		final String trxName = InterfaceWrapperHelper.getTrxName(jobInstructions);
+
+		// note: despite the fact that we only will check in the future,
+		// we still won't schedule that check before the current trx is committed.
+		// that is because we want to be on the safe side, even if
+		// the timeout is e.g. just one second and there is a unexpected delay with the commit of the given 'jobInstructions'.
+		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
+				.registerListener(new TrxListenerAdapter()
+				{
+					@Override
+					public void afterCommit(final ITrx trx)
+					{
+						// schedule our check to be run after 'printTimeOutSeconds' seconds
+						taskExecutorService.schedule(
+								new Callable<Void>()
+								{
+									@Override
+									public Void call() throws Exception
+									{
+										final INotificationBL notificationBL = Services.get(INotificationBL.class);
+										final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+										final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+										// reload the records. Note that we don't want to hold a reference to a record from the model interceptor method in this callable instance.
+										final I_AD_User userToPrintReloaded =
+												InterfaceWrapperHelper.create(ctx,
+														userToPrintID,
+														I_AD_User.class,
+														ITrx.TRXNAME_None);
+										final I_C_Print_Job_Instructions printJobInstructionsReloaded =
+												InterfaceWrapperHelper.create(ctx,
+														printJobInstructionsID,
+														I_C_Print_Job_Instructions.class,
+														ITrx.TRXNAME_None);
+
+										if (status.equals(printJobInstructionsReloaded.getStatus()))
+										{
+											// the status is still unchanged after the specified timeout => notify the user
+											final String statusName = adReferenceDAO.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status);
+											final String timeoutMsg = msgBL.getMsg(ctx, MSG_CLIENT_PRINT_TIMEOUT_DETAILS, new Object[] { printTimeOutSeconds, statusName });
+
+											notificationBL.notifyUser(
+													userToPrintReloaded,
+													MSG_CLIENT_PRINT_TIMEOUT,
+													timeoutMsg,
+													TableRecordReference.of(printJobInstructionsReloaded));
+										}
+										return null;
+									}
+								},
+								printTimeOutSeconds,
+								TimeUnit.SECONDS,
+								C_Print_Job_Instructions.class.getSimpleName());
+					}
+				});
 	}
 
 	private void logDocOutbound(final I_C_Print_Job_Line line, final I_AD_User userToPrint)

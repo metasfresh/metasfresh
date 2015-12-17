@@ -139,8 +139,16 @@ final class CLogFormatter extends Formatter
 		 * .append(record.getLevel().getLocalizedName());
 		 * /** Thread
 		 **/
-		if (record.getThreadID() != 10)
-			sb.append(" [").append(record.getThreadID()).append("]");
+		
+		//
+		// Thread ID/Name
+		{
+			final int threadID = record.getThreadID();
+			final Thread currentThread = Thread.currentThread();
+			final String threadName = currentThread.getName();
+			
+			sb.append(" [").append(threadID).append("/").append(threadName).append("]");
+		}
 
 		//
 		sb.append(NL);
@@ -210,27 +218,48 @@ final class CLogFormatter extends Formatter
 	 * @param record record
 	 * @return class.method
 	 */
-	public static String getClassMethod(LogRecord record)
+	public static String getClassMethod(final LogRecord record)
 	{
-		StringBuilder sb = new StringBuilder();
-		String className = record.getLoggerName();
-		if (className == null
-				|| className.indexOf("default") != -1	// anonymous logger
-				|| className.indexOf("global") != -1)	// global logger
+		final StringBuilder sb = new StringBuilder();
+		
+		//
+		// Get the classname
+		final String loggerName = record.getLoggerName();
+		final String className;
+		if (loggerName == null
+				|| loggerName.equals(CLogger.LOGGERNAME_DEFAULT) // default logger
+				|| loggerName.startsWith(CLogger.LOGGERNAME_MODULE_PREFIX) // module logger
+		)
+		{
 			className = record.getSourceClassName();
+		}
+		else
+		{
+			className = loggerName;
+		}
+
+		//
+		// Append the classname
 		if (className != null)
 		{
-			int index = className.lastIndexOf('.');
-			if (index != -1)
+			final int index = className.lastIndexOf('.');
+			if (index >= 0)
 				sb.append(className.substring(index + 1));
 			else
 				sb.append(className);
 		}
 		else
-			sb.append(record.getLoggerName());
-		if (record.getSourceMethodName() != null)
-			sb.append(".").append(record.getSourceMethodName());
-		String retValue = sb.toString();
+		{
+			sb.append(loggerName);
+		}
+
+		//
+		// Append the method name
+		final String sourceMethodName = record.getSourceMethodName();
+		if (sourceMethodName != null)
+			sb.append(".").append(sourceMethodName);
+		
+		final String retValue = sb.toString();
 		if (retValue.equals("Trace.printStack"))
 			return "";
 		return retValue;

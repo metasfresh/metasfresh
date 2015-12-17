@@ -22,7 +22,6 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
 import org.adempiere.util.ISingletonService;
@@ -64,6 +63,8 @@ public interface IShipmentScheduleAllocBL extends ISingletonService
 	 * 
 	 * @param alloc
 	 * @return true if given alloc was already delivered (i.e. {@link I_M_ShipmentSchedule_QtyPicked#getM_InOutLine_ID()} is set).
+	 *         Note: task 08959
+	 *         Only the allocations made on inout lines that belong to a completed inout are considered Delivered.
 	 */
 	boolean isDelivered(I_M_ShipmentSchedule_QtyPicked alloc);
 

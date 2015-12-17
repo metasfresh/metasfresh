@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api;
 
+import org.compiere.util.CLogger;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -22,10 +24,18 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-
 public class InvoiceCandidate_Constants
 {
+	private static final String LOGGER_NAME = CLogger.createModuleLoggerName("de.metas.invoicecandidate");
+
+	public static final CLogger getLogger()
+	{
+		return CLogger.getCLogger(LOGGER_NAME);
+	}
+
 	public static final String ENTITY_TYPE = "de.metas.invoicecandidate";
+	
+	public static final String JMX_BASE_NAME = ENTITY_TYPE;
 
 	/**
 	 * Internal name of the AD_Input_Data destination for invoice candidates candidates.

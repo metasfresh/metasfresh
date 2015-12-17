@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="ec8cf752-2238-4390-92e5-bf24750dd646">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="RECORD_ID" class="java.math.BigDecimal"/>
+	<queryString>
+		<![CDATA[select * from RV_M_Material_Tracking_Report where M_Material_Tracking_Report_ID = $P{RECORD_ID};]]>
+	</queryString>
+	<field name="m_material_tracking_report_id" class="java.math.BigDecimal"/>
+	<field name="m_material_tracking_report_line_id" class="java.math.BigDecimal"/>
+	<field name="datedoc" class="java.sql.Timestamp"/>
+	<field name="periodname" class="java.lang.String"/>
+	<field name="productname" class="java.lang.String"/>
+	<field name="qtyreceived" class="java.math.BigDecimal"/>
+	<field name="qtyissued" class="java.math.BigDecimal"/>
+	<field name="differenceqty" class="java.math.BigDecimal"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="a0dc8c27-5b7c-4f0c-b89d-5f344cd3d07e" x="0" y="0" width="284" height="40"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Statistik für monatliche Lagermeldung]]></text>
+			</staticText>
+			<textField>
+				<reportElement uuid="bcb30b6a-ecc6-44c5-96b4-3bb9e3ba73d6" x="36" y="55" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{datedoc}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="7a101df1-acd6-40bb-b707-5c13722c66b0" x="184" y="55" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{periodname}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="5190b6e4-f254-4917-b944-69b25e24faf1" x="0" y="55" width="36" height="20"/>
+				<textElement/>
+				<text><![CDATA[Datum]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="25afaf83-c3ba-44ae-b10b-bc211ec91315" x="136" y="55" width="48" height="20"/>
+				<textElement/>
+				<text><![CDATA[Periode]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="15" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="c347424e-2fcf-41a0-83a0-28e1a7f0f7e9" x="1" y="0" width="140" height="12"/>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Produkt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="76ed996f-a233-475b-b4a0-2fa80fd85f27" x="141" y="0" width="115" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Empfangene Menge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="fee597be-db7b-4c71-9fcd-338740f0c3ab" x="256" y="0" width="115" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Ausgelagerte Menge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="77af1e73-0865-4fb1-a75b-e0dac29c4cee" x="371" y="0" width="115" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Differenz]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<textField>
+				<reportElement uuid="c246c202-77f3-485d-8837-2e91816704e4" x="371" y="1" width="115" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{differenceqty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="ca45ed38-e4c4-4d0c-8b26-d7ce1eaa0b76" x="1" y="1" width="140" height="12"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="2dbd8f29-076d-43ef-a7eb-50c1d8027096" x="141" y="1" width="115" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qtyreceived}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="d13156fc-255b-4fd2-91c4-f4792ca8da70" x="256" y="1" width="115" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qtyissued}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement uuid="19def8f8-db8e-472e-845e-a0f7ab5aea53" key="textField-62" x="519" y="42" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + "/ "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement uuid="6b4b91a6-d40e-4a81-af69-b8f0917a5c01" key="textField-64" x="540" y="42" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="fef84b2b-0e02-4390-8645-42eaf63416d0" key="textField-63" x="456" y="42" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Seite]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

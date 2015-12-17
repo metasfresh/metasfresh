@@ -50,6 +50,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -74,7 +75,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		}
 	};
 
-	private static final transient CLogger logger = CLogger.getCLogger(InvoiceCandidateHandlerBL.class);
+	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
 
 	@Override
 	public List<IInvoiceCandidateHandler> retrieveImplementationsForTable(final Properties ctx, final String tableName)
@@ -168,7 +169,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 	/**
 	 * Schedule invoice candidates generation for given model (asynchronously).
-	 * 
+	 *
 	 * @param model
 	 * @param handler
 	 */

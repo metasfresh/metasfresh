@@ -32,9 +32,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
-import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 
@@ -74,12 +72,7 @@ public class C_BankStatementLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void unlinkPaySelectionLine(final I_C_BankStatementLine bankStatementLine)
 	{
-		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(bankStatementLine))
-		{
-			paySelectionLine.setC_BankStatementLine(null);
-			paySelectionLine.setC_BankStatementLine_Ref(null);
-			InterfaceWrapperHelper.save(paySelectionLine);
-		}
+		Services.get(IBankStatementBL.class).unlinkPaySelectionLine(bankStatementLine);
 	}
 	
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })

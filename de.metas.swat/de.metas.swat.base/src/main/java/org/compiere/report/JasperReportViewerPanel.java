@@ -13,12 +13,12 @@ package org.compiere.report;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -81,7 +81,7 @@ import de.metas.adempiere.report.jasper.client.JRClient;
 
 /**
  * Jasper Report Viewer Panel
- * 
+ *
  * @author tsa
  *
  */
@@ -358,19 +358,20 @@ public class JasperReportViewerPanel extends JRViewer
 				final boolean displayPrintDialog = true;
 				jasperService.print(getJasperPrint(), getProcessInfo(), displayPrintDialog);
 			}
-		});
+		},
+		this.getClass().getSimpleName());
 	}
 
 	/**
 	 * Export current jasper report, using current export format to given file.
-	 * 
+	 *
 	 * @param file
 	 * @return created {@link I_AD_Archive} or <code>null</code> if no archive was created
 	 */
 	final I_AD_Archive exportToFile(final File file)
 	{
 		Check.assumeNotNull(file, "file not null");
-		
+
 		final OutputType exportFormat = getExportFormat();
 		Check.assumeNotNull(exportFormat, "exportFormat not null"); // shall not happen
 

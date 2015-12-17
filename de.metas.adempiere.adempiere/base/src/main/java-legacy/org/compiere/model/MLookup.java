@@ -48,24 +48,24 @@ import org.compiere.util.ValueNamePair;
 
 /**
  * An intelligent MutableComboBoxModel, which determines what can be cached.
- * 
+ *
  * <pre>
  *      Validated   - SQL is final / not dynamic
  *      AllLoaded   - All Records are loaded
- * 
+ *
  * 	Get Info about Lookup
  * 	-	SQL
  * 	-	KeyColumn
  * 	-	Zoom Target
  * </pre>
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MLookup.java,v 1.4 2006/10/07 00:58:57 jjanke Exp $
  */
 public final class MLookup extends Lookup implements Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5784044288965615466L;
 
@@ -157,7 +157,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * MLookup Constructor
-	 * 
+	 *
 	 * @param info info
 	 * @param TabNo tab no
 	 */
@@ -328,7 +328,8 @@ public final class MLookup extends Lookup implements Serializable
 			else
 			{
 				final MLookupLoader loader = new MLookupLoader(getValidationContext(), m_info);
-				_futureLookupData = Services.get(ITaskExecutorService.class).submit(loader);
+				_futureLookupData = Services.get(ITaskExecutorService.class)
+						.submit(loader, MLookup.class.getSimpleName());
 			}
 		}
 
@@ -352,7 +353,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Retrieves {@link ILookupData}. Never return null
-	 * 
+	 *
 	 * @param state
 	 * @return lookup data
 	 */
@@ -413,7 +414,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Get value (name) for key. If not found return null;
-	 * 
+	 *
 	 * @param key key (Integer for Keys or String for Lists)
 	 * @return value
 	 */
@@ -470,7 +471,7 @@ public final class MLookup extends Lookup implements Serializable
 					&& !isHighVolume()
 					// Don't load it if it's flagged as parent because in most of the cases our parent link columns
 					// are defined as TableDir and no validation rules,
-					// which will imply loading a huge amount of data. 
+					// which will imply loading a huge amount of data.
 					&& !m_info.isParent()
 					)
 			{
@@ -493,7 +494,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Get Display value (name). If not found return key embedded in inactive signs.
-	 * 
+	 *
 	 * @param key key
 	 * @return value
 	 */
@@ -524,7 +525,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * The Lookup contains the key
-	 * 
+	 *
 	 * @param key key
 	 * @return true if key is known
 	 */
@@ -566,7 +567,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Indicates whether some other object is "equal to" this one.
-	 * 
+	 *
 	 * @param obj the reference object with which to compare.
 	 * @return <code>true</code> if this object is the same as the obj argument; <code>false</code> otherwise.
 	 */
@@ -577,7 +578,7 @@ public final class MLookup extends Lookup implements Serializable
 		{
 			return true;
 		}
-		
+
 		if (obj instanceof MLookup)
 		{
 			final MLookup ll = (MLookup)obj;
@@ -589,7 +590,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Return Size
-	 * 
+	 *
 	 * @return size
 	 */
 	public int size()
@@ -599,7 +600,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Is it all loaded
-	 * 
+	 *
 	 * @return true, if all loaded
 	 */
 	public boolean isAllLoaded()
@@ -609,7 +610,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Is the List fully Validated
-	 * 
+	 *
 	 * @return true, if validated
 	 */
 	@Override
@@ -662,7 +663,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Get Validation SQL
-	 * 
+	 *
 	 * @return Validation SQL
 	 */
 	@Override
@@ -681,7 +682,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Get Reference Value
-	 * 
+	 *
 	 * @return Reference Value
 	 */
 	public int getAD_Reference_Value_ID()
@@ -691,7 +692,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Has inactive elements in list
-	 * 
+	 *
 	 * @return true, if list contains inactive values
 	 */
 	@Override
@@ -702,7 +703,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Return info as ArrayList containing Value/KeyNamePair
-	 * 
+	 *
 	 * @param onlyValidated only validated
 	 * @param loadParent get Data even for parent lookups
 	 * @return List
@@ -724,7 +725,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Return data as Array containing Value/KeyNamePair
-	 * 
+	 *
 	 * @param mandatory if not mandatory, an additional empty value is inserted
 	 * @param onlyValidated only validated
 	 * @param onlyActive only active
@@ -780,7 +781,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Get Data Direct from Table.
-	 * 
+	 *
 	 * @param evalCtx if {@code null} or {@link IValidationContext#NULL}, then this lookup's own {@code m_evalCtx} is used.
 	 * @param key key
 	 * @param saveInCache save in cache for r/w
@@ -881,7 +882,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Get Zoom
-	 * 
+	 *
 	 * @return Zoom AD_Window_ID
 	 */
 	@Override
@@ -892,7 +893,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Get Zoom
-	 * 
+	 *
 	 * @param query query
 	 * @return Zoom Window
 	 */
@@ -905,7 +906,7 @@ public final class MLookup extends Lookup implements Serializable
 		{
 			return m_info.ZoomWindow;
 		}
-		
+
 		// Need to check SO/PO
 		final boolean isSOTrx = DB.isSOTrx(m_info.TableName, query.getWhereClause(false));
 		//
@@ -918,7 +919,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Get Zoom Query String
-	 * 
+	 *
 	 * @return Zoom SQL Where Clause
 	 */
 	@Override
@@ -933,7 +934,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Get underlying fully qualified Table.Column Name
-	 * 
+	 *
 	 * @return Key Column
 	 */
 	@Override
@@ -950,7 +951,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Refresh & return number of items read. Get get data of parent lookups
-	 * 
+	 *
 	 * @return no of items read
 	 */
 	@Override
@@ -963,7 +964,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Refresh & return number of items read
-	 * 
+	 *
 	 * @param loadParent get data of parent lookups
 	 * @return no of items refresh
 	 */
@@ -1007,7 +1008,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	/**
 	 * Remove All cached Elements
-	 * 
+	 *
 	 * @see org.compiere.model.Lookup#removeAllElements()
 	 */
 	@Override
@@ -1063,7 +1064,7 @@ public final class MLookup extends Lookup implements Serializable
 	{
 		return m_info.getTableName();
 	}
-	
+
 	@Override
 	public boolean isAutoComplete()
 	{

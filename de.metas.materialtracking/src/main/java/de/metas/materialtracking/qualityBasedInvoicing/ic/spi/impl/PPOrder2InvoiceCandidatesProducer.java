@@ -23,6 +23,7 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -69,14 +70,16 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
  * @author tsa
  *
  */
-/* package */class PPOrder2InvoiceCandidatesProducer
+/* package */final class PPOrder2InvoiceCandidatesProducer
 {
 	// Services
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
-	private final IQualityInspectionHandlerDAO qualityInspectionHandlerDAO = Services.get(IQualityInspectionHandlerDAO.class);
-	private final IQualityBasedInvoicingDAO qualityBasedInvoicingDAO = Services.get(IQualityBasedInvoicingDAO.class);
-	private final IQualityBasedInvoicingBL qualityBasedInvoicingBL = Services.get(IQualityBasedInvoicingBL.class);
-	private final IQualityBasedSpiProviderService qualityBasedSpiProviderService = Services.get(IQualityBasedSpiProviderService.class);
+	private static final transient CLogger logger = CLogger.getCLogger(PPOrder2InvoiceCandidatesProducer.class);
+	private final transient IQualityInspectionHandlerDAO qualityInspectionHandlerDAO = Services.get(IQualityInspectionHandlerDAO.class);
+	private final transient IQualityBasedInvoicingDAO qualityBasedInvoicingDAO = Services.get(IQualityBasedInvoicingDAO.class);
+	private final transient IQualityBasedInvoicingBL qualityBasedInvoicingBL = Services.get(IQualityBasedInvoicingBL.class);
+	private final transient IQualityBasedSpiProviderService qualityBasedSpiProviderService = Services.get(IQualityBasedSpiProviderService.class);
+	private final transient IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
+	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	// Parameters
 	private I_C_ILCandHandler _qualityInspectionHandlerRecord;
@@ -144,38 +147,44 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 			// Case: ppOrder was not assigned to a material tracking (for some reason)
 			final String msg = "Skip invoice candidates creation because model {0} is not assigned to a material tracking";
 			loggable.addLog(msg, ppOrder);
-			logger.log(Level.WARNING, msg, ppOrder);
+			logger.log(Level.INFO, msg, ppOrder);
 			return Collections.emptyList();
 		}
 
+		//
+		// Get the quality inspection order
 		final IQualityInspectionOrder qiOrder = materialTrackingDocuments.getQualityInspectionOrderOrNull();
 		if (qiOrder == null)
 		{
 			final String msg = "Skip invoice candidates creation because there is no quality inspection for model {0}";
 			loggable.addLog(msg, ppOrder);
-			logger.log(Level.WARNING, msg, ppOrder);
+			logger.log(Level.INFO, msg, ppOrder);
 			return Collections.emptyList();
 		}
 
 		// figure out if this is a downPayment. It is, if 'ppOrder' is a quality inspection and not the last one.
-		final boolean ppOrderIsQualityInpection = Services.get(IMaterialTrackingPPOrderBL.class).isQualityInspection(ppOrder);
+		final boolean ppOrderIsQualityInpection = materialTrackingPPOrderBL.isQualityInspection(ppOrder);
 		final boolean isDownPayment = ppOrderIsQualityInpection && !qualityBasedInvoicingBL.isLastInspection(qiOrder);
 		if (isDownPayment)
 		{
-			final List<de.metas.invoicecandidate.model.I_C_Invoice_Candidate> downPaymentICs = Services.get(IInvoiceCandDAO.class).retrieveReferencing(qiOrder.getPP_Order());
+			final List<de.metas.invoicecandidate.model.I_C_Invoice_Candidate> downPaymentICs = invoiceCandDAO.retrieveReferencing(qiOrder.getPP_Order());
 			if (!downPaymentICs.isEmpty())
 			{
+				final de.metas.invoicecandidate.model.I_C_Invoice_Candidate firstDownPaymentIC = downPaymentICs.get(0);
 				final String msg = "Skip invoice candidates creation because {0} is a downpayment quality inspection and there are already C_Invoice_Candidates such as {1} for it";
-				loggable.addLog(msg, ppOrder, downPaymentICs.get(0));
-				logger.log(Level.WARNING, msg, ppOrder, downPaymentICs.get(0));
+				loggable.addLog(msg, ppOrder, firstDownPaymentIC);
+				logger.log(Level.INFO, msg, ppOrder, firstDownPaymentIC);
 				return Collections.emptyList();
 			}
 		}
 
-		final I_M_Material_Tracking materialTracking = materialTrackingDocuments.getM_Material_Tracking();
 		//
-		// Make sure all original invoice candidates are valid.
+		// Make sure all original invoice candidates (of original purchase order) are valid.
 		// If not, we shall postpone this computation because makes no sense. We will wait for better times (i.e. when original invoice candidates are valid)
+		//
+		// Make sure all original invoice candidates (of original purchase order) are valid.
+		// If not, we shall postpone this computation because makes no sense. We will wait for better times (i.e. when original invoice candidates are valid)
+		final I_M_Material_Tracking materialTracking = materialTrackingDocuments.getM_Material_Tracking();
 		final List<I_C_Invoice_Candidate> originalInvoiceCandidates = qualityInspectionHandlerDAO.retrieveOriginalInvoiceCandidates(materialTracking, I_C_Invoice_Candidate.class);
 		if (originalInvoiceCandidates.isEmpty())
 		{
@@ -213,7 +222,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		}
 		final I_M_PricingSystem pricingSystem = vendorInvoicingInfo.getM_PricingSystem();
 
-		final List<I_M_PriceList_Version> plvs = materialTrackingDocuments.setPricingSystemLoadPLVs(pricingSystem);
+		final Collection<I_M_PriceList_Version> plvs = materialTrackingDocuments.setPricingSystemLoadPLVs(pricingSystem);
 
 		final List<I_C_Invoice_Candidate> result = new ArrayList<>();
 		for (I_M_PriceList_Version plv : plvs)
@@ -226,13 +235,11 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 
 			//
 			// Create invoice line groups
-			final List<IQualityInvoiceLineGroup> invoiceLineGroups =
-					createQualityInvoiceLineGroups(context, materialTrackingDocuments, vendorReceiptForPLV, vendorInvoicingInfo);
+			final List<IQualityInvoiceLineGroup> invoiceLineGroups = createQualityInvoiceLineGroups(context, materialTrackingDocuments, vendorReceiptForPLV, vendorInvoicingInfo);
 
 			//
 			// Create invoice candidates from those groups
-			final InvoiceCandidateWriter invoiceCandidateBuilder =
-					new InvoiceCandidateWriter(context)
+			final InvoiceCandidateWriter invoiceCandidateBuilder = new InvoiceCandidateWriter(context)
 							.setC_ILCandHandler(getC_ILCandHandler())
 							.setVendorInvoicingInfo(vendorInvoicingInfo)
 							.setMaterialTrackingDocuments(materialTrackingDocuments)
@@ -267,11 +274,13 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 
 	private List<IQualityInvoiceLineGroup> createQualityInvoiceLineGroups(final IContextAware context,
 			final IMaterialTrackingDocuments materialTrackingDocuments,
-			@SuppressWarnings("rawtypes") final IVendorReceipt receiptFromVendor, // only the add() method is parameterized and the won't use that method here, so it's safe to suppress
+			@SuppressWarnings("rawtypes") final IVendorReceipt vendorReceipt, // only the add() method is parameterized and the won't use that method here, so it's safe to suppress
 			final IVendorInvoicingInfo vendorInvoicingInfo)
 	{
 		Check.assumeNotNull(materialTrackingDocuments, "materialTrackingDocuments not null");
-		Check.assumeNotNull(receiptFromVendor, "receiptFromVendor not null");
+		Check.assumeNotNull(vendorReceipt,
+				"vendorReceipt not null;\nmaterialTrackingDocuments={0}\nvendorInvoicingInfo={1}",
+				materialTrackingDocuments, vendorInvoicingInfo);
 
 		final IQualityInspectionOrder qiOrder = materialTrackingDocuments.getQualityInspectionOrderOrNull();
 		// we can be sure it's not null because if it was then this method would not be called.
@@ -283,7 +292,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 
 		//
 		// Configure: Qty received from Vendor (reference Qty)
-		invoiceLineGroupsBuilder.setReceiptFromVendor(receiptFromVendor);
+		invoiceLineGroupsBuilder.setReceiptFromVendor(vendorReceipt);
 
 		//
 		// Configure: pricing context to be used

@@ -194,6 +194,8 @@ public class GridFieldVO implements Serializable
 					vo.FieldLength = rs.getInt (i);
 				else if (columnName.equalsIgnoreCase("VFormat"))
 					vo.VFormat = rs.getString (i);
+				else if (columnName.equalsIgnoreCase("FormatPattern"))
+					vo.formatPattern = rs.getString (i);
 				else if (columnName.equalsIgnoreCase("ValueMin"))
 					vo.ValueMin = rs.getString (i);
 				else if (columnName.equalsIgnoreCase("ValueMax"))
@@ -334,6 +336,7 @@ public class GridFieldVO implements Serializable
 			vo.DefaultValue = rs.getString("DefaultValue");
 			vo.DefaultValue2 = rs.getString("DefaultValue2");
 			vo.VFormat = rs.getString("VFormat");
+			vo.formatPattern = "";
 			vo.ValueMin = rs.getString("ValueMin");
 			vo.ValueMax = rs.getString("ValueMax");
 			vo.isRange = rs.getString("IsRange").equals("Y");
@@ -386,6 +389,7 @@ public class GridFieldVO implements Serializable
 		voTo.layoutConstraints = vo.layoutConstraints.copy();
 		voTo.DefaultValue = vo.DefaultValue2;
 		voTo.VFormat = vo.VFormat;
+		voTo.formatPattern = vo.formatPattern;
 		voTo.ValueMin = vo.ValueMin;
 		voTo.ValueMax = vo.ValueMax;
 		voTo.isRange = vo.isRange;
@@ -545,6 +549,7 @@ public class GridFieldVO implements Serializable
 	public int          FieldLength = 0;
 	/**	Format enforcement		*/
 	public String       VFormat = "";
+	private String formatPattern = "";
 	/**	Min. Value		*/
 	public String       ValueMin = "";
 	/**	Max. Value		*/
@@ -1039,5 +1044,10 @@ public class GridFieldVO implements Serializable
 	public boolean isHiddenFromUI()
 	{
 		return this.isHiddenFromUI;
+	}
+
+	public String getFormatPattern()
+	{
+		return formatPattern;
 	}
 }

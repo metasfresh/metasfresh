@@ -84,7 +84,8 @@ public class ReportStarter implements ProcessCall, ClientProcess
 							Services.get(IClientUI.class).warn(pi.getWindowNo(), e);
 						}
 					}
-				});
+				},
+				ReportStarter.class.getSimpleName());
 			}
 			//
 			// Create report and preview it

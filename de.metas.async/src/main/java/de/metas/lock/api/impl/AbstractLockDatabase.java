@@ -302,7 +302,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 			}
 
 			// attempt to get a lock
-			final ITableRecordReference record = new TableRecordReference(model);
+			final ITableRecordReference record = TableRecordReference.of(model);
 			if (lockRecord(lockCommand, record))
 			{
 				// Successfully acquired our lock :-)

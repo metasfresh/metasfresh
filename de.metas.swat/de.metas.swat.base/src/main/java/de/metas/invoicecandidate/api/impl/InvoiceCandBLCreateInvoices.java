@@ -84,6 +84,7 @@ import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.workflow.api.IWFExecutionFactory;
@@ -95,7 +96,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	//
 	// Services
-	private static final transient CLogger logger = CLogger.getCLogger(InvoiceCandBLCreateInvoices.class);
+	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IInvoiceCandidateListeners invoiceCandListeners = Services.get(IInvoiceCandidateListeners.class);

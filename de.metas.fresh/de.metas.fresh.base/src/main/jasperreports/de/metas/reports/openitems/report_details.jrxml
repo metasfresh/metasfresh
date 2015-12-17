@@ -25,7 +25,7 @@
 	<parameter name="PassForPayment" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT
-	c.iso_code,
+	oi.CurrencyCode as iso_code,
 	oi.DocumentNo,
 	oi.DateInvoiced::date,
 	oi.NetDays,
@@ -36,49 +36,10 @@
 	oi.GrandTotal,
 	oi.PaidAmt,
 	oi.OpenAmt,
-	bp.Value,
-	bp.Name,
-	oi.PassForPayment
-FROM
-	(
-	SELECT
-		i.AD_Org_ID,
-		i.DocumentNo,
-		i.C_BPartner_ID,
-		i.IsSOTrx,
-		i.DateInvoiced,
-		EXISTS (SELECT 0 FROM C_PaySelectionLine psl WHERE psl.processed = 'Y' AND psl.C_Invoice_ID = i.C_Invoice_ID) AS PassForPayment,
-		COALESCE ( p.NetDays, DaysBetween( ips.DueDate::timestamp with time zone, i.DateInvoiced::timestamp with time zone ) ) AS NetDays,
-		p.DiscountDays,
-		COALESCE( PaymentTermDueDate( p.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone ), ips.DueDate ) AS DueDate,
-		COALESCE(
-			PaymentTermDueDays(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone, $P{Reference_Date}),
-			DaysBetween($P{Reference_Date}, ips.DueDate::timestamp with time zone)
-		) AS DaysDue,
-		COALESCE( AddDays( i.DateInvoiced::timestamp with time zone, p.DiscountDays ), ips.DiscountDate ) AS DiscountDate,
-		COALESCE( Round( i.GrandTotal * p.Discount / 100::numeric, 2 ), ips.DiscountAmt ) AS DiscountAmt,
-		COALESCE( ips.DueAmt, i.GrandTotal ) AS GrandTotal,
-		COALESCE(
-			invoicepaidtodate(i.C_Invoice_ID, i.C_Currency_ID, i.multiplierAP, $P{Reference_Date}),
-			COALESCE( ips.DueAmt, i.GrandTotal ) - invoiceopentodate( i.C_Invoice_ID, COALESCE ( ips.C_InvoicePaySchedule_ID, 0::numeric ), $P{Reference_Date} )
-		) AS PaidAmt,
-		invoiceopentodate ( i.C_Invoice_ID, COALESCE ( ips.C_InvoicePaySchedule_ID, 0::numeric ), $P{Reference_Date} ) AS OpenAmt,
-		i.InvoiceCollectionType,
-		i.C_Currency_ID
-	FROM
-		C_Invoice_v i
-		LEFT OUTER JOIN C_PaymentTerm p ON i.C_PaymentTerm_ID = p.C_PaymentTerm_ID
-		LEFT OUTER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID AND ips.isvalid = 'Y'
-	WHERE
-		invoiceopentodate( i.C_Invoice_ID, COALESCE( ips.C_InvoicePaySchedule_ID, 0::numeric ), $P{Reference_Date}  ) <> 0::numeric
-		AND i.DocStatus IN ('CO','CL','RE')
-	ORDER BY
-		 i.DocumentNo
-	)as oi
-	INNER JOIN C_BPartner bp 	ON oi.C_BPartner_ID = bp.C_BPartner_ID
-	INNER JOIN AD_Org o 		ON o.AD_Org_ID = oi.AD_Org_ID
-	INNER JOIN AD_OrgInfo ori 	ON ori.AD_Org_ID = o.AD_Org_ID
-	INNER JOIN C_Currency c 	ON oi.C_Currency_ID = c.C_Currency_ID
+	oi.BPValue as Value,
+	oi.BPName as Name,
+	oi.IsInPaySelection as PassForPayment
+FROM de_metas_endcustomer_fresh_reports.OpenItems_Report($P{Reference_Date}) oi
 WHERE
 	oi.AD_Org_ID = (CASE WHEN $P{AD_Org_ID} IS NULL THEN oi.AD_Org_ID ELSE $P{AD_Org_ID} END)
 	AND oi.IsSOTrx = (CASE WHEN $P{IsSOTrx} IS NULL THEN oi.IsSOTrx ELSE $P{IsSOTrx} END)
@@ -91,11 +52,11 @@ WHERE
 		AND oi.DateInvoiced <= ( CASE WHEN $P{EndDate}::date IS NULL THEN oi.DateInvoiced ELSE $P{EndDate}::date END )
 	)
 	-- 08394: If Flag is not set, only display invoices that are not part of a processed PaySelection
-	AND ( $P{PassForPayment} = 'Y' OR NOT oi.PassForPayment )
+	AND ( $P{PassForPayment} = 'Y' OR NOT oi.IsInPaySelection )
 ORDER BY
-	c.iso_code,
-	bp.Name,
-	bp.value,
+	oi.CurrencyCode,
+	oi.BPName,
+	oi.BPValue,
 	oi.DateInvoiced,
 	oi.DocumentNo
 ;]]>

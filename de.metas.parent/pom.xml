@@ -178,6 +178,67 @@
 			 i don't yet see the point..maybe it's just using so many SNAPSHOT dependencies is not a common case, 
 			 or maybe we are misregarding other best practices..
 		    -->
+<!--
+			<dependency>
+				<artifactId></artifactId>
+				<groupId></groupId>
+				<version>${project.version}</version>
+			</dependency>
+-->
+			<dependency>
+				<artifactId> de.metas.handlingunits.base</artifactId>
+				<groupId>de.metas.handlingunits</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
+				<artifactId>de.metas.document.refid</artifactId>
+				<groupId>de.metas.document</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
+				<artifactId>de.metas.payment.esr</artifactId>
+				<groupId>de.metas.payment.esr</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>de.metas.monitoring</artifactId>
+				<groupId>de.metas.monitoring</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
+				<artifactId>de.metas.dimension</artifactId>
+				<groupId>de.metas.dimension</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
+				<artifactId>de.metas.contracts</artifactId>
+				<groupId>de.metas.contracts</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
+				<artifactId>de.metas.materialtracking</artifactId>
+				<groupId>de.metas.materialtracking</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>de.metas.printing.base</artifactId>
+				<groupId>de.metas.printing</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>de.metas.async</artifactId>
+				<groupId>de.metas.async</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			
 			<dependency>
 				<artifactId>de.metas.commission.client</artifactId>
 				<groupId>de.metas.commission</groupId>
@@ -205,7 +266,11 @@
 				<artifactId>de.metas.swat.ait</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
+			<dependency>
+				<artifactId>de.metas.swat.base</artifactId>
+				<groupId>de.metas.swat</groupId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>de.metas.storage</groupId>
 				<artifactId>de.metas.storage</artifactId>
@@ -243,7 +308,12 @@
 				<groupId>de.metas.adempiere.adempiere</groupId>
 				<version>${project.version}</version>
 			</dependency>
-
+			<dependency>
+				<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
+				<groupId>de.metas.adempiere.adempiere</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			
 			<dependency>
 				<artifactId>de.metas.util</artifactId>
 				<groupId>de.metas.util</groupId>
@@ -279,7 +349,6 @@
 			</exclusions>
 		</dependency>
 	</dependencies>
-
 
 	<build>
 		<pluginManagement>
@@ -431,6 +500,25 @@
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											jasperreports-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.0-beta-2,)
+										</versionRange>
+										<goals>
+											<goal>compile-reports</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
 											org.apache.maven.plugins
 										</groupId>
 										<artifactId>
@@ -475,19 +563,6 @@
 										<goals>
 											<goal>update-file-header</goal>
 											<goal>update-project-license</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>com.alexnederlof</groupId>
-										<artifactId>jasperreports-plugin</artifactId>
-										<versionRange>[2.0,)</versionRange>
-										<goals>
-											<goal>jasper</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
@@ -918,28 +993,82 @@
 					</plugin>
 
 					<plugin>
-						<!-- task 09644: using more recent plugin; also see https://github.com/alexnederlof/Jasper-report-maven-plugin -->
-						<groupId>com.alexnederlof</groupId>
-						<artifactId>jasperreports-plugin</artifactId>
-						<version>2.0</version>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>jasperreports-maven-plugin</artifactId>
+						<version>1.0-beta-2</version>
+						<configuration>
+							<outputDirectory>${project.build.directory}/jasper</outputDirectory>
+						</configuration>
+						
+						<dependencies>
+							<dependency>
+								<groupId>org.codehaus.mojo</groupId>
+								<artifactId>jasperreports-maven-plugin</artifactId>
+								<version>1.0-beta-2</version>
+								<!-- note that excluding jasperreports:jasperreports version 1.2 doesn't work even if we don't need it, 
+								see http://stackoverflow.com/questions/34193602/how-to-exclude-jasperreports-artifact-from-jasperreports-maven-plugin/34198348 -->
+							</dependency>
+							<dependency>
+								<groupId>net.sf.jasperreports</groupId>
+								<artifactId>jasperreports</artifactId>
+								<version>${jasperreports.version}</version>
+							</dependency>
+							
+							<!-- http://stackoverflow.com/questions/34193602/how-to-exclude-jasperreports-artifact-from-jasperreports-maven-plugin/34198348#34198348 -->
+							<dependency>
+								<groupId>commons-collections</groupId>
+								<artifactId>commons-collections</artifactId>
+								<version>3.2.1</version>
+							</dependency>
+
+							<!-- required to support groovy expressions in jrxml files -->
+							<dependency>
+								<groupId>org.codehaus.groovy</groupId>
+								<artifactId>groovy-all</artifactId>
+								<version>1.6.5</version>
+							</dependency>
+
+							<!-- required to compile reports with barcodes -->
+							<dependency>
+								<groupId>net.sf.barcode4j</groupId>
+								<artifactId>barcode4j-fop-ext-complete</artifactId>
+								<version>2.0</version>
+								<type>jar</type>
+								<scope>compile</scope>
+							</dependency>
+
+							<!-- Should fix this error: Execution default of goal org.codehaus.mojo:jasperreports-maven-plugin:1.0-beta-2:compile-reports 
+								failed: A required class was missing while executing org.codehaus.mojo:jasperreports-maven-plugin:1.0-beta-2:compile-reports: 
+								org/apache/log4j/Layout -->
+							<dependency>
+								<groupId>log4j</groupId>
+								<artifactId>log4j</artifactId>
+								<version>1.2.14</version>
+							</dependency>
+							
+							<!-- 
+								Adding spring-core and spring-beans to fix "java.lang.NoClassDefFoundError: org/springframework/core/io/Resource"
+								when running the jrc
+								-->
+							<dependency>
+								<groupId>org.springframework</groupId>
+								<artifactId>spring-core</artifactId>
+								<version>3.0.6.RELEASE</version>
+							</dependency>
+							<dependency>
+								<groupId>org.springframework</groupId>
+								<artifactId>spring-beans</artifactId>
+								<version>3.0.6.RELEASE</version>
+							</dependency>
+							
+						</dependencies>
 						<executions>
 							<execution>
-								<phase>process-sources</phase>
 								<goals>
-									<goal>jasper</goal>
+									<goal>compile-reports</goal>
 								</goals>
 							</execution>
 						</executions>
-						<configuration>
-                			<!-- These are the default configurations: -->
-							<compiler>net.sf.jasperreports.engine.design.JRJdtCompiler</compiler>
-							<sourceDirectory>src/main/jasperreports</sourceDirectory>
-							<outputDirectory>${project.build.directory}/jasper</outputDirectory>
-							<outputFileExt>.jasper</outputFileExt>
-							<xmlValidation>true</xmlValidation>
-							<verbose>false</verbose>
-							<numberOfThreads>4</numberOfThreads>
-						</configuration>
 					</plugin>
 
 					<plugin>

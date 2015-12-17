@@ -28,10 +28,12 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 
@@ -69,6 +71,14 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 */
 	I_M_Material_Tracking_Ref createMaterialTrackingRefNoSave(I_M_Material_Tracking materialTracking, Object model);
 
+	/**
+	 * 
+	 * Retrieve the material tracking refs for the given {@link I_M_Material_Tracking} and model's {@link I_AD_Table}
+	 * 
+	 * @param materialTracking
+	 * @param modelClass
+	 * @return
+	 */
 	List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefForType(I_M_Material_Tracking materialTracking, Class<?> modelClass);
 
 	/**
@@ -125,5 +135,21 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_Flatrate_Term> retrieveC_Flatrate_Terms_For_MaterialTracking(de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking materialTracking);
+
+	/**
+	 * Retrieve all the material tracking entries that fit the given period.
+	 * For this logic only the period's end-date is used: Material tracking's ValidFrom must be <= periodEnd and validTO >= periodEnd
+	 * 
+	 * @param period
+	 * @return list of the Material trackings that were found, EMpty list if none was found
+	 */
+	List<I_M_Material_Tracking> retrieveMaterialTrackingsForPeriod(I_C_Period period);
+
+	/**
+	 * Delete directly all the lines of the given {@link I_M_Material_Tracking_Report}
+	 * 
+	 * @param report
+	 */
+	void deleteMaterialTrackingReportLines(I_M_Material_Tracking_Report report);
 
 }

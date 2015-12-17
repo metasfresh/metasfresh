@@ -10,12 +10,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.invoicing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,6 +33,10 @@ import java.util.List;
  */
 public interface IQualityInvoiceLineGroup
 {
+	/**
+	 *
+	 * @return never return <code>null</code>.
+	 */
 	QualityInvoiceLineGroupType getQualityInvoiceLineGroupType();
 
 	IQualityInvoiceLine getInvoiceableLine();
@@ -41,14 +45,14 @@ public interface IQualityInvoiceLineGroup
 
 	/**
 	 * Each invoice line group can have one detail line which contains informations to be displayed (on the invoice jasper) <b>instead</b> of the actual invoice line's product, qty etc.
-	 * 
+	 *
 	 * @return
 	 */
 	IQualityInvoiceLine getInvoiceableLineOverride();
 
 	/**
 	 * See {@link #getInvoiceableLineOverride()}.
-	 * 
+	 *
 	 * @param invoiceableLineOverride
 	 */
 	void setInvoiceableLineOverride(IQualityInvoiceLine invoiceableLineOverride);

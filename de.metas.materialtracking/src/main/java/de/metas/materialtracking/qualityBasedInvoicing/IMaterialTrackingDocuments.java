@@ -22,6 +22,7 @@ package de.metas.materialtracking.qualityBasedInvoicing;
  * #L%
  */
 
+import java.util.Collection;
 import java.util.List;
 
 import org.compiere.model.I_M_PriceList_Version;
@@ -29,6 +30,7 @@ import org.compiere.model.I_M_PricingSystem;
 
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.model.I_PP_Order;
 
 /**
  * Material tracking documents: contains all quality inspection orders together with other relevant documents for a tracking number.
@@ -54,7 +56,7 @@ public interface IMaterialTrackingDocuments
 	 *
 	 * NOTE: the returned {@link IQualityInspectionOrder} could contain another instance of given manufacturing order (identification is made by ID only)
 	 *
-	 * @return
+	 * @return the actual quality inspection order or null if there is no quality inspection order
 	 */
 	IQualityInspectionOrder getQualityInspectionOrderOrNull();
 
@@ -69,10 +71,21 @@ public interface IMaterialTrackingDocuments
 	 * Iterate all PP_Orders and find out to which PLV they belong, according to their inout's <code>MovementDate</code>.
 	 *
 	 * @param pricingSystem
+	 * @return all price list versions related to our quality inspection orders
 	 */
-	List<I_M_PriceList_Version> setPricingSystemLoadPLVs(I_M_PricingSystem pricingSystem);
+	Collection<I_M_PriceList_Version> setPricingSystemLoadPLVs(I_M_PricingSystem pricingSystem);
 
 	List<IQualityInspectionOrder> getQualityInspectionOrdersForPLV(I_M_PriceList_Version plv);
 
 	IVendorReceipt<I_M_InOutLine> getVendorReceiptForPLV(I_M_PriceList_Version plv);
+
+	/**
+	 * Allow this instance to threat the given <code>ppOrder</code> as if is was closed, even if that is not (yet) the case.
+	 * Required when this we want to update the given ppOrder's data from is model interceptor right when the ppOrder is closed.
+	 * At that stage, the PPOrder is not yet closed in the DB.
+	 *
+	 * @param ppOrder may not be <code>null</code>
+	 * @task http://dewiki908/mediawiki/index.php/09657_WP-Auswertung_wird_beim_Schlie%C3%9Fen_nicht_erstellt_%28109750474442%29
+	 */
+	void considerPPOrderAsClosed(I_PP_Order ppOrder);
 }

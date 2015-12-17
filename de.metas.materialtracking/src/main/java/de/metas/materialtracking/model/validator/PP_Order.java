@@ -48,6 +48,7 @@ import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocuments;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.impl.PPOrderQualityCalculator;
+import de.metas.materialtracking.qualityBasedInvoicing.impl.PPOrderReportWriter;
 import de.metas.materialtracking.spi.impl.listeners.PPOrderMaterialTrackingListener;
 
 @Interceptor(I_PP_Order.class)
@@ -60,29 +61,37 @@ public class PP_Order
 		materialTrackingBL.addModelTrackingListener(I_PP_Order.Table_Name, PPOrderMaterialTrackingListener.instance);
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_CLOSE })
-	public void updateQualityFieldsAfterClose(final I_PP_Order ppOrder)
+	@DocValidate(timings = {
+			ModelValidator.TIMING_AFTER_CLOSE,
+			ModelValidator.TIMING_AFTER_UNCLOSE })
+	public void updateQualityFields(final I_PP_Order ppOrder)
 	{
+		// used services
+		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
+		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
+		final IQualityBasedInvoicingDAO qualityBasedInvoicingDAO = Services.get(IQualityBasedInvoicingDAO.class);
+
 		// Applies only on Quality Inspection orders
-		if (!Services.get(IMaterialTrackingPPOrderBL.class).isQualityInspection(ppOrder))
+		if (!materialTrackingPPOrderBL.isQualityInspection(ppOrder))
 		{
 			return;
 		}
 
 		// Applies only on those Quality Inspection orders which are linked to a material tracking
-		final I_M_Material_Tracking materialTracking = Services.get(IMaterialTrackingDAO.class).retrieveMaterialTrackingForModel(ppOrder);
+		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(ppOrder);
 		if (materialTracking == null)
 		{
 			return;
 		}
 
-		final IQualityBasedInvoicingDAO qualityBasedInvoicingDAO = Services.get(IQualityBasedInvoicingDAO.class);
+		// if the value was true for whatever reason, then we need to make it false now
+		ppOrder.setIsInvoiceCandidate(false);
+
 		final IMaterialTrackingDocuments materialTrackingDocuments = qualityBasedInvoicingDAO.retrieveMaterialTrackingDocuments(materialTracking);
+		materialTrackingDocuments.considerPPOrderAsClosed(ppOrder); // task 09657
 
 		final PPOrderQualityCalculator calculator = new PPOrderQualityCalculator();
 		calculator.update(materialTrackingDocuments);
-
-		ppOrder.setIsInvoiceCandidate(false); // if the value was true for whatever reason, then we need to make it false now
 	}
 
 	/**
@@ -98,8 +107,8 @@ public class PP_Order
 		final List<I_C_Invoice> invoices = queryBL
 				.createQueryBuilder(I_C_Invoice_Detail.class, ppOrder)
 				.addEqualsFilter(I_C_Invoice_Detail.COLUMN_PP_Order_ID, ppOrder.getPP_Order_ID())
-				.andCollect(I_C_InvoiceLine.COLUMN_C_InvoiceLine_ID)
-				.andCollect(I_C_Invoice.COLUMN_C_Invoice_ID)
+				.andCollect(I_C_Invoice_Detail.COLUMN_C_InvoiceLine_ID)
+				.andCollect(I_C_InvoiceLine.COLUMN_C_Invoice_ID)
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
 				.orderBy().addColumn(I_C_Invoice.COLUMNNAME_DocumentNo).endOrderBy()
 				.create()
@@ -135,7 +144,8 @@ public class PP_Order
 	public void deleteInvoiceDetailsAfterUnclose(final I_PP_Order ppOrder)
 	{
 		Services.get(IMaterialTrackingPPOrderDAO.class).deleteInvoiceDetails(ppOrder);
-
 		ppOrder.setIsInvoiceCandidate(false);
+
+		new PPOrderReportWriter(ppOrder).deleteReportLines();
 	}
 }

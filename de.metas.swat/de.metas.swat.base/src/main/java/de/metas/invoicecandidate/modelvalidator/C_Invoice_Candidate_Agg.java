@@ -23,7 +23,7 @@ package de.metas.invoicecandidate.modelvalidator;
  */
 
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -66,7 +66,7 @@ public class C_Invoice_Candidate_Agg implements ModelValidator
 		{
 			if (po.is_ValueChanged(I_C_Invoice_Candidate_Agg.COLUMNNAME_Classname))
 			{
-				final I_C_Invoice_Candidate_Agg icAgg = POWrapper.create(po, I_C_Invoice_Candidate_Agg.class);
+				final I_C_Invoice_Candidate_Agg icAgg = InterfaceWrapperHelper.create(po, I_C_Invoice_Candidate_Agg.class);
 				Services.get(IAggregationBL.class).evalClassName(icAgg);
 			}
 

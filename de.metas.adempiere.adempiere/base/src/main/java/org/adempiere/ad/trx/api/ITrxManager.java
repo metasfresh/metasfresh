@@ -10,18 +10,17 @@ package org.adempiere.ad.trx.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.List;
@@ -194,7 +193,7 @@ public interface ITrxManager extends ISingletonService
 
 	/**
 	 * Convenient method to execute the given runnable, but out of transaction (i.e. NO transaction management will be involved).
-	 * 
+	 *
 	 * @param r runnable
 	 */
 	void runOutOfTransaction(TrxRunnable r);
@@ -218,7 +217,7 @@ public interface ITrxManager extends ISingletonService
 
 	/**
 	 * Same as {@link #getTrxListenerManager(String)}.
-	 * 
+	 *
 	 * But in case
 	 * <ul>
 	 * <li>the transaction {@link #isNull(String)}
@@ -226,8 +225,8 @@ public interface ITrxManager extends ISingletonService
 	 * <li>or transaction no longer exists or was closed
 	 * </ul>
 	 * this method will return a pseudo- {@link ITrxListenerManager} which automatically commits when a listener is registered.
-	 * 
-	 * 
+	 *
+	 *
 	 * @param trxName
 	 * @return auto-commit {@link ITrxListenerManager}; never returns null
 	 */
@@ -242,9 +241,9 @@ public interface ITrxManager extends ISingletonService
 
 	/**
 	 * Checks if given <code>trxName</code> is a "null"/no transaction.
-	 * 
+	 *
 	 * Mainly, null/no transaction names are <code>null</code>, empty string, {@link ITrx#TRXNAME_None}, {@link ITrx#TRXNAME_NoneNotNull}.
-	 * 
+	 *
 	 * @param trxName
 	 * @return true if given transaction is "null" (i.e. no transaction)
 	 */
@@ -347,7 +346,7 @@ public interface ITrxManager extends ISingletonService
 	 * Assumes current thread has thread inherited transaction set.
 	 */
 	void assertThreadInheritedTrxExists();
-	
+
 	/**
 	 * Assumes current thread does not have thread inherited transaction set.
 	 */
@@ -407,7 +406,7 @@ public interface ITrxManager extends ISingletonService
 
 	/**
 	 * Sets the default {@link OnRunnableFail} to be used when a new {@link #run(TrxRunnable)} is executed.
-	 * 
+	 *
 	 * @param onRunnableFail
 	 */
 	void setThreadInheritedOnRunnableFail(OnRunnableFail onRunnableFail);

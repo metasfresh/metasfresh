@@ -122,17 +122,19 @@ public class ServerMonitorFilter implements Filter
 	private boolean checkAuthorization(String authorization)
 	{
 		if (authorization == null)
+		{
 			return false;
+		}
 		try
 		{
-			String userInfo = authorization.substring(6).trim();
-			final String namePassword = DatatypeConverter.printBase64Binary(userInfo.getBytes());
-			
+			final String userInfo = authorization.substring(6).trim();
+			final String namePassword = new String(DatatypeConverter.parseBase64Binary(userInfo));
+
 			// log.fine("checkAuthorization - Name:Password=" + namePassword);
-			int index = namePassword.indexOf(':');
-			String name = namePassword.substring(0, index);
-			String password = namePassword.substring(index + 1);
-			MUser user = MUser.get(Env.getCtx(), name, password);
+			final int index = namePassword.indexOf(':');
+			final String name = namePassword.substring(0, index);
+			final String password = namePassword.substring(index + 1);
+			final MUser user = MUser.get(Env.getCtx(), name, password);
 			if (user == null)
 			{
 				log.warning("User not found: '" + name + "/" + password + "'");
@@ -146,7 +148,7 @@ public class ServerMonitorFilter implements Filter
 			log.info("Name=" + name);
 			return true;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.log(Level.SEVERE, "check", e);
 		}

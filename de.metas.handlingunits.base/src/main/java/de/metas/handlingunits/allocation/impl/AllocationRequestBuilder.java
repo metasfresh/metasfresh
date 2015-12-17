@@ -196,23 +196,7 @@ import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 	@Override
 	public IAllocationRequestBuilder setFromReferencedModel(final Object referenceModel)
 	{
-		final ITableRecordReference fromReferencedTableRecord;
-		if (referenceModel != null)
-		{
-			if (referenceModel instanceof ITableRecordReference)
-			{
-				fromReferencedTableRecord = (ITableRecordReference)referenceModel;
-			}
-			else
-			{
-				fromReferencedTableRecord = new TableRecordReference(referenceModel);
-			}
-		}
-		else
-		{
-			fromReferencedTableRecord = null;
-		}
-
+		final ITableRecordReference fromReferencedTableRecord = TableRecordReference.ofOrNull(referenceModel);
 		return setFromReferencedTableRecord(fromReferencedTableRecord);
 	}
 

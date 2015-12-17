@@ -32,6 +32,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
@@ -44,6 +45,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
  */
 public class C_Invoice_Candidate_Create_Missing extends SvrProcess
 {
+	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	
 	@Override
 	protected void prepare()
 	{
@@ -59,17 +62,9 @@ public class C_Invoice_Candidate_Create_Missing extends SvrProcess
 
 		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, getAD_PInstance_ID(), I_AD_PInstance.class, trxName);
 
-		final IInvoiceCandBL service = Services.get(IInvoiceCandBL.class);
-		try
+		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 		{
-			// make sure that the code in the thread knows..
-			// this avoids the effort of invalidating candidates over and over by different model validators etc
-			service.setUpdateProcessInProgress(true);
-			service.createMissingCandidates(adPInstance, trxName);
-		}
-		finally
-		{
-			service.setUpdateProcessInProgress(false);
+			invoiceCandBL.createMissingCandidates(adPInstance, trxName);
 		}
 		return "@Success@";
 	}

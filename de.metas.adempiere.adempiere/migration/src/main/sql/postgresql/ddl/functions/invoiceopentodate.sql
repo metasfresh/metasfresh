@@ -3,9 +3,21 @@ DROP FUNCTION IF EXISTS invoiceopentodate(numeric, numeric, date);
 DROP FUNCTION IF EXISTS invoiceOpenToDate(numeric, numeric, timestamp with time zone);
 DROP FUNCTION IF EXISTS invoiceOpenToDate(numeric, numeric, char, timestamp with time zone);
 DROP FUNCTION IF EXISTS invoiceOpenToDate(numeric, numeric, char, timestamp with time zone, numeric);
-
--- drop current function
+-- drop current function:
 DROP FUNCTION IF EXISTS invoiceOpenToDate(numeric, numeric, char, timestamp with time zone, numeric, numeric);
+
+
+
+drop type if exists InvoiceOpenResult;
+create type InvoiceOpenResult as (
+	GrandTotal numeric
+	, OpenAmt numeric
+	, PaidAmt numeric
+	--
+	, C_Currency_ID numeric
+);
+COMMENT ON TYPE InvoiceOpenResult IS 'The result of some invoiceOpen functions. It mainly contains the invoice grand total, open amount, paid amount and the currency of those amounts.';
+
 
 CREATE OR REPLACE FUNCTION invoiceOpenToDate
 (
@@ -18,7 +30,7 @@ CREATE OR REPLACE FUNCTION invoiceOpenToDate
 	/** Currency of the result. If null, invoice currency will be used */ 
 	, p_Result_Currency_ID numeric = null
 )
-RETURNS numeric AS
+RETURNS InvoiceOpenResult AS
 $BODY$
 DECLARE
 	v_InvoiceCurrency_ID numeric;
@@ -39,6 +51,8 @@ DECLARE
 	v_Remaining numeric := 0;
 	v_AllocAmtSource numeric := 0;
 	v_AllocAmtConv numeric := 0;
+	--
+	v_result InvoiceOpenResult;
 	--
 	allocationline record;
 	invoiceschedule record;
@@ -115,6 +129,11 @@ BEGIN
 	raise debug 'C_Currency_ID=%, GrandTotal(abs)=%, MultiplierAP=%, MultiplierCM=%', v_Currency_ID, v_TotalOpenAmt, v_MultiplierAP, v_MultiplierCM;
 	raise debug 'StdPrecision=%, Rounding tolerance=%', v_Precision, v_Min;
 	--
+	
+	--
+	-- Initialize the result
+	v_result.GrandTotal := v_TotalOpenAmt;
+	v_result.C_Currency_ID := v_Currency_ID;
 
 	--
 	--	Calculate Allocated Amount
@@ -192,7 +211,13 @@ BEGIN
 
 	--	Round to currency precision
 	v_TotalOpenAmt := ROUND(COALESCE(v_TotalOpenAmt,0), v_Precision);
-	RETURN	v_TotalOpenAmt;
+	
+	--
+	-- Update the result and return it
+	v_result.OpenAmt := v_TotalOpenAmt;
+	v_result.PaidAmt := v_result.GrandTotal - v_result.OpenAmt;
+	
+	RETURN	v_result;
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE
@@ -203,13 +228,21 @@ COST 100;
 CREATE OR REPLACE FUNCTION invoiceOpenToDate(p_c_invoice_id numeric, p_c_invoicepayschedule_id numeric, p_DateTrx timestamp with time zone)
 RETURNS numeric AS
 $BODY$
+DECLARE
+	v_result InvoiceOpenResult;
 BEGIN
-	return invoiceOpenToDate (
+	v_result := invoiceOpenToDate (
 		p_C_Invoice_ID
 		, p_C_InvoicePaySchedule_ID
 		, 'T' -- p_DateType
 		, p_DateTrx
 	);
+	
+	if (v_result is null) then
+		return null;
+	end if;
+	
+	return v_result.OpenAmt;
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE

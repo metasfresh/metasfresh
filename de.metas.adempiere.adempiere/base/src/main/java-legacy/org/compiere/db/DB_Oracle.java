@@ -867,5 +867,11 @@ public class DB_Oracle implements AdempiereDatabase
 	{
 		throw new UnsupportedOperationException();
 	}
+	
+	@Override
+	public String getRowIdSql(final String tableName)
+	{
+		throw new UnsupportedOperationException();
+	}
 
 }   //  DB_Oracle

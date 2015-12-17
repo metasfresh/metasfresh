@@ -220,7 +220,7 @@ public class QualityInspectionLinesBuilder
 			final BigDecimal producedTotal_QtyProjected = raw_Line.getQtyProjected().subtract(scrap_Line.getQtyProjected());
 			producedTotal_Line = newQualityInspectionLine()
 					.setQualityInspectionLineType(QualityInspectionLineType.ProducedTotal)
-					.setName("Karotten netto gewaschen")
+					.setName("netto gewaschen")
 					.setQty(producedTotal_Qty)
 					.setQtyProjected(producedTotal_QtyProjected)
 					.setC_UOM(uom)

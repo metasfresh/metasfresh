@@ -25,7 +25,6 @@ package de.metas.notification.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -155,9 +154,15 @@ public class MailBL implements IMailBL
 
 	// @Cached
 	@Override
-	public IMailbox findMailBox(final I_AD_Client client, final int AD_Org_ID, final int AD_Process_ID, final String customType, final I_AD_User user)
+	public IMailbox findMailBox(final I_AD_Client client,
+			final int AD_Org_ID,
+			final int AD_Process_ID,
+			final String customType,
+			final I_AD_User user)
 	{
 		IMailbox mailbox = findMailBox(client, AD_Org_ID, AD_Process_ID, customType);
+		Check.errorIf(mailbox == null, "Unable to find IMailbox for AD_Client={0}, AD_Org_ID={1}, AD_Process_ID={2}, customeType={3}",
+				client, AD_Org_ID, AD_Process_ID, customType);
 		if (user != null)
 		{
 			mailbox = new Mailbox(mailbox.getSmtpHost(),
@@ -167,8 +172,7 @@ public class MailBL implements IMailBL
 					mailbox.isSmtpAuthorization(),
 					mailbox.isSendFromServer(),
 					mailbox.getAD_Client_ID(),
-					user.getAD_User_ID()
-					);
+					user.getAD_User_ID());
 		}
 		return mailbox;
 	}

@@ -10,77 +10,68 @@ package org.adempiere.ad.trx.processor.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.exceptions.AdempiereException;
 
 /**
  * An {@link ITrxItemProcessorExecutor}'s exception handler which fails on first error.
- * 
+ *
  * @author tsa
- * 
+ *
  */
-public final class FailTrxItemExceptionHandler implements ITrxItemExceptionHandler
+public class FailTrxItemExceptionHandler implements ITrxItemExceptionHandler
 {
 	public static final FailTrxItemExceptionHandler instance = new FailTrxItemExceptionHandler();
 
-	private FailTrxItemExceptionHandler()
+	protected FailTrxItemExceptionHandler()
 	{
 		super();
 	}
 
-	private final void fail(final Exception e, Object item)
+	protected void fail(final Exception e, final Object item)
 	{
-		if (e instanceof AdempiereException)
-		{
-			final AdempiereException aex = (AdempiereException)e;
-			throw aex;
-		}
-		else
-		{
-			throw new AdempiereException(e.getLocalizedMessage(), e);
-		}
+		throw AdempiereException.wrapIfNeeded(e);
 	}
 
 	@Override
-	public void onNewChunkError(Exception e, Object item)
+	public void onNewChunkError(final Exception e, final Object item)
 	{
 		fail(e, item);
 	}
 
 	@Override
-	public void onItemError(Exception e, Object item)
+	public void onItemError(final Exception e, final Object item)
 	{
 		fail(e, item);
 	}
 
 	@Override
-	public void onCompleteChunkError(Exception e)
+	public void onCompleteChunkError(final Exception e)
 	{
 		final Object item = null;
 		fail(e, item);
 	}
 
 	@Override
-	public void onCommitChunkError(Exception e)
+	public void onCommitChunkError(final Exception e)
 	{
 		final Object item = null;
 		fail(e, item);
 	}
 
 	@Override
-	public void onCancelChunkError(Exception e)
+	public void onCancelChunkError(final Exception e)
 	{
 		final Object item = null;
 		fail(e, item);

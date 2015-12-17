@@ -59,6 +59,7 @@ c_trl.ad_language
 , c.isautocomplete
 , f.includedtabheight
 , c.iscalculated
+, c.FormatPattern
 , f.SpanX
 , f.SpanY
 , f.EntityType as FieldEntityType

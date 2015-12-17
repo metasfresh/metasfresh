@@ -21,7 +21,6 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 

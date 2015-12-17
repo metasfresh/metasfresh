@@ -1,8 +1,8 @@
 
 DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0));
-DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments character varying  );
-
-CREATE FUNCTION report.fresh_Account_Info_Report_Sub ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments  character varying ) 
+DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub  (IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments  character varying) ;
+DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report_Sub  (IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments  character varying, IN showCurrencyExchange character varying) ;
+CREATE OR REPLACE FUNCTION report.fresh_Account_Info_Report_Sub ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments  character varying, IN showCurrencyExchange character varying) 
 	RETURNS TABLE ( 
 		DateAcct date, 
 		Fact_Acct_ID numeric (10,0), 
@@ -22,7 +22,10 @@ CREATE FUNCTION report.fresh_Account_Info_Report_Sub ( IN Account_ID numeric (10
 		Param_Start_Date text,
 		Param_Activity_Value text,
 		Param_Activity_Name text,
-		DocStatus text
+		DocStatus text,
+		ConversionMultiplyRate numeric,
+		EuroSaldo numeric,
+		containsEUR text
 	) AS 
 $$
 SELECT
@@ -66,7 +69,11 @@ SELECT
 	to_char($2, 'DD.MM.YYYY') AS Param_Start_Date,
 	pa.value AS Param_Activity_Value,
 	pa.Name AS Param_Activit_Name,
-	fa.docStatus
+	fa.docStatus,
+	ConversionMultiplyRate,
+	CASE WHEN $6 = 'Y' AND ConversionMultiplyRate IS NOT NULL  THEN ConversionMultiplyRate * (CarryBalance + SUM( Balance ) OVER ( 
+	)) ELSE NULL END AS EuroSaldo,
+	containsEUR
 FROM
 	(
 		SELECT 
@@ -74,10 +81,13 @@ FROM
 			ev.value AS Param_Acct_Value, ev.name AS Param_Acct_Name,fa.Record_ID,
 			COALESCE( CASE WHEN isCalculationSwitched THEN AmtAcctDr - AmtAcctCr ELSE AmtAcctCr - AmtAcctDr END, 0 ) AS Balance,
 			COALESCE( CASE WHEN isCalculationSwitched THEN switchedCarryBalance ELSE CarryBalance END, 0 ) AS CarryBalance,
-			fa.DocStatus
+			fa.DocStatus,
+			cr.MultiplyRate AS ConversionMultiplyRate,
+			CASE WHEN fa.C_Currency_ID= (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR') THEN 'Y' END AS containsEUR
+			
 		FROM 
 			( 
-				SELECT ev.C_ElementValue_ID, ev.value, ev.name, Accounttype IN ('A', 'R', 'O') AS isCalculationSwitched 
+				SELECT ev.C_ElementValue_ID, ev.value, ev.name, ev.ad_client_id, Accounttype IN ('A', 'R', 'O') AS isCalculationSwitched 
 				FROM C_ElementValue ev WHERE C_ElementValue_ID = $1 
 			) ev
 			LEFT OUTER JOIN Fact_Acct fa ON fa.Account_ID = ev.C_ElementValue_ID 
@@ -88,6 +98,15 @@ FROM
 				SELECT SUM ( AmtAcctDr - AmtAcctCr ) AS switchedCarryBalance,  SUM ( fa.AmtAcctCr - AmtAcctDr ) AS CarryBalance, fa.Account_ID
 				FROM Fact_Acct fa WHERE fa.DateAcct < $2 GROUP BY Account_ID
 			) cb ON cb.Account_ID = C_ElementValue_ID
+			--taking the currency of the client to convert it into euro
+			LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID=ev.ad_client_id
+			LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID
+			LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID
+			--convertion rate to euro
+			LEFT OUTER JOIN C_Conversion_Rate cr ON cr.c_currency_id = c.c_currency_id
+				AND cr.c_currency_id_to = (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR') 
+				AND cr.validfrom<=$3 AND $3<=cr.validto 
+				AND cr.C_ConversionType_ID=(SELECT C_ConversionType_ID FROM C_ConversionType where value ='P')
 
 		
 	) fa
@@ -97,7 +116,7 @@ FROM
 	LEFT OUTER JOIN C_Activity a ON fa.C_Activity_ID = a.C_Activity_ID
 	LEFT OUTER JOIN C_Activity pa ON COALESCE( pa.C_Activity_ID = $4, false )
 WHERE
-			--fa.DocStatus NOT IN ('CL', 'VO', 'RE')
+			
 		CASE WHEN ($5 = 'Y') THEN
  			1=1
  			ELSE
@@ -109,7 +128,7 @@ ORDER BY
 	fa.Account_ID,
 	fa.DateAcct::Date, 
 	fa.Fact_Acct_ID
-$$ 
+ $$ 
 LANGUAGE sql STABLE;
 
 
@@ -119,7 +138,9 @@ DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report ( IN Account_ID numeric
 
 DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments character varying   );
 
-CREATE FUNCTION report.fresh_Account_Info_Report ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments character varying  ) 
+DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments character varying, IN showCurrencyExchange character varying  );
+
+CREATE OR REPLACE FUNCTION report.fresh_Account_Info_Report ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0), IN DisplayVoidDocuments character varying, IN showCurrencyExchange character varying  ) 
 	RETURNS TABLE ( 
 		DateAcct date, 
 		Fact_Acct_ID numeric (10,0), 
@@ -138,22 +159,29 @@ CREATE FUNCTION report.fresh_Account_Info_Report ( IN Account_ID numeric (10,0),
 		Param_Activity_Name text,
 		overallcount bigint,
 		UnionOrder integer,
-		docStatus text
+		docStatus text,
+		EuroSaldo numeric,
+		containsEUR text
 	) AS 
 $$
 	SELECT 	DateAcct, Fact_Acct_ID, BP_Name, Description, Account2_ID, a_Value, AmtAcctDr, AmtAcctCr, Saldo, 
 		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, 
-		Param_Activity_Name, count(0) OVER () AS overallcount, 2 AS UnionOrder, DocStatus
-	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5 )
+		Param_Activity_Name, count(0) OVER () AS overallcount, 2 AS UnionOrder, DocStatus, null::numeric, null::text
+	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6 )
 	WHERE	Fact_Acct_ID IS NOT NULL
 UNION ALL
 	SELECT DISTINCT null::date, null::numeric, null, 'Anfangssaldo', null::text, null::text, null::numeric, null::numeric, CarrySaldo, 
-		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 1, null::text
-	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3,  $4, $5 )
+		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 1, null::text, null::numeric, null::text
+	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3,  $4, $5, $6 )
 UNION ALL
 	SELECT DISTINCT null::date, null::numeric, null, 'Summe', null::text, null::text, AmtAcctDrEnd, AmtAcctCrEnd, CarrySaldo, 
-		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 3, null::text
-	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3,  $4, $5 )
+		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 3, null::text, null::numeric, null::text
+	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3,  $4, $5, $6 )
+UNION ALL
+	(SELECT DISTINCT null::date, null::numeric, null, 'Summe in EUR', null::text, null::text, null::numeric, null::numeric, null::numeric, 
+		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 4, null::text, EuroSaldo, containsEUR
+	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3,  $4, $5, $6 )
+	WHERE containsEUR is not null )
 ORDER BY
 	UnionOrder, DateAcct, 
 	Fact_Acct_ID

@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -44,8 +43,16 @@ import de.metas.lock.api.ILockManager;
  * @author tsa
  *
  */
-/* package */class LockedByOrNotLockedAtAllFilter implements IQueryFilter<I_C_Invoice_Candidate>, ISqlQueryFilter
+/* package */class LockedByOrNotLockedAtAllFilter implements IQueryFilter<I_C_Invoice_Candidate_Recompute>, ISqlQueryFilter
 {
+	/**
+	 * @param lock lock or <code>null</code>
+	 */
+	public static final LockedByOrNotLockedAtAllFilter of(final ILock lock)
+	{
+		return new LockedByOrNotLockedAtAllFilter(lock);
+	}
+	
 	// services
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 
@@ -56,11 +63,7 @@ import de.metas.lock.api.ILockManager;
 	private boolean sqlBuilt = false;
 	private String sql = null;
 
-	/**
-	 *
-	 * @param lock lock or <code>null</code>
-	 */
-	public LockedByOrNotLockedAtAllFilter(final ILock lock)
+	private LockedByOrNotLockedAtAllFilter(final ILock lock)
 	{
 		super();
 		this.lock = lock;
@@ -104,19 +107,19 @@ import de.metas.lock.api.ILockManager;
 			lockedWhereClause = lockManager.getLockedWhereClause(I_C_Invoice_Candidate.class, columnNameInvoiceCandidateId, lock);
 		}
 
-		sql = " AND (" + lockedWhereClause + ")";
+		sql = "(" + lockedWhereClause + ")";
 		sqlBuilt = true;
 	}
 
 	@Override
-	public boolean accept(final I_C_Invoice_Candidate model)
+	public boolean accept(final I_C_Invoice_Candidate_Recompute model)
 	{
 		if (model == null)
 		{
 			return false;
 		}
 
-		final int invoiceCandidateId = InterfaceWrapperHelper.getId(model);
+		final int invoiceCandidateId = model.getC_Invoice_Candidate_ID();
 		return acceptInvoiceCandidateId(invoiceCandidateId);
 	}
 

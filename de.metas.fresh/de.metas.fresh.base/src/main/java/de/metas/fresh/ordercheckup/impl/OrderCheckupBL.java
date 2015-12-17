@@ -92,7 +92,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		{
 			//
 			// Retrieve the product data planning which defines how the order line product will be manufactured
-			final I_PP_Product_Planning mfgProductPlanning = orderCheckupDAO.retrieveManufacturingProductPlanningOrNull(orderLine);
+			final I_PP_Product_Planning mfgProductPlanning = orderCheckupDAO.retrieveProductPlanningOrNull(orderLine);
 			if (mfgProductPlanning == null)
 			{
 				logger.log(Level.INFO, "Skip order line because no manufacturing product planning was found for it: {0}", orderLine);

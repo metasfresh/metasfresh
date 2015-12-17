@@ -53,6 +53,7 @@ import org.compiere.util.Trx;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.ui.MiniTableUtil;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
@@ -63,7 +64,7 @@ public abstract class InvoiceGenerate extends GenForm
 {
 	public static final String MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P = "InvoiceGenerate_No_Candidates_Selected";
 
-	protected final CLogger log = CLogger.getCLogger(getClass());
+	protected static final transient CLogger log = InvoiceCandidate_Constants.getLogger();
 
 	private final int InvoiceCandidate_Window_ID = 540093; // HARDCODED
 	// see de.metas.adempiere.process.C_Invoice_Candidate_Generate class
@@ -81,6 +82,7 @@ public abstract class InvoiceGenerate extends GenForm
 		setAskPrintMsg("PrintInvoices");
 	}
 
+	@Override
 	public void configureMiniTable(IMiniTable miniTable)
 	{
 		final boolean multiSelection = true;

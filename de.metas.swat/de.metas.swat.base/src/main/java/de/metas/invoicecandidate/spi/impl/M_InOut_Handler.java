@@ -109,7 +109,24 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
-		// nothing
+		final I_M_InOut inout = InterfaceWrapperHelper.create(model, I_M_InOut.class);
+		invalidateCandidatesForInOut(inout);
+	}
+	
+	private void invalidateCandidatesForInOut(final I_M_InOut inout)
+	{
+		//
+		// Retrieve inout line handlers
+		final Properties ctx = InterfaceWrapperHelper.getCtx(inout);
+		final List<IInvoiceCandidateHandler> inoutLineHandlers = Services.get(IInvoiceCandidateHandlerBL.class).retrieveImplementationsForTable(ctx, org.compiere.model.I_M_InOutLine.Table_Name);
+
+		for (final IInvoiceCandidateHandler handler : inoutLineHandlers)
+		{
+			for (final org.compiere.model.I_M_InOutLine line : inOutDAO.retrieveLines(inout))
+			{
+				handler.invalidateCandidatesFor(line);
+			}
+		}
 	}
 
 	@Override

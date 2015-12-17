@@ -22,7 +22,7 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -44,21 +44,44 @@ public interface IInvoiceCandRecomputeTagger
 	 * 
 	 * If the recompute tag is not set, a new one will be generated.
 	 * 
-	 * @return recompute tag (i.e. AD_PInstance_ID).
+	 * @return recompute tag
 	 */
-	int tagAll();
+	InvoiceCandRecomputeTag tag();
 
 	/**
-	 * Tag given invoice candidates, <b>IF</b> they were scheduled to be recomputed.
+	 * Un-tag all those which were previously tagged by {@link #tag()} and which were not already deleted.
 	 * 
-	 * If the recompute tag is not set, a new one will be generated.
-	 * 
-	 * @return recompute tag (i.e. AD_PInstance_ID).
+	 * @return how many candidates were un-tagged.
 	 */
-	int tag(final Iterator<I_C_Invoice_Candidate> candidates);
+	int untag();
 
-	/** @param adPInstanceId recompute tag to be used */
-	IInvoiceCandRecomputeTagger setRecomputeTag(final int adPInstanceId);
+	/**
+	 * 
+	 * @return how many invoice candidates will be tagged by {@link #tag()} method.
+	 */
+	int countToBeTagged();
+
+	/**
+	 * Delete all invoice candidates schedulers for recompute of current tag.
+	 */
+	void deleteAllTagged();
+
+	/**
+	 * Delete given invoice candidates which were scheduled for recompute and are tagged with current tag.
+	 * 
+	 * @param invoiceCandidateIds
+	 */
+	void deleteTagged(Collection<Integer> invoiceCandidateIds);
+
+	/**
+	 * Retrieves tagged invoice candidates.
+	 * 
+	 * This method assumes {@link #tag()} was called before.
+	 */
+	Iterator<I_C_Invoice_Candidate> retrieveInvoiceCandidates();
+
+	/** @param recomputeTag recompute tag to be used */
+	IInvoiceCandRecomputeTagger setRecomputeTag(final InvoiceCandRecomputeTag recomputeTag);
 
 	IInvoiceCandRecomputeTagger setContext(final Properties ctx, final String trxName);
 
@@ -71,4 +94,39 @@ public interface IInvoiceCandRecomputeTagger
 	 *            </ul>
 	 */
 	IInvoiceCandRecomputeTagger setLockedBy(ILock lockedBy);
+
+	/**
+	 * Consider only those invoice candidates which were tagged with given tag.
+	 * 
+	 * @param tag
+	 */
+	IInvoiceCandRecomputeTagger setTaggedWith(InvoiceCandRecomputeTag tag);
+
+	/**
+	 * Consider only those invoice candidates which were not tagged.
+	 */
+	IInvoiceCandRecomputeTagger setTaggedWithNoTag();
+
+	/**
+	 * Consider any invalid invoice candidate, no matter if they are tagged or not.
+	 *
+	 * NOTE:
+	 * <ul>
+	 * <li>this is the default behavior if no setTaggedWith methods are called.
+	 * </ul>
+	 */
+	IInvoiceCandRecomputeTagger setTaggedWithAnyTag();
+
+	/**
+	 * Sets maximum number of invoice candidates to tag.
+	 * 
+	 * @param limit
+	 */
+	IInvoiceCandRecomputeTagger setLimit(int limit);
+
+	IInvoiceCandRecomputeTagger setOnlyC_Invoice_Candidates(Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates);
+
+	IInvoiceCandRecomputeTagger setOnlyC_Invoice_Candidates(Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates);
+
+	boolean isOnlyC_Invoice_Candidate_IDs();
 }

@@ -53,7 +53,7 @@ import org.compiere.util.CLogger;
  * @param <IT>
  * @param <RT>
  */
-public class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor<IT, RT>
+class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor<IT, RT>
 {
 	//
 	// Services
@@ -64,17 +64,25 @@ public class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorE
 
 	private static final String TRXNAME_PREFIX = "TrxItemChunkProcessorExecutor";
 
+	//
+	// Configuration parameters
 	private final ITrxItemProcessorContext processorCtx;
 	private final ITrxItemChunkProcessor<IT, RT> processor;
 	private ITrxItemExceptionHandler exceptionHandler = DEFAULT_ExceptionHandler;
+	private boolean useTrxSavepoints = true; // default: true - backward compatibility
 
+	//
+	// State
 	private boolean chunkOpen = false;
 	private boolean chunkHasErrors = false;
-
+	// Transaction state
 	private ITrx chunkTrx;
+	/** true if the {@link #chunkTrx} was created locally in this executor */
+	private boolean chunkTrxIsLocal;
 	private ITrxSavepoint chunkTrxSavepoint;
+	private ITrxItemProcessorContext chunkCtx;
 
-	public TrxItemChunkProcessorExecutor(final ITrxItemProcessorContext processorCtx, final ITrxItemChunkProcessor<IT, RT> processor)
+	TrxItemChunkProcessorExecutor(final ITrxItemProcessorContext processorCtx, final ITrxItemChunkProcessor<IT, RT> processor)
 	{
 		super();
 
@@ -91,6 +99,13 @@ public class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorE
 		Check.assumeNotNull(exceptionHandler, "exceptionHandler not null");
 		this.exceptionHandler = exceptionHandler;
 
+		return this;
+	}
+	
+	@Override
+	public ITrxItemProcessorExecutor<IT, RT> setUseTrxSavepoints(final boolean useTrxSavepoints)
+	{
+		this.useTrxSavepoints = useTrxSavepoints;
 		return this;
 	}
 
@@ -212,7 +227,7 @@ public class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorE
 		final String trxNameBkp = InterfaceWrapperHelper.getTrxName(item, ignoreIfNotHandled);
 		try
 		{
-			InterfaceWrapperHelper.setTrxName(item, processorCtx.getTrxName(), ignoreIfNotHandled);
+			InterfaceWrapperHelper.setTrxName(item, chunkCtx.getTrxName(), ignoreIfNotHandled);
 			processor.process(item);
 		}
 		catch (final Exception e)
@@ -239,7 +254,7 @@ public class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorE
 		{
 			//
 			// Setup chunk context
-			final ITrxItemProcessorContext chunkCtx = processorCtx.copy();
+			this.chunkCtx = processorCtx.copy();
 			chunkCtx.setTrx(chunkTrx);
 			processor.setTrxItemProcessorCtx(chunkCtx);
 
@@ -363,12 +378,22 @@ public class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorE
 		{
 			final String trxName = trxManager.createTrxName(TRXNAME_PREFIX, true);
 			chunkTrx = trxManager.get(trxName, OnTrxMissingPolicy.Fail);
+			chunkTrxIsLocal = true;
 			chunkTrxSavepoint = null;
 		}
 		else
 		{
 			chunkTrx = parentTrx;
-			chunkTrxSavepoint = parentTrx.createTrxSavepoint(null);
+			chunkTrxIsLocal = false;
+			
+			if (useTrxSavepoints)
+			{
+				chunkTrxSavepoint = parentTrx.createTrxSavepoint(null);
+			}
+			else
+			{
+				chunkTrxSavepoint = null;
+			}
 		}
 
 		//
@@ -386,12 +411,9 @@ public class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorE
 	{
 		Check.assumeNotNull(chunkTrx, "chunkTrx shall NOT be null");
 
-		if (chunkTrxSavepoint != null)
-		{
-			chunkTrx.releaseSavepoint(chunkTrxSavepoint);
-			chunkTrxSavepoint = null;
-		}
-		else
+		//
+		// Case: Locally created transaction => commit it
+		if (chunkTrxIsLocal)
 		{
 			try
 			{
@@ -402,6 +424,19 @@ public class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorE
 				throw new DBException(e);
 			}
 			chunkTrx.close();
+		}
+		//
+		// Case: Savepoint on inherited transaction => release the savepoint 
+		else if (chunkTrxSavepoint != null)
+		{
+			chunkTrx.releaseSavepoint(chunkTrxSavepoint);
+			chunkTrxSavepoint = null;
+		}
+		//
+		// Case: Inherited transaction without any savepoint => do nothing 
+		else
+		{
+			// nothing
 		}
 
 		chunkTrx = null;
@@ -419,15 +454,25 @@ public class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorE
 	{
 		Check.assumeNotNull(chunkTrx, "chunkTrx shall NOT be null");
 
-		if (chunkTrxSavepoint != null)
+		//
+		// Case: Locally created transaction => rollback it
+		if (chunkTrxIsLocal)
+		{
+			chunkTrx.rollback();
+			chunkTrx.close();
+		}
+		//
+		// Case: Savepoint on inherited transaction => rollback to savepoint 
+		else if (chunkTrxSavepoint != null)
 		{
 			chunkTrx.rollback(chunkTrxSavepoint);
 			chunkTrxSavepoint = null;
 		}
+		//
+		// Case: Inherited transaction without any savepoint => do nothing 
 		else
 		{
-			chunkTrx.rollback();
-			chunkTrx.close();
+			// nothing
 		}
 
 		chunkTrx = null;

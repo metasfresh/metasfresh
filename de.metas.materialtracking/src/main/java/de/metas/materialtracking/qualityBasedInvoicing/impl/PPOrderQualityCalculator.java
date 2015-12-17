@@ -35,6 +35,7 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
@@ -78,6 +79,13 @@ public class PPOrderQualityCalculator
 		IQualityInspectionOrder qiOrderPrevious = null;
 		for (final IQualityInspectionOrder qiOrder : documents.getQualityInspectionOrders())
 		{
+			if(!qiOrder.isQualityInspection())
+			{
+				continue;
+			}
+
+			ILoggable.THREADLOCAL.getLoggable().addLog("Processing PP_Order {0}", qiOrder.getPP_Order());
+
 			//
 			// Update QM_QtyDeliveredPercOfRaw
 			updateQM_QtyDeliveredPercOfRaw(qiOrder);

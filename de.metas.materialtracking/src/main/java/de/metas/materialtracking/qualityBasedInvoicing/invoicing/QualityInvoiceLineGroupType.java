@@ -1,5 +1,11 @@
 package de.metas.materialtracking.qualityBasedInvoicing.invoicing;
 
+import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.materialtracking.model.I_C_Invoice_Candidate;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -10,18 +16,17 @@ package de.metas.materialtracking.qualityBasedInvoicing.invoicing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 /**
  * {@link IQualityInvoiceLineGroup} type.
@@ -36,14 +41,14 @@ public enum QualityInvoiceLineGroupType
 	 *
 	 * i.e. Erdbesatz
 	 */
-	Scrap,
+	Scrap(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_Scrap)
 
 	/**
 	 * By-Product(s)
 	 *
 	 * e.g. Futterkarotten
 	 */
-	ProducedByProducts,
+	, ProducedByProducts(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_ProducedByProducts)
 
 	/**
 	 * Additional fees
@@ -54,33 +59,69 @@ public enum QualityInvoiceLineGroupType
 	 * <li>Abzug für Beitrag Verkaufsförderung
 	 * </ul>
 	 */
-	AdditionalFee,
+	, AdditionalFee(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_AdditionalFee)
 
 	/**
 	 * Main Produced product
 	 *
 	 * i.e. Karotten mittel
 	 */
-	ProducedMainProduct,
+	, ProducedMainProduct(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_ProducedMainProduct)
 
 	/**
 	 * Co-Products
 	 *
 	 * i.e. Karotten gross
 	 */
-	ProducedCoProduct,
+	, ProducedCoProduct(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_ProducedCoProduct)
 
 	/**
 	 * Withholding
 	 *
 	 * e.g. Akontozahlung 50 %
 	 */
-	WithholdingAmount,
+	, WithholdingAmount(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_WithholdingAmount)
 
 	/**
 	 * Preceeding regular orders deduction
 	 *
 	 * i.e. Auslagerung per 30.09.2014
 	 */
-	PreceeedingRegularOrderDeduction,
+	, PreceeedingRegularOrderDeduction(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_PreceeedingRegularOrderDeduction)
+
+	;
+
+	/** Map: AD_Ref_List_Value to {@link QualityInvoiceLineGroupType} */
+	private static final Map<String, QualityInvoiceLineGroupType> adRefListValue2value;
+	static
+	{
+		final ImmutableMap.Builder<String, QualityInvoiceLineGroupType> adRefListValue2valueBuilder = ImmutableMap.builder();
+		for (final QualityInvoiceLineGroupType value : values())
+		{
+			adRefListValue2valueBuilder.put(value.getAD_Ref_List_Value(), value);
+		}
+		adRefListValue2value = adRefListValue2valueBuilder.build();
+	}
+
+	private final String adRefListValue;
+
+	private QualityInvoiceLineGroupType(final String adRefListValue)
+	{
+		this.adRefListValue = adRefListValue;
+	}
+
+	public final String getAD_Ref_List_Value()
+	{
+		return adRefListValue;
+	}
+
+	public static final QualityInvoiceLineGroupType ofAD_Ref_List_Value(final String adRefListValue)
+	{
+		final QualityInvoiceLineGroupType value = adRefListValue2value.get(adRefListValue);
+		if (value == null)
+		{
+			throw new IllegalArgumentException("No " + QualityInvoiceLineGroupType.class + " found for AD_Ref_List_Value=" + adRefListValue);
+		}
+		return value;
+	}
 }

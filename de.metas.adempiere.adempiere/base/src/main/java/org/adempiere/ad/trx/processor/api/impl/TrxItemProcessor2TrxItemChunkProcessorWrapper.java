@@ -22,7 +22,6 @@ package org.adempiere.ad.trx.processor.api.impl;
  * #L%
  */
 
-
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
@@ -38,13 +37,30 @@ import org.adempiere.util.Check;
  */
 /* package */class TrxItemProcessor2TrxItemChunkProcessorWrapper<IT, RT> implements ITrxItemChunkProcessor<IT, RT>
 {
+	public static final <IT, RT> ITrxItemChunkProcessor<IT, RT> wrapIfNeeded(final ITrxItemProcessor<IT, RT> processor)
+	{
+		if (processor instanceof ITrxItemChunkProcessor)
+		{
+			final ITrxItemChunkProcessor<IT, RT> chunkProcessor = (ITrxItemChunkProcessor<IT, RT>)processor;
+			return chunkProcessor;
+		}
+
+		return new TrxItemProcessor2TrxItemChunkProcessorWrapper<>(processor);
+	}
+
 	private final ITrxItemProcessor<IT, RT> processor;
 
-	public TrxItemProcessor2TrxItemChunkProcessorWrapper(final ITrxItemProcessor<IT, RT> processor)
+	private TrxItemProcessor2TrxItemChunkProcessorWrapper(final ITrxItemProcessor<IT, RT> processor)
 	{
 		super();
 		Check.assumeNotNull(processor, "processor not null");
 		this.processor = processor;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "TrxItemChunkProcessorWrapper[" + processor + "]";
 	}
 
 	@Override

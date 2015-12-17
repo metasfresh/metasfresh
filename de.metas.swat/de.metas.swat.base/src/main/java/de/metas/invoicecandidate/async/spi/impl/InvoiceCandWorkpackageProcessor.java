@@ -30,6 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.CLogger;
 
@@ -44,6 +45,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -62,7 +64,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
-	private static final transient CLogger logger = CLogger.getCLogger(InvoiceCandWorkpackageProcessor.class);
+	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
 
 	private final IInvoiceGenerateResult _result;
 	private InvoicingParams _invoicingParams = null; // lazy loaded
@@ -94,11 +96,8 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 		final List<I_C_Invoice_Candidate> candidatesOfPackage = queueDAO.retrieveItems(workPackage, I_C_Invoice_Candidate.class, localTrxName);
 
-		try
+		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 		{
-			// make sure that our updateInvalid() call doesn't just cause the ICs in question to be directly invalidated again.
-			invoiceCandBL.setUpdateProcessInProgress(true);
-
 			// Validate all invoice candidates
 			updateInvalid(localCtx, candidatesOfPackage, localTrxName);
 			
@@ -121,10 +120,6 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 			// invalidate them all at once
 			invoiceCandDAO.invalidateCands(candidatesOfPackage, localTrxName);
-		}
-		finally
-		{
-			invoiceCandBL.setUpdateProcessInProgress(false);
 		}
 
 		return Result.SUCCESS;
@@ -174,9 +169,10 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 		final Optional<ILock> elementsLock = getElementsLock();
 		invoiceCandBL.updateInvalid()
 				.setContext(localCtx, localTrxName)
-				.setManagedTrx(true) // i.e. don't commit
 				.setLockedBy(elementsLock.orNull())
-				.update(candidates);
+				.setTaggedWithAnyTag()
+				.setOnlyC_Invoice_Candidates(candidates)
+				.update();
 
 		// Make sure the invoice candidate is fresh before we actually use it (task 06162, also see javadoc of updateInvalid method)
 		InterfaceWrapperHelper.refreshAll(candidates);

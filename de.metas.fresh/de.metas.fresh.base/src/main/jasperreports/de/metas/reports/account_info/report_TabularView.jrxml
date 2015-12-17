@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1000" pageHeight="842" columnWidth="1000" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="3.0"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="2042"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -15,14 +15,18 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="DisplayVoidDocuments" class="java.lang.String"/>
+	<parameter name="showCurrencyExchange" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM report.Fresh_Account_Info_Report (
 	$P{Account_ID},
 	$P{StartDate},
 	$P{EndDate},
 	$P{C_Activity_ID},
-	$P{DisplayVoidDocuments}
-)]]>
+	$P{DisplayVoidDocuments},
+	$P{showCurrencyExchange}
+);]]>
 	</queryString>
 	<field name="dateacct" class="java.sql.Date"/>
 	<field name="fact_acct_id" class="java.math.BigDecimal"/>
@@ -42,6 +46,7 @@
 	<field name="overallcount" class="java.lang.Long"/>
 	<field name="unionorder" class="java.lang.Integer"/>
 	<field name="docstatus" class="java.lang.String"/>
+	<field name="eurosaldo" class="java.math.BigDecimal"/>
 	<group name="Count Group">
 		<groupExpression><![CDATA[""]]></groupExpression>
 	</group>
@@ -241,7 +246,7 @@
 	</columnHeader>
 	<detail>
 		<band height="10" splitType="Stretch">
-			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() != 3 && $F{overallcount} < 150000)]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() != 3 && $F{unionorder}.intValue() != 4 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e" x="37" y="0" width="70" height="9"/>
 				<box rightPadding="3"/>
@@ -365,6 +370,23 @@
 					<font size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{a_value}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 4 && $F{eurosaldo} != null && $F{overallcount} < 150000)]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
+				<reportElement uuid="563908a3-7488-4625-b0e5-d89de1d56c16" x="377" y="0" width="200" height="9"/>
+				<textElement>
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement uuid="3ed5e779-b96e-4c30-bb05-4091249f759d" x="857" y="0" width="70" height="9"/>
+				<textElement>
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{eurosaldo}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

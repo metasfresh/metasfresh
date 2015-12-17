@@ -22,20 +22,13 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IOrderDAO;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 
 @Interceptor(I_C_Order.class)
 public class C_Order
@@ -44,17 +37,6 @@ public class C_Order
 	public void invalidateInvoiceCandidates(final I_C_Order order)
 	{
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final List<IInvoiceCandidateHandler> invalidators = invoiceCandidateHandlerBL.retrieveImplementationsForTable(ctx, I_C_OrderLine.Table_Name);
-		
-		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order))
-		{
-			for (final IInvoiceCandidateHandler invalidator : invalidators)
-			{
-				invalidator.invalidateCandidatesFor(ol);
-			}
-		}
+		invoiceCandidateHandlerBL.invalidateCandidatesFor(order);
 	}
 }

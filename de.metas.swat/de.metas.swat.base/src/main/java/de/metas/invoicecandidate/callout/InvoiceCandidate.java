@@ -94,7 +94,7 @@ public class InvoiceCandidate extends CalloutEngine
 			Services.get(IAggregationBL.class).resetHeaderAggregationKey(ic);
 			ic.setLineAggregationKey(null);
 			//
-			invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(ctx, ic, ITrx.TRXNAME_None);
+			invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(ctx, ic);
 			//
 			if (ic.getBill_BPartner_ID() > 0)
 			{

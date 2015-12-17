@@ -334,5 +334,11 @@ public interface AdempiereDatabase
 	 * @return
 	 */
 	String getConnectionBackendId(Connection connection, boolean throwDBException);
+
+	/**
+	 * @param tableName
+	 * @return SQL code for getting the ROW ID of a given table.
+	 */
+	String getRowIdSql(final String tableName);
 }   // AdempiereDatabase
 

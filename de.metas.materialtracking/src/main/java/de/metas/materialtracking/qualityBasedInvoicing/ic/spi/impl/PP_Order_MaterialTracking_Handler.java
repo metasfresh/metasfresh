@@ -38,7 +38,6 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
-import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
 
 /**
  * Creates invoice candidates for {@link I_PP_Order}s that reference a {@link I_M_Material_Tracking}.<br>
@@ -70,7 +69,7 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	}
 
 	/**
-	 * @return <code>true</code> if the given model is invoicable according to {@link IQualityInspectionHandlerDAO#getInvoiceableOrderFilter()}.
+	 * @return <code>true</code> always.
 	 */
 	@Override
 	public final boolean isCreateMissingCandidatesAutomatically(final Object model)
@@ -97,8 +96,7 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 
 		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = createInvoiceCandidatesProducer();
 
-		final List<de.metas.materialtracking.model.I_C_Invoice_Candidate> invoiceCandidates =
-				invoiceCandidatesProducer.createInvoiceCandidates(model);
+		final List<de.metas.materialtracking.model.I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidatesProducer.createInvoiceCandidates(model);
 
 		final IIsInvoiceCandidateAware isInvoiceCandidateAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IIsInvoiceCandidateAware.class);
 		if (isInvoiceCandidateAware != null)

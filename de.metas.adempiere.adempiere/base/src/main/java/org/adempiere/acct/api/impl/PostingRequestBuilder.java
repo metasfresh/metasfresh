@@ -382,7 +382,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 		final Optional<Integer> adClientId = InterfaceWrapperHelper.getValue(document, "AD_Client_ID");
 		Check.assume(adClientId.isPresent(), "document={0} has an AD_Client_ID value", document);
 		
-		final ITableRecordReference documentRef = new TableRecordReference(document);
+		final ITableRecordReference documentRef = TableRecordReference.of(document);
 
 		setContext(ctx, trxName);
 		setAD_Client_ID(adClientId.get());

@@ -16,9 +16,11 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
+import java.text.DecimalFormat;
 import java.util.logging.Level;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.GridField;
@@ -172,6 +174,23 @@ public final class VEditorFactory
 			vn.setRange(mField.getValueMin(), mField.getValueMax());
 			vn.setName(columnName);
 			vn.setField(mField);
+			
+			//
+			// Use field's decimal format if any
+			final String formatPattern = mField.getVO().getFormatPattern();
+			if (!Check.isEmpty(formatPattern, true))
+			{
+				try
+				{
+					final DecimalFormat format = new DecimalFormat(formatPattern);
+					vn.setDecimalFormat(format);
+				}
+				catch (Exception e)
+				{
+					logger.log(Level.WARNING, "Invalid decimal format '" + formatPattern + "' for field " + mField, e);
+				}
+			}
+			
 			editor = vn;
 		}
 

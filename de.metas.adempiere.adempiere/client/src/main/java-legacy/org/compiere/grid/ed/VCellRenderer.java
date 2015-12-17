@@ -33,6 +33,7 @@ import org.adempiere.ad.ui.ITableColorProvider;
 import org.adempiere.ad.ui.NullTableColorProvider;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.util.Check;
 import org.adempiere.util.GridRowCtx;
 import org.compiere.grid.GridController;
 import org.compiere.model.GridField;
@@ -56,6 +57,9 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 	 * 
 	 */
 	private static final long serialVersionUID = 3135422746697244864L;
+	
+	/** Logger */
+	private static CLogger logger = CLogger.getCLogger(VCellRenderer.class);
 
 	/**
 	 * Constructor for Grid
@@ -77,6 +81,20 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 			m_button = (VButton)VEditorFactory.getEditor(mField, true);
 		}
 		// metas-2009_0021_AP1_CR053: end
+		
+		final String formatPattern = mField.getVO().getFormatPattern();
+		if (!Check.isEmpty(formatPattern, true))
+		{
+			try
+			{
+				this.m_numberFormat = new DecimalFormat(formatPattern);
+			}
+			catch (Exception e)
+			{
+				logger.log(Level.WARNING, "Invalid decimal format '" + formatPattern + "' for field " + mField, e);
+			}
+		}
+
 	}	// VCellRenderer
 
 	/**

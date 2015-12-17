@@ -126,6 +126,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		this.modelClass = modelClass;
 	}
 
+	/**
+	 * @return {@link POInfo}; never returns null
+	 */
 	private final POInfo getPOInfo()
 	{
 		if (this._poInfo == null)
@@ -690,7 +693,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Build columns SQL
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final POInfo poInfo = getPOInfo();
 		final Map<String, Class<?>> columnName2class = new HashMap<>(columnNames.length);
 		final StringBuilder sqlColumnNames = new StringBuilder();
 		for (final String columnName : columnNames)
@@ -1146,15 +1149,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @param useOrderByClause true if ORDER BY clause shall be appended
 	 * @return final SQL
 	 */
-	public final String buildSQL(StringBuilder selectClause, boolean useOrderByClause)
+	public final String buildSQL(StringBuilder selectClause, final boolean useOrderByClause)
 	{
 		if (selectClause == null)
 		{
-			final POInfo info = POInfo.getPOInfo(getTableName());
-			if (info == null)
-			{
-				throw new IllegalStateException("No POInfo found for " + getTableName());
-			}
+			final POInfo info = getPOInfo();
 			selectClause = new StringBuilder()
 					.append("SELECT ").append(info.getSqlSelectColumns())
 					.append("\n FROM ").append(getSqlFrom());
@@ -1630,8 +1629,16 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return countUpdated;
 	}
 
-	private final int updateSql(ISqlQueryUpdater<T> sqlQueryUpdater)
+	private final int updateSql(final ISqlQueryUpdater<T> sqlQueryUpdater)
 	{
+		// In case we have LIMIT/OFFSET clauses, we shall update the records differently
+		// (i.e. by having a UPDATE FROM (sub select) ).
+		final boolean useSelectFromSubQuery = this.limit > 0 || this.offset >= 0; 
+		if (useSelectFromSubQuery)
+		{
+			return updateSql_UsingSelectFromSubQuery(sqlQueryUpdater);
+		}
+		
 		final List<Object> sqlParams = new ArrayList<Object>();
 		final String sqlUpdateSet = sqlQueryUpdater.getSql(sqlParams);
 
@@ -1643,6 +1650,61 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		sqlParams.addAll(sqlWhereClauseParams);
 
 		return DB.executeUpdateEx(sql, sqlParams.toArray(), getTrxName());
+	}
+
+	/**
+	 * Builds the update SQL using a sub query for select.
+	 * 
+	 * i.e.
+	 * <pre>
+	 * UPDATE t .. FROM (SELECT subquery) f WHERE t.rowid = f.rowid
+	 * </pre> 
+	 * 
+	 * @param sqlQueryUpdater
+	 * @return how many rows were updated
+	 */
+	private final int updateSql_UsingSelectFromSubQuery(final ISqlQueryUpdater<T> sqlQueryUpdater)
+	{
+		//
+		// Get the key column name / row id
+		final String tableName = getTableName();
+		final POInfo info = getPOInfo();
+		String keyColumnName = info.getKeyColumnName();
+		if (keyColumnName == null)
+		{
+			// Fallback if table has no primary key: use database specific ROW ID
+			keyColumnName = DB.getDatabase().getRowIdSql(tableName);
+		}
+		
+		final List<Object> sqlParams = new ArrayList<Object>();
+		final StringBuilder sql = new StringBuilder(100);
+				
+		//
+		// UPDATE
+		final String sqlUpdateSet = sqlQueryUpdater.getSql(sqlParams);
+		sql.append("UPDATE ").append(tableName).append(" t ")
+				.append("\n SET ").append(sqlUpdateSet);
+
+		//
+		// FROM
+		{
+			final StringBuilder sqlFrom_Select = new StringBuilder()
+					.append("\n SELECT ").append(info.getSqlSelectColumns())
+					.append("\n , ").append(keyColumnName).append(" as ZZ_RowId")
+					.append("\n FROM ").append(getSqlFrom());
+			final String sqlFrom = buildSQL(sqlFrom_Select, true);
+			
+			sql.append("\n FROM (").append(sqlFrom).append(") f ");
+			sqlParams.addAll(getParametersEffective());
+		}
+		
+		//
+		// WHERE
+		sql.append("\n WHERE t.").append(keyColumnName).append(" = f.ZZ_RowId");
+		
+		//
+		// Execute
+		return DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), getTrxName());
 	}
 
 	@Override

@@ -45,7 +45,7 @@ public interface ITableRecordReference
 		@Override
 		public ITableRecordReference convert(final Object model)
 		{
-			return model == null ? null : new TableRecordReference(model);
+			return TableRecordReference.ofOrNull(model);
 		}
 	};
 

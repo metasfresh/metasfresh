@@ -61,6 +61,5 @@ public class C_OrderLine
 		{
 			InterfaceWrapperHelper.delete(icToDelete);
 		}
-
 	}
 }

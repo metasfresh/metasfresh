@@ -32,7 +32,6 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
-			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 				
@@ -53,12 +52,10 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.serverRoot.ejb</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!--
@@ -91,7 +88,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.2</version>
 
 				<executions>
 					<execution>

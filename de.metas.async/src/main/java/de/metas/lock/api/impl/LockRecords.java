@@ -59,7 +59,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 	public void setRecordByModel(final Object model)
 	{
-		final ITableRecordReference record = new TableRecordReference(model);
+		final ITableRecordReference record = TableRecordReference.of(model);
 		setRecords(Collections.singleton(record));
 	}
 
@@ -74,7 +74,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 		final Set<ITableRecordReference> records = new HashSet<>(models.size());
 		for (final Object model : models)
 		{
-			final ITableRecordReference record = new TableRecordReference(model);
+			final ITableRecordReference record = TableRecordReference.of(model);
 			records.add(record);
 		}
 
@@ -149,7 +149,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 	public void addRecordByModel(final Object model)
 	{
-		final ITableRecordReference record = new TableRecordReference(model);
+		final ITableRecordReference record = TableRecordReference.of(model);
 		addRecords(Collections.singleton(record));
 	}
 

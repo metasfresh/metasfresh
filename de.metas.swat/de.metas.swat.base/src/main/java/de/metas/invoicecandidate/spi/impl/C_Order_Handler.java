@@ -11,6 +11,7 @@ import org.compiere.model.I_C_Order;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.service.IOrderDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -112,7 +113,26 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
-		// nothing
+		final I_C_Order order = InterfaceWrapperHelper.create(model, I_C_Order.class);
+		invalidateCandidatesFor(order);
+	}
+	
+	private void invalidateCandidatesFor(final I_C_Order order)
+	{
+		// services
+		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		
+		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
+		final List<IInvoiceCandidateHandler> invalidators = invoiceCandidateHandlerBL.retrieveImplementationsForTable(ctx, I_C_OrderLine.Table_Name);
+		
+		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order))
+		{
+			for (final IInvoiceCandidateHandler invalidator : invalidators)
+			{
+				invalidator.invalidateCandidatesFor(ol);
+			}
+		}
 	}
 
 	@Override

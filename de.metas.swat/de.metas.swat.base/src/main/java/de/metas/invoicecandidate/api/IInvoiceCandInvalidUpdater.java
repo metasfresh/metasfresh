@@ -10,39 +10,38 @@ package de.metas.invoicecandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 
 /**
  * Updates {@link I_C_Invoice_Candidate}s which are scheduled to be recomputed.
- * 
+ *
  * @author tsa
  *
  */
 public interface IInvoiceCandInvalidUpdater
 {
+
 	/**
-	 * Update given invoice candidates (which were scheduled to be recomputed).
+	 * Updates invoice candidates (which were scheduled to be recomputed)
 	 *
 	 * NOTEs:
 	 * <ul>
@@ -50,35 +49,12 @@ public interface IInvoiceCandInvalidUpdater
 	 * <li>If some candidates will be updated in database, they need to be refreshed by caller method if caller method wants to use them subsequently (i.e. use
 	 * {@link InterfaceWrapperHelper#refresh(Object)}). That's because the implementation won't actually work with the instances from the provided iterator
 	 * </ul>
-	 * 
-	 * @param candidates
 	 */
-	void update(final Iterator<I_C_Invoice_Candidate> candidates);
-
-	/**
-	 * 
-	 * @param candidates
-	 * @see #update(Iterator)
-	 */
-	void update(final Iterable<I_C_Invoice_Candidate> candidates);
-
-	/**
-	 * Updates all candidates (which were scheduled to be recomputed)
-	 *
-	 * @param adPInstanceId the "recompute marker"
-	 */
-	void updateAll(final int adPInstanceId);
+	void update();
 
 	IInvoiceCandInvalidUpdater setContext(final Properties ctx, final String trxName);
 
 	IInvoiceCandInvalidUpdater setContext(IContextAware context);
-
-	/**
-	 * @param managedTrx if false, then this updater will commit the given trx between the different work steps. Use managedTrx=true only if you know that there are few candidates to update
-	 */
-	IInvoiceCandInvalidUpdater setManagedTrx(final boolean managedTrx);
-
-	IInvoiceCandInvalidUpdater setLoggable(final ILoggable loggable);
 
 	/**
 	 * @param lockedBy <ul>
@@ -87,4 +63,37 @@ public interface IInvoiceCandInvalidUpdater
 	 *            </ul>
 	 */
 	IInvoiceCandInvalidUpdater setLockedBy(ILock lockedBy);
+
+	/**
+	 * Consider only those invoice candidates which were not tagged.
+	 */
+	IInvoiceCandInvalidUpdater setTaggedWithNoTag();
+
+	/**
+	 * Consider any invalid invoice candidate, no matter if they are tagged or not.
+	 *
+	 * NOTE:
+	 * <ul>
+	 * <li>this is the default behavior if no setTaggedWith methods are called.
+	 * </ul>
+	 */
+	IInvoiceCandInvalidUpdater setTaggedWithAnyTag();
+
+	/**
+	 * Sets maximum number of invoice candidates to update.
+	 *
+	 * @param limit
+	 */
+	IInvoiceCandInvalidUpdater setLimit(int limit);
+
+	/**
+	 * Sets the tag to be used when tagging the invoice candidates.
+	 *
+	 * @param tag
+	 */
+	IInvoiceCandInvalidUpdater setRecomputeTagToUse(InvoiceCandRecomputeTag tag);
+
+	IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates);
+
+	IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates);
 }

@@ -1,0 +1,5 @@
+
+-- 15.12.2015 09:56
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET TabLevel=1,Updated=TO_TIMESTAMP('2015-12-15 09:56:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540713
+;

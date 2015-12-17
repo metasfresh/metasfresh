@@ -22,7 +22,6 @@ package org.adempiere.ad.trx.processor.api.impl;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -30,9 +29,7 @@ import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
-import org.adempiere.util.Check;
 import org.adempiere.util.api.IParams;
 
 public class TrxItemProcessorExecutorService implements ITrxItemProcessorExecutorService
@@ -56,26 +53,16 @@ public class TrxItemProcessorExecutorService implements ITrxItemProcessorExecuto
 	@Override
 	public <IT, RT> ITrxItemProcessorExecutor<IT, RT> createExecutor(final ITrxItemProcessorContext processorCtx, final ITrxItemProcessor<IT, RT> processor)
 	{
-		ITrxItemChunkProcessor<IT, RT> chunkProcessor = asTrxItemChunkProcessor(processor);
-		final TrxItemChunkProcessorExecutor<IT, RT> executor = new TrxItemChunkProcessorExecutor<IT, RT>(processorCtx, chunkProcessor);
-		return executor;
+		final ITrxItemExecutorBuilder<IT, RT> builder = createExecutor();
+		return builder
+				.setContext(processorCtx)
+				.setProcessor(processor)
+				.build();
 	}
 
 	@Override
 	public <IT, RT> ITrxItemExecutorBuilder<IT, RT> createExecutor()
 	{
 		return new TrxItemExecutorBuilder<IT, RT>(this);
-	}
-
-	public <IT, RT> ITrxItemChunkProcessor<IT, RT> asTrxItemChunkProcessor(final ITrxItemProcessor<IT, RT> processor)
-	{
-		Check.assumeNotNull(processor, "processor not null");
-		if (processor instanceof ITrxItemChunkProcessor)
-		{
-			final ITrxItemChunkProcessor<IT, RT> chunkProcessor = (ITrxItemChunkProcessor<IT, RT>)processor;
-			return chunkProcessor;
-		}
-
-		return new TrxItemProcessor2TrxItemChunkProcessorWrapper<IT, RT>(processor);
 	}
 }

@@ -83,6 +83,7 @@ import org.compiere.util.TrxRunnable2;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -97,7 +98,7 @@ public class CreateInvoiceCandidateDialog
 {
 	private static final long serialVersionUID = 5069654601970071033L;
 
-	private static final CLogger logger = CLogger.getCLogger(CreateInvoiceCandidateDialog.class);
+	private static final CLogger logger = InvoiceCandidate_Constants.getLogger();
 
 	private final int windowNo;
 
@@ -658,8 +659,9 @@ public class CreateInvoiceCandidateDialog
 				// Invalidate (re-process candidate on-fly)
 				Services.get(IInvoiceCandBL.class).updateInvalid()
 						.setContext(ctx, localTrxName)
-						.setManagedTrx(true)
-						.update(Collections.singleton(ic));
+						.setTaggedWithAnyTag()
+						.setOnlyC_Invoice_Candidates(Collections.singleton(ic))
+						.update();
 
 				invoiceCandidateId = ic.getC_Invoice_Candidate_ID();
 

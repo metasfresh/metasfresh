@@ -10,12 +10,12 @@ package org.adempiere.ad.trx.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,6 +66,8 @@ import org.compiere.util.TrxRunnable2;
 import org.compiere.util.TrxRunnable2Wrapper;
 import org.compiere.util.Util;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Abstract {@link ITrxManager} implementation without any dependencies on a native stuff.
  *
@@ -110,7 +112,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 	/**
 	 * Creates and returns a transaction for given name.
-	 * 
+	 *
 	 * NOTE: implementations of this method shall not register or start the transaction. They only need to create the actual {@link ITrx} object.
 	 *
 	 * @param trxName transaction name; please keep in mind: this is the actual trxName that will be used and not a prefix
@@ -120,13 +122,14 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 	/**
 	 * Creates and registers {@link ITrx} for given transaction name.
-	 * 
+	 *
 	 * NOTE: this method assumes that {@link #trxName2trxLock} is already locked.
-	 * 
+	 *
 	 * @param trxName
 	 * @return created transaction name
 	 */
-	private final ITrx createTrxAndRegister(final String trxName)
+	@VisibleForTesting
+	final ITrx createTrxAndRegister(final String trxName)
 	{
 		final ITrx trx = createTrx(trxName);
 		Check.assumeNotNull(trx, "trx not null"); // shall never happen, but just to make sure the contract is respected
@@ -191,15 +194,16 @@ public abstract class AbstractTrxManager implements ITrxManager
 	@Override
 	public ITrx getTrx(final String trxName)
 	{
-		if (isNull(trxName))
+		final String trxNameActual = ITrx.TRXNAME_ThreadInherited == trxName ? getThreadInheritedTrxName() : trxName;
+		if (isNull(trxNameActual))
 		{
 			return ITrx.TRX_None;
 		}
 
-		final ITrx trx = get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
+		final ITrx trx = get(trxNameActual, OnTrxMissingPolicy.ReturnTrxNone);
 		if (isNull(trx))
 		{
-			throw new TrxNotFoundException(this, trxName);
+			throw new TrxNotFoundException(this, trxNameActual);
 		}
 		return trx;
 	}
@@ -245,7 +249,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 				{
 					final String newTrxNamePrefix = null; // no prefix
 					// NOTE: don't actual create&register the ITrx object (to avoid recursion).
-					// The actual transaction will be explicitelly created later in this method.
+					// The actual transaction will be explicitly created later in this method.
 					final boolean createTrx = false;
 					trxName = createTrxName(newTrxNamePrefix, createTrx);
 				}
@@ -778,7 +782,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			}
 		}
 	}
-	
+
 	@Override
 	public void runOutOfTransaction(final TrxRunnable r)
 	{
@@ -789,7 +793,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		// Set thread inherited trxName to NULL.
 		// It will be restored later, in this method.
 		final String trxNameBackup = setThreadInheritedTrxName(ITrx.TRXNAME_None);
-		
+
 		Throwable exceptionToThrow = null; // set in "catch" block; used in finally block to add more suppressed exceptions if needed.
 		try
 		{
@@ -818,7 +822,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			{
 				logger.log(Level.WARNING, "Possible issue: running out of transaction, rollback was asked, there is no exception to throw => data created by runnable {0} will not be actually rolled back", runnable);
 			}
-			
+
 			//
 			// Propagate the caught exception, no matter what, even if we were called with OnRunnableFail.DONT_ROLLBACK
 			if (exceptionToThrow != null)
@@ -876,7 +880,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 			return AutoCommitTrxListenerManager.instance;
 		}
 		return trx.getTrxListenerManager();
-
 	}
 
 	@Override
@@ -1042,7 +1045,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		final String trxName = getThreadInheritedTrxName();
 		Check.assume(!isNull(trxName), "ThreadInherited transaction shall be set at this point");
 	}
-	
+
 	@Override
 	public void assertThreadInheritedTrxNotExists()
 	{
@@ -1143,13 +1146,13 @@ public abstract class AbstractTrxManager implements ITrxManager
 			}
 		};
 	}
-	
+
 	@Override
 	public void setThreadInheritedOnRunnableFail(final OnRunnableFail onRunnableFail)
 	{
 		threadLocalOnRunnableFail.set(onRunnableFail);
 	}
-	
+
 	private final OnRunnableFail getThreadInheritedOnRunnableFail(final OnRunnableFail onRunnableFailDefault)
 	{
 		final OnRunnableFail onRunnableFail = threadLocalOnRunnableFail.get();

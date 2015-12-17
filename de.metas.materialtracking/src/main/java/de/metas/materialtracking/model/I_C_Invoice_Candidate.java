@@ -1,5 +1,6 @@
 package de.metas.materialtracking.model;
 
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -31,5 +32,28 @@ public interface I_C_Invoice_Candidate extends de.metas.invoicecandidate.model.I
 	// void setM_Material_Tracking_ID(int M_Material_Tracking_ID); // shall not be used
 	I_M_Material_Tracking getM_Material_Tracking();
 	void setM_Material_Tracking(I_M_Material_Tracking M_Material_Tracking);
+	// @formatter:on
+	
+
+	// @formatter:off
+	public static final int QUALITYINVOICELINEGROUPTYPE_AD_Reference_ID=540617;
+	/** Scrap = 01 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_Scrap = "01";
+	/** ProducedByProducts = 02 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_ProducedByProducts = "02";
+	/** AdditionalFee = 03 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_AdditionalFee = "03";
+	/** ProducedMainProduct = 04 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_ProducedMainProduct = "04";
+	/** ProducedCoProduct = 05 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_ProducedCoProduct = "05";
+	/** WithholdingAmount = 06 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_WithholdingAmount = "06";
+	/** PreceeedingRegularOrderDeduction = 07 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_PreceeedingRegularOrderDeduction = "07";
+
+	String COLUMNNAME_QualityInvoiceLineGroupType = "QualityInvoiceLineGroupType";
+	String getQualityInvoiceLineGroupType();
+	void setQualityInvoiceLineGroupType(final String QualityInvoiceLineGroupType);
 	// @formatter:on
 }

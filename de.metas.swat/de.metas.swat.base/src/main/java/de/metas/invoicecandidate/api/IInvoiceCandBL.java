@@ -25,7 +25,6 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -33,6 +32,7 @@ import java.util.Properties;
 
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_InvoiceSchedule;
@@ -158,8 +158,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	boolean isTaxIncluded(I_C_Invoice_Candidate ic);
 
 	/**
-	 * Gets amounts precision.
-	 * Taken from currency, default 2.
+	 * Gets amounts precision. Taken from currency, default 2.
 	 *
 	 * @param ic
 	 * @return precision used to calculate amounts
@@ -178,9 +177,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @param ctx
 	 * @param ic the candidate whose values shall be updated. It is assumed that the candidate has <code>IsManual='Y'</code>.
-	 * @param trxName
 	 */
-	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(Properties ctx, I_C_Invoice_Candidate ic, String trxName);
+	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(Properties ctx, I_C_Invoice_Candidate ic);
 
 	/**
 	 *
@@ -211,12 +209,14 @@ public interface IInvoiceCandBL extends ISingletonService
 	boolean isUpdateProcessInProgress();
 
 	/**
-	 * See {@link #isChangedByUpdateProcess(I_C_Invoice_Candidate)}.
-	 *
-	 * @param candidate
-	 * @param value
+	 * Enables "update in progress" flag and returns an {@link IAutoCloseable} to put it back to off.
+	 * 
+	 * It is important to call this method in any block where we are updating the invoice candidates and we want to avoid them to be invalidated after.
+	 * 
+	 * @return auto closable
+	 * @see #isUpdateProcessInProgress()
 	 */
-	boolean setUpdateProcessInProgress(boolean value);
+	IAutoCloseable setUpdateProcessInProgress();
 
 	/**
 	 * Creates initial {@link IInvoiceGenerateResult}
@@ -243,6 +243,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Updates/Creates {@link I_C_Invoice_Line_Alloc}s for the case of an invoice (including credit memo) completion. Also makes sure that ICs are created on the fly if they are still missing.
+	 * 
 	 * @param invoice
 	 */
 	void handleCompleteForInvoice(org.compiere.model.I_C_Invoice invoice);
@@ -375,8 +376,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	BigDecimal getQtyToInvoice(I_C_Invoice_Candidate ic);
 
 	/**
-	 * Set the QualityDiscountPercent_Override based on the QualityIssuePercentage from the discount schema
-	 * If the value does not exist, leave the field on null
+	 * Set the QualityDiscountPercent_Override based on the QualityIssuePercentage from the discount schema If the value does not exist, leave the field on null
 	 *
 	 * Note: ic not saved
 	 *

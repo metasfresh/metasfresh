@@ -4,6 +4,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
@@ -13,6 +14,7 @@ import de.metas.banking.bankstatement.match.spi.IPaymentBatchProvider;
 import de.metas.banking.bankstatement.match.spi.PaymentBatch;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_PaySelectionLine;
+import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 
 /*
@@ -75,8 +77,7 @@ public class PaySelectionPaymentBatchProvider implements IPaymentBatchProvider
 			return;
 		}
 		
-		paySelectionLine.setC_BankStatementLine_Ref(bankStatementLineRef);
-		paySelectionLine.setC_BankStatementLine(bankStatementLineRef.getC_BankStatementLine());
-		InterfaceWrapperHelper.save(paySelectionLine);
+		final I_C_BankStatementLine bankStatementLine = bankStatementLineRef.getC_BankStatementLine();
+		Services.get(IPaySelectionBL.class).linkBankStatementLine(paySelectionLine, bankStatementLine, bankStatementLineRef);
 	}
 }

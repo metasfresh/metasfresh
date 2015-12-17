@@ -31,13 +31,14 @@ import org.adempiere.facet.impl.CompositeFacetCollector;
 import org.adempiere.util.Check;
 import org.compiere.util.CLogger;
 
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.facet.IInvoiceCandidateFacetCollectorFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 public class InvoiceCandidateFacetCollectorFactory implements IInvoiceCandidateFacetCollectorFactory
 {
 	// services
-	private final transient CLogger logger = CLogger.getCLogger(getClass());
+	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
 
 	private final CopyOnWriteArrayList<Class<? extends IFacetCollector<I_C_Invoice_Candidate>>> facetCollectorClasses = new CopyOnWriteArrayList<>();
 

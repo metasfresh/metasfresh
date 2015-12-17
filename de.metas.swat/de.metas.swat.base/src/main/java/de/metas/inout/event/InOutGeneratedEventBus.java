@@ -127,9 +127,9 @@ public final class InOutGeneratedEventBus extends QueueableForwardingEventBus
 		final String adMessage = inout.isSOTrx() ? MSG_Event_ShipmentGenerated : MSG_Event_ReceiptGenerated;
 
 		final Event event = Event.builder()
-				.setDetailADMessage(adMessage, new TableRecordReference(inout), bpValue, bpName)
+				.setDetailADMessage(adMessage, TableRecordReference.of(inout), bpValue, bpName)
 				.addRecipient_User_ID(recipientUserId)
-				.putProperty(EVENT_PROPERTY_InOutRecord, new TableRecordReference(inout))
+				.putProperty(EVENT_PROPERTY_InOutRecord, TableRecordReference.of(inout))
 				.build();
 		return event;
 	}

@@ -37,6 +37,7 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.ui.spi.impl.InvoiceCandidatesSelectionSummaryInfo.Builder;
@@ -49,7 +50,7 @@ import de.metas.invoicecandidate.ui.spi.impl.InvoiceCandidatesSelectionSummaryIn
  */
 public class C_Invoice_Candidate_GridTabSummaryInfoProvider implements IGridTabSummaryInfoProvider
 {
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
 
 	@Override
 	public final IGridTabSummaryInfo getSummaryInfo(final GridTab gridTab)

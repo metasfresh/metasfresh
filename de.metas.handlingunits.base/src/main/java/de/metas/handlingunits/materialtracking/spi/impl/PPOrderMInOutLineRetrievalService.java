@@ -1,11 +1,11 @@
 package de.metas.handlingunits.materialtracking.spi.impl;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.util.Services;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -44,17 +44,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 	@Override
 	public List<I_M_InOutLine> provideIssuedInOutLines(final I_PP_Cost_Collector issueCostCollector)
 	{
-		final Set<I_M_InOutLine> result = new TreeSet<I_M_InOutLine>(new Comparator<I_M_InOutLine>()
-		{
-			/**
-			 * we are going to return the iols ordered by their M_InOutLine_ID
-			 */
-			@Override
-			public int compare(I_M_InOutLine o1, I_M_InOutLine o2)
-			{
-				return Integer.compare(o1.getM_InOutLine_ID(), o2.getM_InOutLine_ID());
-			}
-		});
+		final Set<I_M_InOutLine> result = new TreeSet<>(ModelByIdComparator.getInstance());
 
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);

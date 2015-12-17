@@ -23,6 +23,8 @@ package de.metas.materialtracking.impl;
  */
 
 
+import java.sql.Timestamp;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.util.Check;
@@ -64,6 +66,23 @@ public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 	public IQueryFilter<I_PP_Order> getQualityInspectionFilter()
 	{
 		return qualityInspectionFilter;
+	}
+	
+	@Override
+	public Timestamp getDateOfProduction(final I_PP_Order ppOrder)
+	{
+	
+		final Timestamp dateOfProduction;
+		if (ppOrder.getDateDelivered() != null)
+		{
+			dateOfProduction = ppOrder.getDateDelivered();
+		}
+		else
+		{
+			dateOfProduction = ppOrder.getDateFinishSchedule();
+		}
+		Check.assumeNotNull(dateOfProduction, "dateOfProduction not null for PP_Order {0}", ppOrder);
+		return dateOfProduction;
 	}
 
 }

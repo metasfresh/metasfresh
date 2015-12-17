@@ -38,6 +38,7 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnableAdapter;
 
@@ -98,7 +99,7 @@ import de.metas.lock.api.LockOwner;
 			{
 				setTrxName(localTrxName);
 
-				final ILock icLock = acquireLock(adPInstanceId);
+				final ILock icLock = lockInvoiceCandidatesForSelection(adPInstanceId);
 				try (final ILockAutoCloseable l = icLock.asAutocloseableOnTrxClose(localTrxName))
 				{
 					final IInvoiceCandidateEnqueueResult result = enqueueSelection0(icLock, adPInstanceId);
@@ -118,10 +119,10 @@ import de.metas.lock.api.LockOwner;
 
 	private final IInvoiceCandidateEnqueueResult enqueueSelection0(final ILock icLock, final int adPInstanceId)
 	{
+		Check.assumeNotNull(icLock, "icLock not null");
 		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
 		final Properties ctx = getCtx();
-		final String trxName = getTrxName();
-		trxManager.assertTrxNameNotNull(trxName);
+		final String trxName = getTrxNameNotNull();
 
 		final Iterable<I_C_Invoice_Candidate> invoiceCandidates = retrieveSelection(adPInstanceId);
 
@@ -133,15 +134,19 @@ import de.metas.lock.api.LockOwner;
 		//
 		// Prepare
 		prepareSelectionForEnqueueing(adPInstanceId);
+		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
+		// * the ones which are in our selection, we will update right now (see below)
+		// * the other ones will be updated later, asynchronously
 
 		//
 		// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
 		// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
 		invoiceCandBL.updateInvalid()
-				.setContext(getCtx(), getTrxName())
-				.setManagedTrx(true)
+				.setContext(getCtx(), getTrxNameNotNull())
 				.setLockedBy(icLock)
-				.update(invoiceCandidates);
+				.setTaggedWithAnyTag()
+				.setOnlyC_Invoice_Candidates(invoiceCandidates)
+				.update();
 
 		//
 		// Make sure there are no changes in amounts or relevant fields (if that is required)
@@ -172,8 +177,11 @@ import de.metas.lock.api.LockOwner;
 
 			//
 			// 07666: Set approval back to false after enqueuing and save within transaction
-			ic.setApprovalForInvoicing(false);
-			InterfaceWrapperHelper.save(ic, trxName);
+			try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+			{
+				ic.setApprovalForInvoicing(false);
+				InterfaceWrapperHelper.save(ic);
+			}
 
 			invoiceCandidateSelectionCount++; // increment AFTER validating that it was approved for invoicing etc
 			totalNetAmtToInvoiceChecksum.add(ic);
@@ -213,7 +221,7 @@ import de.metas.lock.api.LockOwner;
 	}
 
 	/** Lock all invoice candidates for selection and return an auto-closable lock. */
-	private final ILock acquireLock(final int adPInstanceId)
+	private final ILock lockInvoiceCandidatesForSelection(final int adPInstanceId)
 	{
 		final LockOwner lockOwner = LockOwner.newOwner("ICEnqueuer", adPInstanceId);
 		return lockManager.lock()
@@ -269,7 +277,7 @@ import de.metas.lock.api.LockOwner;
 	private final void prepareSelectionForEnqueueing(final int adPInstanceId)
 	{
 		final Timestamp today = invoiceCandBL.getToday();
-		final String trxName = getTrxName();
+		final String trxName = getTrxNameNotNull();
 
 		//
 		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)
@@ -316,13 +324,15 @@ import de.metas.lock.api.LockOwner;
 
 	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final int adPInstanceId)
 	{
+		// NOTE: we designed this method for the case of enqueuing 1mio invoice candidates.
+		
 		return new Iterable<I_C_Invoice_Candidate>()
 		{
 			@Override
 			public Iterator<I_C_Invoice_Candidate> iterator()
 			{
 				final Properties ctx = getCtx();
-				final String trxName = getTrxName();
+				final String trxName = getTrxNameNotNull();
 				return invoiceCandDAO.retrieveIcForSelection(ctx, adPInstanceId, trxName);
 			}
 		};
@@ -336,18 +346,27 @@ import de.metas.lock.api.LockOwner;
 		return this;
 	}
 
+	/**
+	 * @return context; never returns null
+	 */
 	private final Properties getCtx()
 	{
 		Check.assumeNotNull(_ctx, "_ctx not null");
 		return _ctx;
 	}
 
+	/**
+	 * @return initial transaction, i.e. the transaction used when this enqueuer was called
+	 */
 	private final String getTrxNameInitial()
 	{
 		return _trxNameInitial;
 	}
 
-	private final String getTrxName()
+	/**
+	 * @return transaction name; never returns an null transaction
+	 */
+	private final String getTrxNameNotNull()
 	{
 		trxManager.assertTrxNameNotNull(_trxName);
 		return _trxName;

@@ -43,14 +43,12 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductNotOnPriceListException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
@@ -59,11 +57,12 @@ import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
-import org.adempiere.util.IProcessor;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
@@ -101,7 +100,6 @@ import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
 import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
@@ -113,12 +111,12 @@ import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
 import de.metas.tax.api.ITaxBL;
@@ -147,7 +145,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 */
 	private static final Timestamp DATE_TO_INVOICE_MAX_DATE = TimeUtil.getDay(9999, 12, 31);
 
-	private final CLogger logger = CLogger.getCLogger(getClass());
+	private final CLogger logger = InvoiceCandidate_Constants.getLogger();
 
 	@Override
 	public void createMissingCandidates(final I_AD_PInstance adPinstance, final String trxName)
@@ -165,228 +163,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	/**
-	 * @param updateRequest
-	 */
-	// TODO: refactor and move this method together with all required methods to InvoiceCandInvalidUpdater
-	/* package */void updateInvalid(final InvoiceCandInvalidUpdater updateRequest)
-	{
-		// services
-		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-
-		final Properties ctx = updateRequest.getCtx();
-		final String trxName = updateRequest.getTrxName();
-
-		//
-		// Iteration 1: (note: currently there is only one iteration; see comments below)
-		updateInvalid(updateRequest, new IProcessor<I_C_Invoice_Candidate>()
-		{
-			@Override
-			public void process(final I_C_Invoice_Candidate ic)
-			{
-				// reset scheduler result
-				ic.setSchedulerResult(null);
-				resetError(ic);
-
-				// update qtyOrdered. we need to be up to date for that factor
-				invoiceCandidateHandlerBL.setOrderedData(ic);
-
-				// i.e. QtyOrdered's signum. Used at different places throughout this method
-				final BigDecimal factor;
-				if (ic.getQtyOrdered().signum() < 0)
-				{
-					factor = BigDecimal.ONE.negate();
-				}
-				else
-				{
-					factor = BigDecimal.ONE;
-				}
-
-				final BigDecimal oldQtyInvoiced = ic.getQtyInvoiced().multiply(factor);
-
-				// update the Discount value of 'ic'. We will need it for the priceActual further down
-				set_Discount(ctx, ic);
-
-				// 06502: add entry in C_InvoiceCandidate_InOutLine to link InvoiceCandidate with inoutLines
-				// Note: the code originally related to task 06502 has partially been moved to de.metas.invoicecandidate.modelvalidator.M_InoutLine
-				// we'll need those icIols to be up to date to date in order to have QtyWithIssues (updateQtyWithIssues() et al. further down),
-				// and we need them (depending on which handler) for setDeliveredData()
-				populateC_InvoiceCandidate_InOutLine(ic, ic.getC_OrderLine());
-
-				// updating qty delivered
-				// 07814-IT2 only from now on we have the correct QtyDelivered
-				// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
-				invoiceCandidateHandlerBL.setDeliveredData(ic);
-
-				//
-				// Update Price Actual and Price Entered,
-				// only if this invoice candidate was NOT approved for invoicing (08610)
-				if (!ic.isApprovalForInvoicing())
-				{
-					// update the PriceActual value of 'ic'
-					// NOTE: this could fail and in case it fails, we don't want to stop updating the other fields
-					try
-					{
-						invoiceCandidateHandlerBL.setPriceActual(ic);
-					}
-					catch (final Exception e)
-					{
-						setError(ic, e);
-					}
-
-					// update the PriceEntered value of 'ic'
-					invoiceCandidateHandlerBL.setPriceEntered(ic); // task 06727
-				}
-
-				// update BPartner data from 'ic'
-				invoiceCandidateHandlerBL.setBPartnerData(ic);
-
-				// update the 'QtyInvoiced', 'NetAmtInvoiced', 'Processed' and 'HeaderAggregationKey' values of 'ic'
-				// task 08512: Note that this call needs to be *after* setBPartnerData() because there we might have updated the AllowConsolidateInvoice flag
-				set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic, trxName);
-
-				// update C_UOM_ID data from 'ic'
-				invoiceCandidateHandlerBL.setC_UOM_ID(ic);
-
-				// 06539 add qty overdelivery to qty delivered
-				final org.compiere.model.I_C_OrderLine ol = ic.getC_OrderLine();
-				if (ol != null)
-				{
-					ic.setQtyOrderedOverUnder(ol.getQtyOrderedOverUnder());
-				}
-
-				// Update 'QtyToInvoice_OverrideFulfilled'
-				// If is turns out that the fulfillment is now sufficient,
-				// reset both 'QtyToInvoice_Override' and 'QtyToInvoice_OverrideFulfilled'
-				set_QtyToInvoiceOverrideFulfilled(ic, oldQtyInvoiced, factor);
-
-				// calculate the fields from 06502: qualityDiscountPercent, qtyWithIssues and IsInDispute.
-				// we'll need QtyWithIssues to be up to date to date in order to have QtyWithIssues_Effective
-				updateQtyWithIssues(ic);
-
-				// we'll need QtyWithIssues_Effective to be up to date to date in order to have the effective qtyDelivered
-				updateQtyWithIssues_Effective(ic);
-
-				//
-				// Set the new qtyToInvoice value, depending on invoiceRule
-				final BigDecimal newQtyToInvoice = computeQtyToInvoice(ctx, ic, factor, true);
-				ic.setQtyToInvoice(newQtyToInvoice);
-
-				// we'll need both qtyToInvoice/qtyToInvoiceInPriceUOM and priceActual to compute the netAmtToInvoice further down
-				setPriceActual_Override(ic);
-
-				final BigDecimal qtyToInvoiceInPriceUOM = convertToPriceUOM(newQtyToInvoice, ic);
-				ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM);
-
-				final BigDecimal newQtyToInvoiceBeforeDiscount = computeQtyToInvoice(ctx, ic, factor, false);
-				ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount);
-
-				// Note: ic.setProcessed is not invoked here, but in a model validator
-				// That's because QtyToOrder and QtyInvoiced could also be set somewhere else
-
-// @formatter:off
-// ts: removing the three iterations, because it makes things more complex, and the actual reason (overall amount in the invoice schedule)
-// is sth that we don't use anyways. By running all updates in the same iteration, i make sure that one IC being saved two or tree times is not
-// one of our error sources
-//			}
-//		});
-//
-//		//
-//		// Iteration 2: Set the DateToInvoice
-//		// Note: the value might be influenced by the overall invoicable amounts. This is why we update the field in a
-//		// dedicated iteration.
-//		updateInvalid(ctx, AD_PInstance_ID, managedTrx, trxName, new IProcessor<I_C_Invoice_Candidate>()
-//		{
-//
-//			@Override
-//			public void process(final I_C_Invoice_Candidate ic)
-//			{
-// @formatter:on
-				set_DateToInvoice(ctx, ic, trxName);
-
-				// We need to update the NetAmtToInvoice again because in some cases this value depends on overall in invoiceable amount
-				// e.g. see ManualCandidateHandler which is calculated how much we can invoice of a credit memo amount
-				setNetAmtToInvoice(ic);
-// @formatter:off
-//			}
-//		});
-//
-//		//
-//		// Iteration 3:
-//		updateInvalid(ctx, AD_PInstance_ID, managedTrx, trxName, new IProcessor<I_C_Invoice_Candidate>()
-//		{
-//
-//			@Override
-//			public void process(final I_C_Invoice_Candidate ic)
-//			{
-// @formatter:on
-				setInvoiceScheduleAmtStatus(ctx, ic, trxName);
-			}
-		});
-	}
-
-	@SafeVarargs
-	private final void updateInvalid(
-			final InvoiceCandInvalidUpdater updateRequest,
-			final IProcessor<I_C_Invoice_Candidate>... processors)
-	{
-		Check.assumeNotNull(updateRequest, "updateRequest not null");
-		Check.assumeNotEmpty(processors, "processor not null");
-
-		// services
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-		final Properties ctx = updateRequest.getCtx();
-		final int AD_PInstance_ID = updateRequest.getRecomputeTag();
-		final boolean managedTrx = updateRequest.isManagedTrx();
-		final String trxName = updateRequest.getTrxName();
-
-		//
-		// Make sure we are running in a transaction
-		trxManager.assertTrxNameNotNull(trxName);
-
-		int counter = 0;
-		final Iterator<I_C_Invoice_Candidate> candidatesToUpdate = invoiceCandDAO.fetchInvalidInvoiceCandidates(ctx, AD_PInstance_ID, trxName);
-		while (candidatesToUpdate.hasNext())
-		{
-			final I_C_Invoice_Candidate ic = candidatesToUpdate.next();
-
-			//
-			// Process and save our invoice candidate
-			for (final IProcessor<I_C_Invoice_Candidate> processor : processors)
-			{
-				try
-				{
-					processor.process(ic);
-					invoiceCandDAO.save(ic);
-				}
-				catch (final RuntimeException e)
-				{
-					discardChangesAndSetError(ic, e);
-
-					// Try to save it again
-					invoiceCandDAO.save(ic);
-				}
-			}
-
-			//
-			// Commit from time to time (just to avoid having a huge transaction)
-			counter++;
-			if (counter % 50 == 0 && !managedTrx)
-			{
-				trxManager.commit(trxName);
-			}
-		}
-
-		//
-		// Commit the last changes
-		if (!managedTrx)
-		{
-			trxManager.commit(trxName);
-		}
-	}
-
-	/**
 	 * Sets the given IC's <code>DateToInvoice</code> value:
 	 * <ul>
 	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_NachLieferung} or {@link X_C_Invoice_Candidate#INVOICERULE_NachLieferungAuftrag}: <code>DeliveryDate</code> or {@link #DATE_TO_INVOICE_MAX_DATE} if
@@ -399,13 +175,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 *
 	 * @param ctx
 	 * @param ic
-	 * @param trxName
 	 * @task 08542
 	 */
-	private void set_DateToInvoice(
-			final Properties ctx,
-			final I_C_Invoice_Candidate ic,
-			final String trxName)
+	void set_DateToInvoice(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		final Timestamp dateToInvoice;
 
@@ -525,8 +297,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return lastDayOfMonth;
 	}
 
-	private void setInvoiceScheduleAmtStatus(
-			final Properties ctx, final I_C_Invoice_Candidate ic, final String trxName)
+	void setInvoiceScheduleAmtStatus(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		//
 		// services
@@ -550,6 +321,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return;
 		}
 
+		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
 		final I_C_InvoiceSchedule invoiceSched = InterfaceWrapperHelper.create(ctx, invoiceSchedId, I_C_InvoiceSchedule.class, trxName);
 
 		if (invoiceSched.isAmount())
@@ -585,7 +357,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * @param oldQtyInvoiced
 	 * @param factor
 	 */
-	private void set_QtyToInvoiceOverrideFulfilled(
+	void set_QtyToInvoiceOverrideFulfilled(
 			final I_C_Invoice_Candidate ic,
 			final BigDecimal oldQtyInvoiced,
 			final BigDecimal factor)
@@ -615,13 +387,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void set_QtyInvoiced_NetAmtInvoiced_Aggregation(
-			final Properties ctx,
-			final I_C_Invoice_Candidate ic,
-			final String trxName)
+	public void set_QtyInvoiced_NetAmtInvoiced_Aggregation(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		Check.assume(ic.isManual(), ic + " has IsManual='Y'");
-		set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic, trxName);
+		set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic);
 	}
 
 	/**
@@ -630,14 +399,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * <b>Also invokes {@link #updateProcessedFlag(I_C_Invoice_Candidate)}</b>
 	 *
 	 * @param ctx
-	 * @param invoiceCandDB
 	 * @param ic
-	 * @param trxName
 	 */
-	private void set_QtyInvoiced_NetAmtInvoiced_Aggregation0(
-			final Properties ctx,
-			final I_C_Invoice_Candidate ic,
-			final String trxName)
+	void set_QtyInvoiced_NetAmtInvoiced_Aggregation0(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		if (ic.isToClear())
 		{
@@ -702,7 +466,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return qtyAndNetAmtInvoiced;
 	}
 
-	private void set_Discount(final Properties ctx, final I_C_Invoice_Candidate ic)
+	/*package */void set_Discount(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		if (ic.getC_OrderLine_ID() > 0)
 		{
@@ -1315,32 +1079,18 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return new InvoiceGenerateResult(shallStoreInvoices);
 	}
 
-	private final ThreadLocal<Boolean> updateProcessInProgress = new ThreadLocal<Boolean>()
-	{
-		@Override
-		protected Boolean initialValue()
-		{
-			return false;
-		};
-	};
+	private final AutoClosableThreadLocalBoolean updateProcessInProgress = AutoClosableThreadLocalBoolean.newInstance();
 
 	@Override
 	public boolean isUpdateProcessInProgress()
 	{
-		final Boolean isUpdateProcess = updateProcessInProgress.get();
-
-		return isUpdateProcess == null
-				? false
-				: isUpdateProcess.booleanValue();
+		return updateProcessInProgress.booleanValue();
 	}
 
 	@Override
-	public boolean setUpdateProcessInProgress(final boolean value)
+	public IAutoCloseable setUpdateProcessInProgress()
 	{
-		final Boolean isUpdateProcess = isUpdateProcessInProgress();
-		updateProcessInProgress.set(value);
-
-		return isUpdateProcess;
+		return updateProcessInProgress.enable();
 	}
 
 	@Override
@@ -1603,11 +1353,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// Invalidate existing candidates that belong to 'il'
 			// NOTE: in case invoice was not created from invoice candidates (e.g. Kommissionierung or Credit memo)
 			// here we will get ZERO candidates
-			final List<I_C_Invoice_Candidate> invoiceCands = invoiceCandDAO.retrieveIcForIl(il);
-
-			for (final I_C_Invoice_Candidate ic : invoiceCands)
 			{
-				invoiceCandDAO.invalidateCand(ic);
+				final List<I_C_Invoice_Candidate> invoiceCands = invoiceCandDAO.retrieveIcForIl(il);
+				invoiceCandDAO.invalidateCands(invoiceCands, trxName);
 			}
 
 			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new HashSet<I_C_Invoice_Candidate>();
@@ -1635,8 +1383,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					// Make sure the invoice candidates are valid before we link to them, because their C_Invoice_Candidate_Agg_ID is copied to the ila
 					updateInvalid()
 							.setContext(ctx, trxName)
-							.setManagedTrx(true)
-							.update(invoiceCandsNew.iterator());
+							.setTaggedWithAnyTag()
+							.setOnlyC_Invoice_Candidates(invoiceCandsNew)
+							.update();
 				}
 				else
 				{
@@ -1744,40 +1493,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	}
 
-	/**
-	 * Link all orderLine's inoutLine to our invoice candidate.
-	 *
-	 * @param ic
-	 * @param orderLine
-	 */
-	private void populateC_InvoiceCandidate_InOutLine(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)
-	{
-		if (orderLine == null)
-		{
-			return; // nothing to do
-		}
-
-		// services
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
-		final IContextAware context = InterfaceWrapperHelper.getContextAware(ic);
-
-		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLinesForOrderLine(orderLine, I_M_InOutLine.class);
-		for (final I_M_InOutLine inOutLine : inoutLines)
-		{
-			if (invoiceCandDAO.existsInvoiceCandidateInOutLinesForInvoiceCandidate(ic, inOutLine))
-			{
-				continue; // nothing to to, record already exists
-			}
-
-			final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
-			iciol.setAD_Org_ID(inOutLine.getAD_Org_ID());
-			iciol.setM_InOutLine(inOutLine);
-			iciol.setC_Invoice_Candidate(ic);
-			InterfaceWrapperHelper.save(iciol);
-		}
-	}
 
 	@Override
 	public void resetError(final I_C_Invoice_Candidate ic)
@@ -1787,7 +1502,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		ic.setErrorMsg(null);
 	}
 
-	private void discardChangesAndSetError(final I_C_Invoice_Candidate ic, final Exception e)
+	/* package */void discardChangesAndSetError(final I_C_Invoice_Candidate ic, final Exception e)
 	{
 		//
 		// Backup fields that we want to keep
@@ -1954,7 +1669,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return ic.getQtyDelivered().subtract(ic.getQtyWithIssues_Effective());
 	}
 
-	// package-visible for testing
 	/* package */void updateQtyWithIssues_Effective(final I_C_Invoice_Candidate ic)
 	{
 		final BigDecimal qualityDiscountPercent_Override = InterfaceWrapperHelper.getValueOrNull(ic, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override);
@@ -2134,7 +1848,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// return SystemTime.asDayTimestamp();
 	}
 
-	private BigDecimal computeQtyToInvoice(final Properties ctx, final I_C_Invoice_Candidate ic, final BigDecimal factor, boolean useEffectiveQtyDeliviered)
+	BigDecimal computeQtyToInvoice(final Properties ctx, final I_C_Invoice_Candidate ic, final BigDecimal factor, boolean useEffectiveQtyDeliviered)
 	{
 		final BigDecimal newQtyToInvoice;
 

@@ -92,7 +92,9 @@ import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
+import de.metas.inoutcandidate.spi.impl.CompositeShipmentScheduleQtyUpdateListener;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.storage.IStorageBL;
@@ -115,6 +117,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final static CLogger logger = CLogger.getCLogger(ShipmentScheduleBL.class);
 
 	private final CompositeCandidateProcessor candidateProcessors = new CompositeCandidateProcessor();
+	
+	/**
+	 * Listeners for delivery Qty updates  (task 08959)
+	 */
+	final CompositeShipmentScheduleQtyUpdateListener listeners = new CompositeShipmentScheduleQtyUpdateListener();
+
 
 	@Override
 	public void updateSchedules(
@@ -227,6 +235,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			sched.setQtyReserved(BigDecimal.ZERO.max(ol.getQtyOrdered().subtract(ol.getQtyDelivered())));
 
 			sched.setQtyDelivered(ol.getQtyDelivered());
+			
+			// task 08959
+			// Additional qty updates from other projects
+			listeners.updateQtys(sched);
 
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			final de.metas.interfaces.I_C_OrderLine olEx = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
@@ -243,7 +255,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				setQtyToDeliverWhenNullInoutLine(sched);
 			}
-
+			
 			final BigDecimal newQtyToDeliverOverrideFulfilled = mkQtyToDeliverOverrideFulFilled(olAndSched);
 
 			if (olAndSched.getQtyOverride() != null)
@@ -1205,5 +1217,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		sched.setProcessed(newProcessed);
 
 		return newProcessed;
+	}
+
+	@Override
+	public void addShipmentScheduleQtyUpdateListener(final IShipmentScheduleQtyUpdateListener listener)
+	{
+		listeners.addShipmentScheduleQtyUpdateListener(listener);
 	}
 }

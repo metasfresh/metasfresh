@@ -41,7 +41,7 @@ import org.compiere.util.CLogger;
  */
 public final class EventBusConstants
 {
-	private static final String LOGGER_NAME = EventBusConstants.class.getPackage().getName() + ".EventBus";
+	private static final String LOGGER_NAME = CLogger.createModuleLoggerName(EventBusConstants.class.getPackage().getName() + ".EventBus");
 
 	public static CLogger getLogger()
 	{

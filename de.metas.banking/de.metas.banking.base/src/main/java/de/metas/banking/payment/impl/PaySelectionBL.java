@@ -34,9 +34,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.IPaySelectionBL;
@@ -154,9 +154,7 @@ public class PaySelectionBL implements IPaySelectionBL
 
 			//
 			// Update pay selection line => mark it as reconciled
-			psl.setC_BankStatementLine(bankStatementLine);
-			psl.setC_BankStatementLine_Ref(bankStatementLineRef);
-			InterfaceWrapperHelper.save(psl);
+			linkBankStatementLine(psl, bankStatementLine, bankStatementLineRef);
 		}
 
 		//
@@ -236,5 +234,24 @@ public class PaySelectionBL implements IPaySelectionBL
 				.createAndProcess();
 
 		return InterfaceWrapperHelper.create(payment, I_C_Payment.class);
+	}
+
+	@Override
+	public void linkBankStatementLine(final I_C_PaySelectionLine psl, final org.compiere.model.I_C_BankStatementLine bankStatementLine, final de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef)
+	{
+		Check.assumeNotNull(bankStatementLine, "bankStatementLine not null");
+		Check.assume(bankStatementLine.getC_BankStatementLine_ID() > 0, "bankStatementLine is saved: {0}", bankStatementLine);
+		
+		psl.setC_BankStatementLine(bankStatementLine);
+		psl.setC_BankStatementLine_Ref(bankStatementLineRef);
+		InterfaceWrapperHelper.save(psl);
+	}
+	
+	@Override
+	public void unlinkBankStatementLine(final I_C_PaySelectionLine psl)
+	{
+		psl.setC_BankStatementLine(null);
+		psl.setC_BankStatementLine_Ref(null);
+		InterfaceWrapperHelper.save(psl);
 	}
 }

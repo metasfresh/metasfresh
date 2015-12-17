@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
@@ -290,25 +291,19 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
-		final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
-
-		invalidateCandidateForInOutLine(InterfaceWrapperHelper.create(inOutLine, I_M_InOutLine.class));
+		final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
+		invalidateCandidateForInOutLine(inoutLine);
 	}
 
-	private void invalidateCandidateForInOutLine(final I_M_InOutLine inOutLine)
+	private void invalidateCandidateForInOutLine(final I_M_InOutLine inoutLine)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inOutLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(inOutLine);
-
-		final List<I_C_Invoice_Candidate> ics = invoiceCandDAO.fetchInvoiceCandidates(ctx, org.compiere.model.I_M_InOutLine.Table_Name, inOutLine.getM_InOutLine_ID(), trxName);
-		for (final I_C_Invoice_Candidate ic : ics)
-		{
-			invoiceCandDAO.invalidateCand(ic);
-		}
+		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLineQuery(inoutLine);
+		
+		invoiceCandDAO.invalidateCandsFor(icQueryBuilder);
 	}
-
+	
 	@Override
 	public String getSourceTable()
 	{
@@ -400,8 +395,15 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void setDeliveredData(final I_C_Invoice_Candidate ic)
 	{
-		ic.setQtyDelivered(ic.getQtyOrdered());
+		//
+		// Get delivered quantity and then set it to IC
+		// NOTE: please check setOrderedData() method which is setting QtyOrdered as inout lines' movement quantity,
+		// so that's why, here, we consider the QtyDelivered as QtyOrdered.
+		final BigDecimal qtyDelivered = ic.getQtyOrdered();
+		ic.setQtyDelivered(qtyDelivered);
 
+		//
+		// Set other delivery informations by fetching them from first shipment/receipt.
 		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
 		final org.compiere.model.I_M_InOut inOut = inOutLine.getM_InOut();
 		setDeliveredDataFromFirstInOut(ic, inOut);

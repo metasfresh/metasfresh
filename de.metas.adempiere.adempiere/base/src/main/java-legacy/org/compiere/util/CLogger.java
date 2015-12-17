@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.compiere.model.MSession;
 
@@ -51,8 +52,10 @@ public class CLogger extends Logger implements Serializable
 {
 	private static final long serialVersionUID = 6492376264463028357L;
 
-	private static final String LOGGERNAME_DEFAULT = "org.adempiere.default";
+	/* package */static final String LOGGERNAME_DEFAULT = "org.adempiere.default";
 	private static final String LASTERRORINSTANCE_CTXKEY = LastErrorsInstance.class.getName();
+	
+	/* package */static final String LOGGERNAME_MODULE_PREFIX = "module:";
 
 	private static final ILoggerCustomizer loggerCustomizer = SysConfigLoggerCustomizer.instance;
 
@@ -108,7 +111,13 @@ public class CLogger extends Logger implements Serializable
 		}
 		return getCLogger(clazz.getName());
 	}	// getLogger
-
+	
+	public static final String createModuleLoggerName(final String moduleName)
+	{
+		Check.assumeNotEmpty(moduleName, "moduleName not empty");
+		return LOGGERNAME_MODULE_PREFIX + moduleName.trim();
+	}
+	
 	/**
 	 * Get default Adempiere Logger.
 	 * Need to be used in serialized objects

@@ -22,7 +22,6 @@ package de.metas.banking.payment;
  * #L%
  */
 
-
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
@@ -70,5 +69,22 @@ public interface IPaySelectionBL extends ISingletonService
 	 * @return newly created payment or <code>null</code> if no payment was generated.
 	 */
 	I_C_Payment createPaymentIfNeeded(de.metas.banking.model.I_C_PaySelectionLine line);
+
+	/**
+	 * Link given {@link I_C_BankStatementLine_Ref}/{@link I_C_BankStatementLine} to pay selection line
+	 * 
+	 * @param psl
+	 * @param bankStatementLine
+	 * @param bankStatementLineRef
+	 */
+	void linkBankStatementLine(de.metas.banking.model.I_C_PaySelectionLine psl, org.compiere.model.I_C_BankStatementLine bankStatementLine,
+			de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef);
+
+	/**
+	 * Unlink any bank statement line from given pay selection line.
+	 * 
+	 * @param psl
+	 */
+	void unlinkBankStatementLine(de.metas.banking.model.I_C_PaySelectionLine psl);
 
 }

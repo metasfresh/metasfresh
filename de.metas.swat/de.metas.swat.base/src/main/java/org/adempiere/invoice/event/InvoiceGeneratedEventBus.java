@@ -119,9 +119,9 @@ public class InvoiceGeneratedEventBus extends QueueableForwardingEventBus
 		final String bpName = bpartner.getName();
 
 		final Event event = Event.builder()
-				.setDetailADMessage(MSG_Event_InvoiceGenerated, new TableRecordReference(invoice), bpValue, bpName)
+				.setDetailADMessage(MSG_Event_InvoiceGenerated, TableRecordReference.of(invoice), bpValue, bpName)
 				.addRecipient_User_ID(recipientUserId <= 0 ? invoice.getCreatedBy() : recipientUserId)
-				.putProperty(EVENT_PROPERTY_InvoiceRecord, new TableRecordReference(invoice))
+				.putProperty(EVENT_PROPERTY_InvoiceRecord, TableRecordReference.of(invoice))
 				.build();
 		return event;
 	}

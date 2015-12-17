@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/saldobilanz/report" uuid="8895fecc-00d6-4320-8b0a-ab970c9a09bd">
 	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="210"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="Date" class="java.util.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="defaultAcc" class="java.lang.String">
-		<defaultValueExpression><![CDATA['N']]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="showCurrencyExchange" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM report.saldobilanz_report ($P{Date},$P{defaultAcc});]]>
+		<![CDATA[SELECT * FROM report.saldobilanz_Report ($P{Date},$P{defaultAcc},$P{showCurrencyExchange});]]>
 	</queryString>
 	<field name="parentname1" class="java.lang.String"/>
 	<field name="parentvalue1" class="java.lang.String"/>
@@ -22,12 +25,14 @@
 	<field name="namevalue" class="java.lang.String"/>
 	<field name="sameyearsum" class="java.math.BigDecimal"/>
 	<field name="lastyearsum" class="java.math.BigDecimal"/>
+	<field name="eurosaldo" class="java.math.BigDecimal"/>
 	<field name="l3_sameyearsum" class="java.math.BigDecimal"/>
 	<field name="l3_lastyearsum" class="java.math.BigDecimal"/>
 	<field name="l2_sameyearsum" class="java.math.BigDecimal"/>
 	<field name="l2_lastyearsum" class="java.math.BigDecimal"/>
 	<field name="l1_sameyearsum" class="java.math.BigDecimal"/>
 	<field name="l1_lastyearsum" class="java.math.BigDecimal"/>
+	<field name="showeur" class="java.math.BigDecimal"/>
 	<group name="lvl1">
 		<groupExpression><![CDATA[$F{parentvalue1}]]></groupExpression>
 		<groupHeader>
@@ -48,14 +53,14 @@
 					<textFieldExpression><![CDATA[$F{parentname1}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00">
-					<reportElement uuid="4f6c34ca-cfa5-45fe-91f5-9f5b226917bf" x="371" y="0" width="92" height="16"/>
+					<reportElement uuid="4f6c34ca-cfa5-45fe-91f5-9f5b226917bf" x="353" y="0" width="102" height="16"/>
 					<textElement textAlignment="Right">
 						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l1_sameyearsum}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00">
-					<reportElement uuid="f48222ff-5f4f-4a64-8aa8-c80da92700b5" x="463" y="0" width="92" height="16"/>
+					<reportElement uuid="f48222ff-5f4f-4a64-8aa8-c80da92700b5" x="455" y="0" width="102" height="16"/>
 					<textElement textAlignment="Right">
 						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -89,14 +94,14 @@
 					<textFieldExpression><![CDATA[$F{parentname2}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="53e0dacb-5311-41ad-a566-3fa80b958378" x="371" y="0" width="92" height="14"/>
+					<reportElement uuid="53e0dacb-5311-41ad-a566-3fa80b958378" x="353" y="0" width="102" height="14"/>
 					<textElement textAlignment="Right">
 						<font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l2_sameyearsum}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="5b04e4b2-4945-4f65-8cd2-96e6a4e789ad" x="463" y="0" width="92" height="14"/>
+					<reportElement uuid="5b04e4b2-4945-4f65-8cd2-96e6a4e789ad" x="455" y="0" width="102" height="14"/>
 					<textElement textAlignment="Right">
 						<font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -130,14 +135,14 @@
 					<textFieldExpression><![CDATA[$F{parentvalue3}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="f79b0d71-78b6-480e-8f9f-e4b521f0412f" x="371" y="0" width="92" height="12"/>
+					<reportElement uuid="f79b0d71-78b6-480e-8f9f-e4b521f0412f" x="353" y="0" width="102" height="12"/>
 					<textElement textAlignment="Right">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l3_sameyearsum}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="5c4ab886-4c86-4a07-ab7d-c16d1cfe7f29" x="463" y="0" width="92" height="12"/>
+					<reportElement uuid="5c4ab886-4c86-4a07-ab7d-c16d1cfe7f29" x="455" y="0" width="102" height="12"/>
 					<textElement textAlignment="Right">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -178,14 +183,14 @@
 				<textFieldExpression><![CDATA[$R{Name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="dfad107d-84ff-4ee3-b0d4-477487fad9c2" x="371" y="35" width="92" height="12"/>
+				<reportElement uuid="dfad107d-84ff-4ee3-b0d4-477487fad9c2" x="353" y="35" width="102" height="12"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{SameYearSum}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c0c76cb0-674a-4a38-a820-3eecd76b2a74" x="462" y="35" width="92" height="12"/>
+				<reportElement uuid="c0c76cb0-674a-4a38-a820-3eecd76b2a74" x="454" y="35" width="102" height="12"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -208,7 +213,7 @@
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="12" splitType="Stretch">
+		<band height="24" splitType="Stretch">
 			<textField>
 				<reportElement uuid="3b1734bc-2684-4024-a509-7ac2a65ce3ee" x="37" y="0" width="50" height="12" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
@@ -228,7 +233,7 @@
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement uuid="c736b19e-df7a-4125-8045-ae1ab228ab57" x="371" y="0" width="92" height="12" isRemoveLineWhenBlank="true">
+				<reportElement uuid="c736b19e-df7a-4125-8045-ae1ab228ab57" x="353" y="0" width="102" height="12" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -237,13 +242,22 @@
 				<textFieldExpression><![CDATA[$F{sameyearsum}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement uuid="949d1719-aba6-4365-8a19-d734014b0c81" x="463" y="0" width="92" height="12" isRemoveLineWhenBlank="true">
+				<reportElement uuid="949d1719-aba6-4365-8a19-d734014b0c81" x="455" y="0" width="102" height="12" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{lastyearsum}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="c736b19e-df7a-4125-8045-ae1ab228ab57" x="353" y="12" width="102" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA["(" + $F{eurosaldo}.setScale( 2, RoundingMode.HALF_UP ) + " EUR)"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

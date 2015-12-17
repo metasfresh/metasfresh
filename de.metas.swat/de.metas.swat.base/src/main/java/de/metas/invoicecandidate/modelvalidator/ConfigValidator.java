@@ -39,6 +39,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.jmx.JMXRegistry;
+import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -56,6 +58,7 @@ import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.callout.C_Invoice_Candidate_TabCallout;
+import de.metas.invoicecandidate.jmx.JMXInvoiceCandidates;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.ui.spi.impl.C_Invoice_Candidate_GridTabSummaryInfoProvider;
@@ -103,7 +106,10 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		//
 		// Setup event bus topics on which swing client notification listener shall subscribe
 		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InvoiceGeneratedEventBus.EVENTBUS_TOPIC);
-		
+
+		//
+		// JMX
+		JMXRegistry.get().registerJMX(new JMXInvoiceCandidates(), OnJMXAlreadyExistsPolicy.Replace);
 	}
 
 	@Override

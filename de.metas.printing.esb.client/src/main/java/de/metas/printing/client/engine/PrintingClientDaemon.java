@@ -198,6 +198,12 @@ public class PrintingClientDaemon implements Runnable
 			in = connection.getPrintPackageData(printPackage);
 			final PrintJobInstructionsConfirm response = printingEngine.print(printPackage, in);
 
+			final String supressResponse = Context.getContext().getProperty(Context.CTX_Testing_Dont_RespondAfterPrinting, Context.DEFAULT_Dont_RespondAfterPrinting);
+			if (Boolean.parseBoolean(supressResponse))
+			{
+				log.log(Level.INFO, "{0} is true, so we do *not* report anything", Context.CTX_Testing_Dont_RespondAfterPrinting);
+				return;
+			}
 			connection.sendPrintPackageResponse(printPackage, response);
 		}
 		finally

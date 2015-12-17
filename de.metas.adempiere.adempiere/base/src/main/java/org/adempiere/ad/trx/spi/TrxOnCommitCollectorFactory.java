@@ -40,8 +40,9 @@ import com.google.common.base.Supplier;
  */
 public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 {
-	final ITrxManager trxManager = Services.get(ITrxManager.class);
-
+	// services:
+	// NOTE: this is supposed to be a long living class, so having services here is not a good idea
+	
 	/**
 	 * Collects given item.
 	 * <ul>
@@ -54,8 +55,11 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 	 */
 	public final void collect(final ItemType item)
 	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		
 		final String trxName = extractTrxNameFromItem(item);
-		if (trxManager.isNull(trxName))
+		final ITrx trx = trxManager.getTrx(trxName);
+		if (trxManager.isNull(trx))
 		{
 			final CollectorType collector = newCollector(item);
 			collectItem(collector, item);
@@ -65,7 +69,6 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 		{
 			//
 			// Get/create the transaction level collector
-			final ITrx trx = trxManager.getTrx(trxName);
 			final AtomicBoolean itemWasCollected = new AtomicBoolean(false);
 			final String trxProperyName = getTrxProperyName();
 			final CollectorType collector = trx.getProperty(trxProperyName, new Supplier<CollectorType>()

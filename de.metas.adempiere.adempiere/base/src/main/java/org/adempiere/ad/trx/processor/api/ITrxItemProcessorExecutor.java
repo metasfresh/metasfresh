@@ -22,7 +22,6 @@ package org.adempiere.ad.trx.processor.api;
  * #L%
  */
 
-
 import java.util.Iterator;
 
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
@@ -53,6 +52,13 @@ public interface ITrxItemProcessorExecutor<IT, RT>
 	 * @return this
 	 */
 	ITrxItemProcessorExecutor<IT, RT> setExceptionHandler(ITrxItemExceptionHandler exceptionHandler);
+
+	/**
+	 * Sets if the executor shall use transaction savepoints internally.
+	 * 
+	 * @param useTrxSavepoints
+	 */
+	ITrxItemProcessorExecutor<IT, RT> setUseTrxSavepoints(final boolean useTrxSavepoints);
 
 	/**
 	 * Process given items.

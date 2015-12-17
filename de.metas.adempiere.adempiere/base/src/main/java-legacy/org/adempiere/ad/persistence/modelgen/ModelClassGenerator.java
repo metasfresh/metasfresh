@@ -36,7 +36,6 @@ import org.adempiere.util.Check;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -389,9 +388,14 @@ public class ModelClassGenerator
 		sb.append("\tpublic void set").append(columnName).append(" (").append(dataType).append(" ").append(columnName).append(")").append(NL)
 				.append("\t{").append(NL);
 		// List Validation
-		if (columnInfo.getAD_Reference_ID() > 0 && String.class == clazz)
+		if (columnInfo.getAD_Reference_ID() > 0 && String.class == clazz && columnInfo.getListInfo().isPresent())
 		{
-			String staticVar = addListValidation(sb, columnInfo);
+			sb.append("\n");
+			
+			final String staticVar = ADRefListGenerator.newInstance()
+					.setColumnName(columnInfo.getColumnName())
+					.setListInfo(columnInfo.getListInfo().get())
+					.generateConstants();
 			sb.insert(0, staticVar);
 		}
 		// setValue ("ColumnName", xx);
@@ -550,162 +554,6 @@ public class ModelClassGenerator
 		}
 		result.append("\t  */").append(NL);
 	}
-
-	/**
-	 * Add List Validation
-	 * 
-	 * @param sb buffer - example:
-	 *            if (NextAction.equals("N") || NextAction.equals("F"));
-	 *            else throw new IllegalArgumentException ("NextAction Invalid value - Reference_ID=219 - N - F");
-	 * @param columnInfo
-	 * @return static parameter - Example:
-	 *         public static final int NEXTACTION_AD_Reference_ID=219;
-	 *         public static final String NEXTACTION_None = "N";
-	 *         public static final String NEXTACTION_FollowUp = "F";
-	 */
-	private String addListValidation(final StringBuilder sb, final ColumnInfo columnInfo)
-	{
-		final String columnName = columnInfo.getColumnName();
-		final Optional<ListInfo> listInfoOrNull = columnInfo.getListInfo();
-		final ListInfo listInfo = listInfoOrNull.get();
-		final int AD_Reference_ID = listInfo.getAD_Reference_ID();
-
-		final String referenceName = listInfo.getName();
-
-		StringBuilder retValue = new StringBuilder();
-		retValue.append("\n\t/** ")
-				.append("\n\t * ").append(columnName).append(" AD_Reference_ID=").append(AD_Reference_ID)
-				.append("\n\t * Reference name: ").append(referenceName)
-				.append("\n\t */")
-				.append("\n\tpublic static final int ").append(columnName.toUpperCase())
-				.append("_AD_Reference_ID=").append(AD_Reference_ID).append(";");
-		//
-		boolean found = false;
-		StringBuilder values = new StringBuilder("Reference_ID=")
-				.append(AD_Reference_ID);
-		StringBuilder statement = new StringBuilder();
-		//
-		for (final ListItemInfo item : listInfo.getItems())
-		{
-			final String value = item.getValue();
-			values.append(" - ").append(value);
-			if (statement.length() == 0)
-				statement.append("\n\t\tif (").append(columnName)
-						.append(".equals(\"").append(value).append("\")");
-			else
-				statement.append(" || ").append(columnName)
-						.append(".equals(\"").append(value).append("\")");
-			//
-			if (!found)
-			{
-				found = true;
-			}
-
-			// Name (SmallTalkNotation)
-			String name = item.getName();
-			// metas: 02827: begin
-			final String valueName = item.getValueName();
-			if (!Check.isEmpty(valueName, true))
-			{
-				name = valueName;
-			}
-			// metas: 02827: end
-			char[] nameArray = name.toCharArray();
-			StringBuilder nameClean = new StringBuilder();
-			boolean initCap = true;
-			for (int i = 0; i < nameArray.length; i++)
-			{
-				char c = nameArray[i];
-				// metas: teo_sarca: begin
-				// replacing german umlauts with equivalent ascii
-				if (c == '\u00c4')
-				{
-					nameClean.append("Ae");
-					initCap = false;
-				}
-				else if (c == '\u00dc')
-				{
-					nameClean.append("Ue");
-					initCap = false;
-				}
-				else if (c == '\u00d6')
-				{
-					nameClean.append("Oe");
-					initCap = false;
-				}
-				else if (c == '\u00e4')
-				{
-					nameClean.append("ae");
-					initCap = false;
-				}
-				else if (c == '\u00fc')
-				{
-					nameClean.append("ue");
-					initCap = false;
-				}
-				else if (c == '\u00f6')
-				{
-					nameClean.append("oe");
-					initCap = false;
-				}
-				else if (c == '\u00df')
-				{
-					nameClean.append("ss");
-					initCap = false;
-				}
-				else
-				// metas: teo_sarca: end
-				if (Character.isJavaIdentifierPart(c))
-				{
-					if (initCap)
-						nameClean.append(Character.toUpperCase(c));
-					else
-						nameClean.append(c);
-					initCap = false;
-				}
-				else
-				{
-					if (c == '+')
-						nameClean.append("Plus");
-					else if (c == '-')
-						nameClean.append("_");
-					else if (c == '>')
-					{
-						if (name.indexOf('<') == -1)	// ignore <xx>
-							nameClean.append("Gt");
-					}
-					else if (c == '<')
-					{
-						if (name.indexOf('>') == -1)	// ignore <xx>
-							nameClean.append("Le");
-					}
-					else if (c == '!')
-						nameClean.append("Not");
-					else if (c == '=')
-						nameClean.append("Eq");
-					else if (c == '~')
-						nameClean.append("Like");
-					initCap = true;
-				}
-			}
-			retValue.append("\n\t/** ").append(name).append(" = ").append(value).append(" */");
-			retValue.append("\n\tpublic static final String ").append(columnName.toUpperCase())
-					.append("_").append(nameClean)
-					.append(" = \"").append(value).append("\";");
-		}
-
-		statement.append(")"
-				+ "; "
-				+ "else "
-				+ "throw new IllegalArgumentException (\"").append(columnName)
-				.append(" Invalid value - \" + ").append(columnName)
-				.append(" + \" - ").append(values).append("\");");
-		// [1762461] - Remove hardcoded list items checking in generated models
-		// if (found && !columnName.equals("EntityType"))
-		// sb.append (statement);
-		sb.append("\n");
-		return retValue.toString();
-	}	// addListValidation
 
 	/**
 	 * Create getKeyNamePair() method with first identifier

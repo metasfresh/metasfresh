@@ -36,7 +36,7 @@ import de.metas.materialtracking.IHandlingUnitsInfo;
  *
  * Contains informations about vendor material receipt. These informations will be used a reference when projected quantities will be calculated.
  *
- * @param <T> the type of the instances to to add using the {@link #add(Object)} method.
+ * @param <T> the type of the instances to add using the {@link #add(Object)} method.
  * @author tsa
  */
 public interface IVendorReceipt<T>

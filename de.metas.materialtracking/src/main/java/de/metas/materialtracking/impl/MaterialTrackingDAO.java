@@ -39,6 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
 
@@ -47,6 +48,8 @@ import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.IMaterialTrackingQuery.OnMoreThanOneFound;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_C_Flatrate_Conditions;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -282,6 +285,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 				+ "\n @PP_Order_ID: " + ppOrder
 				+ "\n @M_Material_Tracking_ID@: " + materialTracking);
 	}
+
 	@Override
 	public List<I_C_Flatrate_Term> retrieveC_Flatrate_Terms_For_MaterialTracking(final de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking materialTracking)
 	{
@@ -315,4 +319,31 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 				.list(I_C_Flatrate_Term.class);
 
 	}
+
+	@Override
+	public List<I_M_Material_Tracking> retrieveMaterialTrackingsForPeriod(final I_C_Period period)
+	{
+
+		final Timestamp periodEndDate = period.getEndDate();
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_Material_Tracking.class, period)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_M_Material_Tracking.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, periodEndDate)
+				.addCompareFilter(I_M_Material_Tracking.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, periodEndDate)
+				.create()
+				.list(I_M_Material_Tracking.class);
+	}
+
+	@Override
+	public void deleteMaterialTrackingReportLines(final I_M_Material_Tracking_Report report)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		queryBL.createQueryBuilder(I_M_Material_Tracking_Report_Line.class, report)
+				.addEqualsFilter(I_M_Material_Tracking_Report_Line.COLUMN_M_Material_Tracking_Report_ID, report.getM_Material_Tracking_Report_ID())
+				.create()
+				.deleteDirectly();
+
+	}
+
 }

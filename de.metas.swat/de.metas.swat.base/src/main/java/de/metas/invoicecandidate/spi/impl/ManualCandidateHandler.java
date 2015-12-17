@@ -38,6 +38,7 @@ import org.compiere.util.CLogger;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.exceptions.InvalidQtyForPartialAmtToInvoiceException;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -55,7 +56,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	 */
 	final public static String MANUAL = "ManualCandidateHandler";
 
-	private final static transient CLogger logger = CLogger.getCLogger(ManualCandidateHandler.class);
+	private final static transient CLogger logger = InvoiceCandidate_Constants.getLogger();
 	
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically()

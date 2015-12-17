@@ -235,11 +235,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final String trxName = InterfaceWrapperHelper.getTrxName(olc);
 
 		final List<I_C_Invoice_Candidate> ics = invoiceCandDAO.fetchInvoiceCandidates(ctx, I_C_OLCand.Table_Name, olc.getC_OLCand_ID(), trxName);
-		for (final I_C_Invoice_Candidate ic : ics)
-		{
-			invoiceCandDAO.invalidateCand(ic);
-		}
-
+		invoiceCandDAO.invalidateCands(ics, trxName);
 	}
 
 	@Override

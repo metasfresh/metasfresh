@@ -36,9 +36,9 @@ import com.google.common.collect.ImmutableList;
  * @author tsa
  *
  */
-class ListInfo
+public class ListInfo
 {
-	public static Builder builder()
+	static Builder builder()
 	{
 		return new Builder();
 	}

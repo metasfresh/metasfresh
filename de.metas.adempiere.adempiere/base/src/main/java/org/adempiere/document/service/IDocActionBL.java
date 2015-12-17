@@ -22,7 +22,6 @@ package org.adempiere.document.service;
  * #L%
  */
 
-
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Properties;
@@ -145,6 +144,12 @@ public interface IDocActionBL extends ISingletonService
 	boolean isStatusDraftedOrInProgress(Object document);
 
 	boolean isStatusCompleted(Object document);
+
+	/**
+	 * @param document
+	 * @return true if the doc has status 'CL', false otherwise
+	 */
+	boolean isStatusClosed(Object document);
 
 	/**
 	 * Returns <code>true</code> if the given <code>document</code>'s status is one of the given <code>docStatusesToCheckFor</code>.

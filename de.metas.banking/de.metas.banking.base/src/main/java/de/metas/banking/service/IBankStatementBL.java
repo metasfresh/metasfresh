@@ -93,4 +93,10 @@ public interface IBankStatementBL extends ISingletonService
 	 */
 	void unpost(I_C_BankStatement bankStatement);
 
+	/**
+	 * Unlink any pay selection line which points to given bank statement line or to one of it's references.
+	 * 
+	 * @param bankStatementLine
+	 */
+	void unlinkPaySelectionLine(de.metas.banking.model.I_C_BankStatementLine bankStatementLine);
 }

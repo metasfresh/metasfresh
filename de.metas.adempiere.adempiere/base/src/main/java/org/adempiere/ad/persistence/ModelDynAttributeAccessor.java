@@ -117,6 +117,13 @@ public final class ModelDynAttributeAccessor<ModelType, AttributeType>
 		return attributeValue == null;
 	}
 
+	/** @return true if given <code>model</code>'s attribute equals with <code>expectedValue</code> */
+	public boolean is(final ModelType model, final AttributeType expectedValue)
+	{
+		final Object attributeValue = InterfaceWrapperHelper.getDynAttribute(model, attributeName);
+		return Check.equals(attributeValue, expectedValue);
+	}
+
 	public void reset(final ModelType model)
 	{
 		final AttributeType attributeValue = null;

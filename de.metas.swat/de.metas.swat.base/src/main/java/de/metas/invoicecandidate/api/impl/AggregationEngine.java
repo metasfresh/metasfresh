@@ -60,6 +60,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 
@@ -67,7 +68,7 @@ public class AggregationEngine implements IAggregationEngine
 {
 	//
 	// services
-	private static final transient CLogger logger = CLogger.getCLogger(AggregationEngine.class);
+	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);

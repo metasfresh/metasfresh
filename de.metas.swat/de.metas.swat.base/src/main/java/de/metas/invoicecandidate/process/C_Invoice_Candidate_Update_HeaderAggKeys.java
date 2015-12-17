@@ -32,6 +32,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.process.SvrProcess;
@@ -63,10 +64,8 @@ public class C_Invoice_Candidate_Update_HeaderAggKeys extends SvrProcess
 
 		final Iterator<I_C_Invoice_Candidate> unprocessedCands = invoiceCandDAO.retrieveNonProcessed(new PlainContextAware(getCtx(), ITrx.TRXNAME_None));
 
-		try
+		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 		{
-			invoiceCandBL.setUpdateProcessInProgress(true);
-			
 			for (final I_C_Invoice_Candidate ic : IteratorUtils.asIterable(unprocessedCands))
 			{
 				Services.get(IAggregationBL.class)
@@ -78,10 +77,6 @@ public class C_Invoice_Candidate_Update_HeaderAggKeys extends SvrProcess
 				InterfaceWrapperHelper.save(ic);
 				counter++;
 			}
-		}
-		finally
-		{
-			invoiceCandBL.setUpdateProcessInProgress(false);
 		}
 		return "@Updated@ " + counter + " @C_Invoice_Candidate@";
 	}

@@ -29,6 +29,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingResult;
@@ -41,6 +46,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
+import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -48,6 +54,7 @@ import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocuments;
@@ -69,9 +76,12 @@ import de.metas.tax.api.ITaxBL;
 public class InvoiceCandidateWriter
 {
 	// Services
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
-	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
-
+	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
+	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	// Parameters:
 	private final IContextAware _context;
 	private I_C_ILCandHandler _invoiceCandidateHandler;
@@ -173,9 +183,7 @@ public class InvoiceCandidateWriter
 		// Make sure the invoice candidate is saved, so that we can use its ID further down (e.g. to reference if from the detail lines)
 		InterfaceWrapperHelper.save(invoiceCandidate);
 
-		ILoggable.THREADLOCAL.getLoggableOr(ILoggable.NULL).addLog(newIc ? "Created new IC " : "Updated existing IC " + invoiceCandidate);
-
-		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
+		ILoggable.THREADLOCAL.getLoggable().addLog((newIc ? "Created new IC " : "Updated existing IC ") + invoiceCandidate);
 
 		//
 		// delete/recreate Invoice Clearing Allocation
@@ -184,7 +192,7 @@ public class InvoiceCandidateWriter
 		{
 			final IVendorInvoicingInfo vendorInvoicingInfo = getVendorInvoicingInfo();
 
-			for (I_C_Invoice_Clearing_Alloc ica : flatrateDB.retrieveClearingAllocs(invoiceCandidate))
+			for (final I_C_Invoice_Clearing_Alloc ica : flatrateDB.retrieveClearingAllocs(invoiceCandidate))
 			{
 				InterfaceWrapperHelper.delete(ica);
 			}
@@ -251,6 +259,8 @@ public class InvoiceCandidateWriter
 
 	public InvoiceCandidateWriter setQualityInspectionOrder(final IQualityInspectionOrder qualityInspectionOrder)
 	{
+		Check.assume(qualityInspectionOrder.isQualityInspection(),
+				"Given qualityInspectionOrder {0} is a *real* quality inspection order", qualityInspectionOrder);
 		_qualityInspectionOrder = qualityInspectionOrder;
 		return this;
 	}
@@ -282,14 +292,11 @@ public class InvoiceCandidateWriter
 
 	private void create(final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
 	{
-		Check.assumeNotNull(qualityInvoiceLineGroup, "qualityInvoiceLineGroup not null");
-
 		//
 		// Create Invoice Candidate from invoiceable line
-		final IQualityInvoiceLine invoiceableLine = qualityInvoiceLineGroup.getInvoiceableLine();
-		final I_C_Invoice_Candidate invoiceCandidate = createOrUpdateInvoiceCandidate(invoiceableLine);
+		final I_C_Invoice_Candidate invoiceCandidate = createInvoiceCandidate(qualityInvoiceLineGroup);
 
-		Services.get(IInvoiceCandDAO.class).deleteInvoiceDetails(invoiceCandidate);
+		invoiceCandDAO.deleteInvoiceDetails(invoiceCandidate);
 
 		if (qualityInvoiceLineGroup.getInvoiceableLineOverride() != null)
 		{
@@ -322,15 +329,22 @@ public class InvoiceCandidateWriter
 	 * @param invoiceableLine
 	 * @return invoice candidate; never returns <code>null</code>
 	 */
-	private I_C_Invoice_Candidate createOrUpdateInvoiceCandidate(final IQualityInvoiceLine invoiceableLine)
+	private I_C_Invoice_Candidate createInvoiceCandidate(final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
 	{
+		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
+
+		Check.assumeNotNull(qualityInvoiceLineGroup, "qualityInvoiceLineGroup not null");
+		final IQualityInvoiceLine invoiceableLine = qualityInvoiceLineGroup.getInvoiceableLine();
 		Check.assumeNotNull(invoiceableLine, "invoiceableLine not null");
+
+		//
+		// Delete existing invoice candidates (if any)
+		deleteExistingInvoiceCandidates(qualityInvoiceLineGroup);
 
 		//
 		// Extract infos from Order
 		final IQualityInspectionOrder order = getQualityInspectionOrder();
 		final I_PP_Order ppOrder = order.getPP_Order();
-		// final Timestamp dateOfProduction = order.getDateOfProduction();
 		final int orgId = ppOrder.getAD_Org_ID();
 		final int modelTableId = InterfaceWrapperHelper.getModelTableId(ppOrder);
 		final int modelRecordId = ppOrder.getPP_Order_ID();
@@ -386,7 +400,7 @@ public class InvoiceCandidateWriter
 		ic.setQtyToInvoice(Env.ZERO); // to be computed
 		ic.setC_UOM(uom);
 
-		ic.setDateOrdered(order.getDateOfProduction());
+		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));
 
 		// bill partner data
 		ic.setBill_BPartner_ID(vendorInvoicingInfo.getBill_BPartner_ID());
@@ -420,6 +434,9 @@ public class InvoiceCandidateWriter
 		final IMaterialTrackingDocuments materialTrackingDocuments = getMaterialTrackingDocuments();
 		ic.setM_Material_Tracking(materialTrackingDocuments.getM_Material_Tracking());
 
+		// task 09655
+		ic.setQualityInvoiceLineGroupType(qualityInvoiceLineGroup.getQualityInvoiceLineGroupType().getAD_Ref_List_Value());
+
 		// NOTE: don't save it
 
 		// Add it to the list of created invoice candidates
@@ -427,6 +444,90 @@ public class InvoiceCandidateWriter
 
 		// Return it
 		return ic;
+	}
+
+	/**
+	 * If there are any preexisting ICs to be come obsolete because of our new
+	 * @param qualityInvoiceLineGroup
+	 * @task http://dewiki908/mediawiki/index.php/09655_Karottenabrechnung_mehrfache_Zeilen_%28105150975301%29
+	 */
+	private void deleteExistingInvoiceCandidates(final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
+	{
+		//
+		// first extract "primitive" data to be used inside the trx listener. We don't want any references to
+		// live data models that would be stale/inconsistent when the listener is fired
+
+		// to filter by quality inspection order
+		final IQualityInspectionOrder order = getQualityInspectionOrder();
+		final I_PP_Order ppOrder = order.getPP_Order();
+		final int modelTableId = InterfaceWrapperHelper.getModelTableId(ppOrder);
+		final int modelRecordId = ppOrder.getPP_Order_ID();
+
+		// to filter by QualityInvoiceLineGroupType
+		final QualityInvoiceLineGroupType type = qualityInvoiceLineGroup.getQualityInvoiceLineGroupType();
+
+		//
+		// secondly, invoke the listener code
+		trxManager
+				.getTrxListenerManagerOrAutoCommit(getContext().getTrxName())
+				.registerListener(
+						new TrxListenerAdapter()
+						{
+							@Override
+							public void afterCommit(ITrx trx)
+							{
+								trxManager.run(new TrxRunnableAdapter()
+								{
+									@Override
+									public void run(final String localTrxName) throws Exception
+									{
+										deleteExistingInvoiceCandidates0(modelTableId, modelRecordId, type, localTrxName);
+									}
+								});
+							}
+						});
+	}
+
+	private void deleteExistingInvoiceCandidates0(final int modelTableId,
+			final int modelRecordId,
+			final QualityInvoiceLineGroupType type,
+			final String localTrxName)
+	{
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate.class, getContext().getCtx(), localTrxName);
+
+		//
+		// Filter by quality inspection order
+		{
+			queryBuilder.addEqualsFilter(de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, modelTableId);
+			queryBuilder.addEqualsFilter(de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Record_ID, modelRecordId);
+		}
+
+		//
+		// Filter by QualityInvoiceLineGroupType
+		{
+			Check.assumeNotNull(type, "QualityInvoiceLineGroupType not null");
+			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QualityInvoiceLineGroupType, type.getAD_Ref_List_Value());
+		}
+
+		//
+		// Filter by Product
+		// => don't do it because we want to support product changing in configuration
+
+		//
+		// Avoid invoiced(i.e. processed) invoice candidates
+		queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false);
+
+		//
+		// Retrieve the existing invoice candidates
+		final List<I_C_Invoice_Candidate> invoiceCandidates = queryBuilder.create().list(I_C_Invoice_Candidate.class);
+		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
+		{
+			Check.assume(!ic.isProcessed(), "Invoice candidate not already processed: {0}", ic);
+			Check.assume(ic.getQtyInvoiced().signum() == 0, "Invoice candidate's QtyInvoiced is zero: {0}", ic);
+
+			invoiceCandDAO.deleteAndAvoidRecreateScheduling(ic);
+		}
 	}
 
 	/**

@@ -54,6 +54,9 @@ public class Context implements IContext
 
 	public static final String CTX_Testing_ErrorMessage = CTX_ROOT + ".testing.errorMessage";
 	public static final String DEFAULT_ErrorMessage = "Testing: Client returns 'ERROR' for testing purposes";
+
+	public static final String CTX_Testing_Dont_RespondAfterPrinting = CTX_ROOT + ".testing.dontSendResponse";
+	public static final String DEFAULT_Dont_RespondAfterPrinting = Boolean.FALSE.toString();
 	// task 09618 end
 
 	/**

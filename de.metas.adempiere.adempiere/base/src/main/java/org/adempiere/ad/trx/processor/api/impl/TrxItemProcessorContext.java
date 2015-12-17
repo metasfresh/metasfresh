@@ -93,6 +93,6 @@ import org.adempiere.util.api.IParams;
 	@Override
 	public String toString()
 	{
-		return "TrxItemProcessorContext [ctx=" + ctx + ", trx=" + trx + ", params=" + params + "]";
+		return "TrxItemProcessorContext [trx=" + trx + ", params=" + params + "]";
 	}
 }

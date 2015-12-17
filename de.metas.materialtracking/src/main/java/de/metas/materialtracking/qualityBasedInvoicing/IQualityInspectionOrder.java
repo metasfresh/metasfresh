@@ -24,11 +24,9 @@ package de.metas.materialtracking.qualityBasedInvoicing;
 
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -78,18 +76,6 @@ public interface IQualityInspectionOrder
 	 * @return underlying manufacturing order; never return null
 	 */
 	I_PP_Order getPP_Order();
-
-	/**
-	 *
-	 * @return plv or <code>null</code>
-	 */
-	I_M_PriceList_Version getPriceListVersion();
-
-	/**
-	 *
-	 * @return production date; never return null
-	 */
-	Timestamp getDateOfProduction();
 
 	List<IProductionMaterial> getProductionMaterials();
 

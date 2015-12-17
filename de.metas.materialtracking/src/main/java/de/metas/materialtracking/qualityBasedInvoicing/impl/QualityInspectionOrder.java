@@ -23,7 +23,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -36,7 +35,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
 
@@ -54,6 +52,11 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 
 /* package */class QualityInspectionOrder implements IQualityInspectionOrder
 {
+	public static final QualityInspectionOrder cast(IQualityInspectionOrder qualityInspectionOrder)
+	{
+		return (QualityInspectionOrder)qualityInspectionOrder;
+	}
+	
 	// Services
 	private final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
 	private final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
@@ -79,7 +82,6 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 	private BigDecimal _alreadyInvoicedSum = null;
 
 	private List<IQualityInspectionOrder> allOrders;
-	private I_M_PriceList_Version _priceListversion;
 
 	/**
 	 * Constructor.
@@ -169,38 +171,10 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 		_inspectionNumber = inspectionNumber;
 	}
 
-	protected void setPriceListversion(final I_M_PriceList_Version priceListVersion)
-	{
-		this._priceListversion = priceListVersion;
-	}
-
-	@Override
-	public I_M_PriceList_Version getPriceListVersion()
-	{
-		return _priceListversion;
-	}
-
 	@Override
 	public final I_PP_Order getPP_Order()
 	{
 		return _ppOrder;
-	}
-
-	@Override
-	public Timestamp getDateOfProduction()
-	{
-		final I_PP_Order ppOrder = getPP_Order();
-		final Timestamp dateOfProduction;
-		if (ppOrder.getDateDelivered() != null)
-		{
-			dateOfProduction = ppOrder.getDateDelivered();
-		}
-		else
-		{
-			dateOfProduction = ppOrder.getDateFinishSchedule();
-		}
-		Check.assumeNotNull(dateOfProduction, "dateOfProduction not null for PP_Order {0}", ppOrder);
-		return dateOfProduction;
 	}
 
 	@Override
