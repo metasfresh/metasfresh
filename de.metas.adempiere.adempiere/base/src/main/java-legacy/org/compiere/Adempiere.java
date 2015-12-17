@@ -108,10 +108,6 @@ public final class Adempiere
 	private static String _productIconSmallName = null;
 	private static Image _productIconSmall;
 
-	/** Product icon name (large) */
-	private static String _productIconLargeName = null;
-	private static Image _productIconLarge;
-
 	/** Product logo name (small) */
 	private static String _productLogoSmallName = null;
 	private static Image _productLogoSmallImage;
@@ -162,7 +158,6 @@ public final class Adempiere
 				//
 				// Icons:
 				_productIconSmallName = properties.getProperty("product.icon.small");
-				_productIconLargeName = properties.getProperty("product.icon.large");
 				_productLogoSmallName = properties.getProperty("product.logo.small");
 				_productLogoLargeName = properties.getProperty("product.logo.large");
 				//
@@ -390,20 +385,6 @@ public final class Adempiere
 		return _productIconSmall;
 	}
 	
-	/** @return product icon (large) */
-	public static Image getProductIconLarge()
-	{
-		if (_productIconLarge == null && !Check.isEmpty(_productIconLargeName, true))
-		{
-			URL url = org.compiere.Adempiere.class.getResource(_productIconLargeName);
-			if (url == null)
-				return null;
-			final Toolkit tk = Toolkit.getDefaultToolkit();
-			_productIconLarge = tk.getImage(url);
-		}
-		return _productIconLarge;
-	}
-
 	/** @return product's logo (large, high resolution) */
 	public static Image getProductLogoLarge()
 	{

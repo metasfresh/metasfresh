@@ -224,10 +224,10 @@ public final class ALogin extends CDialog
 		titleLabel.setFont(UIManager.getFont(MetasFreshTheme.KEY_Logo_TextFontSmall));
 		titleLabel.setForeground(UIManager.getColor(MetasFreshTheme.KEY_Logo_TextColor));
 		titleLabel.setRequestFocusEnabled(false);
+		titleLabel.setIcon(new ImageIcon(Adempiere.getProductLogoLarge()));
 		titleLabel.setToolTipText(Adempiere.getURL());
 		titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		titleLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-		titleLabel.setIcon(new ImageIcon(Adempiere.getProductLogoLarge()));
 		titleLabel.setText(Adempiere.getSubtitle());
 		titleLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
 		//
@@ -301,19 +301,29 @@ public final class ALogin extends CDialog
 		connectionPanel.add(languageCombo, new GridBagConstraints(1, 5, 3, 1, 1.0, 0.0
 				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
 		// @Trifon - end
-		copy0Label.setHorizontalAlignment(SwingConstants.RIGHT);
-		connectionPanel.add(copy0Label, new GridBagConstraints(0, 6, 1, 1, 0.0, 0.0
-				, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
-
-		copy1Label.setText(Adempiere.getCopyright());
-		connectionPanel.add(copy1Label, new GridBagConstraints(1, 6, 2, 1, 0.0, 0.0
-				, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 12, 12), 0, 0));
-		connectionPanel.add(compileDate, new GridBagConstraints(2, 1, 2, 1, 0.0, 0.0
-				, GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(2, 0, 0, 12), 0, 0));
+		
+		// Panel top: Logo, version, compile date
 		connectionPanel.add(titleLabel, new GridBagConstraints(0, 0, 2, 2, 0.0, 0.0
 				, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(12, 12, 5, 5), 0, 0));
 		connectionPanel.add(versionLabel, new GridBagConstraints(2, 0, 2, 1, 0.0, 0.0
 				, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(12, 5, 0, 12), 0, 0));
+		connectionPanel.add(compileDate, new GridBagConstraints(2, 1, 2, 1, 0.0, 0.0
+				, GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(2, 0, 0, 12), 0, 0));
+
+		// Panel bottom: copyright texts (if any)
+		if (!Check.isEmpty(copy0Label.getText(), true))
+		{
+			copy0Label.setHorizontalAlignment(SwingConstants.RIGHT);
+			connectionPanel.add(copy0Label, new GridBagConstraints(0, 6, 1, 1, 0.0, 0.0
+					, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
+		}
+		copy1Label.setText(Adempiere.getCopyright());
+		if (!Check.isEmpty(copy1Label.getText(), true))
+		{
+			connectionPanel.add(copy1Label, new GridBagConstraints(1, 6, 2, 1, 0.0, 0.0
+					, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 12, 12), 0, 0));
+		}
+
 
 		loginTabPane.add(connectionPanel, res.getString("Connection"));
 
