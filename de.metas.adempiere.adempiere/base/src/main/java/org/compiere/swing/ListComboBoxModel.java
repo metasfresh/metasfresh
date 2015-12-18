@@ -26,6 +26,7 @@ package org.compiere.swing;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
@@ -181,5 +182,20 @@ public class ListComboBoxModel<E> extends AbstractListModel<E> implements ComboB
 	{
 		clear();
 		addAll(items);
+	}
+	
+	public void set(final E[] items)
+	{
+		final List<E> itemsAsList;
+		if (items == null || items.length == 0)
+		{
+			itemsAsList = Collections.emptyList();
+		}
+		else
+		{
+			itemsAsList = Arrays.asList(items);
+		}
+		
+		set(itemsAsList);
 	}
 }

@@ -22,14 +22,13 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
 
 /**
@@ -210,7 +209,7 @@ public class MLocation extends X_C_Location
 		// Load
 		if (m_c == null)
 		{
-			if (getC_Country_ID() != 0)
+			if (getC_Country_ID() > 0)
 				m_c = MCountry.get(getCtx(), getC_Country_ID());
 			else
 				m_c = MCountry.getDefault(getCtx());
@@ -310,7 +309,7 @@ public class MLocation extends X_C_Location
 		if (m_r != null && m_r.get_ID() != getC_Region_ID())
 			m_r = null;
 		//
-		if (m_r == null && getC_Region_ID() != 0)
+		if (m_r == null && getC_Region_ID() > 0)
 			m_r = MRegion.get(getCtx(), getC_Region_ID());
 		return m_r;
 	}	//	getRegion

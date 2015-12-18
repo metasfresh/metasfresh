@@ -35,10 +35,10 @@ import org.compiere.util.HashcodeBuilder;
  */
 public class CityVO implements ResultItem
 {
-	public final int C_City_ID;
-	public final String CityName;
-	public final int C_Region_ID;
-	public final String RegionName;
+	private final int C_City_ID;
+	private final String CityName;
+	private final int C_Region_ID;
+	private final String RegionName;
 
 	public CityVO(int city_ID, String cityName, int region_ID, String regionName)
 	{
@@ -100,6 +100,26 @@ public class CityVO implements ResultItem
 			sb.append(" (").append(this.RegionName).append(")");
 		}
 		return sb.toString();
+	}
+	
+	public int getC_City_ID()
+	{
+		return C_City_ID;
+	}
+
+	public String getCityName()
+	{
+		return CityName;
+	}
+
+	public int getC_Region_ID()
+	{
+		return C_Region_ID;
+	}
+	
+	public String getRegionName()
+	{
+		return RegionName;
 	}
 
 }

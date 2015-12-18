@@ -29,6 +29,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.adempiere.service.ILocationBL;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
 import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.esr.ESRConstants;
@@ -84,6 +85,7 @@ class ClientSetup
 	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IBankingBPBankAccountDAO bankAccountDAO = Services.get(IBankingBPBankAccountDAO.class);
+	private final transient ILocationBL locationBL = Services.get(ILocationBL.class);
 
 	private static final int AD_Org_ID_Main = 1000000;
 
@@ -290,17 +292,14 @@ class ClientSetup
 		return companyAddress;
 	}
 
-	private static final I_C_Location copy(final I_C_Location location)
+	private final I_C_Location copy(final I_C_Location location)
 	{
 		if (location == null)
 		{
 			return null;
 		}
 
-		final I_C_Location locationCopy = InterfaceWrapperHelper.newInstance(I_C_Location.class, location);
-		InterfaceWrapperHelper.copyValues(location, locationCopy);
-		InterfaceWrapperHelper.save(locationCopy);
-		return locationCopy;
+		return locationBL.duplicate(location);
 	}
 
 	public final int getCompanyAddressLocationId()

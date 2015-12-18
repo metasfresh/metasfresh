@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_Country;
@@ -38,7 +39,6 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.Query;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import com.akunagroup.uk.postcode.AddressInterface;
 
@@ -80,7 +80,7 @@ public class LocationBL implements ILocationBL
 	@Override
 	public void validatePostal(Properties ctx, com.akunagroup.uk.postcode.AddressInterface address)
 	{
-		if (Util.isEmpty(address.getPostcode(), true))
+		if (Check.isEmpty(address.getPostcode(), true))
 		{
 			log.info("Empty postal code found [IGNORED]");
 			return;
@@ -132,7 +132,7 @@ public class LocationBL implements ILocationBL
 			city = null;
 
 		// if the user search for multiple cities, there is no point to try an exact match
-		if ( city != null && city.endsWith("%") && Util.isEmpty(postal, true))
+		if ( city != null && city.endsWith("%") && Check.isEmpty(postal, true))
 		{
 			return null;
 		}
@@ -675,7 +675,7 @@ public class LocationBL implements ILocationBL
 	@Override
 	public I_C_Location duplicate(final org.compiere.model.I_C_Location location)
 	{
-		Util.assumeNotNull(location, "location not null");
+		Check.assumeNotNull(location, "location not null");
 		
 		final I_C_Location locationNew = InterfaceWrapperHelper.newInstance(I_C_Location.class, location);
 		InterfaceWrapperHelper.copyValues(location, locationNew);

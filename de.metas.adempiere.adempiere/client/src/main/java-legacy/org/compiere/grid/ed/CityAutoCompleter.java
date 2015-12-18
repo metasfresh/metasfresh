@@ -43,7 +43,7 @@ import com.google.common.collect.ImmutableList;
  * @author Cristina Ghita , www.arhipac.ro
  *
  */
-public class CityAutoCompleter extends JTextComponentAutoCompleter
+class CityAutoCompleter extends JTextComponentAutoCompleter
 {
 	private final CitiesSource source = new CitiesSource();
 
@@ -59,7 +59,14 @@ public class CityAutoCompleter extends JTextComponentAutoCompleter
 	}
 
 	@Override
-	protected void onCurrentItemChanged(final ResultItem resultItem, final ResultItem resultItemOld)
+	protected final void onCurrentItemChanged(final ResultItem resultItem, final ResultItem resultItemOld)
+	{
+		final CityVO city = (CityVO)resultItem;
+		final CityVO cityOld = (CityVO)resultItemOld;
+		onCurrentCityChanged(city, cityOld);
+	}
+	
+	protected void onCurrentCityChanged(final CityVO city, final CityVO cityOld)
 	{
 		// nothing
 	}
@@ -67,13 +74,13 @@ public class CityAutoCompleter extends JTextComponentAutoCompleter
 	public int getC_City_ID()
 	{
 		final CityVO city = (CityVO)getCurrentItem();
-		return city != null ? city.C_City_ID : -1;
+		return city != null ? city.getC_City_ID() : -1;
 	}
 
 	public int getC_Region_ID()
 	{
 		final CityVO city = (CityVO)getCurrentItem();
-		return city != null ? city.C_Region_ID : -1;
+		return city != null ? city.getC_Region_ID() : -1;
 	}
 
 	public void setC_Country_ID(final int countryId)

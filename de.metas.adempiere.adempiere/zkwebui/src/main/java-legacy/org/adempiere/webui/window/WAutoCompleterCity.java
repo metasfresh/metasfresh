@@ -84,7 +84,7 @@ public class WAutoCompleterCity extends AutoComplete implements EventListener
 	public void refreshData(String val) 
 	{
 		String search = val;
-		if (m_city != null && m_city.CityName.compareTo(search) != 0)
+		if (m_city != null && m_city.getCityName().compareTo(search) != 0)
 		{
 			setCity(null);
 		}
@@ -96,7 +96,7 @@ public class WAutoCompleterCity extends AutoComplete implements EventListener
 		search = search.toUpperCase();
 		int i = 0;
 		for (CityVO vo : m_cities) {
-			if (vo.CityName.toUpperCase().startsWith(search)) {
+			if (vo.getCityName().toUpperCase().startsWith(search)) {
 				if (i > 0 && i == m_maxRows+1)
 				{
 					m_citiesShow.add(ITEM_More);
@@ -114,8 +114,8 @@ public class WAutoCompleterCity extends AutoComplete implements EventListener
 		}
 		else
 		{
-			CityVO city = (CityVO) m_citiesShow.get(0);
-			if (city.CityName.equalsIgnoreCase(search))
+			CityVO city = m_citiesShow.get(0);
+			if (city.getCityName().equalsIgnoreCase(search))
 			{
 				m_city = city;
 				return;
@@ -133,8 +133,8 @@ public class WAutoCompleterCity extends AutoComplete implements EventListener
 		String[] cityDesc = new String[m_citiesShow.size()];
 		i = 0;
 		for (CityVO vo : m_citiesShow) {
-			cityValues[i] = vo.CityName;
-			cityDesc[i] = vo.RegionName;
+			cityValues[i] = vo.getCityName();
+			cityDesc[i] = vo.getRegionName();
 			i++;
 		}
 		//
@@ -204,7 +204,7 @@ public class WAutoCompleterCity extends AutoComplete implements EventListener
 	}
 	public int getC_City_ID()
 	{
-		return m_city != null ? m_city.C_City_ID : -1;
+		return m_city != null ? m_city.getC_City_ID() : -1;
 	}
 	public int getAD_Client_ID()
 	{
@@ -220,6 +220,7 @@ public class WAutoCompleterCity extends AutoComplete implements EventListener
 	}
 
 
+	@Override
 	public void onEvent(Event event) throws Exception 
 	{
 		System.out.println("Event: " + event.getName());
@@ -228,7 +229,7 @@ public class WAutoCompleterCity extends AutoComplete implements EventListener
 		System.out.println("Index = " +index	);
 		if (index>=0)
 		{
-			CityVO city = (CityVO) m_citiesShow.get(index);
+			CityVO city = m_citiesShow.get(index);
 	
 			if(event == null || city.equals(ITEM_More))
 			{
@@ -237,8 +238,8 @@ public class WAutoCompleterCity extends AutoComplete implements EventListener
 			}
 	
 			setCity(city);
-			Env.setContext(Env.getCtx(), m_windowNo, Env.TAB_INFO, "C_Region_ID", String.valueOf(city.C_Region_ID));
-			this.setText(city.CityName);
+			Env.setContext(Env.getCtx(), m_windowNo, Env.TAB_INFO, "C_Region_ID", String.valueOf(city.getC_Region_ID()));
+			this.setText(city.getCityName());
 		}
 	}
 

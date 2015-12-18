@@ -30,6 +30,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
@@ -142,7 +143,7 @@ public class JTextComponentAutoCompleter
 	/**
 	 * Action triggered when user presses Enter in text box, but the popup is not visible.
 	 * 
-	 * It will fire {@link #onCurrentItemChanged(ResultItem, ResultItem)} if the current item is not null.
+	 * It will fire {@link #fireCurrentItemChanged(ResultItem, ResultItem)} if the current item is not null.
 	 */
 	private final Action textBoxEnterAction = new AbstractAction()
 	{
@@ -157,7 +158,7 @@ public class JTextComponentAutoCompleter
 			// NOTE: in some cases the BL will decide to re-run an action for given item, when user presses enter
 			if (currentItem != null)
 			{
-				onCurrentItemChanged(currentItem, currentItem);
+				fireCurrentItemChanged(currentItem, currentItem);
 			}
 		}
 	};
@@ -748,7 +749,7 @@ public class JTextComponentAutoCompleter
 		// Notify that current item was changed
 		if (!Check.equals(currentItem, currentItemOld))
 		{
-			onCurrentItemChanged(item, currentItemOld);
+			fireCurrentItemChanged(item, currentItemOld);
 		}
 	}
 
@@ -815,6 +816,18 @@ public class JTextComponentAutoCompleter
 		}
 
 		return true;
+	}
+	
+	private final void fireCurrentItemChanged(final ResultItem currentItem, final ResultItem currentItemOld)
+	{
+		try
+		{
+			onCurrentItemChanged(currentItem, currentItemOld);
+		}
+		catch (Exception e)
+		{
+			logger.log(Level.WARNING, "Failed while firing current item changed", e);
+		}
 	}
 
 	protected void onCurrentItemChanged(final ResultItem currentItem, final ResultItem currentItemOld)

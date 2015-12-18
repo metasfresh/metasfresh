@@ -165,7 +165,7 @@ public final class MCountry extends X_C_Country
 	 * 	Get Translated Name
 	 *	@return name
 	 */
-	public String getTrlName()
+	private String getTrlName()
 	{
 		if (m_trlName != null && s_AD_Language != null)
 		{
@@ -181,7 +181,7 @@ public final class MCountry extends X_C_Country
 	 *  @param language 
 	 *	@return name
 	 */
-	public String getTrlName(String language)
+	String getTrlName(String language)
 	{
 		if ( language != null)
 		{

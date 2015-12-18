@@ -18,6 +18,8 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
+import javax.swing.InputVerifier;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -90,6 +92,7 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 	 * Flag to indicate if setSelectedItem has been called subsequent calls to remove/insertString should be ignored
 	 */
 	private boolean selecting = false;
+	private EditingCommand currentEditingCommand = null;
 	/** Bug 5100422 on Java 1.5: Editable CComboBox won't hide popup when tabbing out */
 	private static final boolean hidePopupOnFocusLoss = SystemUtils.IS_JAVA_1_5;
 	private boolean hitBackspace = false;
@@ -196,6 +199,28 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 		}
 	};
 
+	private final InputVerifier editorInputVerifier = new InputVerifier()
+	{
+
+		@Override
+		public boolean verify(final JComponent input)
+		{
+			return true;
+		}
+
+		@Override
+		public boolean shouldYieldFocus(final JComponent input)
+		{
+			// Don't lose focus if user is currently writting this this box
+			if (currentEditingCommand != null)
+			{
+				return false;
+			}
+			
+			return super.shouldYieldFocus(input);
+		};
+	};
+
 	private ComboBoxAutoCompletion(final CComboBox<E> comboBox)
 	{
 		super();
@@ -257,6 +282,10 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 			{
 				_editorComp.removeKeyListener(editorKeyListener);
 				_editorComp.removeFocusListener(editorFocusListener);
+				if (_editorComp.getInputVerifier() == editorInputVerifier)
+				{
+					_editorComp.setInputVerifier(null);
+				}
 				_editorComp = null;
 			}
 
@@ -267,6 +296,7 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 				_editorComp.addKeyListener(editorKeyListener);
 				_editorComp.addFocusListener(editorFocusListener);
 				_editorComp.setDocument(ComboBoxAutoCompletion.this);
+				_editorComp.setInputVerifier(editorInputVerifier);
 			}
 		}
 		finally
@@ -317,49 +347,87 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 			return;
 		}
 
-		super.insertString(offs, str, a);
-
-		// lookup and select a matching item
-		E item = lookupItem(getText(0, getLength()));
-
-		if (item != null)
+		if (currentEditingCommand != null)
 		{
-			setSelectedItem(item);
+			return; // shall not happen
 		}
-		else
+
+		currentEditingCommand = new EditingCommand();
+		try
 		{
-			if (m_strictMode)
+			super.insertString(offs, str, a);
+
+			// lookup and select a matching item
+			E item = lookupItem(getText(0, getLength()));
+
+			if (item != null)
 			{
-				if (offs == 0)
-				{
-					setSelectedItem(null); // null is valid for non-mandatory fields
-					// so if cursor is at start of line allow it
-					// otherwise keep old item selected if there is no better match
-				}
-				else
-				{
-					item = comboBox.getSelectedItem();
-				}
-				// undo the insertion as there isn't a valid match
-				offs = offs - str.length();
-				UIManager.getLookAndFeel().provideErrorFeedback(comboBox);
+				// setSelectedItem(item);
+				currentEditingCommand.setItemToSelect(item);
 			}
 			else
 			{
-				return;
+				if (m_strictMode)
+				{
+					if (offs == 0)
+					{
+						// null is valid for non-mandatory fields
+						// so if cursor is at start of line allow it
+						// otherwise keep old item selected if there is no better match
+						// setSelectedItem(null);
+						currentEditingCommand.setItemToSelect(null);
+					}
+					else
+					{
+						item = comboBox.getSelectedItem();
+					}
+					// undo the insertion as there isn't a valid match
+					offs = offs - str.length();
+					UIManager.getLookAndFeel().provideErrorFeedback(comboBox);
+				}
+				else
+				{
+					return;
+				}
 			}
-		}
 
-		if (item != null)
-		{
-			setText(valueToString(item));
+			if (item != null)
+			{
+				// setText(valueToString(item));
+				currentEditingCommand.setTextToSet(valueToString(item));
+			}
+			else
+			{
+				// setText("");
+				currentEditingCommand.setTextToSet("");
+			}
+
+			// select the completed part so it can be overwritten easily
+			// highlightCompletedText(offs + str.length());
+			currentEditingCommand.setHighlightTextStartPosition(offs + str.length());
+
+			performEditingCommand(currentEditingCommand);
 		}
-		else
+		finally
 		{
-			setText("");
+			currentEditingCommand = null;
 		}
-		// select the completed part so it can be overwritten easily
-		highlightCompletedText(offs + str.length());
+	}
+
+	private final void performEditingCommand(final EditingCommand cmd)
+	{
+		if (cmd.isDoSelectItem())
+		{
+			setSelectedItem(cmd.getItemToSelect());
+		}
+		if (cmd.isDoSetText())
+		{
+			setText(cmd.getTextToSet());
+		}
+		if (cmd.isDoHighlightText())
+		{
+			highlightCompletedText(cmd.getHighlightTextStartPosition());
+		}
 	}
 
 	/**
@@ -381,15 +449,11 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 		}
 	}
 
-	private void highlightCompletedText(int start)
+	private void highlightCompletedText(final int start)
 	{
 		final JTextComponent editor = getComboBoxEditorComponent();
-		editor.setCaretPosition(getLength());
-		if (getLength() < start)
-		{
-			start = getLength();
-		}
-		editor.moveCaretPosition(start);
+		final int length = getLength();
+		editor.select(start, length);
 	}
 
 	private void setSelectedItem(final Object item)
@@ -406,12 +470,19 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 		}
 	}
 
-	private E lookupItem(final String pattern)
+	private E getSelectedItem()
 	{
 		final ComboBoxModel<E> model = getComboBoxModel();
 
 		@SuppressWarnings("unchecked")
 		final E selectedItem = (E)model.getSelectedItem();
+		return selectedItem;
+	}
+
+	private E lookupItem(final String pattern)
+	{
+		final E selectedItem = getSelectedItem();
+
 		// only search for a different item if the currently selected does not match
 		if (selectedItem != null && startsWithIgnoreCase(valueToString(selectedItem), pattern))
 		{
@@ -419,6 +490,8 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 		}
 		else
 		{
+			final ComboBoxModel<E> model = getComboBoxModel();
+
 			// iterate over all items
 			for (int i = 0, n = model.getSize(); i < n; i++)
 			{
@@ -500,4 +573,64 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 		final JList<E> list = comboPopup.getList();
 		return list;
 	}
+
+	private final class EditingCommand
+	{
+		private boolean doSelectItem = false;
+		private E itemToSelect = null;
+
+		private boolean doSetText = false;
+		private String textToSet = null;
+
+		private boolean doHighlightText = false;
+		private int highlightTextStartPosition = 0;
+
+		public void setItemToSelect(E itemToSelect)
+		{
+			this.itemToSelect = itemToSelect;
+			this.doSelectItem = true;
+		}
+
+		public boolean isDoSelectItem()
+		{
+			return doSelectItem;
+		}
+
+		public E getItemToSelect()
+		{
+			return itemToSelect;
+		}
+
+		public void setTextToSet(String textToSet)
+		{
+			this.textToSet = textToSet;
+			this.doSetText = true;
+		}
+
+		public boolean isDoSetText()
+		{
+			return doSetText;
+		}
+
+		public String getTextToSet()
+		{
+			return textToSet;
+		}
+
+		public void setHighlightTextStartPosition(int highlightTextStartPosition)
+		{
+			this.highlightTextStartPosition = highlightTextStartPosition;
+			this.doHighlightText = true;
+		}
+
+		public boolean isDoHighlightText()
+		{
+			return doHighlightText;
+		}
+
+		public int getHighlightTextStartPosition()
+		{
+			return highlightTextStartPosition;
+		}
+	};
 }

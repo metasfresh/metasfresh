@@ -372,14 +372,18 @@ public class VLookup extends JComponent
 //		m_lookup = null;
 		m_mField = null;
 		//
-		m_combo.getEditor().getEditorComponent().removeFocusListener(this);
-//		m_combo.getEditor().getEditorComponent().removeMouseListener(mouseAdapter);
-		m_combo.removeFocusListener(this);
-		m_combo.removeActionListener(this);
-		m_combo.setModel(new DefaultComboBoxModel<>());    //  remove reference
-		m_comboModelProxy.setDelegate(null);
-	//	m_combo.removeAllItems();
-		m_combo = null;
+		if (m_combo != null)
+		{
+			m_combo.getEditor().getEditorComponent().removeFocusListener(this);
+	//		m_combo.getEditor().getEditorComponent().removeMouseListener(mouseAdapter);
+			m_combo.removeFocusListener(this);
+			m_combo.removeActionListener(this);
+			m_combo.setSelectedItem(null);
+			m_combo.setModel(new DefaultComboBoxModel<>());    //  remove reference
+			m_comboModelProxy.setDelegate(null);
+		//	m_combo.removeAllItems();
+			m_combo = null;
+		}
 		lookupAutoCompleter = null;
 	}   //  dispose
 

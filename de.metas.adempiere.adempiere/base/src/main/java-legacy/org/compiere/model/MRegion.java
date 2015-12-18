@@ -49,7 +49,7 @@ public final class MRegion extends X_C_Region
 	 */
 	private static void loadAllRegions (Properties ctx)
 	{
-		s_regions = new CCache<String,MRegion>("C_Region", 100);
+		s_regions = new CCache<String,MRegion>(I_C_Region.Table_Name, 100);
 		String sql = "SELECT * FROM C_Region WHERE IsActive='Y'";
 		try
 		{
@@ -83,7 +83,7 @@ public final class MRegion extends X_C_Region
 		if (s_regions == null || s_regions.size() == 0)
 			loadAllRegions(ctx);
 		String key = String.valueOf(C_Region_ID);
-		MRegion r = (MRegion)s_regions.get(key);
+		MRegion r = s_regions.get(key);
 		if (r != null)
 			return r;
 		r = new MRegion (ctx, C_Region_ID, null);
@@ -136,7 +136,7 @@ public final class MRegion extends X_C_Region
 		Iterator<MRegion> it = s_regions.values().iterator();
 		while (it.hasNext())
 		{
-			MRegion r = (MRegion)it.next();
+			MRegion r = it.next();
 			if (r.getC_Country_ID() == C_Country_ID)
 				list.add(r);
 		}
