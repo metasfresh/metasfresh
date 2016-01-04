@@ -36,6 +36,7 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
+import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
@@ -109,8 +110,8 @@ public class C_Invoice_Candidate
 
 	private void updateLinkToTrackingIfNotNull(final I_C_Invoice_Candidate ic, final boolean createLink)
 	{
-		final de.metas.materialtracking.model.I_C_Invoice_Candidate icExt = InterfaceWrapperHelper.create(ic, de.metas.materialtracking.model.I_C_Invoice_Candidate.class);
-		if (icExt.getM_Material_Tracking_ID() <= 0)
+		final IMaterialTrackingAware materialTrackingAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(ic, IMaterialTrackingAware.class);
+		if (materialTrackingAware.getM_Material_Tracking_ID() <= 0)
 		{
 			return;
 		}

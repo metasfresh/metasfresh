@@ -31,6 +31,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
@@ -40,6 +41,7 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
@@ -448,6 +450,7 @@ public class InvoiceCandidateWriter
 
 	/**
 	 * If there are any preexisting ICs to be come obsolete because of our new
+	 *
 	 * @param qualityInvoiceLineGroup
 	 * @task http://dewiki908/mediawiki/index.php/09655_Karottenabrechnung_mehrfache_Zeilen_%28105150975301%29
 	 */
@@ -466,6 +469,10 @@ public class InvoiceCandidateWriter
 		// to filter by QualityInvoiceLineGroupType
 		final QualityInvoiceLineGroupType type = qualityInvoiceLineGroup.getQualityInvoiceLineGroupType();
 
+		final Integer maxId = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ppOrder)
+				.create()
+				.aggregate(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, IQuery.AGGREGATE_MAX, Integer.class);
+
 		//
 		// secondly, invoke the listener code
 		trxManager
@@ -481,7 +488,7 @@ public class InvoiceCandidateWriter
 									@Override
 									public void run(final String localTrxName) throws Exception
 									{
-										deleteExistingInvoiceCandidates0(modelTableId, modelRecordId, type, localTrxName);
+										deleteExistingInvoiceCandidates0(modelTableId, modelRecordId, type, maxId, localTrxName);
 									}
 								});
 							}
@@ -491,10 +498,17 @@ public class InvoiceCandidateWriter
 	private void deleteExistingInvoiceCandidates0(final int modelTableId,
 			final int modelRecordId,
 			final QualityInvoiceLineGroupType type,
+			final int maxId,
 			final String localTrxName)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getContext().getCtx(), localTrxName);
+
+		//
+		// only delete older ICs, not the ones we only just created
+		{
+			queryBuilder.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, Operator.LESS_OR_EQUAL, maxId);
+		}
 
 		//
 		// Filter by quality inspection order

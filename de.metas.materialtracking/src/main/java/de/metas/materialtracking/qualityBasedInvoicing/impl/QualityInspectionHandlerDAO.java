@@ -29,12 +29,17 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingDAO;
@@ -101,6 +106,9 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 			return; // nothing to do
 		}
 
+		//
+		// set values from the referencedObject's material tracking
+		//
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(referencedObject);
 		if (materialTracking == null)
@@ -123,19 +131,45 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 			ic.setC_DocTypeInvoice_ID(config.getC_DocTypeInvoice_FinalSettlement_ID());
 		}
 
+		// ----------------
+
+		final I_C_OrderLine originalOl;
+		if (InterfaceWrapperHelper.isInstanceOf(referencedObject, I_C_OrderLine.class))
+		{
+			originalOl = InterfaceWrapperHelper.create(referencedObject, I_C_OrderLine.class);
+		}
+		else
+		{
+			// get originalOl via M_Material_Tracking_Refs
+			final List<I_M_Material_Tracking_Ref> orderLineMaterialTrackingRefs = Services.get(IMaterialTrackingDAO.class).retrieveMaterialTrackingRefForType(materialTracking, I_C_OrderLine.class);
+			if (orderLineMaterialTrackingRefs.isEmpty())
+			{
+				final String msg = "Missing M_Material_Tracking_Ref for the C_OrderLines of materialTracking {0}; ic {1}; referencedObject {2}.";
+				ILoggable.THREADLOCAL.getLoggable().addLog(msg, materialTracking, ic, referencedObject);
+
+				return;
+			}
+			final I_M_Material_Tracking_Ref firstRef = orderLineMaterialTrackingRefs.get(0);
+			originalOl = TableRecordCacheLocal.getReferencedValue(firstRef, I_C_OrderLine.class);
+		}
+
+		//
 		// get the original IC via M_Material_Tracking_Refs
-		final List<I_M_Material_Tracking_Ref> icMaterialTrackingRefs = Services.get(IMaterialTrackingDAO.class).retrieveMaterialTrackingRefForType(materialTracking, I_C_Invoice_Candidate.class);
-		if (icMaterialTrackingRefs.isEmpty())
+		//
+
+		final List<I_C_Invoice_Candidate> originalICs = Services.get(IInvoiceCandDAO.class).retrieveReferencing(originalOl);
+		if (originalICs.isEmpty())
 		{
 			return;
 		}
-		final I_M_Material_Tracking_Ref firstRef = icMaterialTrackingRefs.get(0);
-		final I_C_Invoice_Candidate originalIC = TableRecordCacheLocal.getReferencedValue(firstRef, I_C_Invoice_Candidate.class);
+		final I_C_Invoice_Candidate originalIC = originalICs.get(0);
 
 		// get C_Invoice_Clearing_Alloc => C_Flatrate_Term => C_Flatrate_Condidtions => M_PricingsSystem, or falls back to the original IC's pricing system
 		if (!originalIC.isToClear())
 		{
-			// this can happen if the user created a tracking with a product & partner that have/has no contract. This shouldn't kill the whole IC-process.
+			// this can happen if the user created a tracking with a product & partner that have/has no contract,
+			// !! but shall not happen anymore, since we have task 09542 Material Tracking Validation(101636821539) !!
+			ILoggable.THREADLOCAL.getLoggable().addLog("IC {0} has istoClear='N'!", originalIC);
 			return;
 		}
 		final I_C_Invoice_Clearing_Alloc invoiceClearingAlloc = Services.get(IQualityInspectionHandlerDAO.class).retrieveInitialInvoiceClearingAlloc(originalIC);
@@ -155,6 +189,24 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 				ic.setM_PricingSystem_ID(flatrateConditions.getM_PricingSystem_ID());
 			}
 		}
+
+		if (!InterfaceWrapperHelper.isInstanceOf(referencedObject, I_M_InOutLine.class))
+		{
+			return; // we are done
+		}
+
+		final I_M_InOutLine iol = InterfaceWrapperHelper.create(referencedObject, I_M_InOutLine.class);
+
+		final I_M_InOut inOut = iol.getM_InOut();
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+
+		final boolean processedPLVFiltering = true; // in the material tracking context, only processed PLVs matter.
+		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(ic.getM_PricingSystem(),
+				inOut.getC_BPartner_Location(),
+				inOut.getMovementDate(),
+				inOut.isSOTrx(),
+				processedPLVFiltering);
+		ic.setM_PriceList_Version(plv);
 	}
 
 	@Override

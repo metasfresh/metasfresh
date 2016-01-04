@@ -1,5 +1,7 @@
 package de.metas.inout.model.validator;
 
+import java.util.List;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -20,12 +22,12 @@ import de.metas.inout.model.I_M_InOutLine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,7 +58,12 @@ public class M_InOutLine
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void processorDeleted(final I_M_InOutLine packingMaterialLine)
 	{
-		for (final I_M_InOutLine referencingIol : Services.get(IInOutDAO.class).retrieveAllReferencingLines(packingMaterialLine))
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+		final List<I_M_InOutLine> allReferencingLines = inOutDAO.retrieveAllReferencingLinesBuilder(packingMaterialLine)
+				.create()
+				.list(I_M_InOutLine.class);
+
+		for (final I_M_InOutLine referencingIol : allReferencingLines)
 		{
 			referencingIol.setM_PackingMaterial_InOutLine(null);
 			InterfaceWrapperHelper.save(referencingIol);

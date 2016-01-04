@@ -22,7 +22,6 @@ package de.metas.materialtracking.qualityBasedInvoicing;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
@@ -32,9 +31,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /**
- *
- * Retrieve different records that are related to creating/updating invoice candidates. Used by {@link de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.PP_Order_MaterialTracking_Handler} and
- * {@link de.metas.materialtracking.model.validator.C_Invoice_Candidate}.
+ * Retrieve different records which are related to creating/updating invoice candidates. Used by {@link de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.PP_Order_MaterialTracking_Handler}
+ * and {@link de.metas.materialtracking.model.validator.C_Invoice_Candidate}.
  *
  */
 public interface IQualityInspectionHandlerDAO extends ISingletonService
@@ -47,9 +45,17 @@ public interface IQualityInspectionHandlerDAO extends ISingletonService
 	<T extends I_C_Invoice_Candidate> List<T> retrieveOriginalInvoiceCandidates(I_M_Material_Tracking materialTracking, Class<T> clazz);
 
 	/**
+	 * Updates the <code>M_Material_Tracking_ID</code>, <code>C_DocTypeInvoice_ID</code>, <code>M_PricingSystem_ID</code> and in case of an inOutLine also the <code>M_PriceList_Version_ID</code> if
+	 * the given <code>ic</code>.
+	 * <p>
+	 * This method is intended to update ICs that belong to a material tracking, but do not reference a quality inspection. The only know cases for this are
+	 * <ul>
+	 * <li>C_OrderLines
+	 * <li>packing material M_InOutLines
+	 * </ul>
 	 *
 	 * @param ic
-	 * @param referencedObject the record referenced by the given <code>ic</code>, or <code>null</code>
+	 * @param referencedObject can be <code>null</code>, in which case nothing is done.
 	 */
 	void updateICFromMaterialTracking(I_C_Invoice_Candidate ic, Object referencedObject);
 

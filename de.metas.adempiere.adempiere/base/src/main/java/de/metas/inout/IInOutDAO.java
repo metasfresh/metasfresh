@@ -10,12 +10,12 @@ package de.metas.inout;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,7 @@ public interface IInOutDAO extends ISingletonService
 
 	/**
 	 * Retrieve all (active) lines of given <code>inOut</code>.
-	 * 
+	 *
 	 * @param inOut
 	 * @param inoutLineClass
 	 * @return <code>inOut</code>'s lines
@@ -48,7 +48,7 @@ public interface IInOutDAO extends ISingletonService
 
 	/**
 	 * For the given <code>inOut</code> the method returns those inout lines that don't reference an order line.
-	 * 
+	 *
 	 * @param inOut
 	 * @param clazz
 	 * @return
@@ -60,7 +60,7 @@ public interface IInOutDAO extends ISingletonService
 	<T extends I_M_InOutLine> List<T> retrieveLinesForOrderLine(I_C_OrderLine orderLine, Class<T> clazz);
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @return query to retrieve all {@link I_M_InOutLine}s which are part of a shipment with doc status <code>Draft</code>, <code>InProgress</code> or <code>WaitingConfirmation</code>.
 	 */
@@ -68,9 +68,9 @@ public interface IInOutDAO extends ISingletonService
 
 	/**
 	 * Returns all (including inactive) M_InOutLines that reference the given <code>packingMaterialLine</code> from their <code>M_PackingMaterial_InOutLine_ID</code> value.
-	 * 
+	 *
 	 * @param packingMaterialLine
 	 * @return
 	 */
-	List<de.metas.inout.model.I_M_InOutLine> retrieveAllReferencingLines(I_M_InOutLine packingMaterialLine);
+	IQueryBuilder<I_M_InOutLine> retrieveAllReferencingLinesBuilder(I_M_InOutLine packingMaterialLine);
 }

@@ -59,7 +59,7 @@ public class PriceListBL implements IPriceListBL
 			final Timestamp date,
 			final boolean isSoTrx)
 	{
-		final I_M_PriceList_Version currentVersion = getLastPriceListVersionOrNull(pricingSystem, partnerLocation, date, isSoTrx);
+		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystem, partnerLocation, date, isSoTrx, null);
 
 		if (currentVersion == null)
 		{
@@ -157,7 +157,7 @@ public class PriceListBL implements IPriceListBL
 			final I_C_BPartner_Location location,
 			final boolean isSOTrx)
 	{
-		final I_M_PriceList_Version currentVersion = getLastPriceListVersionOrNull(pricingSystem, location, SystemTime.asDayTimestamp(), isSOTrx);
+		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystem, location, SystemTime.asDayTimestamp(), isSOTrx, null);
 
 		final I_M_ProductPrice productPrice = Services.get(IPriceListDAO.class)
 				.retrieveProductPriceOrNull(
@@ -167,13 +167,11 @@ public class PriceListBL implements IPriceListBL
 		return productPrice;
 	}
 
-	/**
-	 * Find the newest version from a pricing system based on bp location
-	 */
-	private I_M_PriceList_Version getLastPriceListVersionOrNull(final I_M_PricingSystem pricingSystem,
+	@Override
+	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(final I_M_PricingSystem pricingSystem,
 			final I_C_BPartner_Location partnerLocation,
 			final Timestamp date,
-			final boolean isSoTrx)
+			final boolean isSoTrx, Boolean processedPLVFiltering)
 	{
 		if (partnerLocation == null)
 		{
@@ -181,22 +179,18 @@ public class PriceListBL implements IPriceListBL
 		}
 
 		final I_C_BPartner partner = partnerLocation.getC_BPartner();
-
 		if (partner == null)
 		{
 			return null;
 		}
-
 		if (pricingSystem == null)
 		{
 			return null;
 		}
-
 		if (!partner.isVendor() && !isSoTrx)
 		{
 			return null;
 		}
-
 		if (!partner.isCustomer() && isSoTrx)
 		{
 			return null;
@@ -213,7 +207,7 @@ public class PriceListBL implements IPriceListBL
 
 		// This will be the most "fresh" pricelist (check the closest dateFrom)
 		I_M_PriceList currentPricelist = null;
-		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
+
 		Timestamp currentValidFrom = null;
 		I_M_PriceList_Version lastPriceListVersion = null;
 
