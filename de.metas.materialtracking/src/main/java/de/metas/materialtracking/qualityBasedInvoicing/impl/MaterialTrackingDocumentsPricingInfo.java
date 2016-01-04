@@ -142,7 +142,9 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 				final I_M_PriceList_Version plv = plvAndIols.getFirst();
 				if (plv == null)
 				{
-					continue; // this shouldn't happen, unless the PP_Order was closed without any previous issue
+					// this shouldn't happen, unless the PP_Order was closed without any previous issue
+					// OR! unless we have a pruned-down database dump that lacks M_HUs
+					continue;
 				}
 
 				final int plvId = plv.getM_PriceList_Version_ID();

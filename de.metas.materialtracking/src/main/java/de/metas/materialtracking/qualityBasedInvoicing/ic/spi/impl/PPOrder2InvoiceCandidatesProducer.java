@@ -223,6 +223,10 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		final I_M_PricingSystem pricingSystem = vendorInvoicingInfo.getM_PricingSystem();
 
 		final Collection<I_M_PriceList_Version> plvs = materialTrackingDocuments.setPricingSystemLoadPLVs(pricingSystem);
+		if (plvs.isEmpty())
+		{
+			loggable.addLog("Found no M_PriceList_Version for pricingSystem {0}; ppOrder {1}", pricingSystem, ppOrder);
+		}
 
 		final List<I_C_Invoice_Candidate> result = new ArrayList<>();
 		for (I_M_PriceList_Version plv : plvs)
@@ -240,12 +244,12 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 			//
 			// Create invoice candidates from those groups
 			final InvoiceCandidateWriter invoiceCandidateBuilder = new InvoiceCandidateWriter(context)
-							.setC_ILCandHandler(getC_ILCandHandler())
-							.setVendorInvoicingInfo(vendorInvoicingInfo)
-							.setMaterialTrackingDocuments(materialTrackingDocuments)
-							.setQualityInspectionOrder(qiOrder)
-							.setInvoiceCandidatesToClear(originalInvoiceCandidates)
-							.setQualityInvoiceLineGroupTypes(config.getQualityInvoiceLineGroupTypes());
+					.setC_ILCandHandler(getC_ILCandHandler())
+					.setVendorInvoicingInfo(vendorInvoicingInfo)
+					.setMaterialTrackingDocuments(materialTrackingDocuments)
+					.setQualityInspectionOrder(qiOrder)
+					.setInvoiceCandidatesToClear(originalInvoiceCandidates)
+					.setQualityInvoiceLineGroupTypes(config.getQualityInvoiceLineGroupTypes());
 
 			// task: 07845 decide which doctype to use
 			final int docTypeInvoice_ID;
