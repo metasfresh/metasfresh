@@ -103,6 +103,11 @@ public class InvoiceCandidateWriter
 
 	private int _lineNoNext = 10;
 
+	/**
+	 * Set by the constructor to avoid deleting e.g. the 2nd, 3rd, 4th etc regular-pp-order IC by the after-commit-listener that was installed for the 1st one.
+	 */
+	private final int _maxInvoiceCandidateToDeleteID;
+
 	// Result
 	private final List<I_C_Invoice_Candidate> _createdInvoiceCandidates = new ArrayList<>();
 
@@ -112,6 +117,10 @@ public class InvoiceCandidateWriter
 
 		Check.assumeNotNull(context, "context not null");
 		_context = context;
+
+		_maxInvoiceCandidateToDeleteID = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, context)
+				.create()
+				.aggregate(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, IQuery.AGGREGATE_MAX, Integer.class);
 	}
 
 	public InvoiceCandidateWriter setC_ILCandHandler(final I_C_ILCandHandler invoiceCandidateHandler)
@@ -469,9 +478,8 @@ public class InvoiceCandidateWriter
 		// to filter by QualityInvoiceLineGroupType
 		final QualityInvoiceLineGroupType type = qualityInvoiceLineGroup.getQualityInvoiceLineGroupType();
 
-		final Integer maxId = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ppOrder)
-				.create()
-				.aggregate(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, IQuery.AGGREGATE_MAX, Integer.class);
+		final IVendorInvoicingInfo vendorInvoicingInfo = getVendorInvoicingInfo();
+		final int priceListVersionID = vendorInvoicingInfo.getM_PriceList_Version().getM_PriceList_Version_ID();
 
 		//
 		// secondly, invoke the listener code
@@ -488,7 +496,12 @@ public class InvoiceCandidateWriter
 									@Override
 									public void run(final String localTrxName) throws Exception
 									{
-										deleteExistingInvoiceCandidates0(modelTableId, modelRecordId, type, maxId, localTrxName);
+										deleteExistingInvoiceCandidates0(modelTableId,
+												modelRecordId,
+												type,
+												priceListVersionID,
+												_maxInvoiceCandidateToDeleteID,
+												localTrxName);
 									}
 								});
 							}
@@ -498,23 +511,30 @@ public class InvoiceCandidateWriter
 	private void deleteExistingInvoiceCandidates0(final int modelTableId,
 			final int modelRecordId,
 			final QualityInvoiceLineGroupType type,
-			final int maxId,
+			final int priceListVersionID,
+			final int maxInvoiceCandidateID,
 			final String localTrxName)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getContext().getCtx(), localTrxName);
 
 		//
-		// only delete older ICs, not the ones we only just created
+		// Only delete older ICs, not the ones we only just created!
 		{
-			queryBuilder.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, Operator.LESS_OR_EQUAL, maxId);
+			queryBuilder.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, Operator.LESS_OR_EQUAL, maxInvoiceCandidateID);
+		}
+
+		//
+		// Filter by PLV; there might be other ICs for other PLVs
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_PriceList_Version_ID, priceListVersionID);
 		}
 
 		//
 		// Filter by quality inspection order
 		{
-			queryBuilder.addEqualsFilter(de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, modelTableId);
-			queryBuilder.addEqualsFilter(de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Record_ID, modelRecordId);
+			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, modelTableId);
+			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, modelRecordId);
 		}
 
 		//
