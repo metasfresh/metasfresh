@@ -49,6 +49,7 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBConnectionAcquireTimeoutException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -440,16 +441,24 @@ public final class DB
 		Connection conn = null;
 		try (final IAutoCloseable c = CLogMgt.getErrorBuffer().temporaryDisableIssueReporting())
 		{
-			conn = getConnectionRW();   // try to get a connection
-			return conn != null;
+			try
+			{
+				conn = getConnectionRW();   // try to get a connection
+				return conn != null;
+			}
+			catch (DBConnectionAcquireTimeoutException timeoutException)
+			{
+				log.log(Level.WARNING, "Timeout while acquiring database connection. Ignored", timeoutException);
+				return false;
+			}
+			finally
+			{
+				close(conn);
+			}
 		}
 		catch (Exception e)
 		{
 			// ignore the error
-		}
-		finally
-		{
-			close(conn);
 		}
 		return false;
 	}   // isConnected

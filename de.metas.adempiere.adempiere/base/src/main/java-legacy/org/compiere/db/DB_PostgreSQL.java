@@ -33,9 +33,11 @@ import java.util.logging.Level;
 
 import javax.sql.DataSource;
 
+import org.adempiere.exceptions.DBConnectionAcquireTimeoutException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
+import org.adempiere.util.SystemUtils;
 import org.compiere.dbPort.Convert;
 import org.compiere.dbPort.Convert_PostgreSQL;
 import org.compiere.dbPort.Convert_PostgreSQL_Native;
@@ -64,6 +66,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 {
 	private static final String CONFIG_UseNativeConverter = "org.compiere.db.DB_PostgreSQL.UseNativeConverter";
 	private static final String CONFIG_UseNativeConverter_DefaultValue = "true";
+	private static final String CONFIG_CheckoutTimeout = "org.compiere.db.DB_PostgreSQL.CheckoutTimeout";
 
 	/**
 	 * Statement Converter for external use (i.e. returned by {@link #getConvert()}.
@@ -644,6 +647,16 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			connOk = true;
 			return conn;
 		}
+		catch (final SQLException sqlException)
+		{
+			final Throwable cause = sqlException.getCause();
+			if (cause instanceof com.mchange.v2.resourcepool.TimeoutException)
+			{
+				throw new DBConnectionAcquireTimeoutException(sqlException);
+			}
+			
+			throw sqlException;
+		}
 		finally
 		{
 			if (!connOk)
@@ -732,7 +745,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			cpds.setAcquireRetryAttempts(2);
 			
 			// Set checkout timeout to avoid forever locking when trying to connect to a not existing host. 
-			cpds.setCheckoutTimeout(10 * 1000);
+			cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout, 20 * 1000));
 
 			if (Ini.isClient())
 			{

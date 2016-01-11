@@ -36,6 +36,10 @@ public final class ExtendedMemorizingSupplier<T> implements Supplier<T>, Seriali
 {
 	public static final <T> ExtendedMemorizingSupplier<T> of(final Supplier<T> supplier)
 	{
+		if (supplier instanceof ExtendedMemorizingSupplier)
+		{
+			return (ExtendedMemorizingSupplier<T>)supplier;
+		}
 		return new ExtendedMemorizingSupplier<T>(supplier);
 	}
 

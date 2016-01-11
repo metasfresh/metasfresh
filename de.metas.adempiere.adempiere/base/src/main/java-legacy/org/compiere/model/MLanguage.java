@@ -30,12 +30,15 @@ import java.util.logging.Level;
 import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.exceptions.DBNoConnectionException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere.RunMode;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+
+import com.google.common.base.Supplier;
 
 /**
  * Language Model
@@ -85,21 +88,6 @@ public class MLanguage extends X_AD_Language
 	}	// get
 
 	/**
-	 * Load Languages (variants) with Language
-	 *
-	 * @param ctx context
-	 * @param LanguageISO language (2 letter) e.g. en
-	 * @return language
-	 */
-	public static MLanguage[] getWithLanguage(final Properties ctx, final String LanguageISO)
-	{
-		final List<MLanguage> list = new Query(ctx, Table_Name, COLUMNNAME_LanguageISO + "=?", null)
-				.setParameters(new Object[] { LanguageISO })
-				.list();
-		return list.toArray(new MLanguage[list.size()]);
-	}	// get
-
-	/**
 	 * Maintain all active languages
 	 *
 	 * @param ctx context
@@ -124,34 +112,55 @@ public class MLanguage extends X_AD_Language
 	 */
 	public static void setBaseLanguage()
 	{
-		// metas: 03362: Load BaseLanguage only if we have database connection.
-		// Could happen, if we invoke this method in early steps of initialization/startup to not have database connection yet
-		if (!DB.isConnected())
+		Language.setBaseLanguage(baseLanguageSupplier);
+		
+		//
+		// Try to initialize the base language, if possible.
+		try
 		{
-			s_log.config("No database connection. Skip setting base language");
-			return;
+			Language.getBaseLanguage();
 		}
-
-		final String baseADLanguage = Services.get(ILanguageDAO.class).retrieveBaseLanguage();
-		final Language language = Language.getLanguage(baseADLanguage);
-		if (language == null)
+		catch (Exception e)
 		{
-			// metas: 03362: If there is no Language object for database configured base language,
-			// that is a big error and we need to throw an exception, instead of just returning
-			throw new AdempiereException("No org.compiere.util.Language defined for " + baseADLanguage);
-			// return;
-		}
-
-		Language.setBaseLanguage(language);
-
-		final Properties ctx = Env.getCtx();
-		if (Env.getAD_Language(ctx) == null)
-		{
-			Env.setContext(ctx, Env.CTXNAME_AD_Language, language.getAD_Language());
+			s_log.log(Level.WARNING, "Cannot initialize base language. Skip.", e);
 		}
 	}
-
 	// metas: end
+	
+	private static final Supplier<Language> baseLanguageSupplier = new Supplier<Language>()
+	{
+
+		@Override
+		public Language get()
+		{
+			// metas: 03362: Load BaseLanguage only if we have database connection.
+			// Could happen, if we invoke this method in early steps of initialization/startup to not have database connection yet
+			if (!DB.isConnected())
+			{
+				throw new DBNoConnectionException();
+			}
+
+			final String baseADLanguage = Services.get(ILanguageDAO.class).retrieveBaseLanguage();
+			final Language language = Language.getLanguage(baseADLanguage);
+			if (language == null)
+			{
+				// metas: 03362: If there is no Language object for database configured base language,
+				// that is a big error and we need to throw an exception, instead of just returning
+				throw new AdempiereException("No org.compiere.util.Language defined for " + baseADLanguage);
+				// return;
+			}
+			s_log.log(Level.CONFIG, "Found base language: {0}", language);
+
+			final Properties ctx = Env.getCtx();
+			if (Check.isEmpty(Env.getContext(ctx, Env.CTXNAME_AD_Language), true))
+			{
+				Env.setContext(ctx, Env.CTXNAME_AD_Language, language.getAD_Language());
+			}
+			
+			return language;
+		}
+
+	};
 
 	// /** Logger */
 	// private static CLogger s_log = CLogger.getCLogger (MLanguage.class);
@@ -544,41 +553,4 @@ public class MLanguage extends X_AD_Language
 		}
 		return no;
 	}	// addTable
-
-	/**************************************************************************
-	 * Setup
-	 *
-	 * @param args args
-	 */
-	public static void main(final String[] args)
-	{
-		System.out.println("Language");
-		Env.getSingleAdempiereInstance().startup(RunMode.SWING_CLIENT);
-
-		System.out.println(MLanguage.get(Env.getCtx(), "de_DE"));
-		System.out.println(MLanguage.get(Env.getCtx(), "en_US"));
-		
-		/**
-		Locale[] locales = Locale.getAvailableLocales();
-		for (int i = 0; i < locales.length; i++)
-		{
-			Locale loc = locales[i];
-			if (loc.getVariant() != null && loc.getVariant().length() != 0)
-				continue;
-			if (loc.getCountry() != null && loc.getCountry().length() != 0)
-				continue;
-
-			System.out.println(loc.toString()
-				+ " - " + loc.getDisplayName()
-				+ " + " + loc.getCountry()
-				+ " + " + loc.getLanguage()
-			);
-			MLanguage lang = new MLanguage (Env.getCtx(), loc.toString(),
-				loc.getDisplayName(), loc.getCountry(), loc.getLanguage());
-			lang.saveEx();
-			System.out.println(lang);
-		}
-	   /**/
-	}	//	main
-
 }	//	MLanguage

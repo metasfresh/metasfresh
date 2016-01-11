@@ -31,6 +31,9 @@ import javax.print.attribute.standard.MediaSize;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+
+import com.google.common.base.Supplier;
 
 /**
  *  Language Management.
@@ -223,13 +226,12 @@ public class Language implements Serializable
 			MediaSize.ISO.A4)
 
 	};
-	/** Default Language            */
-	// private static Language     s_loginLanguage = s_languages[0]; // metas: 02214: commented out because we are not using it
-	/** Base Language            */
-	private static Language     s_baseLanguage = null; // metas
+	
+	/** Base Language supplier */
+	private static ExtendedMemorizingSupplier<Language> _baseLanguageSupplier = null;
 
 	/**	Logger			*/
-	private static Logger log = Logger.getLogger(Language.class.getName());
+	private static final transient Logger log = Logger.getLogger(Language.class.getName());
 	
 	/**
 	 *  Get Number of Languages
@@ -334,29 +336,32 @@ public class Language implements Serializable
 	 * Get Base Language
 	 * 
 	 * @return Base Language
-	 * @throws AdempiereException if the base language was not already configured
+	 * @throws AdempiereException if the base language was not already configured or it could not be determined
 	 */
 	public static Language getBaseLanguage()
 	{
-		//return s_languages[0];
-		// metas:
-//		if (s_baseLanguage != null)
-//			return s_baseLanguage;
-//		else
-//			// metas US463: returning german as baselanguage
-//			return s_languages[4];
-		Check.assume(s_baseLanguage != null, "BaseLanguage has already been determined");
-		return s_baseLanguage;
+		if (_baseLanguageSupplier == null)
+		{
+			throw new AdempiereException("Base language supplier was not configured");
+		}
+
+		final Language baseLanguage = _baseLanguageSupplier.get();
+		if (baseLanguage == null)
+		{
+			_baseLanguageSupplier.forget();
+			throw new AdempiereException("BaseLanguage could not be determined");
+		}
+		return baseLanguage;
 	}   //  getBase
 	
 	/**
 	 * Set the actual base language. Do not call this method because this is part of internal API.
-	 * @param language base language
+	 * @param languageSupplier base language supplier
 	 */
-	// metas
-	public static void setBaseLanguage(Language language)
+	public static void setBaseLanguage(final Supplier<Language> languageSupplier)
 	{
-		s_baseLanguage = language;
+		Check.assumeNotNull(languageSupplier, "languageSupplier not null");
+		_baseLanguageSupplier = ExtendedMemorizingSupplier.of(languageSupplier);
 	}
 	
 	/**
@@ -365,7 +370,7 @@ public class Language implements Serializable
 	 */
 	public static final boolean isBaseLanguageSet()
 	{
-		return s_baseLanguage != null;
+		return _baseLanguageSupplier.isInitialized();
 	}
 
 	/**
