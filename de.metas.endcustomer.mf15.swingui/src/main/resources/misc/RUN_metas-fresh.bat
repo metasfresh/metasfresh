@@ -102,7 +102,7 @@ REM @goto MULTI_INSTALL
 :START
 @REM Note that we don't need the javaagent, because our stuff is already instrumented
 @REM Note that -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)"
-"%JAVA%" -Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true -Dorg.adempiere.client.lang="Deutsch (Schweiz)" -DADEMPIERE_HOME=%ADEMPIERE_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% %SECURE% -classpath "%CLASSPATH%" org.compiere.Adempiere
+"%JAVA%" -Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true -DADEMPIERE_HOME=%ADEMPIERE_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% %SECURE% -classpath "%CLASSPATH%" org.compiere.Adempiere
 
 @Rem @sleep 15
 @CHOICE /C YN /T 15 /D N > NUL

@@ -233,7 +233,6 @@
 									<opt>-XX:+HeapDumpOnOutOfMemoryError</opt>
 									xml-comment: java.util.Arrays.useLegacyMergeSort: related to task "07072 Comparison method violates its general contract (100965620270)"
 									<opt>-Djava.util.Arrays.useLegacyMergeSort=true</opt>
-									<opt>-Dorg.adempiere.client.lang="Deutsch"</opt>
 									xml-comment: always create a log file because there is no other way to check the console when running gui/javaw
 									<opt>-DTraceFile=true</opt>
 								</opts>
