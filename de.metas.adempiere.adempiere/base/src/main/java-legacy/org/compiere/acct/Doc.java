@@ -31,6 +31,7 @@ import java.util.logging.Level;
 
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IFactAcctDAO;
+import org.adempiere.acct.api.IFactAcctListenersService;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
@@ -52,7 +53,6 @@ import org.compiere.model.MCurrency;
 import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocumentEngine;
@@ -584,7 +584,8 @@ public abstract class Doc
 
 		//
 		// Fire event: BEFORE_POST
-		ModelValidationEngine.get().fireDocValidate(getPO(), ModelValidator.TIMING_BEFORE_POST);
+		final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
+		factAcctListenersService.fireBeforePost(getPO());
 
 		//
 		// Save facts
@@ -602,8 +603,7 @@ public abstract class Doc
 
 		//
 		// Fire event: AFTER_POST
-		// if (p_Status.equals(PostingStatus.Posted))
-		ModelValidationEngine.get().fireDocValidate(getPO(), ModelValidator.TIMING_AFTER_POST);
+		factAcctListenersService.fireAfterPost(getPO());
 
 		//
 		// Execute after document posted code

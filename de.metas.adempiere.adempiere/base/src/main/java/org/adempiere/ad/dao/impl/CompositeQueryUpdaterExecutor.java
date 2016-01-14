@@ -22,15 +22,17 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+import java.math.BigDecimal;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 
 /* package */class CompositeQueryUpdaterExecutor<T>
-extends CompositeQueryUpdater<T>
-implements ICompositeQueryUpdaterExecutor<T>
+		extends CompositeQueryUpdater<T>
+		implements ICompositeQueryUpdaterExecutor<T>
 {
 	private final IQuery<T> query;
 	private boolean executeDirectly = true;
@@ -81,6 +83,20 @@ implements ICompositeQueryUpdaterExecutor<T>
 	public ICompositeQueryUpdaterExecutor<T> addSetColumnFromColumn(final String columnName, final ModelColumnNameValue<T> fromColumnName)
 	{
 		super.addSetColumnFromColumn(columnName, fromColumnName);
+		return this;
+	}
+
+	@Override
+	public ICompositeQueryUpdaterExecutor<T> addAddValueToColumn(String columnName, BigDecimal valueToAdd)
+	{
+		super.addAddValueToColumn(columnName, valueToAdd);
+		return this;
+	}
+
+	@Override
+	public ICompositeQueryUpdaterExecutor<T> addAddValueToColumn(String columnName, BigDecimal valueToAdd, IQueryFilter<T> onlyWhenFilter)
+	{
+		super.addAddValueToColumn(columnName, valueToAdd, onlyWhenFilter);
 		return this;
 	}
 }

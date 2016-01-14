@@ -321,6 +321,12 @@
 			</dependency>
 
 			<dependency>
+				<groupId>de.metas.acct</groupId>
+				<artifactId>de.metas.acct.base</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
 				<artifactId>de.metas.util</artifactId>
 				<groupId>de.metas.util</groupId>
 				<version>${project.version}</version>

@@ -417,6 +417,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		try
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
+			
+			// Optimization: if we don't have post-query filters, it's fine to set the Maximum Rows to fetch to one.
+			if (postQueryFilter == null)
+			{
+				pstmt.setMaxRows(1);
+			}
+			
 			rs = createResultSet(pstmt);
 			model = retrieveNextModel(rs, clazz);
 		}
@@ -1660,7 +1667,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		
 		final List<Object> sqlParams = new ArrayList<Object>();
-		final String sqlUpdateSet = sqlQueryUpdater.getSql(sqlParams);
+		final String sqlUpdateSet = sqlQueryUpdater.getSql(getCtx(), sqlParams);
 
 		final StringBuilder sqlUpdate = new StringBuilder("UPDATE ").append(getTableName())
 				.append(" SET ").append(sqlUpdateSet);
@@ -1701,7 +1708,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				
 		//
 		// UPDATE
-		final String sqlUpdateSet = sqlQueryUpdater.getSql(sqlParams);
+		final String sqlUpdateSet = sqlQueryUpdater.getSql(getCtx(), sqlParams);
 		sql.append("UPDATE ").append(tableName).append(" t ")
 				.append("\n SET ").append(sqlUpdateSet);
 

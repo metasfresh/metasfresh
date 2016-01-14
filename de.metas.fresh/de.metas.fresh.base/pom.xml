@@ -207,6 +207,11 @@
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.acct</groupId>
+			<artifactId>de.metas.acct.base</artifactId>
+		</dependency>
 
 	</dependencies>
 

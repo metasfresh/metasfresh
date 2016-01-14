@@ -23,10 +23,13 @@ package org.adempiere.ad.dao.impl;
  */
 
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.exceptions.AdempiereException;
@@ -72,6 +75,21 @@ import org.adempiere.util.Check;
 		final IQueryUpdater<T> updater = new SetColumnNameQueryUpdater<T>(columnName, fromColumnName);
 		return addQueryUpdater(updater);
 	}
+	
+	@Override
+	public ICompositeQueryUpdater<T> addAddValueToColumn(final String columnName, final BigDecimal valueToAdd)
+	{
+		final IQueryFilter<T> onlyWhenFilter = null;
+		final IQueryUpdater<T> updater = new AddToColumnQueryUpdater<T>(columnName, valueToAdd, onlyWhenFilter);
+		return addQueryUpdater(updater);
+	}
+
+	@Override
+	public ICompositeQueryUpdater<T> addAddValueToColumn(final String columnName, final BigDecimal valueToAdd, final IQueryFilter<T> onlyWhenFilter)
+	{
+		final IQueryUpdater<T> updater = new AddToColumnQueryUpdater<T>(columnName, valueToAdd, onlyWhenFilter);
+		return addQueryUpdater(updater);
+	}
 
 	@Override
 	public boolean update(final T model)
@@ -88,15 +106,15 @@ import org.adempiere.util.Check;
 	}
 
 	@Override
-	public String getSql(final List<Object> params)
+	public String getSql(final Properties ctx, final List<Object> params)
 	{
-		buildSql();
+		buildSql(ctx);
 
 		params.addAll(sqlParams);
 		return sql;
 	}
 
-	private final void buildSql()
+	private final void buildSql(final Properties ctx)
 	{
 		if (sqlBuilt)
 		{
@@ -114,7 +132,7 @@ import org.adempiere.util.Check;
 		for (final IQueryUpdater<T> updater : queryUpdaters)
 		{
 			final ISqlQueryUpdater<T> sqlUpdater = (ISqlQueryUpdater<T>)updater;
-			final String sqlChunk = sqlUpdater.getSql(params);
+			final String sqlChunk = sqlUpdater.getSql(ctx, params);
 
 			if (Check.isEmpty(sqlChunk))
 			{

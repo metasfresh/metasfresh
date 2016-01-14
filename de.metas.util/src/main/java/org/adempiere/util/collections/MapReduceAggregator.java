@@ -153,7 +153,10 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 				protected boolean removeLRU(final org.apache.commons.collections4.map.AbstractLinkedMap.LinkEntry<Object, GroupType> entry)
 				{
 					final GroupType group = entry.getValue();
-					closeGroup(group);
+					if(group != null)
+					{
+						closeGroup(group);
+					}
 					return true; // accept to remove it
 				}
 
@@ -184,8 +187,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 		// If no matching group found for our item, create a new group.
 		if (group == null)
 		{
-			group = createGroup(itemHashKey, item);
-			addGroupToBuffer(itemHashKey, group);
+			group = createAndAddGroupToBuffer(itemHashKey, item);
 		}
 
 		//
@@ -202,22 +204,31 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	private final Object createItemHashKey(final ItemType item)
 	{
 		final IAggregationKeyBuilder<ItemType> itemAggregationKeyBuilder = getItemAggregationKeyBuilder();
-		final String itemHashKey = itemAggregationKeyBuilder.buildKey(item);
+		final Object itemHashKey = itemAggregationKeyBuilder.buildKey(item);
 		return itemHashKey;
 	}
 
 	/**
-	 * Adds given group to groups buffer.
+	 * Creates a new group based on given item and adds it to groups buffer.
 	 * 
 	 * If the groups buffer capacity is reached the last used group will be removed from buffer (this is done indirectly by {@link LRUMap}).
 	 * 
 	 * @param itemHashKey
-	 * @param group
+	 * @param item item to be used for creating the new group
+	 * @return 
 	 */
-	private final void addGroupToBuffer(final Object itemHashKey, final GroupType group)
+	private final GroupType createAndAddGroupToBuffer(final Object itemHashKey, final ItemType item)
 	{
+		// We put a null value to map (before actually creating the group),
+		// to make sure the previous groups are closed before the new group is actually created
+		_itemHashKey2group.put(itemHashKey, null);
+		
+		final GroupType group = createGroup(itemHashKey, item);
+
 		_itemHashKey2group.put(itemHashKey, group);
 		_countGroups++;
+		
+		return group;
 	}
 
 	/**
@@ -248,6 +259,10 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 		while (groups.hasNext())
 		{
 			final GroupType group = groups.next();
+			if (group == null)
+			{
+				continue;
+			}
 
 			// Skip the excepted group
 			if (group == exceptGroup)

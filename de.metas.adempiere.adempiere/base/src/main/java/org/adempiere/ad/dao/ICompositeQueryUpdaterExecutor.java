@@ -1,5 +1,7 @@
 package org.adempiere.ad.dao;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -53,4 +55,9 @@ public interface ICompositeQueryUpdaterExecutor<T> extends ICompositeQueryUpdate
 	@Override
 	ICompositeQueryUpdaterExecutor<T> addSetColumnValue(String columnName, Object value);
 
+	@Override
+	ICompositeQueryUpdaterExecutor<T> addAddValueToColumn(String columnName, BigDecimal valueToAdd);
+	
+	@Override
+	ICompositeQueryUpdaterExecutor<T> addAddValueToColumn(String columnName, BigDecimal valueToAdd, IQueryFilter<T> onlyWhenFilter);
 }

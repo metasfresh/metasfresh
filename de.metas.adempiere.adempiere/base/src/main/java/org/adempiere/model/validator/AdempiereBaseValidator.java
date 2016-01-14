@@ -89,12 +89,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		}
 
 		//
-		// Accounting (org.adempiere.acct)
-		{
-			engine.addModelValidator(new org.adempiere.acct.model.validator.AcctModuleInterceptor(), client); // 08354
-		}
-
-		//
 		// Storage
 		{
 			engine.addModelValidator(new org.adempiere.model.validator.M_Transaction(), client);

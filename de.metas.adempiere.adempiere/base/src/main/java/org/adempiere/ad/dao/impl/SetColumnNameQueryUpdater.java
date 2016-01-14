@@ -24,6 +24,7 @@ package org.adempiere.ad.dao.impl;
 
 
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -54,7 +55,7 @@ import org.adempiere.util.Check;
 	}
 
 	@Override
-	public String getSql(final List<Object> params)
+	public String getSql(final Properties ctx, final List<Object> params)
 	{
 		final StringBuilder sql = new StringBuilder();
 

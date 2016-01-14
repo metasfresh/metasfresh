@@ -22,7 +22,6 @@ package org.adempiere.acct.api;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -31,6 +30,10 @@ import org.compiere.model.I_Fact_Acct;
 
 public interface IFactAcctDAO extends ISingletonService
 {
+	String DB_SCHEMA = "de_metas_acct";
+	/** Function used to calculate ending balance for a given {@link I_Fact_Acct} line. */
+	String DB_FUNC_Fact_Acct_EndingBalance = DB_SCHEMA + ".Fact_Acct_EndingBalance";
+
 	/**
 	 * Deletes all accounting records for given document.
 	 * 

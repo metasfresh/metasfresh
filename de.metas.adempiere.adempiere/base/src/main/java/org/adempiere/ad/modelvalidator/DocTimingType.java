@@ -57,6 +57,8 @@ public enum DocTimingType
 	AFTER_REVERSECORRECT(ModelValidator.TIMING_AFTER_REVERSECORRECT),
 	/** Called after document is reverseaccrual */
 	AFTER_REVERSEACCRUAL(ModelValidator.TIMING_AFTER_REVERSEACCRUAL),
+	/** Called after document is un-posted */
+	AFTER_UNPOST(ModelValidator.TIMING_AFTER_UNPOST),
 	/** Called before document is posted */
 	BEFORE_POST(ModelValidator.TIMING_BEFORE_POST),
 	/** Called after document is posted */
@@ -146,6 +148,10 @@ public enum DocTimingType
 		else if (DocAction.ACTION_UnClose.equals(docAction))
 		{
 			return before ? BEFORE_UNCLOSE : AFTER_UNCLOSE;
+		}
+		else if (DocAction.ACTION_Post.equals(docAction))
+		{
+			return before ? BEFORE_POST : AFTER_POST;
 		}
 		else
 		{

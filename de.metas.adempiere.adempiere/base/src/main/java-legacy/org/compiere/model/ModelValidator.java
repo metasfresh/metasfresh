@@ -37,26 +37,14 @@ public interface ModelValidator
 {
 	/** Model Change Type New */
 	public static final int TYPE_BEFORE_NEW = 1;			// teo_sarca [ 1675490 ]
-	@Deprecated
-	public static final int TYPE_NEW = 1;
-	@Deprecated
-	public static final int CHANGETYPE_NEW = 1;				// Compatibility with Compiere 260c
 	public static final int TYPE_AFTER_NEW = 4;			// teo_sarca [ 1675490 ]
 	public static final int TYPE_AFTER_NEW_REPLICATION = 7;	// @Trifon
 	/** Model Change Type Change */
 	public static final int TYPE_BEFORE_CHANGE = 2;		// teo_sarca [ 1675490 ]
-	@Deprecated
-	public static final int TYPE_CHANGE = 2;
-	@Deprecated
-	public static final int CHANGETYPE_CHANGE = 2;			// Compatibility with Compiere 260c
 	public static final int TYPE_AFTER_CHANGE = 5;			// teo_sarca [ 1675490 ]
 	public static final int TYPE_AFTER_CHANGE_REPLICATION = 8; // @Trifon
 	/** Model Change Type Delete */
 	public static final int TYPE_BEFORE_DELETE = 3;		// teo_sarca [ 1675490 ]
-	@Deprecated
-	public static final int TYPE_DELETE = 3;
-	@Deprecated
-	public static final int CHANGETYPE_DELETE = 3;			// Compatibility with Compiere 260c
 	public static final int TYPE_AFTER_DELETE = 6;			// teo_sarca [ 1675490 ]
 	public static final int TYPE_BEFORE_DELETE_REPLICATION = 9; // @Trifon
 
@@ -101,7 +89,6 @@ public interface ModelValidator
 	int DOCTIMING_Offset = 1000000; // NOTE: we are offsetting the TIMINGS because we don't want to collide with TYPE_* values
 	/** Called before document is prepared */
 	public static final int TIMING_BEFORE_PREPARE = DOCTIMING_Offset + 1;
-	public static final int DOCTIMING_BEFORE_PREPARE = DOCTIMING_Offset + 1; // Compatibility with Compiere 260c
 	/** Called before document is void */
 	public static final int TIMING_BEFORE_VOID = DOCTIMING_Offset + 2;
 	/** Called before document is close */
@@ -118,26 +105,29 @@ public interface ModelValidator
 	public static final int TIMING_AFTER_PREPARE = DOCTIMING_Offset + 8;
 	/** Called after document is completed */
 	public static final int TIMING_AFTER_COMPLETE = DOCTIMING_Offset + 9;
-	public static final int DOCTIMING_AFTER_COMPLETE = DOCTIMING_Offset + 9; // Compatibility with Compiere 260c
 	/** Called after document is void */
 	public static final int TIMING_AFTER_VOID = DOCTIMING_Offset + 10;
 	/** Called after document is closed */
 	public static final int TIMING_AFTER_CLOSE = DOCTIMING_Offset + 11;
 	/** Called after document is reactivated */
 	public static final int TIMING_AFTER_REACTIVATE = DOCTIMING_Offset + 12;
-	/** Called after document is reversecorrect */
+	/** Called after document is reverse-correct */
 	public static final int TIMING_AFTER_REVERSECORRECT = DOCTIMING_Offset + 13;
-	/** Called after document is reverseaccrual */
+	/** Called after document is reverse-accrual */
 	public static final int TIMING_AFTER_REVERSEACCRUAL = DOCTIMING_Offset + 14;
+	
+	/** Called after document is un-posted */
+	public static final int TIMING_AFTER_UNPOST = DOCTIMING_Offset + 16;
+
 	/** Called before document is posted */
-	public static final int TIMING_BEFORE_POST = DOCTIMING_Offset + 15;
+	public static final int TIMING_BEFORE_POST = DOCTIMING_Offset + 17;
 	/** Called after document is posted */
-	public static final int TIMING_AFTER_POST = DOCTIMING_Offset + 16;
+	public static final int TIMING_AFTER_POST = DOCTIMING_Offset + 18;
 
 	/** Called before document is un-closed */
-	public static final int TIMING_BEFORE_UNCLOSE = DOCTIMING_Offset + 17;
+	public static final int TIMING_BEFORE_UNCLOSE = DOCTIMING_Offset + 19;
 	/** Called after document is un-closed */
-	public static final int TIMING_AFTER_UNCLOSE = DOCTIMING_Offset + 18;
+	public static final int TIMING_AFTER_UNCLOSE = DOCTIMING_Offset + 20;
 
 	// Correlation between constant events and list of event script model validators
 	Map<Integer, String> documentEventValidators = ImmutableMap.<Integer, String> builder()

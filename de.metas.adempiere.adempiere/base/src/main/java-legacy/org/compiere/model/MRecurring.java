@@ -119,12 +119,15 @@ public class MRecurring extends X_C_Recurring
 			run.setC_Project_ID(project.getC_Project_ID());
 			msg += project.getValue();
 		}
-		else if (getRecurringType().equals(MRecurring.RECURRINGTYPE_GLJournal))
-		{
-			MJournalBatch journal = MJournalBatch.copyFrom (getCtx(), getGL_JournalBatch_ID(), dateDoc, get_TrxName());
-			run.setGL_JournalBatch_ID(journal.getGL_JournalBatch_ID());
-			msg += journal.getDocumentNo();
-		}
+		// metas-tsa: commented out because
+		// * we moved MJournalBatch to de.metas.acct
+		// * we are not using this functionality at all
+//		else if (getRecurringType().equals(MRecurring.RECURRINGTYPE_GLJournal))
+//		{
+//			MJournalBatch journal = MJournalBatch.copyFrom (getCtx(), getGL_JournalBatch_ID(), dateDoc, get_TrxName());
+//			run.setGL_JournalBatch_ID(journal.getGL_JournalBatch_ID());
+//			msg += journal.getDocumentNo();
+//		}
 		else
 			return "Invalid @RecurringType@ = " + getRecurringType();
 		run.save(get_TrxName());

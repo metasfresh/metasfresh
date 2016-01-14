@@ -22,7 +22,7 @@
 		<module>../de.metas.monitoring</module>
 
 		<module>../de.metas.adempiere.adempiere</module>
-
+		
 		<module>../de.metas.report.jasper.client</module>
 		<module>../de.metas.report.jasper.commons</module>
 		<module>../de.metas.report.jasper.server</module>
@@ -30,14 +30,16 @@
 		<module>../de.metas.adempiere.libero.libero</module>
 		<module>../de.metas.adempiere.libero.liberoHR</module>
 
+		<module>../de.metas.async</module>
+		<module>../de.metas.acct.base</module>
+		
 		<module>../de.metas.aggregation</module>
 
 		<module>../de.metas.dimension</module> <!-- task 08681 -->
 		<module>../de.metas.storage</module>
 
 		<module>../de.metas.swat</module>
-
-		<module>../de.metas.async</module>
+		
 		<module>../de.metas.banking</module>
 
 		<module>../de.metas.commission</module>

@@ -3933,7 +3933,7 @@ public abstract class PO
 	public final boolean insertTranslations()
 	{
 		//	Not a translation table
-		if (m_IDs.length > 1
+		if (m_IDs.length > 1 || m_IDs.length == 0
 			|| m_IDs[0].equals(I_ZERO)
 			|| !p_info.isTranslated()
 			|| !(m_IDs[0] instanceof Integer))

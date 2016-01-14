@@ -227,7 +227,7 @@ public class DBException extends AdempiereException
 	@Override
 	protected String buildMessage()
 	{
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		String msg = super.buildMessage();
 		if (!Check.isEmpty(msg))
 			sb.append(msg);

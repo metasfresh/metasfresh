@@ -389,11 +389,13 @@ final class FactLine extends X_Fact_Acct
 		if (m_docLine != null && m_docLine.getDateAcct() != null)
 			setDateAcct(m_docLine.getDateAcct());
 		
-		// Period, Tax
-		if (m_docLine != null && m_docLine.getC_Period_ID() != 0)
+		// Period
+		if (m_docLine != null && m_docLine.getC_Period_ID() > 0)
 			setC_Period_ID(m_docLine.getC_Period_ID());
 		else
 			setC_Period_ID(m_doc.getC_Period_ID());
+		
+		// Tax
 		if (m_docLine != null)
 			setC_Tax_ID(m_docLine.getC_Tax_ID());
 		

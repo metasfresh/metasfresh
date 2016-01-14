@@ -62,6 +62,15 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		registerTabCallouts(Services.get(ITabCalloutFactory.class));
 		registerCallouts(Services.get(IProgramaticCalloutProvider.class));
 		setupCaching(Services.get(IModelCacheService.class));
+		onAfterInit();
+	}
+	
+	/**
+	 * Called by {@link #onInit(IModelValidationEngine, I_AD_Client)} right before method execution is finishing.
+	 */
+	protected void onAfterInit()
+	{
+		// nothing at this level
 	}
 
 	/**

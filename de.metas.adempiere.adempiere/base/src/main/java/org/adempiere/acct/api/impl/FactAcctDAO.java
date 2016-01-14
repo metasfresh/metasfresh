@@ -26,6 +26,7 @@ package org.adempiere.acct.api.impl;
 import java.util.List;
 
 import org.adempiere.acct.api.IFactAcctDAO;
+import org.adempiere.acct.api.IFactAcctListenersService;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -42,6 +43,8 @@ public class FactAcctDAO implements IFactAcctDAO
 		final int countDeleted = retrieveQueryForDocument(document)
 				.create()
 				.deleteDirectly();
+		
+		Services.get(IFactAcctListenersService.class).fireAfterUnpost(document);
 
 		return countDeleted;
 	}

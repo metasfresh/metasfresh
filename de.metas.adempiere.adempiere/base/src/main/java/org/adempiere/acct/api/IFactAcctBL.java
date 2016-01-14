@@ -34,9 +34,6 @@ import org.compiere.report.core.RColumn;
 
 public interface IFactAcctBL extends ISingletonService
 {
-
-	IFactAcctCubeUpdater createFactAcctCubeUpdater();
-
 	/**
 	 * Create the {@link RColumn} for displaying the Ending Balance
 	 * 
