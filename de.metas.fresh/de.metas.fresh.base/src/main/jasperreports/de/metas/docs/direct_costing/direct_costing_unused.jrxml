@@ -359,7 +359,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{startdate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="10" y="10" width="260" height="14"/>
+				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="10" y="10" width="308" height="14"/>
 				<textElement>
 					<font size="10" isBold="true"/>
 				</textElement>

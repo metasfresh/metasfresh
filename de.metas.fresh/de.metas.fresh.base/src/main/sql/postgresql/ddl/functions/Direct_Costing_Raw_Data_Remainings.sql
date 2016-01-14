@@ -17,7 +17,7 @@ SELECT
 	Balance_100 * Multi_100 AS Balance_100,
 	Balance_150 * Multi_150 AS Balance_150,
 	Balance_Other * Multi_150 AS Balance_Other,
-	Balance_1000 * Multi_1000 + Balance_2000 * Multi_2000 + Balance_100 * Multi_100 + Balance_150 * Multi_150 AS Balance,
+	Balance_1000 * Multi_1000 + Balance_2000 * Multi_2000 + Balance_100 * Multi_100 + Balance_150 * Multi_150 + Balance_Other * Multi_150 AS Balance,
 	Budget_1000 * Multi_1000 AS Budget_1000,
 	Budget_2000 * Multi_2000 AS Budget_2000,
 	Budget_100 * Multi_100 AS Budget_100,
