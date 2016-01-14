@@ -23,14 +23,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Vector;
 import java.util.logging.Level;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -54,7 +50,7 @@ import de.metas.adempiere.model.I_M_ProductPrice;
 
 /**
  * Create PriceList by copying purchase prices (M_Product_PO) and applying product category discounts (M_CategoryDiscount)
- * 
+ *
  * @author Layda Salas (globalqss)
  * @version $Id: M_PriceList_Create,v 1.0 2005/10/09 22:19:00 globalqss Exp $
  * @author Carlos Ruiz (globalqss) Make T_Selection tables permanent
@@ -64,6 +60,7 @@ public class M_PriceList_Create extends SvrProcess
 {
 	// Services
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final transient ISessionBL sessionBL = Services.get(ISessionBL.class);
 
 	/**
 	 * Target Price List Version (where we will create the prices)
@@ -98,7 +95,7 @@ public class M_PriceList_Create extends SvrProcess
 
 	/**
 	 * Process
-	 * 
+	 *
 	 * @return message
 	 * @throws Exception
 	 */
@@ -107,7 +104,7 @@ public class M_PriceList_Create extends SvrProcess
 	{
 		// Disabling change log creation because we will create and then update a huge amount of M_ProductPrice_Attribute[_Line] records.
 		// To avoid this huge performance issue we are disabling for this thread (08125)
-		Services.get(ISessionBL.class).setDisableChangeLogsForThread(true);
+		sessionBL.setDisableChangeLogsForThread(true);
 
 		String sql;
 
@@ -170,7 +167,7 @@ public class M_PriceList_Create extends SvrProcess
 
 				sql = "SELECT "
 						+ " * "
-// @formatter:off					
+// @formatter:off
 //					+ "	   m_discountschemaline_id"
 //					+ "         ,ad_client_id" + "         ,ad_org_id"
 //					+ "         ,isactive" + "         ,created"
@@ -190,7 +187,7 @@ public class M_PriceList_Create extends SvrProcess
 //					+ "         ,limit_rounding" + "         ,limit_minamt"
 //					+ "         ,limit_maxamt" + "         ,limit_fixed"
 //					+ "         ,c_conversiontype_id"
-// @formatter:on					
+// @formatter:on
 						+ " FROM	M_DiscountSchemaLine"
 						+ " WHERE	M_DiscountSchema_ID=" + v.getInt("M_DiscountSchema_ID")
 						+ " AND IsActive='Y'"
@@ -247,6 +244,7 @@ public class M_PriceList_Create extends SvrProcess
 		finally
 		{
 			DB.close(v, curgen);
+			sessionBL.setDisableChangeLogsForThread(false);
 		}
 
 		return "OK";
@@ -387,7 +385,7 @@ public class M_PriceList_Create extends SvrProcess
 
 	/**
 	 * Create/Update Product Prices for current M_DiscountSchemaLine.
-	 * 
+	 *
 	 * @param v result set containing current selected Price List and Price List Version columns
 	 * @param dl result set containing current M_DiscountSchemaLine record
 	 * @param v_NextNo
@@ -817,7 +815,7 @@ public class M_PriceList_Create extends SvrProcess
 
 	/**
 	 * Returns a sql where string with the given category id and all of its subcategory ids. It is used as restriction in MQuery.
-	 * 
+	 *
 	 * @param productCategoryId
 	 * @return
 	 */
@@ -881,7 +879,7 @@ public class M_PriceList_Create extends SvrProcess
 
 	/**
 	 * Recursive search for subcategories with loop detection.
-	 * 
+	 *
 	 * @param productCategoryId
 	 * @param categories
 	 * @param loopIndicatorId
@@ -894,7 +892,7 @@ public class M_PriceList_Create extends SvrProcess
 		final Iterator<SimpleTreeNode> iter = categories.iterator();
 		while (iter.hasNext())
 		{
-			SimpleTreeNode node = (SimpleTreeNode)iter.next();
+			SimpleTreeNode node = iter.next();
 			if (node.getParentId() == productCategoryId)
 			{
 				if (node.getNodeId() == loopIndicatorId)
@@ -910,9 +908,9 @@ public class M_PriceList_Create extends SvrProcess
 
 	/**
 	 * Simple tree node class for product category tree search.
-	 * 
+	 *
 	 * @author Karsten Thiemann, kthiemann@adempiere.org
-	 * 
+	 *
 	 */
 	private class SimpleTreeNode
 	{

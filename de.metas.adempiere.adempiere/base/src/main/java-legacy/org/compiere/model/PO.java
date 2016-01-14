@@ -5093,7 +5093,7 @@ public abstract class PO
 	{
 		if (I_AD_Session.Table_Name.equals(get_TableName()))
 		{
-			// to avoid recursions and data coruption problems due to stalled caches, never return session when do do CRUD operations with a session
+			// to avoid recursions and data coruption problems due to stalled caches, never return session when doing CRUD operations with a session
 			return null;
 		}
 

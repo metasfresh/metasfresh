@@ -67,9 +67,7 @@ public class InOutDAO implements IInOutDAO
 		Check.assumeNotNull(inoutLineClass, "inoutLineClass not null");
 
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, inOut)
-				.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inOut.getM_InOut_ID())
-		// .filterByClientId()
-		;
+				.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inOut.getM_InOut_ID());
 
 		if (!retrieveAll)
 		{
@@ -89,7 +87,6 @@ public class InOutDAO implements IInOutDAO
 		{
 			inoutLine.setM_InOut(inOut);
 		}
-
 		return inoutLines;
 	}
 

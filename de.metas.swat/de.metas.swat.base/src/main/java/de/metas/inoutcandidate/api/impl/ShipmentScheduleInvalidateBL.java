@@ -10,18 +10,17 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,7 +80,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
 		final List<I_M_ShipmentSchedule_QtyPicked> allocs = shipmentScheduleAllocDAO.retrieveAllForInOutLine(inoutLine, I_M_ShipmentSchedule_QtyPicked.class);
-		for (I_M_ShipmentSchedule_QtyPicked alloc : allocs)
+		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocs)
 		{
 			// check if the ID is already there, to spare us from loading the sched
 			if (id2sched.containsKey(alloc.getM_ShipmentSchedule_ID()))
@@ -91,7 +90,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 			id2sched.put(alloc.getM_ShipmentSchedule_ID(), alloc.getM_ShipmentSchedule());
 		}
 	}
-	
+
 	@Override
 	public void invalidateSegmentsForLines(final I_M_InOut shipment)
 	{
@@ -118,7 +117,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 
 	/**
 	 * Note that this method is overridden in the de.metas.handlingunits.base module!
- 	 * TODO: don't override this whole method, there are plenty of better ways
+	 * TODO: don't override this whole method, there are plenty of better ways
 	 */
 	protected IStorageSegment createSegmentForInOutLine(final int bPartnerId, final I_M_InOutLine inoutLine)
 	{
@@ -158,10 +157,10 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	protected IStorageSegment createSegmentForShipmentSchedule(final I_M_ShipmentSchedule schedule)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		
+
 		final IStorageBL storageBL = Services.get(IStorageBL.class);
 		final IStorageSegmentBuilder storageSegmentBuilder = storageBL.createStorageSegmentBuilder();
-		
+
 		// we can't restrict the segment to the sched's bpartner, because we don't know if the qty could in theory be reallocated to a *different* partner.
 		// So we have to notify *all* partners' segments.
 		final int bpartnerId = 0;
@@ -199,7 +198,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		final I_M_ShipmentSchedule sched = shipmentSchedulePA.retrieveForOrderLine(orderLine);
-		shipmentSchedulePA.invalidate(Collections.singletonList(sched),InterfaceWrapperHelper.getTrxName(orderLine));
+		shipmentSchedulePA.invalidate(Collections.singletonList(sched), InterfaceWrapperHelper.getTrxName(orderLine));
 	}
 
 }
