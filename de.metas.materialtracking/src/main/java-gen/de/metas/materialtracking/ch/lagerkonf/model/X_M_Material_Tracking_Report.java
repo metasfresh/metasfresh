@@ -30,7 +30,7 @@ public class X_M_Material_Tracking_Report extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1496037647L;
+	private static final long serialVersionUID = -2063136126L;
 
     /** Standard Constructor */
     public X_M_Material_Tracking_Report (Properties ctx, int M_Material_Tracking_Report_ID, String trxName)
@@ -39,6 +39,7 @@ public class X_M_Material_Tracking_Report extends org.compiere.model.PO implemen
       /** if (M_Material_Tracking_Report_ID == 0)
         {
 			setC_Period_ID (0);
+			setC_Year_ID (0);
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
 			setM_Material_Tracking_Report_ID (0);
@@ -94,6 +95,43 @@ public class X_M_Material_Tracking_Report extends org.compiere.model.PO implemen
 	public int getC_Period_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Period_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Year getC_Year() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Year_ID, org.compiere.model.I_C_Year.class);
+	}
+
+	@Override
+	public void setC_Year(org.compiere.model.I_C_Year C_Year)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Year_ID, org.compiere.model.I_C_Year.class, C_Year);
+	}
+
+	/** Set Jahr.
+		@param C_Year_ID 
+		Kalenderjahr
+	  */
+	@Override
+	public void setC_Year_ID (int C_Year_ID)
+	{
+		if (C_Year_ID < 1) 
+			set_Value (COLUMNNAME_C_Year_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Year_ID, Integer.valueOf(C_Year_ID));
+	}
+
+	/** Get Jahr.
+		@return Kalenderjahr
+	  */
+	@Override
+	public int getC_Year_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Year_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

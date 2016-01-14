@@ -62,6 +62,12 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.dimension</groupId>
+			<artifactId>de.metas.dimension</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 	</dependencies>
 

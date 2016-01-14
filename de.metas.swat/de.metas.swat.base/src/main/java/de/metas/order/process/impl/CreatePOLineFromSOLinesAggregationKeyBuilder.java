@@ -34,7 +34,7 @@ import de.metas.interfaces.I_C_OrderLine;
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
-public class CreatePOLineFromSOLinesAggregationKeyBuilder extends AbstractAggregationKeyBuilder
+public class CreatePOLineFromSOLinesAggregationKeyBuilder extends AbstractOrderLineAggregationKeyBuilder
 {
 
 	/*package*/ static CreatePOLineFromSOLinesAggregationKeyBuilder INSTANCE = new CreatePOLineFromSOLinesAggregationKeyBuilder();

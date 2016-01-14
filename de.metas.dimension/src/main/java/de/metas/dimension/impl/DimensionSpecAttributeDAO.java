@@ -22,7 +22,6 @@ package de.metas.dimension.impl;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -32,6 +31,7 @@ import org.compiere.model.I_M_Attribute;
 import de.metas.dimension.IDimensionSpecAttributeDAO;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
+import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 
 public class DimensionSpecAttributeDAO implements IDimensionSpecAttributeDAO
 {
@@ -47,5 +47,30 @@ public class DimensionSpecAttributeDAO implements IDimensionSpecAttributeDAO
 				.andCollect(I_DIM_Dimension_Spec_Attribute.COLUMN_M_Attribute_ID, I_M_Attribute.class)
 				.create()
 				.list(I_M_Attribute.class);
+	}
+
+	@Override
+	public List<I_DIM_Dimension_Spec_Attribute> retrieveDimensionSpecAttributes(final I_DIM_Dimension_Spec dimensionSpec)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class, dimensionSpec)
+				.addEqualsFilter(I_DIM_Dimension_Spec_Attribute.COLUMNNAME_DIM_Dimension_Spec_ID, dimensionSpec.getDIM_Dimension_Spec_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_DIM_Dimension_Spec_Attribute.class);
+	}
+
+	@Override
+	public List<I_DIM_Dimension_Spec_AttributeValue> retrieveDimSpecAttrValues(final I_DIM_Dimension_Spec_Attribute dimSpecAttr)
+	{
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_DIM_Dimension_Spec_AttributeValue.class, dimSpecAttr)
+				.addEqualsFilter(I_DIM_Dimension_Spec_AttributeValue.COLUMNNAME_DIM_Dimension_Spec_Attribute_ID, dimSpecAttr.getDIM_Dimension_Spec_Attribute_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_DIM_Dimension_Spec_AttributeValue.class);
 	}
 }

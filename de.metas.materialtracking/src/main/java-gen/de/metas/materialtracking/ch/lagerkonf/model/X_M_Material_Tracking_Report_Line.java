@@ -32,7 +32,7 @@ public class X_M_Material_Tracking_Report_Line extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -493067510L;
+	private static final long serialVersionUID = -937794722L;
 
     /** Standard Constructor */
     public X_M_Material_Tracking_Report_Line (Properties ctx, int M_Material_Tracking_Report_Line_ID, String trxName)
@@ -81,6 +81,43 @@ public class X_M_Material_Tracking_Report_Line extends org.compiere.model.PO imp
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	/** Set Ausprägung Merkmals-Satz.
+		@param M_AttributeSetInstance_ID 
+		Instanz des Merkmals-Satzes zum Produkt
+	  */
+	@Override
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+	}
+
+	/** Get Ausprägung Merkmals-Satz.
+		@return Instanz des Merkmals-Satzes zum Produkt
+	  */
+	@Override
+	public int getM_AttributeSetInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override

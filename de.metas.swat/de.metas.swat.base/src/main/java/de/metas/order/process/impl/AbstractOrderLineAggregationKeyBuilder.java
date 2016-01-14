@@ -1,14 +1,14 @@
-package de.metas.materialtracking.process;
+package de.metas.order.process.impl;
 
-import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
+import java.util.List;
 
-import de.metas.materialtracking.IMaterialTrackingBL;
-import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
+import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+
+import de.metas.interfaces.I_C_OrderLine;
 
 /*
  * #%L
- * de.metas.materialtracking
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -16,36 +16,29 @@ import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class M_Material_Tracking_Report_Line_Create_Or_Update extends SvrProcess
+public abstract class AbstractOrderLineAggregationKeyBuilder implements IAggregationKeyBuilder<I_C_OrderLine>
 {
-
-	private final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
-
 	@Override
-	protected void prepare()
+	public final List<String> getDependsOnColumnNames()
 	{
-		// nothing to do
+		throw new UnsupportedOperationException("getDependsOnColumnNames() is not supported in this applciation");
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	public final boolean isSame(final I_C_OrderLine item1, final I_C_OrderLine item2)
 	{
-		final I_M_Material_Tracking_Report report = getRecord(I_M_Material_Tracking_Report.class);
-
-		materialTrackingBL.createOrUpdateMaterialTrackingReportLines(report);
-		return MSG_OK;
+		return item1.getC_OrderLine_ID() == item2.getC_OrderLine_ID();
 	}
-
 }

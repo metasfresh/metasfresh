@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="ec8cf752-2238-4390-92e5-bf24750dd646">
-	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="RECORD_ID" class="java.math.BigDecimal"/>
 	<queryString>
-		<![CDATA[select * from RV_M_Material_Tracking_Report where M_Material_Tracking_Report_ID = $P{RECORD_ID};]]>
+		<![CDATA[select * from RV_M_Material_Tracking_Report where M_Material_Tracking_Report_ID = $P{RECORD_ID} order by ProductName;]]>
 	</queryString>
 	<field name="m_material_tracking_report_id" class="java.math.BigDecimal"/>
 	<field name="m_material_tracking_report_line_id" class="java.math.BigDecimal"/>
+	<field name="description" class="java.lang.String"/>
 	<field name="datedoc" class="java.sql.Timestamp"/>
 	<field name="periodname" class="java.lang.String"/>
 	<field name="productname" class="java.lang.String"/>
@@ -62,32 +63,39 @@
 				<text><![CDATA[Produkt]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="76ed996f-a233-475b-b4a0-2fa80fd85f27" x="141" y="0" width="115" height="12"/>
+				<reportElement uuid="76ed996f-a233-475b-b4a0-2fa80fd85f27" x="290" y="0" width="90" height="12"/>
 				<textElement textAlignment="Right">
 					<font size="9" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Empfangene Menge]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="fee597be-db7b-4c71-9fcd-338740f0c3ab" x="256" y="0" width="115" height="12"/>
+				<reportElement uuid="fee597be-db7b-4c71-9fcd-338740f0c3ab" x="382" y="0" width="90" height="12"/>
 				<textElement textAlignment="Right">
 					<font size="9" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Ausgelagerte Menge]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="77af1e73-0865-4fb1-a75b-e0dac29c4cee" x="371" y="0" width="115" height="12"/>
+				<reportElement uuid="77af1e73-0865-4fb1-a75b-e0dac29c4cee" x="472" y="0" width="83" height="12"/>
 				<textElement textAlignment="Right">
 					<font size="9" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Differenz]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="bdaca201-f380-4bae-87b8-4ae127a31c38" x="141" y="0" width="149" height="12"/>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Ausprägung Merkmals-Satz]]></text>
 			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="15" splitType="Stretch">
 			<textField>
-				<reportElement uuid="c246c202-77f3-485d-8837-2e91816704e4" x="371" y="1" width="115" height="12"/>
+				<reportElement uuid="c246c202-77f3-485d-8837-2e91816704e4" x="472" y="1" width="83" height="12"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
@@ -101,18 +109,25 @@
 				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="2dbd8f29-076d-43ef-a7eb-50c1d8027096" x="141" y="1" width="115" height="12"/>
+				<reportElement uuid="2dbd8f29-076d-43ef-a7eb-50c1d8027096" x="284" y="1" width="96" height="12"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyreceived}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="d13156fc-255b-4fd2-91c4-f4792ca8da70" x="256" y="1" width="115" height="12"/>
+				<reportElement uuid="d13156fc-255b-4fd2-91c4-f4792ca8da70" x="382" y="1" width="90" height="12"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyissued}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="4e85bb2f-732d-483c-bb8e-bb47b90ccb46" x="141" y="1" width="149" height="12"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

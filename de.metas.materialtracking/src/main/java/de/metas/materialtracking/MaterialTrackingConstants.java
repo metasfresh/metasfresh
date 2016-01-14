@@ -1,16 +1,10 @@
-package de.metas.order.process.impl;
-
-import java.util.List;
-
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-
-import de.metas.interfaces.I_C_OrderLine;
+package de.metas.materialtracking;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.materialtracking
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,17 +22,11 @@ import de.metas.interfaces.I_C_OrderLine;
  * #L%
  */
 
-public abstract class AbstractAggregationKeyBuilder implements IAggregationKeyBuilder<I_C_OrderLine>
+public class MaterialTrackingConstants
 {
-	@Override
-	public final List<String> getDependsOnColumnNames()
-	{
-		throw new UnsupportedOperationException("getDependsOnColumnNames() is not supported in this applciation");
-	}
+	/**
+	 * Name of the sys config that holds the InternalName of the dimension that will be used in selecting the important attributes for M_Material_Tracking_Report
+	 */
+	public static final String SYSCONFIG_M_Material_Tracking_Report_Dimension = "de.metas.materialtracking.impl.MaterialTrackingBL.M_Material_Tracking_Report_Dimension";
 
-	@Override
-	public final boolean isSame(final I_C_OrderLine item1, final I_C_OrderLine item2)
-	{
-		return item1.getC_OrderLine_ID() == item2.getC_OrderLine_ID();
-	}
 }

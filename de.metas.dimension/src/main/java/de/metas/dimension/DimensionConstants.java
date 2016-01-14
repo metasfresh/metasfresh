@@ -38,4 +38,11 @@ public final class DimensionConstants
 	 * NAme of a view that selects all values for a given attribute dimension specification. 
 	 */
 	public static String VIEW_DIM_Dimension_Spec_Attribute_AllValue = ENTITY_TYPE + ".DIM_Dimension_Spec_Attribute_AllValues";
+
+
+	/**
+	 * Placeholder for empty attribute value in dimension
+	 */
+	public static String DIM_EMPTY = "DIM_EMPTY";
+	
 }

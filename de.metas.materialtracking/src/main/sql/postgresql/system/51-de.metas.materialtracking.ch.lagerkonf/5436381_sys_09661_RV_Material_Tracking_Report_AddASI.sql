@@ -6,7 +6,7 @@ AS
 (
 	SELECT 
 		mr.M_Material_Tracking_Report_ID,
-		mrl.M_Material_Tracking_Report_Line_ID, -- in case we need it some day
+		mrl.M_Material_Tracking_Report_Line_ID, -- in case w e need it some day
 		asi.Description,
 		mr.DateDoc,
 		per.name as periodName,

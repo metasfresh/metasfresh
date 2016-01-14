@@ -144,6 +144,35 @@ public interface I_M_Material_Tracking_Report
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Jahr.
+	 * Kalenderjahr
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Year_ID (int C_Year_ID);
+
+	/**
+	 * Get Jahr.
+	 * Kalenderjahr
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Year_ID();
+
+	public org.compiere.model.I_C_Year getC_Year();
+
+	public void setC_Year(org.compiere.model.I_C_Year C_Year);
+
+    /** Column definition for C_Year_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report, org.compiere.model.I_C_Year> COLUMN_C_Year_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report, org.compiere.model.I_C_Year>(I_M_Material_Tracking_Report.class, "C_Year_ID", org.compiere.model.I_C_Year.class);
+    /** Column name C_Year_ID */
+    public static final String COLUMNNAME_C_Year_ID = "C_Year_ID";
+
+	/**
 	 * Set Belegdatum.
 	 * Datum des Belegs
 	 *

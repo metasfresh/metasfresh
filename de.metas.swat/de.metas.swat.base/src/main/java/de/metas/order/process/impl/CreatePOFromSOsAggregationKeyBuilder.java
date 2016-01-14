@@ -43,7 +43,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
-public class CreatePOFromSOsAggregationKeyBuilder extends AbstractAggregationKeyBuilder
+public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggregationKeyBuilder
 {
 	private static final String ON_MISSING_C_B_PARTNER_PRODUCT_ERROR = "ERROR";
 
