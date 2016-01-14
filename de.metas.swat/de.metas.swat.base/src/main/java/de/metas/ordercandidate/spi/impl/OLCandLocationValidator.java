@@ -33,6 +33,11 @@ import de.metas.ordercandidate.spi.IOLCandValdiator;
  * #L%
  */
 
+/**
+ *
+ * @author metas-dev <dev@metas-fresh.com>
+ * @task http://dewiki908/mediawiki/index.php/09623_old_incoice_location_taken_sometimes_in_excel_import_%28104714160405%29
+ */
 public class OLCandLocationValidator implements IOLCandValdiator
 {
 	// error messages
@@ -97,6 +102,7 @@ public class OLCandLocationValidator implements IOLCandValdiator
 
 		if (!isValid)
 		{
+			olCand.setIsError(true);
 			olCand.setErrorMsg(Services.get(IMsgBL.class).parseTranslation(ctx, msg.toString()));
 			return false;
 		}
