@@ -44,8 +44,10 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -104,7 +106,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 			// Generate invoices from them
 			final ILoggable loggable = getLoggable();
 			final EventRecorderInvoiceGenerateResult createInvoiceResults = new EventRecorderInvoiceGenerateResult(getInvoiceGenerateResult())
-					.setEventRecipientUserId(workPackage.getCreatedBy()); // Events shall be sent to workpackage creator 
+					.setEventRecipientUserId(workPackage.getCreatedBy()); // Events shall be sent to workpackage creator
 			invoiceCandBL.generateInvoices()
 					.setContext(localCtx, localTrxName)
 					.setLoggable(loggable)
@@ -121,6 +123,13 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 			// invalidate them all at once
 			invoiceCandDAO.invalidateCands(candidatesOfPackage, localTrxName);
 		}
+
+		//
+		// After invoices were generated, schedule another update invalid workpackage to update any remaining invoice candidates.
+		// This is a workaround and we do that because our testers reported that randomly, when we do mass invoicing,
+		// sometimes there are some invoice candidates invalidated.
+		Services.get(IInvoiceCandUpdateSchedulerService.class)
+				.scheduleForUpdate(InvoiceCandUpdateSchedulerRequest.of(localCtx, localTrxName));
 
 		return Result.SUCCESS;
 	}

@@ -38,6 +38,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
+import org.compiere.process.ProcessInfo.ShowProcessLogs;
 import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;
@@ -70,6 +71,11 @@ public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
 	@RunOutOfTrx
 	protected void prepare()
 	{
+		// Display process logs only if the process failed.
+		// NOTE: we do that because this process is called from window Gear and user shall only see how many ICs where enqueued, in status line,
+		// and no popup shall be displayed.
+		setShowProcessLogs(ShowProcessLogs.OnError);
+		
 		final IParams params = getParameterAsIParams();
 		this.invoicingParams = new InvoicingParams(params);
 
@@ -127,7 +133,7 @@ public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
 	{
 		final int adPInstanceId = getAD_PInstance_ID();
 		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
-
+		
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 				.setContext(getCtx(), get_TrxName())
 				.setLoggable(this)

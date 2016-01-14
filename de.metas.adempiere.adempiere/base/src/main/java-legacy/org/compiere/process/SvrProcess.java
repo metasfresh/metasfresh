@@ -51,6 +51,7 @@ import org.adempiere.util.lang.ImmutableReference;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MPInstance;
 import org.compiere.model.PO;
+import org.compiere.process.ProcessInfo.ShowProcessLogs;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -681,6 +682,17 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	protected final IRangeAwareParams getParameterAsIParams()
 	{
 		return m_pi.getParameterAsIParams();
+	}
+	
+	/**
+	 * Sets if the process logs (if any) shall be displayed to user
+	 * 
+	 * @param showProcessLogsPolicy
+	 * @see ProcessInfo#setShowProcessLogs(ShowProcessLogs)
+	 */
+	protected final void setShowProcessLogs(ShowProcessLogs showProcessLogsPolicy)
+	{
+		m_pi.setShowProcessLogs(showProcessLogsPolicy);
 	}
 
 	/**************************************************************************

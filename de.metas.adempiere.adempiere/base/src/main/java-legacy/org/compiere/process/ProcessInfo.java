@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -37,6 +38,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.MTable;
+import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -94,6 +96,9 @@ public class ProcessInfo implements Serializable
 
 	/** Serialization Info **/
 	static final long serialVersionUID = -1993220053515488725L;
+	
+	// services
+	private static final transient CLogger logger = CLogger.getCLogger(ProcessInfo.class);
 
 	/** Title of the Process/Report */
 	private String m_Title;
@@ -133,6 +138,7 @@ public class ProcessInfo implements Serializable
 
 	/** Log Info */
 	private ArrayList<ProcessInfoLog> m_logs = null;
+	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
 
 	/** Log Info */
 	private ProcessInfoParameter[] m_parameter = null;
@@ -297,6 +303,36 @@ public class ProcessInfo implements Serializable
 	}	// isTimeout
 
 	/**
+	 * Sets if the process logs (if any) shall be displayed to user
+	 * 
+	 * @param showProcessLogsPolicy
+	 */
+	public final void setShowProcessLogs(final ShowProcessLogs showProcessLogsPolicy)
+	{
+		Check.assumeNotNull(showProcessLogsPolicy, "showProcessLogsPolicy not null");
+		this.showProcessLogsPolicy = showProcessLogsPolicy;
+	}
+
+	/**
+	 * @return true if the process logs (if any) shall be displayed to user
+	 */
+	public final boolean isShowProcessLogs()
+	{
+		switch (showProcessLogsPolicy)
+		{
+			case Always:
+				return true;
+			case Never:
+				return false;
+			case OnError:
+				return isError();
+			default:
+				logger.log(Level.WARNING, "Unknown ShowProcessLogsPolicy: " + showProcessLogsPolicy + ". Considering " + ShowProcessLogs.Always);
+				return true;
+		}
+	}
+
+	/**
 	 * Set Log of Process.
 	 *
 	 * <pre>
@@ -308,10 +344,13 @@ public class ProcessInfo implements Serializable
 	 * @param html if true with HTML markup
 	 * @return Log Info
 	 */
-	public String getLogInfo(boolean html)
+	public String getLogInfo(final boolean html)
 	{
 		if (m_logs == null)
+		{
 			return "";
+		}
+		
 		//
 		final StringBuilder sb = new StringBuilder();
 		SimpleDateFormat dateFormat = DisplayType.getDateFormat(DisplayType.DateTime);
@@ -1116,5 +1155,17 @@ public class ProcessInfo implements Serializable
 		}
 		return ProcessClassInfo.of(processClass);
 	}
-
+	
+	/**
+	 * Display process logs to user policy
+	 */
+	public static enum ShowProcessLogs
+	{
+		/** Always display them */
+		Always,
+		/** Display them only if the process failed */
+		OnError,
+		/** Never display them */
+		Never,
+	};
 }   // ProcessInfo

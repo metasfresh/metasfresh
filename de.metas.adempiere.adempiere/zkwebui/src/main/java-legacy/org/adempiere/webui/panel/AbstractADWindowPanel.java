@@ -2269,12 +2269,16 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
 		if (summary != null && summary.indexOf('@') != -1)
 			pi.setSummary(Msg.parseTranslation(Env.getCtx(), summary));
 		statusBar.setStatusLine(pi.getSummary(), pi.isError(), true);
-		//	Get Log Info
-		ProcessInfoUtil.setLogFromDB(pi);
-		String logInfo = pi.getLogInfo();
-		if (logInfo.length() > 0)
-			FDialog.info(curWindowNo, this.getComponent(), Env.getHeader(ctx, curWindowNo),
-				pi.getTitle() + "<br>" + logInfo);
+		
+		// Show process logs if any
+		if (pi.isShowProcessLogs())
+		{
+			ProcessInfoUtil.setLogFromDB(pi);
+			String logInfo = pi.getLogInfo();
+			if (logInfo.length() > 0)
+				FDialog.info(curWindowNo, this.getComponent(), Env.getHeader(ctx, curWindowNo),
+					pi.getTitle() + "<br>" + logInfo);
+		}
 	}
 
 	/**

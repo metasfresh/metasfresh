@@ -375,12 +375,17 @@ public class ProcessDialog extends Window implements EventListener//, ASyncProce
 		}
 	}
 
-	private void updateUI(ProcessInfo pi) {
-		ProcessInfoUtil.setLogFromDB(pi);
-		m_messageText.append("<p><font color=\"").append(pi.isError() ? "#FF0000" : "#0000FF").append("\">** ")
-			.append(pi.getSummary())
-			.append("</font></p>");
-		m_messageText.append(pi.getLogInfo(true));
+	private void updateUI(ProcessInfo pi)
+	{
+		// Show process logs if any
+		if (pi.isShowProcessLogs())
+		{
+			ProcessInfoUtil.setLogFromDB(pi);
+			m_messageText.append("<p><font color=\"").append(pi.isError() ? "#FF0000" : "#0000FF").append("\">** ")
+				.append(pi.getSummary())
+				.append("</font></p>");
+			m_messageText.append(pi.getLogInfo(true));
+		}
 		message.setContent(m_messageText.toString());
 		
 		bOK.setLabel("");		

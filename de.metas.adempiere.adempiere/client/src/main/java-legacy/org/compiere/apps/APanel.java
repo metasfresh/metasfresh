@@ -3133,13 +3133,16 @@ public class APanel extends CPanel
 
 			updateStatusLine(pi);
 
-			// Get Log Info
-			ProcessInfoUtil.setLogFromDB(pi);
-
-			final String logInfo = pi.getLogInfo();
-			if (logInfo.length() > 0)
+			// Show process logs if any
+			if (pi.isShowProcessLogs())
 			{
-				ADialog.info(m_curWindowNo, this, Env.getHeader(m_ctx, m_curWindowNo), pi.getTitle(), logInfo);	// clear text
+				ProcessInfoUtil.setLogFromDB(pi);
+	
+				final String logInfo = pi.getLogInfo();
+				if (logInfo.length() > 0)
+				{
+					ADialog.info(m_curWindowNo, this, Env.getHeader(m_ctx, m_curWindowNo), pi.getTitle(), logInfo);	// clear text
+				}
 			}
 		}
 		else

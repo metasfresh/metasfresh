@@ -126,30 +126,37 @@ public class ProcessInfoUtil
 	 *	Set Log of Process.
 	 * 	@param pi process info
 	 */
-	public static void setLogFromDB (ProcessInfo pi)
+	public static void setLogFromDB(final ProcessInfo pi)
 	{
-	//	s_log.fine("setLogFromDB - AD_PInstance_ID=" + pi.getAD_PInstance_ID());
-		String sql = "SELECT Log_ID, P_ID, P_Date, P_Number, P_Msg "
-			+ "FROM AD_PInstance_Log "
-			+ "WHERE AD_PInstance_ID=? "
-			+ "ORDER BY Log_ID";
+		final String sql = "SELECT Log_ID, P_ID, P_Date, P_Number, P_Msg "
+				+ "FROM AD_PInstance_Log "
+				+ "WHERE AD_PInstance_ID=? "
+				+ "ORDER BY Log_ID";
 
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try
 		{
-			PreparedStatement pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, pi.getAD_PInstance_ID());
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			while (rs.next())
-			//	int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg
-				pi.addLog (rs.getInt(1), rs.getInt(2), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
-			rs.close();
-			pstmt.close();
+			{
+				// int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg
+				pi.addLog(rs.getInt(1), rs.getInt(2), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
+			}
 		}
 		catch (SQLException e)
 		{
 			s_log.log(Level.SEVERE, "setLogFromDB", e);
 		}
-	}	//	getLogFromDB
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
+		}
+	}	// getLogFromDB
 
 	/**
 	 *  Create Process Log

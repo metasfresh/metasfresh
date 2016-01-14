@@ -54,13 +54,21 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_AD_Process;
 
 /**
- * Dialog to Start process. Displays information about the process and lets the user decide to start it and displays results (optionally print them). Calls ProcessCtl to execute.
+ *	Dialog to Start process.
+ *	Displays information about the process
+ *		and lets the user decide to start it
+ *  	and displays results (optionally print them).
+ *  Calls ProcessCtl to execute.
  *
  * @author Jorg Janke
  * @version $Id: ProcessDialog.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
- * @author Low Heng Sin - Merge process parameter dialog into process dialog.
- * @author arboleda - globalqss - Implement ShowHelp option on processes and reports
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1893525 ] ProcessDialog: Cannot select the text from text field <li>BF [ 1963128 ] Running a process w/o trl should display an error
+ *  @author		Low Heng Sin
+ *  - Merge process parameter dialog into process dialog.
+ *  @author     arboleda - globalqss
+ *  - Implement ShowHelp option on processes and reports
+ *  @author		Teo Sarca, SC ARHIPAC SERVICE SRL
+ *  				<li>BF [ 1893525 ] ProcessDialog: Cannot select the text from text field
+ *  				<li>BF [ 1963128 ] Running a process w/o trl should display an error
  */
 public class ProcessDialog extends CFrame
 		implements ActionListener, ASyncProcess
@@ -445,14 +453,19 @@ public class ProcessDialog extends CFrame
 	@Override
 	public void unlockUI(final ProcessInfo pi)
 	{
-		//
-		// Update message
-		ProcessInfoUtil.setLogFromDB(pi);
 		final StringBuilder m_messageText = new StringBuilder();
-		m_messageText.append("<p><font color=\"").append(pi.isError() ? "#FF0000" : "#0000FF").append("\">** ")
-				.append(pi.getSummary())
-				.append("</font></p>");
-		m_messageText.append(pi.getLogInfo(true));
+
+		// Show process logs if any
+		if (pi.isShowProcessLogs())
+		{
+			//
+			// Update message
+			ProcessInfoUtil.setLogFromDB(pi);
+			m_messageText.append("<p><font color=\"").append(pi.isError() ? "#FF0000" : "#0000FF").append("\">** ")
+					.append(pi.getSummary())
+					.append("</font></p>");
+			m_messageText.append(pi.getLogInfo(true));
+		}
 		resultMessagePane.setText(m_messageText.toString());
 		resultMessagePane.moveCaretToEnd(); // scroll down
 		// message.setCaretPosition(message.getDocument().getLength()); // scroll down

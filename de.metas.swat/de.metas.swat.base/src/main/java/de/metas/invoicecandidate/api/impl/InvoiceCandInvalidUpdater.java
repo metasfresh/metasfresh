@@ -210,7 +210,7 @@ import de.metas.lock.api.ILock;
 		//
 		// Log the result
 		final ILoggable loggable = getLoggable();
-		loggable.addLog("Result: {0}", result.getSummary());
+		loggable.addLog("Update invalid result: {0}", result.getSummary());
 	}
 
 	private final void updateInvalid(final I_C_Invoice_Candidate ic)
