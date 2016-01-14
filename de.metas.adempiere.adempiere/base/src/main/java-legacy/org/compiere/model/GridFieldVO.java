@@ -34,6 +34,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.CLogger;
+import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
@@ -69,6 +70,11 @@ public class GridFieldVO implements Serializable
 		// Only those fields which entity type allows to be displayed in UI
 		// NOTE: instead of filtering we will, later, set IsDisplayed and IsDisplayedGrid flags.
 		// sql.append(" AND (").append(EntityTypesCache.instance.getDisplayedInUIEntityTypeSQLWhereClause("FieldEntityType")).append(")");
+		
+		if (!baseLanguage)
+		{
+			sql.append(" AND AD_Language=").append(DB.TO_STRING(Env.getAD_Language(ctx)));
+		}
 		
 		sql.append(" ORDER BY IsDisplayed DESC, SeqNo");
 		
