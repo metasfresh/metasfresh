@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent</artifactId>
-		<version>1.0_UAT-SNAPSHOT</version>
+		<version>1.0_IT-SNAPSHOT</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
