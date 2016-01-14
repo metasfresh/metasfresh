@@ -30,7 +30,6 @@ CREATE TABLE report.saldobilanz_Report
 WITH (
 	OIDS=FALSE
 );
-ALTER TABLE report.saldobilanz_Report OWNER TO adempiere;
 
 CREATE FUNCTION report.saldobilanz_Report(IN Date Date, IN defaultAcc character varying, IN showCurrencyExchange character varying) RETURNS SETOF report.saldobilanz_Report AS
 $BODY$

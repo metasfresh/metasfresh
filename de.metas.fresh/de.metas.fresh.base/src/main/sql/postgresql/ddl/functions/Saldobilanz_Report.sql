@@ -146,5 +146,3 @@ ORDER BY
 	parentValue1, parentValue2, parentValue3, value 
 $BODY$
 LANGUAGE sql STABLE;
-ALTER FUNCTION report.saldobilanz_Report(IN Date, IN character varying) OWNER TO adempiere;
-
