@@ -1,4 +1,4 @@
-package de.metas.callout;
+package de.metas.banking.callout;
 
 /*
  * #%L

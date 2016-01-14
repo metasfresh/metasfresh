@@ -612,26 +612,23 @@ public final class MPayment extends X_C_Payment
 
 		// Organization
 		//
-
 		// [ adempiere-Bugs-1885417 ] Validate BP on Payment Prepare or BeforeSave
 		// there is bp and (invoice or order)
 		if (getC_BPartner_ID() != 0 && (getC_Invoice_ID() != 0 || getC_Order_ID() != 0))
 		{
 			if (getC_Invoice_ID() != 0)
 			{
-				MInvoice inv = new MInvoice(getCtx(), getC_Invoice_ID(), get_TrxName());
-				if (inv.getC_BPartner_ID() != getC_BPartner_ID())
-				{
-					throw new AdempiereException("BP different from BP Invoice");
-				}
+				final I_C_Invoice inv = getC_Invoice();
+				Check.errorIf(inv.getC_BPartner_ID() != getC_BPartner_ID(),
+						"Payment {0} has C_BPartner_ID={1}, but invoice {2} has C_BPartner_ID={3}",
+						this, getC_BPartner_ID(), inv, inv.getC_BPartner_ID());
 			}
 			if (getC_Order_ID() != 0)
 			{
-				MOrder ord = new MOrder(getCtx(), getC_Order_ID(), get_TrxName());
-				if (ord.getC_BPartner_ID() != getC_BPartner_ID())
-				{
-					throw new AdempiereException("BP different from BP Order");
-				}
+				final I_C_Order ord = getC_Order();
+				Check.errorIf(ord.getC_BPartner_ID() != getC_BPartner_ID(),
+						"Payment {0} has C_BPartner_ID={1}, but order {2} has C_BPartner_ID={3}",
+						this, getC_BPartner_ID(), ord, ord.getC_BPartner_ID());
 			}
 		}
 

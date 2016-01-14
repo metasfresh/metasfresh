@@ -10,12 +10,12 @@ package de.metas.banking.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,9 +34,9 @@ import de.metas.banking.service.impl.BankingBL;
 
 /**
  * Banking module activator
- * 
+ *
  * @author ts
- * 
+ *
  */
 public class Banking extends AbstractModuleInterceptor
 {
@@ -77,7 +77,8 @@ public class Banking extends AbstractModuleInterceptor
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
-		calloutsRegistry.registerAnnotatedCallout(de.metas.callout.C_BankStatement.instance);
+		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatement.instance);
+		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.payment.callout.C_PaySelectionLine.instance);
 	}
 
 

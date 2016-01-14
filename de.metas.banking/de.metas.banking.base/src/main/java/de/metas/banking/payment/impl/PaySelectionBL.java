@@ -10,30 +10,34 @@ package de.metas.banking.payment.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.X_C_BP_BankAccount;
 
+import de.metas.adempiere.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
@@ -116,7 +120,7 @@ public class PaySelectionBL implements IPaySelectionBL
 			final I_C_Invoice invoice = psl.getC_Invoice();
 			bankStatementLineRef.setC_Invoice(invoice);
 			bankStatementLineRef.setC_Currency_ID(invoice.getC_Currency_ID());
-			
+
 			//
 			// Get pay schedule line amounts:
 			final boolean isReceipt;
@@ -167,6 +171,62 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
+	public void updateFromInvoice(final org.compiere.model.I_C_PaySelectionLine psl)
+	{
+		if (psl.getC_Invoice_ID() <= 0)
+		{
+			return; // nothing to do yet, but as C_PaySelectionLine.C_Invoice_ID is mandatory, we only need to make sure this method is eventually called from a model interceptor
+		}
+
+		final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+
+		final I_C_PaySelectionLine pslExt = InterfaceWrapperHelper.create(psl, I_C_PaySelectionLine.class);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(pslExt);
+
+		final int partnerID = pslExt.getC_Invoice().getC_BPartner_ID();
+		pslExt.setC_BPartner_ID(partnerID);
+
+		final String paymentRule = pslExt.getPaymentRule();
+
+		// task 09500 get the currency from the account of the selection header
+		// this is safe because the columns are mandatory
+		final int currencyID = pslExt.getC_PaySelection().getC_BP_BankAccount().getC_Currency_ID();
+
+		final List<I_C_BP_BankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(ctx, partnerID, currencyID);
+
+		if (!bankAccts.isEmpty())
+		{
+			int primaryAcct = 0;
+			int secondaryAcct = 0;
+
+			for (final I_C_BP_BankAccount account : bankAccts)
+			{
+				final int accountID = account.getC_BP_BankAccount_ID();
+				if (accountID > 0)
+				{
+					if (account.getBPBankAcctUse().equals(X_C_BP_BankAccount.BPBANKACCTUSE_Both))
+					{
+						secondaryAcct = accountID;
+					}
+					else if (account.getBPBankAcctUse().equals(paymentRule))
+					{
+						primaryAcct = accountID;
+						break;
+					}
+				}
+			}
+			if (primaryAcct != 0)
+			{
+				pslExt.setC_BP_BankAccount_ID(primaryAcct);
+			}
+			else if (secondaryAcct != 0)
+			{
+				pslExt.setC_BP_BankAccount_ID(secondaryAcct);
+			}
+		}
+	}
+
+	@Override
 	public IPaySelectionUpdater newPaySelectionUpdater()
 	{
 		return new PaySelectionUpdater();
@@ -199,18 +259,25 @@ public class PaySelectionBL implements IPaySelectionBL
 			return null;
 		}
 
-		final I_C_Payment payment = createPayment(line);
-		line.setC_Payment(payment);
-		InterfaceWrapperHelper.save(line);
+		try
+		{
+			final I_C_Payment payment = createPayment(line);
+			line.setC_Payment(payment);
+			InterfaceWrapperHelper.save(line);
 
-		return payment;
+			return payment;
+		}
+		catch (Exception e)
+		{
+			throw new AdempiereException("Caught " + e + " while trying to create a payment for C_PaySelectionLine " + line, e);
+		}
 	}
 
 	/**
 	 * Generates a payment for given pay selection line. The payment will be also processed.
-	 * 
-	 * NOTE: this method is  NOT checking if the payment was already created or it's not needed.
-	 * 
+	 *
+	 * NOTE: this method is NOT checking if the payment was already created or it's not needed.
+	 *
 	 * @param line
 	 * @return generated payment.
 	 */
@@ -237,16 +304,17 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public void linkBankStatementLine(final I_C_PaySelectionLine psl, final org.compiere.model.I_C_BankStatementLine bankStatementLine, final de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef)
+	public void linkBankStatementLine(final I_C_PaySelectionLine psl, final org.compiere.model.I_C_BankStatementLine bankStatementLine,
+			final de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef)
 	{
 		Check.assumeNotNull(bankStatementLine, "bankStatementLine not null");
 		Check.assume(bankStatementLine.getC_BankStatementLine_ID() > 0, "bankStatementLine is saved: {0}", bankStatementLine);
-		
+
 		psl.setC_BankStatementLine(bankStatementLine);
 		psl.setC_BankStatementLine_Ref(bankStatementLineRef);
 		InterfaceWrapperHelper.save(psl);
 	}
-	
+
 	@Override
 	public void unlinkBankStatementLine(final I_C_PaySelectionLine psl)
 	{
