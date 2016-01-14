@@ -1,7 +1,7 @@
 
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying);
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying) CASCADE;
 DROP TABLE IF EXISTS report.saldobilanz_Report CASCADE;
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying);
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying) CASCADE;
 
 
 CREATE TABLE report.saldobilanz_Report

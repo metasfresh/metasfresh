@@ -570,9 +570,12 @@ public class OLCandBL implements IOLCandBL
 		else
 		{
 			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-
+			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+			
 			final int bpartnerID = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
-			final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, bpartnerID, true, trxName);
+			final boolean soTrx = true;
+			
+			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(ctx, bpartnerID, soTrx, trxName);
 			return pricingSystemId;
 		}
 	}

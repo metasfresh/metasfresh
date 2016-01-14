@@ -27,7 +27,9 @@ import java.util.logging.Level;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.tax.api.ITaxBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
@@ -1004,6 +1006,8 @@ public class MMatchPO extends X_M_MatchPO
 				//	Different currency
 				if (oLine.getC_Currency_ID() != as.getC_Currency_ID())
 				{
+					final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+					
 					final I_C_Order order = oLine.getC_Order();
 					Timestamp dateAcct = order.getDateAcct();
 					//get costing method for product
@@ -1014,14 +1018,21 @@ public class MMatchPO extends X_M_MatchPO
 					{
 						dateAcct = inOut.getDateAcct(); 	//Movement Date
 					}
+					
 					//
-					BigDecimal rate = MConversionRate.getRate(
-						order.getC_Currency_ID(), as.getC_Currency_ID(),
-						dateAcct, order.getC_ConversionType_ID(),
-						oLine.getAD_Client_ID(), oLine.getAD_Org_ID());
+					final BigDecimal rate = currencyConversionBL.getRate(
+						order.getC_Currency_ID(), 
+						as.getC_Currency_ID(),
+						dateAcct, 
+						order.getC_ConversionType_ID(),
+						oLine.getAD_Client_ID(), 
+						oLine.getAD_Org_ID());
 					if (rate == null)
 					{
-						return "Purchase Order not convertible - " + as.getName();
+						Check.errorIf(rate == null, 
+								"Unable to convert from currency {0} (purchase order {1}) to currency {2} (accounting schema {3}), ", 
+								order.getC_Currency().getCurSymbol(), order.getDocumentNo(), as.getC_Currency().getCurSymbol(), as.getName());						
+						return "Purchase Order not convertible - " + as.getName(); // won't usually be reached
 					}
 					poCost = poCost.multiply(rate);
 					if (poCost.scale() > as.getCostingPrecision())

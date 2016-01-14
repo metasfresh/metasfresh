@@ -39,6 +39,7 @@ import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -109,20 +110,29 @@ public class C_Print_Job_Instructions
 				jobInstructions.getAD_Org_ID());
 		if (notifyUser)
 		{
+			final int printJobInstructionsID = jobInstructions.getC_Print_Job_Instructions_ID();
+			final int userToPrintID = jobInstructions.getAD_User_ToPrint_ID();
+			final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
+			final String trxName = InterfaceWrapperHelper.getTrxName(jobInstructions);
+
 			// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
-			final String trxName = InterfaceWrapperHelper.getTrxName(jobInstructions);
+
 			trxManager.getTrxListenerManagerOrAutoCommit(trxName)
 					.registerListener(new TrxListenerAdapter()
 					{
 						@Override
 						public void afterCommit(final ITrx trx)
 						{
+							final Pair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords = reloadRecords(ctx, printJobInstructionsID, userToPrintID);
+							final I_C_Print_Job_Instructions printJobInstructionsReloaded = reloadRecords.getFirst();
+							final I_AD_User userToPrintReloaded = reloadRecords.getSecond();
+
 							notificationBL.notifyUser(
-									jobInstructions.getAD_User_ToPrint(),
+									userToPrintReloaded,
 									MSG_CLIENT_REPORTS_PRINT_ERROR,
-									jobInstructions.getErrorMsg(),
-									TableRecordReference.of(jobInstructions));
+									printJobInstructionsReloaded.getErrorMsg(),
+									TableRecordReference.of(printJobInstructionsReloaded));
 						}
 					});
 
@@ -217,17 +227,9 @@ public class C_Print_Job_Instructions
 										final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 										final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-										// reload the records. Note that we don't want to hold a reference to a record from the model interceptor method in this callable instance.
-										final I_AD_User userToPrintReloaded =
-												InterfaceWrapperHelper.create(ctx,
-														userToPrintID,
-														I_AD_User.class,
-														ITrx.TRXNAME_None);
-										final I_C_Print_Job_Instructions printJobInstructionsReloaded =
-												InterfaceWrapperHelper.create(ctx,
-														printJobInstructionsID,
-														I_C_Print_Job_Instructions.class,
-														ITrx.TRXNAME_None);
+										final Pair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords = reloadRecords(ctx, printJobInstructionsID, userToPrintID);
+										final I_C_Print_Job_Instructions printJobInstructionsReloaded = reloadRecords.getFirst();
+										final I_AD_User userToPrintReloaded = reloadRecords.getSecond();
 
 										if (status.equals(printJobInstructionsReloaded.getStatus()))
 										{
@@ -249,6 +251,33 @@ public class C_Print_Job_Instructions
 								C_Print_Job_Instructions.class.getSimpleName());
 					}
 				});
+	}
+
+	/**
+	 * Reload the records. This method is supposed to be called from within the after-trx-commit listeners.<br>
+	 * Note that we don't want to hold a reference to a record from the model interceptor method in there.
+	 * 
+	 * @param ctx
+	 * @param printJobInstructionsID
+	 * @param userToPrintID
+	 * @return
+	 */
+	private Pair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords(final Properties ctx,
+			final int printJobInstructionsID,
+			final int userToPrintID)
+	{
+		final I_C_Print_Job_Instructions printJobInstructionsReloaded =
+				InterfaceWrapperHelper.create(ctx,
+						printJobInstructionsID,
+						I_C_Print_Job_Instructions.class,
+						ITrx.TRXNAME_None);
+
+		final I_AD_User userToPrintReloaded =
+				InterfaceWrapperHelper.create(ctx,
+						userToPrintID,
+						I_AD_User.class,
+						ITrx.TRXNAME_None);
+		return new Pair<I_C_Print_Job_Instructions, I_AD_User>(printJobInstructionsReloaded, userToPrintReloaded);
 	}
 
 	private void logDocOutbound(final I_C_Print_Job_Line line, final I_AD_User userToPrint)

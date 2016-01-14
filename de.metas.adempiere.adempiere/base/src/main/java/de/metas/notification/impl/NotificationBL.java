@@ -7,7 +7,6 @@ import java.util.Set;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.user.api.IUserBL;
-import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -17,7 +16,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.EMail;
-import org.compiere.util.Env;
 
 import de.metas.notification.IMailBL;
 import de.metas.notification.IMailBL.IMailbox;
@@ -119,21 +117,21 @@ public class NotificationBL implements INotificationBL
 			final ITableRecordReference referencedRecord)
 	{
 		final IMailBL mailBL = Services.get(IMailBL.class);
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
 		final IClientDAO clientDAO = Services.get(IClientDAO.class);
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(recipient);
 
-		final de.metas.adempiere.model.I_AD_User sender = userDAO.retrieveUser(ctx, Env.getAD_User_ID(ctx));
-		final I_AD_Client adClient = clientDAO.retriveClient(ctx, sender.getAD_Client_ID());
 		final String subject = msgBL.getMsg(ctx, adMessage);
 
-		final IMailbox mailBox = mailBL.findMailBox(adClient, sender.getAD_Org_ID(),
+		// final de.metas.adempiere.model.I_AD_User sender = userDAO.retrieveUser(ctx, Env.getAD_User_ID(ctx));
+		final I_AD_Client adClient = clientDAO.retriveClient(ctx);
+
+		final IMailbox mailBox = mailBL.findMailBox(adClient, recipient.getAD_Org_ID(),
 				0, // AD_Process_ID
 				null, // customType
-				sender);
-		Check.assumeNotNull(mailBox, "IMailbox for adClient={0}, sender={1}", adClient, sender);
+				null); // sender
+		Check.assumeNotNull(mailBox, "IMailbox for adClient={0}, AD_Org_ID={1}", adClient, recipient.getAD_Org_ID());
 
 		final StringBuilder mailBody = new StringBuilder();
 		mailBody.append("\n" + messageText + "\n");
