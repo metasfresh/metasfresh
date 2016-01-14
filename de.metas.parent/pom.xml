@@ -190,13 +190,13 @@
 				<groupId>de.metas.handlingunits</groupId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<artifactId>de.metas.document.refid</artifactId>
 				<groupId>de.metas.document</groupId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<artifactId>de.metas.payment.esr</artifactId>
 				<groupId>de.metas.payment.esr</groupId>
@@ -208,19 +208,19 @@
 				<groupId>de.metas.monitoring</groupId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<artifactId>de.metas.dimension</artifactId>
 				<groupId>de.metas.dimension</groupId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<artifactId>de.metas.contracts</artifactId>
 				<groupId>de.metas.contracts</groupId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<artifactId>de.metas.materialtracking</artifactId>
 				<groupId>de.metas.materialtracking</groupId>
@@ -238,7 +238,7 @@
 				<groupId>de.metas.async</groupId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<artifactId>de.metas.commission.client</artifactId>
 				<groupId>de.metas.commission</groupId>
@@ -278,6 +278,12 @@
 			</dependency>
 
 			<dependency>
+				<groupId>de.metas.adempiere.ait</groupId>
+				<artifactId>de.metas.adempiere.ait</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
 				<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 				<groupId>de.metas.adempiere.adempiere</groupId>
 				<version>${project.version}</version>
@@ -313,7 +319,7 @@
 				<groupId>de.metas.adempiere.adempiere</groupId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<artifactId>de.metas.util</artifactId>
 				<groupId>de.metas.util</groupId>
@@ -1000,7 +1006,7 @@
 						<configuration>
 							<outputDirectory>${project.build.directory}/jasper</outputDirectory>
 						</configuration>
-						
+
 						<dependencies>
 							<dependency>
 								<groupId>org.codehaus.mojo</groupId>
@@ -1061,7 +1067,7 @@
 								<artifactId>spring-beans</artifactId>
 								<version>3.0.6.RELEASE</version>
 							</dependency>
-							
+
 						</dependencies>
 						<executions>
 							<execution>
