@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_page_header" pageWidth="534" pageHeight="842" columnWidth="534" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout/report" uuid="3e37de0f-dc4b-413d-8d15-10a99f5ce3f9">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -29,16 +29,6 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 	<field name="sr_fax" class="java.lang.String"/>
 	<field name="sr_email" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
-	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -81,7 +71,7 @@ $P{ad_language}.equals("it_CH")?"Datum":
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="4f009dc5-6a53-426a-97ae-f8872807f0a9" key="textField-6" x="332" y="0" width="133" height="11"/>

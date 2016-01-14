@@ -9,7 +9,10 @@
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="RECORD_ID" class="java.lang.Integer"/>
-	<parameter name="ad_language" class="java.lang.String"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT 	*
 FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD_ID}, $P{ad_language} )
@@ -29,36 +32,6 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 	<field name="sr_fax" class="java.lang.String"/>
 	<field name="sr_email" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
-	<variable name="BP_Value" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Reference" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Externe Belegnummer":
-$P{ad_language}.equals("fr_CH")?"Référence":
-$P{ad_language}.equals("it_CH")?"Externe Belegnummer":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Externe Belegnummer":
-$P{ad_language}.equals("fr_CH")?"Référence":
-$P{ad_language}.equals("it_CH")?"Externe Belegnummer":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -75,7 +48,7 @@ $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement uuid="3c4dcef5-1224-4889-ab28-77d4bfd15e5f" key="textField-3" x="172" y="139" width="91" height="13"/>
@@ -118,7 +91,7 @@ $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Reference}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Reference}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="ad7e6470-0901-4b6a-84c6-57356f52df4f" key="textField-6" x="37" y="127" width="136" height="13" forecolor="#000000"/>
@@ -146,7 +119,7 @@ $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{BP_Value}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{BP_Value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="32c99b4e-6dee-45af-bfcb-2766e20b30ba" key="textField-1" x="172" y="127" width="91" height="13" forecolor="#000000"/>

@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="dffd0ce7-f5c2-4d5c-8553-9b258e5080c6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -130,22 +130,6 @@ ORDER BY
 	<field name="c_order_id" class="java.math.BigDecimal"/>
 	<field name="tag" class="java.lang.String"/>
 	<field name="position" class="java.lang.Integer"/>
-	<variable name="PaymentCond" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de") ? "Zahlungsbedingungen" :
-$P{ad_language}.equals("fr_CH") ? "Conditions de paiement" :
-$P{ad_language}.equals("it_CH") ? "Zahlungsbedingungen" :
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de") ? "Zahlungsbedingungen" :
-$P{ad_language}.equals("fr_CH") ? "Conditions de paiement" :
-$P{ad_language}.equals("it_CH") ? "Zahlungsbedingungen" :
-""]]></initialValueExpression>
-	</variable>
-	<variable name="PaymentRule" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de") ? "Zahlungsweise" :
-$P{ad_language}.equals("fr_CH") ? "forme de paiement" :
-$P{ad_language}.equals("it_CH") ? "Zahlungsweise" :
-""]]></variableExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -173,8 +157,8 @@ $P{ad_language}.equals("it_CH") ? "Zahlungsweise" :
 				<textElement markup="html">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{tag}.equals("cond") ? $V{PaymentCond}+": ": "") +
-($F{tag}.equals("prule") ? $V{PaymentRule}+": ": "") +
+				<textFieldExpression><![CDATA[($F{tag}.equals("cond") ? $R{PaymentCond}+": ": "") +
+($F{tag}.equals("prule") ? $R{PaymentRule}+": ": "") +
 $F{textleft}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -190,8 +174,8 @@ $F{textleft}]]></textFieldExpression>
 				<textElement textAlignment="Center" markup="html">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{tag}.equals("cond") ? $V{PaymentCond}+": " : "") +
-($F{tag}.equals("prule") ? $V{PaymentRule}+": " : "") +
+				<textFieldExpression><![CDATA[($F{tag}.equals("cond") ? $R{PaymentCond}+": " : "") +
+($F{tag}.equals("prule") ? $R{PaymentRule}+": " : "") +
 $F{textcenter}]]></textFieldExpression>
 			</textField>
 		</band>

@@ -829,7 +829,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	// metas: begin
 	public final String getTableName()
 	{
-		return m_pi.getTableName();
+		return m_pi.getTableNameOrNull();
 	}
 
 	protected final <T> IQueryBuilder<T> retrieveSelectedRecordsQueryBuilder(final Class<T> recordType)

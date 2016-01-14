@@ -161,7 +161,7 @@ public class ReceiptScheduleHUDocumentFactory implements IHUDocumentFactory
 	{
 		Check.assumeNotNull(pi, "process info not null");
 
-		final String tableName = pi.getTableName();
+		final String tableName = pi.getTableNameOrNull();
 		assumeTableName(tableName);
 
 		final Iterator<I_M_ReceiptSchedule> schedules = retrieveReceiptSchedules(pi);

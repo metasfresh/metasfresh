@@ -50,16 +50,6 @@ WHERE
 	<field name="dateinvoiced" class="java.sql.Timestamp"/>
 	<field name="bp_value" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
-	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -102,7 +92,7 @@ $P{ad_language}.equals("it_CH")?"Datum":
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="4f009dc5-6a53-426a-97ae-f8872807f0a9" key="textField-6" x="332" y="0" width="133" height="11"/>

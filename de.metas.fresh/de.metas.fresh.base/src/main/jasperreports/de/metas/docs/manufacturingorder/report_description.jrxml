@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="76495d90-b1ae-4c08-8670-90019f94d24a">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/manufacturingorder/report" uuid="76495d90-b1ae-4c08-8670-90019f94d24a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.331000000000001"/>
@@ -81,55 +81,6 @@ WHERE
 	<field name="receipt" class="java.lang.String"/>
 	<field name="movementdate" class="java.sql.Timestamp"/>
 	<field name="parcell" class="java.lang.String"/>
-	<variable name="CustomerNo" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals( "de_CH" ) ? "Geschäftspartner-Nr." :
-$P{ad_language}.equals( "fr_CH" ) ? "Geschäftspartner-Nr." :
-$P{ad_language}.equals( "it_CH" ) ? "Geschäftspartner-Nr." :
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Date" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals( "de_CH" ) ? "Datum" :
-$P{ad_language}.equals( "fr_CH" ) ? "Datum" :
-$P{ad_language}.equals( "it_CH" ) ? "Datum" :
-""]]></initialValueExpression>
-	</variable>
-	<variable name="SalesRep" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals( "de_CH" ) ? "Ansprechpartner" :
-$P{ad_language}.equals( "fr_CH" ) ? "Ansprechpartner" :
-$P{ad_language}.equals( "it_CH" ) ? "Ansprechpartner" :
-""]]></initialValueExpression>
-	</variable>
-	<variable name="ShipmentDate" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals( "de_CH" ) ? "Anlieferung" :
-$P{ad_language}.equals( "fr_CH" ) ? "Anlieferung" :
-$P{ad_language}.equals( "it_CH" ) ? "Anlieferung" :
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Shipment" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals( "de_CH" ) ? "Lieferbestätigung" :
-$P{ad_language}.equals( "fr_CH" ) ? "Lieferbestätigung" :
-$P{ad_language}.equals( "it_CH" ) ? "Lieferbestätigung" :
-""]]></initialValueExpression>
-	</variable>
-	<variable name="LotNo" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals( "de_CH" ) ? "Karotten-ID" :
-$P{ad_language}.equals( "fr_CH" ) ? "Karotten-ID" :
-$P{ad_language}.equals( "it_CH" ) ? "Karotten-ID" :
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Parcell" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.equals( "de_CH" ) ? "Parzelle" :
-$P{ad_language}.equals( "fr_CH" ) ? "Parzelle" :
-$P{ad_language}.equals( "it_CH" ) ? "Parzelle" :
-""]]></initialValueExpression>
-	</variable>
-	<variable name="DocNo" class="java.lang.String">
-		<variableExpression><![CDATA[]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals( "de_CH" ) ? "Waschprobe" :
-$P{ad_language}.equals( "fr_CH" ) ? "Waschprobe" :
-$P{ad_language}.equals( "it_CH" ) ? "Waschprobe" :
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -174,7 +125,7 @@ $P{ad_language}.equals( "it_CH" ) ? "Waschprobe" :
 				<textElement textAlignment="Left">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-1" x="169" y="127" width="120" height="13" forecolor="#000000"/>
@@ -185,7 +136,7 @@ $P{ad_language}.equals( "it_CH" ) ? "Waschprobe" :
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
@@ -202,7 +153,7 @@ $P{ad_language}.equals( "it_CH" ) ? "Waschprobe" :
 				<textElement textAlignment="Left">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{CustomerNo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{CustomerNo}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="c92f9276-6317-4bdd-9067-12af4231a75e" key="textField-6" x="37" y="127" width="133" height="13" forecolor="#000000"/>
@@ -213,9 +164,9 @@ $P{ad_language}.equals( "it_CH" ) ? "Waschprobe" :
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{DocNo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{DocNo}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="544c4066-f2ba-46d3-9659-0492702b8ba2" key="textField-5" x="309" y="139" width="89" height="13"/>
@@ -228,7 +179,7 @@ $P{ad_language}.equals( "it_CH" ) ? "Waschprobe" :
 				<textElement textAlignment="Left">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{SalesRep}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{SalesRep}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="397" y="139" width="150" height="13"/>
@@ -252,9 +203,9 @@ $P{ad_language}.equals( "it_CH" ) ? "Waschprobe" :
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{ShipmentDate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{ShipmentDate}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="c92f9276-6317-4bdd-9067-12af4231a75e" key="textField-6" x="37" y="175" width="133" height="13" forecolor="#000000"/>
@@ -265,9 +216,9 @@ $P{ad_language}.equals( "it_CH" ) ? "Waschprobe" :
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Shipment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Shipment}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy HH.mm" isBlankWhenNull="true">
 				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="169" y="163" width="120" height="13"/>
@@ -304,9 +255,9 @@ $P{ad_language}.equals( "it_CH" ) ? "Waschprobe" :
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Parcell}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Parcell}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="c92f9276-6317-4bdd-9067-12af4231a75e" key="textField-6" x="309" y="163" width="89" height="13" forecolor="#000000"/>
@@ -317,9 +268,9 @@ $P{ad_language}.equals( "it_CH" ) ? "Waschprobe" :
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{LotNo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{LotNo}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="397" y="163" width="150" height="13"/>

@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="62"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -34,116 +34,6 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
-	<variable name="Unit" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Einheit":
-$P{ad_language}.equals("fr_CH")?"Unité":
-$P{ad_language}.equals("it_CH")?"Einheit":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Einheit":
-$P{ad_language}.equals("fr_CH")?"Unité":
-$P{ad_language}.equals("it_CH")?"Einheit":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Attributes" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Merkmale":
-$P{ad_language}.equals("fr_CH")?"Spécifications":
-$P{ad_language}.equals("it_CH")?"Merkmale":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Merkmale":
-$P{ad_language}.equals("fr_CH")?"Spécifications":
-$P{ad_language}.equals("it_CH")?"Merkmale":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Amount" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Betrag":
-$P{ad_language}.equals("fr_CH")?"Montant":
-$P{ad_language}.equals("it_CH")?"Betrag":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Betrag":
-$P{ad_language}.equals("fr_CH")?"Montant":
-$P{ad_language}.equals("it_CH")?"Betrag":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="SubTotal" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Zwischensumme":
-$P{ad_language}.equals("fr_CH")?"Sous-total":
-$P{ad_language}.equals("it_CH")?"Zwischensumme":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Zwischensumme":
-$P{ad_language}.equals("fr_CH")?"Sous-total":
-$P{ad_language}.equals("it_CH")?"Zwischensumme":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Carry" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Übertrag":
-$P{ad_language}.equals("fr_CH")?"Report":
-$P{ad_language}.equals("it_CH")?"Übertrag":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Übertrag":
-$P{ad_language}.equals("fr_CH")?"Report":
-$P{ad_language}.equals("it_CH")?"Übertrag":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Price" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Preis":
-$P{ad_language}.equals("fr_CH")?"Prix":
-$P{ad_language}.equals("it_CH")?"Preis":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Preis":
-$P{ad_language}.equals("fr_CH")?"Prix":
-$P{ad_language}.equals("it_CH")?"Preis":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Pack_Inst" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Packvorschrift":
-$P{ad_language}.equals("fr_CH")?"Conditionnement":
-$P{ad_language}.equals("it_CH")?"Packvorschrift":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Packvorschrift":
-$P{ad_language}.equals("fr_CH")?"Conditionnement":
-$P{ad_language}.equals("it_CH")?"Packvorschrift":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Quantity" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Menge":
-$P{ad_language}.equals("fr_CH")?"Quantité":
-$P{ad_language}.equals("it_CH")?"Menge":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Menge":
-$P{ad_language}.equals("fr_CH")?"Quantité":
-$P{ad_language}.equals("it_CH")?"Menge":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="HUQuantity" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Anzahl":
-$P{ad_language}.equals("fr_CH")?"Nombre":
-$P{ad_language}.equals("it_CH")?"Anzahl":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Anzahl":
-$P{ad_language}.equals("fr_CH")?"Nombre":
-$P{ad_language}.equals("it_CH")?"Anzahl":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Article" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Artikel":
-$P{ad_language}.equals("fr_CH")?"Article":
-$P{ad_language}.equals("it_CH")?"Artikel":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Artikel":
-$P{ad_language}.equals("fr_CH")?"Article":
-$P{ad_language}.equals("it_CH")?"Artikel":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="TotalAmount" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Total":
-$P{ad_language}.equals("fr_CH")?"Total":
-$P{ad_language}.equals("it_CH")?"Total":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Total":
-$P{ad_language}.equals("fr_CH")?"Total":
-$P{ad_language}.equals("it_CH")?"Total":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -157,56 +47,56 @@ $P{ad_language}.equals("it_CH")?"Total":
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Quantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="35bfebbe-2a4e-4e2d-8ac5-884ccbd51718" key="textField-20" x="405" y="0" width="40" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Unit}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="c2a20384-4f83-4956-8de0-647e2b2f9d11" key="textField-13" x="166" y="0" width="67" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Attributes}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="f0f37ac5-8ba3-475c-87e9-382ac9b70abf" key="textField-13" x="227" y="0" width="42" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{HUQuantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="13f10026-f4a5-4106-b562-2972eb43d034" key="textField-20" x="441" y="0" width="33" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Price}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="b45ffa6b-7b14-4fcb-9324-11acf5dd951b" key="textField-20" x="510" y="0" width="43" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Amount}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="a02faea5-2530-4505-a8fb-aa78021f3a67" key="textField-17" x="272" y="0" width="84" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Pack_Inst}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7" key="textField-16" x="37" y="0" width="130" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Article}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -233,7 +123,7 @@ $P{ad_language}.equals("it_CH")?"Total":
 				<textElement markup="none">
 					<font size="9" isItalic="true" pdfFontName="Helvetica-Oblique"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Carry}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Carry}]]></textFieldExpression>
 			</textField>
 		</band>
 	</columnHeader>
@@ -374,7 +264,7 @@ $P{ad_language}.equals("it_CH")?"Total":
 				<textElement markup="none">
 					<font size="9" isItalic="true" pdfFontName="Helvetica-Oblique"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{SubTotal}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{SubTotal}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
@@ -402,7 +292,7 @@ $P{ad_language}.equals("it_CH")?"Total":
 				<textElement markup="none">
 					<font size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TotalAmount}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{TotalAmount}]]></textFieldExpression>
 			</textField>
 		</band>
 	</lastPageFooter>

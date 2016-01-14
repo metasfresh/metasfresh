@@ -33,32 +33,6 @@ WHERE org.ad_org_id = $P{ad_org_id}]]>
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
 	</variable>
-	<variable name="HUReturns" class="java.lang.String">
-		<variableExpression><![CDATA[!$P{ad_language}.equals("fr_CH")?"Gebinde Retouren":
-$P{ad_language}.equals("fr_CH")?"Retour emballages":
-""]]></variableExpression>
-	</variable>
-	<variable name="Amount" class="java.lang.String">
-		<variableExpression><![CDATA[!$P{ad_language}.equals("fr_CH")?"Betrag":
-$P{ad_language}.equals("fr_CH")?"Montant":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[!$P{ad_language}.equals("fr_CH")?"Betrag":
-$P{ad_language}.equals("fr_CH")?"Montant":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="GoodsNote" class="java.lang.String">
-		<variableExpression><![CDATA[!$P{ad_language}.equals("fr_CH")?"Waren in einwandfreiem Zustand erhalten.":
-$P{ad_language}.equals("fr_CH")?"Marchandise reçue dans un était irréprochable.":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[!$P{ad_language}.equals("fr_CH")?"Waren in einwandfreiem Zustand erhalten.":
-$P{ad_language}.equals("fr_CH")?"Marchandise reçue dans un était irréprochable":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Signature" class="java.lang.String">
-		<variableExpression><![CDATA[!$P{ad_language}.equals("fr_CH")?"Unterschrift":
-$P{ad_language}.equals("fr_CH")?"Signature":
-""]]></variableExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -75,14 +49,14 @@ $P{ad_language}.equals("fr_CH")?"Signature":
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{HUReturns}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{HUReturns}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="f2805df3-fac3-4b9d-86b8-582327e2627e" key="textField-19" x="335" y="0" width="54" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Amount}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement uuid="29b3439c-dc9f-4453-a34b-742c951b1566" x="35" y="25" width="490" height="1"/>
@@ -109,14 +83,14 @@ $P{ad_language}.equals("fr_CH")?"Signature":
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{GoodsNote}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{GoodsNote}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049" key="textField-16" x="37" y="36" width="125" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Signature} + ":"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Signature} + ":"]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement uuid="2d2bef7b-44cf-45d4-b528-93208eb77818" x="129" y="48" width="396" height="1"/>

@@ -45,16 +45,6 @@ WHERE
 	<field name="docstatus" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
 	<field name="displayhu" class="java.lang.String"/>
-	<variable name="Page" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Seite":
-$P{ad_language}.equals("fr_CH")?"Page":
-$P{ad_language}.equals("it_CH")?"Seite":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Seite":
-$P{ad_language}.equals("fr_CH")?"Page":
-$P{ad_language}.equals("it_CH")?"Seite":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="true">
@@ -239,7 +229,7 @@ $P{ad_language}.equals("it_CH")?"Seite":
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Page}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
 				<reportElement uuid="6efa1619-9f95-4657-9401-77336ceaf824" key="textField-64" x="528" y="20" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF"/>

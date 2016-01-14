@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="1a23dc24-c216-40e0-891b-a3648835dca6">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shippedinouts/report" uuid="1a23dc24-c216-40e0-891b-a3648835dca6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.2100000000000006"/>
@@ -20,26 +20,6 @@ WHERE
 	C_BPartner_ID = $P{C_BPartner_ID};]]>
 	</queryString>
 	<field name="bp_value" class="java.lang.String"/>
-	<variable name="BP_Value" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -56,7 +36,7 @@ $P{ad_language}.equals("it_CH")?"Datum":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="bb712730-1ec3-406c-b259-045c9e03f407" key="textField-10" x="172" y="139" width="91" height="13">
@@ -76,7 +56,7 @@ $P{ad_language}.equals("it_CH")?"Datum":
 			<staticText>
 				<reportElement uuid="ac08abbe-c03d-4cf8-ab70-0212a4d993b4" key="textField-6" x="37" y="127" width="136" height="13" forecolor="#000000"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Rüstliste]]></text>
 			</staticText>
@@ -93,7 +73,7 @@ $P{ad_language}.equals("it_CH")?"Datum":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{BP_Value}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{BP_Value}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
 				<reportElement uuid="9817521f-5905-468e-9e02-1b8a5fa30bdf" key="textField-3" x="423" y="139" width="91" height="13"/>

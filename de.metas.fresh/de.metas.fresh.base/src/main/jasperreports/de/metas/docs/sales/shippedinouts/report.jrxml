@@ -24,16 +24,6 @@ WHERE
 ;]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<variable name="Page" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Seite":
-$P{ad_language}.equals("fr_CH")?"Page":
-$P{ad_language}.equals("it_CH")?"Seite":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Seite":
-$P{ad_language}.equals("fr_CH")?"Page":
-$P{ad_language}.equals("it_CH")?"Seite":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band height="842" splitType="Stretch"/>
 	</background>
@@ -194,7 +184,7 @@ $P{ad_language}.equals("it_CH")?"Seite":
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Page}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>

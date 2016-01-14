@@ -70,66 +70,6 @@ WHERE
 		<variableExpression><![CDATA[]]></variableExpression>
 		<initialValueExpression><![CDATA["Einkaufsbestätigung"]]></initialValueExpression>
 	</variable>
-	<variable name="salesrep" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Ansprechpartner":
-$P{ad_language}.equals("fr_CH")?"Contact":
-$P{ad_language}.equals("it_CH")?"Ansprechpartner":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Ansprechpartner":
-$P{ad_language}.equals("fr_CH")?"Contact":
-$P{ad_language}.equals("it_CH")?"Ansprechpartner":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="BP_Value" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="DeliverTo" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Abladeort":
-$P{ad_language}.equals("fr_CH")?"Lieu de livraison":
-$P{ad_language}.equals("it_CH")?"Abladeort":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Abladeort":
-$P{ad_language}.equals("fr_CH")?"Lieu de livraison":
-$P{ad_language}.equals("it_CH")?"Abladeort":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Delivery" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Anlieferung":
-$P{ad_language}.equals("fr_CH")?"Livraison":
-$P{ad_language}.equals("it_CH")?"Anlieferung":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Anlieferung":
-$P{ad_language}.equals("fr_CH")?"Livraison":
-$P{ad_language}.equals("it_CH")?"Anlieferung":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Reference" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Externe Belegnummer":
-$P{ad_language}.equals("fr_CH")?"Référence":
-$P{ad_language}.equals("it_CH")?"Externe Belegnummer":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Externe Belegnummer":
-$P{ad_language}.equals("fr_CH")?"Référence":
-$P{ad_language}.equals("it_CH")?"Externe Belegnummer":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -161,7 +101,7 @@ $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="c92f9276-6317-4bdd-9067-12af4231a75e" key="textField-6" x="37" y="127" width="117" height="13" forecolor="#000000"/>
@@ -172,7 +112,7 @@ $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
@@ -185,7 +125,7 @@ $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
@@ -202,7 +142,7 @@ $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{BP_Value}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{BP_Value}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
 				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="423" y="139" width="150" height="13"/>
@@ -241,16 +181,16 @@ $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{DeliverTo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{DeliverTo}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="7f846796-865c-44f9-a364-15ce44e50bbc" key="textField-6" x="37" y="225" width="117" height="13" forecolor="#000000"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Delivery}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Delivery}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="false">
 				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-1" x="153" y="225" width="134" height="13" forecolor="#000000"/>
@@ -278,7 +218,7 @@ $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{salesrep}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{salesrep}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="423" y="151" width="150" height="13"/>
@@ -306,7 +246,7 @@ $P{ad_language}.equals("it_CH")?"Externe Belegnummer":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Reference}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Reference}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement uuid="3c4dcef5-1224-4889-ab28-77d4bfd15e5f" key="textField-3" x="423" y="127" width="150" height="13"/>

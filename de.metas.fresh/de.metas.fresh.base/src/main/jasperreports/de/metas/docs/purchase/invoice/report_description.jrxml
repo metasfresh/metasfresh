@@ -62,46 +62,6 @@ WHERE
 	<field name="sr_fax" class="java.lang.String"/>
 	<field name="sr_email" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
-	<variable name="BP_Value" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Reference" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Externe Belegnummer":
-$P{ad_language}.equals("fr_CH")?"Référence":
-$P{ad_language}.equals("it_CH")?"Externe Belegnummer":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Externe Belegnummer":
-$P{ad_language}.equals("fr_CH")?"Référence":
-$P{ad_language}.equals("it_CH")?"Externe Belegnummer":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="VAT_ID" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"UID Nr. ":
-$P{ad_language}.equals("fr_CH")?"ID-TVA ":
-$P{ad_language}.equals("it_CH")?"UID Nr. ":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"UID Nr. ":
-$P{ad_language}.equals("fr_CH")?"ID-TVA ":
-$P{ad_language}.equals("it_CH")?"UID Nr. ":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -120,7 +80,7 @@ $P{ad_language}.equals("it_CH")?"UID Nr. ":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{BP_Value}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{BP_Value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="c92f9276-6317-4bdd-9067-12af4231a75e" key="textField-6" x="37" y="127" width="164" height="13" forecolor="#000000"/>
@@ -146,7 +106,7 @@ $P{ad_language}.equals("it_CH")?"UID Nr. ":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="200" y="151" width="90" height="13">
@@ -196,7 +156,7 @@ $P{ad_language}.equals("it_CH")?"UID Nr. ":
 				<textElement textAlignment="Left" markup="none">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Reference}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Reference}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="200" y="139" width="90" height="13">
@@ -226,7 +186,7 @@ $P{ad_language}.equals("it_CH")?"UID Nr. ":
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{VAT_ID} + $F{vataxid}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{VAT_ID} + $F{vataxid}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement uuid="af1712c5-f942-4697-883e-e90fe63c5cbb" x="37" y="175" width="477" height="13" isPrintWhenDetailOverflows="true">

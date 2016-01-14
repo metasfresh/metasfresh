@@ -74,40 +74,6 @@ WHERE
 	<field name="sr_fax" class="java.lang.String"/>
 	<field name="sr_email" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
-	<variable name="docno" class="java.lang.String">
-		<variableExpression><![CDATA[]]></variableExpression>
-		<initialValueExpression><![CDATA["Auftragsbestätigung"]]></initialValueExpression>
-	</variable>
-	<variable name="BP_Value" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="POReference" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Referenz":
-$P{ad_language}.equals("fr_CH")?"Référence":
-$P{ad_language}.equals("it_CH")?"Referenz":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Referenz":
-$P{ad_language}.equals("fr_CH")?"Référence":
-$P{ad_language}.equals("it_CH")?"Referenz":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -165,7 +131,7 @@ $P{ad_language}.equals("it_CH")?"Referenz":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-1" x="169" y="127" width="135" height="13" forecolor="#000000"/>
@@ -193,7 +159,7 @@ $P{ad_language}.equals("it_CH")?"Referenz":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{BP_Value}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{BP_Value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="c92f9276-6317-4bdd-9067-12af4231a75e" key="textField-6" x="37" y="127" width="133" height="13" forecolor="#000000"/>
@@ -221,7 +187,7 @@ $P{ad_language}.equals("it_CH")?"Referenz":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{POReference}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{POReference}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
 				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="359" y="127" width="186" height="13">

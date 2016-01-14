@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/manufacturingorder/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.6963904734899482"/>
-	<property name="ireport.x" value="160"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -59,49 +59,49 @@ ORDER BY
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="37" y="0" width="300" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Artikel]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="c7acd6de-af63-42ec-a530-5ed4496aa666" x="557" y="0" width="13" height="12"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[%]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="355" y="0" width="60" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Gewicht]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="355" y="12" width="60" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Waschprobe]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="415" y="0" width="60" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Gewicht]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="415" y="12" width="60" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Lieferung]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="480" y="0" width="40" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Einheit]]></text>
 			</staticText>
@@ -131,7 +131,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="9" isBold="false" />
+					<font fontName="SansSerif" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
@@ -249,7 +249,7 @@ ORDER BY
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="37" y="24" width="160" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Qualitätsbewertung]]></text>
 			</staticText>
@@ -268,7 +268,7 @@ ORDER BY
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="37" y="24" width="160" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Qualitätsbewertung]]></text>
 			</staticText>

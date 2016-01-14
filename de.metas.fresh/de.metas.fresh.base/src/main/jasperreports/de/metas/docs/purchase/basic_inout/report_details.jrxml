@@ -148,86 +148,6 @@ ORDER BY
 	<field name="qualitynote" class="java.lang.String"/>
 	<field name="inouts" class="java.lang.String"/>
 	<field name="rma_name" class="java.lang.String"/>
-	<variable name="Quantity" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Menge":
-$P{ad_language}.equals("fr_CH")?"Quantité":
-$P{ad_language}.equals("it_CH")?"Menge":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Menge":
-$P{ad_language}.equals("fr_CH")?"Quantité":
-$P{ad_language}.equals("it_CH")?"Menge":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Attributes" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Merkmale":
-$P{ad_language}.equals("fr_CH")?"Spécifications":
-$P{ad_language}.equals("it_CH")?"Merkmale":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Merkmale":
-$P{ad_language}.equals("fr_CH")?"Spécifications":
-$P{ad_language}.equals("it_CH")?"Merkmale":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Article" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Artikel":
-$P{ad_language}.equals("fr_CH")?"Article":
-$P{ad_language}.equals("it_CH")?"Artikel":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Artikel":
-$P{ad_language}.equals("fr_CH")?"Article":
-$P{ad_language}.equals("it_CH")?"Artikel":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="HUQuantity" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Anzahl":
-$P{ad_language}.equals("fr_CH")?"Nombre":
-$P{ad_language}.equals("it_CH")?"Anzahl":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Anzahl":
-$P{ad_language}.equals("fr_CH")?"Nombre":
-$P{ad_language}.equals("it_CH")?"Anzahl":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Unit" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Einheit":
-$P{ad_language}.equals("fr_CH")?"Unité":
-$P{ad_language}.equals("it_CH")?"Einheit":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Einheit":
-$P{ad_language}.equals("fr_CH")?"Unité":
-$P{ad_language}.equals("it_CH")?"Einheit":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Pack_Inst" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Packvorschrift":
-$P{ad_language}.equals("fr_CH")?"Conditionnement":
-$P{ad_language}.equals("it_CH")?"Packvorschrift":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Packvorschrift":
-$P{ad_language}.equals("fr_CH")?"Conditionnement":
-$P{ad_language}.equals("it_CH")?"Packvorschrift":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="QualityPercent" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Qualität\n Abzug in %":
-$P{ad_language}.equals("fr_CH")?"Qualité déduction en %":
-$P{ad_language}.equals("it_CH")?"Qualität\n Abzug in %":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Qualität\n Abzug in %":
-$P{ad_language}.equals("fr_CH")?"Qualité déduction en %":
-$P{ad_language}.equals("it_CH")?"Qualität\n Abzug in %":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="QualityNote" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Notiz":
-$P{ad_language}.equals("fr_CH")?"Note":
-$P{ad_language}.equals("it_CH")?"Notiz":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Notiz":
-$P{ad_language}.equals("fr_CH")?"Note":
-$P{ad_language}.equals("it_CH")?"Notiz":
-""]]></initialValueExpression>
-	</variable>
 	<group name="inout">
 		<groupExpression><![CDATA[$F{inouts}]]></groupExpression>
 		<groupHeader>
@@ -260,42 +180,42 @@ $P{ad_language}.equals("it_CH")?"Notiz":
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{QualityNote}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{QualityNote}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="3cb866f4-e2d6-44b5-a16f-44cae8114aef" key="textField-20" x="394" y="0" width="40" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Unit}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="8116d308-0ad1-4a6d-af6e-8ef20195440a" key="textField-20" x="432" y="0" width="58" height="23" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{QualityPercent}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{QualityPercent}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="3d0a8948-beb8-4d7c-8b09-cf1cc4ec53d1" key="textField-19" x="332" y="0" width="57" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Quantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="8d860116-0db1-43b5-9aea-5add2b394f7c" key="textField-16" x="36" y="0" width="194" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Article}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="ede1b61c-e40c-40d6-92b1-b74add6059e7" key="textField-13" x="235" y="0" width="86" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Attributes}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

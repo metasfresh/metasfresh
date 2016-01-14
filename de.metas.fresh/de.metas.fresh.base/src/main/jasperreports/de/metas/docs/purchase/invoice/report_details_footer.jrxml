@@ -45,26 +45,6 @@ WHERE
 	<field name="descriptionbottom" class="java.lang.String"/>
 	<field name="p_cond" class="java.lang.String"/>
 	<field name="p_term" class="java.lang.String"/>
-	<variable name="PaymentCond" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH") ? "Zahlungsbedingungen:" :
-$P{ad_language}.equals("fr_CH") ? "Conditions de paiement:" :
-$P{ad_language}.equals("it_CH") ? "Zahlungsbedingungen:" :
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH") ? "Zahlungsbedingungen:" :
-$P{ad_language}.equals("fr_CH") ? "Conditions de paiement:" :
-$P{ad_language}.equals("it_CH") ? "Zahlungsbedingungen:" :
-""]]></initialValueExpression>
-	</variable>
-	<variable name="PaymentRule" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH") ? "Zahlungsweise:" :
-$P{ad_language}.equals("fr_CH") ? "Forme de paiement:" :
-$P{ad_language}.equals("it_CH") ? "Zahlungsweise:" :
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH") ? "Zahlungsweise:" :
-$P{ad_language}.equals("fr_CH") ? "Forme de paiement:" :
-$P{ad_language}.equals("it_CH") ? "Zahlungsweise:" :
-""]]></initialValueExpression>
-	</variable>
 	<detail>
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean( $F{p_cond} != null )]]></printWhenExpression>
@@ -79,7 +59,7 @@ $P{ad_language}.equals("it_CH") ? "Zahlungsweise:" :
 				<textElement markup="html">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PaymentCond} + " " + $F{p_cond}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{PaymentCond} + " " + $F{p_cond}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
@@ -95,7 +75,7 @@ $P{ad_language}.equals("it_CH") ? "Zahlungsweise:" :
 				<textElement markup="html">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PaymentRule} + " " + $F{p_term}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{PaymentRule} + " " + $F{p_term}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="24">

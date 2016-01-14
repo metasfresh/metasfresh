@@ -16,24 +16,27 @@ fi
 
 JAVA=$JAVA_HOME/bin/java
 
+# Listen on port 8788, suspend on startup to give the debugger time to connect
+#DEBUG_SETTINGS=-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8788,suspend=y
+
 CP=$ADEMPIERE_HOME/lib/CInstall.jar:$ADEMPIERE_HOME/lib/Adempiere.jar:$ADEMPIERE_HOME/lib/CCTools.jar:$ADEMPIERE_HOME/lib/oracle.jar:$ADEMPIERE_HOME/lib/derby.jar:$ADEMPIERE_HOME/lib/fyracle.jar:$ADEMPIERE_HOME/lib/jboss.jar:$ADEMPIERE_HOME/lib/postgresql.jar:$ADEMPIERE_HOME/lib/CompiereJasperReqs.jar:
 
 echo ===================================
 echo Sign Database Build
 echo ===================================
-$JAVA -classpath $CP -DADEMPIERE_HOME=$ADEMPIERE_HOME org.adempiere.process.SignDatabaseBuild
+$JAVA $DEBUG_SETTINGS -classpath $CP -DADEMPIERE_HOME=$ADEMPIERE_HOME org.adempiere.process.SignDatabaseBuild
 
 echo ===================================
 echo Update Sequence Numbers
 echo ===================================
-$JAVA -classpath $CP -DADEMPIERE_HOME=$ADEMPIERE_HOME org.compiere.process.SequenceCheck
+$JAVA $DEBUG_SETTINGS -classpath $CP -DADEMPIERE_HOME=$ADEMPIERE_HOME org.compiere.process.SequenceCheck
 
 echo ===================================
 echo Update Role Access
 echo ===================================
-$JAVA -classpath $CP -DADEMPIERE_HOME=$ADEMPIERE_HOME org.compiere.process.RoleAccessUpdate
+$JAVA $DEBUG_SETTINGS -classpath $CP -DADEMPIERE_HOME=$ADEMPIERE_HOME org.compiere.process.RoleAccessUpdate
 
 echo ===================================
 echo Executing database after migration
 echo ===================================
-$JAVA -classpath $CP -DADEMPIERE_HOME=$ADEMPIERE_HOME org.adempiere.db.util.AfterMigration
+$JAVA $DEBUG_SETTINGS -classpath $CP -DADEMPIERE_HOME=$ADEMPIERE_HOME org.adempiere.db.util.AfterMigration

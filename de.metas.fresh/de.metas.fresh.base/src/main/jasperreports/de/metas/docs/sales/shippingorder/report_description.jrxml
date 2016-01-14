@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="bed26190-0a93-4012-8083-15ce9416a0bf">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shippingorder/report" uuid="bed26190-0a93-4012-8083-15ce9416a0bf">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.4641000000000008"/>
@@ -41,43 +41,6 @@ WHERE
 	<field name="name" class="java.lang.String"/>
 	<field name="datetobefetched" class="java.sql.Timestamp"/>
 	<field name="username" class="java.lang.String"/>
-	<variable name="DocType" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Fahrauftrag":
-$P{ad_language}.equals("fr_CH")?"Fahrauftrag":
-$P{ad_language}.equals("it_CH")?"Fahrauftrag":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Tour" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Tour":
-$P{ad_language}.equals("fr_CH")?"Tour":
-$P{ad_language}.equals("it_CH")?"Tour":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Date" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Datum":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="SalesRep" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Ansprechpartner":
-$P{ad_language}.equals("fr_CH")?"Ansprechpartner":
-$P{ad_language}.equals("it_CH")?"Ansprechpartner":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="PickupDate" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Abholdatum und -zeit":
-$P{ad_language}.equals("fr_CH")?"Abholdatum und -zeit":
-$P{ad_language}.equals("it_CH")?"Abholdatum und -zeit":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="PickupLocation" class="java.lang.String">
-		<variableExpression><![CDATA[]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Abholort":
-$P{ad_language}.equals("fr_CH")?"Abholort":
-$P{ad_language}.equals("it_CH")?"Abholort":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -92,9 +55,9 @@ $P{ad_language}.equals("it_CH")?"Abholort":
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{DocType}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{DocType}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="544c4066-f2ba-46d3-9659-0492702b8ba2" key="textField-5" x="324" y="127" width="100" height="13"/>
@@ -107,7 +70,7 @@ $P{ad_language}.equals("it_CH")?"Abholort":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="423" y="127" width="91" height="13"/>
@@ -131,7 +94,7 @@ $P{ad_language}.equals("it_CH")?"Abholort":
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
@@ -140,7 +103,7 @@ $P{ad_language}.equals("it_CH")?"Abholort":
 				<textElement textAlignment="Left" markup="none">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Tour}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Tour}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="153" y="139" width="134" height="13"/>
@@ -168,7 +131,7 @@ $P{ad_language}.equals("it_CH")?"Abholort":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{SalesRep}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{SalesRep}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="423" y="139" width="91" height="13"/>
@@ -209,14 +172,14 @@ $P{ad_language}.equals("it_CH")?"Abholort":
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PickupDate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{PickupDate}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="4a533619-3034-4320-927e-63955c92f246" key="textField-11" x="37" y="163" width="117" height="13"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PickupLocation}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{PickupLocation}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="153" y="163" width="134" height="47"/>

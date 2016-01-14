@@ -109,22 +109,6 @@ ORDER BY
 	<field name="c_order_id" class="java.math.BigDecimal"/>
 	<field name="tag" class="java.lang.String"/>
 	<field name="position" class="java.lang.Integer"/>
-	<variable name="PaymentCond" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH") ? "Zahlungsbedingungen" :
-$P{ad_language}.equals("fr_CH") ? "Conditions de paiement" :
-$P{ad_language}.equals("it_CH") ? "Zahlungsbedingungen" :
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH") ? "Zahlungsbedingungen" :
-$P{ad_language}.equals("fr_CH") ? "Conditions de paiement" :
-$P{ad_language}.equals("it_CH") ? "Zahlungsbedingungen" :
-""]]></initialValueExpression>
-	</variable>
-	<variable name="PaymentRule" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH") ? "Zahlungsweise" :
-$P{ad_language}.equals("fr_CH") ? "forme de paiement" :
-$P{ad_language}.equals("it_CH") ? "Zahlungsweise" :
-""]]></variableExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -152,7 +136,7 @@ $P{ad_language}.equals("it_CH") ? "Zahlungsweise" :
 				<textElement markup="html">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{tag}.equals("cond") ? $V{PaymentCond}+": ": "") +
+				<textFieldExpression><![CDATA[($F{tag}.equals("cond") ? $R{PaymentCond}+": ": "") +
 $F{textleft}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -168,7 +152,7 @@ $F{textleft}]]></textFieldExpression>
 				<textElement textAlignment="Center" markup="html">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{tag}.equals("cond") ? $V{PaymentCond}+": " : "") +
+				<textFieldExpression><![CDATA[($F{tag}.equals("cond") ? $R{PaymentCond}+": " : "") +
 $F{textcenter}]]></textFieldExpression>
 			</textField>
 		</band>

@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.3579476910000046"/>
-	<property name="ireport.x" value="222"/>
+	<property name="ireport.x" value="248"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -23,66 +23,6 @@
 ;]]>
 	</queryString>
 	<field name="bpartner" class="java.lang.String"/>
-	<variable name="Headline" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Umsatzliste":
-$P{ad_language}.equals("fr_CH")?"Umsatzliste":
-$P{ad_language}.equals("it_CH")?"Umsatzliste":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Umsatzliste":
-$P{ad_language}.equals("fr_CH")?"Umsatzliste":
-$P{ad_language}.equals("it_CH")?"Umsatzliste":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Timeframe" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Zeitraum":
-$P{ad_language}.equals("fr_CH")?"Zeitraum":
-$P{ad_language}.equals("it_CH")?"Zeitraum":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Zeitraum":
-$P{ad_language}.equals("fr_CH")?"Zeitraum":
-$P{ad_language}.equals("it_CH")?"Zeitraum":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="BPartner" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner":
-$P{ad_language}.equals("fr_CH")?"Geschäftspartner":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner":
-$P{ad_language}.equals("fr_CH")?"Geschäftspartner":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="IsSOTrx" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Transaktionen":
-$P{ad_language}.equals("fr_CH")?"Transaktionen":
-$P{ad_language}.equals("it_CH")?"Transaktionen":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Transaktionen":
-$P{ad_language}.equals("fr_CH")?"Transaktionen":
-$P{ad_language}.equals("it_CH")?"Transaktionen":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="SalesOnly" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"nur Verkauf":
-$P{ad_language}.equals("fr_CH")?"nur Verkauf":
-$P{ad_language}.equals("it_CH")?"nur Verkauf":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"nur Verkauf":
-$P{ad_language}.equals("fr_CH")?"nur Verkauf":
-$P{ad_language}.equals("it_CH")?"nur Verkauf":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="PurchaseOnly" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"nur Einkauf":
-$P{ad_language}.equals("fr_CH")?"nur Einkauf":
-$P{ad_language}.equals("it_CH")?"nur Einkauf":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"nur Einkauf":
-$P{ad_language}.equals("fr_CH")?"nur Einkauf":
-$P{ad_language}.equals("it_CH")?"nur Einkauf":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -97,9 +37,9 @@ $P{ad_language}.equals("it_CH")?"nur Einkauf":
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="14" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Headline}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Headline}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="0b0321d5-002e-4666-8af9-ab827c840dec" key="textField-4" x="289" y="43" width="167" height="12"/>
@@ -125,7 +65,7 @@ $P{ad_language}.equals("it_CH")?"nur Einkauf":
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{BPartner}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{BPartner}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
 				<reportElement uuid="0b0321d5-002e-4666-8af9-ab827c840dec" key="textField-4" x="309" y="31" width="50" height="12"/>
@@ -172,7 +112,7 @@ $P{ad_language}.equals("it_CH")?"nur Einkauf":
 				<textElement markup="none">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Timeframe}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Timeframe}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="de0e7bd4-55d2-4aeb-84a5-1bd1cacffad9" key="textField-5" x="200" y="56" width="90" height="12"/>
@@ -185,7 +125,7 @@ $P{ad_language}.equals("it_CH")?"nur Einkauf":
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{IsSOTrx}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{IsSOTrx}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="0b0321d5-002e-4666-8af9-ab827c840dec" key="textField-4" x="289" y="56" width="167" height="12"/>
@@ -198,7 +138,7 @@ $P{ad_language}.equals("it_CH")?"nur Einkauf":
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{IsSOTrx}.equals( "Y" )? $V{SalesOnly} : $V{PurchaseOnly}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{IsSOTrx}.equals( "Y" )? $R{SalesOnly} : $R{PurchaseOnly}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

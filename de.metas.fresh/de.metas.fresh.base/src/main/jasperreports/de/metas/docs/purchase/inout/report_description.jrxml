@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="1a23dc24-c216-40e0-891b-a3648835dca6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -52,36 +52,6 @@ WHERE
 	<field name="bp_value" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
 	<field name="o_documentno" class="java.lang.String"/>
-	<variable name="BP_Value" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner-Nr.":
-$P{ad_language}.equals("fr_CH")?"N° du partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner-Nr.":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Date" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Anieferdatum":
-$P{ad_language}.equals("fr_CH")?"Date de livraison":
-$P{ad_language}.equals("it_CH")?"Anieferdatum":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Datum":
-$P{ad_language}.equals("fr_CH")?"Date":
-$P{ad_language}.equals("it_CH")?"Datum":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Order" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Auftragsnummer":
-$P{ad_language}.equals("fr_CH")?"Numéro de confirmation":
-$P{ad_language}.equals("it_CH")?"Auftragsnummer":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Auftragsnummer":
-$P{ad_language}.equals("fr_CH")?"Numéro de confirmation":
-$P{ad_language}.equals("it_CH")?"Auftragsnummer":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -92,7 +62,7 @@ $P{ad_language}.equals("it_CH")?"Auftragsnummer":
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="bb712730-1ec3-406c-b259-045c9e03f407" key="textField-10" x="176" y="154" width="91" height="13">
@@ -123,7 +93,7 @@ $P{ad_language}.equals("it_CH")?"Auftragsnummer":
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Order}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Order}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="32c99b4e-6dee-45af-bfcb-2766e20b30ba" key="textField-1" x="176" y="142" width="91" height="13" forecolor="#000000"/>
@@ -158,7 +128,7 @@ $P{ad_language}.equals("it_CH")?"Auftragsnummer":
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{BP_Value}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{BP_Value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="bb712730-1ec3-406c-b259-045c9e03f407" key="textField-10" x="176" y="166" width="91" height="13">

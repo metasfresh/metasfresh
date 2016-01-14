@@ -485,7 +485,7 @@ public class ProcessInfo implements Serializable
 		m_EstSeconds = EstSeconds;
 	}
 
-	public String getTableName()
+	public String getTableNameOrNull()
 	{
 		if (m_Table_ID <= 0)
 		{
@@ -570,7 +570,7 @@ public class ProcessInfo implements Serializable
 	{
 		Check.assumeNotNull(modelClass, "modelClass not null");
 
-		final String tableName = getTableName();
+		final String tableName = getTableNameOrNull();
 		if (Check.isEmpty(tableName, true))
 		{
 			throw new AdempiereException("@NotFound@ @AD_Table_ID@");
@@ -601,7 +601,7 @@ public class ProcessInfo implements Serializable
 	public final <ModelType> Optional<ModelType> getRecordIfApplies(final Class<ModelType> modelClass, final String trxName)
 	{
 		Check.assumeNotNull(modelClass, "modelClass not null");
-		final String tableName = getTableName();
+		final String tableName = getTableNameOrNull();
 		if (Check.isEmpty(tableName, true))
 		{
 			return Optional.absent();

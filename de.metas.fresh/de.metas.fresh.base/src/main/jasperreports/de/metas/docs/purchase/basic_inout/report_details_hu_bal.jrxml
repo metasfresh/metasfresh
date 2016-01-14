@@ -44,56 +44,6 @@ ORDER BY
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
 	</variable>
-	<variable name="HU_Balance" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Gebindesaldo":
-$P{ad_language}.equals("fr_CH")?"Solde des emballages":
-$P{ad_language}.equals("it_CH")?"Gebindesaldo":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Gebindesaldo":
-$P{ad_language}.equals("fr_CH")?"Solde des emballages":
-$P{ad_language}.equals("it_CH")?"Gebindesaldo":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Quantity" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Menge":
-$P{ad_language}.equals("fr_CH")?"Quantité":
-$P{ad_language}.equals("it_CH")?"Menge":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Menge":
-$P{ad_language}.equals("fr_CH")?"Quantité":
-$P{ad_language}.equals("it_CH")?"Menge":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Unit" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Einheit":
-$P{ad_language}.equals("fr_CH")?"Unité":
-$P{ad_language}.equals("it_CH")?"Einheit":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Einheit":
-$P{ad_language}.equals("fr_CH")?"Unité":
-$P{ad_language}.equals("it_CH")?"Einheit":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="InFavor" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Zu Gunsten":
-$P{ad_language}.equals("fr_CH")?"au profit de":
-$P{ad_language}.equals("it_CH")?"Zu Gunsten":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Zu Gunsten":
-$P{ad_language}.equals("fr_CH")?"au profit de":
-$P{ad_language}.equals("it_CH")?"Zu Gunsten":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Partner" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner":
-$P{ad_language}.equals("fr_CH")?"partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Geschäftspartner":
-$P{ad_language}.equals("fr_CH")?"partenaire":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner":
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -114,49 +64,49 @@ $P{ad_language}.equals("it_CH")?"Geschäftspartner":
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{InFavor}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{InFavor}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="86aea795-2eab-4beb-8cc3-c438c3e1a430" key="textField-20" x="309" y="0" width="80" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Quantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="3fc6ce65-a7f6-4e8b-8bcc-0e62028dc668" key="textField-20" x="211" y="22" width="95" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Partner}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Partner}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="c7339025-4f98-4fa2-8cf7-ba5bef4895f4" key="textField-20" x="211" y="0" width="95" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Quantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="3b4f95d2-d18e-4a86-a5a8-ce95327e9c35" key="textField-20" x="211" y="11" width="95" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{InFavor}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{InFavor}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="0088fba9-0c4c-42a2-b1bf-646c9498de3e" key="textField-20" x="394" y="0" width="40" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Unit}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="969c2a3a-2b3a-4ca6-b959-066b26b77978" key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{HU_Balance}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{HU_Balance}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="261"/>
+	<property name="ireport.x" value="62"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -149,86 +149,6 @@ ORDER BY
 	<field name="qualitydiscountpercent" class="java.math.BigDecimal"/>
 	<field name="qualitynote" class="java.lang.String"/>
 	<field name="isindispute" class="java.lang.String"/>
-	<variable name="Article" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Artikel":
-$P{ad_language}.equals("fr_CH")?"Article":
-$P{ad_language}.equals("it_CH")?"Artikel":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Artikel":
-$P{ad_language}.equals("fr_CH")?"Article":
-$P{ad_language}.equals("it_CH")?"Artikel":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Unit" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Einheit":
-$P{ad_language}.equals("fr_CH")?"Unité":
-$P{ad_language}.equals("it_CH")?"Einheit":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Einheit":
-$P{ad_language}.equals("fr_CH")?"Unité":
-$P{ad_language}.equals("it_CH")?"Einheit":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Pack_Inst" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Packvorschrift":
-$P{ad_language}.equals("fr_CH")?"Conditionnement":
-$P{ad_language}.equals("it_CH")?"Packvorschrift":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Packvorschrift":
-$P{ad_language}.equals("fr_CH")?"Conditionnement":
-$P{ad_language}.equals("it_CH")?"Packvorschrift":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Attributes" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Merkmale":
-$P{ad_language}.equals("fr_CH")?"Spécifications":
-$P{ad_language}.equals("it_CH")?"Merkmale":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Merkmale":
-$P{ad_language}.equals("fr_CH")?"Spécifications":
-$P{ad_language}.equals("it_CH")?"Merkmale":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="HUQuantity" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Anzahl":
-$P{ad_language}.equals("fr_CH")?"Nombre":
-$P{ad_language}.equals("it_CH")?"Anzahl":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Anzahl":
-$P{ad_language}.equals("fr_CH")?"Nombre":
-$P{ad_language}.equals("it_CH")?"Anzahl":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Quantity" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Menge":
-$P{ad_language}.equals("fr_CH")?"Quantité":
-$P{ad_language}.equals("it_CH")?"Menge":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Menge":
-$P{ad_language}.equals("fr_CH")?"Quantité":
-$P{ad_language}.equals("it_CH")?"Menge":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="QualityPercent" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Qualität\n Abzug in %":
-$P{ad_language}.equals("fr_CH")?"Qualité déduction en %":
-$P{ad_language}.equals("it_CH")?"Qualität\n Abzug in %":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Qualität\n Abzug in %":
-$P{ad_language}.equals("fr_CH")?"Qualité déduction en %":
-$P{ad_language}.equals("it_CH")?"Qualität\n Abzug in %":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="QualityNote" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Notiz":
-$P{ad_language}.equals("fr_CH")?"Note":
-$P{ad_language}.equals("it_CH")?"Notiz":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Notiz":
-$P{ad_language}.equals("fr_CH")?"Note":
-$P{ad_language}.equals("it_CH")?"Notiz":
-""]]></initialValueExpression>
-	</variable>
 	<variable name="qtyToInvoice" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
@@ -243,56 +163,56 @@ $P{ad_language}.equals("it_CH")?"Notiz":
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{QualityNote}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{QualityNote}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement uuid="bcf49517-5066-429e-a6dc-64c97a459ab0" key="textField-20" x="399" y="0" width="40" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Unit}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement uuid="60b4107a-7639-4cdf-923a-7af7cc025cd5" key="textField-13" x="228" y="0" width="39" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{HUQuantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement uuid="4a06f254-2d43-4b5a-8875-443684dfe832" key="textField-20" x="421" y="0" width="74" height="23" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="styled">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{QualityPercent}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{QualityPercent}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement uuid="b040ea3d-0c64-4095-aa4b-a1769c19620e" key="textField-19" x="350" y="0" width="47" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Quantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement uuid="cc66405f-c1b0-4307-ba43-7fc0b0b92d27" key="textField-17" x="269" y="0" width="80" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Pack_Inst}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement uuid="50bc7226-6afd-4ce3-b115-2b74cdd846f9" key="textField-16" x="36" y="0" width="130" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Article}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement uuid="7c66cab1-6ef2-4c56-a84b-1a0e01ccb82c" key="textField-13" x="165" y="0" width="65" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Attributes}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

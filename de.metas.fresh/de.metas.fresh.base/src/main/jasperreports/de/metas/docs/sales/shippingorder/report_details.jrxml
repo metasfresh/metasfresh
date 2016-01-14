@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shippingorder/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.8150000000000117"/>
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -60,82 +60,6 @@ GROUP BY
 	<field name="ispallet" class="java.lang.String"/>
 	<field name="qty" class="java.math.BigDecimal"/>
 	<field name="notes" class="java.lang.String"/>
-	<variable name="BPName" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Geschäftspartner":
-$P{ad_language}.equals("fr_CH")?"Geschäftspartner":
-$P{ad_language}.equals("it_CH")?"Geschäftspartner":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="BPAddress" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Adresse":
-$P{ad_language}.equals("fr_CH")?"Adresse":
-$P{ad_language}.equals("it_CH")?"Adresse":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Time" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Zeit":
-$P{ad_language}.equals("fr_CH")?"Zeit":
-$P{ad_language}.equals("it_CH")?"Zeit":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Qty" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Anzahl":
-$P{ad_language}.equals("fr_CH")?"Anzahl":
-$P{ad_language}.equals("it_CH")?"Anzahl":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="HUs" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Gebinde":
-$P{ad_language}.equals("fr_CH")?"Gebinde":
-$P{ad_language}.equals("it_CH")?"Gebinde":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Notes" class="java.lang.String">
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Bemerkungen":
-$P{ad_language}.equals("fr_CH")?"Bemerkungen":
-$P{ad_language}.equals("it_CH")?"Bemerkungen":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Palette" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Palette":
-$P{ad_language}.equals("fr_CH")?"Palette":
-$P{ad_language}.equals("it_CH")?"Palette":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Palette":
-$P{ad_language}.equals("fr_CH")?"Palette":
-$P{ad_language}.equals("it_CH")?"Palette":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Unit" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Einheit":
-$P{ad_language}.equals("fr_CH")?"Einheit":
-$P{ad_language}.equals("it_CH")?"Einheit":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Einheit":
-$P{ad_language}.equals("fr_CH")?"Einheit":
-$P{ad_language}.equals("it_CH")?"Einheit":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Palettes" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Paletten":
-$P{ad_language}.equals("fr_CH")?"Paletten":
-$P{ad_language}.equals("it_CH")?"Paletten":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Paletten":
-$P{ad_language}.equals("fr_CH")?"Paletten":
-$P{ad_language}.equals("it_CH")?"Paletten":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Units" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Einheiten":
-$P{ad_language}.equals("fr_CH")?"Einheiten":
-$P{ad_language}.equals("it_CH")?"Einheiten":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Einheiten":
-$P{ad_language}.equals("fr_CH")?"Einheiten":
-$P{ad_language}.equals("it_CH")?"Einheiten":
-""]]></initialValueExpression>
-	</variable>
 	<title>
 		<band splitType="Stretch"/>
 	</title>
@@ -144,44 +68,44 @@ $P{ad_language}.equals("it_CH")?"Einheiten":
 			<textField>
 				<reportElement uuid="eb476af4-b073-4070-9a1a-c2c973a60b7e" key="textField-16" x="37" y="0" width="115" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{BPName}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{BPName}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="b4bb8f27-47ed-4754-bbb5-b589345bda20" key="textField-16" x="151" y="0" width="115" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{BPAddress}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{BPAddress}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="f43638ed-8f3f-49ac-878e-7f6761b08abb" key="textField-16" x="266" y="0" width="85" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Time}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Time}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="96305905-191e-4d0f-b7c7-95bc8de3364e" key="textField-16" x="350" y="0" width="35" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Qty}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Qty}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="58d5e493-ff08-445a-ba1d-aee21c925057" key="textField-16" x="392" y="0" width="45" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{HUs}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{HUs}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="67f56434-f07d-4084-a473-3d829e5e4940" key="textField-16" x="437" y="0" width="110" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Notes}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Notes}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -228,8 +152,8 @@ $P{ad_language}.equals("it_CH")?"Einheiten":
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{ispallet}.equals( "Y" )?
-    ($F{qty}.intValue() == 1? $V{Palette}: $V{Palettes}):
-    ($F{qty}.intValue() == 1? $V{Unit}: $V{Units})]]></textFieldExpression>
+    ($F{qty}.intValue() == 1? $R{Palette}: $R{Palettes}):
+    ($F{qty}.intValue() == 1? $R{Unit}: $R{Units})]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="5"/>

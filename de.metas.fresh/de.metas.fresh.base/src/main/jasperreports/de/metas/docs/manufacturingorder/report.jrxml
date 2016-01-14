@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -41,16 +41,6 @@ WHERE
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="docstatus" class="java.lang.String"/>
 	<field name="bp_loc_id" class="java.math.BigDecimal"/>
-	<variable name="page" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals( "de_CH" ) ? "Seite" :
-$P{ad_language}.equals( "fr_CH" ) ? "Seite" :
-$P{ad_language}.equals( "it_CH" ) ? "Seite" :
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals( "de_CH" ) ? "Seite" :
-$P{ad_language}.equals( "fr_CH" ) ? "Seite" :
-$P{ad_language}.equals( "it_CH" ) ? "Seite" :
-""]]></initialValueExpression>
-	</variable>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="true">
@@ -62,7 +52,7 @@ $P{ad_language}.equals( "it_CH" ) ? "Seite" :
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="48" isBold="true" isItalic="true" isStrikeThrough="false"  pdfFontName="Helvetica-Bold" />
+					<font fontName="SansSerif" size="48" isBold="true" isItalic="true" isStrikeThrough="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[(($F{docstatus}.equals("DR")) ? "Entwurf" :
 (($F{docstatus}.equals("IN")) ? "Ungültig" : null))]]></textFieldExpression>
@@ -186,7 +176,7 @@ $P{ad_language}.equals( "it_CH" ) ? "Seite" :
 				<textElement textAlignment="Right">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{page}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
 				<reportElement uuid="6b4b91a6-d40e-4a81-af69-b8f0917a5c01" key="textField-64" x="528" y="20" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF"/>

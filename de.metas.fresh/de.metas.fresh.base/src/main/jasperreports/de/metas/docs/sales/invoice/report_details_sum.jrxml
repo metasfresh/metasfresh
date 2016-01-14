@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_sum" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="b62f017e-3912-43a3-99f6-cb0c797b3e75">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.2100000000000026"/>
+	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -113,106 +113,6 @@ ORDER BY
 		<variableExpression><![CDATA[$F{iso_code}]]></variableExpression>
 		<initialValueExpression><![CDATA[$F{iso_code}]]></initialValueExpression>
 	</variable>
-	<variable name="Summary" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Rekapitulation":
-$P{ad_language}.equals("fr_CH")?"Récapitulation":
-$P{ad_language}.equals("it_CH")?"Rekapitulation":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Rekapitulation":
-$P{ad_language}.equals("fr_CH")?"Récapitulation":
-$P{ad_language}.equals("it_CH")?"Rekapitulation":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="NetTotal" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Total ohne MWST = MWST Basis":
-$P{ad_language}.equals("fr_CH")?"Total HT":
-$P{ad_language}.equals("it_CH")?"Total ohne MWST = MWST Basis":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Total ohne MWST = MWST Basis":
-$P{ad_language}.equals("fr_CH")?"Total HT":
-$P{ad_language}.equals("it_CH")?"Total ohne MWST = MWST Basis":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="VAT_Amount" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"MWST-Betrag":
-$P{ad_language}.equals("fr_CH")?"Montant TVA":
-$P{ad_language}.equals("it_CH")?"MWST-Betrag":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"MWST-Betrag":
-$P{ad_language}.equals("fr_CH")?"Montant TVA":
-$P{ad_language}.equals("it_CH")?"MWST-Betrag":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Amount" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Betrag":
-$P{ad_language}.equals("fr_CH")?"Montant":
-$P{ad_language}.equals("it_CH")?"Betrag":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Betrag":
-$P{ad_language}.equals("fr_CH")?"Montant":
-$P{ad_language}.equals("it_CH")?"Betrag":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="TaxRate" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Steuersatz":
-$P{ad_language}.equals("fr_CH")?"Taux de TVA":
-$P{ad_language}.equals("it_CH")?"Steuersatz":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Steuersatz":
-$P{ad_language}.equals("fr_CH")?"Taux de TVA":
-$P{ad_language}.equals("it_CH")?"Steuersatz":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="HUTotal" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Total Gebinde":
-$P{ad_language}.equals("fr_CH")?"Total emballage":
-$P{ad_language}.equals("it_CH")?"Total Gebinde":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Total Gebinde":
-$P{ad_language}.equals("fr_CH")?"Total emballage":
-$P{ad_language}.equals("it_CH")?"Total Gebinde":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="InvoiceTotal" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"Rechnungstotal":
-$P{ad_language}.equals("fr_CH")?"Total":
-$P{ad_language}.equals("it_CH")?"Rechnungstotal":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"Rechnungstotal":
-$P{ad_language}.equals("fr_CH")?"Total":
-$P{ad_language}.equals("it_CH")?"Rechnungstotal":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="VATIncluded" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"inkl. MWST":
-$P{ad_language}.equals("fr_CH")?"TVA incluse":
-$P{ad_language}.equals("it_CH")?"inkl. MWST":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"inkl. MWST":
-$P{ad_language}.equals("fr_CH")?"TVA incluse":
-$P{ad_language}.equals("it_CH")?"inkl. MWST":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="TaxFree" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"MWST-frei":
-$P{ad_language}.equals("fr_CH")?"exonéré de TVA":
-$P{ad_language}.equals("it_CH")?"MWST-frei":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"MWST-frei":
-$P{ad_language}.equals("fr_CH")?"exonéré de la TVA":
-$P{ad_language}.equals("it_CH")?"MWST-frei":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="Tax" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.startsWith("de")?"MwSt":
-$P{ad_language}.equals("fr_CH")?"TVA":
-$P{ad_language}.equals("it_CH")?"MwSt":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.startsWith("de")?"MwSt":
-$P{ad_language}.equals("fr_CH")?"TVA":
-$P{ad_language}.equals("it_CH")?"MwSt":
-""]]></initialValueExpression>
-	</variable>
 	<group name="AllLines" keepTogether="true">
 		<groupExpression><![CDATA[$F{c_invoice_id}]]></groupExpression>
 		<groupHeader>
@@ -222,14 +122,14 @@ $P{ad_language}.equals("it_CH")?"MwSt":
 					<textElement markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{Summary}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{Summary}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement uuid="f3887bd5-7222-4cc3-9daa-878ed48f1acd" key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000"/>
 					<textElement textAlignment="Right" markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{Amount}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement uuid="3d3693f0-cf03-4ab6-a228-55dea03649c0" key="textField-20" x="529" y="0" width="47" height="12" forecolor="#000000">
@@ -238,7 +138,7 @@ $P{ad_language}.equals("it_CH")?"MwSt":
 					<textElement textAlignment="Right" markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{Tax}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{Tax}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -255,8 +155,8 @@ $P{ad_language}.equals("it_CH")?"MwSt":
 					<textElement>
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{InvoiceTotal} + " " + $F{iso_code} + (
-    $F{isprinttaxsales}.equals( 'Y' ) ? " " + $V{VATIncluded} : ""
+					<textFieldExpression><![CDATA[$R{InvoiceTotal} + " " + $F{iso_code} + (
+    $F{isprinttaxsales}.equals( 'Y' ) ? " " + $R{VATIncluded} : ""
 )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="false">
@@ -323,7 +223,7 @@ $P{ad_language}.equals("it_CH")?"MwSt":
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{NetTotal}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{NetTotal}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
@@ -360,7 +260,7 @@ $P{ad_language}.equals("it_CH")?"MwSt":
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{VAT_Amount}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{VAT_Amount}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585" key="textField-16" x="112" y="0" width="85" height="12" forecolor="#000000"/>
@@ -368,8 +268,8 @@ $P{ad_language}.equals("it_CH")?"MwSt":
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxrate}.floatValue() == 0 ?
-    $V{TaxFree}:
-    $V{TaxRate}]]></textFieldExpression>
+    $R{TaxFree}:
+    $R{TaxRate}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
@@ -379,7 +279,7 @@ $P{ad_language}.equals("it_CH")?"MwSt":
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{HUTotal}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{HUTotal}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement uuid="effa9ea2-2983-4839-921b-ed1a4cd6cfae" key="textField-16" x="222" y="0" width="12" height="12" forecolor="#000000"/>
@@ -414,8 +314,8 @@ $P{ad_language}.equals("it_CH")?"MwSt":
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxrate}.floatValue() == 0 ?
-    $V{TaxFree}:
-    $V{TaxRate}]]></textFieldExpression>
+    $R{TaxFree}:
+    $R{TaxRate}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band>

@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.1000000000000023"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="211"/>
+	<property name="ireport.y" value="96"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -60,36 +60,6 @@ LIMIT 1
 	<field name="displayhu" class="java.lang.String"/>
 	<field name="c_order_id" class="java.lang.Integer"/>
 	<field name="movementdate" class="java.sql.Date"/>
-	<variable name="Page" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Seite":
-$P{ad_language}.equals("fr_CH")?"Page":
-$P{ad_language}.equals("it_CH")?"Seite":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Seite":
-$P{ad_language}.equals("fr_CH")?"Page":
-$P{ad_language}.equals("it_CH")?"Seite":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="RecipientSignature" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Unterschrift Empfänger":
-$P{ad_language}.equals("fr_CH")?"Signature réception":
-$P{ad_language}.equals("it_CH")?"Unterschrift Empfänger":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Unterschrift Empfänger":
-$P{ad_language}.equals("fr_CH")?"Signature réception":
-$P{ad_language}.equals("it_CH")?"Unterschrift Empfänger":
-""]]></initialValueExpression>
-	</variable>
-	<variable name="ShipperSignature" class="java.lang.String">
-		<variableExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Unterschrift Lieferant":
-$P{ad_language}.equals("fr_CH")?"Signature fournisseur":
-$P{ad_language}.equals("it_CH")?"Unterschrift Lieferant":
-""]]></variableExpression>
-		<initialValueExpression><![CDATA[$P{ad_language}.equals("de_CH")?"Unterschrift Lieferant":
-$P{ad_language}.equals("fr_CH")?"Signature fournisseur":
-$P{ad_language}.equals("it_CH")?"Unterschrift Lieferant":
-""]]></initialValueExpression>
-	</variable>
 	<title>
 		<band height="269" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
@@ -208,7 +178,7 @@ $P{ad_language}.equals("it_CH")?"Unterschrift Lieferant":
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="93">
+		<band height="75">
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
 				<reportElement uuid="85172f8d-b93e-4eda-9c02-1a7cddd32913" key="textField-62" x="529" y="21" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
@@ -246,16 +216,8 @@ $P{ad_language}.equals("it_CH")?"Unterschrift Lieferant":
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Page}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
 			</textField>
-			<subreport isUsingCache="true">
-				<reportElement uuid="a1ef87ac-5fb9-4f7e-a50e-e520bc29995d" key="subreport-7" x="0" y="0" width="595" height="93"/>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
-			</subreport>
 		</band>
 	</pageFooter>
 	<lastPageFooter>
@@ -284,7 +246,7 @@ $P{ad_language}.equals("it_CH")?"Unterschrift Lieferant":
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Page}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
 				<reportElement uuid="85172f8d-b93e-4eda-9c02-1a7cddd32913" key="textField-62" x="529" y="96" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
@@ -300,33 +262,25 @@ $P{ad_language}.equals("it_CH")?"Unterschrift Lieferant":
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="02b7b566-3ec1-453d-823a-bce6f71fe49d" x="26" y="4" width="147" height="13"/>
+				<reportElement uuid="02b7b566-3ec1-453d-823a-bce6f71fe49d" x="26" y="7" width="147" height="13"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{RecipientSignature}+":"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{RecipientSignature}+":"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="2c6ae606-0cb0-43d7-85eb-9684da7dadbc" x="26" y="41" width="143" height="13"/>
+				<reportElement uuid="2c6ae606-0cb0-43d7-85eb-9684da7dadbc" x="26" y="44" width="143" height="13"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{ShipperSignature}+":"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{ShipperSignature}+":"]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="8120a350-fd62-4566-bed5-a0f810936b3b" x="156" y="52" width="397" height="1"/>
+				<reportElement uuid="8120a350-fd62-4566-bed5-a0f810936b3b" x="156" y="55" width="397" height="1"/>
 			</line>
 			<line>
-				<reportElement uuid="27908fa3-b612-4e95-b799-091a08d11d7c" x="156" y="15" width="397" height="1"/>
+				<reportElement uuid="27908fa3-b612-4e95-b799-091a08d11d7c" x="156" y="18" width="397" height="1"/>
 			</line>
-			<subreport isUsingCache="true">
-				<reportElement uuid="a1ef87ac-5fb9-4f7e-a50e-e520bc29995d" key="subreport-7" x="0" y="57" width="595" height="93"/>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
-			</subreport>
 		</band>
 	</lastPageFooter>
 </jasperReport>
