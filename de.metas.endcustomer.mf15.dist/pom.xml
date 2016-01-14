@@ -65,8 +65,17 @@
 		</dependency>
 
 <!-- 
-SQL and jasper dependencies
+SQL and jasper dependencies:
+note: when adding new records, please roughly order them by alphabet.
  -->
+ 		<dependency>
+			<groupId>de.metas.acct</groupId>
+			<artifactId>de.metas.acct.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
