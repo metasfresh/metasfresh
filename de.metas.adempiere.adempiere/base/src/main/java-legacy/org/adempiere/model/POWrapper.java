@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableSet;
 
 /**
  * Wrap a PO object to a given bean interface. Example
- * 
+ *
  * <pre>
  * public interface I_C_Invoice_Customized
  * {
@@ -60,19 +60,19 @@ import com.google.common.collect.ImmutableSet;
  * invoiceCustomized.setCustomString1("my test string");
  * invoice.saveEx();
  * </pre>
- * 
+ *
  * @author Teo Sarca, teo.sarca@gmail.com
  */
 public class POWrapper implements InvocationHandler
 {
-	public static <T> T create(Object po, Class<T> cl)
+	public static <T> T create(final Object po, final Class<T> cl)
 	{
 		final Boolean useOldValues = null; // take it from wrapped object if any, else "false"
 		final String trlAdLanguage = null; // take it from wrapped object if any, else fallback to std way of getting it
 		return create(po, cl, useOldValues, trlAdLanguage);
 	}
 
-	public static <T> T create(Object po, Class<T> cl, boolean useOldValues)
+	public static <T> T create(final Object po, final Class<T> cl, final boolean useOldValues)
 	{
 		final String trlAdLanguage = null;
 		return create(po, cl, useOldValues, trlAdLanguage);
@@ -150,7 +150,7 @@ public class POWrapper implements InvocationHandler
 
 	/**
 	 * Create a new instance of given interface
-	 * 
+	 *
 	 * @param <T> model interface
 	 * @param ctx context
 	 * @param id record id
@@ -158,18 +158,15 @@ public class POWrapper implements InvocationHandler
 	 * @param trxName db transaction name
 	 * @return new instance or null if not found
 	 */
-	public static <T> T create(Properties ctx, int id, Class<T> cl, String trxName)
+	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, final String trxName)
 	{
-		if (id < 0)
-			return null;
-
-		String tableName = getTableName(cl);
+		final String tableName = getTableName(cl); // won't return null
 		return create(ctx, tableName, id, cl, trxName);
 	}
 
 	/**
 	 * Create a new instance of given interface
-	 * 
+	 *
 	 * @param <T> model interface
 	 * @param ctx context
 	 * @param tableName table name to be queried
@@ -178,14 +175,15 @@ public class POWrapper implements InvocationHandler
 	 * @param trxName db transaction name
 	 * @return new instance or null if not found
 	 */
-	public static <T> T create(Properties ctx, final String tableName, int id, Class<T> modelClass, String trxName)
+	public static <T> T create(final Properties ctx, final String tableName, final int id, final Class<T> modelClass, final String trxName)
 	{
-		if (id < 0)
+		Check.assumeNotNull(tableName, "tableName not null");
+
+		if (id < getFirstValidIdByColumnName(tableName + "_ID"))
 		{
 			return null;
 		}
 
-		Check.assumeNotNull(tableName, "tableName not null");
 		final PO po = tableModelLoader.getPO(ctx, tableName, id, trxName);
 
 		if (po == null || po.get_ID() != id)
@@ -196,7 +194,7 @@ public class POWrapper implements InvocationHandler
 		return create(po, modelClass);
 	}
 
-	public static <T> T create(Properties ctx, Class<T> cl, String trxName)
+	public static <T> T create(final Properties ctx, final Class<T> cl, final String trxName)
 	{
 		final String tableName = getTableName(cl);
 		final PO po = tableModelLoader.newPO(ctx, tableName, trxName);
@@ -208,13 +206,13 @@ public class POWrapper implements InvocationHandler
 		return create(po, cl);
 	}
 
-	public static <T> T translate(T model, Class<T> cl)
+	public static <T> T translate(final T model, final Class<T> cl)
 	{
 		final String trlAdLanguage = null; // autodetect from context
 		return translate(model, cl, trlAdLanguage);
 	}
 
-	public static <T> T translate(T model, Class<T> cl, String trlAdLanguage)
+	public static <T> T translate(final T model, final Class<T> cl, String trlAdLanguage)
 	{
 		final PO po = getPO(model);
 
@@ -235,12 +233,12 @@ public class POWrapper implements InvocationHandler
 
 	/**
 	 * Method calls {@link #getPO(Object, boolean)} with <code>checkOtherWrapper=true</code>.
-	 * 
+	 *
 	 * @param <T>
 	 * @param model
 	 * @return underlying {@link PO} or null
 	 */
-	public static <T extends PO> T getPO(Object model)
+	public static <T extends PO> T getPO(final Object model)
 	{
 		final boolean checkOtherWrapper = true;
 		@SuppressWarnings("unchecked")
@@ -250,7 +248,7 @@ public class POWrapper implements InvocationHandler
 	}
 
 	/**
-	 * 
+	 *
 	 * @param model
 	 * @param checkOtherWrapper if the given <code>model</code> is handled by a {@link GridTabWrapper} and this param is <code>true</code>, then this method <b>loads a new PO from DB</b>, only using
 	 *            the given <code>model</code>'s table name and record ID. If this param is <code>false</code> and <code>model</code> is not handled by <code>POWrapper</code>, then this method returns
@@ -258,7 +256,7 @@ public class POWrapper implements InvocationHandler
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends PO> T getPO(Object model, boolean checkOtherWrapper)
+	public static <T extends PO> T getPO(final Object model, final boolean checkOtherWrapper)
 	{
 		if (model == null)
 		{
@@ -272,13 +270,13 @@ public class POWrapper implements InvocationHandler
 
 		if (Proxy.isProxyClass(model.getClass()))
 		{
-			InvocationHandler ih = Proxy.getInvocationHandler(model);
+			final InvocationHandler ih = Proxy.getInvocationHandler(model);
 			if (ih instanceof POWrapper)
 			{
 				final POWrapper wrapper = (POWrapper)ih;
 				return (T)wrapper.getPO();
 			}
-			if (checkOtherWrapper && (ih instanceof GridTabWrapper))
+			if (checkOtherWrapper && ih instanceof GridTabWrapper)
 			{
 				// using the grid tab wrapper to load the PO
 				final GridTab gridTab = GridTabWrapper.getGridTab(model);
@@ -309,7 +307,7 @@ public class POWrapper implements InvocationHandler
 
 	/**
 	 * Get model context.
-	 * 
+	 *
 	 * @param model
 	 * @return
 	 */
@@ -321,9 +319,9 @@ public class POWrapper implements InvocationHandler
 
 	/**
 	 * Get context form model.
-	 * If <code>useClientOrgFromModel</code> is true, then the returned context will contain the given <code>model</code>'s AD_Client_ID and AD_Org_ID in its
-	 * <code>#AD_client_ID</code> and <code>#AD_Org_ID</code> properties.
-	 * 
+	 * If <code>useClientOrgFromModel</code> is true, then the returned context will contain the given <code>model</code>'s AD_Client_ID and AD_Org_ID in its <code>#AD_client_ID</code> and
+	 * <code>#AD_Org_ID</code> properties.
+	 *
 	 * @param model
 	 * @param useClientOrgFromModel
 	 * @return
@@ -372,11 +370,13 @@ public class POWrapper implements InvocationHandler
 		return Env.getCtx();
 	}
 
-	public static String getTrxName(Object model)
+	public static String getTrxName(final Object model)
 	{
-		PO po = getPO(model);
+		final PO po = getPO(model);
 		if (po != null)
+		{
 			return po.get_TrxName();
+		}
 
 		// Notify developer that (s)he is using wrong models
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
@@ -389,13 +389,13 @@ public class POWrapper implements InvocationHandler
 	}
 
 	/**
-	 * 
+	 *
 	 * @param clazz
 	 * @return
 	 * @throws AdempiereException
 	 * @see {@link InterfaceWrapperHelper#getTableName(Class)}
 	 */
-	public static final String getTableName(Class<?> clazz) throws AdempiereException
+	public static final String getTableName(final Class<?> clazz) throws AdempiereException
 	{
 		return InterfaceWrapperHelper.getTableName(clazz);
 	}
@@ -408,7 +408,7 @@ public class POWrapper implements InvocationHandler
 	private final String trlAdLanguage;
 	private final IModelClassInfo modelClassInfo;
 
-	private POWrapper(Class<?> interfaceClass, PO po, boolean useOldValues, String trlAdLanguage)
+	private POWrapper(final Class<?> interfaceClass, final PO po, final boolean useOldValues, final String trlAdLanguage)
 	{
 		super();
 		this.po = po;
@@ -416,7 +416,7 @@ public class POWrapper implements InvocationHandler
 		this.interfaceClass = interfaceClass;
 
 		// FIXME: handle the case when interfaceClass is not an model interface
-		this.modelClassInfo = ModelClassIntrospector.getInstance().getModelClassInfo(this.interfaceClass);
+		modelClassInfo = ModelClassIntrospector.getInstance().getModelClassInfo(this.interfaceClass);
 
 		this.trlAdLanguage = trlAdLanguage;
 	}
@@ -438,7 +438,7 @@ public class POWrapper implements InvocationHandler
 
 	/**
 	 * Gets model's implementation class
-	 * 
+	 *
 	 * @return model's implementation class; never return null
 	 */
 	private final Class<?> getModelClassImpl()
@@ -451,7 +451,7 @@ public class POWrapper implements InvocationHandler
 		return po.getPOInfo().getColumnNames();
 	}
 
-	protected int getColumnIndex(String name)
+	protected int getColumnIndex(final String name)
 	{
 		return po.get_ColumnIndex(name);
 	}
@@ -461,12 +461,12 @@ public class POWrapper implements InvocationHandler
 		return po.getPOInfo().isVirtualColumn(columnName);
 	}
 
-	public boolean isKeyColumnName(String columnName)
+	public boolean isKeyColumnName(final String columnName)
 	{
 		return po.getPOInfo().isKey(columnName);
 	}
 
-	public boolean isCalculated(String columnName)
+	public boolean isCalculated(final String columnName)
 	{
 		return po.getPOInfo().isCalculated(columnName);
 	};
@@ -491,9 +491,13 @@ public class POWrapper implements InvocationHandler
 		if (boolean.class.equals(returnType))
 		{
 			if (value == null)
+			{
 				return false;
+			}
 			else
+			{
 				return value instanceof Boolean ? value : "Y".equals(value);
+			}
 		}
 		else
 		{
@@ -502,15 +506,19 @@ public class POWrapper implements InvocationHandler
 
 	}
 
-	protected int getValueAsInt(int index)
+	protected int getValueAsInt(final int index)
 	{
 		if (useOldValues)
+		{
 			return po.get_ValueOldAsInt(index);
+		}
 		else
+		{
 			return po.get_ValueAsInt(index);
+		}
 	}
 
-	protected boolean setValue(String name, Object value)
+	protected boolean setValue(final String name, Object value)
 	{
 		if (useOldValues)
 		{
@@ -548,7 +556,7 @@ public class POWrapper implements InvocationHandler
 		}
 	}
 
-	protected void setValueFromPO(String name, Class<?> clazz, Object value)
+	protected void setValueFromPO(final String name, final Class<?> clazz, final Object value)
 	{
 		if (useOldValues)
 		{
@@ -561,7 +569,7 @@ public class POWrapper implements InvocationHandler
 	}
 
 	// NOTE: public until we move everything to "org.adempiere.ad.model.util" package.
-	public static final Object checkZeroIdValue(String columnName, Object value)
+	public static final Object checkZeroIdValue(final String columnName, final Object value)
 	{
 		if (!(value instanceof Integer))
 		{
@@ -588,6 +596,11 @@ public class POWrapper implements InvocationHandler
 		return id;
 	}
 
+	/**
+	 * Returns 0 if there is (or could be) a valid record with ID=0), like for example <code>AD_User_ID</code>.
+	 * @param columnName
+	 * @return
+	 */
 	public static final int getFirstValidIdByColumnName(final String columnName)
 	{
 		if (_ColumnNamesWithFirstValidIdZERO.contains(columnName))
@@ -613,7 +626,7 @@ public class POWrapper implements InvocationHandler
 			.add("M_AttributeSetInstance_ID")
 			.build();
 
-	protected Object invokeParent(Method method, Object[] args) throws Exception
+	protected Object invokeParent(final Method method, final Object[] args) throws Exception
 	{
 		return method.invoke(po, args);
 	}
@@ -643,14 +656,14 @@ public class POWrapper implements InvocationHandler
 	}
 
 	@Override
-	public Object invoke(Object proxy_NOTUSED, Method method, Object[] args) throws Throwable
+	public Object invoke(final Object proxy_NOTUSED, final Method method, final Object[] args) throws Throwable
 	{
 		return modelClassInfo.getMethodInfo(method).invoke(modelInternalAccessor, args);
 	}
 
 	/**
 	 * Load object that is referenced by given property. Example: getReferencedObject("M_Product_ID", method) should load the M_Product record with ID given by M_Product_ID property name;
-	 * 
+	 *
 	 * @param columnName value column name (e.g. M_Product_ID, AD_Client_ID etc)
 	 * @param method
 	 * @return model
@@ -669,7 +682,7 @@ public class POWrapper implements InvocationHandler
 		return getModelValue(po, columnName, columnModelType, poMethod);
 	}
 
-	private final static <ModelType> ModelType getModelValue(final PO model, final String columnName, Class<ModelType> columnModelType, final Method poMethod) throws Exception
+	private final static <ModelType> ModelType getModelValue(final PO model, final String columnName, final Class<ModelType> columnModelType, final Method poMethod) throws Exception
 	{
 		if (poMethod != null)
 		{
@@ -696,7 +709,7 @@ public class POWrapper implements InvocationHandler
 
 	}
 
-	public static <ModelType> ModelType getModelValue(final Object model, final String columnName, Class<ModelType> columnModelType)
+	public static <ModelType> ModelType getModelValue(final Object model, final String columnName, final Class<ModelType> columnModelType)
 	{
 		final PO po = getPO(model, false);
 		Check.assumeNotNull(po, "po not null");
@@ -706,7 +719,7 @@ public class POWrapper implements InvocationHandler
 		{
 			return getModelValue(po, columnName, columnModelType, poMethod);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException("Failed while retrieving model from " + columnName + " of " + model, e);
 		}
@@ -714,7 +727,7 @@ public class POWrapper implements InvocationHandler
 
 	private transient Map<String, POWrapperCacheLocal> poCacheLocals;
 
-	private POWrapperCacheLocal get_POCacheLocal(String columnName, final Class<?> refModelClass)
+	private POWrapperCacheLocal get_POCacheLocal(final String columnName, final Class<?> refModelClass)
 	{
 		if (poCacheLocals == null)
 		{
@@ -738,10 +751,12 @@ public class POWrapper implements InvocationHandler
 		return poCache;
 	}
 
-	public static void save(Object o)
+	public static void save(final Object o)
 	{
 		if (o == null)
+		{
 			throw new IllegalArgumentException("model is null");
+		}
 
 		final PO po = getPO(o);
 		if (po != null)
@@ -757,20 +772,22 @@ public class POWrapper implements InvocationHandler
 	public static void delete(final Object o)
 	{
 		if (o == null)
+		{
 			throw new IllegalArgumentException("model is null");
+		}
 
 		final PO po = getPO(o);
 		if (po != null)
 		{
 			boolean force = false;
-			
+
 			// If the Processed column is a virtual column then we have to NOT check and enforce it,
 			// because the caller has no option to unset it.
 			if (po.getPOInfo().isVirtualColumn("Processed"))
 			{
 				force = true;
 			}
-			
+
 			po.deleteEx(force);
 		}
 		else
@@ -779,23 +796,25 @@ public class POWrapper implements InvocationHandler
 		}
 	}
 
-	public static boolean isHandled(Object model)
+	public static boolean isHandled(final Object model)
 	{
 		return getPO(model, false) != null; // checkOtherWrapper=false
 	}
 
 	/**
 	 * Reload underlying PO object in same transaction as it was
-	 * 
+	 *
 	 * @param model
 	 * @see #refresh(Object, String)
 	 * @throws IllegalArgumentException if model is null
 	 * @throws IllegalArgumentException if there is no underlying PO object (i.e. getPO(model) return null)
 	 */
-	public static void refresh(Object model)
+	public static void refresh(final Object model)
 	{
 		if (model == null)
+		{
 			throw new IllegalArgumentException("model is null");
+		}
 		final PO po = getPO(model);
 		if (po == null)
 		{
@@ -807,7 +826,7 @@ public class POWrapper implements InvocationHandler
 
 	/**
 	 * Reload underlying PO object
-	 * 
+	 *
 	 * @param model
 	 * @param trxName transaction to be used for reloading
 	 * @throws IllegalArgumentException if model is null
@@ -816,7 +835,9 @@ public class POWrapper implements InvocationHandler
 	public static void refresh(final Object model, final String trxName)
 	{
 		if (model == null)
+		{
 			throw new IllegalArgumentException("model is null");
+		}
 		final PO po = getPO(model);
 		if (po == null)
 		{
@@ -829,7 +850,9 @@ public class POWrapper implements InvocationHandler
 	public static void setTrxName(final Object model, final String trxName)
 	{
 		if (model == null)
+		{
 			throw new IllegalArgumentException("model is null");
+		}
 		final PO po = getPO(model);
 		if (po == null)
 		{
@@ -842,12 +865,12 @@ public class POWrapper implements InvocationHandler
 
 	/**
 	 * Check if given columnName's value is null
-	 * 
+	 *
 	 * @param model
 	 * @param columnName
 	 * @return true if columnName's value is null
 	 */
-	public static boolean isNull(Object model, String columnName)
+	public static boolean isNull(final Object model, final String columnName)
 	{
 		final PO po = getPO(model, false);
 		if (po == null)
@@ -872,7 +895,7 @@ public class POWrapper implements InvocationHandler
 		return value;
 	}
 
-	public static boolean hasModelColumnName(Object model, String columnName)
+	public static boolean hasModelColumnName(final Object model, final String columnName)
 	{
 		final PO po = getPO(model, false);
 		if (po == null)
@@ -884,7 +907,7 @@ public class POWrapper implements InvocationHandler
 		return idx >= 0;
 	}
 
-	public static boolean hasColumnName(Class<?> modelClass, String columnName)
+	public static boolean hasColumnName(final Class<?> modelClass, final String columnName)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
@@ -895,7 +918,7 @@ public class POWrapper implements InvocationHandler
 
 		return poInfo.hasColumnName(columnName);
 	}
-	
+
 	public boolean hasColumnName(final String columnName)
 	{
 		return po.getPOInfo().hasColumnName(columnName);
@@ -906,12 +929,12 @@ public class POWrapper implements InvocationHandler
 		return getPO(model, false).is_new();
 	}
 
-	public static boolean isUIAction(Object model)
+	public static boolean isUIAction(final Object model)
 	{
 		return getPO(model, false).is_ManualUserAction();
 	}
 
-	public static boolean isRecordChanged(Object model)
+	public static boolean isRecordChanged(final Object model)
 	{
 		final PO po = getPO(model);
 		Check.assumeNotNull(po, "po not null for {0}", model);
@@ -919,13 +942,13 @@ public class POWrapper implements InvocationHandler
 		return po.is_Changed();
 	}
 
-	public static boolean isValueChanged(Object model, String columnName)
+	public static boolean isValueChanged(final Object model, final String columnName)
 	{
 		final PO po = getPO(model);
 		Check.assumeNotNull(po, "po not null for {0}", model);
 		return isPOValueChanged(po, columnName);
 	}
-	
+
 	/**
 	 * @param model
 	 * @param columnNames
@@ -942,7 +965,7 @@ public class POWrapper implements InvocationHandler
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -959,35 +982,35 @@ public class POWrapper implements InvocationHandler
 		return changed;
 	}
 
-	public static boolean hasChanges(Object model)
+	public static boolean hasChanges(final Object model)
 	{
 		Check.assumeNotNull(model, "model not null");
 		final PO po = getPO(model, false); // checkOtherWrapper=false
 		return po.is_Changed();
 	}
-	
+
 	public static final boolean isOldValues(final Object model)
 	{
 		final POWrapper wrapper = getPOWrapperOrNull(model);
 		return wrapper == null ? false : wrapper.useOldValues;
 	}
-	
-	public static IModelInternalAccessor getModelInternalAccessor(Object model)
+
+	public static IModelInternalAccessor getModelInternalAccessor(final Object model)
 	{
 		Check.assumeNotNull(model, "model not null");
-		
+
 		if (model instanceof PO)
 		{
 			final PO po = (PO)model;
 			return new POModelInternalAccessor(po);
 		}
-		
+
 		final POWrapper wrapper = getPOWrapperOrNull(model);
 		if (wrapper != null)
 		{
 			return wrapper.modelInternalAccessor;
 		}
-		
+
 		return null;
 	}
 
@@ -995,50 +1018,50 @@ public class POWrapper implements InvocationHandler
 	private final IModelInternalAccessor modelInternalAccessor = new IModelInternalAccessor()
 	{
 		@Override
-		public void setValueFromPO(String idColumnName, Class<?> parameterType, Object value)
+		public void setValueFromPO(final String idColumnName, final Class<?> parameterType, final Object value)
 		{
 			POWrapper.this.setValueFromPO(idColumnName, parameterType, value);
 		}
 
 		@Override
-		public boolean setValue(String columnName, Object value)
+		public boolean setValue(final String columnName, final Object value)
 		{
 			return POWrapper.this.setValue(columnName, value);
 		}
-		
+
 		@Override
-		public boolean setValueNoCheck(String columnName, Object value)
+		public boolean setValueNoCheck(final String columnName, final Object value)
 		{
 			return POWrapper.this.setValueNoCheck(columnName, value);
 		};
 
 		@Override
-		public Object invokeParent(Method method, Object[] methodArgs) throws Exception
+		public Object invokeParent(final Method method, final Object[] methodArgs) throws Exception
 		{
 			return POWrapper.this.invokeParent(method, methodArgs);
 		}
 
 		@Override
-		public boolean invokeEquals(Object[] methodArgs)
+		public boolean invokeEquals(final Object[] methodArgs)
 		{
 			return POWrapper.this.invokeEquals(methodArgs);
 		}
 
 		@Override
-		public Object getValue(String columnName, int idx, Class<?> returnType)
+		public Object getValue(final String columnName, final int idx, final Class<?> returnType)
 		{
 			return POWrapper.this.getValue(columnName, idx, returnType);
 		}
-		
+
 		@Override
-		public Object getValue(String columnName, Class<?> returnType)
+		public Object getValue(final String columnName, final Class<?> returnType)
 		{
 			final int columnIndex = POWrapper.this.getColumnIndex(columnName);
 			return POWrapper.this.getValue(columnName, columnIndex, returnType);
 		}
 
 		@Override
-		public Object getReferencedObject(String columnName, Method interfaceMethod) throws Exception
+		public Object getReferencedObject(final String columnName, final Method interfaceMethod) throws Exception
 		{
 			return POWrapper.this.getReferencedObject(columnName, interfaceMethod);
 		}
@@ -1050,31 +1073,31 @@ public class POWrapper implements InvocationHandler
 		}
 
 		@Override
-		public int getColumnIndex(String columnName)
+		public int getColumnIndex(final String columnName)
 		{
 			return POWrapper.this.getColumnIndex(columnName);
 		}
 
 		@Override
-		public boolean isVirtualColumn(String columnName)
+		public boolean isVirtualColumn(final String columnName)
 		{
 			return POWrapper.this.isVirtualColumn(columnName);
 		}
 
 		@Override
-		public boolean isKeyColumnName(String columnName)
+		public boolean isKeyColumnName(final String columnName)
 		{
 			return POWrapper.this.isKeyColumnName(columnName);
 		};
-		
+
 		@Override
-		public boolean isCalculated(String columnName)
+		public boolean isCalculated(final String columnName)
 		{
 			return POWrapper.this.isCalculated(columnName);
 		}
 
 		@Override
-		public boolean hasColumnName(String columnName)
+		public boolean hasColumnName(final String columnName)
 		{
 			return POWrapper.this.hasColumnName(columnName);
 		}

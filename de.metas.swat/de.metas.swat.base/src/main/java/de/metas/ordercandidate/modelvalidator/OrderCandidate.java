@@ -44,6 +44,7 @@ import de.metas.ordercandidate.api.IOLCandValdiatorBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.impl.DefaultGroupingProvider;
 import de.metas.ordercandidate.spi.impl.OLCandASIAwareFactory;
+import de.metas.ordercandidate.spi.impl.OLCandLocationValidator;
 import de.metas.ordercandidate.spi.impl.OLCandPriceValidator;
 import de.metas.ordercandidate.spi.impl.OLCandPricingASIListener;
 import de.metas.ordercandidate.spi.impl.OLCandUOMValidator;
@@ -63,6 +64,8 @@ public class OrderCandidate extends AbstractModuleInterceptor
 
 		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandPriceValidator());
 		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandUOMValidator());
+		//task 09623
+		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandLocationValidator());
 
 		Services.get(IAttributeSetInstanceAwareFactoryService.class).registerFactory(I_C_OLCand.Table_Name, new OLCandASIAwareFactory()); // task 08803
 

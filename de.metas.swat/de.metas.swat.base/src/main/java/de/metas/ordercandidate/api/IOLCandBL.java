@@ -10,18 +10,17 @@ package de.metas.ordercandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -49,7 +48,7 @@ public interface IOLCandBL extends ISingletonService
 
 	/**
 	 * Creates and updates orders.
-	 * 
+	 *
 	 * @param ctx
 	 * @param processor
 	 * @param process Optional. If set, progress info is logged to the given instance
@@ -64,7 +63,7 @@ public interface IOLCandBL extends ISingletonService
 	/**
 	 * Method creates a <code>ModelRelationTarget</code> instance that contains the basic data required to add an explicit relation between the given <code>processor</code> and a set of
 	 * {@link I_C_OLCand}s.
-	 * 
+	 *
 	 * @param processor
 	 * @param sourceWindowId
 	 * @param sourceTabName
@@ -77,7 +76,7 @@ public interface IOLCandBL extends ISingletonService
 
 	/**
 	 * Registers a listener to be informed about events regarding order line candidates.
-	 * 
+	 *
 	 * @param l
 	 */
 	void registerOLCandListener(IOLCandListener l);
@@ -98,7 +97,7 @@ public interface IOLCandBL extends ISingletonService
 	 * <li>{@link I_C_OLCand#getDiscount()}</li>
 	 * <li>etc</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param olc the order line candidate for which we compute the priceActual
 	 * @param qtyOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getQty()}
 	 * @param pricingSystemIdOverride if <code>>0</code>, then this value is used instead of {@link I_C_OLCand#getM_PricingSystem_ID()}
