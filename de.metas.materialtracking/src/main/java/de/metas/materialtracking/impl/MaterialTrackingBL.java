@@ -43,7 +43,7 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 {
 
 	private final CompositeMaterialTrackingListener listeners = new CompositeMaterialTrackingListener();
-	
+
 	/**
 	 * Is material tracking module enabled ?
 	 *
@@ -183,6 +183,5 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 		InterfaceWrapperHelper.delete(ref);
 		listeners.afterModelUnlinked(model, materialTrackingOld);
 	}
-	
-	
+
 }

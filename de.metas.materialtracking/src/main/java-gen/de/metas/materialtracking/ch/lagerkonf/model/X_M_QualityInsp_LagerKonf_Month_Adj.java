@@ -129,15 +129,15 @@ public class X_M_QualityInsp_LagerKonf_Month_Adj extends org.compiere.model.PO i
 	}
 
 	@Override
-	public de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version getM_QualityInsp_LagerKonf_Version() throws RuntimeException
+	public I_M_QualityInsp_LagerKonf_Version getM_QualityInsp_LagerKonf_Version() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_M_QualityInsp_LagerKonf_Version_ID, de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version.class);
+		return get_ValueAsPO(COLUMNNAME_M_QualityInsp_LagerKonf_Version_ID, I_M_QualityInsp_LagerKonf_Version.class);
 	}
 
 	@Override
-	public void setM_QualityInsp_LagerKonf_Version(de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version M_QualityInsp_LagerKonf_Version)
+	public void setM_QualityInsp_LagerKonf_Version(I_M_QualityInsp_LagerKonf_Version M_QualityInsp_LagerKonf_Version)
 	{
-		set_ValueFromPO(COLUMNNAME_M_QualityInsp_LagerKonf_Version_ID, de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version.class, M_QualityInsp_LagerKonf_Version);
+		set_ValueFromPO(COLUMNNAME_M_QualityInsp_LagerKonf_Version_ID, I_M_QualityInsp_LagerKonf_Version.class, M_QualityInsp_LagerKonf_Version);
 	}
 
 	/** Set Lagerkonferenz-Version.

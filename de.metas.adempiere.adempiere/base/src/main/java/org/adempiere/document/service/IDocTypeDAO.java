@@ -10,18 +10,17 @@ package org.adempiere.document.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -35,7 +34,7 @@ public interface IDocTypeDAO extends ISingletonService
 	String DOCSUBTYPE_Any = null;
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @param docBaseType
 	 * @param adClientId
@@ -46,7 +45,7 @@ public interface IDocTypeDAO extends ISingletonService
 	int getDocTypeIdOrNull(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @param docBaseType
 	 * @param adClientId
@@ -58,7 +57,7 @@ public interface IDocTypeDAO extends ISingletonService
 	int getDocTypeId(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @param docBaseType
 	 * @param docSubType doc sub type or {@link #DOCSUBTYPE_Any}.
@@ -72,9 +71,11 @@ public interface IDocTypeDAO extends ISingletonService
 
 	I_C_DocType getDocTypeOrNull(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
 
+	I_C_DocType getDocTypeOrNull(Properties ctx, String docBaseType, String docSubType, int adClientId, int adOrgId, String trxName);
+
 	/**
 	 * Retrieve all the doc types of a certain base type as a list
-	 * 
+	 *
 	 * @param ctx
 	 * @param docBaseType
 	 * @param adClientId only DocTypes with the given <code>AD_Client_ID</code> will be returned

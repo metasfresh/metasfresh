@@ -29,10 +29,12 @@ import org.adempiere.util.ISingletonService;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.model.validator.C_Invoice_Candidate;
+import de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.PP_Order_MaterialTracking_Handler;
 
 /**
- * Retrieve different records which are related to creating/updating invoice candidates. Used by {@link de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.PP_Order_MaterialTracking_Handler}
- * and {@link de.metas.materialtracking.model.validator.C_Invoice_Candidate}.
+ * Retrieve different records which are related to creating/updating invoice candidates. Used by {@link PP_Order_MaterialTracking_Handler}
+ * and {@link C_Invoice_Candidate}.
  *
  */
 public interface IQualityInspectionHandlerDAO extends ISingletonService

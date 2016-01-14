@@ -161,15 +161,15 @@ public class X_M_Material_Tracking_Ref extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public de.metas.materialtracking.model.I_M_Material_Tracking getM_Material_Tracking() throws RuntimeException
+	public I_M_Material_Tracking getM_Material_Tracking() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Material_Tracking_ID, de.metas.materialtracking.model.I_M_Material_Tracking.class);
+		return get_ValueAsPO(COLUMNNAME_M_Material_Tracking_ID, I_M_Material_Tracking.class);
 	}
 
 	@Override
-	public void setM_Material_Tracking(de.metas.materialtracking.model.I_M_Material_Tracking M_Material_Tracking)
+	public void setM_Material_Tracking(I_M_Material_Tracking M_Material_Tracking)
 	{
-		set_ValueFromPO(COLUMNNAME_M_Material_Tracking_ID, de.metas.materialtracking.model.I_M_Material_Tracking.class, M_Material_Tracking);
+		set_ValueFromPO(COLUMNNAME_M_Material_Tracking_ID, I_M_Material_Tracking.class, M_Material_Tracking);
 	}
 
 	/** Set Material-Vorgang-ID.

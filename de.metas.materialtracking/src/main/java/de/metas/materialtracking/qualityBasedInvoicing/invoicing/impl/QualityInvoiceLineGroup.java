@@ -82,6 +82,7 @@ public class QualityInvoiceLineGroup implements IQualityInvoiceLineGroup
 	public void setInvoiceableLine(final IQualityInvoiceLine invoiceableLine)
 	{
 		this.invoiceableLine = invoiceableLine;
+		setThisAsParentIfPossible(invoiceableLine);
 	}
 
 	@Override
@@ -95,6 +96,15 @@ public class QualityInvoiceLineGroup implements IQualityInvoiceLineGroup
 	public void setInvoiceableLineOverride(final IQualityInvoiceLine invoiceableLineOverride)
 	{
 		this.invoiceableLineOverride = invoiceableLineOverride;
+		setThisAsParentIfPossible(invoiceableLineOverride);
+	}
+
+	private void setThisAsParentIfPossible(IQualityInvoiceLine invoiceableLineOverride)
+	{
+		if (invoiceableLineOverride instanceof QualityInvoiceLine)
+		{
+			((QualityInvoiceLine)invoiceableLineOverride).setGroup(this);
+		}
 	}
 
 	@Override
@@ -114,6 +124,7 @@ public class QualityInvoiceLineGroup implements IQualityInvoiceLineGroup
 	{
 		Check.assumeNotNull(line, "line not null");
 		detailsBefore.add(line);
+		setThisAsParentIfPossible(line);
 	}
 
 	@Override
@@ -127,6 +138,7 @@ public class QualityInvoiceLineGroup implements IQualityInvoiceLineGroup
 	{
 		Check.assumeNotNull(line, "line not null");
 		detailsAfter.add(line);
+		setThisAsParentIfPossible(line);
 	}
 
 	@Override

@@ -73,10 +73,14 @@ public interface IQualityInspectionOrder
 
 	/**
 	 *
-	 * @return underlying manufacturing order; never return null
+	 * @return underlying manufacturing order; never return <code>null</code>
 	 */
 	I_PP_Order getPP_Order();
 
+	/**
+	 * Return the production materials, (but not scrap).
+	 * @return
+	 */
 	List<IProductionMaterial> getProductionMaterials();
 
 	IProductionMaterial getProductionMaterial(I_M_Product product);
@@ -107,7 +111,7 @@ public interface IQualityInspectionOrder
 
 	/**
 	 *
-	 * @return all manufacturing orders with the same material tracking, including this one.
+	 * @return all manufacturing orders with the same material tracking that were not yet invoiced. That might include this one.
 	 */
 	List<IQualityInspectionOrder> getAllOrders();
 

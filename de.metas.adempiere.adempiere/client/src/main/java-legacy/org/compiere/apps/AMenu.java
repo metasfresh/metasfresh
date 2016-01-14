@@ -647,10 +647,13 @@ public final class AMenu extends CFrame
 	 */
 	private int getNotes()
 	{
-		String sql = "SELECT COUNT(1) FROM AD_Note "
-				+ "WHERE AD_Client_ID=? AND AD_User_ID IN (0,?)"
-				+ " AND Processed='N'";
-		int retValue = DB.getSQLValue(null, sql, Env.getAD_Client_ID(m_ctx), m_AD_User_ID);
+		final int retValue = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Note.class, new PlainContextAware(m_ctx))
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Note.COLUMN_AD_User_ID, m_AD_User_ID)
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_Processed, false) // not yet acknowledged.
+				.addOnlyContextClientOrSystem()
+				.create()
+				.count();
 		return retValue;
 	}	// getNotes
 

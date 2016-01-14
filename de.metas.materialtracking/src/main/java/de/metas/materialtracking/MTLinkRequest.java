@@ -25,12 +25,11 @@ package de.metas.materialtracking;
 
 import javax.annotation.concurrent.Immutable;
 
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.ObjectUtils;
-
-import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /**
  * Used as parameter in {@link IMaterialTrackingBL#linkModelToMaterialTracking(MTLinkRequest)} and also passed to the registered {@link IMaterialTrackingListener}s.<br>

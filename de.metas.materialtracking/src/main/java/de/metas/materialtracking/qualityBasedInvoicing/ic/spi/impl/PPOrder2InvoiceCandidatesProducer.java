@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.model.IContextAware;
@@ -37,12 +36,12 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -63,12 +62,11 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 
 /**
  * Producer which is able to take quality orders ({@link I_PP_Order}s) as input and creates invoice candidates. Called by
- * {@link PP_Order_MaterialTracking_Handler#createMissingCandidates(Properties, int, String)} and {@link PP_Order_MaterialTracking_Handler#createCandidatesFor(Object)} to do the actual creating.
- *
+ * {@link PP_Order_MaterialTracking_Handler#createCandidatesFor(InvoiceCandidateGenerateRequest)} to do the actual creating.
+ * <p/>
  * Also see {@link IQualityInvoiceLineGroupsBuilder} to create the "raw" data and {@link InvoiceCandidateWriter} to actually create the invoice candidate from those groups.
  *
  * @author tsa
- *
  */
 /* package */final class PPOrder2InvoiceCandidatesProducer
 {
@@ -165,81 +163,47 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		// figure out if this is a downPayment. It is, if 'ppOrder' is a quality inspection and not the last one.
 		final boolean ppOrderIsQualityInpection = materialTrackingPPOrderBL.isQualityInspection(ppOrder);
 		final boolean isDownPayment = ppOrderIsQualityInpection && !qualityBasedInvoicingBL.isLastInspection(qiOrder);
-		if (isDownPayment)
+
+		// if the given ppOrder's qiOrder is a downPayment-qiOrder (i.e. there is not yet any existing finalSettlement-qiOrder),
+		// and if there are already ICs for the downPayment-qiOrder, then do nothing
+		if (!qualityBasedInvoicingBL.isLastInspection(qiOrder))
 		{
 			final List<de.metas.invoicecandidate.model.I_C_Invoice_Candidate> downPaymentICs = invoiceCandDAO.retrieveReferencing(qiOrder.getPP_Order());
 			if (!downPaymentICs.isEmpty())
 			{
 				final de.metas.invoicecandidate.model.I_C_Invoice_Candidate firstDownPaymentIC = downPaymentICs.get(0);
 				final String msg = "Skip invoice candidates creation because {0} is a downpayment quality inspection and there are already C_Invoice_Candidates such as {1} for it";
-				loggable.addLog(msg, ppOrder, firstDownPaymentIC);
+				loggable.addLog(msg, qiOrder.getPP_Order(), firstDownPaymentIC);
 				logger.log(Level.INFO, msg, ppOrder, firstDownPaymentIC);
 				return Collections.emptyList();
 			}
 		}
 
-		//
-		// Make sure all original invoice candidates (of original purchase order) are valid.
-		// If not, we shall postpone this computation because makes no sense. We will wait for better times (i.e. when original invoice candidates are valid)
-		//
-		// Make sure all original invoice candidates (of original purchase order) are valid.
-		// If not, we shall postpone this computation because makes no sense. We will wait for better times (i.e. when original invoice candidates are valid)
 		final I_M_Material_Tracking materialTracking = materialTrackingDocuments.getM_Material_Tracking();
+
 		final List<I_C_Invoice_Candidate> originalInvoiceCandidates = qualityInspectionHandlerDAO.retrieveOriginalInvoiceCandidates(materialTracking, I_C_Invoice_Candidate.class);
-		if (originalInvoiceCandidates.isEmpty())
-		{
-			final String msg = "Postponing invoice candidates creation for model {0} because there are no original C_Invoice_Candidates for M_Material_Tracking {1}";
-			logger.log(Level.INFO, msg, ppOrder, materialTracking);
-			loggable.addLog(msg, ppOrder, materialTracking);
-			return Collections.emptyList();
-		}
-		for (final I_C_Invoice_Candidate originalIC : originalInvoiceCandidates)
-		{
-			if (originalIC.isToRecompute())
-			{
-				final String msg = "Postponing invoice candidates creation for PP_Order {0} because original C_Invoice_Candidate {1} is not (yet?) valid";
-				logger.log(Level.INFO, msg, ppOrder, originalIC);
-				loggable.addLog(msg, ppOrder, originalIC);
-				return Collections.emptyList();
-			}
 
-			if (!originalIC.isToClear())
-			{
-				// this can happen if the user created a tracking with a product & partner that have/has no contract. This shouldn't kill the whole IC-process.
-				final String msg = "Postponing invoice candidates creation for model {0} because original C_Invoice_Candidate {1} has IsToClear='N'";
-				logger.log(Level.INFO, msg, ppOrder, originalIC);
-				loggable.addLog(msg, ppOrder, originalIC);
-				return Collections.emptyList();
-			}
-		}
-
-		//
-		// Iterate invoice candidates of original purchase order and generate invoice candidates for quality order
-		final InvoiceCandidateAsVendorInvoicingInfo vendorInvoicingInfo = new InvoiceCandidateAsVendorInvoicingInfo();
-		for (final I_C_Invoice_Candidate originalIc : originalInvoiceCandidates)
-		{
-			vendorInvoicingInfo.add(originalIc);
-		}
-		final I_M_PricingSystem pricingSystem = vendorInvoicingInfo.getM_PricingSystem();
-
-		final Collection<I_M_PriceList_Version> plvs = materialTrackingDocuments.setPricingSystemLoadPLVs(pricingSystem);
+		final Collection<I_M_PriceList_Version> plvs = materialTrackingDocuments.getPriceListVersions();
 		if (plvs.isEmpty())
 		{
-			loggable.addLog("Found no M_PriceList_Version for pricingSystem {0}; ppOrder {1}", pricingSystem, ppOrder);
+			loggable.addLog("Found no M_PriceList_Version for materialTrackingDocuments {0}; ppOrder {1}", materialTrackingDocuments, ppOrder);
 		}
 
 		final List<I_C_Invoice_Candidate> result = new ArrayList<>();
-		for (I_M_PriceList_Version plv : plvs)
+		for (final I_M_PriceList_Version plv : plvs)
 		{
 			final IVendorReceipt<I_M_InOutLine> vendorReceiptForPLV = materialTrackingDocuments.getVendorReceiptForPLV(plv);
 
-			vendorInvoicingInfo.setM_PriceList_Version(plv);
+			final IVendorInvoicingInfo vendorInvoicingInfo = materialTrackingDocuments.getVendorInvoicingInfoForPLV(plv);
 
 			final IQualityBasedConfig config = qiOrder.getQualityBasedConfig();
 
 			//
 			// Create invoice line groups
-			final List<IQualityInvoiceLineGroup> invoiceLineGroups = createQualityInvoiceLineGroups(context, materialTrackingDocuments, vendorReceiptForPLV, vendorInvoicingInfo);
+			final List<IQualityInvoiceLineGroup> invoiceLineGroups = createQualityInvoiceLineGroups(
+					materialTrackingDocuments,
+					vendorReceiptForPLV,
+					vendorInvoicingInfo);
 
 			//
 			// Create invoice candidates from those groups
@@ -276,15 +240,16 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		return result;
 	}
 
-	private List<IQualityInvoiceLineGroup> createQualityInvoiceLineGroups(final IContextAware context,
+	private List<IQualityInvoiceLineGroup> createQualityInvoiceLineGroups(
 			final IMaterialTrackingDocuments materialTrackingDocuments,
-			@SuppressWarnings("rawtypes") final IVendorReceipt vendorReceipt, // only the add() method is parameterized and the won't use that method here, so it's safe to suppress
-			final IVendorInvoicingInfo vendorInvoicingInfo)
+			@SuppressWarnings("rawtypes") final IVendorReceipt vendorReceipt, // only the add() and getModels methods are parametrized and the won't use them here, so it's safe to suppress
+			final IVendorInvoicingInfo vendorInvoicingInfo
+			)
 	{
 		Check.assumeNotNull(materialTrackingDocuments, "materialTrackingDocuments not null");
 		Check.assumeNotNull(vendorReceipt,
-				"vendorReceipt not null;\nmaterialTrackingDocuments={0}\nvendorInvoicingInfo={1}",
-				materialTrackingDocuments, vendorInvoicingInfo);
+				"vendorReceipt not null;\nmaterialTrackingDocuments={0}",
+				materialTrackingDocuments);
 
 		final IQualityInspectionOrder qiOrder = materialTrackingDocuments.getQualityInspectionOrderOrNull();
 		// we can be sure it's not null because if it was then this method would not be called.
@@ -296,7 +261,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 
 		//
 		// Configure: Qty received from Vendor (reference Qty)
-		invoiceLineGroupsBuilder.setReceiptFromVendor(vendorReceipt);
+		invoiceLineGroupsBuilder.setVendorReceipt(vendorReceipt);
 
 		//
 		// Configure: pricing context to be used
@@ -307,8 +272,9 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 
 		//
 		// Execute builder and create invoice line groups
-		invoiceLineGroupsBuilder.create();
-		final List<IQualityInvoiceLineGroup> invoiceLineGroups = invoiceLineGroupsBuilder.getCreatedInvoiceLineGroups();
+		final List<IQualityInvoiceLineGroup> invoiceLineGroups = invoiceLineGroupsBuilder
+				.create()
+				.getCreatedInvoiceLineGroups();
 
 		// Log builder configuration and status
 		logger.log(Level.INFO, "{0}", invoiceLineGroupsBuilder);

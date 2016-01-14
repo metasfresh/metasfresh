@@ -10,18 +10,17 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -31,18 +30,23 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.Util;
 
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderService;
+import de.metas.materialtracking.qualityBasedInvoicing.spi.IInvoicedSumProvider;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfigProvider;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGroupsBuilderProvider;
 
 public class QualityBasedSpiProviderService implements IQualityBasedSpiProviderService
 {
-	private static final String SYSCONFIG_QualityBasedConfigProvider = "de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfigProvider";
-	private static final String SYSCONFIG_QualityInvoiceLineGroupsBuilderProvider = "de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGroupsBuilderProvider";
+	private static final String SYSCONFIG_QualityBasedConfigProvider = "IQualityBasedConfigProvider";
+	private static final String SYSCONFIG_QualityInvoiceLineGroupsBuilderProvider = "IQualityInvoiceLineGroupsBuilderProvider";
 
 	private IQualityBasedConfigProvider qualityBasedConfigProvider;
 	private IQualityBasedConfigProvider qualityBasedConfigProviderDefault;
+
 	private IQualityInvoiceLineGroupsBuilderProvider qualityInvoiceLineGroupsBuilderProvider;
 	private IQualityInvoiceLineGroupsBuilderProvider qualityInvoiceLineGroupsBuilderProviderDefault;
+
+	private IInvoicedSumProvider invoicedSumProvider;
+	private IInvoicedSumProvider invoicedSumProviderDefault = new InvoicedSumProvider();
 
 	public QualityBasedSpiProviderService()
 	{
@@ -122,5 +126,21 @@ public class QualityBasedSpiProviderService implements IQualityBasedSpiProviderS
 	public void setQualityInvoiceLineGroupsBuilderProvider(final IQualityInvoiceLineGroupsBuilderProvider qualityInvoiceLineGroupsBuilderProvider)
 	{
 		this.qualityInvoiceLineGroupsBuilderProvider = qualityInvoiceLineGroupsBuilderProvider;
+	}
+
+	@Override
+	public void setInvoicedSumProvider(final IInvoicedSumProvider invoicedSumProvider)
+	{
+		this.invoicedSumProvider = invoicedSumProvider;
+	}
+
+	@Override
+	public IInvoicedSumProvider getInvoicedSumProvider()
+	{
+		if (invoicedSumProvider != null)
+		{
+			return invoicedSumProvider;
+		}
+		return invoicedSumProviderDefault;
 	}
 }

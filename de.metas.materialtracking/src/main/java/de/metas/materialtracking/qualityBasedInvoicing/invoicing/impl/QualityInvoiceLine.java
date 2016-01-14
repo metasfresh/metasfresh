@@ -25,12 +25,14 @@ package de.metas.materialtracking.qualityBasedInvoicing.invoicing.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
+import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup;
 
 public class QualityInvoiceLine implements IQualityInvoiceLine
 {
@@ -44,6 +46,7 @@ public class QualityInvoiceLine implements IQualityInvoiceLine
 	private String description = null;
 	private IHandlingUnitsInfo handlingUnitsInfo;
 	private I_PP_Order ppOrder;
+	private IQualityInvoiceLineGroup qualityInvoiceLineGroup;
 
 	@Override
 	public String toString()
@@ -61,6 +64,19 @@ public class QualityInvoiceLine implements IQualityInvoiceLine
 				+ ", ppOrder=" + ppOrder
 				+ ", handlingUnitsInfo=" + handlingUnitsInfo
 				+ "]";
+	}
+
+	@Override public IQualityInvoiceLineGroup getGroup()
+	{
+		return qualityInvoiceLineGroup;
+	}
+
+	/*package*/ void setGroup(final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
+	{
+		Check.errorIf(this.qualityInvoiceLineGroup != null,
+				"This instance {0} was already added to qualityInvoiceLineGroup {1}; can't be added to {2}",
+				this, this.qualityInvoiceLineGroup, qualityInvoiceLineGroup);
+		this.qualityInvoiceLineGroup = qualityInvoiceLineGroup;
 	}
 
 	@Override

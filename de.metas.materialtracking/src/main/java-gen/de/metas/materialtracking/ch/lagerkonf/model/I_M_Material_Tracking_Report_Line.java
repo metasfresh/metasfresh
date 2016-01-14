@@ -211,12 +211,12 @@ public interface I_M_Material_Tracking_Report_Line
 	 */
 	public int getM_Material_Tracking_Report_ID();
 
-	public de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report getM_Material_Tracking_Report();
+	public I_M_Material_Tracking_Report getM_Material_Tracking_Report();
 
-	public void setM_Material_Tracking_Report(de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report M_Material_Tracking_Report);
+	public void setM_Material_Tracking_Report(I_M_Material_Tracking_Report M_Material_Tracking_Report);
 
     /** Column definition for M_Material_Tracking_Report_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line, de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report> COLUMN_M_Material_Tracking_Report_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line, de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report>(I_M_Material_Tracking_Report_Line.class, "M_Material_Tracking_Report_ID", de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report.class);
+    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line, I_M_Material_Tracking_Report> COLUMN_M_Material_Tracking_Report_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line, I_M_Material_Tracking_Report>(I_M_Material_Tracking_Report_Line.class, "M_Material_Tracking_Report_ID", I_M_Material_Tracking_Report.class);
     /** Column name M_Material_Tracking_Report_ID */
     public static final String COLUMNNAME_M_Material_Tracking_Report_ID = "M_Material_Tracking_Report_ID";
 

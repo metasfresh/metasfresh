@@ -87,28 +87,28 @@ public class QualityInspectionLinesBuilder
 		return new QualityInspectionLinesCollection(getCreatedQualityInspectionLines(), _qiOrder);
 	}
 
-	private final IQualityInspectionOrder getQualityInspectionOrder()
+	private IQualityInspectionOrder getQualityInspectionOrder()
 	{
 		// not null
 		return _qiOrder;
 	}
 
-	private final IProductionMaterial getRawProductionMaterial()
+	private IProductionMaterial getRawProductionMaterial()
 	{
 		return getQualityInspectionOrder().getRawProductionMaterial();
 	}
 
-	private final List<IProductionMaterial> getAllProductionMaterials()
+	private List<IProductionMaterial> getAllProductionMaterials()
 	{
 		return getQualityInspectionOrder().getProductionMaterials();
 	}
 
-	private final IProductionMaterial getScrapProductionMaterial()
+	private IProductionMaterial getScrapProductionMaterial()
 	{
 		return getQualityInspectionOrder().getScrapProductionMaterial();
 	}
 
-	private final IProductionMaterial getMainProducedProductionMaterial()
+	private IProductionMaterial getMainProducedProductionMaterial()
 	{
 		return getQualityInspectionOrder().getMainProductionMaterial();
 	}
@@ -119,13 +119,13 @@ public class QualityInspectionLinesBuilder
 		_receiptFromVendor = receiptFromVendor;
 	}
 
-	private final IVendorReceipt<?> getReceiptFromVendor()
+	private IVendorReceipt<?> getReceiptFromVendor()
 	{
 		Check.assumeNotNull(_receiptFromVendor, "_receiptFromVendor not null");
 		return _receiptFromVendor;
 	}
 
-	private final BigDecimal getQtyReceivedFromVendor(final I_C_UOM uomTo)
+	private BigDecimal getQtyReceivedFromVendor(final I_C_UOM uomTo)
 	{
 		Check.assumeNotNull(uomTo, "uomTo not null");
 

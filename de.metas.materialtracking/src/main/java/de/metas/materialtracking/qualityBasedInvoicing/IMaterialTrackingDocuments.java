@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -47,7 +46,10 @@ public interface IMaterialTrackingDocuments
 	I_M_Material_Tracking getM_Material_Tracking();
 
 	/**
-	 * @return all {@link IQualityInspectionOrder}s linked to this material tracking, ordered by the value of {@link IQualityInspectionOrder#getDateOfProduction()}
+	 * Return all "real" {@link IQualityInspectionOrder}s with {@link IQualityInspectionOrder#isQualityInspection()} <code>=true</code>, which linked to this material tracking,<br>
+	 * ordered by the value of {@link IQualityInspectionOrder#getDateOfProduction()}.
+	 *
+	 * @return
 	 */
 	List<IQualityInspectionOrder> getQualityInspectionOrders();
 
@@ -67,15 +69,7 @@ public interface IMaterialTrackingDocuments
 	 */
 	void linkModelToMaterialTracking(Object model);
 
-	/**
-	 * Iterate all PP_Orders and find out to which PLV they belong, according to their inout's <code>MovementDate</code>.
-	 *
-	 * @param pricingSystem
-	 * @return all price list versions related to our quality inspection orders
-	 */
-	Collection<I_M_PriceList_Version> setPricingSystemLoadPLVs(I_M_PricingSystem pricingSystem);
-
-	List<IQualityInspectionOrder> getQualityInspectionOrdersForPLV(I_M_PriceList_Version plv);
+	List<IQualityInspectionOrder> getProductionOrdersForPLV(I_M_PriceList_Version plv);
 
 	IVendorReceipt<I_M_InOutLine> getVendorReceiptForPLV(I_M_PriceList_Version plv);
 
@@ -88,4 +82,8 @@ public interface IMaterialTrackingDocuments
 	 * @task http://dewiki908/mediawiki/index.php/09657_WP-Auswertung_wird_beim_Schlie%C3%9Fen_nicht_erstellt_%28109750474442%29
 	 */
 	void considerPPOrderAsClosed(I_PP_Order ppOrder);
+
+	Collection<I_M_PriceList_Version> getPriceListVersions();
+
+	IVendorInvoicingInfo getVendorInvoicingInfoForPLV(I_M_PriceList_Version plv);
 }

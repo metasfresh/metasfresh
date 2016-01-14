@@ -1,12 +1,13 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -18,14 +19,12 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.process.DocAction;
-import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IPPCostCollectorDAO;
-import org.eevolution.model.I_PP_Cost_Collector;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
@@ -33,12 +32,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.adempiere.model.I_M_PriceList;
+import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
-import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 
 /*
  * #%L
@@ -92,16 +91,30 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 		return plvs.values();
 	}
 
+	/**
+	 * @param plv
+	 * @return those {@link IQualityInspectionOrder}s that are not yet invoiced.
+	 */
 	public final List<IQualityInspectionOrder> getQualityInspectionOrdersForPLV(final I_M_PriceList_Version plv)
 	{
 		Check.assumeNotNull(plv, "Param plv not null");
 		return plvId2qiOrders.get(plv.getM_PriceList_Version_ID());
 	}
 
+	/**
+	 * @param plv
+	 * @return the vendor receipt info that belongs to the given <code>plv</code> and that was not yet issued at all or that was issued to <code>PP_Order</code>s this were not yet invoiced.
+	 */
 	public IVendorReceipt<I_M_InOutLine> getVendorReceiptForPLV(final I_M_PriceList_Version plv)
 	{
 		Check.assumeNotNull(plv, "Param plv not null");
 		return plvId2vendorReceipt.get(plv.getM_PriceList_Version_ID());
+	}
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
 	}
 
 	public static final class Builder
@@ -109,25 +122,29 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 		// services
 		private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 		private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-		private final transient IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
-		private final transient IPPOrderMInOutLineRetrievalService ppOrderMInOutLineRetrievalService = Services.get(IPPOrderMInOutLineRetrievalService.class);
 
 		//
 		// Parameters
 		private I_M_PricingSystem _pricingSystem;
 		private Integer _materialTrackingId;
-		private List<IQualityInspectionOrder> _qualityInspectionOrders;
+		private List<IQualityInspectionOrder> _allProductionOrders;
+		private Set<Integer> _notYetInvoicedPPOrderIDs;
 
 		//
 		// Built/prepared values
+
+		/**
+		 * Those qiOrders that were not yet invoiced
+		 */
 		private final ListMultimap<Integer, IQualityInspectionOrder> plvId2qiOrders = ArrayListMultimap.create();
 		private final Map<Integer, IVendorReceipt<I_M_InOutLine>> plvId2vendorReceipt = new HashMap<>();
 		private final Map<Integer, I_M_PriceList_Version> plvs = new TreeMap<>();
+		private final Map<Integer, List<I_M_InOutLine>> ppOrderId2Iols = new HashMap<>();
+
+		private final Set<Integer> inOutLinesThatWereAlreadyInvoiced = new HashSet<>();
 
 		private Builder()
 		{
-			super();
 		}
 
 		public MaterialTrackingDocumentsPricingInfo build()
@@ -135,7 +152,7 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 			//
 			// Build: M_PriceList_Version_ID to Quality Inspection Orders
 			// Build: Price List Versions map
-			for (final IQualityInspectionOrder productionOrder : getQualityInspectionOrders())
+			for (final IQualityInspectionOrder productionOrder : getProductionOrders())
 			{
 				final I_PP_Order ppOrder = productionOrder.getPP_Order();
 				final Pair<I_M_PriceList_Version, List<I_M_InOutLine>> plvAndIols = providePriceListVersionOrNullForPPOrder(ppOrder);
@@ -155,8 +172,27 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 				// Not just the ones that were already issued, but all of them which were received within the valid-period of the given plv.
 
 				//
-				// add to plvId2qiOrders
-				plvId2qiOrders.put(plvId, productionOrder);
+				// add to plvId2qiOrders, unless it was already invoiced
+				if (getNotYetInvoicedPPOrderIDs().contains(ppOrder.getPP_Order_ID()))
+				{
+					plvId2qiOrders.put(plvId, productionOrder);
+				}
+				ppOrderId2Iols.put(ppOrder.getPP_Order_ID(), plvAndIols.getSecond());
+			}
+
+			//
+			// collect those iols that were already invoiced.
+			for (final IQualityInspectionOrder productionOrder : getProductionOrders())
+			{
+				final int ppOrderId = productionOrder.getPP_Order().getPP_Order_ID();
+				if (getNotYetInvoicedPPOrderIDs().contains(ppOrderId))
+				{
+					continue;
+				}
+				for (final I_M_InOutLine alreadyInvoicedIol : ppOrderId2Iols.get(ppOrderId))
+				{
+					inOutLinesThatWereAlreadyInvoiced.add(alreadyInvoicedIol.getM_InOutLine_ID());
+				}
 			}
 
 			//
@@ -164,7 +200,10 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 			for (final I_M_PriceList_Version plv : plvs.values())
 			{
 				final IVendorReceipt<I_M_InOutLine> vendorReceipt = createVendorReceipt(plv);
-				plvId2vendorReceipt.put(plv.getM_PriceList_Version_ID(), vendorReceipt);
+				if (vendorReceipt.getModels().size() > 0)
+				{
+					plvId2vendorReceipt.put(plv.getM_PriceList_Version_ID(), vendorReceipt);
+				}
 			}
 
 			return new MaterialTrackingDocumentsPricingInfo(this);
@@ -174,40 +213,29 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 		{
 			I_M_PriceList_Version plv = null;
 
-			final List<I_M_InOutLine> allIssuedInOutLines = new ArrayList<>();
-
 			// we don't really care about the PP_Order's date. what we need to know is the movementDate of the material receipt (inout)
-			for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.retrieveForOrder(ppOrder))
+			final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
+			final List<I_M_InOutLine> issuedInOutLinesForPPOrder = materialTrackingPPOrderBL.retrieveIssuedInOutLines(ppOrder);
+			for (final I_M_InOutLine inOutLine : issuedInOutLinesForPPOrder)
 			{
-				if (!ppCostCollectorBL.isMaterialIssue(cc, true))
+				final I_M_PriceList_Version inOutLinePLV = retrivePLV(inOutLine);
+				Check.errorIf(inOutLinePLV == null, "Unable to retrieve a plv for inOutLine {0} and pricingSystem {1}.", inOutLine, getM_PricingSystem());
+
+				if (plv == null)
 				{
-					continue;
+					plv = inOutLinePLV;
 				}
-
-				final List<I_M_InOutLine> issuedInOutLinesForCC = ppOrderMInOutLineRetrievalService.provideIssuedInOutLines(cc);
-				allIssuedInOutLines.addAll(issuedInOutLinesForCC);
-
-				for (final I_M_InOutLine inOutLine : issuedInOutLinesForCC)
+				else if (plv.getM_PriceList_Version_ID() != inOutLinePLV.getM_PriceList_Version_ID())
 				{
-					final I_M_PriceList_Version inOutLinePLV = retrivePLV(inOutLine);
-					Check.errorIf(inOutLinePLV == null, "Unable to retrieve a priceListVersion for inOutLine {0} and pricingSystem {1}.", inOutLine, getM_PricingSystem());
-
-					if (plv == null)
-					{
-						plv = inOutLinePLV;
-					}
-					else if (plv.getM_PriceList_Version_ID() != inOutLinePLV.getM_PriceList_Version_ID())
-					{
-						// note that this shall actually be prevented by the system in the first place
-						Check.errorIf(
-								true,
-								"For an earlier inOutLine the priceListVersion {0} was retreived, but for inOutLine {1}, the priceListVersion {2} was retrieved;\npricingSystem: {3};\nppOrder: {4};\ncostCollector: {5}",
-								plv, inOutLine, inOutLinePLV, getM_PricingSystem(), ppOrder, cc);
-					}
+					// note that this shall actually be prevented by the system in the first place
+					Check.errorIf(
+							true,
+							"For an earlier inOutLine the priceListVersion {0} was retreived, but for inOutLine {1}, the priceListVersion {2} was retrieved;\npricingSystem: {3};\nppOrder",
+							plv, inOutLine, inOutLinePLV, getM_PricingSystem(), ppOrder);
 				}
 			}
 
-			return new Pair<I_M_PriceList_Version, List<I_M_InOutLine>>(plv, allIssuedInOutLines);
+			return new Pair<I_M_PriceList_Version, List<I_M_InOutLine>>(plv, issuedInOutLinesForPPOrder);
 		}
 
 		private I_M_PriceList_Version retrivePLV(final I_M_InOutLine inOutLine)
@@ -236,6 +264,12 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 			return plv;
 		}
 
+		/**
+		 * The created vendor receipt contains only those iols that do not belong to a PP_Order that are already invoiced.
+		 *
+		 * @param plv
+		 * @return
+		 */
 		private final IVendorReceipt<I_M_InOutLine> createVendorReceipt(final I_M_PriceList_Version plv)
 		{
 			//
@@ -256,16 +290,24 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 					.andCollectChildren(org.compiere.model.I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class)
 					.addEqualsFilter(IMaterialTrackingAware.COLUMNNAME_M_Material_Tracking_ID, getM_Material_Tracking_ID())
 					.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial, false)
-					.orderBy().addColumn(org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy() // can't hurt to be a bit predictable
+
+					// can't hurt to be a bit predictable
+					.orderBy().addColumn(org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy()
 					.create()
 					.iterate(I_M_InOutLine.class);
 
-			final IVendorReceipt<I_M_InOutLine> vendorReceipt = new InOutLineAsVendorReceipt();
+			final InOutLineAsVendorReceipt vendorReceipt = new InOutLineAsVendorReceipt();
+			vendorReceipt.setPlv(plv);
+
 			while (inOutLines.hasNext())
 			{
-				vendorReceipt.add(inOutLines.next());
+				final I_M_InOutLine iol = inOutLines.next();
+				if (inOutLinesThatWereAlreadyInvoiced.contains(iol.getM_InOutLine_ID()))
+				{
+					continue;
+				}
+				vendorReceipt.add(iol);
 			}
-
 			return vendorReceipt;
 		}
 
@@ -300,16 +342,32 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 			return _materialTrackingId;
 		}
 
-		public Builder setQualityInspectionOrders(final List<IQualityInspectionOrder> qualityInspectionOrders)
+		public Builder setAllProductionOrders(final List<IQualityInspectionOrder> qualityInspectionOrders)
 		{
-			_qualityInspectionOrders = qualityInspectionOrders;
+			_allProductionOrders = qualityInspectionOrders;
 			return this;
 		}
 
-		private List<IQualityInspectionOrder> getQualityInspectionOrders()
+		private List<IQualityInspectionOrder> getProductionOrders()
 		{
-			Check.assumeNotNull(_qualityInspectionOrders, "_qualityInspectionOrders not null");
-			return _qualityInspectionOrders;
+			Check.assumeNotNull(_allProductionOrders, "_qualityInspectionOrders not null");
+			return _allProductionOrders;
+		}
+
+		public Builder setNotYetInvoicedProductionOrders(final List<IQualityInspectionOrder> qualityInspectionOrders)
+		{
+			_notYetInvoicedPPOrderIDs = new HashSet<>();
+			for (final IQualityInspectionOrder order : qualityInspectionOrders)
+			{
+				_notYetInvoicedPPOrderIDs.add(order.getPP_Order().getPP_Order_ID());
+			}
+			return this;
+		}
+
+		private Set<Integer> getNotYetInvoicedPPOrderIDs()
+		{
+			Check.assumeNotNull(_notYetInvoicedPPOrderIDs, "_notYetInvoicedProductionOrders not null");
+			return _notYetInvoicedPPOrderIDs;
 		}
 	}
 }

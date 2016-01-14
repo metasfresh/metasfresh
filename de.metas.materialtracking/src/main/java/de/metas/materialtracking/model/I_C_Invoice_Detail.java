@@ -24,6 +24,9 @@ package de.metas.materialtracking.model;
  * #L%
  */
 
+import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+
 public interface I_C_Invoice_Detail extends de.metas.invoicecandidate.model.I_C_Invoice_Detail
 {
 	// @formatter:off
@@ -36,4 +39,8 @@ public interface I_C_Invoice_Detail extends de.metas.invoicecandidate.model.I_C_
 	 void setPP_Order(I_PP_Order PP_Order);
 	 I_PP_Order getPP_Order();
 	// @formatter:on
+
+
+	ModelDynAttributeAccessor<I_C_Invoice_Detail, IQualityInvoiceLine> DYNATTR_C_Invoice_Detail_IQualityInvoiceLine =
+			new ModelDynAttributeAccessor<>(IQualityInvoiceLine.class);
 }

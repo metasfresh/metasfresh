@@ -24,7 +24,7 @@ package org.adempiere.pricing.model;
 
 public interface I_M_PriceList_Version extends org.compiere.model.I_M_PriceList_Version
 {
-	// Column IsInDispute
+	// @formatter:off
 	public static final String COLUMNNAME_Processed = "Processed";
 	public void setProcessed(boolean Processed);
 	public boolean isProcessed();

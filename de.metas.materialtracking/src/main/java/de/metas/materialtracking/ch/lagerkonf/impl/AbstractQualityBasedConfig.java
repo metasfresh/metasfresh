@@ -76,12 +76,12 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 	// NOTE: public for testing
 	public static final List<QualityInvoiceLineGroupType> QualityInvoiceLineGroupType_ForInvoicing = Arrays.asList(
 			QualityInvoiceLineGroupType.Scrap,
-			QualityInvoiceLineGroupType.ProducedByProducts,
-			QualityInvoiceLineGroupType.PreceeedingRegularOrderDeduction,
-			QualityInvoiceLineGroupType.AdditionalFee,
-			QualityInvoiceLineGroupType.ProducedMainProduct,
-			QualityInvoiceLineGroupType.ProducedCoProduct,
-			QualityInvoiceLineGroupType.WithholdingAmount
+			QualityInvoiceLineGroupType.ByProduct,
+			QualityInvoiceLineGroupType.ProductionOrder,
+			QualityInvoiceLineGroupType.Fee,
+			QualityInvoiceLineGroupType.MainProduct,
+			QualityInvoiceLineGroupType.CoProduct,
+			QualityInvoiceLineGroupType.Withholding
 			);
 
 	//

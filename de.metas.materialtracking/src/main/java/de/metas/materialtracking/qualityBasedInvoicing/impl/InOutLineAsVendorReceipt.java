@@ -10,12 +10,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,6 +33,7 @@ import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
 import org.compiere.util.CLogger;
@@ -65,18 +66,14 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 	private BigDecimal _qtyReceived = null;
 	private I_C_UOM _qtyReceivedUOM = null;
 	private IHandlingUnitsInfo _handlingUnitsInfo = null;
+	private I_M_PriceList_Version plv;
 
-	public InOutLineAsVendorReceipt(final I_M_InOutLine inOutLine)
+	public InOutLineAsVendorReceipt()
 	{
-		super();
-		add(inOutLine);
 	}
 
-	/**
-	 * Final, because it's called from the constructor.
-	 */
 	@Override
-	public final void add(final I_M_InOutLine inOutLine)
+	public void add(final I_M_InOutLine inOutLine)
 	{
 		Check.assumeNotNull(inOutLine, "inOutLine not null");
 
@@ -87,9 +84,11 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 		inOutLines.add(inOutLine);
 	}
 
-	public InOutLineAsVendorReceipt()
+
+	@Override
+	public List<I_M_InOutLine> getModels()
 	{
-		super();
+		return inOutLines;
 	}
 
 	@Override
@@ -140,6 +139,17 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 		loadQtysIfNeeded();
 		return _handlingUnitsInfo;
 	}
+
+	@Override public I_M_PriceList_Version getPLV()
+	{
+		return plv;
+	}
+
+	/*package*/ void setPlv(I_M_PriceList_Version plv)
+	{
+		this.plv = plv;
+	}
+
 
 	private final void loadQtysIfNeeded()
 	{
@@ -223,6 +233,5 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 		}
 		Check.assume(firstInoutLine.getM_Product_ID() == inoutLine.getM_Product_ID(),
 				"C_Invoice_Candidate {0} and {1} have the same M_Product_ID", firstInoutLine, inoutLine);
-
 	}
 }

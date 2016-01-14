@@ -27,7 +27,7 @@
 	<developers>
 		<developer>
 			<name>metas developer</name>
-			<organizationUrl>>http://www.metas-fresh.com/</organizationUrl>
+			<organizationUrl>http://www.metas-fresh.com/</organizationUrl>
 			<email>info@metas.de</email>
 		</developer>
 	</developers>
@@ -50,6 +50,8 @@
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 
 		<license.name>gpl_v2</license.name>
+
+		<acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
 
 	</properties>
 
@@ -162,6 +164,13 @@
 				<version>1.4.3</version>
 			</dependency>
 
+			<!-- Concordion for acceptance testing-->
+			<dependency>
+				<groupId>org.concordion</groupId>
+				<artifactId>concordion</artifactId>
+				<version>1.5.1</version>
+			</dependency>
+
 			<!--
 			Using dependency management is a workaround for:
 			[WARNING] Rule 0: org.apache.maven.plugins.enforcer.BanDuplicateClasses failed with message:  
@@ -186,41 +195,41 @@
 			</dependency>
 -->
 			<dependency>
+				<groupId>de.metas.adempiere.libero</groupId>
+				<artifactId>de.metas.adempiere.libero.libero</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
 				<artifactId> de.metas.handlingunits.base</artifactId>
 				<groupId>de.metas.handlingunits</groupId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<artifactId>de.metas.document.refid</artifactId>
 				<groupId>de.metas.document</groupId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<artifactId>de.metas.payment.esr</artifactId>
 				<groupId>de.metas.payment.esr</groupId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<artifactId>de.metas.monitoring</artifactId>
 				<groupId>de.metas.monitoring</groupId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<artifactId>de.metas.dimension</artifactId>
 				<groupId>de.metas.dimension</groupId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<artifactId>de.metas.contracts</artifactId>
 				<groupId>de.metas.contracts</groupId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<artifactId>de.metas.materialtracking</artifactId>
 				<groupId>de.metas.materialtracking</groupId>
@@ -261,16 +270,19 @@
 				<artifactId>de.metas.swat.zkwebui</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+
 			<dependency>
 				<groupId>de.metas.swat</groupId>
 				<artifactId>de.metas.swat.ait</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+
 			<dependency>
 				<artifactId>de.metas.swat.base</artifactId>
 				<groupId>de.metas.swat</groupId>
 				<version>${project.version}</version>
 			</dependency>
+
 			<dependency>
 				<groupId>de.metas.storage</groupId>
 				<artifactId>de.metas.storage</artifactId>
@@ -288,6 +300,7 @@
 				<groupId>de.metas.adempiere.adempiere</groupId>
 				<version>${project.version}</version>
 			</dependency>
+
 			<dependency>
 				<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 				<groupId>de.metas.adempiere.adempiere</groupId>
@@ -299,11 +312,13 @@
 				<groupId>de.metas.adempiere.adempiere</groupId>
 				<version>${project.version}</version>
 			</dependency>
+
 			<dependency>
 				<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
 				<groupId>de.metas.adempiere.adempiere</groupId>
 				<version>${project.version}</version>
 			</dependency>
+
 			<dependency>
 				<artifactId>de.metas.adempiere.adempiere.serverRoot.ejb</artifactId>
 				<groupId>de.metas.adempiere.adempiere</groupId>
@@ -319,13 +334,12 @@
 				<groupId>de.metas.adempiere.adempiere</groupId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>de.metas.acct</groupId>
 				<artifactId>de.metas.acct.base</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<artifactId>de.metas.util</artifactId>
 				<groupId>de.metas.util</groupId>
@@ -693,8 +707,11 @@
 
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.18.1</version>
+				<version>2.19.1</version>
 				<configuration>
+					<systemPropertyVariables>
+						<concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
+					</systemPropertyVariables>
 					<includes>
 						<!-- default inclusions, see http://maven.apache.org/surefire/maven-surefire-plugin/examples/inclusion-exclusion.html -->
 						<include>**/Test*.java</include>
@@ -712,12 +729,12 @@
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<configuration>
 					<rules>
-								<!-- task 08834: We shall not leave the decision about plugin-versions to maven.
+						<!-- task 08834: We shall not leave the decision about plugin-versions to maven.
 									Rationale: we had the case that a build stopped working at a *very* critical moment, 
 									because maven picked a more recent version of the jaxb plugin. 
 									That version didn't support the way, we configured it and failed with an error message.
 									This shall not happen again.
-								-->
+						-->
 						<requirePluginVersions>
 							<message>!! We need to have the plugin version under control to avoid build failures due to maven releasing a new plugin version !!</message>
 							<banLatest>true</banLatest>

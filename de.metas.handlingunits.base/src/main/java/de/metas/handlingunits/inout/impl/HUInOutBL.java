@@ -10,12 +10,12 @@ package de.metas.handlingunits.inout.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -125,16 +125,24 @@ public class HUInOutBL implements IHUInOutBL
 	{
 		//
 		// Get TU PI to use
-		// FIXME: this is a nasty workaround
-		// Ideally would by to have M_HU_PI_Item_Product in receipt line
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(inoutLine.getC_OrderLine(), I_C_OrderLine.class);
-		if (orderLine == null)
+		final I_M_HU_PI_Item_Product piItemProduct;
+		if (inoutLine.getM_HU_PI_Item_Product_ID() > 0)
 		{
-			logger.log(Level.WARNING, "Cannot get orderline from inout line: {0}", inoutLine);
-			return null;
+			piItemProduct = inoutLine.getM_HU_PI_Item_Product();
 		}
-
-		final I_M_HU_PI_Item_Product piItemProduct = orderLine.getM_HU_PI_Item_Product();
+		else
+		{
+			// fallback
+			// FIXME: this is a nasty workaround
+			// Ideally would by to have M_HU_PI_Item_Product in receipt line
+			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(inoutLine.getC_OrderLine(), I_C_OrderLine.class);
+			if (orderLine == null)
+			{
+				logger.log(Level.WARNING, "Cannot get orderline from inout line: {0}", inoutLine);
+				return null;
+			}
+			piItemProduct = orderLine.getM_HU_PI_Item_Product();
+		}
 		if (piItemProduct == null)
 		{
 			logger.log(Level.WARNING, "Cannot get PI Item Product from inout line: {0}", inoutLine);

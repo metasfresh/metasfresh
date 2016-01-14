@@ -10,18 +10,17 @@ package de.metas.materialtracking.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +34,7 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 {
 	private int productId = -1;
 	private int bpartnerId = -1;
+	private String lot = null;
 	private Boolean processed = null;
 	private Boolean completeFlatrateTerm = null;
 	private List<?> withLinkedDocuments = null;
@@ -60,9 +60,10 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 	}
 
 	@Override
-	public void setC_BPartner_ID(final int bpartnerId)
+	public IMaterialTrackingQuery setC_BPartner_ID(final int bpartnerId)
 	{
 		this.bpartnerId = bpartnerId;
+		return this;
 	}
 
 	@Override
@@ -72,9 +73,10 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 	}
 
 	@Override
-	public void setM_Product_ID(final int productId)
+	public IMaterialTrackingQuery setM_Product_ID(final int productId)
 	{
 		this.productId = productId;
+		return this;
 	}
 
 	@Override
@@ -84,13 +86,14 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 	}
 
 	@Override
-	public void setProcessed(final Boolean processed)
+	public IMaterialTrackingQuery setProcessed(final Boolean processed)
 	{
 		this.processed = processed;
+		return this;
 	}
 
 	@Override
-	public void setWithLinkedDocuments(final List<?> linkedModels)
+	public IMaterialTrackingQuery setWithLinkedDocuments(final List<?> linkedModels)
 	{
 		if (linkedModels == null || linkedModels.isEmpty())
 		{
@@ -100,6 +103,7 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 		{
 			withLinkedDocuments = new ArrayList<>(linkedModels);
 		}
+		return this;
 	}
 
 	@Override
@@ -109,10 +113,11 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 	}
 
 	@Override
-	public void setOnMoreThanOneFound(final OnMoreThanOneFound onMoreThanOneFound)
+	public IMaterialTrackingQuery setOnMoreThanOneFound(final OnMoreThanOneFound onMoreThanOneFound)
 	{
 		Check.assumeNotNull(onMoreThanOneFound, "onMoreThanOneFound not null");
 		this.onMoreThanOneFound = onMoreThanOneFound;
+		return this;
 	}
 
 	@Override
@@ -122,10 +127,10 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 	}
 
 	@Override
-	public void setCompleteFlatrateTerm(Boolean completeFlatrateTerm)
+	public IMaterialTrackingQuery setCompleteFlatrateTerm(final Boolean completeFlatrateTerm)
 	{
 		this.completeFlatrateTerm = completeFlatrateTerm;
-		
+		return this;
 	}
 
 	@Override
@@ -133,4 +138,18 @@ import de.metas.materialtracking.IMaterialTrackingQuery;
 	{
 		return completeFlatrateTerm;
 	}
+
+	@Override
+	public IMaterialTrackingQuery setLot(final String lot)
+	{
+		this.lot = lot;
+		return this;
+	}
+
+	@Override
+	public String getLot()
+	{
+		return lot;
+	}
+
 }

@@ -27,7 +27,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+
 
 /**
  * Contains vendor invoicing informations.
@@ -59,14 +59,12 @@ public interface IVendorInvoicingInfo
 	 */
 	int getC_Currency_ID();
 
+	I_M_PriceList_Version getM_PriceList_Version();
+
 	/**
 	 * @return vendor pricing system
 	 */
-	int getM_PricingSystem_ID();
-
 	I_M_PricingSystem getM_PricingSystem();
-
-	I_M_PriceList_Version getM_PriceList_Version();
 
 	/**
 	 * @return vendor contract; never return null
@@ -77,14 +75,4 @@ public interface IVendorInvoicingInfo
 	 * @return invoicing rule
 	 */
 	String getInvoiceRule();
-
-	/**
-	 * Add another invoice candidate.
-	 * <p>
-	 * <b>IMPORTANT: </b> No consistency check! only the first added invoiceCandidate will be considered!! TODO: fix that
-	 *
-	 * @param invoiceCandidate
-	 */
-	void add(I_C_Invoice_Candidate invoiceCandidate);
-
 }

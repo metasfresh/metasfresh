@@ -259,12 +259,12 @@ public interface I_M_Material_Tracking_Ref
 	 */
 	public int getM_Material_Tracking_ID();
 
-	public de.metas.materialtracking.model.I_M_Material_Tracking getM_Material_Tracking();
+	public I_M_Material_Tracking getM_Material_Tracking();
 
-	public void setM_Material_Tracking(de.metas.materialtracking.model.I_M_Material_Tracking M_Material_Tracking);
+	public void setM_Material_Tracking(I_M_Material_Tracking M_Material_Tracking);
 
     /** Column definition for M_Material_Tracking_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, de.metas.materialtracking.model.I_M_Material_Tracking> COLUMN_M_Material_Tracking_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, de.metas.materialtracking.model.I_M_Material_Tracking>(I_M_Material_Tracking_Ref.class, "M_Material_Tracking_ID", de.metas.materialtracking.model.I_M_Material_Tracking.class);
+    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, I_M_Material_Tracking> COLUMN_M_Material_Tracking_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, I_M_Material_Tracking>(I_M_Material_Tracking_Ref.class, "M_Material_Tracking_ID", I_M_Material_Tracking.class);
     /** Column name M_Material_Tracking_ID */
     public static final String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
 

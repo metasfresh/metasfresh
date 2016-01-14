@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.service;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,15 +34,15 @@ import org.compiere.model.I_C_Country;
 
 /**
  * @author cg
- * 
+ *
  */
 public interface ICountryDAO extends ISingletonService
 {
-	
-	
+
+
 	/**
 	 * retrieve custom user info
-	 * 
+	 *
 	 * @param ctx
 	 * @param trxName
 	 * @return
@@ -51,13 +51,13 @@ public interface ICountryDAO extends ISingletonService
 
 	/**
 	 * Get Default Country
-	 * 
+	 *
 	 * @param ctx
 	 *            context
 	 * @return Country
 	 */
 	I_C_Country getDefault(Properties ctx);
-	
+
 	/**
 	 * 	Get Country (cached)
 	 * 	@param ctx context
@@ -65,14 +65,13 @@ public interface ICountryDAO extends ISingletonService
 	 *	@return Country
 	 */
 	public I_C_Country get(Properties ctx, int C_Country_ID);
-	
+
 	/**
 	 * Return Countries as Array
-	 * 
+	 *
 	 * @param ctx
 	 *            context
 	 * @return countries
 	 */
 	public List<I_C_Country> getCountries(Properties ctx);
-	
 }

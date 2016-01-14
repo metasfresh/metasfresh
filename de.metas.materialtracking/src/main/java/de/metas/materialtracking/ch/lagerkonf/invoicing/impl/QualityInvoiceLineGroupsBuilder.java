@@ -75,7 +75,7 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
  * Before you start using it you need to configure this builder:
  * <ul>
  * <li>{@link #setPricingContext(IPricingContext)} - set pricing context to be used when calculating the prices
- * <li>{@link #setQtyReceivedFromVendor(BigDecimal, I_C_UOM)} - set Vendor's received Qty/UOM
+ * <li>{@link #setVendorReceipt(IVendorReceipt)} - set Vendor's received Qty/UOM
  * </ul>
  *
  * To generate the {@link IQualityInvoiceLineGroup}s you need to call: {@link #create()}.
@@ -179,22 +179,24 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	}
 
 	@Override
-	public void setReceiptFromVendor(final IVendorReceipt<?> receiptFromVendor)
+	public IQualityInvoiceLineGroupsBuilder setVendorReceipt(final IVendorReceipt<?> receiptFromVendor)
 	{
 		_receiptFromVendor = receiptFromVendor;
+		return this;
 	}
 
-	private IVendorReceipt<?> getReceiptFromVendor()
+	private IVendorReceipt<?> getVendorReceipt()
 	{
 		Check.assumeNotNull(_receiptFromVendor, "_receiptFromVendor not null");
 		return _receiptFromVendor;
 	}
 
 	@Override
-	public void setPricingContext(final IPricingContext pricingContext)
+	public IQualityInvoiceLineGroupsBuilder setPricingContext(final IPricingContext pricingContext)
 	{
 		Check.assumeNotNull(pricingContext, "pricingContext not null");
 		_pricingContext = pricingContext.copy();
+		return this;
 	}
 
 	private IPricingContext getPricingContext()
@@ -209,7 +211,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		{
 			final boolean buildWithAveragedValues = true; // when we invoice we need the average values
 			final QualityInspectionLinesBuilder linesBuilder = new QualityInspectionLinesBuilder(_qiOrder, buildWithAveragedValues);
-			linesBuilder.setReceiptFromVendor(getReceiptFromVendor());
+			linesBuilder.setReceiptFromVendor(getVendorReceipt());
 			linesBuilder.create();
 			_qiLines = linesBuilder.getCreatedQualityInspectionLinesCollection();
 		}
@@ -233,7 +235,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	}
 
 	@Override
-	public void create()
+	public IQualityInvoiceLineGroupsBuilder create()
 	{
 		//
 		// Scrap
@@ -249,7 +251,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// e.g. Futterkarotten
 		for (final IQualityInspectionLine line : getQualityInspectionLinesCollection().getAllByType(QualityInspectionLineType.ProducedByProducts))
 		{
-			createQualityInvoiceLineGroup_ProducedMaterial(line, QualityInvoiceLineGroupType.ProducedByProducts);
+			createQualityInvoiceLineGroup_ProducedMaterial(line, QualityInvoiceLineGroupType.ByProduct);
 		}
 
 		// 08848: for now we create a PreceedingRegularOrder record for all PP_Orders
@@ -278,7 +280,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// i.e. Karotten mittel
 		{
 			final IQualityInspectionLine line = getQualityInspectionLinesCollection().getByType(QualityInspectionLineType.ProducedMain);
-			createQualityInvoiceLineGroup_ProducedMaterial(line, QualityInvoiceLineGroupType.ProducedMainProduct);
+			createQualityInvoiceLineGroup_ProducedMaterial(line, QualityInvoiceLineGroupType.MainProduct);
 		}
 
 		// ok, at this point we can be sure that there is already a invoicing group set!
@@ -316,7 +318,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// i.e. Karotten gross
 		for (final IQualityInspectionLine line : getQualityInspectionLinesCollection().getAllByType(QualityInspectionLineType.ProducedCoProducts))
 		{
-			createQualityInvoiceLineGroup_ProducedMaterial(line, QualityInvoiceLineGroupType.ProducedCoProduct);
+			createQualityInvoiceLineGroup_ProducedMaterial(line, QualityInvoiceLineGroupType.CoProduct);
 		}
 
 		//
@@ -328,16 +330,23 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// TODO: Transport Units(TU) received from vendor
 		{
 		}
+
+		return this;
 	}
 
 	private void createQualityInvoiceLineGroups_RegularOrders()
 	{
 		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
 
-
 		final ILagerKonfQualityBasedConfig config = getQualityBasedConfig();
 
-		final List<IQualityInspectionOrder> allProductionOrders = _materialTrackingDocuments.getQualityInspectionOrdersForPLV(getPricingContext().getM_PriceList_Version());
+		final List<IQualityInspectionOrder> allProductionOrders =
+				_materialTrackingDocuments
+						.getProductionOrdersForPLV(getPricingContext().getM_PriceList_Version());
+
+		// this check is mostly a guard against poorly set up AITs
+		Check.errorIf(allProductionOrders.isEmpty(), "MaterialTrackingDocuments {0} contains no IQualityInspectionOrders for plv {1}",
+				_materialTrackingDocuments, getPricingContext().getM_PriceList_Version());
 
 		final IQualityInspectionLinesCollection qualityInspectionLines = getQualityInspectionLinesCollection();
 		final IQualityInspectionLine producedWithoutByProducts = qualityInspectionLines.getByType(QualityInspectionLineType.ProducedTotalWithoutByProducts);
@@ -354,9 +363,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final Map<Timestamp, QualityInvoiceLineGroup> date2InvoiceLineGroup = new HashMap<Timestamp, QualityInvoiceLineGroup>();
 		for (final IQualityInspectionOrder productionOrder : allProductionOrders)
 		{
-
 			final Timestamp dateOfProduction = TimeUtil.getDay(materialTrackingPPOrderBL.getDateOfProduction(productionOrder.getPP_Order()));
-
 			if (date2InvoiceLineGroup.containsKey(dateOfProduction))
 			{
 				continue; // already created one for this date
@@ -364,7 +371,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			final boolean displayRegularOrderData = isInvoiceRegularOrderForDate(dateOfProduction);
 
-			final QualityInvoiceLineGroup qualityInvoiceLineGroup = new QualityInvoiceLineGroup(QualityInvoiceLineGroupType.PreceeedingRegularOrderDeduction);
+			final QualityInvoiceLineGroup qualityInvoiceLineGroup = new QualityInvoiceLineGroup(QualityInvoiceLineGroupType.ProductionOrder);
 
 			final QualityInvoiceLine invoiceableLine = new QualityInvoiceLine();
 			qualityInvoiceLineGroup.setInvoiceableLine(invoiceableLine);
@@ -402,14 +409,14 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 				priceActual = BigDecimal.ZERO;
 			}
 
-			final IPricingResult pricingResult = createPricingResult(pricingCtx, invoiceableLine, priceActual, invoiceableLine.getC_UOM());
+			final IPricingResult pricingResult = createPricingResult(pricingCtx, priceActual, invoiceableLine.getC_UOM());
 			invoiceableLine.setPrice(pricingResult);
 
 			// the detail that shall override the invoiceable line's displayed infos
-			final QualityInvoiceLine detail = createDetailForSingleRegularOrder(overallRawUOM, huInfo, invoiceableLine.getQty(), labelToUse);
-			detail.setDisplayed(displayRegularOrderData);
+			final QualityInvoiceLine invoicableDetailLineOverride = createDetailForSingleRegularOrder(overallRawUOM, huInfo, invoiceableLine.getQty(), labelToUse);
+			invoicableDetailLineOverride.setDisplayed(displayRegularOrderData);
 
-			qualityInvoiceLineGroup.setInvoiceableLineOverride(detail);
+			qualityInvoiceLineGroup.setInvoiceableLineOverride(invoicableDetailLineOverride);
 
 			date2InvoiceLineGroup.put(dateOfProduction, qualityInvoiceLineGroup);
 
@@ -422,9 +429,9 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		//
 		// now iterate allRegularOrders again, create one non-displayed detail for each PP_Order and aggregate them on the per-date-groups
-		for (final IQualityInspectionOrder regularOrder : allProductionOrders)
+		for (final IQualityInspectionOrder productionOrder : allProductionOrders)
 		{
-			final Timestamp dateOfProduction = TimeUtil.getDay(materialTrackingPPOrderBL.getDateOfProduction(regularOrder.getPP_Order()));
+			final Timestamp dateOfProduction = TimeUtil.getDay(materialTrackingPPOrderBL.getDateOfProduction(productionOrder.getPP_Order()));
 
 			if (isInvoiceRegularOrderForDate(dateOfProduction))
 			{
@@ -438,7 +445,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			if (firstItem && isInvoiceRegularOrderForDate(dateOfProduction))
 			{
 				// note that we only need such a "label" line if isInvoiceRegularOrderForDate() is true
-				final IProductionMaterial currentRawProductionMaterial = regularOrder.getRawProductionMaterial();
+				final IProductionMaterial currentRawProductionMaterial = productionOrder.getRawProductionMaterial();
 				final I_C_UOM uom = currentRawProductionMaterial.getC_UOM();
 
 				final QualityInvoiceLine detailBefore = new QualityInvoiceLine();
@@ -451,7 +458,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 				detailBefore.setM_Product(config.getRegularPPOrderProduct());
 			}
 
-			final QualityInvoiceLine ppOrderDetailLine = createQualityInvoiceLineDetail_RegularOrder(regularOrder,
+			final QualityInvoiceLine ppOrderDetailLine = createQualityInvoiceLineDetail_RegularOrder(productionOrder,
 					overallAvgProducedQtyPerTU,
 					invoiceLineGroup
 							.getInvoiceableLine()
@@ -466,7 +473,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			final QualityInvoiceLine invoicableDetailLine = (QualityInvoiceLine)invoiceLineGroup.getInvoiceableLine();
 			final QualityInvoiceLine invoicableDetailLineOverride = (QualityInvoiceLine)invoiceLineGroup.getInvoiceableLineOverride();
 
-			// note that if isInvoiceRegularOrderForDate() is not true, then we do not update the invoicable line,
+			// note that if isInvoiceRegularOrderForDate() is not true, then we do not update the invoiceable line,
 			// but just the "override"-line (for diagnostics and debugging)
 			if (isInvoiceRegularOrderForDate(dateOfProduction))
 			{
@@ -506,11 +513,13 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		//
 		// if there is *not* a PP_Order for each received HU *and* if where have a quality adjustment, then we need to explicitly deal with the rest
 		final int missingQtyTU = overallRawHUInfo.getQtyTU() - qtyTUSum;
-		final Timestamp dateForMissingQtyTUs = TimeUtil.addDays(config.getValidToDate(), 1);
+		final Timestamp dateForMissingQtyTUs = TimeUtil.addDays(
+				_materialTrackingDocuments.getM_Material_Tracking().getValidTo(),
+				1);
 		if (missingQtyTU > 0
 				&& isInvoiceRegularOrderForDate(dateForMissingQtyTUs))
 		{
-			final QualityInvoiceLineGroup invoiceLineGroup = new QualityInvoiceLineGroup(QualityInvoiceLineGroupType.PreceeedingRegularOrderDeduction);
+			final QualityInvoiceLineGroup invoiceLineGroup = new QualityInvoiceLineGroup(QualityInvoiceLineGroupType.ProductionOrder);
 
 			final String labelPrefix = "Auslagerung nach ";
 			final String labelToUse = createRegularOrderLabelToUse(labelPrefix, dateForMissingQtyTUs);
@@ -542,7 +551,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 				final IPricingContext pricingCtx = createPricingContext(detailLineInvcoiceable);
 				final BigDecimal priceActual = config.getQualityAdjustmentForDateOrNull(dateForMissingQtyTUs);
 
-				final IPricingResult pricingResult = createPricingResult(pricingCtx, detailLineInvcoiceable, priceActual, detailLineInvcoiceable.getC_UOM());
+				final IPricingResult pricingResult = createPricingResult(pricingCtx, priceActual, detailLineInvcoiceable.getC_UOM());
 				detailLineInvcoiceable.setPrice(pricingResult);
 
 				invoiceLineGroup.setInvoiceableLine(detailLineInvcoiceable);
@@ -566,7 +575,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			// Pricing
 			final IPricingContext pricingCtx = createPricingContext(detailAfter);
-			final IPricingResult pricingResult = createPricingResult(pricingCtx, detailAfter, netAmtSum, lastInvoiceLineGroup.getInvoiceableLine().getC_UOM());
+			final IPricingResult pricingResult = createPricingResult(pricingCtx, netAmtSum, lastInvoiceLineGroup.getInvoiceableLine().getC_UOM());
 			detailAfter.setPrice(pricingResult);
 		}
 	}
@@ -590,7 +599,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	{
 		//
 		// Invoice Line Group
-		final QualityInvoiceLineGroup invoiceLineGroup = new QualityInvoiceLineGroup(QualityInvoiceLineGroupType.AdditionalFee);
+		final QualityInvoiceLineGroup invoiceLineGroup = new QualityInvoiceLineGroup(QualityInvoiceLineGroupType.Fee);
 
 		//
 		// Detail: our reference line which we will use to calculate the fee invoiceable line
@@ -766,7 +775,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 				final BigDecimal feeAmt = config.getFeeForProducedMaterial(product, feeProductPercent);
 
 				final IPricingContext pricingContext = createPricingContext(invoiceableLine);
-				final IPricingResult pricingResult = createPricingResult(pricingContext, invoiceableLine, feeAmt.negate(), invoiceableLine.getC_UOM());
+				final IPricingResult pricingResult = createPricingResult(pricingContext, feeAmt.negate(), invoiceableLine.getC_UOM());
 				invoiceableLine.setPrice(pricingResult);
 				invoiceableLine.setDisplayed(true);
 			}
@@ -822,7 +831,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		}
 
 		// Invoice Line Group
-		final QualityInvoiceLineGroup invoiceLineGroup = new QualityInvoiceLineGroup(QualityInvoiceLineGroupType.WithholdingAmount);
+		final QualityInvoiceLineGroup invoiceLineGroup = new QualityInvoiceLineGroup(QualityInvoiceLineGroupType.Withholding);
 
 		//
 		// Detail: Withholding base
@@ -838,7 +847,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			// Pricing
 			final IPricingContext pricingCtx = createPricingContext(detail);
-			final IPricingResult pricingResult = createPricingResult(pricingCtx, detail, withholdingBaseAmount, withholdingPriceUOM);
+			final IPricingResult pricingResult = createPricingResult(pricingCtx, withholdingBaseAmount, withholdingPriceUOM);
 			detail.setPrice(pricingResult);
 		}
 
@@ -865,7 +874,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			// Pricing
 			final IPricingContext pricingCtx = createPricingContext(invoiceableLine);
-			final IPricingResult pricingResult = createPricingResult(pricingCtx, invoiceableLine, withholdingAmount.negate(), withholdingPriceUOM);
+			final IPricingResult pricingResult = createPricingResult(pricingCtx, withholdingAmount.negate(), withholdingPriceUOM);
 			invoiceableLine.setPrice(pricingResult);
 		}
 
@@ -1032,7 +1041,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	private IPricingResult createPricingResult(
 			final IPricingContext pricingCtx,
-			final QualityInvoiceLine line,
 			final BigDecimal price,
 			final I_C_UOM priceUOM)
 	{

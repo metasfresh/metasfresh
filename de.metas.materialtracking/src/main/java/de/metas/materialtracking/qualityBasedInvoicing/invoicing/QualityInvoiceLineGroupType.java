@@ -48,7 +48,7 @@ public enum QualityInvoiceLineGroupType
 	 *
 	 * e.g. Futterkarotten
 	 */
-	, ProducedByProducts(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_ProducedByProducts)
+	, ByProduct(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_ProducedByProducts)
 
 	/**
 	 * Additional fees
@@ -59,35 +59,35 @@ public enum QualityInvoiceLineGroupType
 	 * <li>Abzug für Beitrag Verkaufsförderung
 	 * </ul>
 	 */
-	, AdditionalFee(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_AdditionalFee)
+	, Fee(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_AdditionalFee)
 
 	/**
 	 * Main Produced product
 	 *
 	 * i.e. Karotten mittel
 	 */
-	, ProducedMainProduct(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_ProducedMainProduct)
+	, MainProduct(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_ProducedMainProduct)
 
 	/**
 	 * Co-Products
 	 *
 	 * i.e. Karotten gross
 	 */
-	, ProducedCoProduct(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_ProducedCoProduct)
+	, CoProduct(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_ProducedCoProduct)
 
 	/**
 	 * Withholding
 	 *
 	 * e.g. Akontozahlung 50 %
 	 */
-	, WithholdingAmount(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_WithholdingAmount)
+	, Withholding(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_WithholdingAmount)
 
 	/**
 	 * Preceeding regular orders deduction
 	 *
 	 * i.e. Auslagerung per 30.09.2014
 	 */
-	, PreceeedingRegularOrderDeduction(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_PreceeedingRegularOrderDeduction)
+	, ProductionOrder(I_C_Invoice_Candidate.QUALITYINVOICELINEGROUPTYPE_PreceeedingRegularOrderDeduction)
 
 	;
 
@@ -105,7 +105,7 @@ public enum QualityInvoiceLineGroupType
 
 	private final String adRefListValue;
 
-	private QualityInvoiceLineGroupType(final String adRefListValue)
+	QualityInvoiceLineGroupType(final String adRefListValue)
 	{
 		this.adRefListValue = adRefListValue;
 	}

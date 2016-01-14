@@ -28,15 +28,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
 
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
@@ -48,6 +45,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingDAO
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderService;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
+import de.metas.materialtracking.qualityBasedInvoicing.spi.IInvoicedSumProvider;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 
 /* package */class QualityInspectionOrder implements IQualityInspectionOrder
@@ -56,7 +54,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 	{
 		return (QualityInspectionOrder)qualityInspectionOrder;
 	}
-	
+
 	// Services
 	private final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
 	private final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
@@ -415,28 +413,12 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 	@Override
 	public BigDecimal getAlreadyInvoicedNetSum()
 	{
-		if (_alreadyInvoicedSum != null)
+		if (_alreadyInvoicedSum == null)
 		{
-			return _alreadyInvoicedSum;
+			final IInvoicedSumProvider invoicedSumProvider = qualityBasedConfigProviderService.getInvoicedSumProvider();
+			_alreadyInvoicedSum = invoicedSumProvider.getAlreadyInvoicedNetSum(_materialTracking);
 		}
-
-		final List<I_C_Invoice> invoices = materialTrackingDAO.retrieveReferences(_materialTracking, I_C_Invoice.class);
-
-		BigDecimal result = BigDecimal.ZERO;
-		for (final I_C_Invoice invoice : invoices)
-		{
-			if (Services.get(IDocActionBL.class).isStatusOneOf(invoice, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
-			{
-				result = result.add(invoice.getTotalLines());
-			}
-			else
-			{
-				// for other docstates, we ignore the invoice
-			}
-		}
-		_alreadyInvoicedSum = result;
-
-		return result;
+		return _alreadyInvoicedSum ;
 	}
 
 	@Override

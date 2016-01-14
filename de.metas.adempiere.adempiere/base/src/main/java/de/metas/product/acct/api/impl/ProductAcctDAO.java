@@ -54,7 +54,9 @@ public class ProductAcctDAO implements IProductAcctDAO
 			final I_AD_Org org,
 			final I_M_Product product)
 	{
-		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(contextProvider.getCtx(), org.getAD_Client_ID(), org.getAD_Org_ID());
+		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(contextProvider.getCtx(),
+				org.getAD_Client_ID(),
+				org.getAD_Org_ID());
 		if (acctSchema == null)
 		{
 			return null;

@@ -72,10 +72,13 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 		{
 			type = ProductionMaterialType.RAW;
 		}
+
+		Check.assumeNotNull(this.getC_UOM(), "getC_UOM() does not return null for {0}", this);
+		Check.assumeNotNull(this.getM_Product(), "getM_Product() does not return null for {0}", this);
 	}
 
 	@Override
-	public I_M_Product getM_Product()
+	public final I_M_Product getM_Product()
 	{
 		return ppOrderBOMLine.getM_Product();
 	}
@@ -93,7 +96,7 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 	}
 
 	@Override
-	public I_C_UOM getC_UOM()
+	public final I_C_UOM getC_UOM()
 	{
 		return ppOrderBOMLine.getC_UOM();
 	}

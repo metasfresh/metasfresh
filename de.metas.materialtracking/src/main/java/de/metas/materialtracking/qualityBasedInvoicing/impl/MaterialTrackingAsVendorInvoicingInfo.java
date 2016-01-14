@@ -1,4 +1,4 @@
-package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
+package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 /*
  * #%L
@@ -22,37 +22,22 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
+import de.metas.materialtracking.model.I_C_Invoice_Candidate;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 
 /**
  * Wraps an {@link I_C_Invoice_Candidate} and make it behave like {@link IVendorInvoicingInfo}.
  *
  * @author tsa
- *
  */
-/* package */class InvoiceCandidateAsVendorInvoicingInfo implements IVendorInvoicingInfo
+/* package */class MaterialTrackingAsVendorInvoicingInfo implements IVendorInvoicingInfo
 {
-	// Services
-	private final IQualityInspectionHandlerDAO qualityInspectionHandlerDAO = Services.get(IQualityInspectionHandlerDAO.class);
-
-	// Parameters
-	private final List<I_C_Invoice_Candidate> invoiceCandidates = new ArrayList<I_C_Invoice_Candidate>();
-
 	// Loaded values
 	private int _pricingSystemId = -1;
 	private I_M_PricingSystem _pricingSystem = null;
@@ -61,9 +46,11 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 	private boolean _invoiceRuleSet = false;
 
 	private I_M_PriceList_Version _priceListVersion = null;
+	private final I_M_Material_Tracking materialTracking;
 
-	public InvoiceCandidateAsVendorInvoicingInfo()
+	public MaterialTrackingAsVendorInvoicingInfo(I_M_Material_Tracking materialTracking)
 	{
+		this.materialTracking = materialTracking;
 	}
 
 	@Override
@@ -84,41 +71,31 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 	@Override
 	public int getBill_BPartner_ID()
 	{
-		return invoiceCandidates.get(0).getBill_BPartner_ID();
+		return getC_Flatrate_Term().getBill_BPartner_ID();
 	}
 
 	@Override
 	public int getBill_Location_ID()
 	{
-		return invoiceCandidates.get(0).getBill_Location_ID();
+		return getC_Flatrate_Term().getBill_Location_ID();
 	}
 
 	@Override
 	public int getBill_User_ID()
 	{
-		return invoiceCandidates.get(0).getBill_User_ID();
+		return getC_Flatrate_Term().getBill_User_ID();
 	}
 
 	@Override
 	public int getC_Currency_ID()
 	{
-		return invoiceCandidates.get(0).getC_Currency_ID();
+		return getM_PriceList_Version().getM_PriceList().getC_Currency_ID();
 	}
 
 	@Override
 	public I_M_PriceList_Version getM_PriceList_Version()
 	{
 		return _priceListVersion;
-	}
-
-	@Override
-	public int getM_PricingSystem_ID()
-	{
-		if (_pricingSystemId <= 0)
-		{
-			loadPricingSystem();
-		}
-		return _pricingSystemId;
 	}
 
 	@Override
@@ -133,26 +110,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 
 	private void loadPricingSystem()
 	{
-		final I_C_Flatrate_Term flatrateTerm = getC_Flatrate_Term();
-		final int contractPricingSystemID = flatrateTerm.getM_PricingSystem_ID();
-
-		if (contractPricingSystemID > 0)
-		{
-			_pricingSystemId = contractPricingSystemID;
-			_pricingSystem = flatrateTerm.getM_PricingSystem();
-		}
-		else
-		{
-			// the contract doesn't come with an explicit pricing system, so use the original IC's pricing system.
-			// note: we know the original IC is coming from a C_OrderLine
-			final I_C_OrderLine orderLine = invoiceCandidates.get(0).getC_OrderLine();
-			Check.assumeNotNull(orderLine, "orderLine not null");
-
-			final I_C_Order order = orderLine.getC_Order();
-
-			_pricingSystemId = order.getM_PricingSystem_ID();
-			_pricingSystem = order.getM_PricingSystem();
-		}
+		_pricingSystemId = getC_Flatrate_Term().getM_PricingSystem_ID();
+		_pricingSystem = getC_Flatrate_Term().getM_PricingSystem();
 	}
 
 	@Override
@@ -160,9 +119,10 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 	{
 		if (_flatrateTerm == null)
 		{
-			final I_C_Invoice_Clearing_Alloc invoiceClearingAlloc = qualityInspectionHandlerDAO.retrieveInitialInvoiceClearingAlloc(invoiceCandidates.get(0));
-			_flatrateTerm = invoiceClearingAlloc.getC_Flatrate_Term();
-			Check.assumeNotNull(_flatrateTerm, "_flatrateTerm not null");
+			_flatrateTerm = materialTracking.getC_Flatrate_Term();
+
+			// shouldn't be null because we prevent even material-tracking purchase orders without a flatrate term.
+			Check.errorIf(_flatrateTerm == null, "M_Material_Tracking {0} has no flatrate term", materialTracking);
 		}
 		return _flatrateTerm;
 	}
@@ -175,15 +135,11 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 			//
 			// Try getting the InvoiceRule from Flatrate Term
 			final I_C_Flatrate_Term flatrateTerm = getC_Flatrate_Term();
-			String invoiceRule = flatrateTerm.getC_Flatrate_Conditions().getInvoiceRule();
+			final String invoiceRule = flatrateTerm
+					.getC_Flatrate_Conditions()
+					.getInvoiceRule();
 
-			//
-			// Fallback: get the InvoiceRule from original invoice candidate
-			if (Check.isEmpty(invoiceRule, true))
-			{
-				invoiceRule = Services.get(IInvoiceCandBL.class).getInvoiceRule(invoiceCandidates.get(0));
-			}
-
+			Check.assumeNotEmpty(invoiceRule, "Unable to retrieve invoiceRule from materialTracking {0}", materialTracking);
 			_invoiceRule = invoiceRule;
 			_invoiceRuleSet = true;
 		}
@@ -191,16 +147,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 		return _invoiceRule;
 	}
 
-	@Override
-	public void add(final I_C_Invoice_Candidate invoiceCandidate)
-	{
-		Check.assumeNotNull(invoiceCandidate, "invoiceCandidate not null");
-		Check.assume(!invoiceCandidate.isToRecompute(), "invoiceCandidate is valid (IsToRecompute=false)");
-		invoiceCandidates.add(invoiceCandidate);
-
-	}
-
-	public void setM_PriceList_Version(final I_M_PriceList_Version priceListVersion)
+	/* package */void setM_PriceList_Version(final I_M_PriceList_Version priceListVersion)
 	{
 		_priceListVersion = priceListVersion;
 	}

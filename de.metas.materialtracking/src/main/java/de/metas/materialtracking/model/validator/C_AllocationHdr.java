@@ -24,6 +24,7 @@ package de.metas.materialtracking.model.validator;
 
 import java.util.List;
 
+import de.metas.materialtracking.IMaterialTrackingBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.util.Services;
@@ -34,7 +35,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.spi.impl.listeners.PaymentAllocationLineMaterialTrackingListener;

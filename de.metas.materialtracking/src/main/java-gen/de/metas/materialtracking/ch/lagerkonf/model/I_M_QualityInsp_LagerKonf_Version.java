@@ -321,12 +321,12 @@ public interface I_M_QualityInsp_LagerKonf_Version
 	 */
 	public int getM_QualityInsp_LagerKonf_ID();
 
-	public de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf getM_QualityInsp_LagerKonf();
+	public I_M_QualityInsp_LagerKonf getM_QualityInsp_LagerKonf();
 
-	public void setM_QualityInsp_LagerKonf(de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf M_QualityInsp_LagerKonf);
+	public void setM_QualityInsp_LagerKonf(I_M_QualityInsp_LagerKonf M_QualityInsp_LagerKonf);
 
     /** Column definition for M_QualityInsp_LagerKonf_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_Version, de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf> COLUMN_M_QualityInsp_LagerKonf_ID = new org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_Version, de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf>(I_M_QualityInsp_LagerKonf_Version.class, "M_QualityInsp_LagerKonf_ID", de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf.class);
+    public static final org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_Version, I_M_QualityInsp_LagerKonf> COLUMN_M_QualityInsp_LagerKonf_ID = new org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_Version, I_M_QualityInsp_LagerKonf>(I_M_QualityInsp_LagerKonf_Version.class, "M_QualityInsp_LagerKonf_ID", I_M_QualityInsp_LagerKonf.class);
     /** Column name M_QualityInsp_LagerKonf_ID */
     public static final String COLUMNNAME_M_QualityInsp_LagerKonf_ID = "M_QualityInsp_LagerKonf_ID";
 

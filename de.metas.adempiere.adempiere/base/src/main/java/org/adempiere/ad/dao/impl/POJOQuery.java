@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -163,9 +163,9 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		queryNew.filters.addFilters(filters.getFilters());
 		queryNew.orderBy = this.orderBy;
 		queryNew.options = this.options == null ? null : new HashMap<>(this.options);
-		
+
 		queryNew.unions = unions == null ? null : new ArrayList<>(unions);
-		
+
 		return queryNew;
 	}
 
@@ -264,14 +264,14 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			{
 				final IQuery<T> unionQuery = union.getQuery();
 				final List<ET> unionQueryResult = unionQuery.list(clazz);
-				
+
 				mergeModelLists(resultCasted, unionQueryResult, union.isDistinct());
 			}
 		}
-		
+
 		return resultCasted;
 	}
-	
+
 	private static final <T> void mergeModelLists(final List<T> to, final List<T> from, final boolean distinct)
 	{
 		// Case: from list is empty => nothing to do
@@ -286,7 +286,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			to.addAll(from);
 			return;
 		}
-		
+
 		//
 		// Create a set of existing keys (to speed up searching)
 		final Set<Integer> existingKeys = new HashSet<>();
@@ -295,7 +295,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			final int toModelId = InterfaceWrapperHelper.getId(toModel);
 			existingKeys.add(toModelId);
 		}
-		
+
 		//
 		// Iterate the "from" list and add elements which does not exist (compared by ID)
 		for (final T fromModel : from)
@@ -306,11 +306,11 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 				// model already exists in "to" list => skip it
 				continue;
 			}
-			
+
 			to.add(fromModel);
 		}
 	}
-	
+
 	private final void assertNoUnionQueries()
 	{
 		Check.assume(unions == null || unions.isEmpty(), "UNIONs shall be empty because they are not supported in this case");
@@ -328,7 +328,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	public <ET extends T> ET first(final Class<ET> clazz) throws DBException
 	{
 		assertNoUnionQueries();
-		
+
 		final POJOLookupMap db = POJOLookupMap.get();
 		final String tableName = getTableNameToUse(clazz);
 
@@ -371,7 +371,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	protected <ET extends T> ET firstOnly(final Class<ET> clazz, final boolean throwExIfMoreThenOneFound) throws DBException
 	{
 		assertNoUnionQueries();
-		
+
 		final POJOLookupMap db = POJOLookupMap.get();
 		final String tableName = getTableNameToUse(clazz);
 
@@ -388,7 +388,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	public int count() throws DBException
 	{
 		assertNoUnionQueries();
-		
+
 		final POJOLookupMap db = POJOLookupMap.get();
 
 		return db.getRecords(modelClass, filters).size();
@@ -469,7 +469,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		return this;
 	}
-	
+
 
 	@Override
 	public POJOQuery<T> setOptions(final Map<String, Object> options)
@@ -478,7 +478,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		{
 			return this;
 		}
-		
+
 		if (this.options == null)
 		{
 			this.options = new HashMap<>(options);
@@ -490,7 +490,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		return this;
 	}
-	
+
 
 	@Override
 	public <OT> OT getOption(final String name)
@@ -785,7 +785,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 		unions.add(sqlQueryUnion);
 	}
-	
+
 	/* package */ List<SqlQueryUnion<T>> getUnions()
 	{
 		if(unions == null)

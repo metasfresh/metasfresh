@@ -38,11 +38,13 @@ import org.compiere.process.DocAction;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.IMaterialTrackingPPOrderDAO;
 import de.metas.materialtracking.model.I_C_Invoice_Detail;
+import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocuments;
@@ -54,6 +56,12 @@ import de.metas.materialtracking.spi.impl.listeners.PPOrderMaterialTrackingListe
 @Interceptor(I_PP_Order.class)
 public class PP_Order
 {
+	public static final PP_Order instance = new PP_Order();
+
+	private PP_Order()
+	{
+	}
+
 	@Init
 	public void init()
 	{
@@ -135,16 +143,34 @@ public class PP_Order
 	}
 
 	/**
-	 * After a PP_Order was unclosed, this interceptor deletes all <code>C_Invoice_Details</code> which reference it and sets <code>PP_Order.IsInvoiceCandidate='N'</code>.<br>
-	 * Both so that if the ppOrder is closed again, further invoice candidates can be created for it.
+	 * After a PP_Order was unclosed, this interceptor
+	 * <ul>
+	 * <li>deletes all <code>C_Invoice_Details</code> which reference it
+	 * <li>sets <code>PP_Order.IsInvoiceCandidate='N'</code>
+	 * <li>sets <code>M_InOutLine.IsInvoiceCandidate='N'</code> for the iols whose material was issued to the ppOrder.
+	 * </ul>
+	 * All of this so that if the ppOrder is closed again, further invoice candidates can be created for it.
 	 *
 	 * @param ppOrder
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_UNCLOSE })
 	public void deleteInvoiceDetailsAfterUnclose(final I_PP_Order ppOrder)
 	{
-		Services.get(IMaterialTrackingPPOrderDAO.class).deleteInvoiceDetails(ppOrder);
-		ppOrder.setIsInvoiceCandidate(false);
+		final IMaterialTrackingPPOrderDAO materialTrackingPPOrderDAO = Services.get(IMaterialTrackingPPOrderDAO.class);
+		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
+
+		materialTrackingPPOrderDAO.deleteInvoiceDetails(ppOrder);
+
+		final IIsInvoiceCandidateAware ppOrderIsInvoiceCandidateAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(ppOrder, IIsInvoiceCandidateAware.class);
+		ppOrderIsInvoiceCandidateAware.setIsInvoiceCandidate(false);
+
+		final List<I_M_InOutLine> issuedInOutLines = materialTrackingPPOrderBL.retrieveIssuedInOutLines(ppOrder);
+		for (final I_M_InOutLine iol : issuedInOutLines)
+		{
+			final IIsInvoiceCandidateAware iolIsInvoiceCandidateAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(iol, IIsInvoiceCandidateAware.class);
+			iolIsInvoiceCandidateAware.setIsInvoiceCandidate(false);
+			InterfaceWrapperHelper.save(iol);
+		}
 
 		new PPOrderReportWriter(ppOrder).deleteReportLines();
 	}

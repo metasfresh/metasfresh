@@ -39,4 +39,6 @@ public interface IMaterialTrackingPPOrderDAO extends ISingletonService
 
 	int deleteRelatedUnprocessedICs(I_PP_Order ppOrder);
 
+	boolean isInvoiced(I_PP_Order ppOrder);
+
 }

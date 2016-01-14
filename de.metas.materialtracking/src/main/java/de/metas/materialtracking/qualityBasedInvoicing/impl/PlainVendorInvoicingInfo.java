@@ -26,7 +26,6 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 
 public class PlainVendorInvoicingInfo implements IVendorInvoicingInfo
@@ -122,12 +121,6 @@ public class PlainVendorInvoicingInfo implements IVendorInvoicingInfo
 	}
 
 	@Override
-	public int getM_PricingSystem_ID()
-	{
-		return pricingSystemId;
-	}
-
-	@Override
 	public I_M_PricingSystem getM_PricingSystem()
 	{
 		return pricingSystem;
@@ -149,13 +142,4 @@ public class PlainVendorInvoicingInfo implements IVendorInvoicingInfo
 	{
 		this.priceListVersion = m_PriceList_Version;
 	}
-
-	/**
-	 * This method does nothing!
-	 */
-	@Override
-	public void add(final I_C_Invoice_Candidate IGNORED)
-	{
-	}
-
 }

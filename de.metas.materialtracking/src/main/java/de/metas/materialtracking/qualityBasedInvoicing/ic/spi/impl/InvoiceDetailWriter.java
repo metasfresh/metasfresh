@@ -185,6 +185,8 @@ public class InvoiceDetailWriter
 		//
 		// Save detail line
 		InterfaceWrapperHelper.save(invoiceDetail);
+		I_C_Invoice_Detail.DYNATTR_C_Invoice_Detail_IQualityInvoiceLine.setValue(invoiceDetail, line);
+
 		_createdLines.add(invoiceDetail);
 		_seqNoNext += 10;
 	}

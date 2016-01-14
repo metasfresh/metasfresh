@@ -10,18 +10,17 @@ package de.metas.materialtracking.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.List;
@@ -100,11 +99,16 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 
 		final IQueryOrderByBuilder<I_M_Material_Tracking> orderBy = queryBuilder.orderBy();
 
+		final int productId = queryVO.getM_Product_ID();
+		final String lot = queryVO.getLot();
+		Check.assume(productId > 0 || !Check.isEmpty(lot, true), "Either productId or lot has to be set, but is: productId={0}, lot={1}", productId, lot);
+
 		//
 		// M_Product_ID
-		final int productId = queryVO.getM_Product_ID();
-		Check.assume(productId > 0, "productId > 0");
-		queryBuilder.addEqualsFilter(I_M_Material_Tracking.COLUMN_M_Product_ID, productId);
+		if (productId > 0)
+		{
+			queryBuilder.addEqualsFilter(I_M_Material_Tracking.COLUMN_M_Product_ID, productId);
+		}
 
 		//
 		// C_BPartner_ID
@@ -115,22 +119,28 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 		// TODO: ValidFrom, ValidTo
 
 		//
+		// Lot
+		if (lot != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Material_Tracking.COLUMN_Lot, lot);
+		}
+
+		//
 		// Processed
 		final Boolean processed = queryVO.getProcessed();
 		if (processed != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_Material_Tracking.COLUMN_Processed, processed);
 		}
-		
+
 		final Boolean completeFlatrateTerm = queryVO.getCompleteFlatrateTerm();
-		if(completeFlatrateTerm != null && completeFlatrateTerm.booleanValue() == true)
+		if (completeFlatrateTerm != null && completeFlatrateTerm.booleanValue() == true)
 		{
 			queryBuilder.addCompareFilter(I_M_Material_Tracking.COLUMN_C_Flatrate_Term_ID, Operator.NOT_EQUAL, null)
-			.andCollect(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Flatrate_Term.class)
-			.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
-			.addOnlyActiveRecordsFilter()
-			.andCollectChildren(I_M_Material_Tracking.COLUMN_C_Flatrate_Term_ID, I_M_Material_Tracking.class)
-			;
+					.andCollect(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Flatrate_Term.class)
+					.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
+					.addOnlyActiveRecordsFilter()
+					.andCollectChildren(I_M_Material_Tracking.COLUMN_C_Flatrate_Term_ID, I_M_Material_Tracking.class);
 		}
 
 		//

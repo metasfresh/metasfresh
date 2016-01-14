@@ -45,18 +45,18 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.M_Material_Tracking(), client);
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.M_Material_Tracking_Ref(), client);
+		engine.addModelValidator(new M_Material_Tracking(), client);
+		engine.addModelValidator(new M_Material_Tracking_Ref(), client);
 
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.C_Order(), client);
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.M_InOut(), client);
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.M_InOutLine(), client); // task 07734
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.C_Invoice_Candidate(), client);
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.C_Invoice_Detail(), client); // task 09533
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.C_Invoice(), client);
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.C_AllocationHdr(), client);
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.M_PriceList_Version(), client);
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.PP_Order(), client);
-		engine.addModelValidator(new de.metas.materialtracking.model.validator.PP_Cost_Collector(), client);
+		engine.addModelValidator(new C_Order(), client);
+		engine.addModelValidator(new M_InOut(), client);
+		engine.addModelValidator(new M_InOutLine(), client); // task 07734
+		engine.addModelValidator(new C_Invoice_Candidate(), client);
+		engine.addModelValidator(new C_Invoice_Detail(), client); // task 09533
+		engine.addModelValidator(new C_Invoice(), client);
+		engine.addModelValidator(new C_AllocationHdr(), client);
+		engine.addModelValidator(new M_PriceList_Version(), client);
+		engine.addModelValidator(PP_Order.instance, client);
+		engine.addModelValidator(new PP_Cost_Collector(), client);
 	}
 }

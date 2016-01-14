@@ -34,15 +34,15 @@ public interface IMaterialTrackingQuery
 		ReturnFirst
 	}
 
-	void setM_Product_ID(int productId);
+	IMaterialTrackingQuery setM_Product_ID(int productId);
 
 	int getM_Product_ID();
 
-	void setC_BPartner_ID(int bpartnerId);
+	IMaterialTrackingQuery setC_BPartner_ID(int bpartnerId);
 
 	int getC_BPartner_ID();
 
-	void setProcessed(Boolean processed);
+	IMaterialTrackingQuery setProcessed(Boolean processed);
 
 	Boolean getProcessed();
 
@@ -51,7 +51,8 @@ public interface IMaterialTrackingQuery
 	 * ATM, if set on false, it will work as if not set.
 	 * @param completeFlatrateTerm
 	 */
-	void setCompleteFlatrateTerm(Boolean completeFlatrateTerm);
+	IMaterialTrackingQuery setCompleteFlatrateTerm(Boolean completeFlatrateTerm);
+
 	Boolean getCompleteFlatrateTerm();
 
 	/**
@@ -59,7 +60,7 @@ public interface IMaterialTrackingQuery
 	 *
 	 * @param linkedModels
 	 */
-	void setWithLinkedDocuments(List<?> linkedModels);
+	IMaterialTrackingQuery setWithLinkedDocuments(List<?> linkedModels);
 
 	List<?> getWithLinkedDocuments();
 
@@ -68,7 +69,11 @@ public interface IMaterialTrackingQuery
 	 *
 	 * @param onMoreThanOneFound
 	 */
-	void setOnMoreThanOneFound(OnMoreThanOneFound onMoreThanOneFound);
+	IMaterialTrackingQuery setOnMoreThanOneFound(OnMoreThanOneFound onMoreThanOneFound);
 
 	OnMoreThanOneFound getOnMoreThanOneFound();
+
+	IMaterialTrackingQuery setLot(String lot);
+
+	String getLot();
 }

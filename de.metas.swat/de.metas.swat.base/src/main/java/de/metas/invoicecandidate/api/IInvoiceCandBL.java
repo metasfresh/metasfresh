@@ -208,9 +208,9 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Enables "update in progress" flag and returns an {@link IAutoCloseable} to put it back to off.
-	 * 
+	 *
 	 * It is important to call this method in any block where we are updating the invoice candidates and we want to avoid them to be invalidated after.
-	 * 
+	 *
 	 * @return auto closable
 	 * @see #isUpdateProcessInProgress()
 	 */
@@ -241,7 +241,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Updates/Creates {@link I_C_Invoice_Line_Alloc}s for the case of an invoice (including credit memo) completion. Also makes sure that ICs are created on the fly if they are still missing.
-	 * 
+	 *
 	 * @param invoice
 	 */
 	void handleCompleteForInvoice(org.compiere.model.I_C_Invoice invoice);

@@ -129,14 +129,27 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	@Override
-	public void createMissingCandidates(final Properties ctx)
+	public void createMissingCandidates(final Properties ctx,
+			final List<I_C_ILCandHandler> handlerRecords)
 	{
+		final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
+
+		final List<I_C_ILCandHandler> handlerRecordsToUse;
+		if (handlerRecords == null || handlerRecords.isEmpty())
+		{
+			handlerRecordsToUse = invoiceCandidateHandlerDAO.retrieveAll(ctx);
+		}
+		else
+		{
+			handlerRecordsToUse = handlerRecords;
+		}
+
 		Services.get(ITrxManager.class).run(new TrxRunnable()
 		{
 			@Override
 			public void run(final String trxName) throws Exception
 			{
-				createInvoiceCandidates(ctx, Services.get(IInvoiceCandidateHandlerDAO.class).retrieveAll(ctx), InvoiceCandidateHandlerBL.NO_MODEL, trxName);
+				createInvoiceCandidates(ctx, handlerRecordsToUse, InvoiceCandidateHandlerBL.NO_MODEL, trxName);
 			}
 		});
 	}
@@ -180,7 +193,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	/**
-	 * This method does the actual invoice creation by calling the given <code>creatorRecords</code>. Note that each <code>creatorRecord</code> is called multiple times, until it returns the empty
+	 * This method does the actual invoice candidate creation by calling the given <code>creatorRecords</code>. Note that each <code>creatorRecord</code> is called multiple times, until it returns the
+	 * empty
 	 * list. That way it is possible to for a creator to create only a limited number of invoice candidates at a time and thus avoid memory issues.
 	 *
 	 * @param ctx

@@ -279,15 +279,15 @@ public class X_M_QualityInsp_LagerKonf_Version extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf getM_QualityInsp_LagerKonf() throws RuntimeException
+	public I_M_QualityInsp_LagerKonf getM_QualityInsp_LagerKonf() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_M_QualityInsp_LagerKonf_ID, de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf.class);
+		return get_ValueAsPO(COLUMNNAME_M_QualityInsp_LagerKonf_ID, I_M_QualityInsp_LagerKonf.class);
 	}
 
 	@Override
-	public void setM_QualityInsp_LagerKonf(de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf M_QualityInsp_LagerKonf)
+	public void setM_QualityInsp_LagerKonf(I_M_QualityInsp_LagerKonf M_QualityInsp_LagerKonf)
 	{
-		set_ValueFromPO(COLUMNNAME_M_QualityInsp_LagerKonf_ID, de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf.class, M_QualityInsp_LagerKonf);
+		set_ValueFromPO(COLUMNNAME_M_QualityInsp_LagerKonf_ID, I_M_QualityInsp_LagerKonf.class, M_QualityInsp_LagerKonf);
 	}
 
 	/** Set Lagerkonferenz.

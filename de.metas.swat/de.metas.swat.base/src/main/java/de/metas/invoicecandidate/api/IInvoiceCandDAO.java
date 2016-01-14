@@ -47,6 +47,7 @@ import org.compiere.model.I_M_InOutLine;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 
@@ -129,7 +130,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
-	 * 
+	 *
 	 * @param icQueryBuilder
 	 */
 	void invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
@@ -374,4 +375,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @return true if re-create scheduling shall be avoided for given invoice candidate
 	 */
 	boolean isAvoidRecreate(I_C_Invoice_Candidate ic);
+
+	List<I_C_Invoice_Detail> retrieveInvoiceDetails(I_C_Invoice_Candidate ic);
 }

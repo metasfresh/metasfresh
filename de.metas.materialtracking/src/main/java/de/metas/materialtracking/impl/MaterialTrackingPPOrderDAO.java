@@ -5,6 +5,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_Invoice;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingPPOrderDAO;
@@ -58,7 +59,7 @@ public class MaterialTrackingPPOrderDAO implements IMaterialTrackingPPOrderDAO
 				queryBL.createQueryBuilder(I_C_Invoice_Detail.class, ppOrder)
 						.addOnlyActiveRecordsFilter()
 						.addEqualsFilter(I_C_Invoice_Detail.COLUMN_PP_Order_ID, ppOrder.getPP_Order_ID())
-						.andCollect(I_C_Invoice_Detail.COLUMN_C_Invoice_Candidate_ID)
+						.andCollect(de.metas.invoicecandidate.model.I_C_Invoice_Detail.COLUMN_C_Invoice_Candidate_ID)
 						.addOnlyActiveRecordsFilter()
 						.create()
 						.list(de.metas.materialtracking.model.I_C_Invoice_Candidate.class);
@@ -73,7 +74,7 @@ public class MaterialTrackingPPOrderDAO implements IMaterialTrackingPPOrderDAO
 		{
 			// use ppOrderIC as a representative to delete all unprocessed ICs with the same PLV and M_Material_Tracking
 			result += queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ppOrder)
-					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, Services.get(IADTableDAO.class).retrieveTableId(I_PP_Order.Table_Name))
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, Services.get(IADTableDAO.class).retrieveTableId(org.eevolution.model.I_PP_Order.Table_Name))
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, ppOrderIC.getRecord_ID())
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_PriceList_Version_ID, ppOrderIC.getM_PriceList_Version_ID())
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
@@ -82,5 +83,18 @@ public class MaterialTrackingPPOrderDAO implements IMaterialTrackingPPOrderDAO
 					.delete();
 		}
 		return result;
+	}
+
+	@Override
+	public boolean isInvoiced(final I_PP_Order ppOrder)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_C_Invoice_Detail.class, ppOrder)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.andCollect(de.metas.invoicecandidate.model.I_C_Invoice_Detail.COLUMN_C_Invoice_Candidate_ID)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Processed, true)
+				.create()
+				.match();
 	}
 }

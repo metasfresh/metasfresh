@@ -50,10 +50,11 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 
 	public PPOrderProductionMaterial(final org.eevolution.model.I_PP_Order ppOrder)
 	{
-		super();
-
 		Check.assumeNotNull(ppOrder, "ppOrder not null");
 		this.ppOrder = InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class);
+
+		Check.assumeNotNull(this.getC_UOM(), "getC_UOM() does not return null for {0}", this);
+		Check.assumeNotNull(this.getM_Product(), "getM_Product() does not return null for {0}", this);
 	}
 
 	@Override

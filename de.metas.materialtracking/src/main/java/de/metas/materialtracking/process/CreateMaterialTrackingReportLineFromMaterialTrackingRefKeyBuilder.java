@@ -31,12 +31,12 @@ import de.metas.materialtracking.model.I_PP_Order;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,11 +62,11 @@ public class CreateMaterialTrackingReportLineFromMaterialTrackingRefKeyBuilder i
 	public String buildKey(final I_M_Material_Tracking_Ref ref)
 	{
 		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(ref);
-		
+
 		final String internalName = Services.get(ISysConfigBL.class).getValue(MaterialTrackingConstants.SYSCONFIG_M_Material_Tracking_Report_Dimension);
-		
+
 		final I_DIM_Dimension_Spec dimensionSpec = dimSpecDAO.retrieveForInternalName(internalName, ctxAware);
-		
+
 		final int table_ID = ref.getAD_Table_ID();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ref);

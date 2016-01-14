@@ -39,6 +39,12 @@ import de.metas.materialtracking.model.I_PP_Order;
 public interface IQualityInvoiceLine
 {
 	/**
+	 *
+	 * @return the group to which this instance belongs
+	 */
+	IQualityInvoiceLineGroup getGroup();
+
+	/**
 	 * i.e. Artikel
 	 *
 	 * @return

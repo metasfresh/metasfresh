@@ -31,6 +31,8 @@ import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
@@ -44,31 +46,41 @@ import org.compiere.util.Env;
  */
 public class MockedPricingRule extends PricingRuleAdapter
 {
-	public static final BigDecimal priceToReturnInitial = Env.ONEHUNDRED;
+	public static final MockedPricingRule INSTANCE = new MockedPricingRule();
+
+
+	public final BigDecimal priceToReturnInitial = Env.ONEHUNDRED;
 
 	/** Default price to return */
-	public static BigDecimal priceToReturn = priceToReturnInitial;
+	public BigDecimal priceToReturn = priceToReturnInitial;
 
-	private static int precision;
+	private int precision;
+
+	private final  Map<Integer, I_C_UOM> productId2priceUOM = new HashMap<>();
 
 	/** M_Product_ID to "price" to return" */
-	private static final Map<Integer, BigDecimal> productId2price = new HashMap<>();
+	private final Map<Integer, BigDecimal> productId2price = new HashMap<>();
 
 	/**
 	 * Reset it to inital state.
 	 */
-	public static void reset()
+	public void reset()
 	{
 		priceToReturn = priceToReturnInitial;
 		productId2price.clear();
 	}
 
-	public static void setPrecision(int precision)
+	public void setC_UOM(final I_M_Product product, final I_C_UOM uom)
 	{
-		MockedPricingRule.precision = precision;
+		productId2priceUOM.put(product.getM_Product_ID(), uom);
 	}
 
-	public static void setProductPrice(final I_M_Product product, final BigDecimal price)
+	public void setPrecision(int precision)
+	{
+		this.precision = precision;
+	}
+
+	public void setProductPrice(final I_M_Product product, final BigDecimal price)
 	{
 		productId2price.put(product.getM_Product_ID(), price);
 	}
@@ -84,8 +96,8 @@ public class MockedPricingRule extends PricingRuleAdapter
 	{
 		//
 		// Check product price
-		BigDecimal price = productId2price.get(pricingCtx.getM_Product_ID());
-
+		final int productID = pricingCtx.getM_Product_ID();
+		BigDecimal price = productId2price.get(productID);
 		if (price == null)
 		{
 			price = priceToReturn;
@@ -99,10 +111,19 @@ public class MockedPricingRule extends PricingRuleAdapter
 
 		result.setC_TaxCategory_ID(100);
 
-		result.setCalculated(true);
+		final I_C_UOM priceUOM = productId2priceUOM.get(productID);
+		if(priceUOM!=null)
+		{
+			result.setPrice_UOM_ID(priceUOM.getC_UOM_ID());
+		}
 
-		// final I_C_UOM uom = InterfaceWrapperHelper.create(Env.getCtx(), I_C_UOM.class, ITrx.TRXNAME_None);
-		// InterfaceWrapperHelper.save(uom);
-		// result.setC_UOM_ID(uom.getC_UOM_ID());
+		result.setCalculated(true);
 	}
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(INSTANCE);
+	}
+
 }

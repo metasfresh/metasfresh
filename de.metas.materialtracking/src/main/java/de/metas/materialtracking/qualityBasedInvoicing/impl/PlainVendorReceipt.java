@@ -10,12 +10,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,9 +24,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
@@ -46,6 +49,7 @@ public class PlainVendorReceipt implements IVendorReceipt<Object>
 	private BigDecimal qtyReceived;
 	private I_C_UOM qtyReceivedUOM;
 	private IHandlingUnitsInfo handlingUnitsInfo;
+	private I_M_PriceList_Version plv;
 
 	public PlainVendorReceipt()
 	{
@@ -117,5 +121,24 @@ public class PlainVendorReceipt implements IVendorReceipt<Object>
 	@Override
 	public void add(final Object IGNORED)
 	{
+	}
+
+	/**
+	 * This method returns the empty list.
+	 */
+	@Override
+	public List<Object> getModels()
+	{
+		return Collections.emptyList();
+	}
+
+	@Override public I_M_PriceList_Version getPLV()
+	{
+		return plv;
+	}
+
+	public void setPlv(I_M_PriceList_Version plv)
+	{
+		this.plv = plv;
 	}
 }

@@ -10,23 +10,25 @@ package de.metas.materialtracking.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.model.I_C_Invoice_Detail;
+import org.adempiere.util.Check;
+import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
+import de.metas.materialtracking.impl.PlainHandlingUnitsInfo;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 
 /**
@@ -56,11 +58,48 @@ public class HandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 	}
 
 	/**
-	 * @return <code>null</code>
+	 * @return and ad-hoc implementation that actually works; TODO: fuse with the one in de.metas.materialtracking.
 	 */
 	@Override
-	public IHandlingUnitsInfoWritableQty createHUInfoWritableQty(IHandlingUnitsInfo ingored)
+	public IHandlingUnitsInfoWritableQty createHUInfoWritableQty(final IHandlingUnitsInfo ingored)
 	{
-		return null;
+		return new IHandlingUnitsInfoWritableQty()
+		{
+			private int qtyTU = ingored.getQtyTU();
+
+			@Override
+			public String getTUName()
+			{
+				return ingored.getTUName();
+			}
+
+			@Override
+			public int getQtyTU()
+			{
+				return qtyTU;
+			}
+
+			@Override
+			public IHandlingUnitsInfo add(IHandlingUnitsInfo infoToAdd)
+			{
+				Check.assume(Check.equals(infoToAdd.getTUName(), this.getTUName()), "infoToAdd {0} has a TUName that differs from ours {1}", infoToAdd, this);
+
+				return new PlainHandlingUnitsInfo(
+						ingored.getTUName(),
+						ingored.getQtyTU() + infoToAdd.getQtyTU());
+			}
+
+			@Override
+			public void setQtyTU(int qtyTU)
+			{
+				this.qtyTU = qtyTU;
+			}
+
+			@Override
+			public String toString()
+			{
+				return ObjectUtils.toString(this);
+			}
+		};
 	}
 }

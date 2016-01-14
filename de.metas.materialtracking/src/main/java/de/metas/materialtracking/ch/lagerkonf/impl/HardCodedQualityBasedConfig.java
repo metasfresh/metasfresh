@@ -10,18 +10,17 @@ package de.metas.materialtracking.ch.lagerkonf.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -36,6 +35,7 @@ import java.util.TreeMap;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.product.service.IProductPA;
+import org.adempiere.service.ICurrencyDAO;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -43,7 +43,6 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MCurrency;
 import org.compiere.util.TimeUtil;
 
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
@@ -66,6 +65,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	// Services
 	private final IProductPA productPA = Services.get(IProductPA.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IQualityBasedInvoicingBL qualityBasedInvoicingBL = Services.get(IQualityBasedInvoicingBL.class);
 
 	//
@@ -73,6 +73,8 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	private final SortedMap<BigDecimal, BigDecimal> feeProductPercentage2fee;
 	private final I_M_Product scrapProduct;
 	private final I_C_UOM scrapUOM;
+
+	private Timestamp validToDate;
 
 	/* package */HardCodedQualityBasedConfig(final IContextAware ctxAware)
 	{
@@ -84,7 +86,11 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 		month2qualityAdjustment.put(2, new BigDecimal("0.03"));
 		month2qualityAdjustment.put(3, new BigDecimal("0.04"));
 		month2qualityAdjustment.put(4, new BigDecimal("0.04")); // 4 => May
-		month2qualityAdjustment.put(5, new BigDecimal("0.00"));
+
+		// 5 => June; setting to 0.05 so we have something to invoice, in the case of "incomplete auslagerung"
+		// because usually, material trackings go until may 30th
+		month2qualityAdjustment.put(5, new BigDecimal("0.05"));
+
 		month2qualityAdjustment.put(6, new BigDecimal("0.00"));
 		month2qualityAdjustment.put(7, new BigDecimal("-0.03"));
 		month2qualityAdjustment.put(8, new BigDecimal("-0.03"));
@@ -235,7 +241,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	public I_C_Currency getCurrency()
 	{
 		final IContextAware ctxAware = getContext();
-		return MCurrency.get(ctxAware.getCtx(), CURRENCY_ISO);
+		return currencyDAO.retrieveCurrencyByISOCode(ctxAware.getCtx(), CURRENCY_ISO);
 	}
 
 	@Override
@@ -252,17 +258,26 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 				M_PRODUCT_REGULAR_PP_ORDER_VALUE,
 				true, // throwExIfProductNotFound
 				ctxAware.getTrxName());
-		
+
 		return regularPPOrderProduct;
 	}
 
 	/**
-	 * returns now plus 2 months.
+	 * @return the date that was set with {@link #setValidToDate(Timestamp)}, or falls back to "now plus 2 months". Never returns <code>null</code>.
 	 */
 	@Override
 	public Timestamp getValidToDate()
 	{
-		return TimeUtil.addMonths(SystemTime.asDate(), 2);
+		if (validToDate == null)
+		{
+			return TimeUtil.addMonths(SystemTime.asDate(), 2);
+		}
+		return validToDate;
+	}
+
+	public void setValidToDate(Timestamp validToDate)
+	{
+		this.validToDate = validToDate;
 	}
 
 }

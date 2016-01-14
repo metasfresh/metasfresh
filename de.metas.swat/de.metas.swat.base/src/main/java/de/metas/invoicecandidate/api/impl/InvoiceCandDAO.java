@@ -94,7 +94,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 public class InvoiceCandDAO implements IInvoiceCandDAO
 {
 	private final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
-	
+
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
 	= new ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
 
@@ -337,12 +337,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.create()
 				.list(I_C_Invoice_Candidate.class);
 	}
-	
+
 	@Override
 	public final IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLineQuery(final I_M_InOutLine inoutLine)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		
+
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, inoutLine)
 				// NOTE: advice the query builder to explode the expressions to SQL UNIONs because that is MUCH more efficient on PostgreSQL.
@@ -355,10 +355,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			final ICompositeQueryFilter<I_C_Invoice_Candidate> filter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_M_InOutLine.class))
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, inoutLine.getM_InOutLine_ID());
-			
+
 			queryBuilder.filter(filter);
 		}
-		
+
 		//
 		// ICs which are created for inout line's C_OrderLine_ID
 		if (inoutLine.getC_OrderLine_ID() > 0)
@@ -366,10 +366,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			final ICompositeQueryFilter<I_C_Invoice_Candidate> filter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, inoutLine.getC_OrderLine_ID());
-			
+
 			queryBuilder.filter(filter);
 		}
-		
+
 		//
 		// IC-IOL associations
 		{
@@ -378,10 +378,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 			queryBuilder.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, queryForICIOLs);
 		}
-		
+
 		return queryBuilder;
 	}
-	
+
 	@Override
 	public final void save(final I_C_Invoice_Candidate invoiceCandidate)
 	{
@@ -563,17 +563,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQuery<I_C_Invoice_Candidate> icQuery = icQueryBuilder.create();
 		invalidateCandsFor(icQuery);
 	}
-	
+
 	@Override
 	public final void invalidateCandsFor(final IQuery<I_C_Invoice_Candidate> icQuery)
 	{
 		Check.assumeNotNull(icQuery, "icQuery not null");
-		
+
 		final int count = icQuery.insertDirectlyInto(I_C_Invoice_Candidate_Recompute.class)
 				.mapColumn(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				// NOTE: not setting the AD_PInstance_ID to null, because:
 				// 1. that's the default
-				// 2. there is an issue with the SQL INSERT that is rendered for NULL parameters, i.e. it cannot detect the database type for NULL 
+				// 2. there is an issue with the SQL INSERT that is rendered for NULL parameters, i.e. it cannot detect the database type for NULL
 				// .mapColumnToConstant(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				//
 				.execute();
@@ -743,7 +743,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		Check.assumeNotEmpty(tableName, "Param 'tableName' is not empty");
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		
+
 		return retrieveInvoiceCandidatesForRecordQuery(ctx, adTableId, recordId, trxName);
 	}
 
@@ -868,7 +868,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		return count;
 	}
-	
+
 	/**
 	 * @param tagRequest
 	 * @return how many {@link I_C_Invoice_Candidate_Recompute} records will be tagged by given {@link InvoiceCandRecomputeTagger}.
@@ -911,7 +911,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				onlyInvoiceCandidateIds });
 		logger.log(Level.FINE, "Query: {0}", query);
 	}
-	
+
 	protected final int untag(final InvoiceCandRecomputeTagger tagger)
 	{
 		Check.assumeNotNull(tagger, "tagger not null");
@@ -927,14 +927,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.updateDirectly()
 				.addSetColumnValue(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				.execute();
-		
+
 		logger.log(Level.INFO, "Un-tag {0} {1} records with were tagged with recompute tag={2}", new Object[] { count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag });
 		logger.log(Level.FINE, "Query: {0}", query);
 		logger.log(Level.FINE, "Tagger: {0}", tagger);
 
 		return count;
 	}
-
 
 	@Override
 	public final boolean hasInvalidInvoiceCandidatesForTag(final InvoiceCandRecomputeTag tag)
@@ -1303,5 +1302,21 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.setLimit(1)
 				.create()
 				.match();
+	}
+
+	@Override
+	public List<I_C_Invoice_Detail> retrieveInvoiceDetails(final I_C_Invoice_Candidate ic)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Detail.class, ic)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Detail.COLUMN_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
+				.orderBy()
+				.addColumn(I_C_Invoice_Detail.COLUMNNAME_SeqNo)
+				.addColumn(I_C_Invoice_Detail.COLUMNNAME_IsPrinted, Direction.Descending, Nulls.Last)
+				.addColumn(I_C_Invoice_Detail.COLUMNNAME_IsDetailOverridesLine, Direction.Descending, Nulls.Last)
+				.addColumn(I_C_Invoice_Detail.COLUMNNAME_IsPrintBefore, Direction.Descending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.list();
 	}
 }

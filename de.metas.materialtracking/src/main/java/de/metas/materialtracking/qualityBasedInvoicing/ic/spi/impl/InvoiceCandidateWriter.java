@@ -138,7 +138,7 @@ public class InvoiceCandidateWriter
 	/**
 	 * Sets the original invoice candidates that need to be cleared when a new invoice candidate is created by this builder
 	 *
-	 * @param invoiceCandidateToClear
+	 * @param invoiceCandidatesToClear
 	 */
 	public InvoiceCandidateWriter setInvoiceCandidatesToClear(final List<I_C_Invoice_Candidate> invoiceCandidatesToClear)
 	{
@@ -184,7 +184,7 @@ public class InvoiceCandidateWriter
 		return new ArrayList<>(_createdInvoiceCandidates);
 	}
 
-	private final void addToCreatedInvoiceCandidates(final I_C_Invoice_Candidate invoiceCandidate)
+	private void addToCreatedInvoiceCandidates(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		Check.assumeNotNull(invoiceCandidate, "invoiceCandidate not null");
 
@@ -337,7 +337,7 @@ public class InvoiceCandidateWriter
 	/**
 	 * Creates invoice candidate
 	 *
-	 * @param invoiceableLine
+	 * @param qualityInvoiceLineGroup
 	 * @return invoice candidate; never returns <code>null</code>
 	 */
 	private I_C_Invoice_Candidate createInvoiceCandidate(final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
@@ -383,7 +383,7 @@ public class InvoiceCandidateWriter
 		// Create the new Invoice Candidate
 		//
 		// NOTE: don't link these invoice candidates to C_OrderLine because in that case
-		// de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocuments.getOriginalInvoiceCandidates()
+		// IMaterialTrackingDocuments.getOriginalInvoiceCandidates()
 		// will consider them; and we really don't want!
 
 		if (invoiceDocTypeId > 0)
@@ -448,6 +448,9 @@ public class InvoiceCandidateWriter
 		// task 09655
 		ic.setQualityInvoiceLineGroupType(qualityInvoiceLineGroup.getQualityInvoiceLineGroupType().getAD_Ref_List_Value());
 
+		//
+		ic.setProcessed(false); // in the DB it's processed=false by default, but for decoupled AIts we need to set is explicitly, in order to select ICs by this flag
+
 		// NOTE: don't save it
 
 		// Add it to the list of created invoice candidates
@@ -483,6 +486,7 @@ public class InvoiceCandidateWriter
 
 		//
 		// secondly, invoke the listener code
+		// TODO: check if we actually have to run this code afterCommit, since we now have _maxInvoiceCandidateToDeleteID to make sure we only delete "old" ICs.
 		trxManager
 				.getTrxListenerManagerOrAutoCommit(getContext().getTrxName())
 				.registerListener(

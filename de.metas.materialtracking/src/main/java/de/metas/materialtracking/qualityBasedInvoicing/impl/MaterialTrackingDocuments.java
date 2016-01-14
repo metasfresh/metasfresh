@@ -43,12 +43,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
+import de.metas.materialtracking.IMaterialTrackingPPOrderDAO;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocuments;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
+import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 
 /* package */class MaterialTrackingDocuments implements IMaterialTrackingDocuments
@@ -56,6 +58,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 	// Services
 	private final transient IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 	private final transient IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
+	private final IMaterialTrackingPPOrderDAO materialTrackingPPOrderDAO = Services.get(IMaterialTrackingPPOrderDAO.class);
 
 	// Parameters
 	private final I_M_Material_Tracking _materialTracking;
@@ -63,6 +66,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 	// Loaded values
 	private List<IQualityInspectionOrder> _qualityInspectionOrders = null;
 	private List<IQualityInspectionOrder> _allProductionOrders = null;
+	private List<IQualityInspectionOrder> _notInvoicedProductionOrders = null;
 
 	private MaterialTrackingDocumentsPricingInfo pricingInfo;
 
@@ -100,26 +104,48 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 	{
 		if (_allProductionOrders == null)
 		{
-			_allProductionOrders = ImmutableList.copyOf(retrieveProductionOrders());
-		}
+			_allProductionOrders = ImmutableList.copyOf(retrieveAllProductionOrders());
 
+		}
 		return _allProductionOrders;
 	}
 
-	private List<? extends IQualityInspectionOrder> retrieveProductionOrders()
+	List<IQualityInspectionOrder> getNotInvoicedProductionOrders()
+	{
+		if (_notInvoicedProductionOrders == null)
+		{
+			_notInvoicedProductionOrders = ImmutableList.copyOf(filterOutInvoicedPPOrders(getAllProductionOrders()));
+		}
+		return _notInvoicedProductionOrders;
+	}
+
+	private List<? extends IQualityInspectionOrder> filterOutInvoicedPPOrders(final List<IQualityInspectionOrder> allProductionOrders)
+	{
+		final ArrayList<IQualityInspectionOrder> result = new ArrayList<>();
+		for (final IQualityInspectionOrder order : allProductionOrders)
+		{
+			if (materialTrackingPPOrderDAO.isInvoiced(order.getPP_Order()))
+			{
+				continue;
+			}
+			result.add(order);
+		}
+		return result;
+	}
+
+	private List<? extends IQualityInspectionOrder> retrieveAllProductionOrders()
 	{
 		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
 
 		final I_M_Material_Tracking materialTracking = getM_Material_Tracking();
 
-		// task 08848: we need to order the QualityInspections by their production dates.
-		// Just ordering them by M_Material_Tracking_Ref_ID is not OK because some of data records in might have been created late.
+		// note that at this point we also retrieve those PP_Orders that already have invoice candidates
 		final ArrayList<IQualityInspectionOrder> qualityInspectionOrders = new ArrayList<IQualityInspectionOrder>();
 		for (final I_PP_Order ppOrder : materialTrackingDAO.retrieveReferences(materialTracking, I_PP_Order.class))
 		{
 			if (!DocAction.STATUS_Closed.equals(ppOrder.getDocStatus())
 					&& !ppOrdersToBeConsideredClosed.contains(ppOrder.getPP_Order_ID()) // task 09657
-			)
+					)
 			{
 				continue; // for the invoice candidates, only closed PP_Orders matter.
 			}
@@ -128,6 +154,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			qualityInspectionOrders.add(qiOrder);
 		}
 
+		// task 08848: we need to order the QualityInspections by their production dates.
+		// Just ordering them by M_Material_Tracking_Ref_ID is not OK because some of data records in might have been created late.
 		Collections.sort(qualityInspectionOrders, new Comparator<IQualityInspectionOrder>()
 		{
 			@Override
@@ -150,6 +178,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 		final List<IQualityInspectionOrder> qiOrders = new ArrayList<>();
 		// List<IQualityInspectionOrder> previousOrders = new ArrayList<>();
 
+		// only PP_Orders that were not yet dealt with
 		final List<IQualityInspectionOrder> allProductionOrders = getAllProductionOrders();
 
 		for (final IQualityInspectionOrder qiOrderInterface : allProductionOrders)
@@ -164,22 +193,12 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 				qiOrder.setInspectionNumber(nextInspectionNumber);
 				nextInspectionNumber++;
 
-				qiOrder.setAllOrders(allProductionOrders);
+				qiOrder.setAllOrders(getNotInvoicedProductionOrders());
 
 				qiOrders.add(qiOrder);
 			}
 		}
 		return qiOrders;
-	}
-
-	@Override
-	public Collection<I_M_PriceList_Version> setPricingSystemLoadPLVs(final I_M_PricingSystem pricingSystem)
-	{
-		Check.assumeNotNull(pricingSystem, "Param pricingSystem is not null");
-		pricingInfo = newPricingInfoBuilder()
-				.setM_PricingSystem(pricingSystem)
-				.build();
-		return pricingInfo.getPriceListVersions();
 	}
 
 	@Override
@@ -189,34 +208,53 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 		ppOrdersToBeConsideredClosed.add(ppOrder.getPP_Order_ID());
 	}
 
-	private final MaterialTrackingDocumentsPricingInfo getPricingInfo(final I_M_PriceList_Version plvForInit)
+	@Override public Collection<I_M_PriceList_Version> getPriceListVersions()
+	{
+		return getPricingInfo().getPriceListVersions();
+	}
+
+	@Override public IVendorInvoicingInfo getVendorInvoicingInfoForPLV(I_M_PriceList_Version plv)
+	{
+		final MaterialTrackingAsVendorInvoicingInfo materialTrackingAsVendorInvoicingInfo = new MaterialTrackingAsVendorInvoicingInfo(getM_Material_Tracking());
+		materialTrackingAsVendorInvoicingInfo.setM_PriceList_Version(plv);
+		return materialTrackingAsVendorInvoicingInfo;
+	}
+
+	private final MaterialTrackingDocumentsPricingInfo getPricingInfo()
 	{
 		if (pricingInfo == null)
 		{
-			pricingInfo = newPricingInfoBuilder()
-					.setM_PricingSystemOf(plvForInit)
+			final I_M_PricingSystem pricingSystem = getM_Material_Tracking()
+					.getC_Flatrate_Term()
+					.getC_Flatrate_Conditions()
+					.getM_PricingSystem();
+
+			pricingInfo = MaterialTrackingDocumentsPricingInfo
+					.builder()
+					.setM_Material_Tracking_ID(getM_Material_Tracking().getM_Material_Tracking_ID())
+
+					// note that we give to the builder also those that were already processed into invoice candidates,
+					// because it needs that information to distinguish InOutLines that were not yet issued
+					// from those that were issued and whose issue-PP_Order already have IsInvoiceCanidate='Y'
+					.setAllProductionOrders(getAllProductionOrders())
+
+					.setNotYetInvoicedProductionOrders(getNotInvoicedProductionOrders())
+					.setM_PricingSystem(pricingSystem)
 					.build();
 		}
 		return pricingInfo;
 	}
 
-	private final MaterialTrackingDocumentsPricingInfo.Builder newPricingInfoBuilder()
-	{
-		return MaterialTrackingDocumentsPricingInfo.builder()
-				.setM_Material_Tracking_ID(getM_Material_Tracking().getM_Material_Tracking_ID())
-				.setQualityInspectionOrders(getAllProductionOrders());
-	}
-
 	@Override
-	public List<IQualityInspectionOrder> getQualityInspectionOrdersForPLV(final I_M_PriceList_Version plv)
+	public List<IQualityInspectionOrder> getProductionOrdersForPLV(final I_M_PriceList_Version plv)
 	{
-		return getPricingInfo(plv).getQualityInspectionOrdersForPLV(plv);
+		return getPricingInfo().getQualityInspectionOrdersForPLV(plv);
 	}
 
 	@Override
 	public IVendorReceipt<I_M_InOutLine> getVendorReceiptForPLV(final I_M_PriceList_Version plv)
 	{
-		return getPricingInfo(plv).getVendorReceiptForPLV(plv);
+		return getPricingInfo().getVendorReceiptForPLV(plv);
 	}
 
 	@Override

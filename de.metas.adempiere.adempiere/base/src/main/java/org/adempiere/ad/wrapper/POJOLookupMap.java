@@ -10,12 +10,12 @@ package org.adempiere.ad.wrapper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -227,7 +227,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	}
 
 	/**
-	 * 
+	 *
 	 * @param copyOnSave true if we want that values to be copied on save and not only referenced. Setting to true is like an actual database is working.
 	 */
 	public void setCopyOnSave(boolean copyOnSave)
@@ -335,7 +335,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	/**
 	 * Create a new object using global ctx (Env.getCtx()) and Trx.TRX_None as transaction.
-	 * 
+	 *
 	 * @param interfaceClass
 	 * @return
 	 */
@@ -1078,12 +1078,12 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	public <T> I_AD_PInstance createSelectionFromModels(@SuppressWarnings("unchecked") T... models)
 	{
 		final I_AD_PInstance adPInstance = createSelectionPInstance(Env.getCtx());
-		
+
 		if (models != null)
 		{
 			createSelectionFromModelsCollection(adPInstance, Arrays.asList(models));
 		}
-		
+
 		return adPInstance;
 	}
 
@@ -1121,7 +1121,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 		return selection.contains(id);
 	}
-	
+
 	/**
 	 * @return new database restore point.
 	 */

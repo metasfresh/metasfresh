@@ -24,15 +24,15 @@ package de.metas.materialtracking.model.validator;
 
 import java.util.List;
 
+import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.materialtracking.IMaterialTrackingBL;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 
-import de.metas.materialtracking.IMaterialTrackingAttributeBL;
-import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /**
  * Template for Material Track documents which have an ASI in their lines and that ASI contains Material Tracking Attribute.

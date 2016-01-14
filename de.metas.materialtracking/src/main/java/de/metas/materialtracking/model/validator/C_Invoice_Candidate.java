@@ -23,6 +23,12 @@ package de.metas.materialtracking.model.validator;
  */
 
 
+import de.metas.materialtracking.IMaterialTrackingBL;
+import de.metas.materialtracking.model.IMaterialTrackingAware;
+import de.metas.materialtracking.model.I_C_Invoice_Candidate;
+import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
+import de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.MaterialTrackingInvoiceCandidateListener;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -34,13 +40,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
-import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
-import de.metas.materialtracking.model.IMaterialTrackingAware;
-import de.metas.materialtracking.model.I_C_Invoice_Candidate;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
-import de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.MaterialTrackingInvoiceCandidateListener;
 
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
@@ -54,7 +54,7 @@ public class C_Invoice_Candidate
 
 	/**
 	 * Checks if the given <code>ic</code> references a record that is already tracked. If that is the case, the ic's
-	 * {@link de.metas.materialtracking.model.I_C_Invoice_Candidate#COLUMNNAME_M_Material_Tracking_ID M_Material_Tracking_ID} is set to the referenced object's tracking ID.
+	 * {@link I_C_Invoice_Candidate#COLUMNNAME_M_Material_Tracking_ID M_Material_Tracking_ID} is set to the referenced object's tracking ID.
 	 *
 	 * @param ic
 	 */
@@ -89,7 +89,7 @@ public class C_Invoice_Candidate
 	}
 
 	/**
-	 * Checks if the given <code>ic</code> has {@link de.metas.materialtracking.model.I_C_Invoice_Candidate#COLUMNNAME_M_Material_Tracking_ID M_Material_Tracking_ID} <code>>0</code>. If that is the
+	 * Checks if the given <code>ic</code> has {@link I_C_Invoice_Candidate#COLUMNNAME_M_Material_Tracking_ID M_Material_Tracking_ID} <code>>0</code>. If that is the
 	 * case, it is also linked to the tracking using {@link IMaterialTrackingBL#linkModelToMaterialTracking(Object, I_M_Material_Tracking)}.
 	 *
 	 * @param ic

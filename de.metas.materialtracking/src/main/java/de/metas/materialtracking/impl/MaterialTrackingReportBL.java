@@ -29,12 +29,12 @@ import de.metas.materialtracking.model.I_PP_Order;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -71,7 +71,7 @@ public class MaterialTrackingReportBL implements IMaterialTrackingReportBL
 		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(ref);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ref);
 
-		int table_ID = ref.getAD_Table_ID();
+		final int table_ID = ref.getAD_Table_ID();
 
 		// the ASI of the ref's linked record (inoutLine or ppOrder)
 		final I_M_AttributeSetInstance refASI;
@@ -102,7 +102,6 @@ public class MaterialTrackingReportBL implements IMaterialTrackingReportBL
 
 		return resultASI;
 	}
-	
 
 	@Override
 	public I_M_Material_Tracking_Report_Line_Alloc createMaterialTrackingReportLineAllocation(final I_M_Material_Tracking_Report_Line line, final I_M_Material_Tracking_Ref ref)

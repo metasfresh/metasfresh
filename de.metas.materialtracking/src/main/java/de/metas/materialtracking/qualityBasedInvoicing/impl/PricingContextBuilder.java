@@ -22,9 +22,9 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
@@ -32,6 +32,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 
 /**
@@ -51,6 +52,18 @@ public class PricingContextBuilder
 
 	public PricingContextBuilder setVendorInvoicingInfo(final IVendorInvoicingInfo vendorInvoicingInfo)
 	{
+		Check.assumeNotNull(vendorInvoicingInfo, "Param 'vendorInvoicingInfo' not null");
+
+		// these checks are also intended to guard against poorly set up AITs
+		final I_M_PriceList_Version plv = vendorInvoicingInfo.getM_PriceList_Version();
+		Check.assumeNotNull(plv,
+				"Param 'vendorInvoicingInfo.M_PriceList_Version' not null; vendorInvoicingInfo={0}", vendorInvoicingInfo);
+		final I_M_PriceList pl = InterfaceWrapperHelper.create(plv.getM_PriceList(), I_M_PriceList.class);
+		Check.assumeNotNull(pl,
+				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList' not null; vendorInvoicingInfo={0}", vendorInvoicingInfo);
+		Check.assumeNotNull(pl.getM_PricingSystem(),
+				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList.M_PricingSystem' not null; vendorInvoicingInfo={0}", vendorInvoicingInfo);
+
 		_vendorInvoicingInfo = vendorInvoicingInfo;
 		return this;
 	}
@@ -117,7 +130,7 @@ public class PricingContextBuilder
 		//
 		// Extract infos from original invoice candidate
 		final int billBPartnerId = vendorInvoicingInfo.getBill_BPartner_ID();
-		final int pricingSytemId = vendorInvoicingInfo.getM_PricingSystem_ID();
+		final int pricingSytemId = vendorInvoicingInfo.getM_PricingSystem().getM_PricingSystem_ID();
 		final int currencyId = vendorInvoicingInfo.getC_Currency_ID();
 		final I_M_PriceList_Version priceListVersion = vendorInvoicingInfo.getM_PriceList_Version();
 		final boolean isSOTrx = false; // we are always on purchase side

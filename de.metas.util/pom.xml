@@ -47,9 +47,9 @@
 		As long as we also use jboss-aop, we can't freely choose our javassist version 
 		-->
 		<dependency>
-			<groupId>javassist</groupId>
+			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.10.0.GA</version>
+			<version>3.19.0-GA</version>
 		</dependency>
 
 <!-- 	nice standardiced annotations, but requires java7	
@@ -64,7 +64,6 @@
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
-			<version>1.4.3</version>
 		</dependency>
 
 		<dependency>

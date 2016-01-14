@@ -64,8 +64,9 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	 * Note: this method does not return the created candidates because there might be too many of them.
 	 *
 	 * @param ctx
+	 * @param handlers see {@link IInvoiceCandBL#createMissingCandidates(org.compiere.model.I_AD_PInstance, List, String)}
 	 */
-	void createMissingCandidates(Properties ctx);
+	void createMissingCandidates(Properties ctx, List<I_C_ILCandHandler> handlers);
 
 	/**
 	 * Creates missing invoice candidates for the given table name and model. It is assumes that 'model' can be handled by {@link InterfaceWrapperHelper}.
@@ -79,7 +80,7 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 
 	/**
 	 * Schedule invoice candidates generation for given model (asynchronously).
-	 * 
+	 *
 	 * @param model
 	 */
 	void scheduleCreateMissingCandidatesFor(Object model);

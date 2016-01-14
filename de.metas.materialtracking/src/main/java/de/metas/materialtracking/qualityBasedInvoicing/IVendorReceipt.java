@@ -23,10 +23,12 @@ package de.metas.materialtracking.qualityBasedInvoicing;
  */
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
@@ -36,7 +38,7 @@ import de.metas.materialtracking.IHandlingUnitsInfo;
  *
  * Contains informations about vendor material receipt. These informations will be used a reference when projected quantities will be calculated.
  *
- * @param <T> the type of the instances to add using the {@link #add(Object)} method.
+ * @param <T> the type of the instances to add using the {@link #add(Object)} method and to be returned by {@link #getModels()}.
  * @author tsa
  */
 public interface IVendorReceipt<T>
@@ -67,7 +69,20 @@ public interface IVendorReceipt<T>
 	/**
 	 * Add another model. Needs to be consistent with previously added models.
 	 *
-	 * @param invoiceCandidate
+	 * @param model
 	 */
 	void add(T model);
+
+	/**
+	 * Return the records that were added, see {@link #add(Object)}.
+	 *
+	 * @return
+	 */
+	List<T> getModels();
+
+	/**
+	 *
+	 * @return the price list version that was valid while this vendor receipt happened.
+	 */
+	I_M_PriceList_Version getPLV();
 }

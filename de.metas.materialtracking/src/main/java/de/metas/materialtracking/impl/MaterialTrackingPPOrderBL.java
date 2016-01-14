@@ -10,28 +10,35 @@ package de.metas.materialtracking.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
+import de.metas.materialtracking.model.I_M_InOutLine;
+import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 
 public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 {
@@ -67,11 +74,11 @@ public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 	{
 		return qualityInspectionFilter;
 	}
-	
+
 	@Override
 	public Timestamp getDateOfProduction(final I_PP_Order ppOrder)
 	{
-	
+
 		final Timestamp dateOfProduction;
 		if (ppOrder.getDateDelivered() != null)
 		{
@@ -85,4 +92,26 @@ public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 		return dateOfProduction;
 	}
 
+	@Override
+	public List<I_M_InOutLine> retrieveIssuedInOutLines(final I_PP_Order ppOrder)
+	{
+		// services
+		final IPPOrderMInOutLineRetrievalService ppOrderMInOutLineRetrievalService = Services.get(IPPOrderMInOutLineRetrievalService.class);
+		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+		final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
+
+		final List<I_M_InOutLine> allIssuedInOutLines = new ArrayList<>();
+
+		for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.retrieveForOrder(ppOrder))
+		{
+			if (!ppCostCollectorBL.isMaterialIssue(cc, true))
+			{
+				continue;
+			}
+
+			final List<I_M_InOutLine> issuedInOutLinesForCC = ppOrderMInOutLineRetrievalService.provideIssuedInOutLines(cc);
+			allIssuedInOutLines.addAll(issuedInOutLinesForCC);
+		}
+		return allIssuedInOutLines;
+	}
 }

@@ -10,12 +10,12 @@ package org.adempiere.ad.wrapper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -58,9 +58,9 @@ import org.compiere.util.Evaluatee2;
 
 /**
  * Simple implementation which binds an given interface to a internal Map.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class POJOWrapper implements InvocationHandler
 {
@@ -79,7 +79,7 @@ public class POJOWrapper implements InvocationHandler
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @param cl
 	 * @param trxName
@@ -201,7 +201,7 @@ public class POJOWrapper implements InvocationHandler
 	/**
 	 * If the given <code>cl</code> has a table name (see {@link #getTableNameOrNull(Class)}), then this method makes sure that there is also an <code>I_AD_Table</code> POJO. This can generally be
 	 * assumed when running against a DB and should also be made sure when running unti tests in decoupled mode.
-	 * 
+	 *
 	 * @param ctx
 	 * @param cl
 	 */
@@ -278,7 +278,7 @@ public class POJOWrapper implements InvocationHandler
 
 	/**
 	 * Creates a copy of {@link #values} but remove dynamic attributes and cached models from inside.
-	 * 
+	 *
 	 * @return copy of {@link #values} which contains only column name values.
 	 */
 	private Map<String, Object> copyValues()
@@ -428,7 +428,7 @@ public class POJOWrapper implements InvocationHandler
 
 	/**
 	 * Old Values map.
-	 * 
+	 *
 	 * NOTE: this map will contain values only for those properties that were changed
 	 */
 	private final Map<String, Object> valuesOld;
@@ -1126,7 +1126,7 @@ public class POJOWrapper implements InvocationHandler
 	}
 
 	/**
-	 * 
+	 *
 	 * @return a copy of column values. This map does not contain dynamic attributes or models.
 	 */
 	public Map<String, Object> getValuesMap()
@@ -1135,7 +1135,7 @@ public class POJOWrapper implements InvocationHandler
 	}
 
 	/**
-	 * 
+	 *
 	 * @return inner {@link #valuesRO} map (readonly!) which contains column values, dynamic attributes and cached models.
 	 */
 	private Map<String, Object> getInnerValues()
@@ -1145,7 +1145,7 @@ public class POJOWrapper implements InvocationHandler
 
 	/**
 	 * Get inner values for changing it.
-	 * 
+	 *
 	 * @return inner {@link #values} map (read-write)
 	 */
 	private Map<String, Object> getInnerValuesToSet()
@@ -1162,7 +1162,7 @@ public class POJOWrapper implements InvocationHandler
 
 	/**
 	 * Check if given columnName's value is null
-	 * 
+	 *
 	 * @param model
 	 * @param columnName
 	 * @return true if columnName's value is null
@@ -1194,7 +1194,7 @@ public class POJOWrapper implements InvocationHandler
 	}
 
 	/**
-	 * 
+	 *
 	 * @param model
 	 * @param discardChanges
 	 * @param trxName
@@ -1253,13 +1253,13 @@ public class POJOWrapper implements InvocationHandler
 
 	/**
 	 * Refresh this POJO.
-	 * 
+	 *
 	 * Design contract:
 	 * <ul>
 	 * <li>this method shall fail if the underlying database row does not exists anymore. Please keep it like this because there are tests were we rely on this to make sure that a given record still
 	 * exists and it's not deleted.
 	 * </ul>
-	 * 
+	 *
 	 * @param discardChanges
 	 * @param trxName
 	 */
@@ -1348,7 +1348,7 @@ public class POJOWrapper implements InvocationHandler
 
 	/**
 	 * Sets if the values shall be strict. By strict values we mean that if a value was not found in the map when the getter is called we will throw an exception.
-	 * 
+	 *
 	 * @param strictValues
 	 */
 	public void setStrictValues(boolean strictValues)
@@ -1378,7 +1378,7 @@ public class POJOWrapper implements InvocationHandler
 
 	/**
 	 * Set if we shall allow to {@link #refresh(Object)} an object which has changes.
-	 * 
+	 *
 	 * @param allow
 	 */
 	public static void setAllowRefreshingChangedModels(final boolean allow)
@@ -1453,7 +1453,7 @@ public class POJOWrapper implements InvocationHandler
 	}
 
 	/**
-	 * 
+	 *
 	 * @return if true then toString() method will also print referenced models (if available) and not just the IDs
 	 */
 	public static boolean isPrintReferencedModels()
@@ -1521,7 +1521,7 @@ public class POJOWrapper implements InvocationHandler
 		Check.assumeNotNull(wrapper, "wrapper not null for model {0}", model);
 		return isWrapperValueChanged(wrapper, propertyName);
 	}
-	
+
 	/**
 	 * @param model
 	 * @param columnNames
@@ -1531,7 +1531,7 @@ public class POJOWrapper implements InvocationHandler
 	{
 		final POJOWrapper wrapper = getWrapper(model);
 		Check.assumeNotNull(wrapper, "wrapper not null for model {0}", model);
-		
+
 		for (final String propertyName : propertyNames)
 		{
 			if (isWrapperValueChanged(wrapper, propertyName))
@@ -1539,7 +1539,7 @@ public class POJOWrapper implements InvocationHandler
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -1650,12 +1650,12 @@ public class POJOWrapper implements InvocationHandler
 		this._trxName = trxName;
 		return trxNameOld;
 	}
-	
+
 	public final boolean isOldValues()
 	{
 		return useOldValues;
 	}
-	
+
 	public static final boolean isOldValues(final Object model)
 	{
 		return getWrapper(model).isOldValues();
