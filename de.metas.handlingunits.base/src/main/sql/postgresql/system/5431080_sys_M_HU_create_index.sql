@@ -1,5 +1,5 @@
 
-
+DROP INDEX IF EXISTS m_hu_created;
 
 CREATE INDEX m_hu_created
    ON m_hu (created);

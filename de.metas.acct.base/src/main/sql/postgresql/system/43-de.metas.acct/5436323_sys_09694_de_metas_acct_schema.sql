@@ -21,7 +21,7 @@ drop schema if exists de_metas_acct;
 CREATE SCHEMA de_metas_acct;
 
 
-SET search_path = de_metas_acct, pg_catalog;
+SET search_path = public, de_metas_acct, pg_catalog;
 
 --
 -- TOC entry 8670 (class 1247 OID 119774106)
@@ -80,10 +80,10 @@ $_$;
 --
 -- TOC entry 3232 (class 1255 OID 119774045)
 -- Dependencies: 6120 89
--- Name: fact_acct_endingbalance(adempiere.fact_acct); Type: FUNCTION; Schema: de_metas_acct; Owner: -
+-- Name: fact_acct_endingbalance(fact_acct); Type: FUNCTION; Schema: de_metas_acct; Owner: -
 --
 
-CREATE FUNCTION fact_acct_endingbalance(factline adempiere.fact_acct) RETURNS numeric
+CREATE FUNCTION fact_acct_endingbalance(factline fact_acct) RETURNS numeric
     LANGUAGE sql STABLE
     AS $_$
 	SELECT acctBalance(($1).Account_ID, COALESCE(SUM(AmtAcctDr), 0), COALESCE(SUM(AmtAcctCr), 0))
