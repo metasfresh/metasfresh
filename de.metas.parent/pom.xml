@@ -718,7 +718,7 @@
 							<unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin</unCheckedPluginList>
 						</requirePluginVersions>
 
-						<!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
+								<!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
 						<dependencyConvergence />
 						<banDuplicateClasses>
 							<ignoreClasses>
@@ -741,15 +741,15 @@
 								<ignoreClass>org.w3c.*</ignoreClass>
 								<ignoreClass>org.xml.*</ignoreClass>
 										
-								<!-- this class originates from org.zkoss.calendar:calendar:jar:1.0.0-RC -->
+										<!-- this class originates from org.zkoss.calendar:calendar:jar:1.0.0-RC -->
 								<ignoreClass>org.zkoss.calendar.render.CalendarsDefault</ignoreClass>
 		
-								<!-- the following are camel/servicemix related dependencies -->
-								<!--
-								Found in, both are dependencies of mylin-smooks-all
-									  org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
-									  net.sf.opencsv:opencsv:jar:2.1:compile
-								-->
+										<!-- the following are camel/servicemix related dependencies -->
+										<!--
+										Found in, both are dependencies of mylin-smooks-all
+										  org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
+										  net.sf.opencsv:opencsv:jar:2.1:compile
+										-->
 								<ignoreClass>au.com.bytecode.*</ignoreClass>
 
 								<ignoreClass>com.microsoft.schemas.*</ignoreClass>
@@ -757,11 +757,11 @@
 								<ignoreClass>org.openxmlformats.schemas.*</ignoreClass>
 								<ignoreClass>org.w3.x2000.*</ignoreClass>
 										
-								<!--
-								Found in:
-								  xmlpull:xmlpull:jar:1.1.3.1:compile
-								  xpp3:xpp3_min:jar:1.1.4c:compile
-								-->
+										<!--
+										Found in:
+										  xmlpull:xmlpull:jar:1.1.3.1:compile
+										  xpp3:xpp3_min:jar:1.1.4c:compile
+										-->
 								<ignoreClass>org.xmlpull.*</ignoreClass>
 										
 										<!--
@@ -780,8 +780,8 @@
 							</ignoreClasses>
 
 							<dependencies>
-								<!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM ("JUnit classes in JMockit jar") for background info
-								-->
+										<!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM ("JUnit classes in JMockit jar") for background info
+										-->
 								<dependency>
 									<artifactId>jmockit</artifactId>
 									<ignoreClasses>
@@ -803,6 +803,7 @@
 						<goals>
 							<goal>enforce</goal>
 						</goals>
+
 					</execution>
 				</executions>
 			</plugin>
@@ -877,7 +878,7 @@
 				<artifactId>maven-jxr-plugin</artifactId>
 				<version>2.3</version>
 			</plugin>
- 
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>

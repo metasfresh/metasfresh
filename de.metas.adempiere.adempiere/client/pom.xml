@@ -5,7 +5,6 @@
 	<groupId>de.metas.adempiere.adempiere</groupId>
 	<artifactId>de.metas.adempiere.adempiere.client</artifactId>
 
-
 	<parent>
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent</artifactId>
@@ -28,7 +27,7 @@
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
-	
+
 <!-- 
 not needed by us		
 		<dependency>
@@ -77,6 +76,7 @@ not needed by us
 			<artifactId>groovy-engine</artifactId>
 			<version>1.5.1</version>
 		</dependency>
+
 	</dependencies>
 
 </project>

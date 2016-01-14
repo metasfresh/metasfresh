@@ -150,7 +150,7 @@
 						<Private-Package>
 							de.metas.document.archive.esb.api.*,
 							de.metas.document.archive.esb.base.*,
-							org.adempiere.util.*,
+							de.metas.util.*,
 							{local-packages}
 						</Private-Package>
 					</instructions>

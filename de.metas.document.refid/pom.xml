@@ -14,7 +14,6 @@
 
 	<description>Document ReferenceNo Management</description>
 
-
 	<properties>
 		<migration-sql-basedir>60-de.metas.document.document-refid</migration-sql-basedir>
 	</properties>
@@ -41,4 +40,5 @@
 		</dependency>
 		
 	</dependencies>
+
 </project>

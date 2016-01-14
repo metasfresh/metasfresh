@@ -39,18 +39,19 @@
 
 		<module>../de.metas.async</module>
 		<module>../de.metas.banking</module>
+
 		<module>../de.metas.commission</module>
+
 		<module>../de.metas.contracts</module>
 
 		<module>../de.metas.device.adempiere</module>
 		<module>../de.metas.device.api</module>
 		<module>../de.metas.device.scales</module>
-
 		<module>../de.metas.document.archive</module>
 		<module>../de.metas.document.archive.esb</module>
-
 		<module>../de.metas.document.refid</module>
 		<module>../de.metas.dunning</module>
+
 		<module>../de.metas.edi</module>
 		<module>../de.metas.edi.esb</module>
 

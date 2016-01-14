@@ -18,7 +18,6 @@
 	</properties>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>de.metas.payment.esr</groupId>
 			<artifactId>de.metas.payment.esr</artifactId>

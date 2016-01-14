@@ -9,8 +9,8 @@
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
-	<groupId>de.metas.edi.esb</groupId>
-	<artifactId>de.metas.edi.esb.camel</artifactId>
+	<groupId>de.metas.edi</groupId>
+	<artifactId>de.metas.edi.esb</artifactId>
 
 	<description>Metas :: Components :: EDI (SMX-4.5.1)</description>
 
