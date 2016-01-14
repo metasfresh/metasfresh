@@ -20,8 +20,9 @@
 		<!-- note the fixed version: 
 		     unless we explicitly want to develop esb.api (and thus have a focus on it), we don't want to scratch our heads about what the current snapshot might or might not contain
 		     Background: this API is used by by adempiere and the esb, and for the esb we don't yet automatically rollout the latest snapshot of the time we do an ADempiere rollout
-		-->
 		<de.metas.document.archive.esb.api.version>1.1</de.metas.document.archive.esb.api.version>
+		-->
+		<de.metas.document.archive.esb.api.version>${project.version}</de.metas.document.archive.esb.api.version>
 	</properties>
 
 	<modules>
