@@ -10,12 +10,12 @@ package de.metas.banking.payment.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
@@ -75,19 +76,20 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		Check.assumeNotNull(invoice, "invoice not null");
 
 		final IPaymentRequestDAO paymentRequestDAO = Services.get(IPaymentRequestDAO.class);
+		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+
 		final I_C_Payment_Request paymentRequest = paymentRequestDAO.retrieveSingularRequestOrNull(invoice);
 		if (paymentRequest == null)
 		{
 			return false;
 		}
-		
+
 		final org.compiere.model.I_C_BP_BankAccount payRequestBPBankAcct = paymentRequest.getC_BP_BankAccount();
 		final org.compiere.model.I_C_BP_BankAccount paySelBPBankAcct =  paySelectionLine.getC_PaySelection().getC_BP_BankAccount();
-	
+
 		// 09500: In case we area dealing with 2 bank accounts we have to make sure they are of the same currency
 		if(payRequestBPBankAcct != null && paySelBPBankAcct != null)
 		{
-
 			// do not update the line from the request if they don't match
 			if(payRequestBPBankAcct.getC_Currency_ID() != paySelBPBankAcct.getC_Currency_ID())
 			{
@@ -97,11 +99,18 @@ public class PaymentRequestBL implements IPaymentRequestBL
 
 		//
 		// Primarily, try to use the pay amount from the payment request
-		if (paymentRequest.getAmount().signum() != 0)
+		final BigDecimal requestAmount = paymentRequest.getAmount();
+
+		// task 08406: ...but only apply the payment request's amount if it actually has one specified
+		if (requestAmount.signum() != 0)
 		{
-			// task 08406: ...but only apply the payment request's amount if it actually has one specified
-			paySelectionLine.setPayAmt(paymentRequest.getAmount());
-			final BigDecimal differenceAmt = paymentRequest.getAmount().subtract(invoice.getGrandTotal());
+			// task 09698: don't apply more than the amount which is actually still open, even if the paymentRequest's amount is bigger.
+			final boolean creditMemoAdjusted = true;
+			final BigDecimal openAmt = allocationDAO.retrieveOpenAmt(invoice, creditMemoAdjusted);
+			final BigDecimal payAmt = requestAmount.min(openAmt);
+			paySelectionLine.setPayAmt(payAmt);
+
+			final BigDecimal differenceAmt = payAmt.subtract(openAmt);
 			paySelectionLine.setDifferenceAmt(differenceAmt);
 		}
 

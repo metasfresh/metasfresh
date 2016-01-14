@@ -10,12 +10,12 @@ package de.metas.banking.payment.paymentallocation.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -74,6 +74,7 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.interfaces.I_C_BP_BankAccount;
@@ -425,8 +426,10 @@ final class SelectPaySelectionDialog
 		if (!paymentRequestBL.updatePaySelectionLineFromPaymentRequestIfExists(paySelectionLine))
 		{
 			//
-			// Fallback to invoice grand total
-			paySelectionLine.setPayAmt(invoice.getGrandTotal());
+			// Fallback to invoice open amount (as of task 09698, before it was the invoice's GrandTotal)
+			final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+			final BigDecimal payAmt = allocationDAO.retrieveOpenAmt(invoice, true);
+			paySelectionLine.setPayAmt(payAmt);
 			paySelectionLine.setDifferenceAmt(BigDecimal.ZERO);
 		}
 

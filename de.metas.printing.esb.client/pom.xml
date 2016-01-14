@@ -43,7 +43,6 @@
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.9.10</version>
 		</dependency>
 
 <!-- javax.mail can do stream-based base64 encoding/decoding -->
@@ -103,7 +102,7 @@
 			</plugin>
 
 			<plugin>
-			<!-- sign the uber-jar that we just created with the maven-assembly-plugin -->
+				<!-- sign the uber-jar that we just created with the maven-assembly-plugin -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jarsigner-plugin</artifactId>
 				<executions>
