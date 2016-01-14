@@ -1,5 +1,4 @@
 
-
 DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying) CASCADE;
 DROP TABLE IF EXISTS report.saldobilanz_Report CASCADE;
 DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying) CASCADE;
@@ -31,6 +30,7 @@ CREATE TABLE report.saldobilanz_Report
 WITH (
 	OIDS=FALSE
 );
+ALTER TABLE report.saldobilanz_Report OWNER TO adempiere;
 
 CREATE FUNCTION report.saldobilanz_Report(IN Date Date, IN defaultAcc character varying, IN showCurrencyExchange character varying) RETURNS SETOF report.saldobilanz_Report AS
 $BODY$
@@ -149,5 +149,4 @@ ORDER BY
 	parentValue1, parentValue2, parentValue3, value 
 $BODY$
 LANGUAGE sql STABLE;
-ALTER FUNCTION report.saldobilanz_Report(IN Date, IN character varying) OWNER TO adempiere;
 
