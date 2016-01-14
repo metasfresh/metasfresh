@@ -39,6 +39,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.CLogger;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.IPPOrderCostDAO;
 import org.eevolution.api.IPPOrderWorkflowDAO;
 import org.eevolution.api.IResourceDAO;
 import org.eevolution.model.I_PP_Order;
@@ -53,6 +54,11 @@ public class PPOrderCostBL implements IPPOrderCostBL
 	@Override
 	public void createStandardCosts(final I_PP_Order ppOrder)
 	{
+		//
+		// Before creating the new PP_Order_Cost we need to delete the existing records
+		// (i.e. handling the case when a re-activated PP_Order is completed again)
+		Services.get(IPPOrderCostDAO.class).deleteOrderCosts(ppOrder);
+		
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrder);
 
 		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx);
