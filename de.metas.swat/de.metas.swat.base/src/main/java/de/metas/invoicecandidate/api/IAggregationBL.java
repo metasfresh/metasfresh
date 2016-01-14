@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -64,6 +63,14 @@ public interface IAggregationBL extends ISingletonService
 	IInvoiceLineRW mkInvoiceLine();
 
 	/**
+	 * Creates a new {@link IInvoiceLineRW}, and set every properties of that line from the given <code>template</code>.
+	 *
+	 * @param template
+	 * @return
+	 */
+	IInvoiceLineRW mkInvoiceLine(IInvoiceLineRW template);
+
+	/**
 	 * Creates a plain {@link IInvoiceCandAggregate} instance.
 	 *
 	 * @return
@@ -99,7 +106,7 @@ public interface IAggregationBL extends ISingletonService
 	/**
 	 * Convenience method that returns <code>true</code> if the given <code>iciol</code>'s inOutLine has it's <code>InDispute</code> flag set. <br>
 	 * If iciol is <code>null</code> or if the iciol's M_InOutLine is not set, then the method return <code>false</code>.
-	 * 
+	 *
 	 * @param iciol
 	 * @return
 	 */
@@ -107,16 +114,16 @@ public interface IAggregationBL extends ISingletonService
 
 	/**
 	 * Extract invoice line relevant product attributes from {@link I_M_InOutLine}.
-	 * 
+	 *
 	 * Relevant attributes from inout line are those that:
 	 * <ul>
 	 * <li>are inside the inout line's ASI
 	 * <li>have {@link I_M_Attribute#isAttrDocumentRelevant()} set.
 	 * </ul>
-	 * 
+	 *
 	 * @param inOutLine
 	 * @return invoice line product attributes
-	 * 
+	 *
 	 * @task 08451- this task was the one that initially demanded to aggregate invoice lines per ASI relevant attributes
 	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
@@ -124,18 +131,18 @@ public interface IAggregationBL extends ISingletonService
 
 	/**
 	 * Builds and set Header Aggregation Keys (calculated and the actual one).
-	 * 
+	 *
 	 * Also set the invoicing group.
-	 * 
+	 *
 	 * @param ic
 	 */
 	void setHeaderAggregationKey(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Reset Header Aggregation Keys (calculated and actual).
-	 * 
+	 *
 	 * Also resets the invoicing group.
-	 * 
+	 *
 	 * @param ic
 	 */
 	void resetHeaderAggregationKey(I_C_Invoice_Candidate ic);

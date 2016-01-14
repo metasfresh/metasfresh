@@ -928,7 +928,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final int taxPrecision = getPrecision(invoiceLine);
 
 		// ts: note: our taxes are always on document, so currently the following if-block doesn't apply to us
-		final boolean documentLevel = invoiceTax.isDocumentLevel();
+		final boolean documentLevel = invoiceTax != null // guard against NPE
+				&& invoiceTax.isDocumentLevel();
 
 		// juddm: Tax Exempt & Tax Included in Price List & not Document Level - Adjust Line Amount
 		// http://sourceforge.net/tracker/index.php?func=detail&aid=1733602&group_id=176962&atid=879332

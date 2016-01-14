@@ -10,12 +10,12 @@ package de.metas.fresh.invoicecandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,7 +43,6 @@ import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
-import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
@@ -53,11 +52,11 @@ import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
  * Quanity/Quality Discount Aggregation. This aggregator's job is to customize the system's behavior for the case there there is a {@link I_C_Invoice_Candidate#COLUMN_QualityDiscountPercent_Effective}
  * that is greater than zero. In this case, the default implementation only invoices the quantity minus the quality discount and that's it. This implementation created <b>two</b> invoice lines. The
  * fist one ignores the discount and invoices whatever is the full quantity. The second line explicitly subtracts the discount quantity (line with a negative quantity).
- * 
+ *
  * <p>
  * Note about the naming: this class is called Fresh<b>Quantity</b>DiscountAggregator because the discount is not a percentage on the price, but a part of the delivered quantity is not invoiced. It
  * might also be called Fresh"Quality"DiscountAggregator, because that discount is happened because of quality.
- * 
+ *
  *
  */
 public class FreshQuantityDiscountAggregator implements IAggregator
@@ -101,7 +100,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	/**
 	 * Invokes the {@link #defaultAggregator}'s <code>registerInvoiceCandidateInAggregationCtx</code> method.<br>
 	 * Additionally, if the given <code>candidate</code> has a quality discount, then it is recorded in an internal list of this aggregator.
-	 * 
+	 *
 	 * @see IInvoiceCandBL#getQualityDiscountPercentEffective(I_C_Invoice_Candidate)
 	 */
 	@Override
@@ -160,9 +159,9 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 
 	/**
 	 * Create quality discount invoice line aggregates (one for each invoice candidate), if needed.
-	 * 
+	 *
 	 * NOTE: this method will also adjust the qty to invoice of the original invoice line.
-	 * 
+	 *
 	 * @param invoiceCandAggregate
 	 * @return
 	 */
@@ -198,7 +197,6 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 			// Basically there shall be only one, but there is no harm if we just pick the first one if there are more.
 			final List<IInvoiceLineRW> originalInvoiceLineRWs = invoiceCandAggregate.getLinesFor(candidate);
 			final IInvoiceLineRW originalInvoiceLineRW = originalInvoiceLineRWs.get(0);
-			final Set<IInvoiceLineAttribute> originalInvoiceLineRW_Attributes = originalInvoiceLineRW.getInvoiceLineAttributes();
 
 			//
 			// Adjust the original invoice line add let it include our qty with issues.
@@ -213,7 +211,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 			// The quality discount invoice line shall have the same attributes as the original invoice line (08642)
 			final IInvoiceCandAggregate discountInvoiceCandidateAggregate = createQualityDiscountInvoiceLine(candidate,
 					qtyQualityDiscount,
-					originalInvoiceLineRW_Attributes);
+					originalInvoiceLineRW);
 			for (final I_C_InvoiceCandidate_InOutLine icIol : ic2IndisputeIcIols.get(candidate))
 			{
 				originalInvoiceLineRW.getC_InvoiceCandidate_InOutLine_IDs().add(icIol.getC_InvoiceCandidate_InOutLine_ID());
@@ -227,7 +225,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 
 	/**
 	 * Creates an aggregate with one {@link IInvoiceLineRW} having "minus" <code>qtyDiscount</code>.
-	 * 
+	 *
 	 * @param candidate
 	 * @param qtyDiscount
 	 * @param invoiceLineAttributes attributes to be used on new invoice line
@@ -235,7 +233,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	 */
 	private IInvoiceCandAggregate createQualityDiscountInvoiceLine(final I_C_Invoice_Candidate candidate,
 			final BigDecimal qtyDiscount,
-			final Set<IInvoiceLineAttribute> invoiceLineAttributes)
+			final IInvoiceLineRW originalInvoiceLineRW)
 	{
 		final BigDecimal qtyToInvoice = qtyDiscount.negate();
 		final BigDecimal priceActual = invoiceCandBL.getPriceActual(candidate);
@@ -244,10 +242,11 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		final String descriptionPrefix = getDescriptionPrefix(candidate);
 		final String description = descriptionPrefix + " " + qualityDiscountPercent + "%";
 
-		final IInvoiceLineRW invoiceLine = aggregationBL.mkInvoiceLine();
+		// everything not explicitly set below will be taken from originalInvoiceLineRW, e.g. C_Tax
+		final IInvoiceLineRW invoiceLine = aggregationBL.mkInvoiceLine(originalInvoiceLineRW);
+
 		invoiceLine.setC_Charge_ID(candidate.getC_Charge_ID());
 		invoiceLine.setM_Product_ID(candidate.getM_Product_ID());
-		invoiceLine.setInvoiceLineAttributes(invoiceLineAttributes);
 
 		invoiceLine.setPriceActual(priceActual);
 		invoiceLine.setPriceEntered(priceActual);
@@ -281,7 +280,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 
 	/**
 	 * Gets description prefix to be used when creating an invoice line for given invoice candidate.
-	 * 
+	 *
 	 * @param candidate
 	 * @return
 	 */

@@ -718,7 +718,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		{
 			if (errorException[0] == null)
 			{
-				errorException[0] = new AdempiereException("Error while processing " + aggregate, e);
+				errorException[0] = new AdempiereException("Error while processing " + aggregate, e); // here we might end up with an empty errorCandidates list
 			}
 
 			// don't re-throw the exception, but rollback the trx

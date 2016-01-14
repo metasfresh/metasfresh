@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -122,6 +121,29 @@ public class AggregationBL implements IAggregationBL
 	public IInvoiceLineRW mkInvoiceLine()
 	{
 		return new InvoiceLineImpl();
+	}
+
+	@Override
+	public IInvoiceLineRW mkInvoiceLine(final IInvoiceLineRW template)
+	{
+		final IInvoiceLineRW result = mkInvoiceLine();
+
+		result.setC_Activity_ID(template.getC_Activity_ID());
+		result.setC_Charge_ID(template.getC_Charge_ID());
+		result.setC_OrderLine_ID(template.getC_OrderLine_ID());
+		result.setC_Tax(template.getC_Tax());
+		result.setDescription(template.getDescription());
+		result.setDiscount(template.getDiscount());
+		result.setInvoiceLineAttributes(template.getInvoiceLineAttributes());
+		result.setLineNo(template.getLineNo());
+		result.setM_Product_ID(template.getM_Product_ID());
+		result.setNetLineAmt(template.getNetLineAmt());
+		result.setPriceActual(template.getPriceActual());
+		result.setPriceEntered(template.getPriceEntered());
+		result.setPrinted(template.isPrinted());
+		result.setQtyToInvoice(template.getQtyToInvoice());
+
+		return result;
 	}
 
 	@Override
