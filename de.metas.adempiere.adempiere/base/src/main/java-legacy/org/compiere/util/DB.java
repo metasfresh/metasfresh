@@ -1889,6 +1889,33 @@ public final class DB
 	}	// printWarning
 
 	/**
+	 * Converts given parameter object to SQL code.
+	 * 
+	 * @param param
+	 * @return parameter as SQL code
+	 */
+	public static final String TO_SQL(final Object param)
+	{
+		if (param == null)
+			return "NULL";
+		else if (param instanceof String)
+			return TO_STRING((String)param);
+		else if (param instanceof Integer)
+			return String.valueOf(param);
+		else if (param instanceof BigDecimal)
+			return TO_NUMBER((BigDecimal)param, DisplayType.Number);
+		else if (param instanceof Timestamp)
+			return TO_DATE((Timestamp)param);
+		else if (param instanceof java.util.Date)
+			return TO_DATE(TimeUtil.asTimestamp((java.util.Date)param));
+		else if (param instanceof Boolean)
+			return TO_STRING(DisplayType.toBooleanString((Boolean)param));
+		else
+			throw new DBException("Unknown parameter type: " + param + " (" + param.getClass() + ")");
+		
+	}
+
+	/**
 	 * Create SQL TO Date String from Timestamp
 	 *
 	 * @param time Date to be converted

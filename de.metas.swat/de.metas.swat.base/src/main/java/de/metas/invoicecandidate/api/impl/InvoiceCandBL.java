@@ -148,15 +148,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final CLogger logger = InvoiceCandidate_Constants.getLogger();
 
 	@Override
-	public void createMissingCandidates(final I_AD_PInstance adPinstance, final String trxName)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(adPinstance);
-
-		final IInvoiceCandidateHandlerBL handlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-		handlerBL.createMissingCandidates(ctx);
-	}
-
-	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
 	{
 		return new InvoiceCandInvalidUpdater(this);

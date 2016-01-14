@@ -28,16 +28,14 @@ package de.metas.invoicecandidate.process;
 
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 
 /**
  * @author ts
@@ -45,7 +43,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
  */
 public class C_Invoice_Candidate_Create_Missing extends SvrProcess
 {
+	// services
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final transient IInvoiceCandidateHandlerBL handlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	
 	@Override
 	protected void prepare()
@@ -54,17 +54,15 @@ public class C_Invoice_Candidate_Create_Missing extends SvrProcess
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		final Properties ctx = getCtx();
 		Check.assume(Env.getAD_Client_ID(ctx) > 0, "No point in calling this process with AD_Client_ID=0");
-		final String trxName = ITrx.TRXNAME_None; // AD_Instance shall always be loaded out of trx
-
-		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, getAD_PInstance_ID(), I_AD_PInstance.class, trxName);
 
 		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 		{
-			invoiceCandBL.createMissingCandidates(adPInstance, trxName);
+			handlerBL.createMissingCandidates(ctx);
 		}
 		return "@Success@";
 	}

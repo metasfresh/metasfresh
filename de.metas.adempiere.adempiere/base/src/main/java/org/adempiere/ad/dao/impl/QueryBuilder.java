@@ -25,6 +25,8 @@ package org.adempiere.ad.dao.impl;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -41,6 +43,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
+import com.google.common.collect.ImmutableMap;
+
 /* package */class QueryBuilder<T> implements IQueryBuilder<T>
 {
 	// services
@@ -56,6 +60,8 @@ import org.compiere.model.IQuery;
 
 	private int onlySelection_ID = -1;
 	private int limit = IQuery.NO_LIMIT;
+
+	private Map<String, Object> options = null;
 
 	/**
 	 * we need a local instance, because we want to set its {@code ctx} when our {@link #setContext(Object)} or {@link #setContext(Properties, String)} method is called.
@@ -81,6 +87,8 @@ import org.compiere.model.IQuery;
 		this.orderByBuilder = from.orderByBuilder == null ? null : from.orderByBuilder.copy();
 		this.onlySelection_ID = from.onlySelection_ID;
 		this.limit = from.limit;
+		
+		this.options = from.options == null ? null : new HashMap<>(from.options);
 	}
 
 	@Override
@@ -237,6 +245,48 @@ import org.compiere.model.IQuery;
 	{
 		this.limit = limit;
 		return this;
+	}
+
+	@Override
+	public final QueryBuilder<T> setOption(final String name, final Object value)
+	{
+		Check.assumeNotEmpty(name, "name not empty");
+		if (options == null)
+		{
+			if (value == null)
+			{
+				return this;
+			}
+			
+			options = new HashMap<>();
+		}
+		
+		if (value == null)
+		{
+			options.remove(name);
+		}
+		else
+		{
+			options.put(name, value);
+		}
+
+		return this;
+	}
+	
+	@Override
+	public IQueryBuilder<T> setOption(final String name)
+	{
+		setOption(name, true);
+		return this;
+	}
+	
+	public final Map<String, Object> getOptions()
+	{
+		if (options == null)
+		{
+			return ImmutableMap.of();
+		}
+		return ImmutableMap.copyOf(options);
 	}
 
 	@Override

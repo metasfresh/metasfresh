@@ -22,7 +22,6 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryInsertExecutor;
@@ -35,7 +34,10 @@ import org.adempiere.ad.dao.IQueryInsertExecutor;
  */
 interface IQueryInsertFromColumn
 {
-	/** @return SQL code to be used when the INSERT sql is built */
+	/**
+	 * @param sqlParams output SQL parameters list or NULL if the parameters shall be embedded in the generated SQL code
+	 * @return SQL code to be used when the INSERT sql is built
+	 */
 	String getSql(List<Object> sqlParams);
 
 	/**

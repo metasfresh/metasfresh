@@ -66,6 +66,11 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	boolean isEmpty();
 
 	/**
+	 * @return how many filters are included in this composite filter
+	 */
+	int getFiltersCount();
+
+	/**
 	 * 
 	 * @return true if the JOIN method is AND
 	 * @see #setJoinAnd()

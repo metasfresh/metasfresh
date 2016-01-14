@@ -51,6 +51,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
+
 public class POJOQuery<T> extends AbstractTypedQuery<T>
 {
 	private final Properties ctx;
@@ -63,6 +65,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	private Map<String, Object> options = null;
 	private int limit = NO_LIMIT;
 	private int offset = NO_LIMIT;
+
+	private List<SqlQueryUnion<T>> unions;
 
 	@Deprecated
 	public POJOQuery(final Class<T> modelClass)
@@ -159,6 +163,9 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		queryNew.filters.addFilters(filters.getFilters());
 		queryNew.orderBy = this.orderBy;
 		queryNew.options = this.options == null ? null : new HashMap<>(this.options);
+		
+		queryNew.unions = unions == null ? null : new ArrayList<>(unions);
+		
 		return queryNew;
 	}
 
@@ -248,7 +255,65 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			final ET modelCasted = InterfaceWrapperHelper.create(model, clazz);
 			resultCasted.add(modelCasted);
 		}
+
+		//
+		// If we have UNION queries, execute those too and merge the results here:
+		if (unions != null && !unions.isEmpty())
+		{
+			for (final SqlQueryUnion<T> union : unions)
+			{
+				final IQuery<T> unionQuery = union.getQuery();
+				final List<ET> unionQueryResult = unionQuery.list(clazz);
+				
+				mergeModelLists(resultCasted, unionQueryResult, union.isDistinct());
+			}
+		}
+		
 		return resultCasted;
+	}
+	
+	private static final <T> void mergeModelLists(final List<T> to, final List<T> from, final boolean distinct)
+	{
+		// Case: from list is empty => nothing to do
+		if (from == null || from.isEmpty())
+		{
+			return;
+		}
+
+		// Case: we were not asked to check for distinct values => merge as is
+		if (!distinct)
+		{
+			to.addAll(from);
+			return;
+		}
+		
+		//
+		// Create a set of existing keys (to speed up searching)
+		final Set<Integer> existingKeys = new HashSet<>();
+		for (final T toModel : to)
+		{
+			final int toModelId = InterfaceWrapperHelper.getId(toModel);
+			existingKeys.add(toModelId);
+		}
+		
+		//
+		// Iterate the "from" list and add elements which does not exist (compared by ID)
+		for (final T fromModel : from)
+		{
+			final int fromModelId = InterfaceWrapperHelper.getId(fromModel);
+			if (!existingKeys.add(fromModelId))
+			{
+				// model already exists in "to" list => skip it
+				continue;
+			}
+			
+			to.add(fromModel);
+		}
+	}
+	
+	private final void assertNoUnionQueries()
+	{
+		Check.assume(unions == null || unions.isEmpty(), "UNIONs shall be empty because they are not supported in this case");
 	}
 
 	@Override
@@ -262,6 +327,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public <ET extends T> ET first(final Class<ET> clazz) throws DBException
 	{
+		assertNoUnionQueries();
+		
 		final POJOLookupMap db = POJOLookupMap.get();
 		final String tableName = getTableNameToUse(clazz);
 
@@ -303,6 +370,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	protected <ET extends T> ET firstOnly(final Class<ET> clazz, final boolean throwExIfMoreThenOneFound) throws DBException
 	{
+		assertNoUnionQueries();
+		
 		final POJOLookupMap db = POJOLookupMap.get();
 		final String tableName = getTableNameToUse(clazz);
 
@@ -318,6 +387,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public int count() throws DBException
 	{
+		assertNoUnionQueries();
+		
 		final POJOLookupMap db = POJOLookupMap.get();
 
 		return db.getRecords(modelClass, filters).size();
@@ -392,12 +463,34 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	{
 		if (options == null)
 		{
-			options = new HashMap<String, Object>();
+			options = new HashMap<>();
 		}
 		options.put(name, value);
 
 		return this;
 	}
+	
+
+	@Override
+	public POJOQuery<T> setOptions(final Map<String, Object> options)
+	{
+		if (options == null || options.isEmpty())
+		{
+			return this;
+		}
+		
+		if (this.options == null)
+		{
+			this.options = new HashMap<>(options);
+		}
+		else
+		{
+			this.options.putAll(options);
+		}
+
+		return this;
+	}
+	
 
 	@Override
 	public <OT> OT getOption(final String name)
@@ -685,7 +778,21 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public void addUnion(final IQuery<T> query, final boolean distinct)
 	{
-		throw new UnsupportedOperationException();
+		final SqlQueryUnion<T> sqlQueryUnion = new SqlQueryUnion<T>(query, distinct);
+		if (unions == null)
+		{
+			unions = new ArrayList<>();
+		}
+		unions.add(sqlQueryUnion);
+	}
+	
+	/* package */ List<SqlQueryUnion<T>> getUnions()
+	{
+		if(unions == null)
+		{
+			return ImmutableList.of();
+		}
+		return ImmutableList.copyOf(unions);
 	}
 
 	@Override

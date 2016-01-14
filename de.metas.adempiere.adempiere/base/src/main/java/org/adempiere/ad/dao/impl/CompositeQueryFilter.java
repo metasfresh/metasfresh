@@ -371,6 +371,12 @@ import org.compiere.model.IQuery;
 	}
 
 	@Override
+	public int getFiltersCount()
+	{
+		return filters.size();
+	}
+
+	@Override
 	public List<IQueryFilter<T>> getFilters()
 	{
 		return new ArrayList<IQueryFilter<T>>(filters);
@@ -450,7 +456,6 @@ import org.compiere.model.IQuery;
 		this._compiled = false;
 
 		return this;
-
 	}
 
 	@Override

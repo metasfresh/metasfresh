@@ -22,7 +22,6 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
-
 import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
@@ -39,6 +38,29 @@ import org.compiere.model.IQuery;
  */
 public interface IQueryBuilder<T>
 {
+	/**
+	 * Advice the SQL query builder, in case our filters are joined by OR, to explode them in several UNIONs.
+	 * 
+	 * This is a huge optimization for databases like PostgreSQL which have way better performances on UNIONs instead of WHERE expressions joined by OR.
+	 * 
+	 * Example: A query like
+	 * 
+	 * <pre>
+	 * SELECT ... FROM ... WHERE (Expression1 OR Expression2 OR Expression3)
+	 * </pre>
+	 * 
+	 * will be exploded to:
+	 * 
+	 * <pre>
+	 *  SELECT ... FROM ... WHERE Expression1
+	 *  UNION DISTINCT
+	 *  SELECT ... FROM ... WHERE Expression2
+	 *  UNION DISTINCT
+	 *  SELECT ... FROM ... WHERE Expression3
+	 * </pre>
+	 */
+	String OPTION_Explode_OR_Joins_To_SQL_Unions = "Explode_OR_Joins_To_SQL_Unions";
+
 	IQueryBuilder<T> copy();
 
 	Class<T> getModelClass();
@@ -60,6 +82,24 @@ public interface IQueryBuilder<T>
 	ICompositeQueryFilter<T> getFilters();
 
 	IQueryBuilder<T> setLimit(int limit);
+
+	/**
+	 * Sets a query option which will be used while building the query or while executing the query.
+	 * 
+	 * NOTE: all options will be also passed to {@link IQuery} instance when it will be created.
+	 * 
+	 * @param name
+	 * @param value
+	 * @see IQuery#setOptions(java.util.Map).
+	 */
+	IQueryBuilder<T> setOption(String name, Object value);
+
+	/**
+	 * Convenient way of calling {@link #setOption(String, Object)} with <code>value</code> = {@link Boolean#TRUE}.
+	 * 
+	 * @param name
+	 */
+	IQueryBuilder<T> setOption(String name);
 
 	int getLimit();
 
@@ -177,7 +217,7 @@ public interface IQueryBuilder<T>
 	 *
 	 * <pre>
 	 * final IQueryBuilder&lt;I_C_Order&gt; ordersQueryBuilder = ....;
-	 *
+	 * 
 	 * final List&lt;I_C_BPartner&gt; bpartners = ordersQueryBuilder
 	 *   .addCollect(I_C_Order.COLUMN_Bill_Partner_ID) // an IQueryBuilder&lt;I_C_BPartner&gt; is returned here
 	 *   .create() // create IQuery&lt;I_C_BPartner&gt;

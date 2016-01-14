@@ -22,71 +22,49 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryBuilderDAO;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 
-public class QueryBuilderDAO implements IQueryBuilderDAO
+public class QueryBuilderDAO extends AbstractQueryBuilderDAO
 {
 	private final PlainQueryBuilderDAO memDAO = new PlainQueryBuilderDAO();
 
 	@Override
 	public <T> IQuery<T> create(final IQueryBuilder<T> builder)
 	{
+		//
+		// Handle in memory queries
 		final Class<T> modelClass = builder.getModelClass();
-
 		final POJOLookupMap memDatabase = POJOLookupMap.getInMemoryDatabaseForModel(modelClass);
 		if (memDatabase != null)
 		{
 			return memDAO.create(builder);
 		}
 
-		final QueryBuilder<T> builderImpl = (QueryBuilder<T>)builder;
+		return super.create(builder);
+	}
 
-		final Properties ctx = builderImpl.getCtx();
-		final String trxName = builderImpl.getTrxName();
-
-		final IQueryFilter<T> filter = builderImpl.createFilter();
-
-		//
-		// Get the SQL and nonSQL part of the filter
-		final ISqlQueryFilter sqlFilter;
-		final IQueryFilter<T> nonSqlFilters;
-		if (filter instanceof ICompositeQueryFilter)
-		{
-			final ICompositeQueryFilter<T> compositeFilter = (ICompositeQueryFilter<T>)filter;
-			sqlFilter = compositeFilter.asPartialSqlQueryFilter();
-			nonSqlFilters = compositeFilter.asPartialNonSqlFilterOrNull();
-		}
-		else if (filter instanceof ISqlQueryFilter)
-		{
-			sqlFilter = (ISqlQueryFilter)filter;
-			nonSqlFilters = null;
-		}
-		else
-		{
-			sqlFilter = null;
-			nonSqlFilters = filter;
-		}
-
-		//
-		// Build SQL Where Clause and SQL Params
+	@Override
+	protected final <T> IQuery<T> createQuery(final QueryBuildContext<T> queryBuildCtx, final ISqlQueryFilter sqlFilters, final IQueryFilter<T> nonSqlFilters)
+	{
+		final Properties ctx = queryBuildCtx.getCtx();
 		final String sqlWhereClause;
 		final List<Object> sqlParams;
-		if (sqlFilter != null)
+		if (sqlFilters != null)
 		{
-			sqlWhereClause = sqlFilter.getSql();
-			sqlParams = sqlFilter.getSqlParams(ctx);
+			sqlWhereClause = sqlFilters.getSql();
+			sqlParams = sqlFilters.getSqlParams(ctx);
 		}
 		else
 		{
@@ -94,14 +72,19 @@ public class QueryBuilderDAO implements IQueryBuilderDAO
 			sqlParams = null;
 		}
 
+		final String trxName = queryBuildCtx.getTrxName();
+		final Class<T> modelClass = queryBuildCtx.getModelClass();
+		final IQueryOrderBy queryOrderBy = queryBuildCtx.getQueryOrderBy();
+		final int queryLimit = queryBuildCtx.getQueryLimit();
+		final int queryOnlySelectionId = queryBuildCtx.getQueryOnlySelectionId();
+		final Map<String, Object> queryOptions = queryBuildCtx.getQueryOptions();
 		return new TypedSqlQuery<T>(ctx, modelClass, sqlWhereClause, trxName)
 				.setParameters(sqlParams)
 				.setPostQueryFilter(nonSqlFilters)
-				.setOrderBy(builderImpl.createQueryOrderBy())
-				.setLimit(builderImpl.getLimit())
-				.setOnlySelection(builderImpl.getSelectionId())
-		//
-		;
+				.setOrderBy(queryOrderBy)
+				.setLimit(queryLimit)
+				.setOnlySelection(queryOnlySelectionId)
+				.setOptions(queryOptions);
 	}
 
 	@Override
@@ -116,11 +99,11 @@ public class QueryBuilderDAO implements IQueryBuilderDAO
 		{
 			throw new DBException("Cannot convert filter to SQL because it contains nonSQL parts too: " + filter);
 		}
-		
+
 		final ISqlQueryFilter sqlFilter = filter.asPartialSqlQueryFilter();
 		final String filterSql = sqlFilter.getSql();
 		final List<Object> filterSqlParams = sqlFilter.getSqlParams(ctx);
-		
+
 		if (!Check.isEmpty(filterSqlParams))
 		{
 			// NOTE: we enforce the sqlParamsOut to be not null, only if we really have some parameters to append
@@ -129,5 +112,4 @@ public class QueryBuilderDAO implements IQueryBuilderDAO
 		}
 		return filterSql;
 	}
-
 }

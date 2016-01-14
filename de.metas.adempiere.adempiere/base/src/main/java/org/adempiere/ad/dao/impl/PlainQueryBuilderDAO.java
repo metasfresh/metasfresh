@@ -10,55 +10,79 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryBuilderDAO;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.IQuery;
 
-public class PlainQueryBuilderDAO implements IQueryBuilderDAO
+public class PlainQueryBuilderDAO extends AbstractQueryBuilderDAO
 {
-
 	@Override
-	public <T> IQuery<T> create(final IQueryBuilder<T> builder)
+	protected <T> IQuery<T> createQuery(final QueryBuildContext<T> queryBuildCtx, final ISqlQueryFilter sqlFilters, final IQueryFilter<T> nonSqlFilters)
 	{
-		final Class<T> modelClass = builder.getModelClass();
-
-		final QueryBuilder<T> builderImpl = (QueryBuilder<T>)builder;
-
-		final Properties ctx = builderImpl.getCtx();
-		final String trxName = builderImpl.getTrxName();
-
-		final IQueryFilter<T> filter = builderImpl.createFilter();
+		final Class<T> modelClass = queryBuildCtx.getModelClass();
+		final Properties ctx = queryBuildCtx.getCtx();
+		final String trxName = queryBuildCtx.getTrxName();
 
 		final POJOQuery<T> query = new POJOQuery<T>(ctx, modelClass, trxName)
-				.addFilter(filter)
-				.setOrderBy(builderImpl.createQueryOrderBy())
-				.setOnlySelection(builderImpl.getSelectionId())
-				//
-				;
-		
+				.setOrderBy(queryBuildCtx.getQueryOrderBy())
+				.setOnlySelection(queryBuildCtx.getQueryOnlySelectionId());
+
+		//
+		// Add the SQL filters
+		if (sqlFilters != null)
+		{
+			if (sqlFilters instanceof IQueryFilter)
+			{
+				@SuppressWarnings("unchecked")
+				final IQueryFilter<T> sqlFiltersCasted = (IQueryFilter<T>)sqlFilters;
+				query.addFilter(sqlFiltersCasted);
+			}
+			else
+			{
+				throw new AdempiereException("Sql filter could not be converted to regular filter: " + sqlFilters);
+			}
+		}
+
+		//
+		// Add the non-SQL filters
+		if (nonSqlFilters != null)
+		{
+			query.addFilter(nonSqlFilters);
+		}
+
 		return query;
+	}
+	
+	@Override
+	protected <T> IPair<ISqlQueryFilter, IQueryFilter<T>> extractSqlAndNonSqlFilters(IQueryFilter<T> filter)
+	{
+		// NOTE: SQL filters are not supported in Plain DAO
+		final ISqlQueryFilter sqlFilters = null;
+		final IQueryFilter<T> nonSqlFilters = filter;
+		return ImmutablePair.of(sqlFilters, nonSqlFilters);
 	}
 
 	@Override
-	public <T> String getSql(Properties ctx, ICompositeQueryFilter<T> filter, List<Object> sqlParamsOut)
+	public <T> String getSql(final Properties ctx, final ICompositeQueryFilter<T> filter, final List<Object> sqlParamsOut)
 	{
 		throw new UnsupportedOperationException();
 	}

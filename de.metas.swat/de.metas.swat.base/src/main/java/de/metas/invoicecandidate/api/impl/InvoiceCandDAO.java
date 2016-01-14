@@ -345,8 +345,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, inoutLine)
+				// NOTE: advice the query builder to explode the expressions to SQL UNIONs because that is MUCH more efficient on PostgreSQL.
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
 				.setJoinOr();
-
 
 		//
 		// ICs which are directly created for this inout line
@@ -559,11 +560,21 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void invalidateCandsFor(final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
 	{
 		Check.assumeNotNull(icQueryBuilder, "icQueryBuilder not null");
-		
 		final IQuery<I_C_Invoice_Candidate> icQuery = icQueryBuilder.create();
+		invalidateCandsFor(icQuery);
+	}
+	
+	@Override
+	public final void invalidateCandsFor(final IQuery<I_C_Invoice_Candidate> icQuery)
+	{
+		Check.assumeNotNull(icQuery, "icQuery not null");
+		
 		final int count = icQuery.insertDirectlyInto(I_C_Invoice_Candidate_Recompute.class)
 				.mapColumn(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
-				.mapColumnToConstant(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, null)
+				// NOTE: not setting the AD_PInstance_ID to null, because:
+				// 1. that's the default
+				// 2. there is an issue with the SQL INSERT that is rendered for NULL parameters, i.e. it cannot detect the database type for NULL 
+				// .mapColumnToConstant(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				//
 				.execute();
 
@@ -573,7 +584,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// Schedule an update for invalidated invoice candidates
 		if (count > 0)
 		{
-			final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(icQueryBuilder.getCtx(), icQueryBuilder.getTrxName());
+			final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(icQuery.getCtx(), icQuery.getTrxName());
 			Services.get(IInvoiceCandUpdateSchedulerService.class).scheduleForUpdate(request);
 		}
 	}

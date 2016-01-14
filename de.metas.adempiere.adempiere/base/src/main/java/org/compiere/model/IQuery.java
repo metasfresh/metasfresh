@@ -166,6 +166,9 @@ public interface IQuery<T>
 	IQuery<T> setOption(String name, Object value);
 
 	<OT> OT getOption(String name);
+	
+	IQuery<T> setOptions(Map<String, Object> options);
+
 
 	/**
 	 * Check if there items for query criteria

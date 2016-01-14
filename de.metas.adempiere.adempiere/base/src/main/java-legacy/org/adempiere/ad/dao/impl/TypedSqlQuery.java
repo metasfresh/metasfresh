@@ -1178,7 +1178,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 				final String unionSql = unionQuery.buildSQL(selectClause, false); // useOrderByClause=false
 				sqlBuffer.append("\nUNION ").append(unionDistinct ? "DISTINCT" : "ALL");
-				sqlBuffer.append("\n").append(unionSql);
+				sqlBuffer.append("\n(\n").append(unionSql).append("\n)\n");
 			}
 		}
 
@@ -1434,9 +1434,29 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	{
 		if (options == null)
 		{
-			options = new HashMap<String, Object>();
+			options = new HashMap<>();
 		}
 		options.put(name, value);
+
+		return this;
+	}
+
+	@Override
+	public TypedSqlQuery<T> setOptions(final Map<String, Object> options)
+	{
+		if (options == null || options.isEmpty())
+		{
+			return this;
+		}
+		
+		if (this.options == null)
+		{
+			this.options = new HashMap<>(options);
+		}
+		else
+		{
+			this.options.putAll(options);
+		}
 
 		return this;
 	}
@@ -1725,6 +1745,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		Check.assume(!queryInserter.isEmpty(), "At least one column to be inserted needs to be specified: {0}", queryInserter);
 
 		final List<Object> sqlParams = new ArrayList<>();
+		final boolean collectSqlParamsFromSelectClause = unions == null || unions.isEmpty();
 
 		final TokenizedStringBuilder sqlToSelectColumns = new TokenizedStringBuilder("\n, ")
 				.setAutoAppendSeparator(true);
@@ -1739,9 +1760,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 			// From
 			final IQueryInsertFromColumn from = toColumnName2from.getValue();
-			final String fromSql = from.getSql(sqlParams);
+			final String fromSql = from.getSql(collectSqlParamsFromSelectClause ? sqlParams : null);
 			sqlFromSelectColumns.append(fromSql);
 		}
+		
 		//
 		// Build sql: SELECT ... FROM ... WHERE ...
 		sqlFromSelectColumns.asStringBuilder()

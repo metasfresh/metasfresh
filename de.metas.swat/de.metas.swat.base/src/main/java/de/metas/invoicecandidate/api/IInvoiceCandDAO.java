@@ -35,6 +35,7 @@ import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
@@ -132,6 +133,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @param icQueryBuilder
 	 */
 	void invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
+
+	/**
+	 * Invalidates the invoice candidates identified by given query.
+	 * 
+	 * @param icQuery
+	 */
+	void invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
 
 	/**
 	 * Invalidates just the given candidate.

@@ -171,6 +171,7 @@ public class SubscriptionDAO implements ISubscriptionDAO
 		return retrieveLastSP(ctx, control.getC_Flatrate_Term_ID(), seqNo, trxName);
 	}
 
+	@Override
 	public List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(
 			final Properties ctx,
 			final Timestamp date,
@@ -227,7 +228,7 @@ public class SubscriptionDAO implements ISubscriptionDAO
 		}
 		finally
 		{
-			db.close(rs, pstmt);
+			DB.close(rs, pstmt);
 		}
 	}
 
@@ -283,6 +284,7 @@ public class SubscriptionDAO implements ISubscriptionDAO
 		return sdNew;
 	}
 
+	@Override
 	public I_C_Flatrate_Term retrieveTermForOl(final I_C_OrderLine ol)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
@@ -361,6 +363,7 @@ public class SubscriptionDAO implements ISubscriptionDAO
 				.list(I_C_SubscriptionProgress.class);
 	}
 
+	@Override
 	public List<I_C_SubscriptionProgress> retrieveNextSPs(
 			final I_C_Flatrate_Term term,
 			final Timestamp date)

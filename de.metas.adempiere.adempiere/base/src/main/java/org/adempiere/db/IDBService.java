@@ -24,14 +24,14 @@ package org.adempiere.db;
 
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.util.DB;
 
 /**
  * 
  * @author ts
- * @deprecated 
+ * @deprecated Please use {@link DB} methods
  */
 @Deprecated
 public interface IDBService extends ISingletonService {
@@ -44,17 +44,7 @@ public interface IDBService extends ISingletonService {
 	 */
 	PreparedStatement mkPstmt(String sql, String trxName);
 
-	void close(ResultSet rs, PreparedStatement pstmt);
-
 	void close(PreparedStatement pstmt);
-
-	String createTrx(String prefix);
-
-	boolean commitTrx(String trxName);
-
-	boolean rollBackTrx(String trxName);
-
-	boolean closeTrx(String trxName);
 
 	int getSQLValueEx(String trxName, String sql, Object... params);
 
