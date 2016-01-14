@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.printing.api.impl;
 
@@ -13,12 +13,12 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,8 +54,8 @@ import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintingDAO;
-import de.metas.printing.api.PrintingQueueProcessingInfo;
 import de.metas.printing.api.IPrintingQueueSource;
+import de.metas.printing.api.PrintingQueueProcessingInfo;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_C_Print_Job;
@@ -69,7 +69,7 @@ import de.metas.printing.spi.IPrintJobMonitor;
 
 /**
  * @author cg
- * 
+ *
  */
 public class PrintJobBL implements IPrintJobBL
 {
@@ -83,7 +83,7 @@ public class PrintJobBL implements IPrintJobBL
 
 	/**
 	 * Allows it to set maxLinesPerJob from outside (intended use is for testing). If set, then this value overrides the <code>AD_SysConfig</code> setting {@value #SYSCONFIG_MAX_LINES_PER_JOB}.
-	 * 
+	 *
 	 * @return
 	 */
 	public int getMaxLinesPerJob()
@@ -140,9 +140,9 @@ public class PrintJobBL implements IPrintJobBL
 							return printJobCount;
 						}
 
-						final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJob(source, 
-								currentItems, 
-								printingQueueProcessingInfo, 
+						final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJob(source,
+								currentItems,
+								printingQueueProcessingInfo,
 								trxName);
 						if (printJobInstructions.isEmpty())
 						{
@@ -175,9 +175,9 @@ public class PrintJobBL implements IPrintJobBL
 
 	/**
 	 * Navigates items iterator and skips all printed items.
-	 * 
+	 *
 	 * @param source
-	 * 
+	 *
 	 * @param items
 	 * @return number of items that were skipped
 	 */
@@ -234,9 +234,9 @@ public class PrintJobBL implements IPrintJobBL
 
 	/**
 	 * Creates a print job, print job lines and a print job instructions for at most <code>maxLines</code> items (see {@link #getMaxLinesPerJob(I_C_Print_Job)}) for the given <code>items</code>.<br>
-	 * 
+	 *
 	 * Note that <code>items</code> contains both the source's items and related items.
-	 * 
+	 *
 	 * @param source
 	 * @param items
 	 * @param printingQueueProcessingInfo
@@ -324,7 +324,7 @@ public class PrintJobBL implements IPrintJobBL
 	/**
 	 * If a value has been set via {@link #setMaxLinesPerJob(int)}, then value is returned; otherwise use <code>AD_SysConfig</code> ({@value #SYSCONFIG_MAX_LINES_PER_JOB} with default value
 	 * {@value #DEFAULT_MAX_JOBPRINTLINES}).
-	 * 
+	 *
 	 * @param printJob
 	 * @return
 	 */
@@ -410,6 +410,10 @@ public class PrintJobBL implements IPrintJobBL
 				final String hostKeyToUse;
 				final int userToPrintIdToUse;
 				final I_AD_Printer_Config printerConfig = printingDAO.retrievePrinterConfig(new PlainContextAware(ctx), hostKey, userToPrintId);
+				Check.errorIf(printerConfig == null,
+						"Missing AD_Printer_Config record for hostKey={0}, userToPrintId={1}, ctx={2}",
+						hostKey, userToPrintId, ctx);
+
 				if (printerConfig.getAD_Printer_Config_Shared_ID() > 0)
 				{
 					final I_AD_Printer_Config ad_Printer_Config_Shared = printerConfig.getAD_Printer_Config_Shared();

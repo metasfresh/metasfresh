@@ -33,6 +33,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -75,21 +77,14 @@ public class C_OLCand
 	}
 
 	/**
-	 * Reset the pricing system if there is a new C_BPArtner or C_BPartner location.<br>
+	 * Calls {@link IOLCandValdiatorBL#validate(I_C_OLCand)}.<br>
+	 * 
+	 * Before that it resets the pricing system if there is a new C_BPartner or C_BPartner_Override.<br>
 	 * The {@link de.metas.ordercandidate.spi.IOLCandValdiator} framework is then supposed to call {@link de.metas.ordercandidate.api.IOLCandBL} to come up with the then-correct pricing system.
 	 * 
 	 * @param olCand
 	 * @task http://dewiki908/mediawiki/index.php/09686_PricingSystem_sometimes_not_updated_in_C_OLCand_%28105127201494%29
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = {
-					I_C_OLCand.COLUMNNAME_C_BPartner_ID,
-					I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID })
-	public void resetPricingSytem(final I_C_OLCand olCand)
-	{
-		olCand.setM_PricingSystem(null);
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
 	public void validateC_OLCand(final I_C_OLCand olCand)
 	{
@@ -97,6 +92,15 @@ public class C_OLCand
 		if (olCandValdiatorBL.isValidationProcessInProgress())
 		{
 			return; // we are already within the validation process. no need to call the logic from here.
+		}
+		if (InterfaceWrapperHelper.isValueChanged(
+				olCand,
+				ImmutableSet.<String> of(
+						I_C_OLCand.COLUMNNAME_C_BPartner_ID,
+						I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID)))
+		{
+			// task 09686
+			olCand.setM_PricingSystem(null);
 		}
 		olCandValdiatorBL.validate(olCand);
 	}
