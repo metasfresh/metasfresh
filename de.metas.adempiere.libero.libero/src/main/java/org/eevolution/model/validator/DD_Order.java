@@ -10,12 +10,12 @@ package org.eevolution.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,8 +26,10 @@ package org.eevolution.model.validator;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -41,8 +43,17 @@ import org.eevolution.model.I_DD_OrderLine;
 public class DD_Order
 {
 	/**
+	 * @task http://dewiki908/mediawiki/index.php/09687_DD_order_Copy_with_details_%28101015490340%29
+	 */
+	@Init
+	public void init()
+	{
+		CopyRecordFactory.enableForTableName(I_DD_Order.Table_Name);
+	}
+
+	/**
 	 * Sys config used to Disable the Forward/Backward DD Order processing
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
 	 */
 	private static final String SYSCONFIG_DisableProcessForwardAndBackwardDraftDDOrders = "org.eevolution.mrp.spi.impl.DDOrderMRPSupplyProducer.DisableProcessForwardAndBackwardDraftDDOrders";
@@ -82,7 +93,7 @@ public class DD_Order
 
 	/**
 	 * If {@link I_DD_Order#COLUMN_MRP_AllowCleanup} is set to <code>false</code> then propagate this flag to forward and backward DD Orders too.
-	 * 
+	 *
 	 * @param ddOrder
 	 * @task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
 	 */
@@ -116,7 +127,7 @@ public class DD_Order
 
 	/**
 	 * Complete all forward and backward DD Orders (but on the same plant)
-	 * 
+	 *
 	 * @param ddOrder
 	 * @task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
 	 */
