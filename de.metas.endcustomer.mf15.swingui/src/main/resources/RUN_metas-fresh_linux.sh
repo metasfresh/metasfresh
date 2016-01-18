@@ -9,8 +9,7 @@ fi
 # Exit on Error of command immediately
 set -e
 
-#CLASSPATH=$ADEMPIERE_HOME/lib/de.metas.adempiere.adempiere.jbossfacet.jar:$ADEMPIERE_HOME/lib/jbossall-client.jar:$ADEMPIERE_HOME/lib/adempiereJasper-fonts.jar:$ADEMPIERE_HOME/lib/adempiereJasper-OCRA-font.jar:$ADEMPIERE_HOME/lib/adempiereJasper-OCRB-B10-font.jar:$ADEMPIERE_HOME/lib/de.metas.endcustomer.mf15.base-allInOne.jar:$CLASSPATH
-CLASSPATH=$ADEMPIERE_HOME/lib/jp.osdn.ocra.jar:$ADEMPIERE_HOME/lib/jp.osdn.ocrb.jar:$ADEMPIERE_HOME/lib/de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar
+CLASSPATH=$ADEMPIERE_HOME/lib/jp.osdn.ocra.jar:$ADEMPIERE_HOME/lib/jp.osdn.ocrb.jar:$ADEMPIERE_HOME/lib/de.metas.endcustomer.mf15.swingui-allInOne.jar
 
 echo "CLASSPATH = $CLASSPATH"
 

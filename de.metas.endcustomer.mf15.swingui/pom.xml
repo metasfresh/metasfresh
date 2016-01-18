@@ -24,7 +24,8 @@
 	==> That is why we don't just add these dependencies to adempiereJasper.commons
 -->
 		<!-- 06489 Label is not printed when completing Kommissionierung -->
-		<!-- 
+		<!--	 
+		we probably don't need these fonts anymore
 		<dependency>
 			<groupId>de.metas.adempiere.adempiereJasper</groupId>
 			<artifactId>adempiereJasper-fonts</artifactId>
@@ -120,7 +121,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.1</version>
 
 				<executions>
 					<execution>
@@ -131,8 +131,8 @@
 						</goals>
 						<configuration>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
-							<!-- >outputDirectory>${dist.dir}/metas-fresh/lib/</outputDirectory -->
-
+							<shadedArtifactAttached>true</shadedArtifactAttached> <!-- Make the shaded artifact not the main one -->
+							<outputFile>target/${project.artifactId}-allInOne.jar</outputFile>
 							<artifactSet>
 								<!-- see the comment near the dependency declaration for these artifacts -->
 								<excludes>
@@ -216,7 +216,7 @@
 							<headerType>gui</headerType>
 							<outfile>target/swingui/metas-fresh/RUN_metas-fresh.exe</outfile>
 							<dontWrapJar>true</dontWrapJar>
-							<jar>lib/de.metas.endcustomer.mf15.swingui-1.0_IT-SNAPSHOT.jar</jar>
+							<jar>lib/de.metas.endcustomer.mf15.swingui-allInOne.jar</jar>
 							<errTitle>metas Fresh</errTitle>
 							<icon>src/main/resources/misc/favicon_64.ico</icon>
 							<classPath>
