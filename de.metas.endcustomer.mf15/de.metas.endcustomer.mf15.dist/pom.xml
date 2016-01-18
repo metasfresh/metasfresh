@@ -21,8 +21,6 @@
 		<de.metas.endcustomer.stripVersion>true</de.metas.endcustomer.stripVersion>
 	</properties>
 
-	<description></description>
-
 	<dependencies>
 
 		<dependency>
