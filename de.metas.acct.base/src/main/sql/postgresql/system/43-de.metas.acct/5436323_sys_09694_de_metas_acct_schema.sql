@@ -29,7 +29,7 @@ SET search_path = public, de_metas_acct, pg_catalog;
 -- Name: balanceamt; Type: TYPE; Schema: de_metas_acct; Owner: -
 --
 
-CREATE TYPE balanceamt AS (
+CREATE TYPE de_metas_acct.balanceamt AS (
 	balance numeric,
 	debit numeric,
 	credit numeric
@@ -42,7 +42,7 @@ CREATE TYPE balanceamt AS (
 -- Name: acctbalancetodate(numeric, numeric, date); Type: FUNCTION; Schema: de_metas_acct; Owner: -
 --
 
-CREATE FUNCTION acctbalancetodate(p_account_id numeric, p_c_acctschema_id numeric, p_dateacct date) RETURNS balanceamt
+CREATE FUNCTION de_metas_acct.acctbalancetodate(p_account_id numeric, p_c_acctschema_id numeric, p_dateacct date) RETURNS de_metas_acct.balanceamt
     LANGUAGE sql STABLE
     AS $_$
 -- NOTE: we use COALESCE(SUM(..)) just to make sure we are not returning null
@@ -83,7 +83,7 @@ $_$;
 -- Name: fact_acct_endingbalance(fact_acct); Type: FUNCTION; Schema: de_metas_acct; Owner: -
 --
 
-CREATE FUNCTION fact_acct_endingbalance(factline fact_acct) RETURNS numeric
+CREATE FUNCTION de_metas_acct.fact_acct_endingbalance(factline fact_acct) RETURNS numeric
     LANGUAGE sql STABLE
     AS $_$
 	SELECT acctBalance(($1).Account_ID, COALESCE(SUM(AmtAcctDr), 0), COALESCE(SUM(AmtAcctCr), 0))
@@ -122,7 +122,7 @@ $_$;
 -- Name: fact_acct_endingbalance_rebuildall(); Type: FUNCTION; Schema: de_metas_acct; Owner: -
 --
 
-CREATE FUNCTION fact_acct_endingbalance_rebuildall() RETURNS text
+CREATE FUNCTION de_metas_acct.fact_acct_endingbalance_rebuildall() RETURNS text
     LANGUAGE plpgsql
     AS $$
 declare
@@ -160,7 +160,7 @@ $$;
 -- Name: FUNCTION fact_acct_endingbalance_rebuildall(); Type: COMMENT; Schema: de_metas_acct; Owner: -
 --
 
-COMMENT ON FUNCTION fact_acct_endingbalance_rebuildall() IS 'Rebuilds Fact_Acct_EndingBalance.';
+COMMENT ON FUNCTION de_metas_acct.fact_acct_endingbalance_rebuildall() IS 'Rebuilds Fact_Acct_EndingBalance.';
 
 
 --
@@ -169,7 +169,7 @@ COMMENT ON FUNCTION fact_acct_endingbalance_rebuildall() IS 'Rebuilds Fact_Acct_
 -- Name: fact_acct_endingbalance_updatefortag(character varying); Type: FUNCTION; Schema: de_metas_acct; Owner: -
 --
 
-CREATE FUNCTION fact_acct_endingbalance_updatefortag(p_processingtag character varying) RETURNS text
+CREATE FUNCTION de_metas_acct.fact_acct_endingbalance_updatefortag(p_processingtag character varying) RETURNS text
     LANGUAGE plpgsql
     AS $$
 declare
@@ -231,7 +231,7 @@ $$;
 -- Name: FUNCTION fact_acct_endingbalance_updatefortag(p_processingtag character varying); Type: COMMENT; Schema: de_metas_acct; Owner: -
 --
 
-COMMENT ON FUNCTION fact_acct_endingbalance_updatefortag(p_processingtag character varying) IS 'Checks Fact_Acct_Log for given tag and updates Fact_Acct_EndingBalance precomputed table.';
+COMMENT ON FUNCTION de_metas_acct.fact_acct_endingbalance_updatefortag(p_processingtag character varying) IS 'Checks Fact_Acct_Log for given tag and updates Fact_Acct_EndingBalance precomputed table.';
 
 
 -- Completed on 2016-01-12 11:27:21

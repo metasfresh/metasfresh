@@ -1,5 +1,7 @@
 -- NOTE: keep in sync with ad_field_vt
 
+DROP VIEW IF EXISTS ad_field_v;
+
 CREATE OR REPLACE VIEW ad_field_v AS 
 SELECT
 t.ad_window_id
@@ -71,6 +73,7 @@ WHERE (f.ad_field_id IS NULL OR f.isactive = 'Y'::bpchar) AND c.isactive = 'Y'::
 
 
 -- NOTE: keep in sync with ad_field_v
+DROP VIEW IF EXISTS ad_field_vt;
 
 CREATE OR REPLACE VIEW ad_field_vt AS 
 SELECT
@@ -143,6 +146,4 @@ LEFT JOIN ad_fieldgroup fg ON fg.ad_fieldgroup_id = f.ad_fieldgroup_id
 LEFT JOIN ad_fieldgroup_trl fg_trl ON fg_trl.ad_fieldgroup_id = f.ad_fieldgroup_id AND fg_trl.ad_language::text = c_trl.ad_language::text
 LEFT JOIN ad_val_rule vr ON vr.ad_val_rule_id = COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)
 WHERE (f.ad_field_id IS NULL OR f.isactive = 'Y'::bpchar) AND c.isactive = 'Y'::bpchar;
-
-
 
