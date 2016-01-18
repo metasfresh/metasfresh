@@ -55,11 +55,11 @@ prepare()
 		trace prepare "FOUND FILE ~/.pgpass. This script won't alter it, so please makes sure that it is correct!"
 	else
 		trace prepare "Creating file ~/.pgpass."
-		echo "${ADEMPIERE_DB_SERVER}:5432:${ADEMPIERE_DB_NAME}:adempiere:${ADEMPIERE_DB_PASSWORD}" >> ~/.pgpass
+		echo "${ADEMPIERE_DB_SERVER}:5432:${ADEMPIERE_DB_NAME}:${ADEMPIERE_DB_USER}:${ADEMPIERE_DB_PASSWORD}" >> ~/.pgpass
 		chmod 600 /home/adempiere/.pgpass
 	fi	
 	
-	PSQL_PARAMS="--quiet -t --single-transaction --host $ADEMPIERE_DB_SERVER --dbname $ADEMPIERE_DB_NAME --username adempiere"	
+	PSQL_PARAMS="--quiet -t --single-transaction --host $ADEMPIERE_DB_SERVER --dbname $ADEMPIERE_DB_NAME --username $ADEMPIERE_DB_USER"	
 	if [ "${IGNORE_ERRORS}" == "NO" ]; then
 		PSQL_PARAMS="${PSQL_PARAMS} --variable ON_ERROR_STOP="
 	else
