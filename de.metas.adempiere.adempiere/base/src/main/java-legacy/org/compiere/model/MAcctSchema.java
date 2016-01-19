@@ -145,7 +145,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	/** Element List       */
 	private MAcctSchemaElement[]	m_elements = null;
 	/** GL Info				*/
-	private MAcctSchemaGL			m_gl = null;
+	private I_C_AcctSchema_GL _acctSchemaGL = null;
 	
 	private MAccount				m_SuspenseError_Acct = null;
 	private MAccount				m_CurrencyBalancing_Acct = null;
@@ -199,13 +199,13 @@ public class MAcctSchema extends X_C_AcctSchema
 	 * 	Get AcctSchema GL info
 	 *	@return GL info
 	 */
-	public MAcctSchemaGL getAcctSchemaGL()
+	private final I_C_AcctSchema_GL getAcctSchemaGL()
 	{
-		if (m_gl == null)
-			m_gl = MAcctSchemaGL.get(getCtx(), getC_AcctSchema_ID());
-		if (m_gl == null)
-			throw new IllegalStateException("No GL Definition for C_AcctSchema_ID=" + getC_AcctSchema_ID());
-		return m_gl;
+		if (_acctSchemaGL == null)
+		{
+			_acctSchemaGL = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaGL(getCtx(), getC_AcctSchema_ID());
+		}
+		return _acctSchemaGL;
 	}	//	getAcctSchemaGL
 	
 	/**
@@ -250,8 +250,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	 */
 	public boolean isSuspenseBalancing()
 	{
-		if (m_gl == null)
-			getAcctSchemaGL();
+		final I_C_AcctSchema_GL m_gl = getAcctSchemaGL();
 		return m_gl.isUseSuspenseBalancing() && m_gl.getSuspenseBalancing_Acct() > 0;
 	}	//	isSuspenseBalancing
 
@@ -263,8 +262,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	{
 		if (m_SuspenseError_Acct != null)
 			return m_SuspenseError_Acct;
-		if (m_gl == null)
-			getAcctSchemaGL();
+		final I_C_AcctSchema_GL m_gl = getAcctSchemaGL();
 		int C_ValidCombination_ID = m_gl.getSuspenseBalancing_Acct();
 		m_SuspenseError_Acct = MAccount.get(getCtx(), C_ValidCombination_ID);
 		return m_SuspenseError_Acct;
@@ -276,8 +274,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	 */
 	public boolean isCurrencyBalancing()
 	{
-		if (m_gl == null)
-			getAcctSchemaGL();
+		final I_C_AcctSchema_GL m_gl = getAcctSchemaGL();
 		return m_gl.isUseCurrencyBalancing();
 	}	//	isSuspenseBalancing
 
@@ -289,8 +286,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	{
 		if (m_CurrencyBalancing_Acct != null)
 			return m_CurrencyBalancing_Acct;
-		if (m_gl == null)
-			getAcctSchemaGL();
+		final I_C_AcctSchema_GL m_gl = getAcctSchemaGL();
 		int C_ValidCombination_ID = m_gl.getCurrencyBalancing_Acct();
 		m_CurrencyBalancing_Acct = MAccount.get(getCtx(), C_ValidCombination_ID);
 		return m_CurrencyBalancing_Acct;
@@ -306,8 +302,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	{
 		if (m_DueTo_Acct != null)
 			return m_DueTo_Acct;
-		if (m_gl == null)
-			getAcctSchemaGL();
+		final I_C_AcctSchema_GL m_gl = getAcctSchemaGL();
 		int C_ValidCombination_ID = m_gl.getIntercompanyDueTo_Acct();
 		m_DueTo_Acct = MAccount.get(getCtx(), C_ValidCombination_ID);
 		return m_DueTo_Acct;
@@ -322,8 +317,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	{
 		if (m_DueFrom_Acct != null)
 			return m_DueFrom_Acct;
-		if (m_gl == null)
-			getAcctSchemaGL();
+		final I_C_AcctSchema_GL m_gl = getAcctSchemaGL();
 		int C_ValidCombination_ID = m_gl.getIntercompanyDueFrom_Acct();
 		m_DueFrom_Acct = MAccount.get(getCtx(), C_ValidCombination_ID);
 		return m_DueFrom_Acct;

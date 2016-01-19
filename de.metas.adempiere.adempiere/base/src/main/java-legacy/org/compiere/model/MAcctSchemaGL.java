@@ -20,7 +20,9 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.compiere.util.CLogger;
+import org.adempiere.acct.api.IAcctSchemaDAO;
+import org.adempiere.util.LegacyAdapters;
+import org.adempiere.util.Services;
 import org.compiere.util.KeyNamePair;
 
 
@@ -42,22 +44,19 @@ public class MAcctSchemaGL extends X_C_AcctSchema_GL
 
 
 	/**
-	 * 	Get Accounting Schema GL Info
-	 *	@param ctx context
-	 *	@param C_AcctSchema_ID id
-	 *	@return defaults
+	 * Get Accounting Schema GL Info
+	 *
+	 * @param ctx context
+	 * @param C_AcctSchema_ID id
+	 * @return defaults
+	 * @deprecated Please use {@link IAcctSchemaDAO#retrieveAcctSchemaGL(Properties, int)}
 	 */
-	public static MAcctSchemaGL get (Properties ctx, int C_AcctSchema_ID)
+	@Deprecated
+	public static MAcctSchemaGL get(Properties ctx, int C_AcctSchema_ID)
 	{
-		String whereClause = "C_AcctSchema_ID=?";
-		return new Query(ctx,MAcctSchemaGL.Table_Name,whereClause,null)
-		.setParameters(new Object[]{C_AcctSchema_ID})
-		.firstOnly();		
-	}	//	get
-	
-	/**	Logger							*/
-	protected static CLogger			s_log = CLogger.getCLogger(MAcctSchemaGL.class);
-	
+		final I_C_AcctSchema_GL acctSchemaGL = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaGL(ctx, C_AcctSchema_ID);
+		return LegacyAdapters.convertToPO(acctSchemaGL);
+	}	// get
 	
 	/**
 	 * 	Load Constructor
@@ -122,6 +121,7 @@ public class MAcctSchemaGL extends X_C_AcctSchema_GL
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (getAD_Org_ID() != 0)

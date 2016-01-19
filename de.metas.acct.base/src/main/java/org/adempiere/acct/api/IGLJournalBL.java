@@ -36,4 +36,6 @@ public interface IGLJournalBL extends ISingletonService
 	 */
 	boolean isComplete(I_GL_Journal glJournal);
 
+	void unpost(I_GL_Journal glJournal);
+
 }

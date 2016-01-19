@@ -20,6 +20,7 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.compiere.util.Env;
 
 /** Generated Model for Fact_Acct
@@ -32,7 +33,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 563564447L;
+	private static final long serialVersionUID = -309972651L;
 
     /** Standard Constructor */
     public X_Fact_Acct (Properties ctx, int Fact_Acct_ID, String trxName)
@@ -97,6 +98,18 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 			 return 0;
 		return ii.intValue();
 	}
+
+//	@Override
+//	public org.compiere.model.I_C_ElementValue getAccount() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class);
+//	}
+//
+//	@Override
+//	public void setAccount(org.compiere.model.I_C_ElementValue Account)
+//	{
+//		set_ValueFromPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class, Account);
+//	}
 
 	/** Set Konto.
 		@param Account_ID 

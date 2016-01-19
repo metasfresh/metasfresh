@@ -38,4 +38,6 @@ public interface IGLJournalLineDAO extends ISingletonService
 
 	List<I_GL_JournalLine> retrieveLines(I_GL_Journal glJournal);
 
+	int retrieveLastLineNo(I_GL_Journal glJournal);
+
 }

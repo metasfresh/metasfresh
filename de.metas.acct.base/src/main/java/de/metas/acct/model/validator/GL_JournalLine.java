@@ -25,6 +25,7 @@ package de.metas.acct.model.validator;
 
 import org.adempiere.acct.api.IGLJournalBL;
 import org.adempiere.acct.api.IGLJournalLineBL;
+import org.adempiere.acct.api.IGLJournalLineDAO;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -66,6 +67,14 @@ public class GL_JournalLine
 		if (newRecord && glJournalBL.isComplete(glJournal))
 		{
 			throw new AdempiereException("@ParentComplete@");
+		}
+
+		// Set LineNo if not already set
+		if (newRecord && glJournalLine.getLine() <= 0)
+		{
+			final int lastLineNo = Services.get(IGLJournalLineDAO.class).retrieveLastLineNo(glJournal);
+			final int lineNo = lastLineNo + 10;
+			glJournalLine.setLine(lineNo);
 		}
 
 		//

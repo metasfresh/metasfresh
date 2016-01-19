@@ -341,6 +341,16 @@ public class AccountBL implements IAccountBL
 	}
 
 	@Override
+	public IAccountDimension createAccountDimension(final I_C_ElementValue ev, final int acctSchemaId)
+	{
+		final AccountDimensionVO dim = new AccountDimensionVO();
+		dim.setAD_Client_ID(ev.getAD_Client_ID());
+		dim.setC_ElementValue_ID(ev.getC_ElementValue_ID());
+		dim.setC_AcctSchema_ID(acctSchemaId);
+		return dim;
+	}
+
+	@Override
 	public BigDecimal calculateBalance(final I_C_ElementValue account, final BigDecimal amtDr, final BigDecimal amtCr)
 	{
 		// NOTE: keep in sync with database function "acctBalance"

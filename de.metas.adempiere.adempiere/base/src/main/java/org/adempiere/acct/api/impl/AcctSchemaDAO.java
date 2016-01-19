@@ -217,4 +217,15 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 		return queryBuilder;
 	}
+
+	@Override
+	@Cached(cacheName = I_C_AcctSchema_GL.Table_Name)
+	public I_C_AcctSchema_GL retrieveAcctSchemaGL(@CacheCtx final Properties ctx, final int acctSchemaId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_C_AcctSchema_GL.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_C_AcctSchema_GL.COLUMN_C_AcctSchema_ID, acctSchemaId)
+				.create()
+				.firstOnlyNotNull(I_C_AcctSchema_GL.class);
+	}
 }

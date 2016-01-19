@@ -30,6 +30,7 @@ import org.adempiere.acct.api.exception.AccountingException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
+import org.compiere.model.I_C_AcctSchema_GL;
 
 public interface IAcctSchemaDAO extends ISingletonService
 {
@@ -86,4 +87,6 @@ public interface IAcctSchemaDAO extends ISingletonService
 	List<I_C_AcctSchema_Element> retrieveSchemaElementsDisplayedInEditor(I_C_AcctSchema as);
 
 	I_C_AcctSchema_Element retrieveFirstAcctSchemaElementOrNull(I_C_AcctSchema as, String elementType);
+
+	I_C_AcctSchema_GL retrieveAcctSchemaGL(Properties ctx, int acctSchemaId);
 }

@@ -24,12 +24,13 @@ package org.adempiere.acct.api.impl;
 
 
 import org.adempiere.acct.api.IAccountDimension;
+import org.compiere.util.Env;
 
 public class AccountDimensionVO implements IAccountDimension
 {
 	private String alias = null;
 	private int aD_Client_ID = -1;
-	private int aD_Org_ID = 0;
+	private int aD_Org_ID = Env.CTXVALUE_AD_Org_ID_System;
 	private int c_AcctSchema_ID = -1;
 	private int C_ElementValue_ID = -1;
 	private int c_SubAcct_ID = 0;

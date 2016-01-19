@@ -23,8 +23,14 @@ package org.adempiere.acct.api.impl;
  */
 
 
+import java.util.Properties;
+
+import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IGLJournalBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Journal;
+import org.compiere.model.MPeriod;
 import org.compiere.model.X_GL_Journal;
 
 public class GLJournalBL implements IGLJournalBL
@@ -36,5 +42,18 @@ public class GLJournalBL implements IGLJournalBL
 		return X_GL_Journal.DOCSTATUS_Completed.equals(ds)
 				|| X_GL_Journal.DOCSTATUS_Closed.equals(ds)
 				|| X_GL_Journal.DOCSTATUS_Reversed.equals(ds);
+	}
+
+	@Override
+	public void unpost(final I_GL_Journal glJournal)
+	{
+		// Make sure the period is open
+		final Properties ctx = InterfaceWrapperHelper.getCtx(glJournal);
+		MPeriod.testPeriodOpen(ctx, glJournal.getDateAcct(), glJournal.getC_DocType_ID(), glJournal.getAD_Org_ID());
+
+		Services.get(IFactAcctDAO.class).deleteForDocument(glJournal);
+		
+		glJournal.setPosted(false);
+		InterfaceWrapperHelper.save(glJournal);
 	}
 }

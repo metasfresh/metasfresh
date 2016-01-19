@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IGLJournalBL;
 import org.adempiere.acct.api.IGLJournalLineBL;
 import org.adempiere.acct.api.IGLJournalLineDAO;
@@ -817,7 +818,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 
 		// teo_sarca - FR [ 1776045 ] Add ReActivate action to GL Journal
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocType_ID(), getAD_Org_ID());
-		MFactAcct.deleteEx(MJournal.Table_ID, get_ID(), get_TrxName());
+		Services.get(IFactAcctDAO.class).deleteForDocument(this);
 		setPosted(false);
 		setProcessed(false);
 		setDocAction(DOCACTION_Complete);

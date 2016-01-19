@@ -241,13 +241,8 @@ public class MAccount extends X_C_ValidCombination
 		newAccount.setUser2_ID(dimension.getUser2_ID());
 		newAccount.setUserElement1_ID(dimension.getUserElement1_ID());
 		newAccount.setUserElement2_ID(dimension.getUserElement2_ID());
-		//
-		if (!newAccount.save())
-		{
-			s_log.log(Level.SEVERE, "Could not create new account - " + info);
-			return null;
-		}
-		s_log.fine("New: " + newAccount);
+		InterfaceWrapperHelper.save(newAccount);
+		s_log.log(Level.FINE, "New: {0}", newAccount);
 		return newAccount;
 	}	// get
 
@@ -375,7 +370,7 @@ public class MAccount extends X_C_ValidCombination
 	}	// updateValueDescription
 
 	/** Logger */
-	private static CLogger s_log = CLogger.getCLogger(MAccount.class);
+	private static final transient CLogger s_log = CLogger.getCLogger(MAccount.class);
 
 	/**************************************************************************
 	 * Default constructor

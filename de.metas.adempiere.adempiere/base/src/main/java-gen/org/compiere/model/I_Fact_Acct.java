@@ -83,8 +83,12 @@ public interface I_Fact_Acct
 	 */
 	public int getAccount_ID();
 
+//	public org.compiere.model.I_C_ElementValue getAccount();
+//
+//	public void setAccount(org.compiere.model.I_C_ElementValue Account);
+
     /** Column definition for Account_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Account_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "Account_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue> COLUMN_Account_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue>(I_Fact_Acct.class, "Account_ID", org.compiere.model.I_C_ElementValue.class);
     /** Column name Account_ID */
     public static final String COLUMNNAME_Account_ID = "Account_ID";
 

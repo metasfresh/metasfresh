@@ -61,6 +61,8 @@ public interface IAccountBL extends ISingletonService
 
 	IAccountDimension createAccountDimension(I_Fact_Acct fa);
 
+	IAccountDimension createAccountDimension(I_C_ElementValue ev, int acctSchemaId);
+
 	/**
 	 * Calculates Balance for AmtDr and AmtCr based on account settings (AccountSign and AccountType)
 	 * 

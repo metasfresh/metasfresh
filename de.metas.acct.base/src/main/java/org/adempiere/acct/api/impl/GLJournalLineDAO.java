@@ -136,4 +136,23 @@ public class GLJournalLineDAO implements IGLJournalLineDAO
 				.list();
 
 	}
+
+	@Override
+	public int retrieveLastLineNo(final I_GL_Journal glJournal)
+	{
+		Check.assumeNotNull(glJournal, "glJournal not null");
+
+		final Integer lastLineNo = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_GL_JournalLine.class, glJournal)
+				.addEqualsFilter(I_GL_JournalLine.COLUMN_GL_Journal_ID, glJournal.getGL_Journal_ID())
+				.create()
+				.aggregate(I_GL_JournalLine.COLUMNNAME_Line, IQuery.AGGREGATE_MAX, Integer.class);
+
+		if (lastLineNo == null)
+		{
+			return 0;
+		}
+		return lastLineNo;
+		
+	}
 }

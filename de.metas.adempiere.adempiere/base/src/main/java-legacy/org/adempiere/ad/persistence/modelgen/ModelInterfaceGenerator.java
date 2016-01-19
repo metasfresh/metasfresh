@@ -700,9 +700,6 @@ public class ModelInterfaceGenerator
 		else if (displayType == DisplayType.Table
 				|| (displayType == DisplayType.Search && AD_Reference_ID > 0))
 		{
-			// TODO: HARDCODED: do not generate model getter for Fact_Acct.Account_ID
-			if (AD_Table_ID == 270 && columnName.equals("Account_ID"))
-				return null;
 			// TODO: HARDCODED: do not generate model getter for GL_DistributionLine.Account_ID
 			if (AD_Table_ID == 707 && columnName.equals("Account_ID"))
 				return null;
