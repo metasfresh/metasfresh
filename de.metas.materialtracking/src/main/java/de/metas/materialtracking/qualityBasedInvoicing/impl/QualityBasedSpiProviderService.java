@@ -36,8 +36,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 
 public class QualityBasedSpiProviderService implements IQualityBasedSpiProviderService
 {
-	private static final String SYSCONFIG_QualityBasedConfigProvider = "IQualityBasedConfigProvider";
-	private static final String SYSCONFIG_QualityInvoiceLineGroupsBuilderProvider = "IQualityInvoiceLineGroupsBuilderProvider";
+	private static final String SYSCONFIG_QualityBasedConfigProvider = "de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfigProvider";
+	private static final String SYSCONFIG_QualityInvoiceLineGroupsBuilderProvider = "de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGroupsBuilderProvider";
 
 	private IQualityBasedConfigProvider qualityBasedConfigProvider;
 	private IQualityBasedConfigProvider qualityBasedConfigProviderDefault;
@@ -79,7 +79,7 @@ public class QualityBasedSpiProviderService implements IQualityBasedSpiProviderS
 	private final <T> T getInstance(final String sysConfigName, final Class<T> interfaceClass)
 	{
 		final String classname = Services.get(ISysConfigBL.class).getValue(sysConfigName);
-		Check.assumeNotEmpty(classname, "sysconfig {0} shall be set", sysConfigName);
+		Check.assumeNotEmpty(classname, "AD_Sysconfig {0} shall be set", sysConfigName);
 
 		final T instance = Util.getInstance(interfaceClass, classname);
 		return instance;
