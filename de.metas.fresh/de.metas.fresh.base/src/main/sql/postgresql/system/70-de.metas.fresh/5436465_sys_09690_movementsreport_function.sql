@@ -1,0 +1,136 @@
+
+DROP FUNCTION IF EXISTS report.movements_report( numeric,  numeric,  numeric) ;
+
+
+CREATE OR REPLACE FUNCTION report.movements_report (c_period_id numeric, c_activityfrom_id numeric, c_activityto_id numeric) RETURNS TABLE
+	(
+	P_Value Character Varying, 
+	P_Name Character Varying, 
+	UOMSymbol Character Varying,
+	MovementQty numeric,
+	PeriodStartDate Date,
+	PeriodEndDate Date,
+	param_activity_from_value Character Varying,
+	param_activity_from_name Character Varying,
+	param_activity_to_value Character Varying,
+	param_activity_to_name Character Varying,
+	activity_to Character Varying,
+	activity_from Character Varying,
+	price numeric,
+	account Character Varying
+	)
+AS 
+$$
+
+SELECT
+dat.P_Value,
+dat.P_Name,
+dat.UOMSymbol,
+SUM(dat.MovementQty),
+dat.StartDate,
+dat.EndDate,
+dat.param_activity_from_value,
+dat.param_activity_from_name,
+dat.param_activity_to_value,
+dat.param_activity_to_name,
+dat.activity_to,
+dat.activity_from,
+dat.costprice,
+dat.account 
+FROM
+(
+
+SELECT
+	p.value AS P_Value, 
+	p.name AS P_Name, 
+	uom.UOMSymbol AS UOMSymbol, 
+	ml.MovementQty AS MovementQty,
+	per.StartDate::DATE AS StartDate,
+	per.EndDate::DATE AS EndDate,
+	(SELECT value FROM C_Activity WHERE C_Activity_ID = $2) AS param_activity_from_value,
+	(SELECT name FROM C_Activity WHERE C_Activity_ID = $2) AS param_activity_from_name,
+	(SELECT value FROM C_Activity WHERE C_Activity_ID = $3) AS param_activity_to_value,
+	(SELECT name FROM C_Activity WHERE C_Activity_ID = $3) AS param_activity_to_name,
+	ac_to.value||' - '|| ac_to.name AS activity_to,
+	ac_from.value AS activity_from,
+	COALESCE( hua.ValueNumber, 0::numeric ) AS costprice,
+	ev.value||' - '|| ev.name AS account
+	,fa.line_ID
+	
+FROM 
+	M_MovementLine ml 
+	LEFT OUTER JOIN M_Movement mov ON mov.M_Movement_ID = ml.M_Movement_ID
+	LEFT OUTER JOIN M_Locator l_from ON ml.M_Locator_ID = l_from.M_Locator_ID
+	LEFT OUTER JOIN M_Warehouse wh_from ON l_from.M_Warehouse_ID=wh_from.M_Warehouse_ID
+	LEFT OUTER JOIN M_Locator l_to ON ml.M_LocatorTo_ID = l_to.M_Locator_ID
+	LEFT OUTER JOIN M_Warehouse wh_to ON l_to.M_Warehouse_ID=wh_to.m_warehouse_ID
+	LEFT OUTER JOIN M_Product p ON ml.M_Product_ID = p.M_Product_ID
+	LEFT OUTER JOIN C_UOM uom ON p.C_UOM_ID = uom.C_UOM_ID
+
+	LEFT OUTER JOIN Fact_Acct fa ON fa.Record_ID = mov.M_Movement_ID AND fa.AD_Table_ID = (SELECT Get_Table_ID('M_Movement')) AND fa.Line_ID = ml.M_MovementLine_ID 
+	LEFT OUTER JOIN C_Period per ON fa.C_Period_ID = per.C_Period_ID
+	LEFT OUTER JOIN C_ElementValue ev ON fa.Account_ID = ev.C_ElementValue_ID
+	
+	LEFT OUTER JOIN M_HU_Assignment huas ON huas.AD_Table_ID = get_table_id('M_MovementLine') AND huas.Record_ID = ml.M_MovementLine_ID
+	LEFT OUTER JOIN M_HU lu ON huas.M_HU_ID = lu.M_HU_ID
+	LEFT OUTER JOIN M_HU tu ON lu.m_hu_id = (SELECT M_HU_ID FROM M_HU_Item WHERE tu.m_hu_item_parent_id = M_HU_Item_ID )
+	LEFT OUTER JOIN M_HU vhu ON tu.m_hu_id = (SELECT M_HU_ID FROM M_HU_Item WHERE vhu.m_hu_item_parent_id = M_HU_Item_ID )
+	LEFT OUTER JOIN m_hu_pi_version vlu ON vlu.m_hu_pi_version_id = lu.m_hu_pi_version_id
+	LEFT OUTER JOIN m_hu_pi_version vtu ON vtu.m_hu_pi_version_id = tu.m_hu_pi_version_id
+	LEFT OUTER JOIN m_hu_pi_version vvhu ON vvhu.m_hu_pi_version_id = vhu.m_hu_pi_version_id
+	
+	LEFT OUTER JOIN M_HU_Attribute hua ON 
+	(CASE WHEN vlu.hu_unittype::text = 'V'::text THEN lu.M_HU_ID 
+	WHEN vtu.hu_unittype::text = 'V'::text THEN tu.M_HU_ID 
+	WHEN vvhu.hu_unittype::text = 'V'::text THEN vhu.M_HU_ID 
+	end)
+	= hua.M_HU_ID
+		AND hua.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE Value='HU_CostPrice'))
+
+	LEFT OUTER JOIN C_Activity ac_to on wh_to.c_activity_ID = ac_to.c_activity_ID
+	LEFT OUTER JOIN C_Activity ac_from on wh_from.c_activity_ID = ac_from.c_activity_ID
+
+WHERE 
+	COALESCE(wh_from.C_Activity_ID,0) != COALESCE(wh_to.C_Activity_ID,0) 
+	AND fa.C_Period_ID = $1
+	AND (CASE WHEN $2 IS NOT NULL THEN wh_from.C_Activity_ID = $2 ELSE TRUE END)
+	AND (CASE WHEN $3 IS NOT NULL THEN wh_to.C_Activity_ID = $3 ELSE TRUE END) 
+GROUP BY 
+	p.value, 
+	p.name, 
+	uom.UOMSymbol,
+	per.StartDate::DATE,
+	per.EndDate::DATE,
+	ac_to.value||' - '|| ac_to.name,
+	ac_from.value,
+	COALESCE( hua.ValueNumber, 0::numeric ),
+	ev.value||' - '|| ev.name
+	,ml.MovementQty
+	, fa.line_ID
+)dat
+
+
+GROUP BY 
+dat.P_Value,
+dat.P_Name,
+dat.UOMSymbol,
+dat.StartDate,
+dat.EndDate,
+dat.param_activity_from_value,
+dat.param_activity_from_name,
+dat.param_activity_to_value,
+dat.param_activity_to_name,
+dat.activity_to,
+dat.activity_from,
+dat.costprice,
+dat.account 
+
+ORDER BY 
+dat.activity_to,
+dat.activity_from,
+dat.P_Value
+
+			
+$$
+  LANGUAGE sql STABLE
+;
