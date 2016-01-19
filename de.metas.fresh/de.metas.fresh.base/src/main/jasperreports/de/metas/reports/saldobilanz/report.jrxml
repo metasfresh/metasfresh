@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/saldobilanz/report" uuid="8895fecc-00d6-4320-8b0a-ab970c9a09bd">
-	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="Date" class="java.util.Date">
@@ -12,8 +12,11 @@
 	<parameter name="showCurrencyExchange" class="java.lang.String">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+	<parameter name="IncludePostingTypeStatistical" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM report.saldobilanz_Report ($P{Date},$P{defaultAcc},$P{showCurrencyExchange});]]>
+		<![CDATA[SELECT * FROM report.saldobilanz_Report ($P{Date},$P{defaultAcc},$P{showCurrencyExchange},$P{IncludePostingTypeStatistical});]]>
 	</queryString>
 	<field name="parentname1" class="java.lang.String"/>
 	<field name="parentvalue1" class="java.lang.String"/>
@@ -23,6 +26,7 @@
 	<field name="parentvalue3" class="java.lang.String"/>
 	<field name="name" class="java.lang.String"/>
 	<field name="namevalue" class="java.lang.String"/>
+	<field name="accounttype" class="java.lang.String"/>
 	<field name="sameyearsum" class="java.math.BigDecimal"/>
 	<field name="lastyearsum" class="java.math.BigDecimal"/>
 	<field name="eurosaldo" class="java.math.BigDecimal"/>
@@ -32,6 +36,8 @@
 	<field name="l2_lastyearsum" class="java.math.BigDecimal"/>
 	<field name="l1_sameyearsum" class="java.math.BigDecimal"/>
 	<field name="l1_lastyearsum" class="java.math.BigDecimal"/>
+	<field name="c_calendar_id" class="java.math.BigDecimal"/>
+	<field name="c_elementvalue_id" class="java.math.BigDecimal"/>
 	<group name="lvl1">
 		<groupExpression><![CDATA[$F{parentvalue1}]]></groupExpression>
 		<groupHeader>
@@ -159,7 +165,7 @@
 		<band splitType="Stretch"/>
 	</background>
 	<pageHeader>
-		<band height="65" splitType="Stretch">
+		<band height="77" splitType="Stretch">
 			<textField>
 				<reportElement uuid="5ae2e5f1-5733-48e3-802c-73bb5f5a6893" x="206" y="10" width="73" height="13"/>
 				<textElement markup="none">
@@ -168,28 +174,28 @@
 				<textFieldExpression><![CDATA[$R{Balance}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="8982ea2c-0e75-4070-beb9-713cc6eedb97" x="37" y="35" width="50" height="12"/>
+				<reportElement uuid="8982ea2c-0e75-4070-beb9-713cc6eedb97" x="37" y="47" width="50" height="12"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="21c2a674-61a4-4668-b689-b0264221a282" x="87" y="35" width="259" height="12"/>
+				<reportElement uuid="21c2a674-61a4-4668-b689-b0264221a282" x="87" y="47" width="259" height="12"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="dfad107d-84ff-4ee3-b0d4-477487fad9c2" x="353" y="35" width="102" height="12"/>
+				<reportElement uuid="dfad107d-84ff-4ee3-b0d4-477487fad9c2" x="353" y="47" width="102" height="12"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{SameYearSum}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c0c76cb0-674a-4a38-a820-3eecd76b2a74" x="454" y="35" width="102" height="12"/>
+				<reportElement uuid="c0c76cb0-674a-4a38-a820-3eecd76b2a74" x="454" y="47" width="102" height="12"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -208,6 +214,13 @@
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="8c9642e4-6a41-4d9a-a336-0037f2d02d8a" x="206" y="35" width="163" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{IncludePostingTypeStatistical} + " "+ $P{IncludePostingTypeStatistical}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

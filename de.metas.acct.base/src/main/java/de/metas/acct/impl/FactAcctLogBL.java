@@ -174,6 +174,14 @@ public class FactAcctLogBL implements IFactAcctLogBL
 				{
 					InterfaceWrapperHelper.copyValues(factAcctSummaryExisting, factAcctSummary);
 				}
+				else
+				{
+					factAcctSummary.setAmtAcctDr(BigDecimal.ZERO);
+					factAcctSummary.setAmtAcctCr(BigDecimal.ZERO);
+					factAcctSummary.setAmtAcctDr_YTD(BigDecimal.ZERO);
+					factAcctSummary.setAmtAcctCr_YTD(BigDecimal.ZERO);
+					factAcctSummary.setQty(BigDecimal.ZERO);
+				}
 
 				// Set all dimensions & return it
 				Check.assume(factAcctSummary.getAD_Client_ID() == key.getAD_Client_ID(), "Fact_Acct_Summary shall have the same AD_Client_ID as the log");

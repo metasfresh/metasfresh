@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -121,6 +121,7 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 		filters.addFilter(additionalFilters); // task 07242
 
 		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class, ctx, trxName)
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
 				.filter(filters)
 				.filterByClientId();
 
