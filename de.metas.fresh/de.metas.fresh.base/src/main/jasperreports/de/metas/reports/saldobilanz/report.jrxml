@@ -42,7 +42,7 @@
 		<groupExpression><![CDATA[$F{parentvalue1}]]></groupExpression>
 		<groupHeader>
 			<band height="24">
-				<printWhenExpression><![CDATA[$F{parentname1}!=null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{parentname1}!=null && !$F{parentvalue1}.equals($F{namevalue})]]></printWhenExpression>
 				<textField>
 					<reportElement uuid="8f5d025b-00cf-4521-8a58-2afb00cc3aa6" x="37" y="0" width="50" height="16"/>
 					<textElement>
@@ -83,7 +83,7 @@
 		<groupExpression><![CDATA[$F{parentvalue2}]]></groupExpression>
 		<groupHeader>
 			<band height="18">
-				<printWhenExpression><![CDATA[$F{parentname2}!=null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{parentname2}!=null && !$F{parentvalue2}.equals($F{namevalue})]]></printWhenExpression>
 				<textField isBlankWhenNull="true">
 					<reportElement uuid="3ac1fd90-d716-42ff-9ad2-edc4a855e32f" x="37" y="0" width="50" height="14"/>
 					<textElement>
@@ -124,7 +124,7 @@
 		<groupExpression><![CDATA[$F{parentvalue3}]]></groupExpression>
 		<groupHeader>
 			<band height="16">
-				<printWhenExpression><![CDATA[$F{parentname3}!=null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{parentname3}!=null && !$F{parentvalue3}.equals($F{namevalue})]]></printWhenExpression>
 				<textField isBlankWhenNull="true">
 					<reportElement uuid="cee6221f-e3ac-442c-8190-f113b45137c0" x="87" y="0" width="259" height="12"/>
 					<textElement>
