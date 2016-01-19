@@ -33,6 +33,8 @@ import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -93,6 +95,10 @@ public class ReceiptScheduleCUKey extends CUKey
 		return receiptScheduleRow.getProductNameAndASI();
 	}
 
+	/**
+	 * Keep in sync with {@code de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator.createAllocationRequest(Quantity)}
+	 * @return
+	 */
 	public I_M_HU createVHU()
 	{
 		//
@@ -102,6 +108,11 @@ public class ReceiptScheduleCUKey extends CUKey
 		{
 			return null;
 		}
+		
+		// task 09717
+		// make sure the attributes are initialized in case of multiple row selection, also
+		final List<I_M_ReceiptSchedule> list = ImmutableList.of(receiptSchedule);
+		Services.get(IHUReceiptScheduleBL.class).setInitialAttributeValueDefaults(allocationRequest, list);
 
 		//
 		// Allocation Source: our receipt schedule

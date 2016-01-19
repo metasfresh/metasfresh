@@ -366,6 +366,11 @@ public class ReceiptScheduleHUGenerator
 		return createAllocationRequest(new Quantity(qty, uom));
 	}
 
+	/**
+	 * Keep in sync with {@link de.metas.handlingunits.client.terminal.receipt.model.ReceiptScheduleCUKey.createVHU()}
+	 * @param qty
+	 * @return
+	 */
 	private final IAllocationRequest createAllocationRequest(final Quantity qty)
 	{
 		final IContextAware contextProvider = getContextInitial();
