@@ -22,7 +22,6 @@ package org.adempiere.ad.security.model.validator;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.ad.dao.cache.IModelCacheService;
@@ -34,10 +33,12 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.security.impl.AD_Role_POCopyRecordSupport;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
@@ -62,6 +63,10 @@ public class AD_Role
 	@Init
 	public void init(final IModelValidationEngine engine)
 	{
+
+		CopyRecordFactory.enableForTableName(I_AD_Role.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_AD_Role.Table_Name, AD_Role_POCopyRecordSupport.class);
+
 		final IModelCacheService cachingService = Services.get(IModelCacheService.class);
 		cachingService.createTableCacheConfigBuilder(I_AD_Role.class)
 				.setEnabled(true)
@@ -97,6 +102,7 @@ public class AD_Role
 		{
 			// Add Role to SuperUser
 			final Properties ctx = InterfaceWrapperHelper.getCtx(role);
+
 			final MUserRoles su = new MUserRoles(ctx, IUserDAO.SUPERUSER_USER_ID, role.getAD_Role_ID(), trxName);
 			su.save();
 
