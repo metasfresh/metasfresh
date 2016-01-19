@@ -634,7 +634,7 @@ public class Login
 		final int AD_Role_ID = Env.getContextAsInt(ctx, Env.CTXNAME_AD_Role_ID);
 		final int AD_User_ID = Env.getContextAsInt(ctx, Env.CTXNAME_AD_User_ID);
 		final Date loginDate = SystemTime.asDayTimestamp(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
-		final IUserRolePermissions role = userRolePermissionsDAO.retrieveUserRolePermissions(AD_Role_ID, AD_Role_ID, AD_Client_ID, loginDate);
+		final IUserRolePermissions role = userRolePermissionsDAO.retrieveUserRolePermissions(AD_Role_ID, AD_User_ID, AD_Client_ID, loginDate);
 
 		// Get login organizations
 		final Set<KeyNamePair> orgsList = new TreeSet<>();
