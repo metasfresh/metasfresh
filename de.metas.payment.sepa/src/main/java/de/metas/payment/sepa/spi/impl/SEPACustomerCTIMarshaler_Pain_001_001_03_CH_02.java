@@ -632,7 +632,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 
 		pstlAdr.setPstCd(getFirstNonEmpty(location.getPostal()));
 		pstlAdr.setTwnNm(getFirstNonEmpty(location.getCity()));
-		pstlAdr.setCtry(getFirstNonEmpty(location.getC_Country().getName())); // note: C_Location.C_Country is a mandatory column
+		pstlAdr.setCtry(getFirstNonEmpty(location.getC_Country().getCountryCode())); // note: C_Location.C_Country is a mandatory column
 
 		return pstlAdr;
 	}
