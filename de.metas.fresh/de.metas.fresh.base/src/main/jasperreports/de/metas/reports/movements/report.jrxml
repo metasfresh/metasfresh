@@ -52,14 +52,14 @@
 		<groupHeader>
 			<band height="20">
 				<textField>
-					<reportElement uuid="d0cd08c8-9674-4b3d-93be-8fbeb8bd6b85" x="55" y="0" width="100" height="10"/>
+					<reportElement uuid="d0cd08c8-9674-4b3d-93be-8fbeb8bd6b85" x="65" y="0" width="158" height="10"/>
 					<textElement>
 						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{activity_to}!=null ? $F{activity_to} : "-"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement uuid="d0cd08c8-9674-4b3d-93be-8fbeb8bd6b85" x="0" y="0" width="54" height="10"/>
+					<reportElement uuid="d0cd08c8-9674-4b3d-93be-8fbeb8bd6b85" x="0" y="0" width="65" height="10"/>
 					<textElement>
 						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -115,7 +115,7 @@
 		<groupHeader>
 			<band height="15">
 				<textField>
-					<reportElement uuid="e7be79cc-5801-471b-bb7a-eb5aa1d27a26" x="50" y="0" width="142" height="10"/>
+					<reportElement uuid="e7be79cc-5801-471b-bb7a-eb5aa1d27a26" x="50" y="0" width="131" height="10"/>
 					<textElement>
 						<font size="7"/>
 					</textElement>
@@ -129,14 +129,14 @@
 					<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
 				</textField>
 				<textField pattern="">
-					<reportElement uuid="a4aa5cb8-3e19-483e-ba7f-ef51743662ca" x="192" y="0" width="32" height="10"/>
+					<reportElement uuid="a4aa5cb8-3e19-483e-ba7f-ef51743662ca" x="181" y="0" width="32" height="10"/>
 					<textElement>
 						<font size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="product_group" pattern="#,##0.00">
-					<reportElement uuid="5bf76ced-6e14-4677-a2bf-d6859fae41ae" x="223" y="0" width="40" height="10"/>
+					<reportElement uuid="5bf76ced-6e14-4677-a2bf-d6859fae41ae" x="212" y="0" width="40" height="10"/>
 					<textElement>
 						<font size="7"/>
 					</textElement>
@@ -157,7 +157,7 @@
 					<textFieldExpression><![CDATA[$F{activity_from} != null ? $F{activity_from} : " - "]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="product_group" pattern="#,##0.00">
-					<reportElement uuid="0f68c7a5-d975-48ad-8a0f-1c10b80afdb8" x="253" y="0" width="80" height="10"/>
+					<reportElement uuid="0f68c7a5-d975-48ad-8a0f-1c10b80afdb8" x="252" y="0" width="81" height="10"/>
 					<textElement textAlignment="Right">
 						<font size="7"/>
 					</textElement>
@@ -246,28 +246,28 @@ $R{activityTo} + " "+ $F{param_activity_to_value} + " " + $F{param_activity_to_n
 				<textFieldExpression><![CDATA[$R{productNo}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="2e39084f-72a5-4afb-85a1-c091702b923a" x="50" y="0" width="142" height="10"/>
+				<reportElement uuid="2e39084f-72a5-4afb-85a1-c091702b923a" x="50" y="0" width="131" height="10"/>
 				<textElement>
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{productName}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="484a8689-a2ae-4d59-8652-cf3b65a6de9a" x="192" y="0" width="32" height="10"/>
+				<reportElement uuid="484a8689-a2ae-4d59-8652-cf3b65a6de9a" x="181" y="0" width="32" height="10"/>
 				<textElement>
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{uom}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="6f4f9ee4-2dd1-4523-8977-92891df0cd81" x="223" y="0" width="40" height="10"/>
+				<reportElement uuid="6f4f9ee4-2dd1-4523-8977-92891df0cd81" x="212" y="0" width="40" height="10"/>
 				<textElement>
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="6f4f9ee4-2dd1-4523-8977-92891df0cd81" x="263" y="0" width="70" height="10"/>
+				<reportElement uuid="6f4f9ee4-2dd1-4523-8977-92891df0cd81" x="252" y="0" width="81" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
