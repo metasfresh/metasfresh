@@ -13,7 +13,6 @@
 	<description>Printing client that queries the ESB for print jobs and performs them using the local printer hardware</description>
 
 	<properties>
-		<de.metas.printing.esb.api.version>${project.version}</de.metas.printing.esb.api.version>
 		<!-- note that the scripts are not part of the rollout-package.
 		     they are just present when a developer runs mg migrate from their local dev-station -->
 		<migration-sql-basedir>99-de.metas.printing.esb.client</migration-sql-basedir>
@@ -23,7 +22,7 @@
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.api</artifactId>
-			<version>${de.metas.printing.esb.api.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>

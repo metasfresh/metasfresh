@@ -15,10 +15,6 @@
 	<packaging>bundle</packaging>
 
 	<properties>
-		<!-- note that the de.emtas.printing.esb siblings don't need a SMX-specific 
-			version string -->
-		<de.metas.printing.esb.base.version>${project.version}</de.metas.printing.esb.base.version>
-
 		<!-- versions taken from http://servicemix.apache.org/downloads/servicemix-4.5.1 -->
 		<!-- <camel.version>2.10.4</camel.version> <cxf.version>2.6.6</cxf.version> 
 			<activeMQ.version>5.7.0</activeMQ.version> -->
@@ -33,13 +29,18 @@
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.base</artifactId>
-			<version>${de.metas.printing.esb.base.version}</version>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<artifactId>de.metas.printing.esb.api</artifactId>
+			<groupId>de.metas.printing.esb</groupId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
-			<version>${de.metas.printing.esb.base.version}</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>

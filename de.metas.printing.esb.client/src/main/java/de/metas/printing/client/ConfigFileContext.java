@@ -22,7 +22,6 @@ package de.metas.printing.client;
  * #L%
  */
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -65,7 +64,7 @@ public class ConfigFileContext implements IContext
 		}
 		catch (final IOException e)
 		{
-			throw new RuntimeException("Failed loading config file: " + configFilename+", start client with -Dconfig=<filename> so specify a particualr file", e);
+			throw new RuntimeException("Failed loading config file: " + configFilename + ", start client with -Dconfig=<filename> so specify a particualr file", e);
 		}
 		finally
 		{
@@ -77,7 +76,15 @@ public class ConfigFileContext implements IContext
 	@Override
 	public String getProperty(final String name)
 	{
-		return properties.getProperty(name);
+		final String property = properties.getProperty(name);
+		if (property != null)
+		{
+			// we don't want things to be screwed up by trailing white spaces in our properties file, so we trim.
+			// further reading: https://docs.oracle.com/cd/E23095_01/Platform.93/ATGProgGuide/html/s0204propertiesfileformat01.html
+			// "The property value is generally terminated by the end of the line. White space following the property value is not ignored, and is treated as part of the property value."
+			return property.trim();
+		}
+		return property;
 	}
 
 }

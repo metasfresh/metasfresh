@@ -59,11 +59,11 @@ public class PRTCPrintPackageTypeBean extends PRTCPrintPackageTypeConverter
 
 		final JAXBElement<PRTCPrintPackageType> outBody = factory.createPRTCPrintPackage(printPackage);
 
-		logger.log(Level.INFO, "OUT body: {0}", outBody);
+		logger.log(Level.FINE, "OUT body: {0}", outBody);
 
 		exchange.getOut().setBody(outBody);
 
-		logger.log(Level.INFO, "\n\n\n\n AFTER createPRTCPrintPackageTypeRequest: initial request->PRTCPrintPackageType\n\n\n\n");
+		logger.log(Level.FINE, "AFTER createPRTCPrintPackageTypeRequest: initial request->PRTCPrintPackageType");
 	}
 
 	public void mkPrintPackageFromXMLBean(final Exchange exchange)
