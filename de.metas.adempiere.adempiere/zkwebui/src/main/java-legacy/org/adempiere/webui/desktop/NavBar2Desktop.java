@@ -37,7 +37,6 @@ import org.adempiere.webui.panel.SidePanel;
 import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.util.IServerPushCallback;
 import org.adempiere.webui.util.ServerPushTemplate;
-import org.adempiere.webui.util.UserPreference;
 import org.adempiere.webui.window.ADWindow;
 import org.compiere.model.MGoal;
 import org.compiere.model.MMenu;
@@ -66,6 +65,8 @@ import org.zkoss.zul.Div;
 import org.zkoss.zul.Html;
 import org.zkoss.zul.Panel;
 import org.zkoss.zul.Panelchildren;
+
+import de.metas.ui.web.base.session.UserPreference;
 
 /**
  * @author hengsin
@@ -102,7 +103,8 @@ public class NavBar2Desktop extends TabbedDesktop implements MenuListener, Seria
     	super();
     }
 
-    protected Component doCreatePart(Component parent)
+    @Override
+	protected Component doCreatePart(Component parent)
     {
     	SidePanel pnlSide = new SidePanel();
     	HeaderPanel pnlHead = new HeaderPanel();
@@ -377,7 +379,8 @@ public class NavBar2Desktop extends TabbedDesktop implements MenuListener, Seria
         dashboardThread.start();
 	}
 
-    public void onEvent(Event event)
+    @Override
+	public void onEvent(Event event)
     {
         Component comp = event.getTarget();
         String eventName = event.getName();
@@ -402,7 +405,8 @@ public class NavBar2Desktop extends TabbedDesktop implements MenuListener, Seria
         }
     }
 
-    public void onServerPush(ServerPushTemplate template)
+    @Override
+	public void onServerPush(ServerPushTemplate template)
 	{
     	noOfNotice = DPActivities.getNoticeCount();
     	noOfRequest = DPActivities.getRequestCount();
@@ -415,6 +419,7 @@ public class NavBar2Desktop extends TabbedDesktop implements MenuListener, Seria
 	 *
 	 * @param page
 	 */
+	@Override
 	public void setPage(Page page) {
 		if (this.page != page) {
 			layout.setPage(page);
@@ -436,10 +441,12 @@ public class NavBar2Desktop extends TabbedDesktop implements MenuListener, Seria
 	 * Get the root component
 	 * @return Component
 	 */
+	@Override
 	public Component getComponent() {
 		return layout;
 	}
 
+	@Override
 	public void logout() {
 		if (dashboardThread != null && dashboardThread.isAlive()) {
 			dashboardRunnable.stop();
@@ -447,6 +454,7 @@ public class NavBar2Desktop extends TabbedDesktop implements MenuListener, Seria
 		}
 	}
 
+	@Override
 	public void updateUI() {
 		int total = noOfNotice + noOfRequest + noOfWorkflow;
     	shortcutPanel.setLabel(1, "Activities (" + total + ")");

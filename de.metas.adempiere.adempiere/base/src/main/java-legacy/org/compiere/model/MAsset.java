@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.EMail;
@@ -785,19 +783,4 @@ public class MAsset extends X_A_Asset
 		MAssetDelivery ad = new MAssetDelivery (this, email, AD_User_ID);
 		return ad;
 	}	//	confirmDelivery
-
-	/**
-	 * 	Confirm Asset Download Delivery
-	 *	@param request request
-	 * 	@param AD_User_ID recipient
-	 * 	@return asset delivery
-	 */
-	public MAssetDelivery confirmDelivery (HttpServletRequest request, int AD_User_ID)
-	{
-		setVersionNo(getProductVersionNo());
-		setLifeUseUnits(getLifeUseUnits()+1);
-		MAssetDelivery ad = new MAssetDelivery (this, request, AD_User_ID);
-		return ad;
-	}	//	confirmDelivery
-	
 }	//	MAsset

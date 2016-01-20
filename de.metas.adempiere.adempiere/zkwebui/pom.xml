@@ -18,7 +18,12 @@
 	</properties>
 
 	<dependencies>
-			<!-- Adempiere -->
+		<!-- Adempiere -->
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>de.metas.ui.web.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>

@@ -178,7 +178,7 @@ public class Help extends CDialog
 	 */
 	private void loadInfo(GridWindow mWindow)
 	{
-		WebDoc doc = mWindow.getHelpDoc(true);
+		WebDoc doc = mWindow.getHelpDoc();
 		HTMLDocument htmlDoc = (HTMLDocument)info.getEditorKit().createDefaultDocument();
 		htmlDoc.getDocumentProperties().put("IgnoreCharsetDirective", true);
 		info.setDocument(htmlDoc);

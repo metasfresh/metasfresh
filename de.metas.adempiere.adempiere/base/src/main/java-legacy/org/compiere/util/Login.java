@@ -381,7 +381,7 @@ public class Login
 			{
 				if (force)
 				{
-					Env.setContext(m_ctx, "#AD_User_Name", "System");
+					Env.setContext(m_ctx, Env.CTXNAME_AD_User_Name, "System");
 					Env.setContext(m_ctx, Env.CTXNAME_AD_User_ID, 0);
 					Env.setContext(m_ctx, "#AD_User_Description", "System Forced Login");
 					Env.setContext(m_ctx, Env.CTXNAME_AD_Role_UserLevel, X_AD_Role.USERLEVEL_System);  	// Format 'SCO'
@@ -464,7 +464,7 @@ public class Login
 				InterfaceWrapperHelper.save(user);
 			}
 
-			Env.setContext(m_ctx, "#AD_User_Name", app_user);
+			Env.setContext(m_ctx, Env.CTXNAME_AD_User_Name, app_user);
 			Env.setContext(m_ctx, Env.CTXNAME_AD_User_ID, rs.getInt(1));
 			Env.setContext(m_ctx, Env.CTXNAME_SalesRep_ID, rs.getInt(1));
 			//

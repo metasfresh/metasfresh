@@ -13,14 +13,16 @@
 package org.adempiere.webui;
 
 import org.adempiere.webui.desktop.IDesktop;
-import org.adempiere.webui.util.UserPreference;
+
+import de.metas.ui.web.base.session.UserPreference;
 
 /**
  * 
  * @author hengsin
  *
  */
-public interface IWebClient {
+public interface IWebClient
+{
 
 	/**
 	 * login completed

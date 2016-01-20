@@ -1,20 +1,4 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-package org.compiere.util;
+package org.adempiere.serverRoot.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,161 +30,53 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.ecs.AlignType;
 import org.apache.ecs.xhtml.a;
-import org.apache.ecs.xhtml.body;
-import org.apache.ecs.xhtml.br;
-import org.apache.ecs.xhtml.hr;
 import org.apache.ecs.xhtml.input;
 import org.apache.ecs.xhtml.label;
 import org.apache.ecs.xhtml.option;
-import org.apache.ecs.xhtml.p;
 import org.apache.ecs.xhtml.script;
-import org.apache.ecs.xhtml.small;
 import org.apache.ecs.xhtml.td;
 import org.apache.ecs.xhtml.tr;
-import org.compiere.model.MAttachment;
-import org.compiere.model.MAttachmentEntry;
 import org.compiere.model.MMailMsg;
 import org.compiere.model.MRequest;
 import org.compiere.model.MStore;
 import org.compiere.model.MUserMail;
+import org.compiere.util.CLogger;
+import org.compiere.util.DisplayType;
+import org.compiere.util.EMail;
+import org.compiere.util.Env;
+import org.compiere.util.HtmlCode;
+import org.compiere.util.Language;
+import org.compiere.util.MimeType;
+import org.compiere.util.NamePair;
+import org.compiere.util.Util;
+import org.compiere.util.WebDoc;
 
-/**
- *  Servlet Utilities
- *
- *  @author Jorg Janke
- *  @version  $Id: WebUtil.java,v 1.7 2006/09/24 12:11:54 comdivision Exp $
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.serverRoot.webui
+ * %%
+ * Copyright (C) 2016 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
  */
-public final class WebUtil
+
+public class WebUtil
 {
 	/**	Static Logger	*/
 	private static CLogger		log	= CLogger.getCLogger (WebUtil.class);
-	
-	/**
-	 *  Create Timeout Message
-	 *
-	 *  @param request request
-	 *  @param response response
-	 *  @param servlet servlet
-	 *  @param message - optional message
-	 *  @throws ServletException
-	 *  @throws IOException
-	 */
-	public static void createTimeoutPage (HttpServletRequest request, HttpServletResponse response,
-		HttpServlet servlet, String message) throws ServletException, IOException
-	{
-		log.info(message);
-	  	WebSessionCtx wsc = WebSessionCtx.get(request);
-		String windowTitle = "Timeout";
-		if (wsc != null)
-			windowTitle = Msg.getMsg(wsc.ctx, "Timeout");
-
-		WebDoc doc = WebDoc.create (windowTitle);
-
-		//	Body
-		body body = doc.getBody();
-		//  optional message
-		if (message != null && message.length() > 0)
-			body.addElement(new p(message, AlignType.CENTER));
-
-		//  login button
-		body.addElement(getLoginButton(wsc == null ? null : wsc.ctx));
-
-		//
-		body.addElement(new hr());
-		body.addElement(new small(servlet.getClass().getName()));
-		//	fini
-		createResponse (request, response, servlet, null, doc, false);
-	}   //  createTimeoutPage
-
-	/**
-	 *  Create Error Message
-	 *
-	 *  @param request request
-	 *  @param response response
-	 *  @param servlet servlet
-	 *  @param message message
-	 *  @throws ServletException
-	 *  @throws IOException
-	 */
-	public static void createErrorPage (HttpServletRequest request, HttpServletResponse response,
-		HttpServlet servlet, String message) 
-		throws ServletException, IOException
-	{
-		log.info( message);
-	  	WebSessionCtx wsc = WebSessionCtx.get(request);
-		String windowTitle = "Error";
-		if (wsc != null)
-			windowTitle = Msg.getMsg(wsc.ctx, "Error");
-		if (message != null)
-			windowTitle += ": " + message;
-
-		WebDoc doc = WebDoc.create (windowTitle);
-
-		//	Body
-		body b = doc.getBody();
-
-		b.addElement(new p(servlet.getServletName(), AlignType.CENTER));
-		b.addElement(new br());
-
-		//	fini
-		createResponse (request, response, servlet, null, doc, false);
-	}   //  createErrorPage
-
-	/**
-	 *  Create Exit Page "Log-off".
-	 *  <p>
-	 *  - End Session
-	 *  - Go to start page (e.g. /adempiere/index.html)
-	 *
-	 *  @param request request
-	 *  @param response response
-	 *  @param servlet servlet
-	 *  @param ctx context
-	 *  @param AD_Message messahe
-	 *  @throws ServletException
-	 *  @throws IOException
-	 */
-	public static void createLoginPage (HttpServletRequest request, HttpServletResponse response,
-		HttpServlet servlet, Properties ctx, String AD_Message) throws ServletException, IOException
-	{
-		request.getSession().invalidate();
-		String url = WebEnv.getBaseDirectory("index.html");
-		//
-		WebDoc doc = null;
-		if (ctx != null && AD_Message != null && !AD_Message.equals(""))
-			doc = WebDoc.create (Msg.getMsg(ctx, AD_Message));
-		else if (AD_Message != null)
-			doc = WebDoc.create (AD_Message);
-		else
-			doc = WebDoc.create (false);
-		script script = new script("window.top.location.replace('" + url + "');");
-		doc.getBody().addElement(script);
-		//
-		createResponse (request, response, servlet, null, doc, false);
-	}   //  createLoginPage
-
-	/**
-	 *  Create Login Button - replace Window
-	 *
-	 *  @param ctx context
-	 *  @return Button
-	 */
-	public static input getLoginButton (Properties ctx)
-	{
-		String text = "Login";
-		if (ctx != null)
-			text = Msg.getMsg (ctx, "Login");
-		
-		input button = new input("button", text, "  "+text);		
-		button.setID(text);
-		button.setClass("loginbtn");		
-		StringBuffer cmd = new StringBuffer ("window.top.location.replace('");
-		cmd.append(WebEnv.getBaseDirectory("index.html"));
-		cmd.append("');");
-		button.setOnClick(cmd.toString());
-		return button;
-	}   //  getLoginButton
-
 	
 	/**************************************************************************
 	 *  Get Cookie Properties
@@ -492,7 +368,7 @@ public final class WebUtil
      */
     public static String getParamOrNull (HttpServletRequest request, String parameter)
     {
-        String value = WebUtil.getParameter(request, parameter);
+        String value = getParameter(request, parameter);
         if(value == null) 
         	return value;
         if (value.length() == 0) 
@@ -624,32 +500,6 @@ public final class WebUtil
 		//
 		return retValue;
 	}	//	getForward
-
-	/**
-	 * 	Create Forward Page
-	 * 	@param response response
-	 * 	@param title page title
-	 * 	@param forwardURL url
-	 * 	@param delaySec delay in seconds (default 3)
-	 * 	@throws ServletException
-	 * 	@throws IOException
-	 */
-	public static void createForwardPage (HttpServletResponse response,
-		String title, String forwardURL, int delaySec) throws ServletException, IOException
-	{
-		response.setContentType("text/html; charset=UTF-8");
-		WebDoc doc = WebDoc.create(title);
-		body b = doc.getBody();
-		b.addElement(getForward(forwardURL, delaySec));
-		PrintWriter out = response.getWriter();
-		doc.output(out);
-		out.flush();
-		if (out.checkError())
-			log.log(Level.SEVERE, "Error writing");
-		out.close();
-		log.fine(forwardURL + " - " + title);
-	}	//	createForwardPage
-
 
 	/**
 	 * 	Does Test exist
@@ -880,99 +730,6 @@ public final class WebUtil
 	}   //  addField
 
 	/**
-	 * 	Get Close PopUp Buton
-	 *	@return button
-	 */
-	public static input createClosePopupButton(Properties ctx)
-	{
-		String text = "Close";
-		if (ctx != null)
-			text = Msg.getMsg (ctx, "Close");
-		
-		input close = new input("button", text, "  "+text);		
-		close.setID(text);
-		close.setClass("closebtn");		
-		close.setTitle ("Close PopUp");	//	Help
-		//close.setOnClick ("closePopup();return false;");
-		close.setOnClick ("self.close();return false;");
-		return close;
-	}	//	getClosePopupButton
-	
-	
-	/**
-	 * 	Stream Attachment Entry
-	 *	@param response response
-	 *	@param attachment attachment
-	 *	@param attachmentIndex logical index
-	 *	@return error message or null
-	 */
-	public static String streamAttachment (HttpServletResponse response, 
-		MAttachment attachment, int attachmentIndex)
-	{
-		if (attachment == null)
-			return "No Attachment";
-		
-		int realIndex = -1;
-		MAttachmentEntry[] entries = attachment.getEntries();
-		for (int i = 0; i < entries.length; i++)
-		{
-			MAttachmentEntry entry = entries[i];
-			if (entry.getIndex() == attachmentIndex)
-			{
-				realIndex = i;
-				break;
-			}
-		}
-		if (realIndex < 0)
-		{
-			log.fine("No Attachment Entry for Index=" 
-				+ attachmentIndex + " - " + attachment);
-			return "Attachment Entry not found";
-		}
-		
-		MAttachmentEntry entry = entries[realIndex];
-		if (entry.getData() == null)
-		{
-			log.fine("Empty Attachment Entry for Index=" 
-				+ attachmentIndex + " - " + attachment);
-			return "Attachment Entry empty";
-		}
-		
-		//	Stream Attachment Entry
-		try
-		{
-			int bufferSize = 2048; //	2k Buffer
-			int fileLength = entry.getData().length;
-			//
-			response.setContentType(entry.getContentType());
-			response.setBufferSize(bufferSize);
-			response.setContentLength(fileLength);
-			//
-			log.fine(entry.toString());
-			long time = System.currentTimeMillis();		//	timer start
-			//
-			ServletOutputStream out = response.getOutputStream ();
-			out.write (entry.getData());
-			out.flush();
-			out.close();
-			//
-			time = System.currentTimeMillis() - time;
-			double speed = (fileLength/1024) / ((double)time/1000);
-			log.info("Length=" 
-				+ fileLength + " - " 
-				+ time + " ms - " 
-				+ speed + " kB/sec - " + entry.getContentType());
-		}
-		catch (IOException ex)
-		{
-			log.log(Level.SEVERE, ex.toString());
-			return "Streaming error - " + ex;
-		}
-		return null;
-	}	//	streamAttachment
-
-	
-	/**
 	 * 	Stream File
 	 *	@param response response
 	 *	@param file file to stream
@@ -1047,8 +804,7 @@ public final class WebUtil
 	 *	@param parameter object array with parameters
 	 * 	@return mail EMail.SENT_OK or error message 
 	 */
-	public static String sendEMail (HttpServletRequest request, WebUser to,
-		String msgType, Object[] parameter)
+	public static String sendEMail (HttpServletRequest request, WebUser to, String msgType, Object[] parameter)
 	{
 		WebSessionCtx wsc = WebSessionCtx.get(request);
 		MStore wStore = wsc.wstore;
@@ -1169,7 +925,7 @@ public final class WebUtil
 	{
 		if (updateEMailPwd)
 		{
-			String s = WebUtil.getParameter (request, "PasswordNew");
+			String s = getParameter (request, "PasswordNew");
 			wu.setPasswordMessage (null);
 			wu.setPassword (s);
 			if (wu.getPasswordMessage () != null)
@@ -1177,8 +933,8 @@ public final class WebUtil
                 return false;
             }
 			//
-			s = WebUtil.getParameter (request, "EMail");
-			if (!WebUtil.isEmailValid (s))
+			s = getParameter (request, "EMail");
+			if (!isEmailValid (s))
 			{
 				wu.setPasswordMessage ("EMail Invalid");
 				return false;
@@ -1187,58 +943,58 @@ public final class WebUtil
 		}
 		//
 		StringBuffer mandatory = new StringBuffer();
-		String s = WebUtil.getParameter (request, "Name");
+		String s = getParameter (request, "Name");
 		if (s != null && s.length() != 0)
 			wu.setName(s.trim());
 		else
 			mandatory.append(" - Name");
-		s = WebUtil.getParameter (request, "Company");
+		s = getParameter (request, "Company");
 		if (s != null && s.length() != 0)
 			wu.setCompany(s);
-		s = WebUtil.getParameter (request, "Title");
+		s = getParameter (request, "Title");
 		if (s != null && s.length() != 0)
 			wu.setTitle(s);
 		//
-		s = WebUtil.getParameter (request, "Address");
+		s = getParameter (request, "Address");
 		if (s != null && s.length() != 0)
 			wu.setAddress(s);
 		else
 			mandatory.append(" - Address");
-		s = WebUtil.getParameter (request, "Address2");
+		s = getParameter (request, "Address2");
 		if (s != null && s.length() != 0)
 			wu.setAddress2(s);
 		//
-		s = WebUtil.getParameter (request, "City");
+		s = getParameter (request, "City");
 		if (s != null && s.length() != 0)
 			wu.setCity(s);
 		else
 			mandatory.append(" - City");
-		s = WebUtil.getParameter (request, "Postal");
+		s = getParameter (request, "Postal");
 		if (s != null && s.length() != 0)
 			wu.setPostal(s);
 		else
 			mandatory.append(" - Postal");
 		//	Set Country before Region for validation
-		s = WebUtil.getParameter (request, "C_Country_ID");
+		s = getParameter (request, "C_Country_ID");
 		if (s != null && s.length() != 0)
 			wu.setC_Country_ID(s);
-		s = WebUtil.getParameter (request, "C_Region_ID");
+		s = getParameter (request, "C_Region_ID");
 		if (s != null && s.length() != 0)
 			wu.setC_Region_ID(s);
-		s = WebUtil.getParameter (request, "RegionName");
+		s = getParameter (request, "RegionName");
 		if (s != null && s.length() != 0)
 			wu.setRegionName(s);
 		//
-		s = WebUtil.getParameter (request, "Phone");
+		s = getParameter (request, "Phone");
 		if (s != null && s.length() != 0)
 			wu.setPhone(s);
-		s = WebUtil.getParameter (request, "Phone2");
+		s = getParameter (request, "Phone2");
 		if (s != null && s.length() != 0)
 			wu.setPhone2(s);
-		s = WebUtil.getParameter (request, "C_BP_Group_ID");
+		s = getParameter (request, "C_BP_Group_ID");
 		if (s != null && s.length() != 0)
 			wu.setC_BP_Group_ID (s);
-		s = WebUtil.getParameter (request, "Fax");
+		s = getParameter (request, "Fax");
 		if (s != null && s.length() != 0)
 			wu.setFax(s);
 		//
@@ -1250,4 +1006,5 @@ public final class WebUtil
 		}
 		return wu.save();
 	}	//	updateFields
-}   //  WUtil
+
+}

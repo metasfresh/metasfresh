@@ -61,7 +61,6 @@ import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.theme.ITheme;
 import org.adempiere.webui.theme.ThemeManager;
 import org.adempiere.webui.util.BrowserToken;
-import org.adempiere.webui.util.UserPreference;
 import org.compiere.model.MSession;
 import org.compiere.model.MSystem;
 import org.compiere.model.MUser;
@@ -86,6 +85,8 @@ import org.zkoss.zk.ui.sys.ExecutionsCtrl;
 import org.zkoss.zk.ui.sys.SessionCtrl;
 import org.zkoss.zk.ui.sys.Visualizer;
 import org.zkoss.zul.Window;
+
+import de.metas.ui.web.base.session.UserPreference;
 
 /**
  *
@@ -204,25 +205,15 @@ public class AdempiereWebUI extends Window implements EventListener, IWebClient
 		MSession mSession = MSession.get (ctx, currSess.getRemoteAddr(),
 			currSess.getRemoteHost(), httpSess.getId() );
 
-		//enable full interface, relook into this when doing preference
-		Env.setContext(ctx, "#ShowTrl", true);
 		Env.setContext(ctx, Env.CTXNAME_ShowAcct,
 				Services.get(IPostingService.class).isEnabled()
 				&& Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_ShowAcct));
-		Env.setContext(ctx, "#ShowAdvanced", true);
 
 		// to reload preferences when the user refresh the browser
 		userPreference = loadUserPreference(Env.getAD_User_ID(ctx));
+		userPreference.updateContext(ctx);
 		
-		//auto commit user preference
-		String autoCommit = userPreference.getProperty(UserPreference.P_AUTO_COMMIT);
-		Env.setAutoCommit(ctx, "true".equalsIgnoreCase(autoCommit) || "y".equalsIgnoreCase(autoCommit));
-
-		//auto new user preference
-		String autoNew = userPreference.getProperty(UserPreference.P_AUTO_NEW);
-		Env.setAutoNew(ctx, "true".equalsIgnoreCase(autoNew) || "y".equalsIgnoreCase(autoNew));
-
-		IDesktop d = (IDesktop) currSess.getAttribute("application.desktop");
+		final IDesktop d = (IDesktop) currSess.getAttribute("application.desktop");
 		if (d != null && d instanceof IDesktop)
 		{
 			ExecutionCarryOver eco = (ExecutionCarryOver) currSess.getAttribute(EXECUTION_CARRYOVER_SESSION_KEY);

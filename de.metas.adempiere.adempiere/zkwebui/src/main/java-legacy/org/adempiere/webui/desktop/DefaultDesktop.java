@@ -41,7 +41,6 @@ import org.adempiere.webui.panel.SidePanel;
 import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.util.IServerPushCallback;
 import org.adempiere.webui.util.ServerPushTemplate;
-import org.adempiere.webui.util.UserPreference;
 import org.adempiere.webui.window.ADWindow;
 import org.compiere.model.MGoal;
 import org.compiere.model.MMenu;
@@ -71,6 +70,8 @@ import org.zkoss.zul.Html;
 import org.zkoss.zul.Panel;
 import org.zkoss.zul.Panelchildren;
 import org.zkoss.zul.Toolbarbutton;
+
+import de.metas.ui.web.base.session.UserPreference;
 
 /**
  *
@@ -108,7 +109,8 @@ public class DefaultDesktop extends TabbedDesktop implements MenuListener, Seria
     	super();
     }
 
-    protected Component doCreatePart(Component parent)
+    @Override
+	protected Component doCreatePart(Component parent)
     {
     	SidePanel pnlSide = new SidePanel();
     	HeaderPanel pnlHead = new HeaderPanel();
@@ -294,6 +296,7 @@ public class DefaultDesktop extends TabbedDesktop implements MenuListener, Seria
 		            link.setAttribute("PA_Goal_ID", PA_Goal_ID);
 		            link.addEventListener(Events.ON_CLICK, new EventListener() {
 
+						@Override
 						public void onEvent(Event event) throws Exception {
 							int PA_Goal_ID = (Integer)event.getTarget().getAttribute("PA_Goal_ID");
 							MGoal goal = new MGoal(Env.getCtx(), PA_Goal_ID, null);
@@ -363,7 +366,8 @@ public class DefaultDesktop extends TabbedDesktop implements MenuListener, Seria
         dashboardThread.start();
 	}
 
-    public void onEvent(Event event)
+    @Override
+	public void onEvent(Event event)
     {
         Component comp = event.getTarget();
         String eventName = event.getName();
@@ -388,7 +392,8 @@ public class DefaultDesktop extends TabbedDesktop implements MenuListener, Seria
         }
     }
 
-    public void onServerPush(ServerPushTemplate template)
+    @Override
+	public void onServerPush(ServerPushTemplate template)
 	{
     	noOfNotice = DPActivities.getNoticeCount();
     	noOfRequest = DPActivities.getRequestCount();
@@ -401,6 +406,7 @@ public class DefaultDesktop extends TabbedDesktop implements MenuListener, Seria
 	 *
 	 * @param page
 	 */
+	@Override
 	public void setPage(Page page) {
 		if (this.page != page) {
 			layout.setPage(page);
@@ -422,10 +428,12 @@ public class DefaultDesktop extends TabbedDesktop implements MenuListener, Seria
 	 * Get the root component
 	 * @return Component
 	 */
+	@Override
 	public Component getComponent() {
 		return layout;
 	}
 
+	@Override
 	public void logout() {
 		if (dashboardThread != null && dashboardThread.isAlive()) {
 			dashboardRunnable.stop();
@@ -433,6 +441,7 @@ public class DefaultDesktop extends TabbedDesktop implements MenuListener, Seria
 		}
 	}
 
+	@Override
 	public void updateUI() {
 		int total = noOfNotice + noOfRequest + noOfWorkflow;
 		windowContainer.setTabTitle(0, Msg.getMsg(Env.getCtx(), "Home").replaceAll("&", "")

@@ -55,37 +55,6 @@ public class LanguageBL implements ILanguageBL
 		return retrieveAvailableLanguages(ctx, clientId);
 	}
 
-	@Override
-	public I_AD_Language getByAD_Language(Properties ctx, String adLanguage)
-	{
-		//
-		// First try getting it from available languages
-		for (I_AD_Language lang : getAvailableLanguages(ctx))
-		{
-			if (lang.getAD_Language().equals(adLanguage))
-			{
-				return lang;
-			}
-		}
-
-		//
-		// Fallback: retrieve from database
-		final I_AD_Language lang = retrieveByAD_Language(ctx, adLanguage);
-		return lang;
-	}
-
-	@Cached(cacheName = I_AD_Language.Table_Name)
-	/* package */ I_AD_Language retrieveByAD_Language(@CacheCtx Properties ctx, String adLanguage)
-	{
-		if (adLanguage == null)
-		{
-			return null;
-		}
-		return new Query(ctx, I_AD_Language.Table_Name, I_AD_Language.COLUMNNAME_AD_Language + "=?", null)
-				.setParameters(new Object[] { adLanguage })
-				.firstOnly(I_AD_Language.class);
-	}
-
 	@Cached(cacheName = I_AD_Language.Table_Name)
 	/* package */ List<I_AD_Language> retrieveAvailableLanguages(@CacheCtx final Properties ctx, final int clientId)
 	{

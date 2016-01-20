@@ -38,7 +38,6 @@ import org.adempiere.webui.exception.ApplicationException;
 import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.theme.ITheme;
 import org.adempiere.webui.theme.ThemeManager;
-import org.adempiere.webui.util.UserPreference;
 import org.adempiere.webui.window.LoginWindow;
 import org.compiere.model.MSysConfig;
 import org.compiere.util.Env;
@@ -62,6 +61,7 @@ import org.zkoss.zul.Div;
 import org.zkoss.zul.Image;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.ui.web.base.session.UserPreference;
 
 /**
  *

@@ -34,7 +34,6 @@ import org.adempiere.webui.component.Tabpanel;
 import org.adempiere.webui.component.Tabs;
 import org.adempiere.webui.part.ITabOnSelectHandler;
 import org.adempiere.webui.session.SessionManager;
-import org.adempiere.webui.util.UserPreference;
 import org.compiere.model.GridWindow;
 import org.compiere.model.MQuery;
 import org.compiere.util.CLogger;
@@ -54,6 +53,8 @@ import org.zkoss.zkex.zul.North;
 import org.zkoss.zkex.zul.South;
 import org.zkoss.zkex.zul.West;
 import org.zkoss.zul.Tab;
+
+import de.metas.ui.web.base.session.UserPreference;
 
 /**
  *
@@ -92,6 +93,7 @@ public class ADWindowPanel extends AbstractADWindowPanel
 	}
 
 
+	@Override
 	protected Component doCreatePart(Component parent)
     {
         layout = new Borderlayout();
@@ -184,6 +186,7 @@ public class ADWindowPanel extends AbstractADWindowPanel
         }
 
         layout.setAttribute(ITabOnSelectHandler.ATTRIBUTE_KEY, new ITabOnSelectHandler() {
+			@Override
 			public void onSelect() {
 				IADTab adTab = getADTab();
 				if (adTab != null) {
@@ -201,12 +204,14 @@ public class ADWindowPanel extends AbstractADWindowPanel
         return layout;
     }
 
-    protected IADTab createADTab()
+    @Override
+	protected IADTab createADTab()
     {
     	CompositeADTab composite = new CompositeADTab();
     	return composite;
     }
 
+	@Override
 	public Borderlayout getComponent() {
 		return layout;
 	}
@@ -230,7 +235,8 @@ public class ADWindowPanel extends AbstractADWindowPanel
      * @param event
      * @see EventListener#onEvent(Event)
      */
-    public void onEvent(Event event) {
+    @Override
+	public void onEvent(Event event) {
     	if (Events.ON_CTRL_KEY.equals(event.getName())) {
     		KeyEvent keyEvent = (KeyEvent) event;
     		//enter == 13
@@ -249,6 +255,7 @@ public class ADWindowPanel extends AbstractADWindowPanel
     
 	class TabOnCloseHanlder implements ITabOnCloseHandler {
 
+		@Override
 		public void onClose(Tabpanel tabPanel) {
 			if (ADWindowPanel.this.onExit()) {
 				Tab tab = tabPanel.getLinkedTab();

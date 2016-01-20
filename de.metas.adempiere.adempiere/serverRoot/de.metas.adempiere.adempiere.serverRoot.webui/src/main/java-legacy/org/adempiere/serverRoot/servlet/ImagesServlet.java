@@ -17,6 +17,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.adempiere.serverRoot.util.WebEnv;
+import org.adempiere.serverRoot.util.WebUtil;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -29,8 +31,6 @@ import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.compiere.util.WebEnv;
-import org.compiere.util.WebUtil;
 
 import com.google.common.base.Optional;
 

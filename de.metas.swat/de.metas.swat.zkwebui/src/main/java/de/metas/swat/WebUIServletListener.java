@@ -36,8 +36,7 @@ import org.compiere.report.ReportStarter;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.zk.ZKClientUI;
-import de.metas.hostkey.api.IHostKeyBL;
-import de.metas.hostkey.spi.impl.ZkHostKeyStorage;
+import de.metas.hostkey.spi.impl.HttpCookieHostKeyStorage;
 import de.metas.web.component.FilePreviewJRViewerProvider;
 
 public class WebUIServletListener implements IWebUIServletListener
@@ -60,26 +59,12 @@ public class WebUIServletListener implements IWebUIServletListener
 	@Override
 	public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
 	{
-		createUpdateHostKey(request, response);
+		HttpCookieHostKeyStorage.createUpdateHostKey(request, response);
 	}
 
 	@Override
 	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
 	{
-		createUpdateHostKey(request, response);
-	}
-
-	private void createUpdateHostKey(final HttpServletRequest request, final HttpServletResponse response)
-	{
-		final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
-
-		//
-		// Create HostKey if needed
-		final ZkHostKeyStorage servletHostkeyStorage = new ZkHostKeyStorage(request, response);
-		hostKeyBL.getCreateHostKey(servletHostkeyStorage);
-
-		//
-		// Configure default storage (which fetches hostkey from current Execution)
-		hostKeyBL.setHostKeyStorage(new ZkHostKeyStorage());
+		HttpCookieHostKeyStorage.createUpdateHostKey(request, response);
 	}
 }

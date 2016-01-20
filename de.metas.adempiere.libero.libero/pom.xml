@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
 		<version>1.0_IT-SNAPSHOT</version>
-	<relativePath>../de.metas.parent/pom.xml</relativePath>
-</parent>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
 
 	<properties>
 		<migration-sql-basedir>30-de.metas.adempiere.libero</migration-sql-basedir>
 	</properties>
 
-	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.metas.adempiere.libero</groupId>
 	<artifactId>de.metas.adempiere.libero.libero</artifactId>
+	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>

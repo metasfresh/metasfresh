@@ -76,18 +76,14 @@
 			<artifactId>mail</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<!-- scope>provided</scope> required also at runtime, for de.metas.endcustomer.*.aopc-->
-		</dependency>
-
+		<!-- Required for org.compiere.interfaces.* -->
 		<dependency>
 			<groupId>javax.ejb</groupId>
 			<artifactId>ejb-api</artifactId>
 			<version>3.0</version>
 		</dependency>
 
+		<!-- Mainly required by org.compiere.Adempiere.getCodeBase* methods -->
 		<dependency>
 			<groupId>javax.jnlp</groupId>
 			<artifactId>jnlp</artifactId>

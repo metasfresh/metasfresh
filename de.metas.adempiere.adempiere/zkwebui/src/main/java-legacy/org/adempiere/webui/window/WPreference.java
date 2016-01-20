@@ -13,6 +13,8 @@
  *****************************************************************************/
 package org.adempiere.webui.window;
 
+import java.util.Properties;
+
 import org.adempiere.webui.component.Label;
 import org.adempiere.webui.component.Listbox;
 import org.adempiere.webui.component.ListboxFactory;
@@ -20,7 +22,6 @@ import org.adempiere.webui.component.ToolBar;
 import org.adempiere.webui.component.ToolBarButton;
 import org.adempiere.webui.editor.WYesNoEditor;
 import org.adempiere.webui.session.SessionManager;
-import org.adempiere.webui.util.UserPreference;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Msg;
@@ -31,6 +32,8 @@ import org.zkoss.zul.Div;
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.Separator;
 import org.zkoss.zul.Space;
+
+import de.metas.ui.web.base.session.UserPreference;
 
 /**
  *
@@ -148,27 +151,25 @@ public class WPreference extends Popup implements EventListener {
 		}
 	}
 
-	private void onSave() {
-		UserPreference preference = SessionManager.getSessionApplication().getUserPreference();
-		preference.setProperty(UserPreference.P_AUTO_COMMIT,
-				(Boolean)autoCommit.getValue() ? "Y" : "N");
-		preference.setProperty(UserPreference.P_AUTO_NEW,
-				(Boolean)autoNew.getValue() ? "Y" : "N");
-		preference.setProperty(UserPreference.P_WINDOW_TAB_COLLAPSIBLE,
-				(Boolean)tabCollapsible.getValue() ? "Y" : "N");
-		preference.setProperty(UserPreference.P_WINDOW_TAB_PLACEMENT,
-				(String)tabPlacement.getSelectedItem().getValue());
-
+	private void onSave()
+	{
+		final UserPreference preference = SessionManager.getSessionApplication().getUserPreference();
+		preference.setProperty(UserPreference.P_AUTO_COMMIT, autoCommit.getValue());
+		preference.setProperty(UserPreference.P_AUTO_NEW, autoNew.getValue());
+		preference.setProperty(UserPreference.P_WINDOW_TAB_COLLAPSIBLE, tabCollapsible.getValue());
+		preference.setProperty(UserPreference.P_WINDOW_TAB_PLACEMENT, (String)tabPlacement.getSelectedItem().getValue());
 		preference.savePreference();
 
-		//update context
-		Env.setAutoCommit(Env.getCtx(), "y".equalsIgnoreCase(preference.getProperty(UserPreference.P_AUTO_COMMIT)));
-		Env.setAutoNew(Env.getCtx(), "y".equalsIgnoreCase(preference.getProperty(UserPreference.P_AUTO_NEW)));
-		
+		//
+		// Update context
+		final Properties ctx = Env.getCtx();
+		preference.updateContext(ctx);
+
+		// Update Ini
 		if (adempiereSys != null)
-			Ini.setProperty(Ini.P_ADEMPIERESYS, (Boolean)adempiereSys.getValue() ? "Y" : "N");
+			Ini.setProperty(Ini.P_ADEMPIERESYS, adempiereSys.getValue() ? "Y" : "N");
 		if (logMigrationScript != null)
-			Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, (Boolean)logMigrationScript.getValue() ? "Y" : "N");
+			Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, logMigrationScript.getValue() ? "Y" : "N");
 
 		this.detach();
 	}

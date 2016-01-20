@@ -388,7 +388,7 @@ public final class Adempiere
 	/** @return product's logo (large, high resolution) */
 	public static Image getProductLogoLarge()
 	{
-		if (_productLogoLargeImage == null && !Check.isEmpty(_productLogoLargeName, true))
+		if (_productLogoLargeImage == null && !Check.isEmpty(getProductLogoLargeResourceName(), true))
 		{
 			URL url = getProductLogoLargeURL();
 			if (url == null)
@@ -402,7 +402,12 @@ public final class Adempiere
 	/** @return product large logo resource URL */
 	public static URL getProductLogoLargeURL()
 	{
-		return org.compiere.Adempiere.class.getResource(_productLogoLargeName);
+		return org.compiere.Adempiere.class.getResource(getProductLogoLargeResourceName());
+	}
+
+	public static String getProductLogoLargeResourceName()
+	{
+		return _productLogoLargeName;
 	}
 
 	/** @return product's logo (small) */

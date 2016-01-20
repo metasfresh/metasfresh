@@ -63,6 +63,4 @@ public interface ILanguageBL extends ISingletonService
 	String getOrgAD_Language(Properties ctx, int AD_Org_ID) throws OrgHasNoBPartnerLinkException;
 
 	Language getOrgLanguage(Properties ctx, int AD_Org_ID) throws OrgHasNoBPartnerLinkException;
-	
-	I_AD_Language getByAD_Language(Properties ctx, String adLanguage);
 }

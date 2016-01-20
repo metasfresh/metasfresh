@@ -1314,7 +1314,7 @@ public abstract class AbstractADWindowPanel extends AbstractUIPart implements To
     @Override
 	public void onHelp()
     {
-    	WebDoc doc = gridWindow.getHelpDoc(true);
+    	WebDoc doc = gridWindow.getHelpDoc();
 		SessionManager.getAppDesktop().showURL(doc, "Help", true);
     }
 

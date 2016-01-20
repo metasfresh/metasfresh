@@ -24,8 +24,13 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
+			<scope>provided</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -34,7 +39,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
-					
+
 					<!-- create a *skinny* war; see http://maven.apache.org/plugins/maven-war-plugin/examples/skinny-wars.html -->
 					<packagingExcludes>WEB-INF/lib/*.jar</packagingExcludes>
 					<archive>

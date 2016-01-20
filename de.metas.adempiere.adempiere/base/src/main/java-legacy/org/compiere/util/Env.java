@@ -283,6 +283,7 @@ public final class Env
 	public static final String CTXNAME_User_Org = "#User_Org";
 	
 	public static final String CTXNAME_AD_User_ID = "#AD_User_ID";
+	public static final String CTXNAME_AD_User_Name = "#AD_User_Name";
 	public static final String CTXNAME_SalesRep_ID = "#SalesRep_ID";
 
 	public static final String CTXNAME_Date = "#Date";

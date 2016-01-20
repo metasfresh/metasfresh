@@ -50,9 +50,9 @@ import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.theme.ITheme;
 import org.adempiere.webui.theme.ThemeManager;
 import org.adempiere.webui.util.BrowserToken;
-import org.adempiere.webui.util.UserPreference;
 import org.adempiere.webui.window.LoginWindow;
 import org.compiere.Adempiere;
+import org.compiere.apps.ALoginRes;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MSession;
 import org.compiere.model.MSystem;
@@ -91,6 +91,7 @@ import org.zkoss.zul.mesg.MZul;
 
 import de.metas.adempiere.model.I_AD_Session;
 import de.metas.hostkey.api.IHostKeyBL;
+import de.metas.ui.web.base.session.UserPreference;
 
 /**
  *
@@ -106,7 +107,7 @@ public class LoginPanel extends Window implements EventListener
 	 * 
 	 */
 	private static final long serialVersionUID = 3992171368813030624L;
-	private static final String RESOURCE = "org.compiere.apps.ALoginRes";
+	private static final String RESOURCE = ALoginRes.class.getName();
     private ResourceBundle res = ResourceBundle.getBundle(RESOURCE);
     private static CLogger logger = CLogger.getCLogger(LoginPanel.class);
 

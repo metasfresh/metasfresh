@@ -24,10 +24,7 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.compiere.util.DB;
-import org.compiere.util.WebUtil;
 
 /**
  *	Asset Registration Model
@@ -200,64 +197,5 @@ public class MRegistration extends X_A_Registration
 			pstmt = null;
 		}
 	}	//	createMissingValues
-
-	/**
-	 * 	Load Attributes from Request
-	 *	@param request request
-	 *	@return number of attributes read
-	 */
-	public int loadAttributeValues (HttpServletRequest request)
-	{
-		//	save if not saved
-		if (get_ID() == 0)
-			save();
-		int count = 0;
-		//	read values for all attributes
-		MRegistrationAttribute[] attributes = getAttributes();
-		for (int i = 0; i < attributes.length; i++)
-		{
-			MRegistrationAttribute attribute = attributes[i];
-			String value = WebUtil.getParameter (request, attribute.getName());
-			if (value == null)
-				continue;
-			MRegistrationValue regValue = new MRegistrationValue (this, 
-				attribute.getA_RegistrationAttribute_ID(), value);
-			if (regValue.save())
-				count++;
-		}
-		log.fine("loadAttributeValues - #" + count + " (of " + attributes.length + ")");
-		return count;
-	}	//	loadAttrubuteValues
-
-	/**
-	 * 	Update Attributes from Request
-	 *	@param request request
-	 *	@return number of attributes read
-	 */
-	public int updateAttributeValues (HttpServletRequest request)
-	{
-		//	save if not saved
-		if (get_ID() == 0)
-			save();
-		int count = 0;
-
-		//	Get All Values
-		MRegistrationValue[] regValues = getValues(false);
-		for (int i = 0; i < regValues.length; i++)
-		{
-			MRegistrationValue regValue = regValues[i];
-			String attributeName = regValue.getRegistrationAttribute();
-			//	
-			String dataValue = WebUtil.getParameter (request, attributeName);
-			if (dataValue == null)
-				continue;
-			regValue.setDescription("Previous=" + regValue.getName());
-			regValue.setName(dataValue);
-			if (regValue.save())
-				count++;
-		}
-		log.fine("updateAttributeValues - #" + count + " (of " + regValues.length + ")");
-		return count;
-	}	//	updateAttrubuteValues
 
 }	//	MRegistration

@@ -18,8 +18,6 @@ package org.compiere.model;
 
 import java.util.Properties;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
  * Container Model
  * 
@@ -86,9 +84,9 @@ public class MAd extends X_CM_Ad
 	
 	/**
 	 * Add Click Record to Log
-	 * @param request ServletReqeust
 	 */
-	public void addClick(HttpServletRequest request) {
+	public void addClick()
+	{
 		setActualClick(getActualClick()+1);
 		if (getActualClick()>getMaxClick()) 
 			setIsActive(true);

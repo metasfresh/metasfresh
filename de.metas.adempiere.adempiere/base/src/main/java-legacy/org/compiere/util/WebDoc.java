@@ -19,7 +19,6 @@ package org.compiere.util;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.Properties;
 
 import org.apache.ecs.AlignType;
 import org.apache.ecs.Element;
@@ -29,7 +28,6 @@ import org.apache.ecs.xhtml.h1;
 import org.apache.ecs.xhtml.head;
 import org.apache.ecs.xhtml.html;
 import org.apache.ecs.xhtml.img;
-import org.apache.ecs.xhtml.input;
 import org.apache.ecs.xhtml.link;
 import org.apache.ecs.xhtml.meta;
 import org.apache.ecs.xhtml.script;
@@ -63,70 +61,15 @@ public class WebDoc
 	}   //  create
 	
 	/**
-	 *  Create Document
-	 *  @param plain if false adds stylesheet and standard js
-	 *  @return Document
-	 */
-	public static WebDoc create (final boolean plain)
-	{
-		final String title = null;
-		final boolean swingClient = false;
-		return create (plain, title, swingClient);
-	}   //  create
-	
-	/**
-	 *  Create styled popup Document with Title
-	 *  @param title header title and h1 
-	 *  @return Document
-	 */
-	public static WebDoc createPopup (final String title)
-	{
-		WebDoc doc = create (title);
-		doc.getHead().addElement(new script((Element)null, "/adempiere/js/window.js"));
-		//doc.getHead().addElement(new script((Element)null, "/adempiere/js/Calendar-setup.js"));
-		doc.getHead().addElement(new script((Element)null, "/adempiere/js/calendar.js"));
-		doc.getHead().addElement(new script((Element)null, "/adempiere/js/table.js"));
-		doc.getHead().addElement(new script((Element)null, "/adempiere/lang/calendar-en.js"));
-		doc.getHead().addElement(new link("/adempiere/css/window.css", link.REL_STYLESHEET, link.TYPE_CSS));
-		doc.getHead().addElement(new link("/adempiere/css/popup.css", link.REL_STYLESHEET, link.TYPE_CSS));
-		doc.getHead().addElement(new link("/adempiere/css/table.css", link.REL_STYLESHEET, link.TYPE_CSS));		
-		doc.getHead().addElement(new link("/adempiere/css/calendar-blue.css", link.REL_STYLESHEET, link.TYPE_CSS));
-		doc.setClasses ("popupTable", "popupHeader");
-		doc.getTable().setCellSpacing(0);
-		
-		return doc;
-	}   //  createPopup
-
-	/**
-	 *  Create styled window Document with Title
-	 *  @param title header title and h1 
-	 *  @return Document
-	 */
-	public static WebDoc createWindow (String title)
-	{
-		WebDoc doc = create (title);
-		
-		doc.getHead().addElement(new script((Element)null, "/adempiere/js/window.js"));
-		//doc.getHead().addElement(new script((Element)null, "/adempiere/js/Calendar-setup.js"));
-		doc.getHead().addElement(new script((Element)null, "/adempiere/js/calendar.js"));
-		doc.getHead().addElement(new script((Element)null, "/adempiere/js/table.js"));
-		doc.getHead().addElement(new script((Element)null, "/adempiere/lang/calendar-en.js"));
-		doc.getHead().addElement(new link("/adempiere/css/window.css", link.REL_STYLESHEET, link.TYPE_CSS));
-		doc.getHead().addElement(new link("/adempiere/css/calendar-blue.css", link.REL_STYLESHEET, link.TYPE_CSS));
-		doc.getHead().addElement(new link("/adempiere/css/table.css", link.REL_STYLESHEET, link.TYPE_CSS));		
-		doc.setClasses ("windowTable", "windowHeader");
-		doc.getTable().setCellSpacing(0);
-		return doc;
-	}   //  createWindow
-
-	/**
 	 *  Create styled web Document with Title
 	 *  @param title optional header title and h1 
 	 *  @return Document
 	 */
 	public static WebDoc create (String title)
 	{
-		return create (false, title, false);
+		final boolean plain = false;
+		final boolean swingClient = false;
+		return create (plain, title, swingClient);
 	}   //  create
 
 	/** Non breaking Space					*/
@@ -138,7 +81,8 @@ public class WebDoc
 	 */
 	private WebDoc ()
 	{
-	}   //  WDoc
+		super();
+	}
 
 	private html    m_html = new html();
 	private head    m_head = new head();
@@ -331,75 +275,4 @@ public class WebDoc
 			.addElement(center));
 		return center;
 	}	//	addPopupCenter
-
-	/**
-	 * 	Add Popup Close Footer
-	 *	@return null or array with left/right td
-	 */
-	public td[] addPopupClose(Properties ctx)
-	{
-		input button = WebUtil.createClosePopupButton(ctx); 
-		if (m_table == null)
-		{
-			m_body.addElement(button);
-			return null;
-		}
-		//
-		td left = new td("popupFooter", AlignType.LEFT, AlignType.MIDDLE, false, null);
-		td right = new td("popupFooter", AlignType.RIGHT, AlignType.MIDDLE, false, button); 
-		m_table.addElement(new tr()
-			.addElement(left)
-			.addElement(right));
-		return new td[] {left, right};
-	}	//	addPopupClose
-	
-
-	/**
-	 * 	Add Window Center
-	 * 	@param nowrap set no wrap in td
-	 *	@return empty single center td
-	 */
-	public td addWindowCenter(boolean nowrap)
-	{
-		if (m_table == null)
-			return null;
-		//
-		td center = new td ("windowCenter", AlignType.CENTER, AlignType.MIDDLE, nowrap);
-		center.setColSpan(2);
-		m_table.addElement(new tr()
-			.addElement(center));
-		return center;
-	}	//	addWindowCenter
-
-	/**
-	 * 	Add Window Footer
-	 *	@return null or array with empty left/right td
-	 */
-	public td[] addWindowFooters()
-	{
-		if (m_table == null)
-			return null;
-		//
-		td left = new td("windowFooter", AlignType.LEFT, AlignType.MIDDLE, false);
-		td right = new td("windowFooter", AlignType.RIGHT, AlignType.MIDDLE, false); 
-		m_table.addElement(new tr()
-			.addElement(left)
-			.addElement(right));
-		return new td[] {left, right};
-	}	//	addWindowFooters
-
-	/**
-	 * 	Add Window Footer
-	 *	@return empty single center td
-	 */
-	public td addWindowFooter()
-	{
-		if (m_table == null)
-			return null;
-		//
-		td center = new td("windowFooter", AlignType.CENTER, AlignType.MIDDLE, false);
-		m_table.addElement(new tr()
-			.addElement(center));
-		return center;
-	}	//	addWindowFooter
 }   //  WDoc

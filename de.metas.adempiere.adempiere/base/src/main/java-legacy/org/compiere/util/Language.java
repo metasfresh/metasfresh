@@ -541,7 +541,7 @@ public class Language implements Serializable
 
 
 	/**	Name					*/
-	private String  m_name;
+	private final String m_name;
 	/**	Language (key)			*/
 	private String  m_AD_Language;
 	/** Locale					*/

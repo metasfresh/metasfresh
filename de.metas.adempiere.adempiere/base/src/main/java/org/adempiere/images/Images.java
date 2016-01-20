@@ -48,9 +48,9 @@ public final class Images
 {
 	private static final transient CLogger logger = CLogger.getCLogger(Images.class);
 
-	private static final String RESOURCENAME_ImagesDir = "images/";
+	public static final String RESOURCENAME_ImagesDir = "images/";
 	/** Class used for loading the image resources */
-	private static final Class<?> RESOURCES_Loader = org.compiere.Adempiere.class;
+	public static final Class<?> RESOURCES_Loader = org.compiere.Adempiere.class;
 
 	/** Cache: "fileNameInImageDir" to {@link Image} */
 	private static final LoadingCache<String, Optional<Image>> images = CacheBuilder.newBuilder()

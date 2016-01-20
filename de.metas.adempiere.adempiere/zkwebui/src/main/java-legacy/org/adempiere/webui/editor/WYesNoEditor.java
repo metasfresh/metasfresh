@@ -82,18 +82,20 @@ public class WYesNoEditor extends WEditor implements ContextMenuListener
 		getComponent().setContext(popupMenu.getId());
     }
 
-    public void onEvent(Event event)
+    @Override
+	public void onEvent(Event event)
     {
     	if (Events.ON_CHECK.equalsIgnoreCase(event.getName()))
     	{
-	        Boolean newValue = (Boolean)getValue();
+	        Boolean newValue = getValue();
 	        ValueChangeEvent changeEvent = new ValueChangeEvent(this, this.getColumnName(), oldValue, newValue);
 	        super.fireValueChange(changeEvent);
 	        oldValue = newValue;
     	}
     }
 
-    public void propertyChange(PropertyChangeEvent evt)
+    @Override
+	public void propertyChange(PropertyChangeEvent evt)
     {
         if (evt.getPropertyName().equals(org.compiere.model.GridField.PROPERTY))
         {
@@ -109,9 +111,9 @@ public class WYesNoEditor extends WEditor implements ContextMenuListener
     }
 
     @Override
-    public Object getValue()
+    public Boolean getValue()
     {
-        return new Boolean(getComponent().isChecked());
+        return Boolean.valueOf(getComponent().isChecked());
     }
 
     @Override
@@ -155,6 +157,7 @@ public class WYesNoEditor extends WEditor implements ContextMenuListener
 		getComponent().setEnabled(readWrite);
 	}
 
+	@Override
 	public String[] getEvents()
     {
         return LISTENER_EVENTS;

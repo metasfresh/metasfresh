@@ -20,8 +20,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.compiere.util.EMail;
 
 /**
@@ -64,36 +62,6 @@ public class MAssetDelivery extends X_A_Asset_Delivery
 	}	//	MAssetDelivery
 
 	/**
-	 * 	Create Asset Delivery for HTTP Request
-	 * 	@param asset asset
-	 * 	@param request request
-	 * 	@param AD_User_ID BP Contact
-	 */
-	public MAssetDelivery (MAsset asset, 
-		HttpServletRequest request, int AD_User_ID)
-	{
-		super (asset.getCtx(), 0, asset.get_TrxName());
-		setAD_Client_ID(asset.getAD_Client_ID());
-		setAD_Org_ID(asset.getAD_Org_ID());
-		//	Asset Info
-		setA_Asset_ID (asset.getA_Asset_ID());
-		setLot(asset.getLot());
-		setSerNo(asset.getSerNo());
-		setVersionNo(asset.getVersionNo());
-		//
-		setMovementDate (new Timestamp (System.currentTimeMillis ()));
-		//	Request
-		setURL(request.getRequestURL().toString());
-		setReferrer(request.getHeader("Referer"));
-		setRemote_Addr(request.getRemoteAddr());
-		setRemote_Host(request.getRemoteHost());
-		//	Who
-		setAD_User_ID(AD_User_ID);
-		//
-		save();
-	}	//	MAssetDelivery
-
-	/**
 	 * 	Create Asset Delivery for EMail
 	 * 	@param asset asset
 	 * 	@param email email
@@ -122,6 +90,7 @@ public class MAssetDelivery extends X_A_Asset_Delivery
 	 * 	String representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MAssetDelivery[")
