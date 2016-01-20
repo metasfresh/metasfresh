@@ -1,26 +1,26 @@
 /**********************************************************************
- * This file is part of Adempiere ERP Bazaar                          * 
- * http://www.adempiere.org                                           * 
- *                                                                    * 
- * Copyright (C) Trifon Trifonov.                                     * 
- * Copyright (C) Contributors                                         * 
- *                                                                    * 
- * This program is free software; you can redistribute it and/or      * 
- * modify it under the terms of the GNU General Public License        * 
- * as published by the Free Software Foundation; either version 2     * 
- * of the License, or (at your option) any later version.             * 
- *                                                                    * 
- * This program is distributed in the hope that it will be useful,    * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of     * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the       * 
- * GNU General Public License for more details.                       * 
- *                                                                    * 
- * You should have received a copy of the GNU General Public License  * 
- * along with this program; if not, write to the Free Software        * 
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,         * 
- * MA 02110-1301, USA.                                                * 
- *                                                                    * 
- * Contributors:                                                      * 
+ * This file is part of Adempiere ERP Bazaar                          *
+ * http://www.adempiere.org                                           *
+ *                                                                    *
+ * Copyright (C) Trifon Trifonov.                                     *
+ * Copyright (C) Contributors                                         *
+ *                                                                    *
+ * This program is free software; you can redistribute it and/or      *
+ * modify it under the terms of the GNU General Public License        *
+ * as published by the Free Software Foundation; either version 2     *
+ * of the License, or (at your option) any later version.             *
+ *                                                                    *
+ * This program is distributed in the hope that it will be useful,    *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of     *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the       *
+ * GNU General Public License for more details.                       *
+ *                                                                    *
+ * You should have received a copy of the GNU General Public License  *
+ * along with this program; if not, write to the Free Software        *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,         *
+ * MA 02110-1301, USA.                                                *
+ *                                                                    *
+ * Contributors:                                                      *
  *  - Trifon Trifonov (trifonnt@users.sourceforge.net)                *
  *  - Antonio Cañaveral (antonio.canaveral@e-evolution.com)			  *
  *                                                                    *
@@ -63,7 +63,7 @@ import org.w3c.dom.Document;
 
 /**
  * Listen for JMS Messages
- * 
+ *
  * @author Trifon N. Trifonov
  * @author Antonio Cañaveral, e-Evolution <li>[ 2194986 ] Already connected ClientID issue. <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2194986&group_id=176962&atid=879332
  */
@@ -160,10 +160,19 @@ public class TopicListener implements MessageListener, ExceptionListener
 
 	private boolean isStopping = false;
 
-	public TopicListener(Properties ctx, IReplicationProcessor replicationProcessor, String protocol, String host, int port
-			, boolean isDurableSubscription, String subscriptionName, String topicName
-			, String clientID, String userName, String password
-			, String options, String trxName)
+	public TopicListener(final Properties ctx, 
+			final IReplicationProcessor replicationProcessor, 
+			final String protocol, 
+			final String host, 
+			final int port,
+			final boolean isDurableSubscription, 
+			final String subscriptionName, 
+			final String topicName,
+			final String clientID, 
+			final String userName, 
+			final String password,
+			final String options, 
+			final String trxName)
 	{
 		if (host != null && !host.equals(""))
 		{
@@ -187,26 +196,20 @@ public class TopicListener implements MessageListener, ExceptionListener
 		if (options != null && options.length() > 0)
 		{
 			if (!options.contains("?"))
+			{
 				uri += "?" + options;
+			}
 		}
-		this.setUrl(uri);
+		setUrl(uri);
 
 		this.ctx = ctx;
-
 		this.trxName = trxName;
-
 		this.replicationProcessor = replicationProcessor;
-
 		this.isDurableSubscription = isDurableSubscription;
-
 		this.subscriptionName = subscriptionName;
-
 		this.clientID = clientID;
-
 		this.userName = userName;
-
 		this.password = password;
-
 	}
 
 	public void run()
@@ -216,18 +219,18 @@ public class TopicListener implements MessageListener, ExceptionListener
 			run0();
 			replicationProcessor.setProcessRunning(true);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			stop();
 			throw new ReplicationException("TopicListener.run() caught Exception during startup: " + e.getMessage()
-					+"\n Processor: "+replicationProcessor
+					+ "\n Processor: " + replicationProcessor
 					, e);
 		}
 	}
 
 	private void run0() throws JMSException
 	{
-		ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
+		final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
 		log.finest("ActiveMQConnectionFactory = " + factory);
 
 		if (userName != null && password != null)
@@ -295,10 +298,10 @@ public class TopicListener implements MessageListener, ExceptionListener
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	@Override
-	public void onMessage(Message message)
+	public void onMessage(final Message message)
 	{
 		String text = null;
 		String responseStr = null;
@@ -312,12 +315,12 @@ public class TopicListener implements MessageListener, ExceptionListener
 
 			log("Imported Document", text, null, null);
 		}
-		catch (RuntimeException e)
+		catch (final RuntimeException e)
 		{
 			// Processing errors: log them
 			logException(e, text);
 		}
-		catch (JMSException e)
+		catch (final JMSException e)
 		{
 			logException(e, text);
 			log.finest("Rollback = " + e.toString());
@@ -342,7 +345,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 				// commit the JMS session(mark messages as consumed)
 				session.commit();
 			}
-			catch (JMSException e)
+			catch (final JMSException e)
 			{
 				logException(e, responseStr);
 				log.finest("Rollback = " + e.toString());
@@ -379,7 +382,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 
 	/**
 	 * Import xml document
-	 * 
+	 *
 	 * @param xml xml document (as string) to be imported
 	 * @return xml response (as string)
 	 */
@@ -391,17 +394,17 @@ public class TopicListener implements MessageListener, ExceptionListener
 		{
 			documentToBeImported = XMLHelper.createDocumentFromString(xml);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException(e);
 		}
 
 		final Mutable<Document> responseDOM = new Mutable<Document>(); // 03132
 
-		Services.get(ITrxManager.class).run(this.trxName, new TrxRunnable()
+		Services.get(ITrxManager.class).run(trxName, new TrxRunnable()
 		{
 			@Override
-			public void run(String trxName)
+			public void run(final String trxName)
 			{
 				final IImportHelper impHelper = Services.get(IIMPProcessorBL.class).createImportHelper(ctx);
 				try
@@ -409,7 +412,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 					final StringBuilder result = new StringBuilder();
 					responseDOM.setValue(impHelper.importXMLDocument(result, documentToBeImported, trxName));
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					throw e instanceof AdempiereException ? (AdempiereException)e : new AdempiereException(e);
 				}
@@ -424,7 +427,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 		return XMLHelper.createStringFromDOMNode(responseDOM.getValue());
 	}
 
-	public void setUrl(String url)
+	public void setUrl(final String url)
 	{
 		this.url = url;
 	}
@@ -441,7 +444,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 				{
 					session.rollback();
 				}
-				catch (JMSException e)
+				catch (final JMSException e)
 				{
 				}
 				session = null;
@@ -452,7 +455,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 				{
 					conn.close();
 				}
-				catch (JMSException e)
+				catch (final JMSException e)
 				{
 				}
 				conn = null;
@@ -467,7 +470,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 		}
 	}
 
-	private void logException(Exception e, final String messageText)
+	private void logException(final Exception e, final String messageText)
 	{
 		log("Error: " + e.getLocalizedMessage(),
 				messageText, // text
@@ -476,17 +479,19 @@ public class TopicListener implements MessageListener, ExceptionListener
 		);
 	}
 
-	private void log(String summary, String text, String reference, Throwable error)
+	private void log(final String summary, final String text, final String reference, final Throwable error)
 	{
 		final org.compiere.model.I_IMP_Processor impProcessor = replicationProcessor.getMImportProcessor();
 		Services.get(IIMPProcessorBL.class).createLog(impProcessor, summary, text, reference, error);
 	}
 
 	@Override
-	public void onException(JMSException e)
+	public void onException(final JMSException e)
 	{
 		if (isStopping)
+		{
 			return;
+		}
 		logException(e, null);
 		stop(); // Assume all JMSExceptions as being fatal
 	}

@@ -120,7 +120,7 @@ short story: commented out as of now because we can't incorporate fonts into an 
 									<ul>
 										<li><a href="/binaries/de.metas.edi.esb.camel.jar">EDI ESB bundle</a></li>
 										<li><a href="/binaries/de.metas.document.archive.esb.camel.jar">Archive ESB bundle</a></li>
-										<li><a href="/binaries/de.metas.document.archive.esb.camel.jar">Printing ESB bundle</a></li>
+										<li><a href="/binaries/de.metas.printing.esb.camel.jar">Printing ESB bundle</a></li>
 										<li><a href="/binaries/de.metas.printing.esb.client-jar-with-dependencies.jar">Printing standalone client</a></li>
 									</ul>
 								</td>

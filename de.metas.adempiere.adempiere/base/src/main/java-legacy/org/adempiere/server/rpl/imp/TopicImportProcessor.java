@@ -50,10 +50,10 @@ import org.compiere.util.CLogger;
  */
 public class TopicImportProcessor implements IImportProcessor
 {
-	
-	/**	Logger	*/
-	protected CLogger	log = CLogger.getCLogger (TopicImportProcessor.class);
-	
+
+	/** Logger */
+	protected CLogger log = CLogger.getCLogger(TopicImportProcessor.class);
+
 	public static final String PARAM_topicName = "topicName";
 
 	public static final String PARAM_protocol = "protocol";
@@ -63,27 +63,26 @@ public class TopicImportProcessor implements IImportProcessor
 	public static final String PARAM_subscriptionName = "subscriptionName";
 
 	public static final String PARAM_clientID = "clientID";
-	
+
 	/**
 	 * Topic Listener
 	 */
 	private TopicListener topicListener = null;
 
-	
 	@Override
 	public void start(Properties ctx, IReplicationProcessor replicationProcessor, String trxName) throws Exception
 	{
 		log.info("replicationProcessor = " + replicationProcessor);
 		log.info("replicationProcessor.getMImportProcessor() = " + replicationProcessor.getMImportProcessor());
-		
+
 		final I_IMP_Processor impProcessor = replicationProcessor.getMImportProcessor();
 		final List<I_IMP_ProcessorParameter> processorParameters = Services.get(IIMPProcessorDAO.class).retrieveParameters(impProcessor, trxName);
-		
+
 		String host = impProcessor.getHost();
 		int port = impProcessor.getPort();
 		String account = impProcessor.getAccount();
 		String password = impProcessor.getPasswordInfo();
-		
+
 		// mandatory parameters!
 		String topicName = null;
 		String protocol = null;
@@ -91,7 +90,7 @@ public class TopicImportProcessor implements IImportProcessor
 		String subscriptionName = null;
 		String options = null;
 		String clientID = null;
-		
+
 		for (final I_IMP_ProcessorParameter processorParameter : processorParameters)
 		{
 			log.info("ProcesParameter          Value = " + processorParameter.getValue());
@@ -121,44 +120,59 @@ public class TopicImportProcessor implements IImportProcessor
 				// Some other mandatory parameter here
 			}
 		}
-        
-        if (topicName == null || topicName.length() == 0) {
+
+		if (topicName == null || topicName.length() == 0)
+		{
 			throw new Exception("Missing " + I_IMP_ProcessorParameter.Table_Name + " with key '" + PARAM_topicName + "'!");
-        }
-        if (protocol == null || protocol.length() == 0) {
-        	throw new Exception("Missing "+I_IMP_ProcessorParameter.Table_Name+" with key '" + PARAM_protocol + "'!");
-        }
-        if (isDurableSubscription && subscriptionName == null || subscriptionName.length() == 0) {
-        	throw new Exception("Missing "+I_IMP_ProcessorParameter.Table_Name+" with key '" + PARAM_subscriptionName + "'!");
-        }
-        if (clientID == null || clientID.length() == 0) {
-        	throw new Exception("Missing "+I_IMP_ProcessorParameter.Table_Name+" with key '" + PARAM_clientID + "'!");
-        }
-        
-        topicListener = new TopicListener(ctx, replicationProcessor, protocol, host, port
-        		, isDurableSubscription, subscriptionName, topicName, clientID
-        		, account, password, options, trxName);
-        
-        topicListener.run();
-        log.info("Started topicListener = " + topicListener);
-   }
+		}
+		if (protocol == null || protocol.length() == 0)
+		{
+			throw new Exception("Missing " + I_IMP_ProcessorParameter.Table_Name + " with key '" + PARAM_protocol + "'!");
+		}
+		if (isDurableSubscription && subscriptionName == null || subscriptionName.length() == 0)
+		{
+			throw new Exception("Missing " + I_IMP_ProcessorParameter.Table_Name + " with key '" + PARAM_subscriptionName + "'!");
+		}
+		if (clientID == null || clientID.length() == 0)
+		{
+			throw new Exception("Missing " + I_IMP_ProcessorParameter.Table_Name + " with key '" + PARAM_clientID + "'!");
+		}
+
+		topicListener = new TopicListener(ctx,
+				replicationProcessor,
+				protocol,
+				host,
+				port,
+				isDurableSubscription,
+				subscriptionName,
+				topicName,
+				clientID,
+				account,
+				password,
+				options,
+				trxName);
+
+		topicListener.run();
+		log.info("Started topicListener = " + topicListener);
+	}
 
 	@Override
 	public void stop() throws Exception
 	{
-		
-		if ( topicListener != null ) {
+
+		if (topicListener != null)
+		{
 			topicListener.stop();
-			log.info("Stoped topicListener." );
+			log.info("Stoped topicListener.");
 		}
 		topicListener = null;
 	}
-	
+
 	@Override
 	public void createInitialParameters(I_IMP_Processor processor)
 	{
 		final IIMPProcessorBL impProcessorBL = Services.get(IIMPProcessorBL.class);
-		
+
 		impProcessorBL.createParameter(processor,
 				PARAM_topicName,
 				"Name of JMS Topic from where xml will be Imported",
