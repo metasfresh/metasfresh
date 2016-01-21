@@ -963,7 +963,7 @@
 				 It will compile those jrxml files and then assemble the jasper files into a jar.
 				 It willAdds src/main/jasperreports as additional source folder
 			-->
-			<id>jasper</id>
+			<id>jasper-build</id>
 
 			<activation>
 				<file>
@@ -973,29 +973,6 @@
 
 			<build>
 				<plugins>
-
-					<plugin>
-				<!-- Adds src/main/jasperreports as additional source folder (if the directory is present) -->
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>build-helper-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>add-resource</id>
-								<phase>generate-resources</phase>
-								<goals>
-									<goal>add-resource</goal>
-								</goals>
-								<configuration>
-									<resources>
-										<resource>
-											<directory>src/main/jasperreports</directory>
-										</resource>
-									</resources>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-
 					<plugin>
 						<artifactId>maven-resources-plugin</artifactId>
 						<version>2.6</version>
@@ -1141,6 +1118,43 @@
 			</build>
 		</profile>
 
+		<profile>
+			<!-- Adds src/main/jasperreports as additional source folder (if the directory is present) 
+			this is only intended to be active when running in eclipse, and not for *any* actual maven build.
+			we don't want the jasper-stuff to end up in a "regular" artifact jar!
+			Particularly the properties files need to be overridden in certain situations, 
+			so we can't afford to have an additional copy in the classpath via regular jars
+
+			Hint: 
+			in eclipse, you can activate this profile in the projects where you need it, by opening the projects properties (=>maven).
+			But, then you can't build a proper artifact using eclipse-maven
+			-->
+			<id>jasper-source-folder</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>add-resource</id>
+								<phase>generate-resources</phase>
+								<goals>
+									<goal>add-resource</goal>
+								</goals>
+								<configuration>
+									<resources>
+										<resource>
+											<directory>src/main/jasperreports</directory>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 <!-- 
 	If there is a "webapp" directory, this profile will activate 
 	and put the content into a zip file 
