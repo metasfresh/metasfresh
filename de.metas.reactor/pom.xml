@@ -71,6 +71,8 @@
 		<module>../de.metas.printing.esb.client-webapp</module>
 
 		<module>../de.metas.fresh</module>
+		
+		<module>../de.metas.ui.web.base</module>
 	</modules>
 	
 	<distributionManagement>
