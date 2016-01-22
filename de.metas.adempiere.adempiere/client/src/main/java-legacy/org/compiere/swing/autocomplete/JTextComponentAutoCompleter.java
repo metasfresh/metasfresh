@@ -53,6 +53,8 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
 import org.compiere.util.CLogger;
 
+import com.jgoodies.looks.Options;
+
 /**
  * Auto-complete support for a {@link JTextComponent}.
  * 
@@ -380,6 +382,11 @@ public class JTextComponentAutoCompleter
 
 		Check.assumeNotNull(comp, "comp not null");
 		textBox = comp;
+
+		// Make sure the text is not automatically selected when the textbox got focus.
+		// Reason: in some circumstances the text will be selected while the user is typing (because while typing there was some focus lost and then gain),
+		// so basically when the user will type the next char, what he/she typed until now will be lost => very annoying and makes the component useless. 
+		textBox.putClientProperty(Options.SELECT_ON_FOCUS_GAIN_CLIENT_KEY, Boolean.FALSE);
 
 		textBox.getDocument().addDocumentListener(textBoxDocumentListener);
 		textBox.registerKeyboardAction(textBoxEnterAction, KEY_Enter, JComponent.WHEN_FOCUSED);
