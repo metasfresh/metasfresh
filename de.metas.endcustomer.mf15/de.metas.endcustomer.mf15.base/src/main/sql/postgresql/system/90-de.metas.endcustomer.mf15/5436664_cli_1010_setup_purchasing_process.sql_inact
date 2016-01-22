@@ -1,3 +1,9 @@
+/*
+ * Setting the tile name to .sql_inact to avoid this rollout error:
+   UPDATE 1
+	psql:/home/metasfresh/20160121_141107/dist/sql/90-de.metas.endcustomer.mf15/5436664_cli_1010_setup_purchasing_process.sql:9: ERROR:  duplicate key value violates unique constraint "c_pos_profile_key"
+	DETAIL:  Key (c_pos_profile_id)=(540007) already exists.
+ */
 -- 11.12.2015 09:38
 -- URL zum Konzept
 UPDATE AD_Role SET IsShowAllEntityTypes='Y',Updated=TO_TIMESTAMP('2015-12-11 09:38:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Role_ID=1000000
