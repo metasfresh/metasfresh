@@ -522,10 +522,14 @@ public class OrderBL implements IOrderBL
 		return plv;
 	}
 
+	/**
+	 * Set Business Partner Defaults & Details. SOTrx should be set.
+	 *
+	 * @param bp business partner
+	 */
 	@Override
 	public void setBPartner(final org.compiere.model.I_C_Order order, final org.compiere.model.I_C_BPartner bp)
 	{
-		// FIXME: keep in sync / merge with org.compiere.model.MOrder.setBPartner(MBPartner)
 		if (bp == null)
 		{
 			return;
@@ -536,79 +540,75 @@ public class OrderBL implements IOrderBL
 		final boolean isSOTrx = order.isSOTrx();
 		//
 		// Defaults Payment Term
-		final int paymentTermId;
+		int ii = 0;
 		if (isSOTrx)
 		{
-			paymentTermId = bp.getC_PaymentTerm_ID();
+			ii = bp.getC_PaymentTerm_ID();
 		}
 		else
 		{
-			paymentTermId = bp.getPO_PaymentTerm_ID();
+			ii = bp.getPO_PaymentTerm_ID();
 		}
-		if (paymentTermId > 0)
+		if (ii != 0)
 		{
-			order.setC_PaymentTerm_ID(paymentTermId);
+			order.setC_PaymentTerm_ID(ii);
 		}
 
 		//
 		// Default Price List
-		final int priceListId;
 		if (isSOTrx)
 		{
-			priceListId = bp.getM_PriceList_ID();
+			ii = bp.getM_PriceList_ID();
 		}
 		else
 		{
-			priceListId = bp.getPO_PriceList_ID();
+			ii = bp.getPO_PriceList_ID();
 		}
-		if (priceListId > 0)
+		if (ii != 0)
 		{
-			order.setM_PriceList_ID(priceListId);
+			order.setM_PriceList_ID(ii);
 		}
 
 		//
-		// Default Delivery
-		final String deliveryRule = bp.getDeliveryRule();
-		if (deliveryRule != null)
+		// Default Delivery/Via Rule
+		String ss = bp.getDeliveryRule();
+		if (ss != null)
 		{
-			order.setDeliveryRule(deliveryRule);
+			order.setDeliveryRule(ss);
 		}
-		
-		//
-		// Default Delivery Via Rule
-		final String deliveryViaRule;
 		if(isSOTrx)
 		{
-			deliveryViaRule = bp.getDeliveryViaRule();
+			ss = bp.getDeliveryViaRule();
 		}
 		else
 		{
-			deliveryViaRule = bp.getPO_DeliveryViaRule();
+			ss = bp.getPO_DeliveryViaRule();
 		}
-		if (deliveryViaRule != null)
+
+		if (ss != null)
 		{
-			order.setDeliveryViaRule(deliveryViaRule);
+			order.setDeliveryViaRule(ss);
 		}
 
 		//
 		// Default Invoice/Payment Rule
-		final String invoiceRule = bp.getInvoiceRule();
-		if (invoiceRule != null)
+		ss = bp.getInvoiceRule();
+		if (ss != null)
 		{
-			order.setInvoiceRule(invoiceRule);
+			order.setInvoiceRule(ss);
 		}
-		final String paymentRule = bp.getPaymentRule();
-		if (paymentRule != null)
+		ss = bp.getPaymentRule();
+		if (ss != null)
 		{
-			order.setPaymentRule(paymentRule);
+			order.setPaymentRule(ss);
 		}
 
 		//
 		// Sales Rep
-		final int salesRepId = bp.getSalesRep_ID();
-		if (salesRepId > 0)
+		ii = bp.getSalesRep_ID();
+		if (ii != 0)
 		{
-			order.setSalesRep_ID(salesRepId);
+			order.setSalesRep_ID(ii);
 		}
 
 		setBPLocation(order, bp);

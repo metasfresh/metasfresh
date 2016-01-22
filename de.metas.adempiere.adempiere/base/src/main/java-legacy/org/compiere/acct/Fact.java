@@ -33,6 +33,8 @@ import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
+import org.compiere.model.MDistribution;
+import org.compiere.model.MDistributionLine;
 import org.compiere.model.MFactAcct;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -73,7 +75,7 @@ public final class Fact
 		log.log(Level.CONFIG, "Fact: {0}", this);
 	}	// Fact
 
-	// services
+	/** Log */
 	private static final transient CLogger log = CLogger.getCLogger(Fact.class);
 
 	/** Document */
@@ -687,15 +689,103 @@ public final class Fact
 
 	/**
 	 * GL Distribution of Fact Lines
+	 *
+	 * @return true if success
 	 */
-	public void distribute()
+	public boolean distribute()
 	{
-		final List<FactLine> linesAfterDistribution = FactGLDistributor.newInstance()
-				.distribute(m_lines);
-		
-		m_lines = linesAfterDistribution;
-		// TODO
-	}
+		// no lines -> nothing to distribute
+		if (m_lines.size() == 0)
+			return true;
+
+		ArrayList<FactLine> newLines = new ArrayList<FactLine>();
+		// For all fact lines
+		for (int i = 0; i < m_lines.size(); i++)
+		{
+			FactLine dLine = m_lines.get(i);
+			MDistribution[] distributions = MDistribution.get(dLine.getAccount(),
+					m_postingType, m_doc.getC_DocType_ID());
+			// No Distribution for this line
+			// AZ Goodwill
+			// The above "get" only work in GL Journal because it's using ValidCombination Account
+			// Old:
+			// if (distributions == null || distributions.length == 0)
+			// continue;
+			// For other document, we try the followings (from FactLine):
+			// New:
+			if (distributions == null || distributions.length == 0)
+			{
+				distributions = MDistribution.get(dLine.getCtx(), dLine.getC_AcctSchema_ID(),
+						m_postingType, m_doc.getC_DocType_ID(),
+						dLine.getAD_Org_ID(), dLine.getAccount_ID(),
+						dLine.getM_Product_ID(), dLine.getC_BPartner_ID(), dLine.getC_Project_ID(),
+						dLine.getC_Campaign_ID(), dLine.getC_Activity_ID(), dLine.getAD_OrgTrx_ID(),
+						dLine.getC_SalesRegion_ID(), dLine.getC_LocTo_ID(), dLine.getC_LocFrom_ID(),
+						dLine.getUser1_ID(), dLine.getUser2_ID());
+				if (distributions == null || distributions.length == 0)
+					continue;
+			}
+			// end AZ
+			// Just the first
+			if (distributions.length > 1)
+				log.warning("More then one Distributiion for " + dLine.getAccount());
+			MDistribution distribution = distributions[0];
+
+			// FR 2685367 - GL Distribution delete line instead reverse
+			if (distribution.isCreateReversal())
+			{
+				// Add Reversal
+				FactLine reversal = dLine.reverse(distribution.getName());
+				log.info("Reversal=" + reversal);
+				newLines.add(reversal);		// saved in postCommit
+			}
+			else
+			{
+				// delete the line being distributed
+				m_lines.remove(i);    // or it could be m_lines.remove(dLine);
+				i--;
+			}
+
+			// Prepare
+			distribution.distribute(dLine.getAccount(), dLine.getSourceBalance(), dLine.getQty(), dLine.getC_Currency_ID());
+			MDistributionLine[] lines = distribution.getLines(false);
+			for (int j = 0; j < lines.length; j++)
+			{
+				MDistributionLine dl = lines[j];
+				if (!dl.isActive() || dl.getAmt().signum() == 0)
+					continue;
+				final FactLine factLine = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0, get_TrxName());
+				// Set Info & Account
+				factLine.setDocumentInfo(m_doc, dLine.getDocLine());
+				factLine.setAccount(m_acctSchema, dl.getAccount());
+				factLine.setPostingType(m_postingType);
+				if (dl.isOverwriteOrg())	// set Org explicitly
+					factLine.setAD_Org_ID(dl.getOrg_ID());
+				//
+				if (dl.getAmt().signum() < 0)
+					factLine.setAmtSource(dLine.getC_Currency_ID(), null, dl.getAmt().abs());
+				else
+					factLine.setAmtSource(dLine.getC_Currency_ID(), dl.getAmt(), null);
+				factLine.setQty(dl.getQty());
+				// Convert
+				factLine.convert();
+				//
+				String description = distribution.getName() + " #" + dl.getLine();
+				if (dl.getDescription() != null)
+					description += " - " + dl.getDescription();
+				factLine.addDescription(description);
+				//
+				log.info(factLine.toString());
+				newLines.add(factLine);
+			}
+		}	// for all lines
+
+		// Add Lines
+		for (int i = 0; i < newLines.size(); i++)
+			m_lines.add(newLines.get(i));
+
+		return true;
+	}	// distribute
 
 	/**************************************************************************
 	 * String representation
@@ -720,7 +810,7 @@ public final class Fact
 	 */
 	public FactLine[] getLines()
 	{
-		final FactLine[] temp = new FactLine[m_lines.size()];
+		FactLine[] temp = new FactLine[m_lines.size()];
 		m_lines.toArray(temp);
 		return temp;
 	}	// getLines

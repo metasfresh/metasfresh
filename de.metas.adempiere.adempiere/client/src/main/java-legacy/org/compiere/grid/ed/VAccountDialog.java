@@ -47,7 +47,7 @@ import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IAccountDimensionValidator;
 import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.acct.api.impl.AccountDimension;
+import org.adempiere.acct.api.impl.AccountDimensionVO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -847,7 +847,7 @@ public final class VAccountDialog extends CDialog
 	{
 		final I_C_AcctSchema acctSchema = getC_AcctSchema();
 
-		final AccountDimension.Builder accountDimension = AccountDimension.builder();
+		final IAccountDimension accountDimension = new AccountDimensionVO();
 		accountDimension.setAD_Client_ID(m_AD_Client_ID);
 		accountDimension.setC_AcctSchema_ID(acctSchema.getC_AcctSchema_ID());
 
@@ -929,7 +929,7 @@ public final class VAccountDialog extends CDialog
 			accountDimension.setUser2_ID(User2_ID);
 		}
 
-		return accountDimension.build();
+		return accountDimension;
 	}
 
 	private MAccount getCreateAccountFromFields()

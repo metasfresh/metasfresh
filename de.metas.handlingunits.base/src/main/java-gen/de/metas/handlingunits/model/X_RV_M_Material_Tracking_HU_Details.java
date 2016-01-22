@@ -32,7 +32,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -112517208L;
+	private static final long serialVersionUID = -957040680L;
 
     /** Standard Constructor */
     public X_RV_M_Material_Tracking_HU_Details (Properties ctx, int RV_M_Material_Tracking_HU_Details_ID, String trxName)
@@ -311,74 +311,6 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 		return ii.intValue();
 	}
 
-	@Override
-	public org.eevolution.model.I_PP_Order getPP_Order_Issue() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Order_Issue_ID, org.eevolution.model.I_PP_Order.class);
-	}
-
-	@Override
-	public void setPP_Order_Issue(org.eevolution.model.I_PP_Order PP_Order_Issue)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Order_Issue_ID, org.eevolution.model.I_PP_Order.class, PP_Order_Issue);
-	}
-
-	/** Set Zugeteilt zu Prod.-Auftrag.
-		@param PP_Order_Issue_ID Zugeteilt zu Prod.-Auftrag	  */
-	@Override
-	public void setPP_Order_Issue_ID (int PP_Order_Issue_ID)
-	{
-		if (PP_Order_Issue_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_ID, Integer.valueOf(PP_Order_Issue_ID));
-	}
-
-	/** Get Zugeteilt zu Prod.-Auftrag.
-		@return Zugeteilt zu Prod.-Auftrag	  */
-	@Override
-	public int getPP_Order_Issue_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Issue_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.eevolution.model.I_PP_Order getPP_Order_Receipt() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Order_Receipt_ID, org.eevolution.model.I_PP_Order.class);
-	}
-
-	@Override
-	public void setPP_Order_Receipt(org.eevolution.model.I_PP_Order PP_Order_Receipt)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Order_Receipt_ID, org.eevolution.model.I_PP_Order.class, PP_Order_Receipt);
-	}
-
-	/** Set Empf. aus Prod.-Auftrag.
-		@param PP_Order_Receipt_ID Empf. aus Prod.-Auftrag	  */
-	@Override
-	public void setPP_Order_Receipt_ID (int PP_Order_Receipt_ID)
-	{
-		if (PP_Order_Receipt_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_ID, Integer.valueOf(PP_Order_Receipt_ID));
-	}
-
-	/** Get Empf. aus Prod.-Auftrag.
-		@return Empf. aus Prod.-Auftrag	  */
-	@Override
-	public int getPP_Order_Receipt_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Receipt_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Menge.
 		@param Qty 
 		Menge
@@ -399,27 +331,5 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
-	}
-
-	/** Set RV_M_Material_Tracking_HU_Details_ID.
-		@param RV_M_Material_Tracking_HU_Details_ID RV_M_Material_Tracking_HU_Details_ID	  */
-	@Override
-	public void setRV_M_Material_Tracking_HU_Details_ID (int RV_M_Material_Tracking_HU_Details_ID)
-	{
-		if (RV_M_Material_Tracking_HU_Details_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_RV_M_Material_Tracking_HU_Details_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_RV_M_Material_Tracking_HU_Details_ID, Integer.valueOf(RV_M_Material_Tracking_HU_Details_ID));
-	}
-
-	/** Get RV_M_Material_Tracking_HU_Details_ID.
-		@return RV_M_Material_Tracking_HU_Details_ID	  */
-	@Override
-	public int getRV_M_Material_Tracking_HU_Details_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_RV_M_Material_Tracking_HU_Details_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 }

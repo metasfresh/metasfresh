@@ -39,7 +39,7 @@ public class AcctSchemaBL implements IAcctSchemaBL
 	public int getDefaultValue(final I_C_AcctSchema_Element ase)
 	{
 		final String elementType = ase.getElementType();
-		final int defaultValue;
+		int defaultValue = 0;
 
 		if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Organization))
 		{
@@ -98,10 +98,6 @@ public class AcctSchemaBL implements IAcctSchemaBL
 			defaultValue = 0;
 		}
 		else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement2))
-		{
-			defaultValue = 0;
-		}
-		else
 		{
 			defaultValue = 0;
 		}

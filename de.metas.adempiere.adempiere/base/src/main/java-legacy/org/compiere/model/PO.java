@@ -72,6 +72,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import org.compiere.acct.Doc;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
 import org.compiere.util.CacheMgt;
@@ -4726,6 +4727,17 @@ public abstract class PO
 		return document;
 	}	//	getDocument
 
+	/* Doc - To be used on ModelValidator to get the corresponding Doc from the PO */
+	private Doc m_doc;
+
+	/**
+	 *      Set the accounting document associated to the PO - for use in POST ModelValidator
+	 *      @param doc Document
+	 */
+	public final void setDoc(Doc doc) {
+		m_doc = doc;
+	}
+
 	public final void setReplication(boolean isFromReplication)
 	{
 		m_isReplication = isFromReplication;
@@ -4734,6 +4746,14 @@ public abstract class PO
 	public final boolean isReplication()
 	{
 		return m_isReplication;
+	}
+
+	/**
+	 *      Set the accounting document associated to the PO - for use in POST ModelValidator
+	 *      @return Doc Document
+	 */
+	public final Doc getDoc() {
+		return m_doc;
 	}
 
 	/**

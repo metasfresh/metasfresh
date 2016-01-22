@@ -50,8 +50,4 @@ public interface IFactAcctBL extends ISingletonService
 	 * @return
 	 */
 	MAccount getAccount(I_Fact_Acct factAcct);
-
-	void updateFactLineFromDimension(I_Fact_Acct fa, IAccountDimension dim);
-
-	IAccountDimension createAccountDimension(I_Fact_Acct fa);
 }

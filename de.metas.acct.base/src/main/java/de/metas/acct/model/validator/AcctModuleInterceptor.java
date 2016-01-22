@@ -33,8 +33,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
-import org.compiere.model.I_GL_Distribution;
-import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
@@ -69,9 +67,6 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.acct.model.validator.C_TaxDeclaration(), client);
 		//
 		engine.addModelValidator(new de.metas.acct.model.validator.M_MatchInv(), client);
-		//
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_Distribution(), client);
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_DistributionLine(), client);
 	};
 
 	@Override
@@ -92,9 +87,5 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(MAccount.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Product_Acct.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Product_Category_Acct.Table_Name);
-
-		// GL Distribution: changes performed by Admin (on client) shall be visible to accounting engine (on server).
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_GL_Distribution.Table_Name);
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_GL_DistributionLine.Table_Name);
 	}
 }

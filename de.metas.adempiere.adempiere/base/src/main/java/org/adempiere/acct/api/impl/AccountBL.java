@@ -45,6 +45,7 @@ import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_SalesRegion;
 import org.compiere.model.I_C_SubAcct;
 import org.compiere.model.I_C_ValidCombination;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.model.X_C_ElementValue;
@@ -326,39 +327,27 @@ public class AccountBL implements IAccountBL
 	}
 
 	@Override
-	public IAccountDimension createAccountDimension(final I_C_ElementValue ev, final int acctSchemaId)
+	public IAccountDimension createAccountDimension(final I_Fact_Acct fa)
 	{
-		return AccountDimension.builder()
-				.setAD_Client_ID(ev.getAD_Client_ID())
-				.setC_ElementValue_ID(ev.getC_ElementValue_ID())
-				.setC_AcctSchema_ID(acctSchemaId)
-				.build();
+		return new AccountDimensionVO(fa.getAD_Client_ID(), fa.getAD_Org_ID(),
+				fa.getC_AcctSchema_ID(),
+				fa.getAccount_ID(), fa.getC_SubAcct_ID(),
+				fa.getM_Product_ID(), fa.getC_BPartner_ID(),
+				fa.getAD_OrgTrx_ID(),
+				fa.getC_LocFrom_ID(), fa.getC_LocTo_ID(),
+				fa.getC_SalesRegion_ID(), fa.getC_Project_ID(), fa.getC_Campaign_ID(), fa.getC_Activity_ID(),
+				fa.getUser1_ID(), fa.getUser2_ID(),
+				fa.getUserElement1_ID(), fa.getUserElement2_ID());
 	}
 
 	@Override
-	public IAccountDimension createAccountDimension(final I_C_ValidCombination account)
+	public IAccountDimension createAccountDimension(final I_C_ElementValue ev, final int acctSchemaId)
 	{
-		return AccountDimension.builder()
-				.setAlias(account.getAlias())
-				.setC_AcctSchema_ID(account.getC_AcctSchema_ID())
-				.setAD_Client_ID(account.getAD_Client_ID())
-				.setAD_Org_ID(account.getAD_Org_ID())
-				.setC_ElementValue_ID(account.getAccount_ID())
-				.setC_SubAcct_ID(account.getC_SubAcct_ID())
-				.setM_Product_ID(account.getM_Product_ID())
-				.setC_BPartner_ID(account.getC_BPartner_ID())
-				.setAD_OrgTrx_ID(account.getAD_OrgTrx_ID())
-				.setC_LocFrom_ID(account.getC_LocFrom_ID())
-				.setC_LocTo_ID(account.getC_LocTo_ID())
-				.setC_SalesRegion_ID(account.getC_SalesRegion_ID())
-				.setC_Project_ID(account.getC_Project_ID())
-				.setC_Campaign_ID(account.getC_Campaign_ID())
-				.setC_Activity_ID(account.getC_Activity_ID())
-				.setUser1_ID(account.getUser1_ID())
-				.setUser2_ID(account.getUser2_ID())
-				.setUserElement1_ID(account.getUserElement1_ID())
-				.setUserElement2_ID(account.getUserElement2_ID())
-				.build();
+		final AccountDimensionVO dim = new AccountDimensionVO();
+		dim.setAD_Client_ID(ev.getAD_Client_ID());
+		dim.setC_ElementValue_ID(ev.getC_ElementValue_ID());
+		dim.setC_AcctSchema_ID(acctSchemaId);
+		return dim;
 	}
 
 	@Override

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/receiptlabel/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.zoom" value="1.3310000000000064"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="374"/>
+	<property name="ireport.y" value="96"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -13,7 +13,7 @@
 	</parameter>
 	<parameter name="M_HU_ID" class="java.math.BigDecimal"/>
 	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["http://xxxxxxx:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["http://mf15adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT
@@ -40,7 +40,6 @@
 	lua_cha.value AS Charge,
 	lua_lab.name AS Label,
 	lua_anb.name AS Anbau,
-	"de.metas.handlingunits".HU_LotNumberDate_ToString(lua_LotNumberDate.valueDate::date) AS LotNumberDate,
 	(
 		SELECT DISTINCT o.documentno
 		FROM	M_HU_Trx_Line hutl
@@ -151,13 +150,6 @@ FROM
 			INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
 		WHERE 	sub_a.value = '1000021' --MHD
 	) lua_mhd ON lu.M_HU_ID = lua_mhd.M_HU_ID
-	LEFT JOIN (
-	SELECT 	sub_lua.M_HU_ID, sub_lua.valueDate
-	FROM 	M_HU_Attribute sub_lua
-		INNER JOIN M_Attribute sub_a ON sub_lua.M_Attribute_ID = sub_a.M_Attribute_ID
-		WHERE sub_a.value = 'HU_LotNumberDate'
-	)lua_LotNumberDate ON lu.M_HU_ID = lua_LotNumberDate.M_HU_ID
-
 WHERE
 	lu.M_HU_ID = $P{M_HU_ID}
 ;]]>
@@ -170,7 +162,6 @@ WHERE
 	<field name="charge" class="java.lang.String"/>
 	<field name="label" class="java.lang.String"/>
 	<field name="anbau" class="java.lang.String"/>
-	<field name="lotnumberdate" class="java.lang.String"/>
 	<field name="orderdocno" class="java.lang.String"/>
 	<field name="p_name" class="java.lang.String"/>
 	<field name="adr" class="java.lang.String"/>
@@ -186,7 +177,7 @@ WHERE
 	<detail>
 		<band height="842" splitType="Stretch">
 			<image>
-				<reportElement uuid="c14f0b46-8276-4112-96b1-7bc016671b27" x="122" y="638" width="354" height="85"/>
+				<reportElement uuid="c14f0b46-8276-4112-96b1-7bc016671b27" x="122" y="618" width="354" height="85"/>
 				<imageExpression><![CDATA[new java.net.URL($P{barcodeURL} + "?Content=" + $F{receiptdocno} +
     "&Format=CODE_128&Width=500&Height=120")]]></imageExpression>
 			</image>
@@ -244,14 +235,14 @@ WHERE
 				<text><![CDATA[GAP]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="f7ad30a5-6af9-45f4-a2fe-5017b9499d89" x="97" y="380" width="194" height="16"/>
+				<reportElement uuid="f7ad30a5-6af9-45f4-a2fe-5017b9499d89" x="97" y="360" width="194" height="16"/>
 				<textElement>
 					<font size="11"/>
 				</textElement>
 				<text><![CDATA[Produktionsart]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="47c61b39-76c7-4909-b8b6-952cc617b387" x="97" y="366" width="194" height="16"/>
+				<reportElement uuid="47c61b39-76c7-4909-b8b6-952cc617b387" x="97" y="346" width="194" height="16"/>
 				<textElement>
 					<font size="11"/>
 				</textElement>
@@ -265,35 +256,35 @@ WHERE
 				<text><![CDATA[Herkunft]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="f5c70bdb-04e9-4153-8b36-011b766981d3" x="97" y="408" width="194" height="16"/>
+				<reportElement uuid="f5c70bdb-04e9-4153-8b36-011b766981d3" x="97" y="388" width="194" height="16"/>
 				<textElement>
 					<font size="11"/>
 				</textElement>
 				<text><![CDATA[Karotten-ID]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="e49e07ca-139c-456b-a1ae-e94859e0255c" x="97" y="450" width="194" height="16"/>
+				<reportElement uuid="e49e07ca-139c-456b-a1ae-e94859e0255c" x="97" y="430" width="194" height="16"/>
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($R{org}!= null ? $R{org} : "") +  "Artikelbezeichnung"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0b495f32-ff01-43c8-9278-a7f7ff3c1a3a" x="97" y="462" width="400" height="58"/>
+				<reportElement uuid="0b495f32-ff01-43c8-9278-a7f7ff3c1a3a" x="97" y="442" width="400" height="58"/>
 				<textElement markup="none">
 					<font size="22" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="f957b524-4bc5-452f-a442-e38d46db48f8" x="291" y="380" width="166" height="16"/>
+				<reportElement uuid="f957b524-4bc5-452f-a442-e38d46db48f8" x="291" y="360" width="166" height="16"/>
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{anbau}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="409e7eb9-f006-4462-9d03-18d8b17c5251" x="291" y="408" width="166" height="16"/>
+				<reportElement uuid="409e7eb9-f006-4462-9d03-18d8b17c5251" x="291" y="388" width="166" height="16"/>
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
@@ -307,7 +298,7 @@ WHERE
 				<textFieldExpression><![CDATA[$F{charge}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="bcaa12fe-c71a-46c7-a6f1-66a846453d59" x="291" y="366" width="166" height="16"/>
+				<reportElement uuid="bcaa12fe-c71a-46c7-a6f1-66a846453d59" x="291" y="346" width="166" height="16"/>
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
@@ -328,14 +319,14 @@ WHERE
 				<textFieldExpression><![CDATA[$F{producergap}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="3838508c-2b02-4f75-b9ad-90b13991ad44" x="97" y="521" width="67" height="17"/>
+				<reportElement uuid="3838508c-2b02-4f75-b9ad-90b13991ad44" x="97" y="501" width="67" height="17"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[Marke:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f" x="129" y="520" width="368" height="23"/>
+				<reportElement uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f" x="129" y="500" width="368" height="23"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -358,14 +349,14 @@ WHERE
 				<textFieldExpression><![CDATA[$F{vendorgap}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="ae3863e5-0b37-4ea0-bf42-4ecdfadfb9b0" x="97" y="566" width="131" height="17"/>
+				<reportElement uuid="ae3863e5-0b37-4ea0-bf42-4ecdfadfb9b0" x="97" y="546" width="131" height="17"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[Eingangsdatum: ]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yy" isBlankWhenNull="true">
-				<reportElement uuid="0e3c222c-2aa1-42b7-9329-591c4561a831" x="228" y="564" width="269" height="27">
+				<reportElement uuid="0e3c222c-2aa1-42b7-9329-591c4561a831" x="228" y="544" width="269" height="27">
 					<printWhenExpression><![CDATA[new Boolean($F{deliverydate}==null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -374,7 +365,7 @@ WHERE
 				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de" x="148" y="590" width="349" height="23"/>
+				<reportElement uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de" x="148" y="570" width="349" height="23"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -385,7 +376,7 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 "Ware Gesperrt"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="1e2c2df3-fd68-48b8-8c08-933650ce905d" x="97" y="592" width="95" height="17"/>
+				<reportElement uuid="1e2c2df3-fd68-48b8-8c08-933650ce905d" x="97" y="572" width="95" height="17"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
@@ -401,106 +392,94 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 				<textFieldExpression><![CDATA[$F{vendoraddress} + "\n"]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="c42e5a0a-24e1-4445-87b0-19296bcd8107" x="87" y="637" width="421" height="1"/>
+				<reportElement uuid="c42e5a0a-24e1-4445-87b0-19296bcd8107" x="87" y="617" width="421" height="1"/>
 				<graphicElement>
 					<pen lineWidth="2.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<textField>
-				<reportElement uuid="f308e4fd-b63e-4042-bb31-ea87b83d2407" x="243" y="722" width="106" height="14"/>
+				<reportElement uuid="f308e4fd-b63e-4042-bb31-ea87b83d2407" x="243" y="702" width="106" height="14"/>
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{receiptdocno}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="1e2c2df3-fd68-48b8-8c08-933650ce905d" x="97" y="615" width="179" height="17"/>
+				<reportElement uuid="1e2c2df3-fd68-48b8-8c08-933650ce905d" x="97" y="595" width="179" height="17"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[Qualitätsnotiz:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de" x="97" y="612" width="400" height="23"/>
+				<reportElement uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de" x="97" y="592" width="400" height="23"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{notiz}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="3838508c-2b02-4f75-b9ad-90b13991ad44" x="97" y="543" width="102" height="17"/>
+				<reportElement uuid="3838508c-2b02-4f75-b9ad-90b13991ad44" x="97" y="523" width="102" height="17"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[Packvorschrift:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f" x="129" y="542" width="368" height="23"/>
+				<reportElement uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f" x="129" y="522" width="368" height="23"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{packinginstruction}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="f957b524-4bc5-452f-a442-e38d46db48f8" x="291" y="394" width="166" height="16"/>
+				<reportElement uuid="f957b524-4bc5-452f-a442-e38d46db48f8" x="291" y="374" width="166" height="16"/>
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{zusatz}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="f7ad30a5-6af9-45f4-a2fe-5017b9499d89" x="97" y="394" width="194" height="16"/>
+				<reportElement uuid="f7ad30a5-6af9-45f4-a2fe-5017b9499d89" x="97" y="374" width="194" height="16"/>
 				<textElement>
 					<font size="11"/>
 				</textElement>
 				<text><![CDATA[Zusatzstoffe für Zitrusfrüchte]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="409e7eb9-f006-4462-9d03-18d8b17c5251" x="291" y="422" width="166" height="16"/>
+				<reportElement uuid="409e7eb9-f006-4462-9d03-18d8b17c5251" x="291" y="402" width="166" height="16"/>
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{orderdocno}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="f5c70bdb-04e9-4153-8b36-011b766981d3" x="97" y="422" width="194" height="16"/>
+				<reportElement uuid="f5c70bdb-04e9-4153-8b36-011b766981d3" x="97" y="402" width="194" height="16"/>
 				<textElement>
 					<font size="11"/>
 				</textElement>
 				<text><![CDATA[Produktanlieferung Beleg-Nr.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="f5c70bdb-04e9-4153-8b36-011b766981d3" x="97" y="436" width="194" height="16"/>
+				<reportElement uuid="f5c70bdb-04e9-4153-8b36-011b766981d3" x="97" y="416" width="194" height="16"/>
 				<textElement>
 					<font size="11"/>
 				</textElement>
 				<text><![CDATA[Mindesthaltbarkeitsdatum]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="409e7eb9-f006-4462-9d03-18d8b17c5251" x="291" y="436" width="166" height="16"/>
+				<reportElement uuid="409e7eb9-f006-4462-9d03-18d8b17c5251" x="291" y="416" width="166" height="16"/>
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{mhd}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yy" isBlankWhenNull="true">
-				<reportElement uuid="027ed372-3ff8-480d-8773-e73d83259037" x="228" y="564" width="269" height="27"/>
+				<reportElement uuid="027ed372-3ff8-480d-8773-e73d83259037" x="228" y="544" width="269" height="27"/>
 				<textElement textAlignment="Right">
 					<font size="20" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{deliverydate}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement uuid="1e2c2df3-fd68-48b8-8c08-933650ce905d" x="97" y="349" width="194" height="16"/>
-				<textElement>
-					<font size="11"/>
-				</textElement>
-				<text><![CDATA[Tageslot]]></text>
-			</staticText>
-			<textField>
-				<reportElement uuid="b5844af3-4c31-4e5e-b7e7-620712a40038" x="291" y="349" width="166" height="16"/>
-				<textElement/>
-				<textFieldExpression><![CDATA[$F{lotnumberdate}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

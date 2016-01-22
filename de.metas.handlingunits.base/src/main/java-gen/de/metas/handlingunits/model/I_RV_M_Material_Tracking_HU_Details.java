@@ -352,60 +352,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Zugeteilt zu Prod.-Auftrag.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPP_Order_Issue_ID (int PP_Order_Issue_ID);
-
-	/**
-	 * Get Zugeteilt zu Prod.-Auftrag.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPP_Order_Issue_ID();
-
-	public org.eevolution.model.I_PP_Order getPP_Order_Issue();
-
-	public void setPP_Order_Issue(org.eevolution.model.I_PP_Order PP_Order_Issue);
-
-    /** Column definition for PP_Order_Issue_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_Issue_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.eevolution.model.I_PP_Order>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Issue_ID", org.eevolution.model.I_PP_Order.class);
-    /** Column name PP_Order_Issue_ID */
-    public static final String COLUMNNAME_PP_Order_Issue_ID = "PP_Order_Issue_ID";
-
-	/**
-	 * Set Empf. aus Prod.-Auftrag.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPP_Order_Receipt_ID (int PP_Order_Receipt_ID);
-
-	/**
-	 * Get Empf. aus Prod.-Auftrag.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPP_Order_Receipt_ID();
-
-	public org.eevolution.model.I_PP_Order getPP_Order_Receipt();
-
-	public void setPP_Order_Receipt(org.eevolution.model.I_PP_Order PP_Order_Receipt);
-
-    /** Column definition for PP_Order_Receipt_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_Receipt_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.eevolution.model.I_PP_Order>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Receipt_ID", org.eevolution.model.I_PP_Order.class);
-    /** Column name PP_Order_Receipt_ID */
-    public static final String COLUMNNAME_PP_Order_Receipt_ID = "PP_Order_Receipt_ID";
-
-	/**
 	 * Set Menge.
 	 * Menge
 	 *
@@ -429,29 +375,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
     public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "Qty", null);
     /** Column name Qty */
     public static final String COLUMNNAME_Qty = "Qty";
-
-	/**
-	 * Set RV_M_Material_Tracking_HU_Details_ID.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setRV_M_Material_Tracking_HU_Details_ID (int RV_M_Material_Tracking_HU_Details_ID);
-
-	/**
-	 * Get RV_M_Material_Tracking_HU_Details_ID.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getRV_M_Material_Tracking_HU_Details_ID();
-
-    /** Column definition for RV_M_Material_Tracking_HU_Details_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_RV_M_Material_Tracking_HU_Details_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "RV_M_Material_Tracking_HU_Details_ID", null);
-    /** Column name RV_M_Material_Tracking_HU_Details_ID */
-    public static final String COLUMNNAME_RV_M_Material_Tracking_HU_Details_ID = "RV_M_Material_Tracking_HU_Details_ID";
 
 	/**
 	 * Get Aktualisiert.

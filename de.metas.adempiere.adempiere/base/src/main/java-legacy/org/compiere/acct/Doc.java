@@ -550,6 +550,8 @@ public abstract class Doc
 		// Create Fact per AcctSchema
 		m_fact = new ArrayList<Fact>();
 		// for all Accounting Schema
+		getPO().setDoc(this);
+		//
 		{
 			for (final MAcctSchema acctSchema : m_ass)
 			{
@@ -711,17 +713,13 @@ public abstract class Doc
 			}
 
 			// distribute
-			try
+			if (!fact.distribute())
 			{
-				fact.distribute();
-			}
-			catch (Exception e)
-			{
-				throw newPostingException(e)
+				throw newPostingException()
 						.setC_AcctSchema(acctSchema)
 						.setPostingStatus(PostingStatus.Error)
 						.setFact(fact)
-						.setDetailMessage("Fact distribution error: " + e.getLocalizedMessage());
+						.setDetailMessage("Fact distribution error");
 			}
 
 			// Balance source amounts

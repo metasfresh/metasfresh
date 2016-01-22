@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.handlingunits.model;
 
@@ -32,7 +16,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1282883843L;
+	private static final long serialVersionUID = 1454813007L;
 
     /** Standard Constructor */
     public X_M_HU_Trx_Attribute (Properties ctx, int M_HU_Trx_Attribute_ID, String trxName)
@@ -237,8 +221,8 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 		set_ValueFromPO(COLUMNNAME_M_HU_Trx_Hdr_ID, de.metas.handlingunits.model.I_M_HU_Trx_Hdr.class, M_HU_Trx_Hdr);
 	}
 
-	/** Set HU-Transaktionskopf.
-		@param M_HU_Trx_Hdr_ID HU-Transaktionskopf	  */
+	/** Set Handling Units Transaction Header.
+		@param M_HU_Trx_Hdr_ID Handling Units Transaction Header	  */
 	@Override
 	public void setM_HU_Trx_Hdr_ID (int M_HU_Trx_Hdr_ID)
 	{
@@ -248,8 +232,8 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 			set_ValueNoCheck (COLUMNNAME_M_HU_Trx_Hdr_ID, Integer.valueOf(M_HU_Trx_Hdr_ID));
 	}
 
-	/** Get HU-Transaktionskopf.
-		@return HU-Transaktionskopf	  */
+	/** Get Handling Units Transaction Header.
+		@return Handling Units Transaction Header	  */
 	@Override
 	public int getM_HU_Trx_Hdr_ID () 
 	{
@@ -271,8 +255,8 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 		set_ValueFromPO(COLUMNNAME_M_HU_Trx_Line_ID, de.metas.handlingunits.model.I_M_HU_Trx_Line.class, M_HU_Trx_Line);
 	}
 
-	/** Set HU-Transaktionszeile.
-		@param M_HU_Trx_Line_ID HU-Transaktionszeile	  */
+	/** Set Handling Units Transaction Line.
+		@param M_HU_Trx_Line_ID Handling Units Transaction Line	  */
 	@Override
 	public void setM_HU_Trx_Line_ID (int M_HU_Trx_Line_ID)
 	{
@@ -282,8 +266,8 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 			set_ValueNoCheck (COLUMNNAME_M_HU_Trx_Line_ID, Integer.valueOf(M_HU_Trx_Line_ID));
 	}
 
-	/** Get HU-Transaktionszeile.
-		@return HU-Transaktionszeile	  */
+	/** Get Handling Units Transaction Line.
+		@return Handling Units Transaction Line	  */
 	@Override
 	public int getM_HU_Trx_Line_ID () 
 	{

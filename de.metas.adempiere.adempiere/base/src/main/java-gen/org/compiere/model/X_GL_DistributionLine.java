@@ -21,18 +21,18 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 /** Generated Model for GL_DistributionLine
  *  @author Adempiere (generated) 
- */
-@SuppressWarnings("javadoc")
-public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL_DistributionLine, org.compiere.model.I_Persistent 
+ *  @version Release 3.5.4a - $Id$ */
+public class X_GL_DistributionLine extends PO implements I_GL_DistributionLine, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2055862632L;
+	private static final long serialVersionUID = 20090915L;
 
     /** Standard Constructor */
     public X_GL_DistributionLine (Properties ctx, int GL_DistributionLine_ID, String trxName)
@@ -43,7 +43,7 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			setGL_Distribution_ID (0);
 			setGL_DistributionLine_ID (0);
 			setLine (0);
-// @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM GL_DistributionLine WHERE GL_Distribution_ID=@GL_Distribution_ID@
+// @SQL=SELECT NVL(MAX(Line),0)+10 AS DefaultValue FROM GL_DistributionLine WHERE GL_Distribution_ID=@GL_Distribution_ID@
 			setOverwriteAcct (false);
 			setOverwriteActivity (false);
 			setOverwriteBPartner (false);
@@ -67,20 +67,32 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
       super (ctx, rs, trxName);
     }
 
+    /** AccessLevel
+      * @return 2 - Client 
+      */
+    protected int get_AccessLevel()
+    {
+      return accessLevel.intValue();
+    }
 
     /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
+    protected POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
       return poi;
     }
 
-	/** Set Konto.
+    public String toString()
+    {
+      StringBuffer sb = new StringBuffer ("X_GL_DistributionLine[")
+        .append(get_ID()).append("]");
+      return sb.toString();
+    }
+
+	/** Set Account.
 		@param Account_ID 
 		Account used
 	  */
-	@Override
 	public void setAccount_ID (int Account_ID)
 	{
 		if (Account_ID < 1) 
@@ -89,10 +101,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_Account_ID, Integer.valueOf(Account_ID));
 	}
 
-	/** Get Konto.
+	/** Get Account.
 		@return Account used
 	  */
-	@Override
 	public int getAccount_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Account_ID);
@@ -101,23 +112,10 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class);
-	}
-
-	@Override
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class, AD_OrgTrx);
-	}
-
-	/** Set Buchende Organisation.
+	/** Set Trx Organization.
 		@param AD_OrgTrx_ID 
 		Performing or initiating organization
 	  */
-	@Override
 	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
 	{
 		if (AD_OrgTrx_ID < 1) 
@@ -126,10 +124,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
 	}
 
-	/** Get Buchende Organisation.
+	/** Get Trx Organization.
 		@return Performing or initiating organization
 	  */
-	@Override
 	public int getAD_OrgTrx_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
@@ -138,23 +135,15 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
-	}
+	public I_C_Activity getC_Activity() throws RuntimeException
+    {
+		return (I_C_Activity)MTable.get(getCtx(), I_C_Activity.Table_Name)
+			.getPO(getC_Activity_ID(), get_TrxName());	}
 
-	@Override
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
-	}
-
-	/** Set Kostenstelle.
+	/** Set Activity.
 		@param C_Activity_ID 
-		Kostenstelle
+		Business Activity
 	  */
-	@Override
 	public void setC_Activity_ID (int C_Activity_ID)
 	{
 		if (C_Activity_ID < 1) 
@@ -163,10 +152,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
 	}
 
-	/** Get Kostenstelle.
-		@return Kostenstelle
+	/** Get Activity.
+		@return Business Activity
 	  */
-	@Override
 	public int getC_Activity_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
@@ -175,23 +163,15 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
+	public I_C_BPartner getC_BPartner() throws RuntimeException
+    {
+		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
+			.getPO(getC_BPartner_ID(), get_TrxName());	}
 
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
-	/** Set Geschäftspartner.
+	/** Set Business Partner .
 		@param C_BPartner_ID 
 		Identifies a Business Partner
 	  */
-	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -200,10 +180,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
-	/** Get Geschäftspartner.
+	/** Get Business Partner .
 		@return Identifies a Business Partner
 	  */
-	@Override
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
@@ -212,23 +191,15 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
-	}
+	public I_C_Campaign getC_Campaign() throws RuntimeException
+    {
+		return (I_C_Campaign)MTable.get(getCtx(), I_C_Campaign.Table_Name)
+			.getPO(getC_Campaign_ID(), get_TrxName());	}
 
-	@Override
-	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
-	}
-
-	/** Set Werbemassnahme.
+	/** Set Campaign.
 		@param C_Campaign_ID 
 		Marketing Campaign
 	  */
-	@Override
 	public void setC_Campaign_ID (int C_Campaign_ID)
 	{
 		if (C_Campaign_ID < 1) 
@@ -237,10 +208,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
 	}
 
-	/** Get Werbemassnahme.
+	/** Get Campaign.
 		@return Marketing Campaign
 	  */
-	@Override
 	public int getC_Campaign_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_ID);
@@ -249,23 +219,15 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Location getC_LocFrom() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_LocFrom_ID, org.compiere.model.I_C_Location.class);
-	}
+	public I_C_Location getC_LocFrom() throws RuntimeException
+    {
+		return (I_C_Location)MTable.get(getCtx(), I_C_Location.Table_Name)
+			.getPO(getC_LocFrom_ID(), get_TrxName());	}
 
-	@Override
-	public void setC_LocFrom(org.compiere.model.I_C_Location C_LocFrom)
-	{
-		set_ValueFromPO(COLUMNNAME_C_LocFrom_ID, org.compiere.model.I_C_Location.class, C_LocFrom);
-	}
-
-	/** Set Von Ort.
+	/** Set Location From.
 		@param C_LocFrom_ID 
 		Location that inventory was moved from
 	  */
-	@Override
 	public void setC_LocFrom_ID (int C_LocFrom_ID)
 	{
 		if (C_LocFrom_ID < 1) 
@@ -274,10 +236,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_C_LocFrom_ID, Integer.valueOf(C_LocFrom_ID));
 	}
 
-	/** Get Von Ort.
+	/** Get Location From.
 		@return Location that inventory was moved from
 	  */
-	@Override
 	public int getC_LocFrom_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_LocFrom_ID);
@@ -286,23 +247,15 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Location getC_LocTo() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_LocTo_ID, org.compiere.model.I_C_Location.class);
-	}
+	public I_C_Location getC_LocTo() throws RuntimeException
+    {
+		return (I_C_Location)MTable.get(getCtx(), I_C_Location.Table_Name)
+			.getPO(getC_LocTo_ID(), get_TrxName());	}
 
-	@Override
-	public void setC_LocTo(org.compiere.model.I_C_Location C_LocTo)
-	{
-		set_ValueFromPO(COLUMNNAME_C_LocTo_ID, org.compiere.model.I_C_Location.class, C_LocTo);
-	}
-
-	/** Set Nach Ort.
+	/** Set Location To.
 		@param C_LocTo_ID 
 		Location that inventory was moved to
 	  */
-	@Override
 	public void setC_LocTo_ID (int C_LocTo_ID)
 	{
 		if (C_LocTo_ID < 1) 
@@ -311,10 +264,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_C_LocTo_ID, Integer.valueOf(C_LocTo_ID));
 	}
 
-	/** Get Nach Ort.
+	/** Get Location To.
 		@return Location that inventory was moved to
 	  */
-	@Override
 	public int getC_LocTo_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_LocTo_ID);
@@ -323,23 +275,15 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
-	}
+	public I_C_Project getC_Project() throws RuntimeException
+    {
+		return (I_C_Project)MTable.get(getCtx(), I_C_Project.Table_Name)
+			.getPO(getC_Project_ID(), get_TrxName());	}
 
-	@Override
-	public void setC_Project(org.compiere.model.I_C_Project C_Project)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class, C_Project);
-	}
-
-	/** Set Projekt.
+	/** Set Project.
 		@param C_Project_ID 
 		Financial Project
 	  */
-	@Override
 	public void setC_Project_ID (int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
@@ -348,10 +292,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
 	}
 
-	/** Get Projekt.
+	/** Get Project.
 		@return Financial Project
 	  */
-	@Override
 	public int getC_Project_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
@@ -360,23 +303,15 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_SalesRegion getC_SalesRegion() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_SalesRegion_ID, org.compiere.model.I_C_SalesRegion.class);
-	}
+	public I_C_SalesRegion getC_SalesRegion() throws RuntimeException
+    {
+		return (I_C_SalesRegion)MTable.get(getCtx(), I_C_SalesRegion.Table_Name)
+			.getPO(getC_SalesRegion_ID(), get_TrxName());	}
 
-	@Override
-	public void setC_SalesRegion(org.compiere.model.I_C_SalesRegion C_SalesRegion)
-	{
-		set_ValueFromPO(COLUMNNAME_C_SalesRegion_ID, org.compiere.model.I_C_SalesRegion.class, C_SalesRegion);
-	}
-
-	/** Set Vertriebsgebiet.
+	/** Set Sales Region.
 		@param C_SalesRegion_ID 
 		Sales coverage region
 	  */
-	@Override
 	public void setC_SalesRegion_ID (int C_SalesRegion_ID)
 	{
 		if (C_SalesRegion_ID < 1) 
@@ -385,10 +320,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_C_SalesRegion_ID, Integer.valueOf(C_SalesRegion_ID));
 	}
 
-	/** Get Vertriebsgebiet.
+	/** Get Sales Region.
 		@return Sales coverage region
 	  */
-	@Override
 	public int getC_SalesRegion_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_SalesRegion_ID);
@@ -397,39 +331,32 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
-	@Override
-	public void setDescription (java.lang.String Description)
+	/** Set Description.
+		@param Description 
+		Optional short description of the record
+	  */
+	public void setDescription (String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
-	@Override
-	public java.lang.String getDescription () 
+	/** Get Description.
+		@return Optional short description of the record
+	  */
+	public String getDescription () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return (String)get_Value(COLUMNNAME_Description);
 	}
 
-	@Override
-	public org.compiere.model.I_GL_Distribution getGL_Distribution() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_GL_Distribution_ID, org.compiere.model.I_GL_Distribution.class);
-	}
+	public I_GL_Distribution getGL_Distribution() throws RuntimeException
+    {
+		return (I_GL_Distribution)MTable.get(getCtx(), I_GL_Distribution.Table_Name)
+			.getPO(getGL_Distribution_ID(), get_TrxName());	}
 
-	@Override
-	public void setGL_Distribution(org.compiere.model.I_GL_Distribution GL_Distribution)
-	{
-		set_ValueFromPO(COLUMNNAME_GL_Distribution_ID, org.compiere.model.I_GL_Distribution.class, GL_Distribution);
-	}
-
-	/** Set Hauptbuch - Aufteilung.
+	/** Set GL Distribution.
 		@param GL_Distribution_ID 
 		General Ledger Distribution
 	  */
-	@Override
 	public void setGL_Distribution_ID (int GL_Distribution_ID)
 	{
 		if (GL_Distribution_ID < 1) 
@@ -438,10 +365,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_ValueNoCheck (COLUMNNAME_GL_Distribution_ID, Integer.valueOf(GL_Distribution_ID));
 	}
 
-	/** Get Hauptbuch - Aufteilung.
+	/** Get GL Distribution.
 		@return General Ledger Distribution
 	  */
-	@Override
 	public int getGL_Distribution_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GL_Distribution_ID);
@@ -454,7 +380,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param GL_DistributionLine_ID 
 		General Ledger Distribution Line
 	  */
-	@Override
 	public void setGL_DistributionLine_ID (int GL_DistributionLine_ID)
 	{
 		if (GL_DistributionLine_ID < 1) 
@@ -466,7 +391,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get GL Distribution Line.
 		@return General Ledger Distribution Line
 	  */
-	@Override
 	public int getGL_DistributionLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GL_DistributionLine_ID);
@@ -475,20 +399,18 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	/** Set Zeile Nr..
+	/** Set Line No.
 		@param Line 
 		Unique line for this document
 	  */
-	@Override
 	public void setLine (int Line)
 	{
 		set_Value (COLUMNNAME_Line, Integer.valueOf(Line));
 	}
 
-	/** Get Zeile Nr..
+	/** Get Line No.
 		@return Unique line for this document
 	  */
-	@Override
 	public int getLine () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Line);
@@ -497,23 +419,23 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
+    /** Get Record ID/ColumnName
+        @return ID/ColumnName pair
+      */
+    public KeyNamePair getKeyNamePair() 
+    {
+        return new KeyNamePair(get_ID(), String.valueOf(getLine()));
+    }
 
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
+	public I_M_Product getM_Product() throws RuntimeException
+    {
+		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
+			.getPO(getM_Product_ID(), get_TrxName());	}
 
-	/** Set Produkt.
+	/** Set Product.
 		@param M_Product_ID 
-		Produkt, Leistung, Artikel
+		Product, Service, Item
 	  */
-	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -522,10 +444,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
+	/** Get Product.
+		@return Product, Service, Item
 	  */
-	@Override
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
@@ -534,23 +455,10 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_Org getOrg() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Org_ID, org.compiere.model.I_AD_Org.class);
-	}
-
-	@Override
-	public void setOrg(org.compiere.model.I_AD_Org Org)
-	{
-		set_ValueFromPO(COLUMNNAME_Org_ID, org.compiere.model.I_AD_Org.class, Org);
-	}
-
-	/** Set Organisation.
+	/** Set Organization.
 		@param Org_ID 
 		Organizational entity within client
 	  */
-	@Override
 	public void setOrg_ID (int Org_ID)
 	{
 		if (Org_ID < 1) 
@@ -559,10 +467,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_Org_ID, Integer.valueOf(Org_ID));
 	}
 
-	/** Get Organisation.
+	/** Get Organization.
 		@return Organizational entity within client
 	  */
-	@Override
 	public int getOrg_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Org_ID);
@@ -575,7 +482,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteAcct 
 		Overwrite the account segment Account with the value specified
 	  */
-	@Override
 	public void setOverwriteAcct (boolean OverwriteAcct)
 	{
 		set_Value (COLUMNNAME_OverwriteAcct, Boolean.valueOf(OverwriteAcct));
@@ -584,7 +490,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite Account.
 		@return Overwrite the account segment Account with the value specified
 	  */
-	@Override
 	public boolean isOverwriteAcct () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteAcct);
@@ -601,7 +506,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteActivity 
 		Overwrite the account segment Activity with the value specified
 	  */
-	@Override
 	public void setOverwriteActivity (boolean OverwriteActivity)
 	{
 		set_Value (COLUMNNAME_OverwriteActivity, Boolean.valueOf(OverwriteActivity));
@@ -610,7 +514,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite Activity.
 		@return Overwrite the account segment Activity with the value specified
 	  */
-	@Override
 	public boolean isOverwriteActivity () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteActivity);
@@ -627,7 +530,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteBPartner 
 		Overwrite the account segment Business Partner with the value specified
 	  */
-	@Override
 	public void setOverwriteBPartner (boolean OverwriteBPartner)
 	{
 		set_Value (COLUMNNAME_OverwriteBPartner, Boolean.valueOf(OverwriteBPartner));
@@ -636,7 +538,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite Bus.Partner.
 		@return Overwrite the account segment Business Partner with the value specified
 	  */
-	@Override
 	public boolean isOverwriteBPartner () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteBPartner);
@@ -653,7 +554,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteCampaign 
 		Overwrite the account segment Campaign with the value specified
 	  */
-	@Override
 	public void setOverwriteCampaign (boolean OverwriteCampaign)
 	{
 		set_Value (COLUMNNAME_OverwriteCampaign, Boolean.valueOf(OverwriteCampaign));
@@ -662,7 +562,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite Campaign.
 		@return Overwrite the account segment Campaign with the value specified
 	  */
-	@Override
 	public boolean isOverwriteCampaign () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteCampaign);
@@ -679,7 +578,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteLocFrom 
 		Overwrite the account segment Location From with the value specified
 	  */
-	@Override
 	public void setOverwriteLocFrom (boolean OverwriteLocFrom)
 	{
 		set_Value (COLUMNNAME_OverwriteLocFrom, Boolean.valueOf(OverwriteLocFrom));
@@ -688,7 +586,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite Location From.
 		@return Overwrite the account segment Location From with the value specified
 	  */
-	@Override
 	public boolean isOverwriteLocFrom () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteLocFrom);
@@ -705,7 +602,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteLocTo 
 		Overwrite the account segment Location From with the value specified
 	  */
-	@Override
 	public void setOverwriteLocTo (boolean OverwriteLocTo)
 	{
 		set_Value (COLUMNNAME_OverwriteLocTo, Boolean.valueOf(OverwriteLocTo));
@@ -714,7 +610,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite Location To.
 		@return Overwrite the account segment Location From with the value specified
 	  */
-	@Override
 	public boolean isOverwriteLocTo () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteLocTo);
@@ -731,7 +626,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteOrg 
 		Overwrite the account segment Organization with the value specified
 	  */
-	@Override
 	public void setOverwriteOrg (boolean OverwriteOrg)
 	{
 		set_Value (COLUMNNAME_OverwriteOrg, Boolean.valueOf(OverwriteOrg));
@@ -740,7 +634,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite Organization.
 		@return Overwrite the account segment Organization with the value specified
 	  */
-	@Override
 	public boolean isOverwriteOrg () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteOrg);
@@ -757,7 +650,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteOrgTrx 
 		Overwrite the account segment Transaction Organization with the value specified
 	  */
-	@Override
 	public void setOverwriteOrgTrx (boolean OverwriteOrgTrx)
 	{
 		set_Value (COLUMNNAME_OverwriteOrgTrx, Boolean.valueOf(OverwriteOrgTrx));
@@ -766,7 +658,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite Trx Organuzation.
 		@return Overwrite the account segment Transaction Organization with the value specified
 	  */
-	@Override
 	public boolean isOverwriteOrgTrx () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteOrgTrx);
@@ -783,7 +674,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteProduct 
 		Overwrite the account segment Product with the value specified
 	  */
-	@Override
 	public void setOverwriteProduct (boolean OverwriteProduct)
 	{
 		set_Value (COLUMNNAME_OverwriteProduct, Boolean.valueOf(OverwriteProduct));
@@ -792,7 +682,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite Product.
 		@return Overwrite the account segment Product with the value specified
 	  */
-	@Override
 	public boolean isOverwriteProduct () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteProduct);
@@ -809,7 +698,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteProject 
 		Overwrite the account segment Project with the value specified
 	  */
-	@Override
 	public void setOverwriteProject (boolean OverwriteProject)
 	{
 		set_Value (COLUMNNAME_OverwriteProject, Boolean.valueOf(OverwriteProject));
@@ -818,7 +706,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite Project.
 		@return Overwrite the account segment Project with the value specified
 	  */
-	@Override
 	public boolean isOverwriteProject () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteProject);
@@ -835,7 +722,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteSalesRegion 
 		Overwrite the account segment Sales Region with the value specified
 	  */
-	@Override
 	public void setOverwriteSalesRegion (boolean OverwriteSalesRegion)
 	{
 		set_Value (COLUMNNAME_OverwriteSalesRegion, Boolean.valueOf(OverwriteSalesRegion));
@@ -844,7 +730,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite Sales Region.
 		@return Overwrite the account segment Sales Region with the value specified
 	  */
-	@Override
 	public boolean isOverwriteSalesRegion () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteSalesRegion);
@@ -861,7 +746,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteUser1 
 		Overwrite the account segment User 1 with the value specified
 	  */
-	@Override
 	public void setOverwriteUser1 (boolean OverwriteUser1)
 	{
 		set_Value (COLUMNNAME_OverwriteUser1, Boolean.valueOf(OverwriteUser1));
@@ -870,7 +754,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite User1.
 		@return Overwrite the account segment User 1 with the value specified
 	  */
-	@Override
 	public boolean isOverwriteUser1 () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteUser1);
@@ -887,7 +770,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param OverwriteUser2 
 		Overwrite the account segment User 2 with the value specified
 	  */
-	@Override
 	public void setOverwriteUser2 (boolean OverwriteUser2)
 	{
 		set_Value (COLUMNNAME_OverwriteUser2, Boolean.valueOf(OverwriteUser2));
@@ -896,7 +778,6 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Overwrite User2.
 		@return Overwrite the account segment User 2 with the value specified
 	  */
-	@Override
 	public boolean isOverwriteUser2 () 
 	{
 		Object oo = get_Value(COLUMNNAME_OverwriteUser2);
@@ -913,8 +794,7 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		@param Percent 
 		Percentage
 	  */
-	@Override
-	public void setPercent (java.math.BigDecimal Percent)
+	public void setPercent (BigDecimal Percent)
 	{
 		set_Value (COLUMNNAME_Percent, Percent);
 	}
@@ -922,8 +802,7 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 	/** Get Percent.
 		@return Percentage
 	  */
-	@Override
-	public java.math.BigDecimal getPercent () 
+	public BigDecimal getPercent () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Percent);
 		if (bd == null)
@@ -931,23 +810,15 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return bd;
 	}
 
-	@Override
-	public org.compiere.model.I_C_ElementValue getUser1() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
-	}
+	public I_C_ElementValue getUser1() throws RuntimeException
+    {
+		return (I_C_ElementValue)MTable.get(getCtx(), I_C_ElementValue.Table_Name)
+			.getPO(getUser1_ID(), get_TrxName());	}
 
-	@Override
-	public void setUser1(org.compiere.model.I_C_ElementValue User1)
-	{
-		set_ValueFromPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class, User1);
-	}
-
-	/** Set Nutzer 1.
+	/** Set User List 1.
 		@param User1_ID 
 		User defined list element #1
 	  */
-	@Override
 	public void setUser1_ID (int User1_ID)
 	{
 		if (User1_ID < 1) 
@@ -956,10 +827,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_User1_ID, Integer.valueOf(User1_ID));
 	}
 
-	/** Get Nutzer 1.
+	/** Get User List 1.
 		@return User defined list element #1
 	  */
-	@Override
 	public int getUser1_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_User1_ID);
@@ -968,23 +838,15 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_ElementValue getUser2() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
-	}
+	public I_C_ElementValue getUser2() throws RuntimeException
+    {
+		return (I_C_ElementValue)MTable.get(getCtx(), I_C_ElementValue.Table_Name)
+			.getPO(getUser2_ID(), get_TrxName());	}
 
-	@Override
-	public void setUser2(org.compiere.model.I_C_ElementValue User2)
-	{
-		set_ValueFromPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class, User2);
-	}
-
-	/** Set Nutzer 2.
+	/** Set User List 2.
 		@param User2_ID 
 		User defined list element #2
 	  */
-	@Override
 	public void setUser2_ID (int User2_ID)
 	{
 		if (User2_ID < 1) 
@@ -993,10 +855,9 @@ public class X_GL_DistributionLine extends org.compiere.model.PO implements I_GL
 			set_Value (COLUMNNAME_User2_ID, Integer.valueOf(User2_ID));
 	}
 
-	/** Get Nutzer 2.
+	/** Get User List 2.
 		@return User defined list element #2
 	  */
-	@Override
 	public int getUser2_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_User2_ID);

@@ -58,7 +58,6 @@ public class DunningRunCreate extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
-	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -90,7 +89,7 @@ public class DunningRunCreate extends SvrProcess
 		
 		// metas: begin: us315
 		if (p_SalesRep_ID <= 0)
-			p_SalesRep_ID = Env.getContextAsInt(getCtx(), Env.CTXNAME_SalesRep_ID);
+			p_SalesRep_ID = Env.getContextAsInt(getCtx(), "#SalesRep_ID");
 		// metas: end: us315
 	}	//	prepare
 	
@@ -99,7 +98,6 @@ public class DunningRunCreate extends SvrProcess
 	 *	@return message
 	 *	@throws Exception
 	 */
-	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("C_DunningRun_ID=" + p_C_DunningRun_ID

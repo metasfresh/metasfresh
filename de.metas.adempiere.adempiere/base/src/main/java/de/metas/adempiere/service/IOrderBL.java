@@ -169,11 +169,6 @@ public interface IOrderBL extends ISingletonService
 	 */
 	String evaluateOrderDeliveryViaRule(I_C_Order order);
 
-	/**
-	 * Set Business Partner Defaults & Details. SOTrx should be set.
-	 *
-	 * @param bp business partner
-	 */
 	void setBPartner(I_C_Order order, I_C_BPartner bp);
 
 	void setOrder(I_C_OrderLine orderLine, I_C_Order order, String trxName);

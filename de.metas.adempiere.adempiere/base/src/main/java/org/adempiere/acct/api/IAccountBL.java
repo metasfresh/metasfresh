@@ -29,6 +29,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
+import org.compiere.model.I_Fact_Acct;
 
 /**
  * Business logic used to manipulate accounts (i.e. {@link I_C_ValidCombination}s)
@@ -58,9 +59,9 @@ public interface IAccountBL extends ISingletonService
 	 */
 	void validate(I_C_ValidCombination account);
 
-	IAccountDimension createAccountDimension(I_C_ElementValue ev, int acctSchemaId);
+	IAccountDimension createAccountDimension(I_Fact_Acct fa);
 
-	IAccountDimension createAccountDimension(I_C_ValidCombination account);
+	IAccountDimension createAccountDimension(I_C_ElementValue ev, int acctSchemaId);
 
 	/**
 	 * Calculates Balance for AmtDr and AmtCr based on account settings (AccountSign and AccountType)

@@ -9,7 +9,7 @@
 	String productURL = org.compiere.Adempiere.getURL();
 	if(productURL == null || productURL.isEmpty())
 	{
-		productURL = "http://www.metasfresh.com";
+		productURL = "http://www.metas-fresh.com";
 	}
 	
 	boolean isZkWebUIServerEnabled = org.compiere.Adempiere.isZkWebUIServerEnabled();	
@@ -64,8 +64,8 @@
 									</h2>
 								</td>
 
-								<td bgcolor="#fbf8f1"><a href="/binaries/metasfresh-client.zip"><img src="zip.gif" alt="<%=productName%> Client zip" align="right" border="0" height="32" width="32"></a>Runs under windows and Linux.<br>Instructions: Install a Java
-									Runtime Environment (Java 7 or later); Download and extract the desktop client <a href="/binaries/metasfresh-client.zip" title="Download <%=productName%> Client">zip</a> file on your computer.</td>
+								<td bgcolor="#fbf8f1"><a href="/binaries/metas-fresh-client.zip"><img src="zip.gif" alt="<%=productName%> Client zip" align="right" border="0" height="32" width="32"></a>Runs under windows and Linux.<br>Instructions: Install a Java
+									Runtime Environment (Java 7 or later); Download and extract the desktop client <a href="/binaries/metas-fresh-client.zip" title="Download <%=productName%> Client">zip</a> file on your computer.</td>
 							</tr>
 							<!--
 short story: commented out as of now because we can't incorporate fonts into an uber-jar
@@ -76,11 +76,11 @@ short story: commented out as of now because we can't incorporate fonts into an 
 									</h2>
 								</td>
 
-								<td bgcolor="#fbf8f1"><a href="/binaries/metasfresh-client.exe"><img
-										src="zip.gif" alt="metasfresh Client exe" align="right"
+								<td bgcolor="#fbf8f1"><a href="/binaries/metas-fresh-client.exe"><img
+										src="zip.gif" alt="metas-fresh Client exe" align="right"
 										border="0" height="32" width="32"></a> Install a Java
 									Runtime Environment (Java 7 or later); Download and extract the
-									<%=productName%> Client <a href="/binaries/metasfresh-client.exe"
+									<%=productName%> Client <a href="/binaries/metas-fresh-client.exe"
 									title="Download <%=productName%> Client">exe</a> file on your
 									Client.</td>
 							</tr>

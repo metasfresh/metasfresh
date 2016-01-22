@@ -187,6 +187,7 @@ public class DuplicateTax extends SvrProcess {
 				duplicateTax.setValidFrom(origTax.getValidFrom());
 				duplicateTax.setIsTaxExempt(origTax.isTaxExempt());
 				duplicateTax.setRequiresTaxCertificate(origTax.isRequiresTaxCertificate());
+				duplicateTax.setDoc(origTax.getDoc());
 				duplicateTax.setIsSalesTax(origTax.isSalesTax());
 				duplicateTax.setIsSummary(origTax.isSummary());
 				duplicateTax.setParent_Tax_ID(origTax.getParent_Tax_ID());

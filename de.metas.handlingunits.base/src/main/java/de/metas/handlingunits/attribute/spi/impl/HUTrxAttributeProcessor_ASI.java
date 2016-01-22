@@ -65,7 +65,6 @@ public class HUTrxAttributeProcessor_ASI implements IHUTrxAttributeProcessor
 		}
 
 		ai.setValueNumber(huTrxAttribute.getValueNumber());
-		ai.setValueDate(huTrxAttribute.getValueDate());
 		ai.setValue(huTrxAttribute.getValue());
 		InterfaceWrapperHelper.save(ai);
 	}

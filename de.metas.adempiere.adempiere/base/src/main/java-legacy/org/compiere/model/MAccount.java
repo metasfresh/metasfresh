@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -24,9 +25,7 @@ import java.util.logging.Level;
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.acct.api.IAccountDimension;
-import org.adempiere.acct.api.IAcctSchemaBL;
-import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.acct.api.impl.AccountDimension;
+import org.adempiere.acct.api.impl.AccountDimensionVO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -50,8 +49,28 @@ public class MAccount extends X_C_ValidCombination
 
 	/**
 	 * Get existing Account or create it
+	 *
+	 * @param ctx context
+	 * @param AD_Client_ID
+	 * @param AD_Org_ID
+	 * @param C_AcctSchema_ID
+	 * @param Account_ID
+	 * @param C_SubAcct_ID
+	 * @param M_Product_ID
+	 * @param C_BPartner_ID
+	 * @param AD_OrgTrx_ID
+	 * @param C_LocFrom_ID
+	 * @param C_LocTo_ID
+	 * @param C_SalesRegion_ID
+	 * @param C_Project_ID
+	 * @param C_Campaign_ID
+	 * @param C_Activity_ID
+	 * @param User1_ID
+	 * @param User2_ID
+	 * @param UserElement1_ID
+	 * @param UserElement2_ID
 	 * @return account or null
-	 * @deprecated Use {@link #get(Properties,IAccountDimension)} instead
+	 * @deprecated Use {@link #get(Properties,AccountDimensionVO)} instead
 	 */
 	@Deprecated
 	public static MAccount get(Properties ctx,
@@ -62,50 +81,148 @@ public class MAccount extends X_C_ValidCombination
 			int C_Project_ID, int C_Campaign_ID, int C_Activity_ID,
 			int User1_ID, int User2_ID, int UserElement1_ID, int UserElement2_ID)
 	{
-		final AccountDimension dim = AccountDimension.builder()
-				.setC_AcctSchema_ID(C_AcctSchema_ID)
-				.setAD_Client_ID(AD_Client_ID)
-				.setAD_Org_ID(AD_Org_ID)
-				.setC_ElementValue_ID(Account_ID)
-				.setC_SubAcct_ID(C_SubAcct_ID)
-				.setM_Product_ID(M_Product_ID)
-				.setC_BPartner_ID(C_BPartner_ID)
-				.setAD_OrgTrx_ID(AD_OrgTrx_ID)
-				.setC_LocFrom_ID(C_LocFrom_ID)
-				.setC_LocTo_ID(C_LocTo_ID)
-				.setC_SalesRegion_ID(C_SalesRegion_ID)
-				.setC_Project_ID(C_Project_ID)
-				.setC_Campaign_ID(C_Campaign_ID)
-				.setC_Activity_ID(C_Activity_ID)
-				.setUser1_ID(User1_ID)
-				.setUser2_ID(User2_ID)
-				.setUserElement1_ID(UserElement1_ID)
-				.setUserElement2_ID(UserElement2_ID)
-				.build();
-		return get(ctx, dim);
+		return get(ctx, new AccountDimensionVO(AD_Client_ID, AD_Org_ID, C_AcctSchema_ID, Account_ID, C_SubAcct_ID, M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID, C_LocFrom_ID, C_LocTo_ID,
+				C_SalesRegion_ID, C_Project_ID, C_Campaign_ID, C_Activity_ID, User1_ID, User2_ID, UserElement1_ID, UserElement2_ID));
 	}	// get
-	
+
 	/**
-	 * Get existing Account or create it.
+	 * Get existing Account or create it
 	 *
 	 * @param ctx context
 	 * @param dimension accounting dimension
-	 * @return existing account or a newly created one; never returns null
+	 * @return account or null
 	 */
 	public static MAccount get(final Properties ctx, final IAccountDimension dimension)
 	{
-		// services
-		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-		
-		// Existing
-		final MAccount existingAccount = accountDAO.retrieveAccount(ctx, dimension);
-		if (existingAccount != null)
+		final StringBuilder info = new StringBuilder();
+		info.append("AD_Client_ID=").append(dimension.getAD_Client_ID()).append(",AD_Org_ID=").append(dimension.getAD_Org_ID());
+		// Schema
+		info.append(",C_AcctSchema_ID=").append(dimension.getC_AcctSchema_ID());
+		// Account
+		info.append(",Account_ID=").append(dimension.getC_ElementValue_ID()).append(" ");
+
+		final List<Object> params = new ArrayList<>();
+		// Mandatory fields
+		final StringBuilder whereClause = new StringBuilder("AD_Client_ID=?"		// #1
+				+ " AND AD_Org_ID=?"
+				+ " AND C_AcctSchema_ID=?"
+				+ " AND Account_ID=?");			// #4
+		params.add(dimension.getAD_Client_ID());
+		params.add(dimension.getAD_Org_ID());
+		params.add(dimension.getC_AcctSchema_ID());
+		params.add(dimension.getC_ElementValue_ID());
+		// Optional fields
+		if (dimension.getC_SubAcct_ID() <= 0)
+			whereClause.append(" AND C_SubAcct_ID IS NULL");
+		else
 		{
-			return existingAccount;
+			whereClause.append(" AND C_SubAcct_ID=?");
+			params.add(dimension.getC_SubAcct_ID());
 		}
+		if (dimension.getM_Product_ID() <= 0)
+			whereClause.append(" AND M_Product_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND M_Product_ID=?");
+			params.add(dimension.getM_Product_ID());
+		}
+		if (dimension.getC_BPartner_ID() <= 0)
+			whereClause.append(" AND C_BPartner_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND C_BPartner_ID=?");
+			params.add(dimension.getC_BPartner_ID());
+		}
+		if (dimension.getAD_OrgTrx_ID() <= 0)
+			whereClause.append(" AND AD_OrgTrx_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND AD_OrgTrx_ID=?");
+			params.add(dimension.getAD_OrgTrx_ID());
+		}
+		if (dimension.getC_LocFrom_ID() <= 0)
+			whereClause.append(" AND C_LocFrom_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND C_LocFrom_ID=?");
+			params.add(dimension.getC_LocFrom_ID());
+		}
+		if (dimension.getC_LocTo_ID() <= 0)
+			whereClause.append(" AND C_LocTo_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND C_LocTo_ID=?");
+			params.add(dimension.getC_LocTo_ID());
+		}
+		if (dimension.getC_SalesRegion_ID() <= 0)
+			whereClause.append(" AND C_SalesRegion_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND C_SalesRegion_ID=?");
+			params.add(dimension.getC_SalesRegion_ID());
+		}
+		if (dimension.getC_Project_ID() <= 0)
+			whereClause.append(" AND C_Project_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND C_Project_ID=?");
+			params.add(dimension.getC_Project_ID());
+		}
+		if (dimension.getC_Campaign_ID() <= 0)
+			whereClause.append(" AND C_Campaign_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND C_Campaign_ID=?");
+			params.add(dimension.getC_Campaign_ID());
+		}
+		if (dimension.getC_Activity_ID() <= 0)
+			whereClause.append(" AND C_Activity_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND C_Activity_ID=?");
+			params.add(dimension.getC_Activity_ID());
+		}
+		if (dimension.getUser1_ID() <= 0)
+			whereClause.append(" AND User1_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND User1_ID=?");
+			params.add(dimension.getUser1_ID());
+		}
+		if (dimension.getUser2_ID() <= 0)
+			whereClause.append(" AND User2_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND User2_ID=?");
+			params.add(dimension.getUser2_ID());
+		}
+		if (dimension.getUserElement1_ID() <= 0)
+			whereClause.append(" AND UserElement1_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND UserElement1_ID=?");
+			params.add(dimension.getUserElement1_ID());
+		}
+		if (dimension.getUserElement2_ID() <= 0)
+			whereClause.append(" AND UserElement2_ID IS NULL");
+		else
+		{
+			whereClause.append(" AND UserElement2_ID=?");
+			params.add(dimension.getUserElement2_ID());
+		}
+		// whereClause.append(" ORDER BY IsFullyQualified DESC");
+
+		MAccount existingAccount = new Query(ctx, I_C_ValidCombination.Table_Name, whereClause.toString(), null)
+				.setParameters(params)
+				.setOnlyActiveRecords(true)
+				.firstOnly();
+
+		// Existing
+		if (existingAccount != null)
+			return existingAccount;
 
 		// New
-		final MAccount newAccount = new MAccount(ctx, 0, ITrx.TRXNAME_None);
+		MAccount newAccount = new MAccount(ctx, 0, ITrx.TRXNAME_None);
 		newAccount.setClientOrg(dimension.getAD_Client_ID(), dimension.getAD_Org_ID());
 		newAccount.setC_AcctSchema_ID(dimension.getC_AcctSchema_ID());
 		newAccount.setAccount_ID(dimension.getC_ElementValue_ID());
@@ -130,25 +247,52 @@ public class MAccount extends X_C_ValidCombination
 	}	// get
 
 	/**
+	 * Get from existing Accounting fact
+	 *
+	 * @param fa accounting fact
+	 * @return account
+	 */
+	public static MAccount get(final I_Fact_Acct fa)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(fa);
+		final IAccountDimension accountDimension = Services.get(IAccountBL.class).createAccountDimension(fa);
+		final MAccount acct = get(ctx, accountDimension);
+		return acct;
+	}	// get
+
+	/**************************************************************************
+	 * Factory: default combination
+	 * 
+	 * @param ctx context
+	 * @param C_AcctSchema_ID accounting schema
+	 * @param optionalNull if true the optional values are null
+	 * @param trxName transaction
+	 * @return Account
+	 */
+	public static MAccount getDefault(Properties ctx, int C_AcctSchema_ID, boolean optionalNull, String trxName)
+	{
+		MAcctSchema acctSchema = new MAcctSchema(ctx, C_AcctSchema_ID, trxName);
+		return getDefault(acctSchema, optionalNull);
+	}   // getDefault
+
+	/**
 	 * Factory: default combination
 	 * 
 	 * @param acctSchema accounting schema
 	 * @param optionalNull if true, the optional values are null
 	 * @return Account
 	 */
-	public static MAccount getDefault(final I_C_AcctSchema acctSchema, final boolean optionalNull)
+	public static MAccount getDefault(MAcctSchema acctSchema, boolean optionalNull)
 	{
-		// services
-		final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
-		final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-
 		final MAccount vc = new MAccount(acctSchema);
 		// Active Elements
-		for (final I_C_AcctSchema_Element ase : acctSchemaDAO.retrieveSchemaElements(acctSchema))
+		MAcctSchemaElement[] elements = acctSchema.getAcctSchemaElements();
+		for (int i = 0; i < elements.length; i++)
 		{
-			final String elementType = ase.getElementType();
-			final int defaultValue = acctSchemaBL.getDefaultValue(ase);
-			final boolean setValue = ase.isMandatory() || (!ase.isMandatory() && !optionalNull);
+			MAcctSchemaElement ase = elements[i];
+			String elementType = ase.getElementType();
+			int defaultValue = ase.getDefaultValue();
+			boolean setValue = ase.isMandatory() || (!ase.isMandatory() && !optionalNull);
 			//
 			if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Organization))
 				vc.setAD_Org_ID(defaultValue);
@@ -183,7 +327,9 @@ public class MAccount extends X_C_ValidCombination
 			else if (elementType.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement2) && setValue)
 				vc.setUserElement2_ID(defaultValue);
 		}
-		
+		s_log.fine("Client_ID="
+				+ vc.getAD_Client_ID() + ", Org_ID=" + vc.getAD_Org_ID()
+				+ " - AcctSchema_ID=" + vc.getC_AcctSchema_ID() + ", Account_ID=" + vc.getAccount_ID());
 		return vc;
 	}   // getDefault
 
@@ -208,7 +354,7 @@ public class MAccount extends X_C_ValidCombination
 	 * @param whereClause where clause
 	 * @param trxName transaction
 	 */
-	public static void updateValueDescription(final Properties ctx, final String whereClause, final String trxName)
+	public static void updateValueDescription(Properties ctx, String whereClause, String trxName)
 	{
 		final List<I_C_ValidCombination> accounts = new Query(ctx, I_C_ValidCombination.Table_Name, whereClause, trxName)
 				.setOrderBy(MAccount.COLUMNNAME_C_ValidCombination_ID)
@@ -261,20 +407,25 @@ public class MAccount extends X_C_ValidCombination
 	 *
 	 * @param as account schema
 	 */
-	private MAccount(final I_C_AcctSchema as)
+	private MAccount(MAcctSchema as)
 	{
-		this(
-				InterfaceWrapperHelper.getCtx(as)
-				, 0
-				, InterfaceWrapperHelper.getTrxName(as));
-		setClientOrg(as.getAD_Client_ID(), as.getAD_Org_ID());
-		setC_AcctSchema(as);
+		this(as.getCtx(), 0, as.get_TrxName());
+		setClientOrg(as);
+		setC_AcctSchema_ID(as.getC_AcctSchema_ID());
 	}	// Account
 
+	/** Account Segment */
+	private MElementValue m_accountEV = null;
+
+	/**************************************************************************
+	 * Return String representation
+	 * 
+	 * @return String
+	 */
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("MAccount=[");
+		StringBuffer sb = new StringBuffer("MAccount=[");
 		sb.append(getC_ValidCombination_ID());
 		if (getCombination() != null)
 			sb.append(",")
@@ -320,12 +471,41 @@ public class MAccount extends X_C_ValidCombination
 	}	// toString
 
 	/**
+	 * Set Account_ID
+	 * 
+	 * @param Account_ID id
+	 */
+	@Override
+	public void setAccount_ID(int Account_ID)
+	{
+		m_accountEV = null;	// reset
+		super.setAccount_ID(Account_ID);
+	}	// setAccount
+
+	/**
+	 * Set Account_ID
+	 * 
+	 * @return element value
+	 */
+	@Override
+	public MElementValue getAccount()
+	{
+		if (m_accountEV == null)
+		{
+			if (getAccount_ID() > 0)
+			{
+				m_accountEV = new MElementValue(getCtx(), getAccount_ID(), get_TrxName());
+			}
+		}
+		return m_accountEV;
+	}	// setAccount
+
+	/**
 	 * Get Account Type
 	 *
 	 * @return Account Type of Account Element
-	 * @see I_C_ElementValue#getAccountType()
 	 */
-	private final String getAccountType()
+	public String getAccountType()
 	{
 		final I_C_ElementValue elementValue = getAccount();
 		if (elementValue == null)

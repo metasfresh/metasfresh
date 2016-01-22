@@ -21,7 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
-import org.adempiere.acct.api.impl.AccountDimension;
+import org.adempiere.acct.api.impl.AccountDimensionVO;
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.ConfirmPanel;
 import org.adempiere.webui.component.Grid;
@@ -572,7 +572,6 @@ public final class WAccountDialog extends Window
 	/**
 	 *	dispose
 	 */
-	@Override
 	public void dispose()
 	{
 		saveSelection();
@@ -604,7 +603,6 @@ public final class WAccountDialog extends Window
 		}
 	}	//	saveSelection
 
-	@Override
 	public void onEvent(Event event) throws Exception {
 		if (event.getTarget().getId().equals("Ok"))
 		{
@@ -630,7 +628,6 @@ public final class WAccountDialog extends Window
 	 *	Status Change Listener
 	 *  @param e event
 	 */
-	@Override
 	public void dataStatusChanged (DataStatusEvent e)
 	{
 		log.config(e.toString());
@@ -1000,25 +997,7 @@ public final class WAccountDialog extends Window
 		if (f_User2_ID != null && !isEmpty(f_User2_ID.getValue()))
 			User2_ID = ((Integer)f_User2_ID.getValue()).intValue();
 
-		final AccountDimension acctDim = AccountDimension.builder()
-				.setC_AcctSchema_ID(s_AcctSchema.getC_AcctSchema_ID())
-				.setAD_Client_ID(m_AD_Client_ID)
-				.setAD_Org_ID(((Integer)f_AD_Org_ID.getValue()).intValue())
-				.setC_ElementValue_ID(((Integer)f_Account_ID.getValue()).intValue())
-				.setC_SubAcct_ID(C_SubAcct_ID)
-				.setM_Product_ID(M_Product_ID)
-				.setC_BPartner_ID(C_BPartner_ID)
-				.setAD_OrgTrx_ID(AD_OrgTrx_ID)
-				.setC_LocFrom_ID(C_LocFrom_ID)
-				.setC_LocTo_ID(C_LocTo_ID)
-				.setC_SalesRegion_ID(C_SRegion_ID)
-				.setC_Project_ID(C_Project_ID)
-				.setC_Campaign_ID(C_Campaign_ID)
-				.setC_Activity_ID(C_Activity_ID)
-				.setUser1_ID(User1_ID)
-				.setUser2_ID(User2_ID)
-				.build();
-		MAccount acct = MAccount.get (Env.getCtx(), acctDim);
+		MAccount acct = MAccount.get (Env.getCtx(), new AccountDimensionVO(m_AD_Client_ID, ((Integer)f_AD_Org_ID.getValue()).intValue(), s_AcctSchema.getC_AcctSchema_ID(), ((Integer)f_Account_ID.getValue()).intValue(), C_SubAcct_ID, M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID, C_LocFrom_ID, C_LocTo_ID, C_SRegion_ID, C_Project_ID, C_Campaign_ID, C_Activity_ID, User1_ID, User2_ID, 0, 0));
 		if (acct != null && acct.get_ID() == 0)
 			acct.save();
 
@@ -1117,7 +1096,6 @@ public final class WAccountDialog extends Window
 	 * 	valueChange - Account Changed
 	 *	@param evt event
 	 */
-	@Override
 	public void valueChange(ValueChangeEvent evt) {
 		Object newValue = evt.getNewValue();
 		if (newValue instanceof Integer)

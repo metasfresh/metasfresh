@@ -65,7 +65,6 @@ FROM
 	LEFT OUTER JOIN M_Locator l_to ON ml.M_LocatorTo_ID = l_to.M_Locator_ID
 	LEFT OUTER JOIN M_Warehouse wh_to ON l_to.M_Warehouse_ID=wh_to.m_warehouse_ID
 	LEFT OUTER JOIN M_Product p ON ml.M_Product_ID = p.M_Product_ID
-	LEFT OUTER JOIN M_Product_Category pc ON pc.M_Product_Category_ID = p.M_Product_Category_ID
 	LEFT OUTER JOIN C_UOM uom ON p.C_UOM_ID = uom.C_UOM_ID
 
 	LEFT OUTER JOIN Fact_Acct fa ON fa.Record_ID = mov.M_Movement_ID AND fa.AD_Table_ID = (SELECT Get_Table_ID('M_Movement')) AND fa.Line_ID = ml.M_MovementLine_ID 
@@ -96,10 +95,6 @@ WHERE
 	AND fa.C_Period_ID = $1
 	AND (CASE WHEN $2 IS NOT NULL THEN wh_from.C_Activity_ID = $2 ELSE TRUE END)
 	AND (CASE WHEN $3 IS NOT NULL THEN wh_to.C_Activity_ID = $3 ELSE TRUE END) 
-	--we don't want gebinde and verpackungs 09746
-	AND pc.Name NOT LIKE 'Gebinde' AND pc.Name NOT LIKE 'Verpackungsmaterial'
-	--we don't want movements which are "Materialentnahme" 09746
-	AND wh_to.m_warehouse_ID != (SELECT Value FROM AD_SysConfig WHERE Name LIKE 'de.metas.handlingunits.client.terminal.inventory.model.InventoryHUEditorModel#DirectMove_Warehouse_ID')::integer
 GROUP BY 
 	p.value, 
 	p.name, 
@@ -119,7 +114,7 @@ GROUP BY
 dat.P_Value,
 dat.P_Name,
 dat.UOMSymbol,
-dat.StartDate,       
+dat.StartDate,
 dat.EndDate,
 dat.param_activity_from_value,
 dat.param_activity_from_name,

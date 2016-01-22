@@ -25,13 +25,13 @@ package de.metas.adempiere.form.terminal;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -190,66 +190,49 @@ public abstract class AbstractTerminalDateField
 	private final void onActionPreviousDay()
 	{
 		final Date date = getFieldValue();
-		final Date dateNew;
 		if (date == null)
 		{
-			dateNew = getToday();
+			return;
 		}
-		else
-		{
-			dateNew = TimeUtil.addDays(date, -1);
-		}
+
+		final Timestamp dateNew = TimeUtil.addDays(date, -1);
 		setFieldValue(dateNew, true);
 	}
 
 	private final void onActionNextDay()
 	{
 		final Date date = getFieldValue();
-		final Date dateNew;
 		if (date == null)
 		{
-			dateNew = getToday();
+			return;
 		}
-		else
-		{
-			dateNew = TimeUtil.addDays(date, +1);
-		}
+
+		final Date dateNew = TimeUtil.addDays(date, +1);
 		setFieldValue(dateNew, true);
 	}
 
 	private final void onActionPreviousMonth()
 	{
 		final Date date = getFieldValue();
-		final Date dateNew;
 		if (date == null)
 		{
-			dateNew = getToday();
+			return;
 		}
-		else
-		{
-			dateNew = TimeUtil.addMonths(date, -1);
-		}
+
+		final Date dateNew = TimeUtil.addMonths(date, -1);
 		setFieldValue(dateNew, true);
 	}
 
 	private final void onActionNextMonth()
 	{
 		final Date date = getFieldValue();
-		final Date dateNew;
 		if (date == null)
 		{
-			dateNew = getToday();
+			return;
 		}
-		else
-		{
-			dateNew = TimeUtil.addMonths(date, +1);
-		}
-		setFieldValue(dateNew, true);
-	}
 
-	private final Date getToday()
-	{
-		return Env.getDate(getCtx());
+		final Date dateNew = TimeUtil.addMonths(date, +1);
+		setFieldValue(dateNew, true);
 	}
 
 	@Override

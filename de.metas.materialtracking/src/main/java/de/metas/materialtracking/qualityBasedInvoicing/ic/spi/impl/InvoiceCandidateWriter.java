@@ -484,9 +484,6 @@ public class InvoiceCandidateWriter
 		final IVendorInvoicingInfo vendorInvoicingInfo = getVendorInvoicingInfo();
 		final int priceListVersionID = vendorInvoicingInfo.getM_PriceList_Version().getM_PriceList_Version_ID();
 
-		Check.errorUnless(this.invoiceDocTypeId > 0, "{0} needs to have the invoiceDocTypeId set to >0 when we delete old ICs", this);
-		final int invoiceDocTypeId = this.invoiceDocTypeId; // copy it, who knows that the value will be at the time we invoice the listener
-
 		//
 		// secondly, invoke the listener code
 		// TODO: check if we actually have to run this code afterCommit, since we now have _maxInvoiceCandidateToDeleteID to make sure we only delete "old" ICs.
@@ -507,7 +504,6 @@ public class InvoiceCandidateWriter
 												modelRecordId,
 												type,
 												priceListVersionID,
-												invoiceDocTypeId,
 												_maxInvoiceCandidateToDeleteID,
 												localTrxName);
 									}
@@ -520,7 +516,6 @@ public class InvoiceCandidateWriter
 			final int modelRecordId,
 			final QualityInvoiceLineGroupType type,
 			final int priceListVersionID,
-			final int docTypeInvoiceID,
 			final int maxInvoiceCandidateID,
 			final String localTrxName)
 	{
@@ -531,12 +526,6 @@ public class InvoiceCandidateWriter
 		// Only delete older ICs, not the ones we only just created!
 		{
 			queryBuilder.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, Operator.LESS_OR_EQUAL, maxInvoiceCandidateID);
-		}
-
-		//
-		// Only delete ICs with the same DocType; required for the case that there are unprocessed Downpayment ("Akonto") ICs while we already deal with an Endabrechnung PP_Order
-		{
-			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_DocTypeInvoice_ID, docTypeInvoiceID);
 		}
 
 		//
