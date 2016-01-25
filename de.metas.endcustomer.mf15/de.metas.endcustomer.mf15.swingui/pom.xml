@@ -103,7 +103,7 @@
 						</goals>
 						<configuration>
 							<stripVersion>true</stripVersion>
-							<outputDirectory>${dist.dir}/metas-fresh/lib</outputDirectory>
+							<outputDirectory>${dist.dir}/metasfresh/lib</outputDirectory>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<overWriteIfNewer>true</overWriteIfNewer>
@@ -168,7 +168,7 @@
 						</goals>
 						<configuration>
 							<overwrite>true</overwrite>
-							<outputDirectory>${dist.dir}/metas-fresh</outputDirectory>
+							<outputDirectory>${dist.dir}/metasfresh</outputDirectory>
 							<resources>
 								<resource>
 									<directory>src/main/resources</directory>
@@ -185,7 +185,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${dist.dir}/metas-fresh/lib</outputDirectory>
+							<outputDirectory>${dist.dir}/metasfresh/lib</outputDirectory>
 							<stripVersion>true</stripVersion>
 							<overwrite>true</overwrite>
 							<resources>
@@ -214,7 +214,7 @@
 						</goals>
 						<configuration>
 							<headerType>gui</headerType>
-							<outfile>target/swingui/metas-fresh/RUN_metas-fresh.exe</outfile>
+							<outfile>target/swingui/metasfresh/RUN_metasfresh.exe</outfile>
 							<dontWrapJar>true</dontWrapJar>
 							<jar>lib/de.metas.endcustomer.mf15.swingui-allInOne.jar</jar>
 							<errTitle>metas Fresh</errTitle>
@@ -247,8 +247,8 @@
 								<productVersion>4.1.0.${BUILD_NUMBER_NUMERIC}</productVersion>
 								<txtProductVersion>4.1.0.${BUILD_NUMBER_NUMERIC}</txtProductVersion>
 								<productName>metas fresh ERP</productName>
-								<internalName>metas-fresh</internalName>
-								<originalFilename>metas-fresh.exe</originalFilename>
+								<internalName>metasfresh</internalName>
+								<originalFilename>metasfresh.exe</originalFilename>
 							</versionInfo>
 						</configuration>
 					</execution>
