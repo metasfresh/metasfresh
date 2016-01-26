@@ -257,6 +257,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		// Set internal values
 		// FIXME: set order is important because of org.compiere.model.MAttributeInstance.setValueNumber(BigDecimal)
 		setInternalValueNumber(valueBD);
+		setInternalValueDate(valueDate);
 		setInternalValueString(valueStr);
 		setInternalValueDate(valueDate);
 

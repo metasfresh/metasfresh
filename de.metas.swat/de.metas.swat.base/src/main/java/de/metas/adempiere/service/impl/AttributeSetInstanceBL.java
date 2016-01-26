@@ -22,6 +22,7 @@ package de.metas.adempiere.service.impl;
  * #L%
  */
 
+import java.text.DateFormat;
 import java.util.List;
 import java.util.Properties;
 
@@ -47,8 +48,8 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public String buildDescription(final I_M_AttributeSetInstance asi)
 	{
-
-		return buildDescription(asi, false);
+		final boolean verboseDescription = false;
+		return buildDescription(asi, verboseDescription);
 	}
 
 	@Override
@@ -88,6 +89,11 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		for (final I_M_AttributeInstance instance : attributeInstances)
 		{
 			String value = instance.getValue();
+			if (Check.isEmpty(value) && instance.getValueDate() != null)
+			{
+				final DateFormat dateFormat = DisplayType.getDateFormat(DisplayType.Date);
+				value = dateFormat.format(instance.getValueDate());
+			}
 			if (Check.isEmpty(value) && instance.getValueNumber() != null && verboseDescription)
 			{
 				// only try value number if verboseDescription==true.
@@ -95,6 +101,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 				// after all we are just creating a description here that just contains of AI values..not even the attribute name is included.
 				value = instance.getValueNumber().toString();
 			}
+			
 			if (!Check.isEmpty(value, false))
 			{
 				if (sb.length() > 0)

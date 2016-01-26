@@ -48,6 +48,11 @@ public final class Constants
 	 * @see http://dewiki908/mediawiki/index.php/07759_Stockvalue_by_FiFo_%28100951729256%29
 	 */
 	public static final String ATTR_CostPrice = "HU_CostPrice";
+	
+	/**
+	 * @see http://dewiki908/mediawiki/index.php/09670_Tageslot_Einlagerung_%28100236982974%29
+	 */
+	public static final String ATTR_LotNumberDate = "HU_LotNumberDate";
 
 	/**
 	 * HU's attribute which stores the best before date.

@@ -257,7 +257,7 @@ public interface I_M_HU_Trx_Attribute
     public static final String COLUMNNAME_M_HU_Trx_Attribute_ID = "M_HU_Trx_Attribute_ID";
 
 	/**
-	 * Set Handling Units Transaction Header.
+	 * Set HU-Transaktionskopf.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -266,7 +266,7 @@ public interface I_M_HU_Trx_Attribute
 	public void setM_HU_Trx_Hdr_ID (int M_HU_Trx_Hdr_ID);
 
 	/**
-	 * Get Handling Units Transaction Header.
+	 * Get HU-Transaktionskopf.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -284,7 +284,7 @@ public interface I_M_HU_Trx_Attribute
     public static final String COLUMNNAME_M_HU_Trx_Hdr_ID = "M_HU_Trx_Hdr_ID";
 
 	/**
-	 * Set Handling Units Transaction Line.
+	 * Set HU-Transaktionszeile.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -293,7 +293,7 @@ public interface I_M_HU_Trx_Attribute
 	public void setM_HU_Trx_Line_ID (int M_HU_Trx_Line_ID);
 
 	/**
-	 * Get Handling Units Transaction Line.
+	 * Get HU-Transaktionszeile.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

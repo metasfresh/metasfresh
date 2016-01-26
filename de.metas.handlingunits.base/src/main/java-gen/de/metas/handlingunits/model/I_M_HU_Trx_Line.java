@@ -284,7 +284,7 @@ public interface I_M_HU_Trx_Line
     public static final String COLUMNNAME_M_HU_Item_ID = "M_HU_Item_ID";
 
 	/**
-	 * Set Handling Units Transaction Header.
+	 * Set HU-Transaktionskopf.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -293,7 +293,7 @@ public interface I_M_HU_Trx_Line
 	public void setM_HU_Trx_Hdr_ID (int M_HU_Trx_Hdr_ID);
 
 	/**
-	 * Get Handling Units Transaction Header.
+	 * Get HU-Transaktionskopf.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -311,7 +311,7 @@ public interface I_M_HU_Trx_Line
     public static final String COLUMNNAME_M_HU_Trx_Hdr_ID = "M_HU_Trx_Hdr_ID";
 
 	/**
-	 * Set Handling Units Transaction Line.
+	 * Set HU-Transaktionszeile.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -320,7 +320,7 @@ public interface I_M_HU_Trx_Line
 	public void setM_HU_Trx_Line_ID (int M_HU_Trx_Line_ID);
 
 	/**
-	 * Get Handling Units Transaction Line.
+	 * Get HU-Transaktionszeile.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -392,7 +392,7 @@ public interface I_M_HU_Trx_Line
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Parent Handling Units Transaction Line ID.
+	 * Set Eltern-Transaktionszeile.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -401,7 +401,7 @@ public interface I_M_HU_Trx_Line
 	public void setParent_HU_Trx_Line_ID (int Parent_HU_Trx_Line_ID);
 
 	/**
-	 * Get Parent Handling Units Transaction Line ID.
+	 * Get Eltern-Transaktionszeile.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -494,8 +494,7 @@ public interface I_M_HU_Trx_Line
     public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
-	 * Set Reversal Line.
-	 * Use to keep the reversal line ID for reversing costing purpose
+	 * Set Storno-Zeile.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -504,8 +503,7 @@ public interface I_M_HU_Trx_Line
 	public void setReversalLine_ID (int ReversalLine_ID);
 
 	/**
-	 * Get Reversal Line.
-	 * Use to keep the reversal line ID for reversing costing purpose
+	 * Get Storno-Zeile.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

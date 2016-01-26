@@ -124,7 +124,7 @@ public interface I_M_HU_Trx_Hdr
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Handling Units Transaction Header.
+	 * Set HU-Transaktionskopf.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -133,7 +133,7 @@ public interface I_M_HU_Trx_Hdr
 	public void setM_HU_Trx_Hdr_ID (int M_HU_Trx_Hdr_ID);
 
 	/**
-	 * Get Handling Units Transaction Header.
+	 * Get HU-Transaktionskopf.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
