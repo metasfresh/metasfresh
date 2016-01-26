@@ -1,4 +1,5 @@
---DROP VIEW IF EXISTS report.fresh_HU_SSCC_Label_Report;
+--
+DROP VIEW IF EXISTS report.fresh_HU_SSCC_Label_Report;
 
 CREATE OR REPLACE VIEW report.fresh_HU_SSCC_Label_Report as
 SELECT
@@ -92,3 +93,4 @@ FROM
 -- WHERE
 -- 	lu.M_HU_ID = $P{M_HU_ID}
 ;
+

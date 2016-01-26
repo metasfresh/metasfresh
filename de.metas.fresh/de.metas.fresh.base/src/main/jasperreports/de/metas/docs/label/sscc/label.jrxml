@@ -2,9 +2,9 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/sscc/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="144"/>
+	<property name="ireport.y" value="528"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -13,7 +13,7 @@
 	</parameter>
 	<parameter name="M_HU_ID" class="java.math.BigDecimal"/>
 	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["http://mf15adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["http://xxxxxxxx:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="REPORT_SQL_QUERY" class="java.lang.String">
 		<parameterDescription><![CDATA[Optional SQL query to be used instead of default SQL query.
@@ -44,6 +44,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 	<field name="m_hu_id" class="java.math.BigDecimal"/>
 	<field name="ad_language" class="java.lang.String"/>
 	<field name="org_address" class="java.lang.String"/>
+	<field name="LotNumberDate" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -222,14 +223,14 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$R{lotcode}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="6ae440d2-25ef-4ac9-a54e-8ae527265672" x="154" y="408" width="140" height="16"/>
+				<reportElement uuid="6ae440d2-25ef-4ac9-a54e-8ae527265672" x="154" y="426" width="140" height="16"/>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{paletno}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0" x="149" y="424" width="297" height="1"/>
+				<reportElement uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0" x="149" y="444" width="297" height="1"/>
 			</line>
 			<textField isBlankWhenNull="true">
 				<reportElement uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08" x="311" y="349" width="130" height="20"/>
@@ -253,41 +254,55 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$F{lotcode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08" x="293" y="405" width="148" height="20"/>
+				<reportElement uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08" x="293" y="424" width="148" height="20"/>
 				<textElement textAlignment="Right">
 					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{paletno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="bb5a160b-f650-4430-ac6e-5292b9280f42" x="154" y="424" width="140" height="16"/>
+				<reportElement uuid="bb5a160b-f650-4430-ac6e-5292b9280f42" x="154" y="444" width="140" height="16"/>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{customer}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08" x="154" y="439" width="291" height="42"/>
+				<reportElement uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08" x="154" y="459" width="291" height="42"/>
 				<textElement>
 					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{customer}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0" x="149" y="480" width="297" height="1"/>
+				<reportElement uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0" x="149" y="500" width="297" height="1"/>
 			</line>
 			<image>
-				<reportElement uuid="d04727b7-1619-46f2-8623-f9f5d1c8ac73" x="162" y="493" width="270" height="90"/>
+				<reportElement uuid="d04727b7-1619-46f2-8623-f9f5d1c8ac73" x="162" y="513" width="270" height="90"/>
 				<imageExpression><![CDATA[new java.net.URL( $P{barcodeURL} + "?Content=" +
 $F{sscc} +
 "&Format=CODE_128&Width=280&Height=90" )]]></imageExpression>
 			</image>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="95d6fd65-bcad-47ef-8cf6-6e4ac1feb886" x="162" y="580" width="271" height="14"/>
+				<reportElement uuid="95d6fd65-bcad-47ef-8cf6-6e4ac1feb886" x="162" y="600" width="271" height="14"/>
 				<textElement textAlignment="Center">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sscc}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="e625dbf8-cfcf-42c5-9a98-70715e25ad8f" x="154" y="409" width="140" height="16"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{LotNumberDate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="9a08e298-10e1-496f-86a7-563a5edf0741" x="293" y="405" width="148" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="15" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{LotNumberDate}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
