@@ -156,6 +156,10 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			{
 				final I_PP_Order ppOrder = productionOrder.getPP_Order();
 				final Pair<I_M_PriceList_Version, List<I_M_InOutLine>> plvAndIols = providePriceListVersionOrNullForPPOrder(ppOrder);
+
+				// also add them if there is no PLV. In that case the iols will be an empty list, but there won't be an NPE when acessing it.
+				ppOrderId2Iols.put(ppOrder.getPP_Order_ID(), plvAndIols.getSecond());
+
 				final I_M_PriceList_Version plv = plvAndIols.getFirst();
 				if (plv == null)
 				{
