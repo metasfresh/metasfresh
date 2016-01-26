@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.5937424601000028"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="314"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -17,6 +17,7 @@
 	<parameter name="EndDate" class="java.util.Date" isForPrompting="false"/>
 	<parameter name="Reference_Date" class="java.util.Date"/>
 	<parameter name="PassForPayment" class="java.lang.String"/>
+	<parameter name="switchDate" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT
 	getDate() AS today,
@@ -110,7 +111,7 @@
 				<textFieldExpression><![CDATA[$R{parm2}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
-				<reportElement uuid="f1e57f5a-af47-4462-8369-f2a0e372bc9a" key="textField-6" x="393" y="35" width="104" height="12">
+				<reportElement uuid="f1e57f5a-af47-4462-8369-f2a0e372bc9a" key="textField-6" x="406" y="35" width="91" height="12">
 					<printWhenExpression><![CDATA[new Boolean($P{DaysDue}.intValue() != -999999)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -125,7 +126,7 @@
 				<textFieldExpression><![CDATA[$P{DaysDue}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="f0b990d1-a260-4eb6-a26f-4c075d77655c" key="textField-7" x="303" y="35" width="90" height="12"/>
+				<reportElement uuid="f0b990d1-a260-4eb6-a26f-4c075d77655c" key="textField-7" x="303" y="35" width="103" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -138,7 +139,7 @@
 				<textFieldExpression><![CDATA[$R{parm3}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="b0389c3a-0697-4f07-8c9d-e59b7015d280" key="textField-8" x="393" y="47" width="104" height="12"/>
+				<reportElement uuid="b0389c3a-0697-4f07-8c9d-e59b7015d280" key="textField-8" x="406" y="47" width="91" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -151,7 +152,7 @@
 				<textFieldExpression><![CDATA[$F{invcoltype}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="68fc9843-c088-4975-8115-51c1eb1f5ddf" key="textField-9" x="303" y="47" width="90" height="12"/>
+				<reportElement uuid="68fc9843-c088-4975-8115-51c1eb1f5ddf" key="textField-9" x="303" y="47" width="103" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -177,7 +178,7 @@
 				<textFieldExpression><![CDATA[$R{org}+" "+$F{org}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="0a26c99a-4f9a-43de-9911-b9b2bd2f7db2" x="393" y="35" width="104" height="12">
+				<reportElement uuid="0a26c99a-4f9a-43de-9911-b9b2bd2f7db2" x="406" y="35" width="91" height="12">
 					<printWhenExpression><![CDATA[new Boolean($P{DaysDue}.intValue() == -999999)]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -274,14 +275,14 @@
 				<text><![CDATA[Unbegrenzt]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="b69d3780-c577-4309-9ebb-29b8ed5f1177" key="textField-5" x="303" y="59" width="90" height="12"/>
+				<reportElement uuid="b69d3780-c577-4309-9ebb-29b8ed5f1177" key="textField-5" x="303" y="59" width="103" height="12"/>
 				<textElement markup="none">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Stichtag]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement uuid="b0389c3a-0697-4f07-8c9d-e59b7015d280" key="textField-8" x="393" y="59" width="104" height="12"/>
+				<reportElement uuid="b0389c3a-0697-4f07-8c9d-e59b7015d280" key="textField-8" x="406" y="59" width="91" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -311,6 +312,20 @@
 				</textElement>
 				<text><![CDATA[Nein]]></text>
 			</staticText>
+			<staticText>
+				<reportElement uuid="b69d3780-c577-4309-9ebb-29b8ed5f1177" key="textField-5" x="303" y="71" width="103" height="12"/>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Buchungsdatum Vergleich]]></text>
+			</staticText>
+			<textField>
+				<reportElement uuid="d30a58b7-c882-412a-878f-d501e6f307b7" x="406" y="71" width="91" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{switchDate}]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>

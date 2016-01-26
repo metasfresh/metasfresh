@@ -406,7 +406,12 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 		final MOrder purchaseOrder = new MOrder(ctx, 0, trxName);
 		purchaseOrder.setIsSOTrx(false);
 		purchaseOrder.setM_Warehouse_ID(purchaseSchedule.getM_Warehouse_ID());
-		purchaseOrder.setSalesRep_ID(Env.getAD_User_ID(Env.getCtx()));
+		
+		// Sales Rep
+		// NOTE: we shall not set the SalesRep from context if is not set.
+		// This is not a mandatory field, so leave it like it is.
+		// purchaseOrder.setSalesRep_ID(Env.getAD_User_ID(Env.getCtx()));
+		
 		purchaseOrder.setDocAction(DocAction.ACTION_Prepare);
 		purchaseOrder.setC_DocTypeTarget_ID();
 

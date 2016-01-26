@@ -25,6 +25,7 @@
 	<parameter name="EndDate" class="java.util.Date" isForPrompting="false"/>
 	<parameter name="Reference_Date" class="java.util.Date"/>
 	<parameter name="PassForPayment" class="java.lang.String"/>
+	<parameter name="switchDate" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT '';]]>
 	</queryString>
@@ -48,14 +49,14 @@
 				<subreportParameter name="EndDate">
 					<subreportParameterExpression><![CDATA[$P{EndDate}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="PassForPayment">
-					<subreportParameterExpression><![CDATA[$P{PassForPayment}]]></subreportParameterExpression>
+				<subreportParameter name="Reference_Date">
+					<subreportParameterExpression><![CDATA[$P{Reference_Date}==null ? new Date() : $P{Reference_Date}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="StartDate">
 					<subreportParameterExpression><![CDATA[$P{StartDate}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="Reference_Date">
-					<subreportParameterExpression><![CDATA[$P{Reference_Date}==null ? new Date() : $P{Reference_Date}]]></subreportParameterExpression>
+				<subreportParameter name="PassForPayment">
+					<subreportParameterExpression><![CDATA[$P{PassForPayment}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="InvoiceCollectionType">
 					<subreportParameterExpression><![CDATA[$P{InvoiceCollectionType}]]></subreportParameterExpression>
@@ -65,6 +66,9 @@
 				</subreportParameter>
 				<subreportParameter name="AD_Org_ID">
 					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="switchDate">
+					<subreportParameterExpression><![CDATA[$P{switchDate}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="C_BPartner_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
@@ -87,14 +91,14 @@
 				<subreportParameter name="EndDate">
 					<subreportParameterExpression><![CDATA[$P{EndDate}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="PassForPayment">
-					<subreportParameterExpression><![CDATA[$P{PassForPayment}]]></subreportParameterExpression>
+				<subreportParameter name="Reference_Date">
+					<subreportParameterExpression><![CDATA[$P{Reference_Date}==null ? new Date() : $P{Reference_Date}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="StartDate">
 					<subreportParameterExpression><![CDATA[$P{StartDate}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="Reference_Date">
-					<subreportParameterExpression><![CDATA[$P{Reference_Date}==null ? new Date() : $P{Reference_Date}]]></subreportParameterExpression>
+				<subreportParameter name="PassForPayment">
+					<subreportParameterExpression><![CDATA[$P{PassForPayment}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="InvoiceCollectionType">
 					<subreportParameterExpression><![CDATA[$P{InvoiceCollectionType}]]></subreportParameterExpression>
@@ -104,6 +108,9 @@
 				</subreportParameter>
 				<subreportParameter name="AD_Org_ID">
 					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="switchDate">
+					<subreportParameterExpression><![CDATA[$P{switchDate}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="C_BPartner_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>

@@ -173,8 +173,6 @@ public class DimensionSpecAttributeBL implements IDimensionSpecAttributeBL
 
 			InterfaceWrapperHelper.save(ai);
 		}
-
-		asiBL.buildDescription(newASI);
 		
 		return newASI;
 	}

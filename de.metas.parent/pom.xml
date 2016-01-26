@@ -15,11 +15,11 @@
 
 	<description>Default parent pom with common settings (e.g. java file encoding) to be used by all maven projects</description>
 
-	<url>http://www.metas-fresh.com/</url>
+	<url>http://www.metasfresh.com/</url>
 
 	<organization>
 		<name>metas GmbH</name>
-		<url>http://www.metas-fresh.com/</url>
+		<url>http://www.metasfresh.com/</url>
 	</organization>
 
 	<inceptionYear>2015</inceptionYear>
@@ -27,7 +27,7 @@
 	<developers>
 		<developer>
 			<name>metas developer</name>
-			<organizationUrl>http://www.metas-fresh.com/</organizationUrl>
+			<organizationUrl>http://www.metasfresh.com/</organizationUrl>
 			<email>info@metas.de</email>
 		</developer>
 	</developers>

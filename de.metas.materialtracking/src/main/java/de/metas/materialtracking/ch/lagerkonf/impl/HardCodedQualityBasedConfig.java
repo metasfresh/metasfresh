@@ -75,6 +75,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	private final I_C_UOM scrapUOM;
 
 	private Timestamp validToDate;
+	private static int overallNumberOfInvoicings = 2; // default/old behavior
 
 	/* package */HardCodedQualityBasedConfig(final IContextAware ctxAware)
 	{
@@ -244,10 +245,15 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 		return currencyDAO.retrieveCurrencyByISOCode(ctxAware.getCtx(), CURRENCY_ISO);
 	}
 
+	public static void setOverallNumberOfInvoicings(final int overallNumberOfInvoicings)
+	{
+		HardCodedQualityBasedConfig.overallNumberOfInvoicings = overallNumberOfInvoicings;
+	}
+
 	@Override
 	public int getOverallNumberOfInvoicings()
 	{
-		return 2;
+		return overallNumberOfInvoicings;
 	}
 
 	@Override

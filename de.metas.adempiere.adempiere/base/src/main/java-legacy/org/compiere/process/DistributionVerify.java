@@ -16,47 +16,41 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.compiere.model.MDistribution;
-import org.compiere.util.AdempiereSystemError;
-import org.compiere.util.AdempiereUserError;
-
+import org.adempiere.acct.api.GLDistributionNotValidException;
+import org.adempiere.acct.api.IGLDistributionBL;
+import org.adempiere.util.Services;
+import org.compiere.model.I_GL_Distribution;
 
 /**
- *	Verify GL Distribution
- *	
- *  @author Jorg Janke
- *  @version $Id: DistributionVerify.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
+ * Verify GL Distribution
+ *
+ * @author Jorg Janke
+ * @version $Id: DistributionVerify.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
 public class DistributionVerify extends SvrProcess
 {
+	private final transient IGLDistributionBL glDistributionBL = Services.get(IGLDistributionBL.class);
 
-	/**
-	 * 	Prepare
-	 */
-	protected void prepare ()
+	@Override
+	protected void prepare()
 	{
-	}	//	prepare
+	}
 
-	/**
-	 * 	Process
-	 *	@return message
-	 *	@throws Exception
-	 */
-	protected String doIt () throws Exception
+	@Override
+	protected String doIt() throws Exception
 	{
-		log.info("doIt - GL_Distribution_ID=" + getRecord_ID());
-		MDistribution distribution = new MDistribution (getCtx(), getRecord_ID(), get_TrxName());
-		if (distribution.get_ID() == 0)
-			throw new AdempiereUserError("Not found GL_Distribution_ID=" + getRecord_ID());
+		final I_GL_Distribution glDistribution = getRecord(I_GL_Distribution.class);
 
-		String error = distribution.validate();
-		boolean saved = distribution.save();
-		if (error != null)
-			throw new AdempiereUserError(error);
-		if (!saved)
-			throw new AdempiereSystemError("@NotSaved@");
-		
-		return "@OK@";
-	}	//	doIt
+		try
+		{
+			glDistributionBL.validate(glDistribution);
+			return MSG_OK;
+		}
+		catch (final GLDistributionNotValidException e)
+		{
+			// NOTE: don't propagate the exception because we flagged the glDistribution as not valid, and we want to persist that.
+			return e.getLocalizedMessage();
+		}
+	}
 
-}	//	DistributionVerify
+}	// DistributionVerify

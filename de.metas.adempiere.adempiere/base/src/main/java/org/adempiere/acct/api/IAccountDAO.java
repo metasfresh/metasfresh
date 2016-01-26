@@ -32,4 +32,11 @@ public interface IAccountDAO extends ISingletonService
 
 	MAccount retrieveAccountById(Properties ctx, int validCombinationId);
 
+	/**
+	 * @param ctx
+	 * @param dimension
+	 * @return account or null
+	 */
+	MAccount retrieveAccount(Properties ctx, IAccountDimension dimension);
+
 }

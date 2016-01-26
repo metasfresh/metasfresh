@@ -57,6 +57,7 @@ public class ImportInvoice extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -84,6 +85,7 @@ public class ImportInvoice extends SvrProcess
 	 *  @return clear Message
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws java.lang.Exception
 	{
 		StringBuffer sql = null;
@@ -680,8 +682,11 @@ public class ImportInvoice extends SvrProcess
 					//	SalesRep from Import or the person running the import
 					if (imp.getSalesRep_ID() != 0)
 						invoice.setSalesRep_ID(imp.getSalesRep_ID());
-					if (invoice.getSalesRep_ID() == 0)
-						invoice.setSalesRep_ID(getAD_User_ID());
+					// Default Sales Rep
+					// NOTE: we shall not set the SalesRep from context if is not set.
+					// This is not a mandatory field, so leave it like it is.
+					// if (invoice.getSalesRep_ID() == 0)
+					// invoice.setSalesRep_ID(getAD_User_ID());
 					//
 					if (imp.getAD_OrgTrx_ID() != 0)
 						invoice.setAD_OrgTrx_ID(imp.getAD_OrgTrx_ID());

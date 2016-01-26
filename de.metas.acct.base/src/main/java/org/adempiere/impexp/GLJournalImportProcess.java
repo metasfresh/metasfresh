@@ -12,7 +12,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.acct.api.IAccountDimension;
-import org.adempiere.acct.api.impl.AccountDimensionVO;
+import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -697,13 +697,7 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		// Set/Get Account Combination
 		if (importRecord.getC_ValidCombinationFrom_ID() == 0)
 		{
-			final IAccountDimension acctDim = new AccountDimensionVO(importRecord.getAD_Client_ID(), importRecord.getAD_Org_ID(),
-					importRecord.getC_AcctSchema_ID(), importRecord.getAccountFrom_ID(), 0,
-					importRecord.getM_Product_ID(), importRecord.getC_BPartner_ID(), importRecord.getAD_OrgTrx_ID(),
-					importRecord.getC_LocFrom_ID(), importRecord.getC_LocTo_ID(), importRecord.getC_SalesRegion_ID(),
-					importRecord.getC_Project_ID(), importRecord.getC_Campaign_ID(), importRecord.getC_Activity_ID(),
-					importRecord.getUser1_ID(), importRecord.getUser2_ID(), 0, 0);
-
+			final IAccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountFrom_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
 			if (acct != null && acct.get_ID() == 0)
 				acct.save();
@@ -722,13 +716,7 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		// Set/Get Account Combination
 		if (importRecord.getC_ValidCombinationTo_ID() == 0)
 		{
-			final IAccountDimension acctDim = new AccountDimensionVO(importRecord.getAD_Client_ID(), importRecord.getAD_Org_ID(),
-					importRecord.getC_AcctSchema_ID(), importRecord.getAccountTo_ID(), 0,
-					importRecord.getM_Product_ID(), importRecord.getC_BPartner_ID(), importRecord.getAD_OrgTrx_ID(),
-					importRecord.getC_LocFrom_ID(), importRecord.getC_LocTo_ID(), importRecord.getC_SalesRegion_ID(),
-					importRecord.getC_Project_ID(), importRecord.getC_Campaign_ID(), importRecord.getC_Activity_ID(),
-					importRecord.getUser1_ID(), importRecord.getUser2_ID(), 0, 0);
-
+			final IAccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountTo_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
 			if (acct != null && acct.get_ID() == 0)
 				acct.save();
@@ -766,6 +754,30 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		}
 
 		return wasInsert ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+	}
+	
+	private IAccountDimension newAccountDimension(final I_I_GLJournal importRecord, final int accountId)
+	{
+		return AccountDimension.builder()
+				.setC_AcctSchema_ID(importRecord.getC_AcctSchema_ID())
+				.setAD_Client_ID(importRecord.getAD_Client_ID())
+				.setAD_Org_ID(importRecord.getAD_Org_ID())
+				.setC_ElementValue_ID(accountId)
+				//.setC_SubAcct_ID(importRecord.getC_SubAcct_ID())
+				.setM_Product_ID(importRecord.getM_Product_ID())
+				.setC_BPartner_ID(importRecord.getC_BPartner_ID())
+				.setAD_OrgTrx_ID(importRecord.getAD_OrgTrx_ID())
+				.setC_LocFrom_ID(importRecord.getC_LocFrom_ID())
+				.setC_LocTo_ID(importRecord.getC_LocTo_ID())
+				.setC_SalesRegion_ID(importRecord.getC_SalesRegion_ID())
+				.setC_Project_ID(importRecord.getC_Project_ID())
+				.setC_Campaign_ID(importRecord.getC_Campaign_ID())
+				.setC_Activity_ID(importRecord.getC_Activity_ID())
+				.setUser1_ID(importRecord.getUser1_ID())
+				.setUser2_ID(importRecord.getUser2_ID())
+				//.setUserElement1_ID(importRecord.getUserElement1_ID())
+				//.setUserElement2_ID(importRecord.getUserElement2_ID())
+				.build();
 	}
 
 	@Override

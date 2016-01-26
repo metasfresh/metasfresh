@@ -60,7 +60,8 @@ SELECT
 	bp.ad_Language,
 	--
 	-- Filtering fields
-	lu.M_HU_ID
+	lu.M_HU_ID,
+	"de.metas.handlingunits".HU_LotNumberDate_ToString(lua_LotNumberDate.valueDate::date) AS LotNumberDate
 FROM
 	M_HU lu
 	INNER JOIN M_HU_Storage lus ON lu.M_HU_ID = lus.M_HU_ID
@@ -86,6 +87,8 @@ FROM
 		AND lua_grow.M_Attribute_ID = (SELECT M_Attribute_ID FROM M_Attribute WHERE name = 'Gewicht Brutto kg')
 	LEFT OUTER JOIN M_HU_Attribute lua_lot ON lu.M_HU_ID = lua_lot.M_HU_ID
 		AND lua_lot.M_Attribute_ID = (SELECT M_Attribute_ID FROM M_Attribute WHERE name ILIKE 'Lot-Nummer')
+	LEFT OUTER JOIN M_HU_Attribute lua_LotNumberDate ON lu.M_HU_ID = lua_LotNumberDate.M_HU_ID
+		AND lua_LotNumberDate.M_Attribute_ID = (SELECT M_Attribute_ID FROM M_Attribute WHERE name = 'Tageslot Datum')	
 -- WHERE
 -- 	lu.M_HU_ID = $P{M_HU_ID}
 ;

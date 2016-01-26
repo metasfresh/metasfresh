@@ -47,9 +47,6 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
-import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.MPPProductBOM;
-import org.eevolution.model.MPPProductBOMLine;
 
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
@@ -465,6 +462,8 @@ public class MOrder extends X_C_Order implements DocAction
 	 */
 	public void setBPartner(MBPartner bp)
 	{
+		// FIXME: keep in sync / merge with de.metas.adempiere.service.impl.OrderBL.setBPartner(I_C_Order, I_C_BPartner)
+		
 		if (bp == null)
 			return;
 
@@ -499,9 +498,9 @@ public class MOrder extends X_C_Order implements DocAction
 		if (ss != null)
 			setPaymentRule(ss);
 		// Sales Rep
-		ii = bp.getSalesRep_ID();
-		if (ii != 0)
-			setSalesRep_ID(ii);
+		final int salesRepId = bp.getSalesRep_ID();
+		if (salesRepId > 0)
+			setSalesRep_ID(salesRepId);
 
 		// Set Locations
 		MBPartnerLocation[] locs = bp.getLocations(false);
@@ -1026,12 +1025,8 @@ public class MOrder extends X_C_Order implements DocAction
 		}
 
 		// Default Sales Rep
-		if (getSalesRep_ID() == 0)
-		{
-			int ii = Env.getContextAsInt(getCtx(), "#SalesRep_ID");
-			if (ii != 0)
-				setSalesRep_ID(ii);
-		}
+		// NOTE: we shall not set the SalesRep from context if is not set.
+		// This is not a mandatory field, so leave it like it is.
 
 		// Default Document Type
 		if (getC_DocTypeTarget_ID() == 0)

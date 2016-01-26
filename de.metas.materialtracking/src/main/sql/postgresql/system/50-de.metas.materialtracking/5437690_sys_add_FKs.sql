@@ -1,4 +1,74 @@
 
+ALTER TABLE M_Material_Tracking_Report DROP CONSTRAINT IF EXISTS CPeriod_MMaterialTrackingRepor;
+
+ALTER TABLE M_QualityInsp_LagerKonf_Version DROP CONSTRAINT IF EXISTS CUOMScrap_MQualityInspLagerKon;
+
+ALTER TABLE M_QualityInsp_LagerKonf_ProcessingFee DROP CONSTRAINT IF EXISTS CUOM_MQualityInspLagerKonfProc;
+
+ALTER TABLE M_QualityInsp_LagerKonf_Month_Adj DROP CONSTRAINT IF EXISTS CUOM_MQualityInspLagerKonfMont;
+
+ALTER TABLE M_Material_Tracking_Report_Line_Alloc DROP CONSTRAINT IF EXISTS MMaterialTracking_MMaterialTra;
+
+ALTER TABLE M_QualityInsp_LagerKonf_AdditionalFee DROP CONSTRAINT IF EXISTS MQualityInspLagerKonfVersion_M;
+
+ALTER TABLE M_QualityInsp_LagerKonf_Version DROP CONSTRAINT IF EXISTS MProductScrap_MQualityInspLage;
+
+ALTER TABLE M_Material_Tracking_Report_Line_Alloc DROP CONSTRAINT IF EXISTS MMaterialTrackingReportLine_MM;
+
+ALTER TABLE M_Material_Tracking_Ref DROP CONSTRAINT IF EXISTS ADTable_MMaterialTrackingRef;
+
+ALTER TABLE M_Material_Tracking DROP CONSTRAINT IF EXISTS SalesRep_MMaterialTracking;
+
+ALTER TABLE M_Material_Tracking_Report_Line DROP CONSTRAINT IF EXISTS MMaterialTrackingReport_MMater;
+
+ALTER TABLE M_Material_Tracking_Ref DROP CONSTRAINT IF EXISTS MMaterialTracking_MMaterialTra;
+
+ALTER TABLE M_QualityInsp_LagerKonf_Version DROP CONSTRAINT IF EXISTS MProductWitholding_MQualityIns;
+
+ALTER TABLE M_QualityInsp_LagerKonf_Version DROP CONSTRAINT IF EXISTS MProductProcessingFee_MQuality;
+
+ALTER TABLE M_QualityInsp_LagerKonf_Version DROP CONSTRAINT IF EXISTS MQualityInspLagerKonf_MQuality;
+
+ALTER TABLE M_Material_Tracking DROP CONSTRAINT IF EXISTS CAllotment_MMaterialTracking;
+
+ALTER TABLE M_QualityInsp_LagerKonf_Version DROP CONSTRAINT IF EXISTS MProductRegularPPOrder_MQualit;
+
+ALTER TABLE M_Material_Tracking_Report_Line DROP CONSTRAINT IF EXISTS MProduct_MMaterialTrackingRepo;
+
+ALTER TABLE M_Material_Tracking DROP CONSTRAINT IF EXISTS MAttributeValue_MMaterialTrack;
+
+ALTER TABLE M_Material_Tracking DROP CONSTRAINT IF EXISTS MQualityInspLagerKonfVersion_M;
+
+ALTER TABLE M_QualityInsp_LagerKonf_AdditionalFee DROP CONSTRAINT IF EXISTS MProduct_MQualityInspLagerKonf;
+
+ALTER TABLE M_Material_Tracking DROP CONSTRAINT IF EXISTS CFlatrateTerm_MMaterialTrackin;
+
+ALTER TABLE M_Material_Tracking_Report_Line_Alloc DROP CONSTRAINT IF EXISTS ADTable_MMaterialTrackingRepor;
+
+ALTER TABLE M_QualityInsp_LagerKonf_ProcessingFee DROP CONSTRAINT IF EXISTS MQualityInspLagerKonfVersion_M;
+
+ALTER TABLE M_QualityInsp_LagerKonf_Month_Adj DROP CONSTRAINT IF EXISTS MQualityInspLagerKonfVersion_M;
+
+ALTER TABLE M_QualityInsp_LagerKonf_Version DROP CONSTRAINT IF EXISTS CCurrency_MQualityInspLagerKon;
+
+ALTER TABLE M_Material_Tracking_Report DROP CONSTRAINT IF EXISTS CYear_MMaterialTrackingReport;
+
+ALTER TABLE M_Material_Tracking_Report_Line DROP CONSTRAINT IF EXISTS MAttributeSetInstance_MMateria;
+
+ALTER TABLE M_InOutLine DROP CONSTRAINT IF EXISTS MMaterialTracking_MInOutLine;
+
+ALTER TABLE PP_Order DROP CONSTRAINT IF EXISTS MMaterialTracking_PPOrder;
+
+ALTER TABLE C_Flatrate_Conditions DROP CONSTRAINT IF EXISTS MQualityInspLagerKonf_CFlatrat;
+
+ALTER TABLE C_Invoice_Detail DROP CONSTRAINT IF EXISTS PPOrder_CInvoiceDetail;
+
+ALTER TABLE C_Invoice_Candidate DROP CONSTRAINT IF EXISTS MMaterialTracking_CInvoiceCand;
+
+--------------------------------
+
+
+
 ALTER TABLE M_Material_Tracking_Report ADD CONSTRAINT CPeriod_MMaterialTrackingRepor FOREIGN KEY (C_Period_ID) REFERENCES C_Period DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE M_QualityInsp_LagerKonf_Version ADD CONSTRAINT CUOMScrap_MQualityInspLagerKon FOREIGN KEY (C_UOM_Scrap_ID) REFERENCES C_UOM DEFERRABLE INITIALLY DEFERRED;
