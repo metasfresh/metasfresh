@@ -22,7 +22,7 @@ SELECT
 	Budget_2000 * Multi_2000 AS Budget_2000,
 	Budget_100 * Multi_100 AS Budget_100,
 	Budget_150 * Multi_150 AS Budget_150,
-	Budget_1000 * Multi_1000 + Budget_2000 * Multi_2000 + Budget_100 * Multi_100 + Budget_150 * Multi_150 AS Budget,
+	Budget_1000 * Multi_1000 + Budget_2000 * Multi_2000 + Budget_100 * Multi_100 + Budget_150 * Multi_150 + Budget_Other * Multi_150 AS Budget,
 	acctBalance(l_ElementValue_ID, 0, 1) AS l_Multiplicator
 
 FROM
@@ -40,7 +40,9 @@ FROM
 			SUM( CASE WHEN a.Value = '1000' THEN Budget ELSE 0 END ) AS Budget_1000,
 			SUM( CASE WHEN a.Value = '2000' THEN Budget ELSE 0 END ) AS Budget_2000,
 			SUM( CASE WHEN a.Value = '100' THEN Budget ELSE 0 END ) AS Budget_100,
-			SUM( CASE WHEN a.Value = '150' THEN Budget  ELSE 0 END ) AS Budget_150
+			SUM( CASE WHEN a.Value = '150' THEN Budget  ELSE 0 END ) AS Budget_150,
+			SUM( CASE WHEN a.Value IS NULL OR (a.Value != '1000' AND a.Value != '2000' AND a.Value != '100' AND a.Value != '150') 
+				THEN Budget ELSE 0 END ) AS Budget_Other
 		FROM
 			(
 				SELECT fa.Account_ID
@@ -50,7 +52,10 @@ FROM
 				FROM Fact_Acct fa
 				left outer join C_Activity a on (a.C_Activity_ID=fa.C_Activity_ID)
 				left outer join C_Activity ap on (ap.C_Activity_ID=a.Parent_Activity_ID)
-				WHERE	dateacct::date <= $1
+				WHERE	CASE WHEN postingtype = 'B' THEN
+					dateacct::date <= (select enddate from c_period where c_period_id=report.Get_Period( 1000000, $1 ))
+				ELSE 
+					(dateacct::date <= $1) END
 					AND dateacct::Date >= (
 						SELECT MIN( StartDate )::Date FROM C_Period 
 						WHERE C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000, $1 ))
