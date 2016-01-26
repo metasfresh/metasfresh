@@ -57,6 +57,7 @@ public class ImportOrder extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -84,6 +85,7 @@ public class ImportOrder extends SvrProcess
 	 *  @return Message
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws java.lang.Exception
 	{
 		StringBuffer sql = null;
@@ -706,8 +708,11 @@ public class ImportOrder extends SvrProcess
 					//	SalesRep from Import or the person running the import
 					if (imp.getSalesRep_ID() != 0)
 						order.setSalesRep_ID(imp.getSalesRep_ID());
-					if (order.getSalesRep_ID() == 0)
-						order.setSalesRep_ID(getAD_User_ID());
+					// Default Sales Rep
+					// NOTE: we shall not set the SalesRep from context if is not set.
+					// This is not a mandatory field, so leave it like it is.
+					// if (order.getSalesRep_ID() == 0)
+					// order.setSalesRep_ID(getAD_User_ID());
 					//
 					if (imp.getAD_OrgTrx_ID() != 0)
 						order.setAD_OrgTrx_ID(imp.getAD_OrgTrx_ID());

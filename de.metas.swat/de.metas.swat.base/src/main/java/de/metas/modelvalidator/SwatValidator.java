@@ -143,7 +143,7 @@ public class SwatValidator implements ModelValidator
 	 * 
 	 * @see http://dewiki908/mediawiki/index.php/US315:_Im_Mahntext_die_neuen_Textbausteine_verwenden_k%C3%B6nnen_%282010070510000495%29#SalesRep_issue_.28Teo_09:24.2C_26._Okt._2011_.28CEST.29.29
 	 */
-	public static final String SYSCONFIG_DEFAULT_SalesRep_ID = "DEFAULT_SalesRep_ID";
+	private static final String SYSCONFIG_DEFAULT_SalesRep_ID = "DEFAULT_SalesRep_ID";
 
 	private final CLogger log = CLogger.getCLogger(getClass());
 
@@ -375,8 +375,8 @@ public class SwatValidator implements ModelValidator
 		int defaultSalesRepId = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DEFAULT_SalesRep_ID, -1, Env.getAD_Client_ID(ctx), AD_Org_ID);
 		if (defaultSalesRepId > 0)
 		{
-			log.info("Set #SalesRep_ID=" + defaultSalesRepId + " from " + SYSCONFIG_DEFAULT_SalesRep_ID);
-			Env.setContext(ctx, "#SalesRep_ID", defaultSalesRepId);
+			log.info("Set " + Env.CTXNAME_SalesRep_ID + "=" + defaultSalesRepId + " from " + SYSCONFIG_DEFAULT_SalesRep_ID);
+			Env.setContext(ctx, Env.CTXNAME_SalesRep_ID, defaultSalesRepId);
 		}
 
 		return null;

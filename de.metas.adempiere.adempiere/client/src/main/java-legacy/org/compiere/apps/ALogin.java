@@ -983,7 +983,7 @@ public final class ALogin extends CDialog
 		log.config(": " + client);
 		m_comboActive = true;
 
-		// @Trifon - Set Proper "#AD_Client_ID", #AD_User_ID and "#SalesRep_ID"
+		// @Trifon - Set Proper Env.CTXNAME_AD_Client_ID, Env.CTXNAME_AD_User_ID and Env.CTXNAME_SalesRep_ID
 		// https://sourceforge.net/tracker/?func=detail&aid=2957215&group_id=176962&atid=879332
 		final Properties ctx = getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, client.getKey());
