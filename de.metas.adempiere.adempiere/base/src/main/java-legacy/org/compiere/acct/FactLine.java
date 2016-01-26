@@ -30,6 +30,7 @@ import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -150,7 +151,7 @@ final class FactLine extends X_Fact_Acct
 	public void setAccount(MAcctSchema acctSchema, MAccount acct)
 	{
 		m_acctSchema = acctSchema;
-		setC_AcctSchema(acctSchema);
+		super.setC_AcctSchema(acctSchema);
 		//
 		m_acct = acct;
 		if (getAD_Client_ID() == 0)
@@ -198,6 +199,29 @@ final class FactLine extends X_Fact_Acct
 			}
 		}
 	}   // setAccount
+	
+	final MAcctSchema getAcctSchema()
+	{
+		return m_acctSchema;
+	}
+	
+	/**
+	 * Always throw {@link UnsupportedOperationException}. Please use {@link #setAccount(MAcctSchema, MAccount)}.
+	 */
+	@Override
+	public final void setC_AcctSchema(final I_C_AcctSchema acctSchema)
+	{
+		throw new UnsupportedOperationException("Please use setAccount()");
+	}
+	
+	/**
+	 * Always throw {@link UnsupportedOperationException}. Please use {@link #setAccount(MAcctSchema, MAccount)}.
+	 */
+	@Override
+	public final void setC_AcctSchema_ID(int C_AcctSchema_ID)
+	{
+		throw new UnsupportedOperationException("Please use setAccount()");
+	}
 	
 	public boolean isZeroAmtSource()
 	{
@@ -496,13 +520,18 @@ final class FactLine extends X_Fact_Acct
 			setUser2_ID(m_doc.getUser2_ID());
 		// References in setAccount
 	}   // setDocumentInfo
+	
+	public final Doc getDoc()
+	{
+		return m_doc;
+	}
 
 	/**
 	 * Get Document Line
 	 *
 	 * @return doc line
 	 */
-	public DocLine getDocLine()
+	public final DocLine getDocLine()
 	{
 		return m_docLine;
 	}	// getDocLine

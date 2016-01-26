@@ -57,33 +57,6 @@ public final class MAcctSchemaElement extends X_C_AcctSchema_Element
 	public static MAcctSchemaElement[] getAcctSchemaElements (I_C_AcctSchema as)
 	{
 		return LegacyAdapters.convertToPOArray(Services.get(IAcctSchemaDAO.class).retrieveSchemaElements(as), MAcctSchemaElement.class);
-		
-//		Integer key = new Integer (as.getC_AcctSchema_ID());
-//		MAcctSchemaElement[] retValue = (MAcctSchemaElement[]) s_cache.get (key);
-//		if (retValue != null)
-//			return retValue;
-//
-//		s_log.fine("C_AcctSchema_ID=" + as.getC_AcctSchema_ID());
-//		ArrayList<MAcctSchemaElement> list = new ArrayList<MAcctSchemaElement>();
-//		
-//		String whereClause = "C_AcctSchema_ID=? AND IsActive=?";
-//		List<MAcctSchemaElement> elements= new Query(as.getCtx(), MAcctSchemaElement.Table_Name,whereClause,as.get_TrxName())
-//		.setParameters(new Object[]{as.getC_AcctSchema_ID(),"Y"}).setOrderBy("SeqNo")
-//		.list();
-//		
-//		for(MAcctSchemaElement ase : elements)
-//		{
-//			s_log.fine(" - " + ase);
-//			if (ase.isMandatory() && ase.getDefaultValue() == 0)
-//				s_log.log(Level.SEVERE, "No default value for " + ase.getName());
-//			list.add(ase);
-//		}
-//		
-//		retValue = new MAcctSchemaElement[list.size()];
-//		list.toArray(retValue);
-//		s_cache.put (key, retValue);
-//		return retValue;
-		
 	}   //  getAcctSchemaElements
 
 	/**

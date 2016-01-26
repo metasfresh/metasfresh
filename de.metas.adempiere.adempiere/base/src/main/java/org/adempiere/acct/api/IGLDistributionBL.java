@@ -1,15 +1,13 @@
 package org.adempiere.acct.api;
 
-import java.util.Properties;
-
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.MAccount;
+import org.compiere.model.I_GL_Distribution;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,16 +25,13 @@ import org.compiere.model.MAccount;
  * #L%
  */
 
-public interface IAccountDAO extends ISingletonService
+public interface IGLDistributionBL extends ISingletonService
 {
-
-	MAccount retrieveAccountById(Properties ctx, int validCombinationId);
-
 	/**
-	 * @param ctx
-	 * @param dimension
-	 * @return account or null
+	 * Validates given {@link I_GL_Distribution}, sets PercentTotal, IsValid.
+	 * 
+	 * @param glDistribution
+	 * @throws GLDistributionNotValidException in case it's not valid.
 	 */
-	MAccount retrieveAccount(Properties ctx, IAccountDimension dimension);
-
+	void validate(I_GL_Distribution glDistribution) throws GLDistributionNotValidException;
 }

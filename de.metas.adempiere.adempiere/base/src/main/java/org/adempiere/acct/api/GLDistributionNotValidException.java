@@ -1,15 +1,12 @@
 package org.adempiere.acct.api;
 
-import java.util.Properties;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.MAccount;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,16 +24,18 @@ import org.compiere.model.MAccount;
  * #L%
  */
 
-public interface IAccountDAO extends ISingletonService
+/**
+ * Exception thrown when {@link IGLDistributionBL#validate(org.compiere.model.I_GL_Distribution)} fails.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
+public class GLDistributionNotValidException extends AdempiereException
 {
+	private static final long serialVersionUID = -1707655052772443217L;
 
-	MAccount retrieveAccountById(Properties ctx, int validCombinationId);
-
-	/**
-	 * @param ctx
-	 * @param dimension
-	 * @return account or null
-	 */
-	MAccount retrieveAccount(Properties ctx, IAccountDimension dimension);
-
+	public GLDistributionNotValidException(final String message)
+	{
+		super(message);
+	}
 }
