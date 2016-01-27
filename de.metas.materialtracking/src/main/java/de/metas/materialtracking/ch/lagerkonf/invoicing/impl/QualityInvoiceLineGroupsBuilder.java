@@ -260,7 +260,15 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// task 08092: we only deal with regular orders if it is the last of > 1 invoicings
 		qualityBasedInvoicingBL.isLastInspection(_qiOrder))
 		{
-			createQualityInvoiceLineGroups_RegularOrders();
+			if (config.getOverallNumberOfInvoicings() == 1)
+			{
+				// task 09668
+				createQualityInvoiceLineGroups_RegularOrdersSimplified();
+			}
+			else
+			{
+				createQualityInvoiceLineGroups_RegularOrdersListDistinctPPOrders();
+			}
 		}
 
 		//
@@ -334,7 +342,111 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		return this;
 	}
 
-	private void createQualityInvoiceLineGroups_RegularOrders()
+	/**
+	 * Creates <b>one</b> "Auslagerung per..." record with the date of the qualityInspectionOrder and the full quantity that was received so far.
+	 *
+	 * @task http://dewiki908/mediawiki/index.php/09668_Karotten_Frisch_L%C3%B6sung_ohne_Qualit%C3%A4tslagerausgleich_%28103397626711%29
+	 */
+	private void createQualityInvoiceLineGroups_RegularOrdersSimplified()
+	{
+		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
+
+		final ILagerKonfQualityBasedConfig config = getQualityBasedConfig();
+
+		final IQualityInspectionOrder qualityInspectionOrder = _materialTrackingDocuments.getQualityInspectionOrderOrNull();
+		// if qualityInspectionOrder was null, we shouldn't be here
+		Check.assumeNotNull(qualityInspectionOrder, "the IQualityInspectionOrder of IMAterialTrackingDocuments {0} are not null", _materialTrackingDocuments);
+
+		final IQualityInspectionLinesCollection qualityInspectionLines = getQualityInspectionLinesCollection();
+		final IQualityInspectionLine producedWithoutByProducts = qualityInspectionLines.getByType(QualityInspectionLineType.ProducedTotalWithoutByProducts);
+		final IQualityInspectionLine overallRaw = qualityInspectionLines.getByType(QualityInspectionLineType.Raw);
+		final IHandlingUnitsInfo overallRawHUInfo = overallRaw.getHandlingUnitsInfoProjected();
+		final BigDecimal overallQtyTU = new BigDecimal(overallRawHUInfo.getQtyTU());
+		final BigDecimal overallAvgProducedQtyPerTU = producedWithoutByProducts.getQtyProjected().divide(overallQtyTU, RoundingMode.HALF_UP);
+		final I_C_UOM overallRawUOM = overallRaw.getC_UOM();
+
+		final Timestamp dateOfProduction = TimeUtil.getDay(materialTrackingPPOrderBL.getDateOfProduction(qualityInspectionOrder.getPP_Order()));
+
+		final QualityInvoiceLineGroup invoiceLineGroup = new QualityInvoiceLineGroup(QualityInvoiceLineGroupType.ProductionOrder);
+
+		final QualityInvoiceLine detailBefore = new QualityInvoiceLine();
+
+		detailBefore.setProductName("Anzahl kg pro Paloxe im Durchschnitt");
+		detailBefore.setDisplayed(true);
+		detailBefore.setC_UOM(overallRawUOM);
+		detailBefore.setQty(overallAvgProducedQtyPerTU);
+		detailBefore.setM_Product(config.getRegularPPOrderProduct());
+
+		invoiceLineGroup.addDetailBefore(detailBefore);
+
+		final QualityInvoiceLine invoiceableLine = new QualityInvoiceLine();
+		invoiceLineGroup.setInvoiceableLine(invoiceableLine);
+		final boolean displayRegularOrderData = true;
+		invoiceableLine.setDisplayed(displayRegularOrderData);
+
+		// initial HUInfo
+		final IHandlingUnitsInfoWritableQty huInfo = handlingUnitsInfoFactory.createHUInfoWritableQty(overallRawHUInfo);
+		huInfo.setQtyTU(overallQtyTU.intValue());
+		invoiceableLine.setHandlingUnitsInfo(huInfo);
+
+		invoiceableLine.setQty(overallRaw.getQtyProjected());
+
+		//
+		// static stuff like product, uom
+		final String labelPrefix = "Auslagerung per ";
+		final String labelToUse = createRegularOrderLabelToUse(labelPrefix, dateOfProduction);
+		invoiceableLine.setDescription(labelToUse);
+
+		// 08702: don't use the raw product itself, but a dedicated product.
+		// That's because the raw product is the product-under-contract and therefore the IC would have IsToClear='Y' if we used the raw-product here.
+		// Note that we only use the product, but the raw product's uom and qty.
+		invoiceableLine.setM_Product(config.getRegularPPOrderProduct());
+
+		invoiceableLine.setC_UOM(overallRawUOM);
+
+		// Pricing
+		final IPricingContext pricingCtx = createPricingContext(invoiceableLine);
+		BigDecimal priceActual = config.getQualityAdjustmentForDateOrNull(dateOfProduction);
+		if (priceActual == null)
+		{
+			// this means that for this config and dateOfProduction, there is no QualityAdjustment
+			// we set the price to be zero, and we'll create an invoice candidate, but we won't see it on the invoice jasper
+			priceActual = BigDecimal.ZERO;
+		}
+
+		final IPricingResult pricingResult = createPricingResult(pricingCtx, priceActual, invoiceableLine.getC_UOM());
+		invoiceableLine.setPrice(pricingResult);
+
+		// the detail that shall override the invoiceable line's displayed infos
+		final QualityInvoiceLine invoicableDetailLineOverride = createDetailForSingleRegularOrder(overallRawUOM, huInfo, invoiceableLine.getQty(), labelToUse);
+		invoicableDetailLineOverride.setDisplayed(displayRegularOrderData);
+
+		invoiceLineGroup.setInvoiceableLineOverride(invoicableDetailLineOverride);
+
+		//
+		// add a reference to each PP_Order
+		final List<IQualityInspectionOrder> allProductionOrders =
+				_materialTrackingDocuments
+						.getProductionOrdersForPLV(getPricingContext().getM_PriceList_Version());
+
+		for (final IQualityInspectionOrder productionOrder : allProductionOrders)
+		{
+			final QualityInvoiceLine ppOrderDetailLine = createQualityInvoiceLineDetail_RegularOrder(productionOrder,
+					overallAvgProducedQtyPerTU,
+					invoiceLineGroup
+							.getInvoiceableLine()
+							.getProductName());
+
+			invoiceLineGroup.addDetailBefore(ppOrderDetailLine);
+		}
+
+		addCreatedInvoiceLineGroup(invoiceLineGroup);
+	}
+
+	/**
+	 * Aggregates the existing production orders per production date.
+	 */
+	private void createQualityInvoiceLineGroups_RegularOrdersListDistinctPPOrders()
 	{
 		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
 
@@ -464,7 +576,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 							.getInvoiceableLine()
 							.getProductName());
 
-			ppOrderDetailLine.setDisplayed(false); // it's never displayed; we just add it so that we can do some QA later on
 			invoiceLineGroup.addDetailBefore(ppOrderDetailLine);
 
 			//
@@ -883,17 +994,18 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	}
 
 	/**
+	 * Creates and returns a single QualityInvoiceLine that references the given <code>productionOrder</code>.
+	 * <p>
 	 * Note: we also return a line if there is no QualityAdjustment to be invoiced, in order to keep track of every single regular PP_Order.
 	 *
-	 * @param regularOrder
+	 * @param productionOrder
 	 * @param overallAvgProducedQtyPerTU
 	 * @param labelToUse
 	 * @return
 	 */
-	// TODO: cover by our tests in QualityOrderReportBuilder_StandardUseCase_Test
 	@VisibleForTesting
 	private QualityInvoiceLine createQualityInvoiceLineDetail_RegularOrder(
-			final IQualityInspectionOrder regularOrder,
+			final IQualityInspectionOrder productionOrder,
 			final BigDecimal overallAvgProducedQtyPerTU,
 			final String labelToUse)
 	{
@@ -901,16 +1013,16 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// Extract parameters from regular manufacturing norder
 		final IQualityInspectionLinesCollection qualityInspectionLines = getQualityInspectionLinesCollection();
 
-		final IProductionMaterial currentRawProductionMaterial = regularOrder.getRawProductionMaterial();
+		final IProductionMaterial currentRawProductionMaterial = productionOrder.getRawProductionMaterial();
 		final I_C_UOM uom = currentRawProductionMaterial.getC_UOM();
 
-		final StringBuilder description = new StringBuilder("PP_Order[IsQualityInspection=" + regularOrder.isQualityInspection() + ", PP_Order.DocumentNo="
-				+ regularOrder.getPP_Order().getDocumentNo() + "]");
+		final StringBuilder description = new StringBuilder("PP_Order[IsQualityInspection=" + productionOrder.isQualityInspection()
+				+ ", PP_Order.DocumentNo=" + productionOrder.getPP_Order().getDocumentNo() + "]");
 
 		IHandlingUnitsInfo currentRawHUInfo = currentRawProductionMaterial.getHandlingUnitsInfo();
 		if (currentRawHUInfo == null)
 		{
-			logger.log(Level.INFO, "IQualityInspectionOrder {0} has no IHandlingUnitsInfo; computing the probable TU-Qty", regularOrder);
+			logger.log(Level.INFO, "IQualityInspectionOrder {0} has no IHandlingUnitsInfo; computing the probable TU-Qty", productionOrder);
 
 			final IQualityInspectionLine overallRaw = qualityInspectionLines.getByType(QualityInspectionLineType.Raw);
 			final IHandlingUnitsInfo overallRawHUInfo = overallRaw.getHandlingUnitsInfoProjected();
@@ -933,8 +1045,10 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final BigDecimal currentQty = overallAvgProducedQtyPerTU.multiply(new BigDecimal(currentRawHUInfo.getQtyTU()));
 
 		final QualityInvoiceLine detailForCurrentRegularOrder = createDetailForSingleRegularOrder(uom, currentRawHUInfo, currentQty, labelToUse);
-		detailForCurrentRegularOrder.setPP_Order(regularOrder.getPP_Order());
+		detailForCurrentRegularOrder.setPP_Order(productionOrder.getPP_Order());
 		detailForCurrentRegularOrder.setDescription(description.toString());
+
+		detailForCurrentRegularOrder.setDisplayed(false); // it's never displayed; we just add the line in order to have
 
 		return detailForCurrentRegularOrder;
 	}

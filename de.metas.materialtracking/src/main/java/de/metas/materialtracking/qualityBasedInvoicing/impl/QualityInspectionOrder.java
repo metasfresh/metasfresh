@@ -418,7 +418,12 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 			final IInvoicedSumProvider invoicedSumProvider = qualityBasedConfigProviderService.getInvoicedSumProvider();
 			_alreadyInvoicedSum = invoicedSumProvider.getAlreadyInvoicedNetSum(_materialTracking);
 		}
-		return _alreadyInvoicedSum ;
+		if (_alreadyInvoicedSum == null)
+		{
+			_alreadyInvoicedSum = BigDecimal.ZERO;
+		}
+
+		return _alreadyInvoicedSum;
 	}
 
 	@Override

@@ -35,6 +35,7 @@ import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_InOutLine;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
@@ -126,7 +127,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 		//
 		// Parameters
 		private I_M_PricingSystem _pricingSystem;
-		private Integer _materialTrackingId;
+		private I_M_Material_Tracking _materialTracking;
 		private List<IQualityInspectionOrder> _allProductionOrders;
 		private Set<Integer> _notYetInvoicedPPOrderIDs;
 
@@ -293,14 +294,15 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 					.filter(inOutFilter)
 					.andCollectChildren(org.compiere.model.I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class)
 					.addEqualsFilter(IMaterialTrackingAware.COLUMNNAME_M_Material_Tracking_ID, getM_Material_Tracking_ID())
-					.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial, false)
+					.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_Product_ID, _materialTracking.getM_Product_ID())
+					.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial, false) //
 
 					// can't hurt to be a bit predictable
 					.orderBy().addColumn(org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy()
 					.create()
 					.iterate(I_M_InOutLine.class);
 
-			final InOutLineAsVendorReceipt vendorReceipt = new InOutLineAsVendorReceipt();
+			final InOutLineAsVendorReceipt vendorReceipt = new InOutLineAsVendorReceipt(_materialTracking.getM_Product());
 			vendorReceipt.setPlv(plv);
 
 			while (inOutLines.hasNext())
@@ -334,16 +336,16 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			return _pricingSystem;
 		}
 
-		public Builder setM_Material_Tracking_ID(final int materialTrackingId)
+		public Builder setM_Material_Tracking(final I_M_Material_Tracking materialTracking)
 		{
-			_materialTrackingId = materialTrackingId;
+			_materialTracking = materialTracking;
 			return this;
 		}
 
 		private final int getM_Material_Tracking_ID()
 		{
-			Check.assumeNotNull(_materialTrackingId, "_materialTrackingId not null");
-			return _materialTrackingId;
+			Check.assumeNotNull(_materialTracking, "_materialTracking not null");
+			return _materialTracking.getM_Material_Tracking_ID();
 		}
 
 		public Builder setAllProductionOrders(final List<IQualityInspectionOrder> qualityInspectionOrders)

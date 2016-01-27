@@ -75,7 +75,9 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	private final I_C_UOM scrapUOM;
 
 	private Timestamp validToDate;
+
 	private static int overallNumberOfInvoicings = 2; // default/old behavior
+	private static boolean qualityAdjustmentsActive = true; // default/old behavior
 
 	/* package */HardCodedQualityBasedConfig(final IContextAware ctxAware)
 	{
@@ -177,6 +179,10 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	@Override
 	public BigDecimal getQualityAdjustmentForMonthOrNull(final int month)
 	{
+		if (!qualityAdjustmentsActive)
+		{
+			return null;
+		}
 		return month2qualityAdjustment.get(month);
 	}
 
@@ -256,6 +262,11 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 		return overallNumberOfInvoicings;
 	}
 
+	public static void setQualityAdjustmentActive(final boolean qualityAdjustmentOn)
+	{
+		HardCodedQualityBasedConfig.qualityAdjustmentsActive = qualityAdjustmentOn;
+	}
+
 	@Override
 	public I_M_Product getRegularPPOrderProduct()
 	{
@@ -285,5 +296,4 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	{
 		this.validToDate = validToDate;
 	}
-
 }

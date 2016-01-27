@@ -231,7 +231,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 
 			pricingInfo = MaterialTrackingDocumentsPricingInfo
 					.builder()
-					.setM_Material_Tracking_ID(getM_Material_Tracking().getM_Material_Tracking_ID())
+					.setM_Material_Tracking(getM_Material_Tracking())
 
 					// note that we give to the builder also those that were already processed into invoice candidates,
 					// because it needs that information to distinguish InOutLines that were not yet issued

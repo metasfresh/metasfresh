@@ -41,7 +41,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderService;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
+import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 
 public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 {
@@ -115,16 +117,13 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		icExt.setM_Material_Tracking(materialTracking);
 
 		// get the tracking's config and set its C_DocType
-// nope, they shall have just their "ordinary" doctype
-//		final IQualityBasedConfig config = Services.get(IQualityBasedSpiProviderService.class).getQualityBasedConfigProvider().provideConfigFor(materialTracking);
-//		if (config.getOverallNumberOfInvoicings() > 1)
-//		{
-//			ic.setC_DocTypeInvoice_ID(config.getC_DocTypeInvoice_DownPayment_ID());
-//		}
-//		else
-//		{
-//			ic.setC_DocTypeInvoice_ID(config.getC_DocTypeInvoice_FinalSettlement_ID());
-//		}
+		// task 09668: for "two-phase" material trackings (with downpayment and finla settlement), the packaging shall *not* be part of the invoice
+		final IQualityBasedSpiProviderService qualityBasedSpiProviderService = Services.get(IQualityBasedSpiProviderService.class);
+		final IQualityBasedConfig config = qualityBasedSpiProviderService.getQualityBasedConfigProvider().provideConfigFor(materialTracking);
+		if (config.getOverallNumberOfInvoicings() == 1)
+		{
+			ic.setC_DocTypeInvoice_ID(config.getC_DocTypeInvoice_FinalSettlement_ID());
+		}
 
 		// ----------------
 		ic.setM_PricingSystem_ID(materialTracking.getC_Flatrate_Term().getM_PricingSystem_ID());

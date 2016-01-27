@@ -68,22 +68,22 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 	private IHandlingUnitsInfo _handlingUnitsInfo = null;
 	private I_M_PriceList_Version plv;
 
-	public InOutLineAsVendorReceipt()
+	public InOutLineAsVendorReceipt(final I_M_Product vendorProduct)
 	{
+		Check.assumeNotNull(vendorProduct, "Param 'vendorProduct' is not null");
+		this._product = vendorProduct;
 	}
 
 	@Override
 	public void add(final I_M_InOutLine inOutLine)
 	{
 		Check.assumeNotNull(inOutLine, "inOutLine not null");
-
-		if (!inOutLines.isEmpty())
+		if (inOutLine.getM_Product_ID() != _product.getM_Product_ID())
 		{
-			checkConsistency(inOutLines.get(0), inOutLine);
+			return; // nothing to do
 		}
 		inOutLines.add(inOutLine);
 	}
-
 
 	@Override
 	public List<I_M_InOutLine> getModels()
@@ -140,16 +140,16 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 		return _handlingUnitsInfo;
 	}
 
-	@Override public I_M_PriceList_Version getPLV()
+	@Override
+	public I_M_PriceList_Version getPLV()
 	{
 		return plv;
 	}
 
-	/*package*/ void setPlv(I_M_PriceList_Version plv)
+	/* package */void setPlv(I_M_PriceList_Version plv)
 	{
 		this.plv = plv;
 	}
-
 
 	private final void loadQtysIfNeeded()
 	{
@@ -161,14 +161,12 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 		final I_M_InOutLine firstInOutLine = inOutLines.get(0);
 		//
 		// Vendor Product
-		final I_M_Product product = firstInOutLine.getM_Product();
-		Check.assumeNotNull(product, "product not null");
-		final int productId = product.getM_Product_ID();
-		final I_C_UOM productUOM = product.getC_UOM();
+		final int productId = _product.getM_Product_ID();
+		final I_C_UOM productUOM = _product.getC_UOM();
 		Check.assumeNotNull(productUOM, "productUOM not null");
 
 		// Define the conversion context (in case we need it)
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
+		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(_product);
 
 		//
 		// UOM
@@ -181,11 +179,9 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 
 		for (final I_M_InOutLine inoutLine : inOutLines)
 		{
-			checkConsistency(firstInOutLine, inoutLine);
-
 			if (inoutLine.getM_Product_ID() != productId)
 			{
-				logger.log(Level.FINE, "Not counting {0} because its M_Product_ID={1} is not the ID of product {2}", new Object[] { inoutLine, inoutLine.getM_Product_ID(), product });
+				logger.log(Level.FINE, "Not counting {0} because its M_Product_ID={1} is not the ID of product {2}", new Object[] { inoutLine, inoutLine.getM_Product_ID(), _product });
 				continue;
 			}
 
@@ -218,20 +214,9 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 
 		//
 		// Set loaded values
-		_product = product;
 		_qtyReceived = qtyReceivedTotal;
 		_qtyReceivedUOM = qtyReceivedTotalUOM;
 		_handlingUnitsInfo = handlingUnitsInfoTotal;
 		_loaded = true;
-	}
-
-	private void checkConsistency(final I_M_InOutLine firstInoutLine, final I_M_InOutLine inoutLine)
-	{
-		if (firstInoutLine == null)
-		{
-			return; // nothing to do
-		}
-		Check.assume(firstInoutLine.getM_Product_ID() == inoutLine.getM_Product_ID(),
-				"C_Invoice_Candidate {0} and {1} have the same M_Product_ID", firstInoutLine, inoutLine);
 	}
 }
