@@ -1,4 +1,4 @@
---drop view if exists report.fresh_EDI_DesadvLine_SSCC_Label_Report;
+drop view if exists report.fresh_EDI_DesadvLine_SSCC_Label_Report;
 
 create or replace view report.fresh_EDI_DesadvLine_SSCC_Label_Report
 as
@@ -40,7 +40,8 @@ select
 	NULL::numeric AS M_HU_ID,
 	--
 	dl_sscc.EDI_DesadvLine_SSCC_ID,
-	sel.AD_PInstance_ID
+	sel.AD_PInstance_ID,
+	'' AS LotNumberDate
 --
 from T_Selection sel
 INNER JOIN EDI_DesadvLine_SSCC dl_sscc on (dl_sscc.EDI_DesadvLine_SSCC_ID=sel.T_Selection_ID)
