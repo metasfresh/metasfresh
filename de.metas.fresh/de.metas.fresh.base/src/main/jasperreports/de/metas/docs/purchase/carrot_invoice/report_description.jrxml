@@ -71,7 +71,10 @@ FROM
 	LEFT OUTER JOIN (
 		SELECT
 			i.C_Invoice_ID,
-			MIN(qi.documentno) AS documentno,
+			CASE WHEN i_dt.docbasetype='API' AND i_dt.docsubtype='DP' THEN MIN(qi.documentno)
+			WHEN i_dt.docbasetype='API' AND i_dt.docsubtype='QI' THEN MAX(qi.documentno)
+			END AS documentno,
+			--qi.documentno AS documentno, -- left for traceability
 			count(qi.PP_Order_ID) > 1 AS qiPrintFF
 		FROM
 			C_Invoice i
@@ -86,7 +89,10 @@ FROM
 				AND mt.M_Material_Tracking_ID = mtr_pi.M_Material_Tracking_ID
 				AND mtr_pi.created < mtr_i.created
 
-			-- Get PP_Orders
+			LEFT OUTER JOIN C_DocType i_dt ON i.C_DocType_ID = i_dt.C_DocType_ID
+				AND ((i_dt.docbasetype='API' AND i_dt.docsubtype='DP') OR (i_dt.docbasetype='API' AND i_dt.docsubtype='QI'))
+
+			--get pp_orders
 			LEFT OUTER JOIN
 				(
 					SELECT DISTINCT
@@ -96,15 +102,19 @@ FROM
 					WHERE 	mtr_qi.AD_Table_ID = Get_Table_ID('PP_Order')
 						AND mtr_qi.IsQualityInspectionDoc='Y'
 				) mtr_qi ON mt.M_Material_Tracking_ID = mtr_qi.M_Material_Tracking_ID
-					AND ProductionDate <= mtr_i.Created
-					AND (ProductionDate > mtr_pi.Created OR mtr_pi.Created IS NULL)
+					-- left for traceability
+					--AND ProductionDate <= mtr_i.Created
+					--AND (ProductionDate > mtr_pi.Created OR mtr_pi.Created IS NULL)
+
+
 			LEFT OUTER JOIN PP_Order qi ON mtr_qi.PP_Order_ID = qi.PP_Order_ID
 		GROUP BY
-			i.C_Invoice_ID
+			i.C_Invoice_ID, i_dt.docbasetype,i_dt.docsubtype
 	) qi ON i.C_Invoice_ID = qi.C_Invoice_ID
 WHERE
 	i.C_Invoice_ID = $P{RECORD_ID}
-;]]>
+;
+]]>
 	</queryString>
 	<field name="documentno" class="java.lang.String"/>
 	<field name="dateinvoiced" class="java.sql.Timestamp"/>
