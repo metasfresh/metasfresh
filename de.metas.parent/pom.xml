@@ -961,7 +961,7 @@
 		<profile>
 			<!-- If there is a jasper soruces directory, this profile will activate 
 				 It will compile those jrxml files and then assemble the jasper files into a jar.
-				 It willAdds src/main/jasperreports as additional source folder
+				 It will *NOT* add src/main/jasperreports as additional source folder, (that's done by the "jasper-source-folder" profile)
 			-->
 			<id>jasper-build</id>
 
