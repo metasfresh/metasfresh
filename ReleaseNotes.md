@@ -28,6 +28,8 @@ Additional notes:
  - 09670_Daily Lot for material storing +uat
  - 09671_accounting_always book discount onto actNo 150 +uat
  - 09704_Migration ADempiere nach metasfresh +fix
+    * adjusting the included tab size in the windows order (sales+purchase), shipment and invoice (sales+purchase) to 800, 
+    * additional fixes
  - 09748_Menu search box working weird +fix
  - 09709_metasfresh web (early prototyping, nothing to use yet)
  - 09733_Problems with Sepa-XML import into Mammut +uat
