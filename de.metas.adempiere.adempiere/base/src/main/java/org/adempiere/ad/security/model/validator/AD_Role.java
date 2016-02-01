@@ -32,6 +32,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.impl.AD_Role_POCopyRecordSupport;
 import org.adempiere.ad.trx.api.ITrx;
@@ -94,6 +95,8 @@ public class AD_Role
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterSave(final I_AD_Role role, final ModelChangeType changeType)
 	{
+		// services:
+		final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 		final String trxName = InterfaceWrapperHelper.getTrxName(role);
 
 		//
@@ -103,15 +106,19 @@ public class AD_Role
 			// Add Role to SuperUser
 			final Properties ctx = InterfaceWrapperHelper.getCtx(role);
 
-			final MUserRoles su = new MUserRoles(ctx, IUserDAO.SUPERUSER_USER_ID, role.getAD_Role_ID(), trxName);
-			su.save();
+			if (!roleDAO.hasUserRoleAssignment(ctx, IUserDAO.SUPERUSER_USER_ID, role.getAD_Role_ID()))
+			{
+				final MUserRoles su = new MUserRoles(ctx, IUserDAO.SUPERUSER_USER_ID, role.getAD_Role_ID(), trxName);
+				InterfaceWrapperHelper.save(su);
+			}
 
 			// Add Role to User which created this record
 			final int createdByUserId = role.getCreatedBy();
-			if (createdByUserId != IUserDAO.SUPERUSER_USER_ID)
+			
+			if ((createdByUserId != IUserDAO.SUPERUSER_USER_ID) && !roleDAO.hasUserRoleAssignment(ctx, createdByUserId, role.getAD_Role_ID()))
 			{
 				final MUserRoles ur = new MUserRoles(ctx, createdByUserId, role.getAD_Role_ID(), trxName);
-				ur.save();
+				InterfaceWrapperHelper.save(ur);
 			}
 		}
 

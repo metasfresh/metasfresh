@@ -3,15 +3,10 @@ package org.adempiere.ad.security.impl;
 import java.sql.Timestamp;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.adempiere.model.GeneralCopyRecordSupport;
-import org.adempiere.model.TableInfoVO;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.model.GridTab;
-import org.compiere.model.I_AD_User_Roles;
 import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
@@ -66,21 +61,5 @@ public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 		}
 
 		to.set_CustomColumn(I_AD_Role.COLUMNNAME_Name, msg);
-
-	}
-
-	@Override
-	public List<TableInfoVO> getSuggestedChildren(PO po, GridTab gt)
-	{
-		List<TableInfoVO> list = super.getSuggestedChildren(po, gt);
-		// remove invoice tax from list
-		List<TableInfoVO> finalList = new ArrayList<TableInfoVO>();
-		// Exclude I_AD_User_Roles from copying. These entries are created after save. See org.adempiere.ad.security.model.validator.AD_Role.afterSave(I_AD_Role, ModelChangeType)
-		for (TableInfoVO childTableInfo : list)
-		{
-			if (!I_AD_User_Roles.Table_Name.equals(childTableInfo.tableName))
-				finalList.add(childTableInfo);
-		}
-		return finalList;
 	}
 }

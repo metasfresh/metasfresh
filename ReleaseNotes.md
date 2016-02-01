@@ -19,6 +19,9 @@ Additional notes:
 # The actual release notes
  
 ## Upcoming Release
+ - 09726 Deep-copy support for AD Roles (106651676304) +uat +feature
+    * we now also copy user-role assignements to the target role
+ - 09625 Costing short report incl Budget (105806249331) +uat +feature
  - 09767 DBMoreThenOneRecordsFoundException when retrieving from picking slot queue (105944016827) +uat +fix
  - 09710 Report regarding effective prices (107746499502)
  - 09704 Migration ADempiere to metasfresh (100169279454) +it +feature

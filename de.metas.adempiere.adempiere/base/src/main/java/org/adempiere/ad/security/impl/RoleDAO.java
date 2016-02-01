@@ -181,4 +181,17 @@ public class RoleDAO implements IRoleDAO
 		final I_AD_Role role = retrieveRole(ctx, adRoleId);
 		return role == null ? "<" + adRoleId + ">" : role.getName();
 	}
+	
+	@Override	
+	public boolean hasUserRoleAssignment(final Properties ctx, final int adUserId, final int adRoleId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_Roles.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(I_AD_User_Roles.COLUMNNAME_AD_User_ID, adUserId)
+				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_Role_ID, adRoleId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.match();
+	}
+
 }
