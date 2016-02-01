@@ -52,6 +52,13 @@ import de.metas.payment.api.IPaymentBL;
 
 public class PaySelectionBL implements IPaySelectionBL
 {
+	private static final String MSG_CannotReactivate_PaySelectionLineInBankStatement_2P = "CannotReactivate_PaySelectionLineInBankStatement"; 
+	
+	/** @return true if given pay selection line is imported in a bank statement */
+	private boolean isInBankStatement(final I_C_PaySelectionLine psl)
+	{
+		return psl.getC_BankStatementLine_ID() > 0 || psl.getC_BankStatementLine_Ref_ID() > 0;
+	}
 
 	@Override
 	public void createBankStatementLines(
@@ -74,7 +81,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		for (final I_C_PaySelectionLine psl : paySelectionLines)
 		{
 			// Skip if already in a bank statement
-			if (psl.getC_BankStatementLine_ID() > 0 || psl.getC_BankStatementLine_Ref_ID() > 0)
+			if (isInBankStatement(psl))
 			{
 				continue;
 			}
@@ -254,7 +261,7 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		// Skip if this pay selection line is already in a bank statement
 		// because in that case, the payment shall be generated there
-		if (line.getC_BankStatementLine_ID() > 0 || line.getC_BankStatementLine_Ref_ID() > 0)
+		if (isInBankStatement(line))
 		{
 			return null;
 		}
@@ -320,6 +327,42 @@ public class PaySelectionBL implements IPaySelectionBL
 	{
 		psl.setC_BankStatementLine(null);
 		psl.setC_BankStatementLine_Ref(null);
+		InterfaceWrapperHelper.save(psl);
+	}
+	
+	@Override
+	public void reActivate(final I_C_PaySelection paySelection)
+	{
+		if(!paySelection.isProcessed())
+		{
+			// already re-activated, nothing to do
+			return;
+		}
+		
+		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
+		{
+			paySelectionLine.setC_PaySelection(paySelection); // for optimizations
+			reActivate(paySelectionLine);
+		}
+		
+		paySelection.setProcessed(false);
+		InterfaceWrapperHelper.save(paySelection);
+	}
+	
+	private final void reActivate(final I_C_PaySelectionLine psl)
+	{
+		if (!psl.isProcessed())
+		{
+			return;
+		}
+		
+		if (isInBankStatement(psl))
+		{
+			throw new AdempiereException(MSG_CannotReactivate_PaySelectionLineInBankStatement_2P, new Object[] { psl.getLine(), psl.getC_BankStatementLine().getC_BankStatement().getDocumentNo() });
+		}
+		
+		psl.setProcessed(false);
 		InterfaceWrapperHelper.save(psl);
 	}
 }
