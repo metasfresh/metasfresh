@@ -135,18 +135,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 					continue;
 				}
 
-				//
-				// Special case: Best-before attribute (task #09363)
-				{
-					final BestBeforeASIAttributeValue bestBeforeAttributeValue = BestBeforeASIAttributeValue.createIfApplies(this, asi, piAttribute);
-					if (bestBeforeAttributeValue != null)
-					{
-						result.add(bestBeforeAttributeValue);
-						continue;
-					}
-				}
-
-				//
 				// No M_AttributeInstance was found for our PI Attribute
 				// => create one but don't save
 				final String trxName = InterfaceWrapperHelper.getTrxName(asi);
