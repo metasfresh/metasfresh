@@ -1,0 +1,617 @@
+
+---- MIGRATION
+
+
+
+
+----------- PARTNER SALESGROUP ------------------
+
+
+
+
+
+-- 26.01.2016 16:25
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_BPartner SET Salesgroup='0030',Updated=TO_TIMESTAMP('2016-01-26 16:25:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_BPartner_ID=2000228
+;
+
+-- 26.01.2016 16:26
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_BPartner SET Salesgroup='0030',Updated=TO_TIMESTAMP('2016-01-26 16:26:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_BPartner_ID=2000235
+;
+
+-- 26.01.2016 16:26
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_BPartner SET Salesgroup='0030',Updated=TO_TIMESTAMP('2016-01-26 16:26:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_BPartner_ID=2000237
+;
+
+
+
+
+--------- PRODUCT SALESGROUP --------------------
+
+
+
+-- 26.01.2016 16:28
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+--UPDATE M_Product SET Salesgroup='0010',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Product_ID=2000650
+;
+
+-- Blumenkohl
+
+
+UPDATE M_Product SET Salesgroup='0010',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000112',
+'P000113',
+'P002537',
+'P000114',
+'P000115',
+'P002671',
+'P001262',
+'P001263',
+'P001805',
+'P001806'
+) ;
+
+--Broccoli
+
+
+UPDATE M_Product SET Salesgroup='0020',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000121',
+'P000122',
+'P000123',
+'P000124',
+'P002120',
+'P001264',
+'P001265'
+) ;
+
+-- Cherry-Tomaten Rispen
+
+
+UPDATE M_Product SET Salesgroup='0030',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000510',
+'P002299',
+'P000511',
+'P002036',
+'P002298'
+)
+;
+
+-- Chicorée Witloof
+
+UPDATE M_Product SET Salesgroup='0040',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000425',
+'P000426',
+'P000427',
+'P001146',
+'P001147'
+)
+;
+
+-- Ciccorino rosso
+
+
+UPDATE M_Product SET Salesgroup='0050',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000321',
+'P000429',
+'P000430',
+'P000431',
+'P000496',
+'P001113',
+'P001114',
+'P001115',
+'P001770',
+'P001774',
+'P001775',
+'P002071',
+'P002441'
+)
+;
+
+-- Eichblatt grün und rot
+
+
+UPDATE M_Product SET Salesgroup='0060',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000322',
+'P000323',
+'P000324',
+'P000432',
+'P000433',
+'P000435',
+'P000436',
+'P000434',
+'P000437',
+'P001000',
+'P001142',
+'P001143'
+)
+;
+
+-- Eisberg
+
+
+UPDATE M_Product SET Salesgroup='0070',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000439',
+'P002241',
+'P000325',
+'P000438',
+'P000441',
+'P000440',
+'P000757',
+'P000758',
+'P000775',
+'P000776',
+'P000777',
+'P001116',
+'P001117',
+'P001118',
+'P001119',
+'P001120',
+'P001192',
+'P001193',
+'P001194',
+'P001195',
+'P001196',
+'P001197',
+'P001801',
+'P001816',
+'P001817',
+'P001818',
+'P001914',
+'P002737',
+'P002895',
+'P002314',
+'P002313',
+'P002315'
+
+
+)
+;
+
+-- Fenchel
+
+
+UPDATE M_Product SET Salesgroup='0080',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000146',
+'P000147',
+'P000148',
+'P001266',
+'P001820',
+'P001821',
+'P001822'
+
+)
+
+;
+
+-- Karotten 
+
+UPDATE M_Product SET Salesgroup='0090',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+
+'P000360',
+'P000365',
+'P000367',
+'P000363',
+'P000314',
+'P000315',
+'P000355',
+'P002289',
+'P000369',
+'P000356',
+'P000358',
+'P001924',
+'P000361',
+'P002319',
+'P001891',
+'P001203',
+'P001872',
+'P001299',
+'P001274',
+'P001177',
+'P000364',
+'P001271',
+'P001812',
+'P002118',
+'P002083',
+'P001276',
+'P001277',
+'P001879',
+'P001273',
+'P001807',
+'P000830',
+'P000958',
+'P001201',
+'P001202',
+'P000831',
+'P002074',
+'P000959',
+'P001295',
+'P001275',
+'P002015',
+'P002371',
+'P001270',
+'P001269',
+'P002594',
+'P002014',
+'P001769',
+'P002095',
+'P000357',
+'P001749',
+'P000359',
+'P001740',
+'P001272',
+'P001944',
+'P002525',
+'P002107',
+'P002054',
+'P001178',
+'P001892',
+'P001179',
+'P001814',
+'P001813',
+'P000366',
+'P002055',
+'P001810',
+'P001809'
+
+
+); 
+
+
+-- Knollensellerie
+
+UPDATE M_Product SET Salesgroup='0100',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000164',
+'P000165',
+'P000163',
+'P001542',
+'P001917',
+'P001926',
+'P001927'
+
+)
+
+;
+
+-- Kohlrabi
+
+UPDATE M_Product SET Salesgroup='0110',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000131',
+'P000132',
+'P000267',
+'P000268'
+
+
+)
+;
+
+-- Kopfsalat grün und rot
+
+UPDATE M_Product SET Salesgroup='0120',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000452',
+'P000455',
+'P000331',
+'P000332',
+'P000451',
+'P000454',
+'P000457',
+'P001960',
+'P000453',
+'P000456',
+'P000458',
+'P000765',
+'P000766',
+'P000773',
+'P000778',
+'P000779',
+'P000780',
+'P001009',
+'P001126',
+'P001127',
+'P001128',
+'P001129',
+'P002039',
+'P002070',
+'P002273',
+'P002328',
+'P002865'
+
+)
+;
+
+-- Lauchgrün 
+
+UPDATE M_Product SET Salesgroup='0130',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+
+'P000188',
+'P000189',
+'P000192',
+'P000193',
+'P000194',
+'P000195',
+'P002011'
+
+
+) 
+;
+
+--  Nüsslisalat 
+
+UPDATE M_Product SET Salesgroup='0140',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000762',
+'P001135',
+'P000479',
+'P001746',
+'P002534',
+'P001745',
+'P000763',
+'P002538',
+'P000480',
+'P001772',
+'P001005',
+'P001136',
+'P000340',
+'P000477',
+'P002013',
+'P000481'
+
+
+
+) 
+;
+
+-- Radieschen
+
+
+UPDATE M_Product SET Salesgroup='0150',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000236',
+'P000237',
+'P002615',
+'P000238',
+'P002286',
+'P000235',
+'P001044',
+'P001238',
+'P001239',
+'P001240',
+'P001241',
+'P001717',
+'P001848',
+'P001897',
+'P001898',
+'P002264'
+
+) 
+;
+
+-- Randen gekocht
+
+
+UPDATE M_Product SET Salesgroup='0160',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+
+'P001475',
+'P001476',
+'P001477',
+'P001478',
+'P001479',
+'P001875',
+'P002536',
+'P001849',
+'P001850',
+'P000910',
+'P000913',
+'P000915',
+'P000935',
+'P000938',
+'P000940',
+'P000941',
+'P000946',
+'P000954',
+'P000955',
+'P000956',
+'P000957',
+'P001088',
+'P001480',
+'P001481',
+'P001482',
+'P001483',
+'P001484',
+'P001485',
+'P001486',
+'P001487',
+'P002380',
+'P002421'
+
+
+) 
+;
+-- Salatgurken
+
+
+
+UPDATE M_Product SET Salesgroup='0170',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000156',
+'P000157',
+'P002278',
+'P002279',
+'P002317',
+'P002748',
+'P002750'
+
+
+)
+;
+
+-- Tomaten Rispen
+
+UPDATE M_Product SET Salesgroup='0180',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+
+'P000512',
+'P000514',
+'P002291',
+'P002295',
+'P000508',
+'P002293'
+
+
+)
+;
+
+-- Tomaten rund
+
+UPDATE M_Product SET Salesgroup='0190',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+
+'P002031',
+'P002230',
+'P002231',
+'P000506',
+'P002292',
+'P000515',
+'P000517',
+'P001744',
+'P002225',
+'P000518',
+'P002296',
+'P000519',
+'P001916',
+'P002227',
+'P002228',
+'P000520',
+'P002297',
+'P000522'
+
+
+)
+;
+-- Zuchetti grün und gelb
+
+UPDATE M_Product SET Salesgroup='0200',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P001922',
+'P002253',
+'P001748',
+'P000300',
+'P000303',
+'P000197',
+'P001254',
+'P001255',
+'P001256',
+'P001257',
+'P001258',
+'P001259',
+'P001260',
+'P001261',
+'P001305',
+'P001315',
+'P001864',
+'P001865',
+'P001866',
+'P001867',
+'P001869',
+'P001870',
+'P001873',
+'P001874',
+'P001876',
+'P001877',
+'P001880',
+'P002707',
+'P002728',
+'P000301',
+'P000302',
+'P000304'
+
+
+)
+;
+-- Zuckerhut
+
+UPDATE M_Product SET Salesgroup='0210',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+'P000353',
+'P000497',
+'P000755',
+'P000756',
+'P000767',
+'P001008',
+'P001139',
+'P001140',
+'P001141'
+
+)
+;
+-- Zwiebeln
+
+UPDATE M_Product SET Salesgroup='0220',Updated=TO_TIMESTAMP('2016-01-26 16:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE value  in 
+(
+
+'P000609',
+'P000610',
+'P000613',
+'P000614',
+'P000615',
+'P000616',
+'P000617',
+'P000618',
+'P000611',
+'P000612',
+'P001086',
+'P001434',
+'P001435',
+'P001436',
+'P001438',
+'P001439',
+'P001440',
+'P001442',
+'P001444',
+'P001448',
+'P001449',
+'P001450',
+'P001451',
+'P001452',
+'P001455',
+'P001456',
+'P001911',
+'P001913',
+'P002415',
+'P000607',
+'P001437',
+'P001441',
+'P001443',
+'P001445',
+'P001446',
+'P001447',
+'P001453',
+'P001454',
+'P001457',
+'P001458',
+'P001878',
+'P001908',
+'P001909',
+'P001910',
+'P001912',
+'P002104',
+'P002535',
+'P002582',
+'P000619'
+)
+;

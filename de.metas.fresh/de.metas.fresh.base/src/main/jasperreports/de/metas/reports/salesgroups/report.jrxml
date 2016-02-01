@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="5ad069ca-070c-4a0d-8ec7-5bee6b8a2ff0">
+	<property name="ireport.zoom" value="2.1435888100000016"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="DateFrom" class="java.util.Date"/>
+	<parameter name="DateTo" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[select * from report.Salesgroups($P{DateFrom}, $P{DateTo})]]>
+	</queryString>
+	<field name="productsalesgroup" class="java.lang.String"/>
+	<field name="qtyinvoiceddiscounter" class="java.math.BigDecimal"/>
+	<field name="qtyinvoicedgastro" class="java.math.BigDecimal"/>
+	<field name="qtyinvoiceddetailhandel" class="java.math.BigDecimal"/>
+	<field name="revenuediscounter" class="java.math.BigDecimal"/>
+	<field name="revenuegastro" class="java.math.BigDecimal"/>
+	<field name="revenuedetailhandel" class="java.math.BigDecimal"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="64" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="ec73b25f-4efe-4942-8bef-eca4c9314925" x="270" y="29" width="321" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Bundesamt Statistik]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement uuid="14c1925a-b86f-447f-b169-aab8b0490dfb" x="62" y="0" width="75" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$P{DateFrom}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="32a786f3-8c89-460c-8e56-ec16006a4229" x="0" y="0" width="62" height="20"/>
+				<textElement/>
+				<text><![CDATA[Datum von: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="32a786f3-8c89-460c-8e56-ec16006a4229" x="0" y="20" width="62" height="20"/>
+				<textElement/>
+				<text><![CDATA[Datum bis: ]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement uuid="14c1925a-b86f-447f-b169-aab8b0490dfb" x="62" y="20" width="75" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$P{DateTo}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="66" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="b9a66223-1069-4669-a92b-29fffae36f76" x="105" y="5" width="140" height="30"/>
+				<textElement textAlignment="Right">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Klassischer Detailhandel]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="7493e8dc-69e4-4da5-8e11-7f939756e495" x="292" y="5" width="103" height="30"/>
+				<textElement textAlignment="Center">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Discounter]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="28a40da7-b6a2-4393-898b-765fd3a010c0" x="105" y="36" width="70" height="30"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Menge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="eac4973d-01fe-47c1-b351-277958aa0b94" x="248" y="36" width="70" height="30"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Menge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="7d74116d-e21b-4999-98ca-146ec8c0ba4a" x="465" y="35" width="70" height="30"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Umsatz]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="42a19f60-bfee-43f4-9e46-d71649418e5d" x="175" y="36" width="70" height="30"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Umsatz]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="da708459-cdc4-4b99-9ba1-3c0862c0973e" x="395" y="36" width="70" height="30"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Menge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="833d8a5b-c60a-4825-8089-c29676d8c369" x="318" y="36" width="70" height="29"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Umsatz]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="ec66df54-ba81-4666-a548-e84240cdeed2" stretchType="RelativeToBandHeight" x="413" y="5" width="140" height="15"/>
+				<textElement textAlignment="Center">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Gastronimie und ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="3f7c01f5-8d31-42f5-b101-cb8b346efc94" x="0" y="36" width="105" height="30"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Gemüse]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="32c600a9-61ba-410c-ac49-f41f38d6b5ab" x="413" y="19" width="140" height="16"/>
+				<textElement textAlignment="Center">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Gastronomie - Grosshandel]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<textField>
+				<reportElement uuid="f579eef3-a44f-46bb-9884-32b135a7605a" x="0" y="0" width="105" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{productsalesgroup}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement uuid="7de6d364-712f-4b96-aa11-af3e4198e6e3" x="175" y="1" width="70" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{revenuedetailhandel}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement uuid="995bfa0f-6e14-4d73-8bce-13498c9f477e" x="465" y="1" width="70" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{revenuegastro}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement uuid="0eb745e3-6d37-40b8-b550-25769116813e" x="248" y="0" width="70" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qtyinvoiceddiscounter}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement uuid="09a797da-5c63-4452-8a2c-3cf89e3c797d" x="105" y="1" width="70" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qtyinvoiceddetailhandel}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement uuid="fd5ac9e5-a612-450f-9a3d-1691fff8d9c9" x="318" y="1" width="70" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{revenuediscounter}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement uuid="8d452622-61da-406c-861c-a6670b0a3c2d" x="395" y="1" width="70" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qtyinvoicedgastro}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="38" splitType="Stretch">
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement uuid="1e49ce28-ec9f-4acd-93d7-b54d9b52df03" key="textField-31" mode="Transparent" x="787" y="24" width="14" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement uuid="f86c275a-4413-45da-8de0-099aa8ccc32b" key="textField-30" x="385" y="26" width="170" height="12" forecolor="#000000"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>
