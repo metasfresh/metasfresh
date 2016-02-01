@@ -57,6 +57,10 @@ import org.adempiere.ad.trx.spi.ITrxListener;
 
 	private final void execute(final ITrxListener listener)
 	{
+		if(!listener.isActive())
+		{
+			return; // nothing to do
+		}
 		try
 		{
 			listener.beforeCommit(ITrx.TRX_None);

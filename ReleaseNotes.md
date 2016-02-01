@@ -19,7 +19,8 @@ Additional notes:
 # The actual release notes
  
 ## Upcoming Release
- - 09761 Do research and improve logging of the stand alone printing client (104599264471) +uat
+ - 09618 Bestellkontrolle Druck Probleme (106933593952): allowing an ITrxListener to deactivate itself in case it does not want to be called more than once +fix +uat
+ - 09761 Do research and improve logging of the stand alone printing client (104599264471) +feature +uat
  - 09744_Dunning Report and UI changes +uat
  - 09668_Change quality based invoicing for fresh products +uat
  - 09203_avoid setting IT staff as sales rep in orders that were generated from EDI +uat +fix

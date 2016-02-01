@@ -133,6 +133,8 @@ public class C_Print_Job_Instructions
 									MSG_CLIENT_REPORTS_PRINT_ERROR,
 									printJobInstructionsReloaded.getErrorMsg(),
 									TableRecordReference.of(printJobInstructionsReloaded));
+
+							this.deactivate(); // make sure that the notification is created only once, even if there are >1 commits
 						}
 					});
 
@@ -256,7 +258,7 @@ public class C_Print_Job_Instructions
 	/**
 	 * Reload the records. This method is supposed to be called from within the after-trx-commit listeners.<br>
 	 * Note that we don't want to hold a reference to a record from the model interceptor method in there.
-	 * 
+	 *
 	 * @param ctx
 	 * @param printJobInstructionsID
 	 * @param userToPrintID
