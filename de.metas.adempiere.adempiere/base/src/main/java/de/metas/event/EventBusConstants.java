@@ -82,7 +82,7 @@ public final class EventBusConstants
 		getLogger().info("Distributed events broadcasting disabled");
 	}
 
-	private static final String SYSCONFIG_JMS_URL = "de.metas.event.event.jms.URL";
+	private static final String SYSCONFIG_JMS_URL = "de.metas.event.jms.URL";
 
 	public static final String getJmsURL()
 	{

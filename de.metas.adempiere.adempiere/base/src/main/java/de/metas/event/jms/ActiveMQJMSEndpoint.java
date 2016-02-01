@@ -221,7 +221,6 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 
 	private final Connection createConnection() throws JMSException
 	{
-		// TODO: implement auth
 		final ActiveMQConnection conn = (ActiveMQConnection)getConnectionFactory().createConnection();
 
 		conn.setExceptionListener(exceptionListener);

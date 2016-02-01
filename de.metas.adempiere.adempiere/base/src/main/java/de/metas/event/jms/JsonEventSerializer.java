@@ -454,6 +454,5 @@ public class JsonEventSerializer implements IEventSerializer
 
 			return set;
 		}
-
 	}
 }
