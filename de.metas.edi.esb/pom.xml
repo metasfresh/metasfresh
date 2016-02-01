@@ -99,61 +99,25 @@
 			<version>${camel.version}</version>
 			<scope>provided</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-freemarker</artifactId>
-			<version>${camel.version}</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-flatpack</artifactId>
-			<version>${camel.version}</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<!-- To install this dependency in fuse-esb, open the console and enter 
-			osgi:install mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-io/1.4_3
-			Note that 1.4 is the latest commons-io version that has been provided as bundle.
-		-->
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>1.4</version>
-			<scope>provided</scope>
-		</dependency>
-
+ 
 		<!-- EDI dependency to install in smx, enter the following from console features:addUrl mvn:org.milyn/milyn-smooks-all/1.5.1/xml/features 
 			features:install smooks -->
 		<dependency>
 			<groupId>org.milyn</groupId>
 			<artifactId>milyn-smooks-all</artifactId>
 			<version>${smooks.version}</version>
+			<exclusions>
+				<!-- excluding xercesImpl to get rid of
+				org.xml.sax.SAXNotRecognizedException: Feature 'http://javax.xml.XMLConstants/feature/secure-processing' is not recognized.
+				thx to http://stackoverflow.com/questions/25644023/error-unmarshalling-xml-in-java-8-secure-processing-org-xml-sax-saxnotrecognize
+				-->
+				<exclusion>
+					<artifactId>xercesImpl</artifactId>
+					<groupId>xerces</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-
-<!-- 
-		<dependency>
-			<groupId>org.milyn</groupId>
-			<artifactId>milyn-smooks-scripting</artifactId>
-			<version>${smooks.version}</version>
-			<scope>test</scope>
-		</dependency>
- -->
-		<dependency>
-			<groupId>xalan</groupId>
-			<artifactId>xalan</artifactId>
-			<version>2.7.1</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jvnet.jaxb2_commons</groupId>
-			<artifactId>jaxb2-basics-runtime</artifactId>
-			<version>0.6.5</version>
-		</dependency>
-
+ 
 		<!-- SLF4J Logger dependency -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
