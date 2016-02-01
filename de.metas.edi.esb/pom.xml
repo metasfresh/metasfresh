@@ -12,16 +12,11 @@
 	<groupId>de.metas.edi</groupId>
 	<artifactId>de.metas.edi.esb</artifactId>
 
-	<description>Metas :: Components :: EDI (SMX-4.5.1)</description>
+	<description>metasfresh :: Components :: EDI (SMX-6.1.0)</description>
 
 	<packaging>bundle</packaging>
 
 	<properties>
-		<!-- versions taken from http://servicemix.apache.org/downloads/servicemix-4.5.2 -->
-		<camel.version>2.10.6</camel.version>
-		<cxf.version>2.6.8</cxf.version>
-		<activeMQ.version>5.7.0</activeMQ.version>
-
 		<smooks.version>1.5.1</smooks.version>
 		<jaxb.packageName>de.metas.edi.esb.jaxb</jaxb.packageName>
 	</properties>
@@ -71,12 +66,15 @@
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-camel</artifactId>
-			<version>${activeMQ.version}</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
 					<artifactId>camel-jms</artifactId>
 					<groupId>org.apache.camel</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -205,13 +203,12 @@
 
 		<!-- Guava: needed for misc helper classes which ease development
 			To install in the OSGI container (smx), do 
-				osgi:install mvn:com.google.guava/guava/18.0
+				bundle:install mvn:com.google.guava/guava/18.0
 			If changing the version, please make sure there is also an OSGI bundle for the new version  
 		-->
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>18.0</version>
 		</dependency>
 
 	</dependencies>
@@ -247,6 +244,7 @@
 
 			<!-- check our projects against the java1.6-API
 					 see http://mojo.codehaus.org/animal-sniffer-maven-plugin/index.html -->
+			<!-- 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -268,7 +266,7 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			-->
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>

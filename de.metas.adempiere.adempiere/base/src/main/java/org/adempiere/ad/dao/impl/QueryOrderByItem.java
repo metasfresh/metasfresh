@@ -28,8 +28,8 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.Check;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 
 @Immutable
 final class QueryOrderByItem

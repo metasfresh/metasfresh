@@ -11,7 +11,7 @@
 	<groupId>de.metas.printing.esb</groupId>
 	<artifactId>de.metas.printing.esb</artifactId>
 	
-	<description>Request-Response Framework for Mass Printing</description>
+	<description>metasfresh :: Components :: Request-Response Framework for Printing (SMX-6.1.0)</description>
 
 	<packaging>pom</packaging>
 	<modules>
@@ -33,6 +33,7 @@
 			
 			<!-- check our projects against the java1.6-API
 					 see http://mojo.codehaus.org/animal-sniffer-maven-plugin/index.html -->
+			<!-- 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -54,6 +55,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			-->
 		</plugins>
 		
 		

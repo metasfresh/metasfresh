@@ -23,14 +23,15 @@ package org.adempiere.ui.process;
  */
 
 
-import org.adempiere.event.Event;
-import org.adempiere.event.IEventBus;
-import org.adempiere.event.IEventBusFactory;
-import org.adempiere.event.Topic;
-import org.adempiere.event.Type;
 import org.adempiere.util.Services;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
+
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 
 /**
  * Process used to test the distributed event bus by sending events to a given topic.

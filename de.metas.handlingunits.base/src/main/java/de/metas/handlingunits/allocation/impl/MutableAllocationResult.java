@@ -29,8 +29,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.util.Check;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTransactionAttribute;

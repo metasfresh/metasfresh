@@ -10,12 +10,12 @@ package de.metas.document.archive.esb.camel.route;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,12 +23,9 @@ package de.metas.document.archive.esb.camel.route;
  */
 
 
-import java.util.Arrays;
-
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.common.message.CxfConstants;
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 
 import de.metas.document.archive.esb.api.IArchiveEndpoint;
 import de.metas.document.archive.esb.camel.commons.CamelConstants;
@@ -36,7 +33,7 @@ import de.metas.document.archive.esb.camel.cxf.jaxrs.RESTHttpArchiveEndpoint;
 
 /**
  * RESTful routes for document archive
- * 
+ *
  * @author al
  */
 public class RESTHttpArchiveEndpointRoute extends RouteBuilder
@@ -49,7 +46,7 @@ public class RESTHttpArchiveEndpointRoute extends RouteBuilder
 	@Override
 	public void configure() throws Exception
 	{
-		org.apache.cxf.jaxrs.provider.ProviderFactory.getSharedInstance().setUserProviders(Arrays.asList(new JacksonJsonProvider()));
+//		org.apache.cxf.jaxrs.provider.ProviderFactory.getSharedInstance().setUserProviders(Arrays.asList(new JacksonJsonProvider()));
 
 		onException(Exception.class)
 				.handled(true)

@@ -29,9 +29,9 @@ import java.util.Set;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.util.Env;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 import com.google.common.collect.ImmutableSet;
 

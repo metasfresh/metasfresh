@@ -43,18 +43,19 @@
 			<version>1.4</version>
 			<scope>test</scope>
 		</dependency>
-
+ 
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.2</version>
+			<version>1.7.10</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.github.sarxos</groupId>
 			<artifactId>webcam-capture</artifactId>
 			<version>0.3.9</version>
 			<exclusions>
-			<!-- dx seems to be an android lib, not required for us, and it contains classes that also with the same name are contained in junit -->
+				<!-- dx seems to be an android lib, not required for us, and it contains classes that also with the same name are contained in junit -->
 				<exclusion>
 					<artifactId>dx</artifactId>
 					<groupId>com.google.android.tools</groupId>
@@ -62,6 +63,10 @@
 				<exclusion>
 					<artifactId>filters</artifactId>
 					<groupId>com.jhlabs</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

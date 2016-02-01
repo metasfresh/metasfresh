@@ -34,13 +34,13 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 

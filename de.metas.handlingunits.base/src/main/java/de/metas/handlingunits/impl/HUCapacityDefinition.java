@@ -26,10 +26,10 @@ package de.metas.handlingunits.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 import de.metas.handlingunits.IHUCapacityDefinition;
 

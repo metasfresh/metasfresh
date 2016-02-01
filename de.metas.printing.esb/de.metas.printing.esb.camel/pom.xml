@@ -14,17 +14,6 @@
 
 	<packaging>bundle</packaging>
 
-	<properties>
-		<!-- versions taken from http://servicemix.apache.org/downloads/servicemix-4.5.1 -->
-		<!-- <camel.version>2.10.4</camel.version> <cxf.version>2.6.6</cxf.version> 
-			<activeMQ.version>5.7.0</activeMQ.version> -->
-		<!-- versions taken from http://servicemix.apache.org/downloads/servicemix-4.5.2 -->
-		<camel.version>2.10.6</camel.version>
-		<cxf.version>2.6.8</cxf.version>
-		<activeMQ.version>5.7.0</activeMQ.version>
-
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
@@ -46,6 +35,10 @@
 				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-jdk14</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -69,16 +62,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Required for our base64 encoding; why not use commons-codec? because javax.mail has methods for stream-encoding/decoding adnwe might have a lot of data to encode/decode.  
-		     To install this dependency in fuse-esb/servicemix, 
-			 open the console and enter osgi:install mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax.mail/1.4.1_5 -->
-		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
-
 		<!-- Apache CAMEL dependencies -->
 		<dependency>
 			<groupId>org.apache.camel</groupId>
@@ -89,14 +72,25 @@
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-camel</artifactId>
-			<version>${activeMQ.version}</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- in camel version 2.16.1, this camel-jms dependency has version 2.15.x -->
 					<artifactId>camel-jms</artifactId>
 					<groupId>org.apache.camel</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<dependency>
+			<artifactId>camel-jms</artifactId>
+			<groupId>org.apache.camel</groupId>
+			<version>${camel.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -124,6 +118,10 @@
 				<exclusion>
 					<groupId>com.sun.xml.bind</groupId>
 					<artifactId>jaxb-impl</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>javax.servlet-api</artifactId>
+					<groupId>javax.servlet</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -168,22 +166,23 @@
 			<artifactId>jackson-jaxrs</artifactId>
 			<version>1.9.10</version>
 		</dependency>
-		<!-- To install this dependency in fuse-esb, open the console and enter 
-			osgi:install mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-io/1.4_3 -->
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>1.4</version>
-			<scope>provided</scope>
-		</dependency>
 
+		<!-- Guava: needed for misc helper classes which ease development
+			To install in the OSGI container (smx), do 
+				bundle:install mvn:com.google.guava/guava/18.0
+			If changing the version, please make sure there is also an OSGI bundle for the new version  
+		-->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
 			<version>1.6.6</version>
 			<scope>provided</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>

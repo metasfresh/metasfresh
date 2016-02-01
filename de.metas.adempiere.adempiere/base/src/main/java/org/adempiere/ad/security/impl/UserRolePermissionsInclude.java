@@ -29,9 +29,9 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 /**
  * Defines an {@link IUserRolePermissions} which is included in some other {@link IUserRolePermissions}.

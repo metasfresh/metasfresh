@@ -30,7 +30,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.document.service.IDocumentLocationBL;
-import org.adempiere.event.IEventBusFactory;
+import de.metas.event.IEventBusFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;

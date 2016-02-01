@@ -25,8 +25,9 @@ package org.adempiere.ui.notifications;
 
 import java.util.Set;
 
-import org.adempiere.event.EventBusConstants;
 import org.adempiere.util.jmx.IJMXNameAware;
+
+import de.metas.event.EventBusConstants;
 
 public class JMXSwingEventNotifierService implements JMXSwingEventNotifierServiceMBean, IJMXNameAware
 {

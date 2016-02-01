@@ -27,10 +27,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.event.Event;
-import org.adempiere.event.IEventBusFactory;
-import org.adempiere.event.Topic;
-import org.adempiere.event.Type;
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.ImportProcessResult;
@@ -42,6 +38,10 @@ import org.compiere.util.Env;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.event.Event;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 
 /**
  * Workpackage processor used to import records enqueued by {@link AsyncImportProcessBuilder}.

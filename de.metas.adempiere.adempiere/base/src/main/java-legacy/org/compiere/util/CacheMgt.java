@@ -29,12 +29,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.spi.ITrxListener;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
-import org.adempiere.event.Event;
-import org.adempiere.event.IEventBus;
-import org.adempiere.event.IEventBusFactory;
-import org.adempiere.event.IEventListener;
-import org.adempiere.event.Topic;
-import org.adempiere.event.Type;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.WeakList;
@@ -46,6 +40,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.IEventListener;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 
 /**
  * Adempiere Cache Management

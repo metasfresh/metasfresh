@@ -33,6 +33,7 @@
 			
 			<!-- check our projects against the java1.6-API
 					 see http://mojo.codehaus.org/animal-sniffer-maven-plugin/index.html -->
+			<!--					 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -54,6 +55,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			-->
 		</plugins>
 	</build>
 </project>

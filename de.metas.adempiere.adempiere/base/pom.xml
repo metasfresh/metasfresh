@@ -20,29 +20,18 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.7.2</version>
-<!-- <version>1.5.11</version>  -->
+			<version>1.7.10</version>
 		</dependency>
 
-<!-- 
-		<dependency>
-			<groupId>xml-apis</groupId>
-			<artifactId>xml-apis</artifactId>
-			<version>2.0.0</version>
-		</dependency>
- -->
 		<!-- Adempiere -->
-
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.monitoring</groupId>
 			<artifactId>de.metas.monitoring</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -71,6 +60,7 @@
 			<artifactId>javaee-api</artifactId> <version>5</version> <scope>provided</scope> 
 			</dependency> -->
 
+		<!-- we use javax.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
@@ -102,17 +92,16 @@
 			<version>1.1</version>
 		</dependency>
 
+<!-- 
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-core</artifactId>
-			<version>5.7.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.activemq</groupId>
 					<artifactId>activeio-core</artifactId>
 				</exclusion>
 				<exclusion>
-					<!-- NOTE we specified above that we are using another version -->
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
 				</exclusion>
@@ -122,11 +111,18 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
-		<!-- unused according to maven dependency:analyze, but currently used in 
-			sw01_swat_it by class de.metas.rpl.spi.impl.TopicRplExportProcessor <dependency> 
-			<groupId>org.apache.activemq</groupId> <artifactId>activemq-pool</artifactId> 
-			<version>5.5.1</version> </dependency> -->
+ -->
+ 		<!-- in version 5.12.1 we don't have activemq-core, and we don't want to use activemq-all,
+ 		because activemq-all is an uber-jar that introduces 3rd-party classes and causes duplicated classes in our build path 
+ 		-->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-broker</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+		</dependency>
 
 		<!-- Persistence -->
 		<!-- task 08353: using latest version so that we can display the trxName in the DBMS server status -->
@@ -267,15 +263,17 @@
 		</dependency>
 
 		<!-- workaound, see 06687 Get rid of calls to non-API (107116288996) -->
+		<!-- if you are using badly written maven plugins then blame them and add
+      	<scope>provided</scope>
+      	-->
+		<!-- 
 		<dependency>
 			<groupId>org.codehaus.mojo</groupId>
 			<artifactId>animal-sniffer-annotations</artifactId>
 			<version>1.11</version>
 			<optional>true</optional>
-      <!-- if you are using badly written maven plugins then blame them and add
-      <scope>provided</scope>
-      -->
 		</dependency>
+ 		-->
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>

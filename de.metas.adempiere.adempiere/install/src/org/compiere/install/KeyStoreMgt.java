@@ -30,7 +30,6 @@ import java.util.logging.Level;
 
 import javax.swing.JFrame;
 
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.compiere.Adempiere;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
@@ -39,11 +38,10 @@ import sun.security.tools.KeyTool;
 
 /**
  *	Class to manage SSL KeyStore
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: KeyStoreMgt.java,v 1.3 2006/07/30 00:57:42 jjanke Exp $
  */
-@IgnoreJRERequirement // task 06687
 public class KeyStoreMgt
 {
 	/**
@@ -61,19 +59,19 @@ public class KeyStoreMgt
 		m_certificateAlias = certificateAlias == null ? DEFAULT_CERTIFICATE_ALIAS : certificateAlias;
 		m_certificatePassword = certificatePassword;
 	}	//	KeyStoreMgt
-	
+
 	/**	Logger					*/
 	private static CLogger		log	= CLogger.getCLogger(KeyStoreMgt.class);
 	/**	KeyStore File			*/
 	private File 		m_file = null;
 	/**	KeyStore Password		*/
 	private char[]		m_keyStorePassword = null; // task 005047
-	
+
 	private String m_certificateAlias;
-	
+
 	/**	Key Password		*/
 	private char[]		m_certificatePassword = null; // task 005047
-	
+
 	/** KeyStore				*/
 	private KeyStore	m_keyStore = null;
 	private String organizationUnit;
@@ -82,15 +80,15 @@ public class KeyStoreMgt
 	private String country;
 	private String commonName;
 	private String organization;
-	
-	
+
+
 	/**	Directory below ADEMPIERE_HOME	*/
 	public static String		KEYSTORE_DIRECTORY = "keystore";
 	/** Name of KeyStore				*/
 	public static String		DEFAULT_KEYSTORE_NAME = "myKeystore";
 	/** Certificate Alias				*/
 	public static String		DEFAULT_CERTIFICATE_ALIAS = "adempiere";
-	
+
 
 	/**
 	 * 	Verify/Create Key Store
@@ -127,7 +125,7 @@ public class KeyStoreMgt
 		//	No KeyStore
 		if (ks == null)
 			return "No Key Store";
-		
+
 		//	Verify Certificate
 		Certificate cert = null;
 		try
@@ -141,10 +139,10 @@ public class KeyStoreMgt
 		}
 		if (cert == null)
 			return "No Certificate found";
-		
+
 		return null;	//	OK
 	}	//	verify
-	
+
 	/**
 	 * 	Get KeyStore
 	 *	@return KeyStore or null
@@ -184,7 +182,7 @@ public class KeyStoreMgt
 		//
 		return m_keyStore;
 	}	//	getKeyStore
-	
+
 	/**
 	 * 	Get Certificate
 	 *	@param alias alias
@@ -194,7 +192,7 @@ public class KeyStoreMgt
 	public Certificate getCertificate (String alias) throws Exception
 	{
 		log.config("Alias=" + alias);
-		
+
 		Date date = m_keyStore.getCreationDate(alias);
 		if (date == null)	//	no certificate
 			return null;
@@ -211,13 +209,13 @@ public class KeyStoreMgt
 			log.info("Certificate = " + cert);	//	Multiple lines
 		else
 			log.fine(cert.getType());
-		
+
 	//	log.fine("Certificate - Type=" + cert.getType()
 	//			+ " - PublicKey=" + cert.getPublicKey());
 		return cert;
 	}	//	getCertificate
-	
-	
+
+
 	/**************************************************************************
 	 * 	Create Certificate
 	 *	@param alias alias
@@ -236,7 +234,7 @@ public class KeyStoreMgt
 		{
 			log.log(Level.SEVERE, "directory", e);
 		}
-		
+
 		String dname = getDname(this, parent);
 		if (dname == null)
 			return;
@@ -251,37 +249,37 @@ public class KeyStoreMgt
 			log.log(Level.SEVERE, "certificate", e);
 		}
 	}	//	createCertificate
-	
+
 	public void setCommonName(String cn)
 	{
 		commonName = cn;
 	}
-	
+
 	public void setOrganization(String o)
 	{
-		organization = o; 
+		organization = o;
 	}
-	
+
 	public void setOrganizationUnit(String o)
 	{
 		organizationUnit = o;
 	}
-	
+
 	public void setLocation(String l)
 	{
 		location = l;
 	}
-	
+
 	public void setState(String s)
 	{
 		state = s;
 	}
-	
+
 	public void setCountry(String c)
 	{
 		country = c;
 	}
-	
+
 	/**
 	 * 	Get Distinguised Name
 	 * 	@param parent interactive dialog
@@ -301,7 +299,7 @@ public class KeyStoreMgt
 			{
 			}
 		}
-		
+
 		String ou = mgt.organization != null
 			? mgt.organization
 			: System.getProperty("user.name");
@@ -353,7 +351,7 @@ public class KeyStoreMgt
 			log.warning("No Country (C)");
 			return null;
 		}
-		
+
 		//	Escape commas
 		StringBuffer dname = new StringBuffer();
 		dname.append("CN=").append(escapeCommas(cn));		//	common name
@@ -366,7 +364,7 @@ public class KeyStoreMgt
 		dname.append(", C=").append(escapeCommas(c));		//	country
 		return dname.toString();
 	}	//	getDname
-	
+
 	/**
 	 * 	Escape Commas
 	 *	@param in input string
@@ -387,7 +385,7 @@ public class KeyStoreMgt
 		}
 		return out.toString();
 	}	//	escapeCommas
-	
+
 	/**
 	 * 	Generate Key
 	 *	@param alias adempiere
@@ -407,7 +405,7 @@ public class KeyStoreMgt
 			cmd.append(" -keystore ").append(fileName).append(" -storepass ").append(keyStorePassword);
 		keytool (cmd.toString());
 	}	//	genkey
-	
+
 	/**
 	 * 	Generate Key
 	 *	@param alias adempiere
@@ -427,7 +425,7 @@ public class KeyStoreMgt
 			cmd.append(" -keystore ").append(fileName).append(" -storepass ").append(keyStorePassword);
 		keytool (cmd.toString());
 	}	//	selfcert
-	
+
 	/**
 	 * 	Submit Command to Key Tool
 	 *	@param cmd command
@@ -453,13 +451,13 @@ public class KeyStoreMgt
 				quoteBuffer += " " + token;
 			if (token.endsWith("\""))
 			{
-				String str = quoteBuffer.substring(0, quoteBuffer.length()-1); 
+				String str = quoteBuffer.substring(0, quoteBuffer.length()-1);
 			//	System.out.println("  Buffer= " + str );
 				list.add(str);
 				quoteBuffer = null;
 			}
 		}	//	all tokens
-		
+
 		//
 		String[] args = new String[list.size()];
 		list.toArray(args);
@@ -470,10 +468,10 @@ public class KeyStoreMgt
 		KeyTool.main(args);
                 }
                 catch (Exception e)
-                {                     
+                {
                 }
 	}	//	ketyool
-	
+
 	/**
 	 * 	Get Keystore File Name
 	 *	@param baseDir ADEMPIERE_HOME
@@ -492,12 +490,12 @@ public class KeyStoreMgt
 		{
 			fileName += File.separator;
 		}
-		
+
 		fileName += KEYSTORE_DIRECTORY + File.separator + (keystoreName == null ? DEFAULT_KEYSTORE_NAME: keystoreName);
 		return fileName;
 	}	//	getKeystoreFileName
-	
-	
+
+
 	/**************************************************************************
 	 * 	Test
 	 *	@param args ignored
@@ -508,5 +506,5 @@ public class KeyStoreMgt
 		System.out.println(new KeyStoreMgt (
 			"C:/Adempiere/keystore/myKeystore2", "myPassword".toCharArray(), DEFAULT_CERTIFICATE_ALIAS, "myPassword".toCharArray()).verify(null));
 	}	//	main
-	
+
 }	//	MyKeyStore

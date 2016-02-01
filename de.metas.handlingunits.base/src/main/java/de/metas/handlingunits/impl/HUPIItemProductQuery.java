@@ -25,8 +25,8 @@ package de.metas.handlingunits.impl;
 
 import java.util.Date;
 
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 
 import de.metas.handlingunits.IHUPIItemProductQuery;
 

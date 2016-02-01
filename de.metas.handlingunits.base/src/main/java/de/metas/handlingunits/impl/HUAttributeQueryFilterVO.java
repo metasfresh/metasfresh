@@ -36,12 +36,12 @@ import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.EqualsBuilder;
 
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 

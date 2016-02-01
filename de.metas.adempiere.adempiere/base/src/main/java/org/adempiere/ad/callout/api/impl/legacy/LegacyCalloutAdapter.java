@@ -31,10 +31,10 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 import org.compiere.util.Util;
 
 /**

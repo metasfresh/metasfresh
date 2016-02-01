@@ -27,7 +27,6 @@ import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.event.IEventBusFactory;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.impl.AsyncImportProcessBuilder;
 import org.adempiere.impexp.spi.impl.AsyncImportWorkpackageProcessor;
@@ -43,6 +42,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Log;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.async.processor.IQueueProcessorExecutorService;
+import de.metas.event.IEventBusFactory;
 
 /**
  * ASync module main validator. This is the entry point for all other stuff.

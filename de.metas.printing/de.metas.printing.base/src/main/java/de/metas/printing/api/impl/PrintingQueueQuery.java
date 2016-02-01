@@ -24,9 +24,9 @@ package de.metas.printing.api.impl;
 
 
 import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 import de.metas.printing.api.IPrintingQueueQuery;
 

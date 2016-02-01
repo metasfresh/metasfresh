@@ -28,8 +28,8 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 import org.adempiere.util.Check;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 
 import de.metas.adempiere.form.terminal.table.ITerminalTableModelListener;
 

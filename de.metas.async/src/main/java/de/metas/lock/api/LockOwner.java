@@ -26,9 +26,9 @@ package de.metas.lock.api;
 import java.util.UUID;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 /**
  * Lock Owner

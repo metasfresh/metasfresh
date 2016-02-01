@@ -23,13 +23,13 @@ package org.adempiere.tools;
  */
 
 
-import org.adempiere.event.EventBusConstants;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.addon.impl.AddonStarter;
+import de.metas.event.EventBusConstants;
 
 /**
  * Helper class used by tools build on top of ADempiere, which require only a minimal set of functionalities.

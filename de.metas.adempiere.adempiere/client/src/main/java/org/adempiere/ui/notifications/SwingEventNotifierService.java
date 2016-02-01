@@ -26,15 +26,16 @@ package org.adempiere.ui.notifications;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.adempiere.event.EventBusConstants;
-import org.adempiere.event.IEventBusFactory;
-import org.adempiere.event.Topic;
 import org.adempiere.util.Services;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.compiere.util.CLogger;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.event.EventBusConstants;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
 
 /**
  * Service used to manage the event notifier popup (that one that pops up on the bottom-right corner of the screen).

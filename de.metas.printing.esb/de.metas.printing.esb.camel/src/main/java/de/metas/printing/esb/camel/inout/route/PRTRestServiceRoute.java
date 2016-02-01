@@ -10,12 +10,12 @@ package de.metas.printing.esb.camel.inout.route;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,12 +23,9 @@ package de.metas.printing.esb.camel.inout.route;
  */
 
 
-import java.util.Arrays;
-
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.common.message.CxfConstants;
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 
 import de.metas.printing.esb.api.PRTRestServiceConstants;
 import de.metas.printing.esb.camel.commons.Constants;
@@ -38,9 +35,9 @@ import de.metas.printing.esb.camel.processor.route.TransactionIdProcessor;
 
 /**
  * RESTful routes for the printing client
- * 
+ *
  * @author al
- * 
+ *
  */
 public class PRTRestServiceRoute extends RouteBuilder
 {
@@ -55,9 +52,9 @@ public class PRTRestServiceRoute extends RouteBuilder
 	public void configure()
 	{
 		// FIXME: this is not recognize for some reason?!?!?!
-		final org.apache.cxf.jaxrs.provider.ProviderFactory jaxrsProvidersFactory = org.apache.cxf.jaxrs.provider.ProviderFactory.getSharedInstance();
-		jaxrsProvidersFactory.setUserProviders(Arrays.asList(new JacksonJsonProvider()));
-		
+//		final org.apache.cxf.jaxrs.provider.ProviderFactory jaxrsProvidersFactory = org.apache.cxf.jaxrs.provider.ProviderFactory.getSharedInstance();
+//		jaxrsProvidersFactory.setUserProviders(Arrays.asList(new JacksonJsonProvider()));
+
 		onException(Exception.class)
 				.handled(true)
 				.transform(exceptionMessage())

@@ -33,7 +33,7 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.event.IEventBusFactory;
+import de.metas.event.IEventBusFactory;
 import org.adempiere.invoice.event.InvoiceGeneratedEventBus;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;

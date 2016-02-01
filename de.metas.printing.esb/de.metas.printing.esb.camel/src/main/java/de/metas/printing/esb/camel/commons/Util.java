@@ -10,12 +10,12 @@ package de.metas.printing.esb.camel.commons;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,9 +23,6 @@ package de.metas.printing.esb.camel.commons;
  */
 
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.logging.Logger;
@@ -37,7 +34,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.apache.camel.CamelContext;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.properties.PropertiesComponent;
-import org.apache.commons.io.IOUtils;
 
 public final class Util
 {
@@ -83,25 +79,5 @@ public final class Util
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Converts an java.io.InputStream to java.lang.String
-	 * 
-	 * @param is
-	 * @param encoding
-	 * 
-	 * @return String s
-	 * @throws IOException
-	 */
-	public static String InputStreamToString(final InputStream is, final String encoding) throws IOException
-	{
-		final StringWriter writer = new StringWriter();
-
-		IOUtils.copy(is, writer, encoding);
-
-		final String s = writer.toString();
-
-		return s;
 	}
 }

@@ -20,7 +20,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Session;
 import org.compiere.model.I_AD_User;
@@ -39,9 +38,9 @@ import org.zkoss.zk.ui.util.Clients;
 public final class BrowserToken {
 
 	private final static CLogger log = CLogger.getCLogger(BrowserToken.class);
-	
+
 	private BrowserToken() {}
-	
+
 	public final static String REMEMBER_ME = "Login.RememberMe";
 	/**
 	 * save session and user as client side token for future auto login
@@ -49,20 +48,20 @@ public final class BrowserToken {
 	 * @param user
 	 */
 	public static void save(I_AD_Session session, I_AD_User user) {
-		try 
+		try
 		{
 			String home = getHomeToken();
 			String hash = getPasswordHash(session, user);
 		    String script = "adempiere.saveUserToken('" + home + "', '" + hash + "', '" + session.getAD_Session_ID() + "');";
 			AuScript aus = new AuScript(null, script);
 			Clients.response("saveUserToken", aus);
-		} 
+		}
 		catch (Exception e)
 		{
 			log.log(Level.WARNING, e.getLocalizedMessage(), e);
 		}
 	}
-			
+
 	/**
 	 * remove client side token for auto login
 	 */
@@ -95,7 +94,7 @@ public final class BrowserToken {
         	log.log(Level.WARNING, e.getLocalizedMessage(), e);
         }
 	}
-	
+
 	/**
 	 * validate a stored client side token is valid
 	 * @param session
@@ -104,7 +103,7 @@ public final class BrowserToken {
 	 * @return true if token is valid
 	 */
 	public static boolean validateToken(I_AD_Session session, I_AD_User user, String token) {
-		try 
+		try
 		{
 			String hash = getPasswordHash(session, user);
 			return hash.equals(token);
@@ -112,17 +111,17 @@ public final class BrowserToken {
 		catch (Exception e)
 		{
 			log.log(Level.WARNING, e.getLocalizedMessage(), e);
-		}	
+		}
 		return false;
 	}
-	
+
 	private static String getHomeToken() throws UnsupportedEncodingException {
-		String home = Adempiere.getAdempiereHome();	
+		String home = Adempiere.getAdempiereHome();
 		home = base64encode(home.getBytes("UTF-8"));
 		home = URLEncoder.encode(home, "UTF-8");
 		return home;
 	}
-	
+
 	private static String getPasswordHash(I_AD_Session session, I_AD_User user) throws UnsupportedEncodingException, NoSuchAlgorithmException {
 		MessageDigest digest = MessageDigest.getInstance("SHA-512");
 	    digest.reset();
@@ -135,11 +134,10 @@ public final class BrowserToken {
 	    byte[] input = digest.digest(password.getBytes("UTF-8"));
 	    String hash = base64encode(input);
 	    hash = URLEncoder.encode(hash, "UTF-8");
-	    
+
 	    return hash;
 	}
 
-	@IgnoreJRERequirement
 	private static final String base64encode(final byte[] bytes)
 	{
 		final sun.misc.BASE64Encoder encoder = new sun.misc.BASE64Encoder();

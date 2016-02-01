@@ -23,19 +23,16 @@
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.base</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>

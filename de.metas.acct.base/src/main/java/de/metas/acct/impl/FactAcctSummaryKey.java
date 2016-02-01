@@ -3,8 +3,8 @@ package de.metas.acct.impl;
 import java.util.Date;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
 import org.compiere.util.Env;
-import org.compiere.util.EqualsBuilder;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;

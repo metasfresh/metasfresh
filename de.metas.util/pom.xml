@@ -18,15 +18,7 @@
 			<artifactId>guava</artifactId>
 		</dependency>
 		
-		<!-- 
-		<dependency>
-			<groupId>com.google.code.findbugs</groupId>
-			<artifactId>jsr305</artifactId>
-			<version>3.0.0</version>
-		</dependency>
-		 -->
-
-	<!-- the next 3 are for task http://dewiki908/mediawiki/index.php/06952_Async_Problems_%28109152162496%29 -->
+		<!-- the next 3 are for task http://dewiki908/mediawiki/index.php/06952_Async_Problems_%28109152162496%29 -->
 		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
@@ -59,12 +51,6 @@
 			<version>1.2</version>
 		</dependency>
  -->
-
-		<!-- required for Util.encodeBase64() and Util.decodeBase64() -->
-		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>

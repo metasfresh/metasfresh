@@ -52,6 +52,8 @@ import org.adempiere.model.X_AD_TriggerUI_Action;
 import org.adempiere.model.X_AD_TriggerUI_Criteria;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -62,8 +64,6 @@ import org.compiere.model.Query;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 import de.metas.adempiere.service.ITriggerUIBL;
 import de.metas.adempiere.util.CacheCtx;

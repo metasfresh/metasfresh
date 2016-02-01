@@ -31,11 +31,11 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.CCache;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;

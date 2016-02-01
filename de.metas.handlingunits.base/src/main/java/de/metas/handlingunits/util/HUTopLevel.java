@@ -24,9 +24,9 @@ package de.metas.handlingunits.util;
 
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
-import org.compiere.util.EqualsBuilder;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 

@@ -35,6 +35,8 @@ import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Rule;
@@ -42,8 +44,6 @@ import org.compiere.model.MRule;
 import org.compiere.model.X_AD_Rule;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 public class RuleCalloutInstance implements ICalloutInstance
 {

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://camel.apache.org/schema/osgi"
-	xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
-	xmlns:ctx="http://www.springframework.org/schema/context"
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://camel.apache.org/schema/osgi"
+	xmlns:osgix="http://www.springframework.org/schema/osgi-compendium" xmlns:ctx="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
@@ -35,8 +33,7 @@
 			<property name="traceInterceptorFactory"> <null /> </property -->
 	</bean>
 
-	<bean id="traceFormatter"
-		class="org.apache.camel.processor.interceptor.DefaultTraceFormatter">
+	<bean id="traceFormatter" class="org.apache.camel.processor.interceptor.DefaultTraceFormatter">
 		<property name="breadCrumbLength" value="0" />
 		<property name="nodeLength" value="0" />
 		<property name="showBreadCrumb" value="false" />
@@ -56,8 +53,7 @@
 		<property name="maxChars" value="10000" />
 	</bean>
 
-	<camelContext trace="false"
-		xmlns="http://camel.apache.org/schema/spring">
+	<camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
 		<!-- use the Java DSL route builders -->
 		<packageScan>
 			<package>de.metas.printing.esb.camel.inout.route</package>
@@ -72,12 +68,9 @@
 
 	<!-- Data Conversion Beans -->
 	<bean id="printerHW2AD" class="de.metas.printing.esb.camel.inout.bean.PRTADPrinterHWTypeBean" />
-	<bean id="printPckg2PC"
-		class="de.metas.printing.esb.camel.inout.bean.PRTCPrintPackageTypeBean" />
-	<bean id="printPckgData2PC"
-		class="de.metas.printing.esb.camel.inout.bean.PRTCPrintPackageDataTypeBean" />
-	<bean id="printPckgResponse2AD"
-		class="de.metas.printing.esb.camel.inout.bean.PRTCPrintJobInstructionsConfirmTypeBean" />
+	<bean id="printPckg2PC" class="de.metas.printing.esb.camel.inout.bean.PRTCPrintPackageTypeBean" />
+	<bean id="printPckgData2PC" class="de.metas.printing.esb.camel.inout.bean.PRTCPrintPackageDataTypeBean" />
+	<bean id="printPckgResponse2AD" class="de.metas.printing.esb.camel.inout.bean.PRTCPrintJobInstructionsConfirmTypeBean" />
 	<!-- /Data Conversion Beans -->
 
 </beans>

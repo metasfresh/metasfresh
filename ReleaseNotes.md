@@ -19,6 +19,15 @@ Additional notes:
 # The actual release notes
  
 ## Upcoming Release
+ - 09764 servicemix update (102943200308): the esb bundles now use servmicemix-6.1 +uat +feature
+    *also switching everything from activemq-5.7 to activemq-5.12.1
+    *ActiveMQJMSEndpoint now needs to provide username and password to the jms broker
+    *commenting out the sniffer plugin because we can now build against java 1.7
+    *moving org.adempiere.event to de.metas.event
+    *moving EqualsBuilder and HashcodeBuilder from base to util
+	* removing javax.mail from printing.esb, instead using guava to encode base64
+    * removing javax.mail from de.metas.util
+    * further build fixes and clean-ups
  - 09746_Change of activity report adaptions +fix +uat
     * fixing a / by zero issue
  - 09756 Record from foreign org in material receipt (POS) (105735084840) +fix +uat

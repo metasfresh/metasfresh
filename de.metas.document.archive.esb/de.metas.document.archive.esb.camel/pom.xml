@@ -16,11 +16,6 @@
 
 	<properties>
 		<de.metas.document.archive.esb.base.version>${project.version}</de.metas.document.archive.esb.base.version>
-
-		<!-- versions taken from http://servicemix.apache.org/downloads/servicemix-4.5.2 -->
-		<camel.version>2.10.6</camel.version>
-		<cxf.version>2.6.8</cxf.version>
-		<activeMQ.version>5.7.0</activeMQ.version>
 	</properties>
 
 	<dependencies>
@@ -30,20 +25,6 @@
 			<version>${de.metas.document.archive.esb.base.version}</version>
 		</dependency>
 		
-		<!-- dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
-		</dependency -->
-
-		<!-- Required for our base64 encoding; to install this dependency in fuse-esb/servicemix, 
-			open the console and enter osgi:install mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-codec/1.2_5 -->
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>1.2</version>
-		</dependency>
-
 		<!-- Apache CAMEL dependencies -->
 		<dependency>
 			<groupId>org.apache.camel</groupId>
@@ -60,12 +41,15 @@
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-camel</artifactId>
-			<version>${activeMQ.version}</version>
 			<!-- scope>provided</scope -->
 			<exclusions>
 				<exclusion>
 					<artifactId>camel-jms</artifactId>
 					<groupId>org.apache.camel</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -120,14 +104,6 @@
 			<!--  scope>provided</scope -->
 		</dependency>
 
-		<!-- 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.6.1</version>
-			<  scope>provided</scope >
-		</dependency>
-		-->
 	</dependencies>
 
 	<build>

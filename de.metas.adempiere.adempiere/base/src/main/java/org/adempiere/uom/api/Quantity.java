@@ -29,9 +29,9 @@ import java.math.RoundingMode;
 import org.adempiere.uom.exceptions.QuantitiesUOMNotMatchingExpection;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 /**
  * Immutable Quantity.

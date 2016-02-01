@@ -26,12 +26,12 @@ package de.metas.inout.event;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.adempiere.event.Event;
-import org.adempiere.event.IEventBus;
-import org.adempiere.event.IEventBusFactory;
-import org.adempiere.event.QueueableForwardingEventBus;
-import org.adempiere.event.Topic;
-import org.adempiere.event.Type;
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.QueueableForwardingEventBus;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;

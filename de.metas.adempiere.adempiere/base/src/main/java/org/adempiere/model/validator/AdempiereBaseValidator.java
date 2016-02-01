@@ -27,7 +27,6 @@ import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.event.EventBusAdempiereInterceptor;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Column;
@@ -56,6 +55,7 @@ import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.event.EventBusAdempiereInterceptor;
 
 /**
  * ADempiere Base Module Activator

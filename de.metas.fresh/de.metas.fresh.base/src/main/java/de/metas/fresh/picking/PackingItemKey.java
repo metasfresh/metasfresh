@@ -23,8 +23,8 @@ package de.metas.fresh.picking;
  */
 
 
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 
 public class PackingItemKey
 {

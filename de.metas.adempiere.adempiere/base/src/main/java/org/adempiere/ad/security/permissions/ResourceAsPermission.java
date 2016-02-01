@@ -26,9 +26,9 @@ package org.adempiere.ad.security.permissions;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.text.annotation.ToStringBuilder;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 /**
  * A permission which is in same time a resource too.

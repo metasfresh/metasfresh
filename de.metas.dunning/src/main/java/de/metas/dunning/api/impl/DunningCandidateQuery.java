@@ -25,8 +25,8 @@ package de.metas.dunning.api.impl;
 
 import java.util.List;
 
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.interfaces.I_C_DunningLevel;

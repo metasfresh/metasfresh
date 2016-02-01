@@ -28,9 +28,9 @@ import java.util.Map;
 
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.util.Env;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.X_C_Queue_WorkPackage;

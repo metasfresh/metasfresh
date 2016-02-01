@@ -28,21 +28,19 @@ import javax.sql.rowset.CachedRowSet;
 
 import oracle.jdbc.rowset.OracleCachedRowSet;
 
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.Database;
 
 /**
  *	Adempiere Cached Row Set Implementation
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: CCachedRowSet.java,v 1.6 2006/07/30 00:54:36 jjanke Exp $
  */
-@IgnoreJRERequirement
 public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements CachedRowSet
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -233983261449861555L;
 
@@ -69,7 +67,7 @@ public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements Ca
 		//
 		return crs;
 	}	//	get
-	
+
 	/**
 	 * 	Get Row Set.
 	 * 	Read-Only, Scroll Insensitive
@@ -118,13 +116,13 @@ public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements Ca
 		crs.execute(conn);
 		return crs;
 	}	//	get
-	
+
 	/**
 	 * 	Get Cached Row Set.
-	 * 	Required due to Java Sun bug 393865. 
-	 * 	Also, Oracle NUMBER returns scale -127 
+	 * 	Required due to Java Sun bug 393865.
+	 * 	Also, Oracle NUMBER returns scale -127
 	 * 	@param rs result set
-	 * 	@param db database 
+	 * 	@param db database
 	 *	@return Cached Row Set
 	 *	@throws SQLException
 	 */
@@ -140,12 +138,12 @@ public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements Ca
 		crs.populate(rs);
 		return crs;
 	}	//	getRowSet
-	
+
 	/**
 	 * 	Get Cached Row Set.
 	 * 	Gets Database from DB
-	 * 	Required due to Java Sun bug 393865. 
-	 * 	Also, Oracle NUMBER returns scale -127 
+	 * 	Required due to Java Sun bug 393865.
+	 * 	Also, Oracle NUMBER returns scale -127
 	 * 	@param rs result set
 	 *	@return Cached Row Set
 	 *	@throws SQLException
@@ -155,11 +153,11 @@ public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements Ca
 		return getRowSet(rs, DB.getDatabase());
 	}	//	getRowSet
 
-	
+
 	/**	Private Locale Marker	*/
 	private static Locale s_loc = null;
-	
-	
+
+
 	/**************************************************************************
 	 * 	Adempiere Cached RowSet
 	 *	@throws java.sql.SQLException
@@ -172,10 +170,11 @@ public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements Ca
 
 	/**
 	 *	To Collection
-	 *	@return a <code>Collection</code> object that contains the values in 
+	 *	@return a <code>Collection</code> object that contains the values in
 	 * 		each row in this <code>CachedRowSet</code> object
 	 *	@throws SQLException
 	 */
+	@Override
 	public Collection<?> toCollection () throws SQLException
 	{
 		return super.toCollection ();
@@ -188,19 +187,21 @@ public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements Ca
 	 *	stored in the specified column of this <code>CachedRowSet</code> object
 	 *	@throws SQLException
 	 */
+	@Override
 	public Collection<?> toCollection (int column) throws SQLException
 	{
 		return super.toCollection (column);
 	}
 	/**
 	 *	To Collection
-	 * @param column a <code>String</code> object giving the name of the 
+	 * @param column a <code>String</code> object giving the name of the
 	 *        column whose values are to be represented in a collection
 	 * @return a <code>Collection</code> object that contains the values
 	 * 		stored in the specified column of this <code>CachedRowSet</code> object
 	 * @throws SQLException if an error occurs generating the collection or
 	 * 	an invalid column id is provided
 	 */
+	@Override
 	public Collection<?> toCollection (String column) throws SQLException
 	{
 		return super.toCollection (column);
@@ -208,7 +209,7 @@ public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements Ca
 
 	@Override
 	public int getInt(int idx) throws SQLException {
-		//CachedRowSetImpl throw null pointer exception converting 
+		//CachedRowSetImpl throw null pointer exception converting
 		//decimal value to integer
 		try {
 			return super.getInt(idx);
@@ -221,7 +222,7 @@ public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements Ca
 
 	@Override
 	public int getInt(String column) throws SQLException {
-		//CachedRowSetImpl throw null pointer exception converting 
+		//CachedRowSetImpl throw null pointer exception converting
 		//decimal value to integer
 		try {
 			return super.getInt(column);
@@ -229,6 +230,6 @@ public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements Ca
 			String s = getString(column);
 			if ( s == null ) return 0;
 			return Double.valueOf(s).intValue();
-		}	
+		}
 	}
 }	//	CCachedRowSet

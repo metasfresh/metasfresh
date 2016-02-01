@@ -25,9 +25,9 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.util.Date;
 
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
 

@@ -44,11 +44,11 @@ import javax.swing.WindowConstants;
 
 import net.miginfocom.swing.MigLayout;
 
-import org.adempiere.event.Event;
-import org.adempiere.event.IEventBus;
-import org.adempiere.event.IEventBusFactory;
-import org.adempiere.event.IEventListener;
-import org.adempiere.event.Topic;
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.IEventListener;
+import de.metas.event.Topic;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.SwingEventNotifierUI;
 import org.adempiere.util.Check;

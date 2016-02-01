@@ -4,10 +4,10 @@ import java.util.Date;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
-import org.compiere.util.EqualsBuilder;
 
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 

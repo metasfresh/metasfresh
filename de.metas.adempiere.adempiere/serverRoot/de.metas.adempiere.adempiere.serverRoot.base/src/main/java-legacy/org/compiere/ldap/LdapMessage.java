@@ -5,30 +5,28 @@
  * under the terms version 2 of the GNU General Public License as published
  * by the Free Software Foundation. This program is distributed in the hope
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License along 
- * with this program; if not, write to the Free Software Foundation, Inc., 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  * You may reach us at: ComPiere, Inc. - http://www.compiere.org/license.html
- * 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA or info@compiere.org 
+ * 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA or info@compiere.org
  *****************************************************************************/
 package org.compiere.ldap;
 
 import java.util.logging.Level;
 
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.compiere.util.CLogger;
 
 import com.sun.jndi.ldap.BerDecoder;
 
 /**
- * 	Ldap Message 
- *	
+ * 	Ldap Message
+ *
  *  @author Jorg Janke
  *  @version $Id: LdapMessage.java,v 1.1 2006/10/09 00:23:16 jjanke Exp $
  */
-@IgnoreJRERequirement // task 06687
 public class LdapMessage
 {
 	static public final int BIND_REQUEST = 96;
@@ -37,16 +35,16 @@ public class LdapMessage
 	static public final int SEARCH_REQUEST	= 99;
 	static public final int SEARCH_REP_ENTRY	= 100;
 	static public final int SEARCH_RES_RESULT	= 101;
-	
+
 	static public final int SIMPLE_AUTHENTICATION = 128;
-	
+
 	static public final int FILTER_AND = 160;
 	static public final int FILTER_OR = 161;
 	static public final int FILTER_NOT = 162;
 	static public final int FILTER_EQUALITYMATCH = 163;
-	
+
 	static public final int SEQUENCE = 48;
-	
+
 	/** Decoder */
 	private BerDecoder decoder = null;
 	/**	Logger	*/
@@ -54,7 +52,7 @@ public class LdapMessage
 	/** Protocol Operation		*/
 	private int		m_protocolOp = -1;
     /** Message Id needed for the reply message */
-	private int  msgId;  
+	private int  msgId;
 	/** Distinguished name */
 	private String dn = null;
 	/** Organization */
@@ -69,14 +67,14 @@ public class LdapMessage
 	private String baseObj = null;
 	/** LdapResult object to hold if there's any error during parsing */
 	private LdapResult result = null;
-	
+
 	/**
 	 * 	Ldap Message
 	 */
 	public LdapMessage()
 	{
 	}	//	LdapMessage
-	
+
 	/*
 	 *  Reset all the attributes
 	 */
@@ -94,7 +92,7 @@ public class LdapMessage
 		baseObj = null;
 
 	}  // reset()
-	
+
 	/**
 	 * 	Decode Message
 	 *	@param data input buffer
@@ -112,18 +110,18 @@ public class LdapMessage
 			log.log(Level.SEVERE, data.toString(), e);
 			return;
 		}
-		
+
 		try
 		{
 			// Parse the message envelope
 			decoder.parseSeq(null);
-	
+
 			//  Parse message Id
 			msgId = decoder.parseInt();
-	
+
 			// Parse the operation protocol
 			m_protocolOp = decoder.parseSeq(null);
-			
+
 			//
 			//	Payload
 			if (m_protocolOp == BIND_REQUEST)
@@ -156,13 +154,13 @@ public class LdapMessage
 			// Parse the base Object
 			baseObj = decoder.parseString(true);
 			parseDN(baseObj);
-			
+
 			decoder.parseEnumeration();  // scope
 			decoder.parseEnumeration();  // derefAliases
 			decoder.parseInt();  // sizeLimit
 			decoder.parseInt();  // timeLimit
 			decoder.parseBoolean();  // typeOnly
-			
+
 			boolean equalityFilter = false;
 			while (true)
 			{
@@ -179,7 +177,7 @@ public class LdapMessage
 				else if (filter == SEQUENCE)
 					break;
 			}  // while true
-			
+
 			if (!equalityFilter)  // Didn't find the it
 			{
 				result.setErrorNo(LdapResult.LDAP_PROTOCOL_ERROR);
@@ -191,7 +189,7 @@ public class LdapMessage
 			log.log(Level.SEVERE, "", ex);
 		}
 	}   // handleSearch()
-	
+
 	/*
 	 * Encode the bind request message
 	 */
@@ -208,10 +206,10 @@ public class LdapMessage
 				log.info("#" + msgId + ": unsupported LDAP version - " + version);
 				return;
 			}
-	
+
 			// Parse DN
 			dn = decoder.parseString(true);
-			
+
 			// Peek on AuthenticationChoice; only support simple authentication
 			int auth = decoder.peekByte();
 			if (auth != SIMPLE_AUTHENTICATION)  // 0x80 - simple authentication
@@ -220,7 +218,7 @@ public class LdapMessage
 				log.info("#" + msgId + ": unsupported authentication method - " + auth);
 				return;
 			}
-			
+
 			// It is simple authentication, get the authentication string
 			passwd = decoder.parseStringWithTag(SIMPLE_AUTHENTICATION, true, null);
 			if (passwd != null && passwd.length() > 0)
@@ -235,7 +233,7 @@ public class LdapMessage
 				}
 			}
 
-			// Log the information 
+			// Log the information
 			log.info("#" + msgId + ": bind - version=" + version + ", userId=" + userId);
 		}
 		catch (Exception ex)
@@ -243,7 +241,7 @@ public class LdapMessage
 			log.log(Level.SEVERE, "", ex);
 		}
 	}  // handleBind()
-	
+
 	/*
 	 * Parse the DN to find user id, organization and organization unit
 	 */
@@ -260,7 +258,7 @@ public class LdapMessage
 				orgUnit = dnArray[i].split("=")[1];
 		}
 	}  // parseDN()
-	
+
 	/**
 	 * 	Get Operation Code
 	 *	@return protocolOp
@@ -269,7 +267,7 @@ public class LdapMessage
 	{
 		return m_protocolOp;
 	}	//	getOperation
-	
+
 	/**
 	 * 	Get message id
 	 *	@return msgId
@@ -278,7 +276,7 @@ public class LdapMessage
 	{
 		return msgId;
 	}	//	getMsgId()
-	
+
 	/**
 	 * 	Get DN
 	 *	@return dn
@@ -287,7 +285,7 @@ public class LdapMessage
 	{
 		return dn;
 	}	//	getDN()
-	
+
 	/**
 	 * 	Get User Id
 	 *	@return userId
@@ -296,7 +294,7 @@ public class LdapMessage
 	{
 		return userId;
 	}	//	getUserId()
-	
+
 	/**
 	 * 	Get User passwod
 	 *	@return passwd
@@ -305,7 +303,7 @@ public class LdapMessage
 	{
 		return passwd;
 	}	//	getUserPasswd()
-	
+
 	/**
 	 * 	Get base object
 	 *	@return baseObj
@@ -314,7 +312,7 @@ public class LdapMessage
 	{
 		return baseObj;
 	}	//	getBaseObj()
-	
+
 	/**
 	 * 	Get organization
 	 *	@return org
@@ -323,7 +321,7 @@ public class LdapMessage
 	{
 		return org;
 	}	//	getOrg()
-	
+
 	/**
 	 * 	Get organization unit
 	 *	@return orgUnit

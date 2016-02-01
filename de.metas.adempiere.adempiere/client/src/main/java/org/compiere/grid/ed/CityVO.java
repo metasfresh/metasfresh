@@ -3,9 +3,9 @@
  */
 package org.compiere.grid.ed;
 
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.swing.autocomplete.ResultItem;
-import org.compiere.util.EqualsBuilder;
-import org.compiere.util.HashcodeBuilder;
 
 /*
  * #%L
