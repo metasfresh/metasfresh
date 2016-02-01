@@ -36,7 +36,6 @@ SELECT * FROM
 WHERE COALESCE( ai_value, '') != ''
 ;
 
---ALTER TABLE Report.fresh_Attributes_ConcreteADR OWNER TO adempiere;
 COMMENT ON VIEW Report.fresh_Attributes_ConcreteADR IS 'retrieves Attributes in the way they are needed for the jasper reports';
 
 
