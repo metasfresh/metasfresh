@@ -33,7 +33,7 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>3.0.7.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<!-- 
 		Adding spring-beans to avoid:
@@ -49,7 +49,7 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-			<version>3.0.7.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 
 		<dependency>

@@ -14,15 +14,11 @@
 
 	<description>Document Archive Management :: Camel ESB module</description>
 
-	<properties>
-		<de.metas.document.archive.esb.base.version>${project.version}</de.metas.document.archive.esb.base.version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.document.archive.esb</groupId>
 			<artifactId>de.metas.document.archive.esb.base</artifactId>
-			<version>${de.metas.document.archive.esb.base.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		
 		<!-- Apache CAMEL dependencies -->

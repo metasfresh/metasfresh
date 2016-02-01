@@ -43,24 +43,14 @@
 		<servicemix.java.version>1.7</servicemix.java.version>
 
 		<jasperreports.version>4.6.0</jasperreports.version>
-
-		<!-- 
-		versions taken from http://servicemix.apache.org/downloads/servicemix-4.5.1
-		<camel.version>2.10.4</camel.version>
-		<cxf.version>2.6.6</cxf.version>
-		<activeMQ.version>5.7.0</activeMQ.version>
-		
-		versions taken from http://servicemix.apache.org/downloads/servicemix-4.5.2
-		<camel.version>2.10.6</camel.version>
-		<cxf.version>2.6.8</cxf.version>
-		<activeMQ.version>5.7.0</activeMQ.version 
-		-->
 		
 		<!-- versions taken from http://servicemix.apache.org/downloads/servicemix-6.1.0 -->
 		<camel.version>2.16.1</camel.version>
 		<cxf.version>3.1.4</cxf.version>
 		<activeMQ.version>5.12.1</activeMQ.version>
-				
+		
+		<spring.version>4.1.8.RELEASE</spring.version>
+			
 		<!-- Tells SonarQube to run the unit tests -->
 		<sonar.dynamicAnalysis>true</sonar.dynamicAnalysis>
     	<!-- Tells SonarQube to use JaCoCo (formerly EclEmma) as our unit test coverage tool -->
@@ -150,6 +140,9 @@
 				<artifactId>activemq-core</artifactId>
 				<version>${activeMQ.version}</version>
 			</dependency>
+			<!-- note: you probably don't want to use active-mq all, because it's likely that the enforcer plugin will fail with it. 
+			The reason is that it also includes 3rd-party classes which we already include otherwise.
+			 -->
 			<dependency>
 				<groupId>org.apache.activemq</groupId>
 				<artifactId>activemq-all</artifactId>
@@ -165,12 +158,17 @@
 				<artifactId>activemq-client</artifactId>
 				<version>${activeMQ.version}</version>
 			</dependency>
-
+			<dependency>
+				<groupId>org.apache.activemq</groupId>
+				<artifactId>activemq-kahadb-store</artifactId>
+				<version>${activeMQ.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.apache.activemq</groupId>
 				<artifactId>activemq-camel</artifactId>
 				<version>${activeMQ.version}</version>
 			</dependency>
+
 			<dependency>
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
@@ -220,6 +218,21 @@
 				<version>18.0</version>
 			</dependency>
 
+			<dependency>
+				<artifactId>spring-beans</artifactId>
+				<groupId>org.springframework</groupId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>spring-core</artifactId>
+				<groupId>org.springframework</groupId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>spring-context</artifactId>
+				<groupId>org.springframework</groupId>
+				<version>${spring.version}</version>
+			</dependency>
 			<!--
 			Using dependency management is a workaround for:
 			[WARNING] Rule 0: org.apache.maven.plugins.enforcer.BanDuplicateClasses failed with message:  
@@ -311,6 +324,23 @@
 			<dependency>
 				<artifactId>de.metas.document.archive.base</artifactId>
 				<groupId>de.metas.document.archive</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.metas.document.archive.esb</groupId>
+				<artifactId>de.metas.document.archive.esb.api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>de.metas.printing.base</artifactId>
+				<groupId>de.metas.printing</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>de.metas.printing.esb.api</artifactId>
+				<groupId>de.metas.printing.esb</groupId>
 				<version>${project.version}</version>
 			</dependency>
 
