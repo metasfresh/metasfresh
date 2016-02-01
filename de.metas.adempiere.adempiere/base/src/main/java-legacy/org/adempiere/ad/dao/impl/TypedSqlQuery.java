@@ -59,7 +59,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 /**
- * 
+ *
  * @author Low Heng Sin
  * @author Teo Sarca, www.arhipac.ro <li>FR [ 1981760 ] Improve Query class <li>BF [ 2030280 ] org.compiere.model.Query apply access filter issue <li>FR [ 2041894 ] Add Query.match() method <li>FR [
  *         2107068 ] Query.setOrderBy should be more error tolerant <li>FR [ 2107109 ] Add method Query.setOnlyActiveRecords <li>FR [ 2421313 ] Introduce Query.firstOnly convenient method <li>FR [
@@ -96,7 +96,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private List<SqlQueryUnion<T>> unions;
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @param tableName
 	 * @param whereClause
@@ -145,7 +145,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Sets custom SQL FROM clause to be used instead of {@link #getTableName()}.
-	 * 
+	 *
 	 * @param sqlFrom SQL FROM clause (e.g. Table1 as t1 INNER JOIN Table t2 ON (...) .... )
 	 */
 	TypedSqlQuery<T> setSqlFrom(final String sqlFrom)
@@ -156,7 +156,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Gets SQL to be used in FROM clause.
-	 * 
+	 *
 	 * @return SQL to be used in FROM clause; it returns the custom SQL FROM set by {@link #setSqlFrom(String)} or {@link #getTableName()}.
 	 */
 	private final String getSqlFrom()
@@ -170,7 +170,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Set query parameters
-	 * 
+	 *
 	 * @param parameters
 	 */
 	public TypedSqlQuery<T> setParameters(Object... parameters)
@@ -181,7 +181,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Set query parameters
-	 * 
+	 *
 	 * @param parameters collection of parameters
 	 */
 	public TypedSqlQuery<T> setParameters(List<Object> parameters)
@@ -197,7 +197,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Set order by clause. If the string starts with "ORDER BY" then "ORDER BY" keywords will be discarded.
-	 * 
+	 *
 	 * @param orderBy SQL ORDER BY clause
 	 */
 	public TypedSqlQuery<T> setOrderBy(String orderBy)
@@ -222,9 +222,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Turn on data access filter with controls
-	 * 
+	 *
 	 * @param flag
-	 * 
+	 *
 	 * @deprecated Please use {@link #setApplyAccessFilterRW(boolean)}
 	 */
 	@Deprecated
@@ -274,7 +274,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Return a list of all po that match the query criteria.
-	 * 
+	 *
 	 * @return List
 	 * @throws DBException
 	 */
@@ -335,9 +335,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Move <code>rs</code>'s cursor forward and get next model.
-	 * 
+	 *
 	 * If we have a post-filter (see {@link #setPostQueryFilter(IQueryFilter)}), the model will be validated againt it and if not matched next row will be checked.
-	 * 
+	 *
 	 * @param rs
 	 * @param clazz
 	 * @return model or null if we reached the and of the cursor
@@ -368,7 +368,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Retrieve model from given {@link ResultSet}.
-	 * 
+	 *
 	 * @param rs
 	 * @param clazz
 	 * @return next model
@@ -384,7 +384,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Return first PO that match query criteria
-	 * 
+	 *
 	 * @return first PO
 	 * @throws DBException
 	 */
@@ -417,13 +417,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		try
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
-			
+
 			// Optimization: if we don't have post-query filters, it's fine to set the Maximum Rows to fetch to one.
 			if (postQueryFilter == null)
 			{
 				pstmt.setMaxRows(1);
 			}
-			
+
 			rs = createResultSet(pstmt);
 			model = retrieveNextModel(rs, clazz);
 		}
@@ -444,7 +444,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Return first PO that match query criteria. If there are more records that match criteria an exception will be throwed
-	 * 
+	 *
 	 * @return first PO
 	 * @throws DBException
 	 * @see {@link #first()}
@@ -457,7 +457,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	/**
-	 * 
+	 *
 	 * @param clazz
 	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
@@ -512,7 +512,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Return first ID
-	 * 
+	 *
 	 * @return first ID or -1 if not found
 	 * @throws DBException
 	 */
@@ -570,9 +570,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * red1 - returns full SQL string - for caller needs
-	 * 
+	 *
 	 * @return buildSQL(null,true)
-	 * 
+	 *
 	 */
 	public String getSQL() throws DBException
 	{
@@ -581,7 +581,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Aggregate given expression on this criteria
-	 * 
+	 *
 	 * @param sqlExpression
 	 * @param sqlFunction
 	 * @return aggregated value
@@ -594,7 +594,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Aggregate given expression on this criteria
-	 * 
+	 *
 	 * @param <AT>
 	 * @param columnName
 	 * @param sqlFunction
@@ -794,7 +794,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * SUM sqlExpression for items that match query criteria
-	 * 
+	 *
 	 * @param sqlExpression
 	 * @return sum
 	 */
@@ -854,7 +854,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	/**
 	 * Return an Iterator implementation to fetch one PO at a time. The implementation first retrieve all IDS that match the query criteria and issue sql query to fetch the PO when caller want to
 	 * fetch the next PO. This minimize memory usage but it is slower than the list method.
-	 * 
+	 *
 	 * @return Iterator
 	 * @throws DBException
 	 */
@@ -920,7 +920,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Get a List of composed IDs for this Query.
-	 * 
+	 *
 	 * @return List of composed IDs
 	 */
 	private final List<Object[]> retrieveComposedIDs()
@@ -975,7 +975,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Return a simple wrapper over a JDBC {@link ResultSet}. It is the caller responsibility to call the close method to release the underlying database resources.
-	 * 
+	 *
 	 * @return POResultSet
 	 * @throws DBException
 	 */
@@ -1018,7 +1018,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Create a new {@link TypedSqlQuery} object and set it's whereClause
-	 * 
+	 *
 	 * @param whereClause
 	 * @return
 	 */
@@ -1038,9 +1038,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * This method returns a copy of this instance.
-	 * 
+	 *
 	 * If the given <code>whereClause</code> is not empty, then it is <code>AND</code>ed or <code>OR</code>ed to the copy's current where clause. appended.
-	 * 
+	 *
 	 * @param joinByAnd if <code>true</code>, then the given <code>whereClause</code> (unless empty) is <code>AND</code>ed, otherwise it's <code>OR</code>ed to the new query's where clause.
 	 * @param whereClause
 	 * @return a copy of this instance
@@ -1151,7 +1151,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Build SQL Clause
-	 * 
+	 *
 	 * @param selectClause optional; if null the select clause will be build according to POInfo
 	 * @param useOrderByClause true if ORDER BY clause shall be appended
 	 * @return final SQL
@@ -1236,10 +1236,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final ResultSet rs = pstmt.executeQuery();
 
 		final long durationMillis = System.currentTimeMillis() - ts;
-		final long durationMaxMillis = 1000 * 60 * 5; // 5min
+		final int duarationMaxMinutes = 5;
+		final long durationMaxMillis = 1000 * 60 * duarationMaxMinutes;
 		if (durationMaxMillis > 0 && durationMillis > durationMaxMillis)
 		{
-			log.log(Level.WARNING, "Query " + this + " took longer then " + durationMaxMillis + "millis to create the ResultSet", new Exception("trace"));
+			log.log(Level.WARNING,
+					"Query " + this + " took " + durationMillis + " millis (longer than " + duarationMaxMinutes + " minutes) to create the ResultSet",
+					new Exception("Just to print the Stacktrace"));
 		}
 
 		return rs;
@@ -1247,7 +1250,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Get a Array with the IDs for this Query
-	 * 
+	 *
 	 * @return Get a Array with the IDs
 	 */
 	public int[] getIDs()
@@ -1400,7 +1403,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Gets single key column name.
-	 * 
+	 *
 	 * @return key column name.
 	 * @throws DBException if table does not have a key column or it has composed primary key
 	 */
@@ -1455,7 +1458,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			return this;
 		}
-		
+
 		if (this.options == null)
 		{
 			this.options = new HashMap<>(options);
@@ -1488,7 +1491,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	/**
-	 * 
+	 *
 	 * @return a copy of this object
 	 */
 	@Override
@@ -1533,7 +1536,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Inserts the query result into a <code>T_Selection</code> for the given AD_PInstance_ID
-	 * 
+	 *
 	 * @param AD_PInstance_ID
 	 * @return number of records inserted in selection
 	 */
@@ -1604,9 +1607,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Casts given {@link IQuery} object to {@link TypedSqlQuery}.
-	 * 
+	 *
 	 * We use this method to track where we do "interface casted to native implementation". This information is useful if we decide to refactor this class in future.
-	 * 
+	 *
 	 * @param query
 	 * @return
 	 */
@@ -1660,12 +1663,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	{
 		// In case we have LIMIT/OFFSET clauses, we shall update the records differently
 		// (i.e. by having a UPDATE FROM (sub select) ).
-		final boolean useSelectFromSubQuery = this.limit > 0 || this.offset >= 0; 
+		final boolean useSelectFromSubQuery = this.limit > 0 || this.offset >= 0;
 		if (useSelectFromSubQuery)
 		{
 			return updateSql_UsingSelectFromSubQuery(sqlQueryUpdater);
 		}
-		
+
 		final List<Object> sqlParams = new ArrayList<Object>();
 		final String sqlUpdateSet = sqlQueryUpdater.getSql(getCtx(), sqlParams);
 
@@ -1681,12 +1684,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Builds the update SQL using a sub query for select.
-	 * 
+	 *
 	 * i.e.
+	 *
 	 * <pre>
 	 * UPDATE t .. FROM (SELECT subquery) f WHERE t.rowid = f.rowid
-	 * </pre> 
-	 * 
+	 * </pre>
+	 *
 	 * @param sqlQueryUpdater
 	 * @return how many rows were updated
 	 */
@@ -1702,10 +1706,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			// Fallback if table has no primary key: use database specific ROW ID
 			keyColumnName = DB.getDatabase().getRowIdSql(tableName);
 		}
-		
+
 		final List<Object> sqlParams = new ArrayList<Object>();
 		final StringBuilder sql = new StringBuilder(100);
-				
+
 		//
 		// UPDATE
 		final String sqlUpdateSet = sqlQueryUpdater.getSql(getCtx(), sqlParams);
@@ -1720,15 +1724,15 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 					.append("\n , ").append(keyColumnName).append(" as ZZ_RowId")
 					.append("\n FROM ").append(getSqlFrom());
 			final String sqlFrom = buildSQL(sqlFrom_Select, true);
-			
+
 			sql.append("\n FROM (").append(sqlFrom).append(") f ");
 			sqlParams.addAll(getParametersEffective());
 		}
-		
+
 		//
 		// WHERE
 		sql.append("\n WHERE t.").append(keyColumnName).append(" = f.ZZ_RowId");
-		
+
 		//
 		// Execute
 		return DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), getTrxName());
@@ -1770,7 +1774,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			final String fromSql = from.getSql(collectSqlParamsFromSelectClause ? sqlParams : null);
 			sqlFromSelectColumns.append(fromSql);
 		}
-		
+
 		//
 		// Build sql: SELECT ... FROM ... WHERE ...
 		sqlFromSelectColumns.asStringBuilder()

@@ -19,7 +19,7 @@ Additional notes:
 # The actual release notes
  
 ## Upcoming Release
-
+ - 09761 Do research and improve logging of the stand alone printing client (104599264471) +uat
  - 09744_Dunning Report and UI changes +uat
  - 09668_Change quality based invoicing for fresh products +uat
  - 09203_avoid setting IT staff as sales rep in orders that were generated from EDI +uat +fix
