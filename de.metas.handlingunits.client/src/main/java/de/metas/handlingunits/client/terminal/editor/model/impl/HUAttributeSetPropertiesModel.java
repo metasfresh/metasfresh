@@ -621,7 +621,12 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 
 			for (final IAttributeValue attributeValue : attributeStorage.getAttributeValues())
 			{
-
+				// Skip attributes which will never ever be displayed to user
+				if (!attributeValue.isDisplayedUI())
+				{
+					continue;
+				}
+				
 				final I_M_Attribute attribute = attributeValue.getM_Attribute();
 				final String propertyName = attribute.getValue();
 

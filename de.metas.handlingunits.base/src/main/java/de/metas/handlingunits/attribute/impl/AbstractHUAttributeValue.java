@@ -118,6 +118,12 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	{
 		return huPIAttribute.isReadOnly();
 	}
+	
+	@Override
+	public boolean isDisplayedUI()
+	{
+		return huPIAttribute.isDisplayed();
+	}
 
 	@Override
 	public int getDisplaySeqNo()

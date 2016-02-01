@@ -209,6 +209,31 @@ public interface I_M_HU_PI_Attribute
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Displayed.
+	 * Determines, if this field is displayed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsDisplayed (boolean IsDisplayed);
+
+	/**
+	 * Get Displayed.
+	 * Determines, if this field is displayed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isDisplayed();
+
+    /** Column definition for IsDisplayed */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsDisplayed = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "IsDisplayed", null);
+    /** Column name IsDisplayed */
+    public static final String COLUMNNAME_IsDisplayed = "IsDisplayed";
+
+	/**
 	 * Set Instanz-Attribut.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *

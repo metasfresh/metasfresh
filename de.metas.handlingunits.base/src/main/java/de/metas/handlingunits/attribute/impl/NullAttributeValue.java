@@ -246,6 +246,12 @@ public final class NullAttributeValue implements IAttributeValue
 	{
 		return true;
 	}
+	
+	@Override
+	public boolean isDisplayedUI()
+	{
+		return false;
+	}
 
 	@Override
 	public int getDisplaySeqNo()

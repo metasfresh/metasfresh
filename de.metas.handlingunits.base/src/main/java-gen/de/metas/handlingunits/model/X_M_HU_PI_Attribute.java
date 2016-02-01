@@ -14,7 +14,7 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1568951360L;
+	private static final long serialVersionUID = -1228831570L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Attribute (Properties ctx, int M_HU_PI_Attribute_ID, String trxName)
@@ -23,6 +23,8 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
       /** if (M_HU_PI_Attribute_ID == 0)
         {
 			setHU_TansferStrategy_JavaClass_ID (0);
+			setIsDisplayed (true);
+// Y
 			setIsReadOnly (false);
 // N
 			setM_Attribute_ID (0);
@@ -96,9 +98,9 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
-	/** Set Maßeinheit.
+	/** Set MaÃŸeinheit.
 		@param C_UOM_ID 
-		Maßeinheit
+		MaÃŸeinheit
 	  */
 	@Override
 	public void setC_UOM_ID (int C_UOM_ID)
@@ -109,8 +111,8 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
 	}
 
-	/** Get Maßeinheit.
-		@return Maßeinheit
+	/** Get MaÃŸeinheit.
+		@return MaÃŸeinheit
 	  */
 	@Override
 	public int getC_UOM_ID () 
@@ -156,6 +158,32 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Displayed.
+		@param IsDisplayed 
+		Determines, if this field is displayed
+	  */
+	@Override
+	public void setIsDisplayed (boolean IsDisplayed)
+	{
+		set_Value (COLUMNNAME_IsDisplayed, Boolean.valueOf(IsDisplayed));
+	}
+
+	/** Get Displayed.
+		@return Determines, if this field is displayed
+	  */
+	@Override
+	public boolean isDisplayed () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDisplayed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Instanz-Attribut.
@@ -210,9 +238,9 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		return false;
 	}
 
-	/** Set Schreibgeschützt.
+	/** Set SchreibgeschÃ¼tzt.
 		@param IsReadOnly 
-		Feld / Eintrag / Berecih ist schreibgeschützt
+		Feld / Eintrag / Berecih ist schreibgeschÃ¼tzt
 	  */
 	@Override
 	public void setIsReadOnly (boolean IsReadOnly)
@@ -220,8 +248,8 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		set_Value (COLUMNNAME_IsReadOnly, Boolean.valueOf(IsReadOnly));
 	}
 
-	/** Get Schreibgeschützt.
-		@return Feld / Eintrag / Berecih ist schreibgeschützt
+	/** Get SchreibgeschÃ¼tzt.
+		@return Feld / Eintrag / Berecih ist schreibgeschÃ¼tzt
 	  */
 	@Override
 	public boolean isReadOnly () 
@@ -359,7 +387,7 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 
 	/** Set Reihenfolge.
 		@param SeqNo 
-		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+		Zur Bestimmung der Reihenfolge der EintrÃ¤ge; die kleinste Zahl kommt zuerst
 	  */
 	@Override
 	public void setSeqNo (int SeqNo)
@@ -368,7 +396,7 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 	}
 
 	/** Get Reihenfolge.
-		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+		@return Zur Bestimmung der Reihenfolge der EintrÃ¤ge; die kleinste Zahl kommt zuerst
 	  */
 	@Override
 	public int getSeqNo () 

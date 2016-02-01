@@ -190,11 +190,14 @@ public interface IAttributeValue
 	I_C_UOM getC_UOM();
 
 	/**
-	 *
-	 * @param attribute
 	 * @return true if attribute is readonly for user
 	 */
 	boolean isReadonlyUI();
+	
+	/**
+	 * @return true if attribute is displayed to user
+	 */
+	boolean isDisplayedUI();
 
 	/**
 	 * @return ordering sequence no

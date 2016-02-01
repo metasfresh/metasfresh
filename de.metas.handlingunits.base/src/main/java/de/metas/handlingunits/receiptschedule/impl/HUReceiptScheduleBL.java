@@ -325,9 +325,11 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		Check.assumeNotEmpty(receiptSchedules, "receiptSchedule not empty");
 
 		//
-		// Iterate all receipt schedules and get the PriceActual.
-		// Make sure it's unique for all receipt schedule lines.
+		// Iterate all receipt schedules and get: 
+		// * PriceActual; Make sure it's unique for all receipt schedule lines.
+		// * C_OrderLine_IDs
 		BigDecimal priceActual = null;
+		final Set<Integer> purchaseOrderLineIds = new HashSet<>();
 		for (final de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
 		{
 			Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
@@ -346,6 +348,12 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 						+ "\n @PriceActual@: " + priceActual + ", " + receiptSchedule_priceActual
 						+ "\n @M_ReceiptSchedule_ID@: " + receiptSchedules);
 			}
+			
+			final int orderLineId = receiptSchedule.getC_OrderLine_ID();
+			if (orderLineId > 0)
+			{
+				purchaseOrderLineIds.add(orderLineId);
+			}
 		}
 
 		//
@@ -358,8 +366,18 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			initialAttributeValueDefaults = new HashMap<>();
 			huContext.setProperty(Constants.CTXATTR_DefaultAttributesValue, initialAttributeValueDefaults);
 		}
-		final I_M_Attribute attr_CostPrice = Services.get(IAttributeDAO.class).retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_CostPrice, I_M_Attribute.class);
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final I_M_Attribute attr_CostPrice = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_CostPrice, I_M_Attribute.class);
 		initialAttributeValueDefaults.put(attr_CostPrice, priceActual);
+		
+		//
+		// Set HU_PurchaseOrderLine_ID (task 09741)
+		if (purchaseOrderLineIds.size() == 1)
+		{
+			final I_M_Attribute attr_PurchaseOrderLine = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_PurchaseOrderLine_ID, I_M_Attribute.class);
+			initialAttributeValueDefaults.put(attr_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
+		}
+		
 		return request;
 	}
 

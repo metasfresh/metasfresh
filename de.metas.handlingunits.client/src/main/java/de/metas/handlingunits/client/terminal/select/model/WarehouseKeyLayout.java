@@ -34,6 +34,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
+import de.metas.adempiere.form.terminal.TerminalKeyByNameComparator;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 /**
@@ -74,7 +75,7 @@ public class WarehouseKeyLayout extends DefaultKeyLayout
 			setKeys(keys);
 			return;
 		}
-
+		
 		//
 		// Create Keys
 		final List<ITerminalKey> keys = new ArrayList<ITerminalKey>();
@@ -83,6 +84,10 @@ public class WarehouseKeyLayout extends DefaultKeyLayout
 			final WarehouseKey key = new WarehouseKey(getTerminalContext(), warehouse);
 			keys.add(key);
 		}
+
+		//
+		// Sort keys by Name
+		Collections.sort(keys, TerminalKeyByNameComparator.instance);
 
 		//
 		// Set new Keys list

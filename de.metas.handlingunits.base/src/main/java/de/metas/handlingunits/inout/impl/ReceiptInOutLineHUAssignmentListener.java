@@ -95,10 +95,6 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		Services.get(ITrxManager.class).assertTrxNameNotNull(trxName);
 
 		//
-		// Get the locator where this HU was received
-		final int receiptLocatorId = inoutLine.getM_Locator_ID();
-
-		//
 		// Activate the HU, set it's locator and reset BPartner
 		// NOTE: we need to do it in a HUContextProcessor because we are also changing HU attributes,
 		// which needs to be propagated and the HU attribute transactions needs to be processed.
@@ -110,7 +106,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 					@Override
 					public IMutableAllocationResult process(final IHUContext huContext)
 					{
-						activeHUAfterReceipt(huContext, hu, receiptLocatorId);
+						activeHUAfterReceipt(huContext, hu, inoutLine);
 						return NULL_RESULT; // don't care
 					}
 				});
@@ -128,9 +124,9 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 	 *
 	 * @param huContext
 	 * @param hu
-	 * @param receiptLocatorId
+	 * @param receiptLine
 	 */
-	private final void activeHUAfterReceipt(final IHUContext huContext, final I_M_HU hu, final int receiptLocatorId)
+	private final void activeHUAfterReceipt(final IHUContext huContext, final I_M_HU hu, final I_M_InOutLine receiptLine)
 	{
 		//
 		// Activate HU (i.e. it's not a Planning HU anymore)
@@ -139,11 +135,30 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 
 		//
 		// Update HU's Locator
+		final int receiptLocatorId = receiptLine.getM_Locator_ID(); // the locator where this HU was received
 		hu.setM_Locator_ID(receiptLocatorId);
 
 		//
 		// Update BPartner
 		resetVendor(huContext, hu);
+		
+		//
+		// Set PurchaseOrderLine_ID and ReceiptInOutLine_ID attributes (task 09741)
+		{
+			final IAttributeStorage huAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+
+			final org.compiere.model.I_M_Attribute attr_PurchaseOrderLine = huAttributeStorage.getAttributeByValueKeyOrNull(Constants.ATTR_PurchaseOrderLine_ID);
+			if (attr_PurchaseOrderLine != null)
+			{
+				huAttributeStorage.setValue(attr_PurchaseOrderLine, receiptLine.getC_OrderLine_ID());
+			}
+			
+			final org.compiere.model.I_M_Attribute attr_ReceiptInOutLine = huAttributeStorage.getAttributeByValueKeyOrNull(Constants.ATTR_ReceiptInOutLine_ID);
+			if (attr_ReceiptInOutLine != null)
+			{
+				huAttributeStorage.setValue(attr_ReceiptInOutLine, receiptLine.getM_InOutLine_ID());
+			}
+		}
 
 		// Save changed HU
 		InterfaceWrapperHelper.save(hu, huContext.getTrxName());

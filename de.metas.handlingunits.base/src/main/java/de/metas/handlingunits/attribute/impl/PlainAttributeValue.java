@@ -199,6 +199,12 @@ public class PlainAttributeValue extends AbstractAttributeValue
 	{
 		return false;
 	}
+	
+	@Override
+	public boolean isDisplayedUI()
+	{
+		return true;
+	}
 
 	@Override
 	public boolean isNew()

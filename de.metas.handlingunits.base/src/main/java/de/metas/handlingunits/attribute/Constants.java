@@ -55,11 +55,18 @@ public final class Constants
 	public static final String ATTR_LotNumberDate = "HU_LotNumberDate";
 
 	/**
-	 * HU's attribute which stores the best before date.
+	 * C_OrderLine_ID on which the given HU was received.
 	 * 
-	 * @see http://dewiki908/mediawiki/index.php/09363_Best-before_management_%28Mindesthaltbarkeit%29_%28108375354495%29
+	 * @task 09741
 	 */
-	public static final String ATTR_BestBeforeDate = "HU_BestBeforeDate";
+	public static final String ATTR_PurchaseOrderLine_ID = "HU_PurchaseOrderLine_ID";
+
+	/**
+	 * M_InOutLine_ID on which the given HU was received.
+	 * 
+	 * @task 09741
+	 */
+	public static final String ATTR_ReceiptInOutLine_ID = "HU_ReceiptInOutLine_ID";
 
 	private Constants()
 	{
