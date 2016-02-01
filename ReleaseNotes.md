@@ -19,6 +19,7 @@ Additional notes:
 # The actual release notes
  
 ## Upcoming Release
+ - 09745 alternative jasper shipment document without ADR but explicit GMAA-values (107947997555) +uat +feature
  - 09726 Deep-copy support for AD Roles (106651676304) +uat +feature
     * we now also copy user-role assignements to the target role
  - 09625 Costing short report incl Budget (105806249331) +uat +feature
