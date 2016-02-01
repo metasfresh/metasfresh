@@ -171,6 +171,12 @@
 				<version>1.5.1</version>
 			</dependency>
 
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>18.0</version>
+			</dependency>
+
 			<!--
 			Using dependency management is a workaround for:
 			[WARNING] Rule 0: org.apache.maven.plugins.enforcer.BanDuplicateClasses failed with message:  

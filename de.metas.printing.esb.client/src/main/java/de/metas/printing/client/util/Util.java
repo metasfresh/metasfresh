@@ -10,18 +10,17 @@ package de.metas.printing.client.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -35,7 +34,7 @@ public final class Util
 		super();
 	}
 
-	public static byte[] toByteArray(InputStream in) throws RuntimeException
+	public static byte[] toByteArray(final InputStream in) throws RuntimeException
 	{
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -48,7 +47,7 @@ public final class Util
 				out.write(buf, 0, len);
 			}
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -82,15 +81,15 @@ public final class Util
 			return clazz.asSubclass(interfaceClazz).newInstance();
 
 		}
-		catch (ClassNotFoundException e)
+		catch (final ClassNotFoundException e)
 		{
 			throw new RuntimeException("Unable to instantiate '" + classname + "'", e);
 		}
-		catch (InstantiationException e)
+		catch (final InstantiationException e)
 		{
 			throw new RuntimeException("Unable to instantiate '" + classname + "'", e);
 		}
-		catch (IllegalAccessException e)
+		catch (final IllegalAccessException e)
 		{
 			throw new RuntimeException("Unable to instantiate '" + classname + "'", e);
 		}
@@ -119,7 +118,7 @@ public final class Util
 	}
 
 	/**
-	 * 
+	 *
 	 * @param filename
 	 * @return file extension or null
 	 */
@@ -145,13 +144,13 @@ public final class Util
 		{
 			closeable.close();
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			e.printStackTrace();
 		}
 	}
 
-	public static String toString(InputStream in)
+	public static String toString(final InputStream in)
 	{
 		return new String(toByteArray(in));
 	}

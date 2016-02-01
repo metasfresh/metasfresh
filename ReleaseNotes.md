@@ -19,8 +19,18 @@ Additional notes:
 # The actual release notes
  
 ## Upcoming Release
+ - 09618 order-checkup printing problems (106933593952): +fix +uat
+    * server/core changes: 
+      * allowing an ITrxListener to deactivate itself in case it does not want to be called more than once 
+    * printing client changes
+      * using guava to decode the base64, got rid of javax.mail
+      * Http endpoint: storing the received data in a file that's deleted once the print worked if the print failed, the file's content can be inspected
+      * parent-pom: managing the guava version to be used (=>18.0)
+      * cleaned up the printlcient's code
+- 09761 Do research and improve logging of the stand alone printing client (104599264471) +feature +uat
+    * adding a more usable JUL properties file that includes instructions.
+    * minor changes (removing customer specifics, fixing a log level in the ESB to avoid log file flooding)
  - 09618 Bestellkontrolle Druck Probleme (106933593952): allowing an ITrxListener to deactivate itself in case it does not want to be called more than once +fix +uat
- - 09761 Do research and improve logging of the stand alone printing client (104599264471) +feature +uat
  - 09744_Dunning Report and UI changes +uat
  - 09668_Change quality based invoicing for fresh products +uat
  - 09203_avoid setting IT staff as sales rep in orders that were generated from EDI +uat +fix

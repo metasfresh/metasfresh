@@ -10,18 +10,17 @@ package de.metas.printing.client.engine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.print.Printable;
 
@@ -41,7 +40,7 @@ public class PrintPackageRequest
 	private String printJobName;
 	private Printable printable;
 	private int numPages;
-	
+
 	protected PrintPackageRequest(final PrintPackage printPackage, final PrintPackageInfo printPackageInfo)
 	{
 		if (printPackage == null)
@@ -62,7 +61,7 @@ public class PrintPackageRequest
 		return printService;
 	}
 
-	public void setPrintService(PrintService printService)
+	public void setPrintService(final PrintService printService)
 	{
 		this.printService = printService;
 	}
@@ -87,7 +86,7 @@ public class PrintPackageRequest
 		return printJobName;
 	}
 
-	public void setPrintJobName(String printJobName)
+	public void setPrintJobName(final String printJobName)
 	{
 		this.printJobName = printJobName;
 	}
@@ -97,7 +96,7 @@ public class PrintPackageRequest
 		return printable;
 	}
 
-	public void setPrintable(Printable printable)
+	public void setPrintable(final Printable printable)
 	{
 		this.printable = printable;
 	}
@@ -107,11 +106,11 @@ public class PrintPackageRequest
 		return numPages;
 	}
 
-	public void setNumPages(int numPages)
+	public void setNumPages(final int numPages)
 	{
 		this.numPages = numPages;
 	}
-	
+
 	@Override
 	public String toString()
 	{

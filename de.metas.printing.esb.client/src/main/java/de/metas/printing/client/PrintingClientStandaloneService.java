@@ -22,7 +22,6 @@ package de.metas.printing.client;
  * #L%
  */
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -30,6 +29,7 @@ import java.util.Enumeration;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -40,7 +40,7 @@ import java.util.logging.Logger;
  */
 public class PrintingClientStandaloneService
 {
-	private final transient Logger log = Logger.getLogger(getClass().getName());
+	private final transient Logger logger = Logger.getLogger(getClass().getName());
 
 	public static void main(final String[] args)
 	{
@@ -68,7 +68,7 @@ public class PrintingClientStandaloneService
 						final String version = mainAttribs.getValue("Implementation-Version");
 						if (version != null)
 						{
-							log.info("Resource " + url + " has version " + version);
+							logger.info("Resource " + url + " has version " + version);
 						}
 					}
 				}
@@ -102,7 +102,7 @@ public class PrintingClientStandaloneService
 		}
 		catch (final InterruptedException e)
 		{
-			log.info("Interrupted. Exiting...");
+			logger.log(Level.INFO, "Interrupted. Exiting.", e);
 			client.stop();
 		}
 	}

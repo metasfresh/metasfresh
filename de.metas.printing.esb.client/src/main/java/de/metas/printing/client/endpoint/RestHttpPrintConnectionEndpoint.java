@@ -10,23 +10,27 @@ package de.metas.printing.client.endpoint;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,13 +38,14 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.mail.internet.MimeUtility;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
+
+import com.google.common.io.BaseEncoding;
+import com.google.common.io.ByteStreams;
 
 import de.metas.printing.client.Context;
 import de.metas.printing.client.IPrintConnectionEndpoint;
@@ -51,10 +56,16 @@ import de.metas.printing.esb.api.LoginRequest;
 import de.metas.printing.esb.api.LoginResponse;
 import de.metas.printing.esb.api.PRTRestServiceConstants;
 import de.metas.printing.esb.api.PrintJobInstructionsConfirm;
+import de.metas.printing.esb.api.PrintJobInstructionsStatusEnum;
 import de.metas.printing.esb.api.PrintPackage;
 import de.metas.printing.esb.api.PrintPackageInfo;
 import de.metas.printing.esb.api.PrinterHWList;
 
+/**
+ * Endpoint that queries the printing system via http.
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 {
 	private final transient Logger log = Logger.getLogger(getClass().getName());
@@ -68,15 +79,15 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 	private final Context _ctx;
 	private String _sessionId = null;
 	private final String serverUrl;
-	private IBeanEnconder beanEncoder;
+	private final IBeanEnconder beanEncoder;
 
 	private final HttpClient httpclient;
 
 	public RestHttpPrintConnectionEndpoint()
 	{
 		super();
-		this._ctx = Context.getContext();
-		this._sessionId = _ctx.getProperty(Context.CTX_SessionId);
+		_ctx = Context.getContext();
+		_sessionId = _ctx.getProperty(Context.CTX_SessionId);
 
 		serverUrl = _ctx.getProperty(CTX_ServerUrl);
 		if (serverUrl == null || serverUrl.isEmpty())
@@ -91,7 +102,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final int socketTimeout = Context.getContext().getPropertyAsInt(CTX_SocketTimeoutMillis, DEFAULT_SocketTimeoutMillis);
 		log.log(Level.FINEST, "socketTimeout: {0}", socketTimeout);
 
-		this.httpclient = new HttpClient();
+		httpclient = new HttpClient();
 		httpclient.getParams().setSoTimeout(socketTimeout);
 	}
 
@@ -115,7 +126,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		return _sessionId;
 	}
 
-	private int executeHttpPost(PostMethod httpPost) throws HttpException, IOException
+	private int executeHttpPost(final PostMethod httpPost) throws HttpException, IOException
 	{
 		final int result = httpclient.executeMethod(httpPost);
 		log.log(Level.FINEST, "Result code: {0}", result);
@@ -143,7 +154,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		{
 			result = executeHttpPost(httpPost);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new PrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
@@ -195,7 +206,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 			return printPackage;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw e instanceof PrintConnectionEndpointException ? (PrintConnectionEndpointException)e : new PrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
@@ -207,9 +218,9 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 	}
 
 	@Override
-	public InputStream getPrintPackageData(PrintPackage printPackageInfo)
+	public InputStream getPrintPackageData(final PrintPackage printPackage)
 	{
-		final String transactionId = printPackageInfo.getTransactionId();
+		final String transactionId = printPackage.getTransactionId();
 
 		final Map<String, String> params = createInitialUrlParams();
 		params.put(PRTRestServiceConstants.PARAM_TransactionId, transactionId);
@@ -219,7 +230,6 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final PostMethod httpPost = new PostMethod(url.toString());
 
 		int result = -1;
-		final InputStream in;
 		try
 		{
 			result = executeHttpPost(httpPost);
@@ -234,14 +244,24 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 			// The byte stream itself is the document received from the ESB
 			// task 05011: work with a stream instead of byte[] to avoid problems with large amounts of data
 			final InputStream dataBase64Stream = httpPost.getResponseBodyAsStream();
-			in = MimeUtility.decode(dataBase64Stream, "base64");
+
+			final File file = mkFile(printPackage);
+
+			final FileOutputStream fileOutputStream = new FileOutputStream(file);
+			ByteStreams.copy(dataBase64Stream, fileOutputStream);
+			dataBase64Stream.close();
+			fileOutputStream.close();
+
+			final FileInputStream fileInputStream = new FileInputStream(file);
+			return BaseEncoding
+					.base64()
+					.withSeparator("\r\n", 76)
+					.decodingStream(new InputStreamReader(fileInputStream));
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw e instanceof PrintConnectionEndpointException ? (PrintConnectionEndpointException)e : new PrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
-
-		return in;
 	}
 
 	@Override
@@ -272,10 +292,35 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 				throw new PrintConnectionEndpointException("Error " + result + " while posting on " + url + ": " + errorMsg);
 			}
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw e instanceof PrintConnectionEndpointException ? (PrintConnectionEndpointException)e : new PrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
+		if (PrintJobInstructionsStatusEnum.Gedruckt.equals(response.getStatus()))
+		{
+			final File dataFiletoDelete = mkFile(printPackage);
+			try
+			{
+				Files.delete(dataFiletoDelete.toPath());
+			}
+			catch (IOException e)
+			{
+				log.log(Level.SEVERE, "IOException while trying to delete data file " + dataFiletoDelete, e);
+			}
+
+		}
+	}
+
+	/**
+	 * Create a file that corresponds to the given <code>printPackageInfo</code>.
+	 *
+	 * @param printPackageInfo
+	 * @return
+	 */
+	private File mkFile(final PrintPackage printPackageInfo)
+	{
+		final File file = new File("PrintJobInstructionsID_" + printPackageInfo.getPrintJobInstructionsID() + ".data");
+		return file;
 	}
 
 	// protected because we want to make them testable
@@ -293,13 +338,13 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		return params;
 	}
 
-	private URL getURL(String relativePath)
+	private URL getURL(final String relativePath)
 	{
 		final Map<String, String> params = createInitialUrlParams();
 		return getURL(relativePath, params);
 	}
 
-	private URL getURL(String relativePath, Map<String, String> params)
+	private URL getURL(final String relativePath, final Map<String, String> params)
 	{
 		final StringBuilder urlStrBuf = new StringBuilder();
 		urlStrBuf.append(serverUrl);
@@ -315,7 +360,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		{
 			return new URL(urlStr);
 		}
-		catch (MalformedURLException e)
+		catch (final MalformedURLException e)
 		{
 			throw new RuntimeException("Invalid URL " + urlStr, e);
 		}
@@ -389,12 +434,12 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 			final int sessionIdInt = Integer.parseInt(sessionId.trim());
 			if (sessionIdInt <= 0)
 			{
-				throw new RuntimeException("SessionId '" + (sessionId) + "' is not valid");
+				throw new RuntimeException("SessionId '" + sessionId + "' is not valid");
 			}
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
-			throw new RuntimeException("SessionId '" + (sessionId) + "' is not valid");
+			throw new RuntimeException("SessionId '" + sessionId + "' is not valid");
 		}
 
 	}
@@ -428,7 +473,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 			final LoginResponse loginResponse = beanEncoder.decodeStream(in, LoginResponse.class);
 			return loginResponse;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw e instanceof LoginFailedPrintConnectionEndpointException ? (LoginFailedPrintConnectionEndpointException)e : new LoginFailedPrintConnectionEndpointException("Cannot POST to " + url,
 					e);

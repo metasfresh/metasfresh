@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
@@ -9,7 +10,7 @@
 
 	<groupId>de.metas.printing.esb</groupId>
 	<artifactId>de.metas.printing.esb.client</artifactId>
-	
+
 	<description>Printing client that queries the ESB for print jobs and performs them using the local printer hardware</description>
 
 	<properties>
@@ -44,11 +45,11 @@
 			<artifactId>jackson-mapper-asl</artifactId>
 		</dependency>
 
-<!-- javax.mail can do stream-based base64 encoding/decoding -->
 		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
 		</dependency>
+
 	</dependencies>
 
 	<build>

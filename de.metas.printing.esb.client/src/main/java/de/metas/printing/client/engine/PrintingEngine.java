@@ -79,6 +79,13 @@ public class PrintingEngine
 		redirectDirName = "";
 	}
 
+	/**
+	 * Attempts to print the given package and input stream and closes the stream.
+	 *
+	 * @param printPackage
+	 * @param in
+	 * @return
+	 */
 	public PrintJobInstructionsConfirm print(final PrintPackage printPackage, final InputStream in)
 	{
 		logger.log(Level.INFO, "Printing {0}", printPackage);
@@ -93,9 +100,9 @@ public class PrintingEngine
 		final PrintJobInstructionsConfirm printPackageResponse = new PrintJobInstructionsConfirm();
 		printPackageResponse.setPrintJobInstructionsID(printJobInstructionsId);
 
-		try
+		try (final InputStream inInternal = in)
 		{
-			final PrintablePDF printable = createPrintable(printPackage, in);
+			final PrintablePDF printable = createPrintable(printPackage, inInternal);
 
 			// task 08958: repeating the print for our number of copies
 			final int iterations = printPackage.getCopies();
@@ -119,6 +126,7 @@ public class PrintingEngine
 		}
 		catch (final Exception e)
 		{
+			logger.log(Level.SEVERE, "Exception while trying to print PrintPackage " + printPackage, e);
 			printPackageResponse.setStatus(PrintJobInstructionsStatusEnum.Druckfehler);
 			printPackageResponse.setErrorMsg(e.getLocalizedMessage());
 
@@ -126,7 +134,8 @@ public class PrintingEngine
 		}
 	}
 
-	private PrintablePDF createPrintable(final PrintPackage printPackage,
+	private PrintablePDF createPrintable(
+			final PrintPackage printPackage,
 			final InputStream in)
 	{
 		final String format = printPackage.getFormat();

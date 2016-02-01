@@ -98,7 +98,7 @@ public class Context implements IContext
 		init();
 	}
 
-	public void addSource(IContext source)
+	public void addSource(final IContext source)
 	{
 		if (source == null)
 		{
@@ -112,7 +112,7 @@ public class Context implements IContext
 		sources.add(source);
 	}
 
-	public void setProperty(String name, Object value)
+	public void setProperty(final String name, final Object value)
 	{
 		props.put(name, value);
 	}
@@ -124,7 +124,7 @@ public class Context implements IContext
 		return value instanceof String ? value.toString() : null;
 	}
 
-	public String getProperty(final String name, String defaultValue)
+	public String getProperty(final String name, final String defaultValue)
 	{
 		final String value = getProperty(name);
 		if (value == null)
@@ -152,7 +152,7 @@ public class Context implements IContext
 			{
 				return Integer.parseInt(value.toString());
 			}
-			catch (NumberFormatException e)
+			catch (final NumberFormatException e)
 			{
 				throw new RuntimeException("Property " + name + " has invalid integer value: " + value);
 			}
@@ -170,7 +170,7 @@ public class Context implements IContext
 	 * @param interfaceClazz
 	 * @return instance of given class/interface; never returns <code>null</code>
 	 */
-	public <T> T getInstance(final String name, Class<T> interfaceClazz)
+	public <T> T getInstance(final String name, final Class<T> interfaceClazz)
 	{
 		final Object value = get(name);
 		if (value == null)
@@ -193,7 +193,7 @@ public class Context implements IContext
 					final T obj = (T)clazz.newInstance();
 					return obj;
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					throw new RuntimeException(e);
 				}
@@ -220,25 +220,25 @@ public class Context implements IContext
 		if (props.containsKey(name))
 		{
 			@SuppressWarnings("unchecked")
-			T value = (T)props.get(name);
+			final T value = (T)props.get(name);
 			return value;
 		}
 
 		// Check other sources
-		for (IContext source : sources)
+		for (final IContext source : sources)
 		{
 			final String valueStr = source.getProperty(name);
 			if (valueStr != null)
 			{
 				@SuppressWarnings("unchecked")
-				T value = (T)valueStr;
+				final T value = (T)valueStr;
 				return value;
 			}
 		}
 
 		// Check defaults
 		@SuppressWarnings("unchecked")
-		T value = (T)defaults.get(name);
+		final T value = (T)defaults.get(name);
 		return value;
 	}
 

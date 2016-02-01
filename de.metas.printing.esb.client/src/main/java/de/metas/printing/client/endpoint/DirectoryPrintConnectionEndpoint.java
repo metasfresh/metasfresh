@@ -10,18 +10,17 @@ package de.metas.printing.client.endpoint;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -59,7 +58,7 @@ public class DirectoryPrintConnectionEndpoint implements IPrintConnectionEndpoin
 	{
 		super();
 
-		Context ctx = Context.getContext();
+		final Context ctx = Context.getContext();
 		beanEncoder = ctx.getInstance(Context.CTX_BeanEncoder, IBeanEnconder.class);
 
 		String dirName = ctx.getProperty(CTX_Directory);
@@ -75,7 +74,7 @@ public class DirectoryPrintConnectionEndpoint implements IPrintConnectionEndpoin
 			throw new IllegalStateException("File " + directory + " is not a read/write directory");
 		}
 
-		this.fileExtension = ctx.getProperty(CTX_FileExtension, DEFAULT_FileExtension);
+		fileExtension = ctx.getProperty(CTX_FileExtension, DEFAULT_FileExtension);
 		if (fileExtension == null)
 		{
 			throw new IllegalStateException("No value found for property " + CTX_FileExtension);
@@ -83,7 +82,7 @@ public class DirectoryPrintConnectionEndpoint implements IPrintConnectionEndpoin
 	}
 
 	@Override
-	public void addPrinterHW(PrinterHWList printerHWList)
+	public void addPrinterHW(final PrinterHWList printerHWList)
 	{
 		log.info("Found printer HWs: " + printerHWList);
 	}
@@ -96,13 +95,13 @@ public class DirectoryPrintConnectionEndpoint implements IPrintConnectionEndpoin
 	}
 
 	@Override
-	public InputStream getPrintPackageData(PrintPackage printPackage)
+	public InputStream getPrintPackageData(final PrintPackage printPackage)
 	{
 		return buffer.getPrintPackageData(printPackage);
 	}
 
 	@Override
-	public void sendPrintPackageResponse(PrintPackage printPackage, PrintJobInstructionsConfirm response)
+	public void sendPrintPackageResponse(final PrintPackage printPackage, final PrintJobInstructionsConfirm response)
 	{
 		log.info("Got : " + response + " for " + printPackage);
 	}
@@ -134,7 +133,7 @@ public class DirectoryPrintConnectionEndpoint implements IPrintConnectionEndpoin
 		}
 	}
 
-	private boolean enqueueFile(File file)
+	private boolean enqueueFile(final File file)
 	{
 		log.info("Enqueuing " + file);
 
@@ -159,7 +158,7 @@ public class DirectoryPrintConnectionEndpoint implements IPrintConnectionEndpoin
 			file.delete();
 			dataFile.delete();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.log(Level.WARNING, e.getLocalizedMessage(), e);
 			return false;
@@ -182,7 +181,7 @@ public class DirectoryPrintConnectionEndpoint implements IPrintConnectionEndpoin
 	}
 
 	@Override
-	public LoginResponse login(LoginRequest loginRequest)
+	public LoginResponse login(final LoginRequest loginRequest)
 	{
 		throw new UnsupportedOperationException();
 	}
