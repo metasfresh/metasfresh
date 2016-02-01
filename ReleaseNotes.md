@@ -19,6 +19,7 @@ Additional notes:
 # The actual release notes
  
 ## Upcoming Release
+ - 09741 Problems with HU labels for split HUs (104680331233) +uat +fix
  - 09765 Process to manually re-open C_PAySelection records that were already prepared (108508031142) +uat +feature
  - 09745 alternative jasper shipment document without ADR but explicit GMAA-values (107947997555) +uat +feature
  - 09726 Deep-copy support for AD Roles (106651676304) +uat +feature
