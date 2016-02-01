@@ -19,6 +19,8 @@ Additional notes:
 # The actual release notes
  
 ## Upcoming Release
+ - 09756 Record from foreign org in material receipt (POS) (105735084840) +fix +uat
+    * applying user's access rules in all terminal windows
  - 09203_avoid setting IT staff as sales rep in orders that were generated from EDI +fix +uat
     * refined the logic with new specs that came out during QA
  - 09618 order-checkup printing problems (106933593952): +fix +uat

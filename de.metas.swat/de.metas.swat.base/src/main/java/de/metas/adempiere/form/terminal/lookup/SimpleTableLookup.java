@@ -270,7 +270,9 @@ public class SimpleTableLookup<T> implements ITerminalLookup
 				.filter(filters)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
-				.create();
+				.create()
+				.setApplyAccessFilterRW(false) // only those on which current user has at least read access - task #09756
+		;
 
 		if (orderBy != null)
 		{

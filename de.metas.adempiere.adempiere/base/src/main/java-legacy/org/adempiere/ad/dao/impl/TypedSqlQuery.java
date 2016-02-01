@@ -220,29 +220,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return this;
 	}
 
-	/**
-	 * Turn on data access filter with controls
-	 *
-	 * @param flag
-	 *
-	 * @deprecated Please use {@link #setApplyAccessFilterRW(boolean)}
-	 */
-	@Deprecated
-	public TypedSqlQuery<T> setApplyAccessFilter(boolean fullyQualified, boolean RW)
-	{
-		// metas: begin: fullyQualified parameter shall not exist at all because it's related on how the query is internally built.
-		// For backward-compatibility we are keeping it but we enforce developer to always set it to true
-		if (!fullyQualified)
-		{
-			final AdempiereException ex = new AdempiereException("fullyQualified shall be always true, else it could be a developer issue. Changing to true."
-					+ " Query: " + toString());
-			log.log(Level.WARNING, ex.getLocalizedMessage(), ex);
-		}
-
-		return setApplyAccessFilterRW(RW);
-		// metas: end
-	}
-
 	@Override
 	public TypedSqlQuery<T> setApplyAccessFilterRW(boolean RW)
 	{

@@ -60,7 +60,7 @@ public class C_Postal_DPD_Validate extends SvrProcess
 		Iterator<I_C_Postal> it = new Query(getCtx(), I_C_Postal.Table_Name, whereClause, null)
 				.setParameters(true)
 				.setOnlyActiveRecords(true)
-				.setApplyAccessFilter(true, true) // rw=true
+				.setApplyAccessFilterRW(true) // rw=true
 				.iterate(I_C_Postal.class);
 
 		while (it.hasNext())
