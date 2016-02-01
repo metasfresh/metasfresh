@@ -287,6 +287,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			adUserId = workPackage.getCreatedBy();
 		}
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_User_ID, adUserId);
+		Env.setContext(workPackageCtx, Env.CTXNAME_SalesRep_ID, adUserId);
 		
 		//
 		// Role

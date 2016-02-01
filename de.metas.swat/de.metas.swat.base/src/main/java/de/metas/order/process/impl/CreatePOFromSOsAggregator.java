@@ -18,6 +18,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.interfaces.I_C_OrderLine;
@@ -193,13 +194,26 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			purchaseOrder.setPOReference(salesOrder.getPOReference());
 		}
 		purchaseOrder.setPriorityRule(salesOrder.getPriorityRule());
-		purchaseOrder.setSalesRep_ID(salesOrder.getSalesRep_ID());
 		purchaseOrder.setM_Warehouse_ID(salesOrder.getM_Warehouse_ID());
 
 		// 08812: Make sure the users are correctly set
 
 		orderBL.setBPartner(purchaseOrder, vendor);
 		orderBL.setBill_User_ID(purchaseOrder);
+		
+		//
+		// SalesRep:
+		// * let it to be set from BPartner (this was done above, by orderBL.setBPartner method)
+		// * if not set use it from context
+		if(purchaseOrder.getSalesRep_ID() <= 0)
+		{
+			purchaseOrder.setSalesRep_ID(Env.getContextAsInt(ctx, Env.CTXNAME_SalesRep_ID));
+		}
+		if(purchaseOrder.getSalesRep_ID() <= 0)
+		{
+			purchaseOrder.setSalesRep_ID(Env.getAD_User_ID(ctx));
+		}
+
 
 		// Drop Ship
 		if (p_IsDropShip)

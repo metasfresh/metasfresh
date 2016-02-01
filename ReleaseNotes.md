@@ -19,6 +19,8 @@ Additional notes:
 # The actual release notes
  
 ## Upcoming Release
+ - 09203_avoid setting IT staff as sales rep in orders that were generated from EDI +fix +uat
+    * refined the logic with new specs that came out during QA
  - 09618 order-checkup printing problems (106933593952): +fix +uat
     * server/core changes: 
       * allowing an ITrxListener to deactivate itself in case it does not want to be called more than once 
