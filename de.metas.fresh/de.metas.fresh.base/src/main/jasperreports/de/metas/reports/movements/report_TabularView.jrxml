@@ -36,7 +36,7 @@
 		<variableExpression><![CDATA[$F{price}.multiply($F{movementqty})]]></variableExpression>
 	</variable>
 	<variable name="Product_avg" class="java.math.BigDecimal" resetType="Group" resetGroup="product_group">
-		<variableExpression><![CDATA[$V{Product_qtycost}.divide($V{Product_qty}, 2, RoundingMode.HALF_UP)]]></variableExpression>
+		<variableExpression><![CDATA[$V{Product_qty}.signum()==0 ? new BigDecimal(0) : $V{Product_qtycost}.divide($V{Product_qty}, 2, RoundingMode.HALF_UP)]]></variableExpression>
 	</variable>
 	<variable name="total" class="java.math.BigDecimal" resetType="Group" resetGroup="product_group">
 		<variableExpression><![CDATA[$V{Product_qty}.multiply($V{Product_avg})]]></variableExpression>
