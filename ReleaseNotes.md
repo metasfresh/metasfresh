@@ -19,6 +19,8 @@ Additional notes:
 # The actual release notes
  
 ## Upcoming Release
+ - 09704 Migration ADempiere to metasfresh (100169279454) +it +feature
+    * making hardcoded endcustomer-feature configurable for all metasfresh users
  - 09752 system creates two printing queue items for gernic reports (107420055849) +it +fix
  - 09764 servicemix update (102943200308): the esb bundles now use servmicemix-6.1 +uat +feature
     *also switching everything from activemq-5.7 to activemq-5.12.1
