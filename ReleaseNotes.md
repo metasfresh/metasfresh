@@ -19,6 +19,8 @@ Additional notes:
 # The actual release notes
  
 ## Upcoming Release
+ - 09767 DBMoreThenOneRecordsFoundException when retrieving from picking slot queue (105944016827) +uat +fix
+ - 09710 Report regarding effective prices (107746499502)
  - 09704 Migration ADempiere to metasfresh (100169279454) +it +feature
     * making hardcoded endcustomer-feature configurable for all metasfresh users
  - 09752 system creates two printing queue items for gernic reports (107420055849) +it +fix
