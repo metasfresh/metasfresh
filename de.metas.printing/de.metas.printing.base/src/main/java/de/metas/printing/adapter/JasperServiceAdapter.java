@@ -77,18 +77,24 @@ public final class JasperServiceAdapter extends AbstractJasperService
 
 		//
 		// Create the archive
-		final boolean forceArchiving = true; // archive it even if AutoArchive says no
+		
+		// archive it even if AutoArchive says no
+		final boolean forceArchiving = true; 
+		
+		// task 09752: don't let the API save it, 
+		// because we want to first set the two flags below, and we want the model interceptor to be fired only once
+		final boolean save = false; 
+		
 		final String trxName = ITrx.TRXNAME_None;
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(
-				archiveService.archive(exportData, printInfo, forceArchiving, trxName),
-				I_AD_Archive.class
-				);
+				archiveService.archive(exportData, printInfo, forceArchiving, save, trxName),
+				I_AD_Archive.class);
 		Check.assumeNotNull(archive, "archive not null");
 
 		//
 		// Ask our printing service to printing it right now
 		archive.setIsDirectEnqueue(true);
-		archive.setIsCreatePrintJob(true); // create the print job not only enque to printing queue
+		archive.setIsCreatePrintJob(true); // create the print job not only enqueue to printing queue
 
 		//
 		// Save archive. This will trigger the printing...

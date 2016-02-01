@@ -10,18 +10,17 @@ package org.adempiere.archive.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.InputStream;
 import java.util.Properties;
@@ -61,12 +60,26 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
-	public I_AD_Archive archive(final byte[] data, final PrintInfo printInfo, final boolean force, final String trxName)
+	public I_AD_Archive archive(final byte[] data,
+			final PrintInfo printInfo,
+			final boolean force,
+			final String trxName)
+	{
+		final boolean save = true;
+		return archive(data, printInfo, force, save, trxName);
+	}
+
+	@Override
+	public I_AD_Archive archive(final byte[] data,
+			final PrintInfo printInfo,
+			final boolean force,
+			final boolean save,
+			final String trxName)
 	{
 		final Properties ctx = Env.getCtx();
 		if (force || isToArchive(ctx, printInfo))
 		{
-			return archive0(ctx, data, printInfo, trxName);
+			return archive0(ctx, data, printInfo, save, trxName);
 		}
 
 		return null;
@@ -87,13 +100,17 @@ public class ArchiveBL implements IArchiveBL
 				return null;
 			}
 
-			return archive0(ctx, data, printInfo, trxName);
+			return archive0(ctx, data, printInfo, true, trxName);
 		}
 
 		return null;
 	}
 
-	private I_AD_Archive archive0(final Properties ctx, final byte[] data, final PrintInfo info, final String trxName)
+	private I_AD_Archive archive0(final Properties ctx,
+			final byte[] data,
+			final PrintInfo info,
+			final boolean save,
+			final String trxName)
 	{
 		// t.schoemeberg@metas.de, 03787: using the client/org of the archived PO, if possible
 		final Properties ctxToUse = createContext(ctx, info.getAD_Table_ID(), info.getRecord_ID(), trxName);
@@ -109,11 +126,14 @@ public class ArchiveBL implements IArchiveBL
 		archive.setC_BPartner_ID(info.getC_BPartner_ID());
 		storage.setBinaryData(archive, data);
 
-		InterfaceWrapperHelper.save(archive);
+		if (save)
+		{
+			InterfaceWrapperHelper.save(archive);
+		}
 		return archive;
 	}
 
-	private final Properties createContext(final Properties ctx, int adTableId, int recordId, final String trxName)
+	private final Properties createContext(final Properties ctx, final int adTableId, final int recordId, final String trxName)
 	{
 		if (adTableId <= 0)
 		{
@@ -188,18 +208,24 @@ public class ArchiveBL implements IArchiveBL
 
 		// Nothing to Archive
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_None))
+		{
 			return false;
+		}
 		// Archive External only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_ExternalDocuments))
 		{
 			if (processInfo.isReportingProcess())
+			{
 				return false;
+			}
 		}
 		// Archive Documents only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_Documents))
 		{
 			if (processInfo.isReportingProcess())
+			{
 				return false;
+			}
 		}
 		return true;
 	}
@@ -207,19 +233,25 @@ public class ArchiveBL implements IArchiveBL
 	private String getAutoArchiveType(final Properties ctx)
 	{
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, Env.getAD_Client_ID(ctx));
-		String aaClient = client.getAutoArchive();
-		String aaRole = null; // role.getAutoArchive(); // TODO
+		final String aaClient = client.getAutoArchive();
+		final String aaRole = null; // role.getAutoArchive(); // TODO
 		String aa = aaClient;
 		if (aa == null)
+		{
 			aa = X_AD_Client.AUTOARCHIVE_None;
+		}
 		if (aaRole != null)
 		{
 			if (aaRole.equals(X_AD_Client.AUTOARCHIVE_AllReportsDocuments))
+			{
 				aa = aaRole;
+			}
 			else if (aaRole.equals(X_AD_Client.AUTOARCHIVE_Documents)
 					&& !aaClient
 							.equals(X_AD_Client.AUTOARCHIVE_AllReportsDocuments))
+			{
 				aa = aaRole;
+			}
 		}
 		return aa;
 	}

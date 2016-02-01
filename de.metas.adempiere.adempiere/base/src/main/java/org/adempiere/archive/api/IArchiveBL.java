@@ -22,7 +22,6 @@ package org.adempiere.archive.api;
  * #L%
  */
 
-
 import java.io.InputStream;
 
 import org.adempiere.util.ISingletonService;
@@ -69,6 +68,19 @@ public interface IArchiveBL extends ISingletonService
 	 * @return
 	 */
 	I_AD_Archive archive(byte[] data, PrintInfo printInfo, boolean force, String trxName);
+
+	/**
+	 * Like {@link #archive(LayoutEngine, PrintInfo, boolean, String)}, but allows to only create the <code>AD_Archive</code> without saving the record.
+	 * 
+	 * @param data
+	 * @param printInfo
+	 * @param force
+	 * @param save
+	 * @param trxName
+	 * @return
+	 * @task http://dewiki908/mediawiki/index.php/09752_For_Umsatzreport_and_Mengenstatistiken%2C_two_printing_queue..._%28107420055849%29
+	 */
+	I_AD_Archive archive(byte[] data, PrintInfo printInfo, boolean force, boolean save, String trxName);
 
 	/**
 	 * Converts to PDF and archives given <code>layout</code>.
