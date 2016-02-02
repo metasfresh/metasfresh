@@ -6,7 +6,7 @@
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
 		<version>1.0_IT-SNAPSHOT</version>
-		<relativePath>../../de.metas.parent/pom.xml</relativePath>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.ui.web</groupId>
