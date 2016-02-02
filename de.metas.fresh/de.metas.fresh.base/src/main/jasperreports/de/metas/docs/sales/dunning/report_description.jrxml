@@ -105,36 +105,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{customer}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement uuid="91207ca9-5de3-47f0-a200-85dd8de2365b" key="textField-5" mode="Transparent" x="373" y="34" width="78" height="13">
-					<printWhenExpression><![CDATA[new Boolean ($F{condition} != null && !$F{condition}.equals( "" ))]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{paymentcond}]]></textFieldExpression>
-			</textField>
-			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement uuid="d8ee7ac6-326e-403e-96c3-8d64bf2ffb03" key="textField-3" mode="Transparent" x="451" y="34" width="94" height="13">
-					<printWhenExpression><![CDATA[new Boolean ($F{condition} != null && !$F{condition}.equals( "" ))]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{condition}]]></textFieldExpression>
-			</textField>
 		</band>
 	</title>
 	<pageHeader>

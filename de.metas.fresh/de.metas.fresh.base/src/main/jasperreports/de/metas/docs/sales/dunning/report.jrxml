@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="133"/>
+	<property name="ireport.y" value="0"/>
 	<property name="net.sf.jasperreports.governor.max.pages.enabled" value="true"/>
 	<property name="net.sf.jasperreports.governor.max.pages" value="2"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -65,6 +65,9 @@
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="email">
+					<subreportParameterExpression><![CDATA[$R{mail}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
 			</subreport>
@@ -116,7 +119,7 @@
 		<band height="350" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0" key="subreport-3" mode="Transparent" x="0" y="106" width="595" height="244"/>
+				<reportElement uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0" key="subreport-3" mode="Transparent" x="0" y="105" width="595" height="245"/>
 				<subreportParameter name="REPORT_MAX_COUNT">
 					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>
 				</subreportParameter>
@@ -127,7 +130,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_esr.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement uuid="97ec00bb-e49d-47a5-ab42-eb561d796bf1" key="subreport-8" mode="Transparent" x="0" y="0" width="595" height="53"/>
+				<reportElement uuid="97ec00bb-e49d-47a5-ab42-eb561d796bf1" key="subreport-8" mode="Transparent" x="0" y="11" width="595" height="84"/>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
