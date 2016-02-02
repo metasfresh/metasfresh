@@ -1,64 +1,47 @@
-DROP VIEW IF EXISTS C_Element_Levels;
+DROP VIEW IF EXISTS C_Element_levels;
+CREATE OR REPLACE VIEW C_Element_levels AS 
+	SELECT
+		ev1.C_ElementValue_ID AS lvl1_C_ElementValue_ID, ev1.value AS lvl1_value, ev1.name AS lvl1_name, (ev1.value::text || ' '::text) || ev1.name::text AS lvl1_label
+		, ev2.C_ElementValue_ID AS lvl2_C_ElementValue_ID, ev2.value AS lvl2_value, ev2.name AS lvl2_name, (ev2.value::text || ' '::text) || ev2.name::text AS lvl2_label
+		, ev3.C_ElementValue_ID AS lvl3_C_ElementValue_ID, ev3.value AS lvl3_value, ev3.name AS lvl3_name, (ev3.value::text || ' '::text) || ev3.name::text AS lvl3_label
+		, ev4.C_ElementValue_ID AS lvl4_C_ElementValue_ID, ev4.value AS lvl4_value, ev4.name AS lvl4_name, (ev4.value::text || ' '::text) || ev4.name::text AS lvl4_label
+		, ev5.C_ElementValue_ID AS lvl5_C_ElementValue_ID, ev5.value AS lvl5_value, ev5.name AS lvl5_name, (ev5.value::text || ' '::text) || ev5.name::text AS lvl5_label
+		, COALESCE(ev5.C_ElementValue_ID, ev4.C_ElementValue_ID, ev3.C_ElementValue_ID, ev2.C_ElementValue_ID, ev1.C_ElementValue_ID) AS C_ElementValue_ID
+		, (CASE
+			WHEN ev5.C_ElementValue_ID IS NOT NULL THEN ev5.value
+			WHEN ev4.C_ElementValue_ID IS NOT NULL THEN ev4.value
+			WHEN ev3.C_ElementValue_ID IS NOT NULL THEN ev3.value
+			WHEN ev2.C_ElementValue_ID IS NOT NULL THEN ev2.value
+			WHEN ev1.C_ElementValue_ID IS NOT NULL THEN ev1.value
+			ELSE NULL::character varying
+		END) AS Value
+		, (CASE
+			WHEN ev5.C_ElementValue_ID IS NOT NULL THEN ev5.name
+			WHEN ev4.C_ElementValue_ID IS NOT NULL THEN ev4.name
+			WHEN ev3.C_ElementValue_ID IS NOT NULL THEN ev3.name
+			WHEN ev2.C_ElementValue_ID IS NOT NULL THEN ev2.name
+			WHEN ev1.C_ElementValue_ID IS NOT NULL THEN ev1.name
+			ELSE NULL::character varying
+		END) AS Name
+		, (CASE
+			WHEN ev5.C_ElementValue_ID IS NOT NULL THEN (ev5.value::text || ' '::text) || ev5.name::text
+			WHEN ev4.C_ElementValue_ID IS NOT NULL THEN (ev4.value::text || ' '::text) || ev4.name::text
+			WHEN ev3.C_ElementValue_ID IS NOT NULL THEN (ev3.value::text || ' '::text) || ev3.name::text
+			WHEN ev2.C_ElementValue_ID IS NOT NULL THEN (ev2.value::text || ' '::text) || ev2.name::text
+			WHEN ev1.C_ElementValue_ID IS NOT NULL THEN (ev1.value::text || ' '::text) || ev1.name::text
+			ELSE NULL::text
+		END) AS Label
+		, acctBalance(COALESCE(ev5.C_ElementValue_ID, ev4.C_ElementValue_ID, ev3.C_ElementValue_ID, ev2.C_ElementValue_ID, ev1.C_ElementValue_ID), 1::numeric, 0::numeric) AS Multiplicator
+FROM C_ElementValue ev1
+JOIN C_Element e ON e.C_Element_ID = ev1.C_Element_ID
+JOIN AD_TreeNode tn1 ON tn1.AD_Tree_ID = e.AD_Tree_ID AND tn1.Node_ID = ev1.C_ElementValue_ID AND (tn1.Parent_ID IS NULL OR tn1.Parent_ID = 0::numeric)
+LEFT JOIN AD_TreeNode tn2 ON tn2.AD_Tree_ID = e.AD_Tree_ID AND tn2.Parent_ID = tn1.Node_ID
+LEFT JOIN C_ElementValue ev2 ON ev2.C_ElementValue_ID = tn2.Node_ID
+LEFT JOIN AD_TreeNode tn3 ON tn3.AD_Tree_ID = e.AD_Tree_ID AND tn3.Parent_ID = tn2.Node_ID
+LEFT JOIN C_ElementValue ev3 ON ev3.C_ElementValue_ID = tn3.Node_ID
+LEFT JOIN AD_TreeNode tn4 ON tn4.AD_Tree_ID = e.AD_Tree_ID AND tn4.Parent_ID = tn3.Node_ID
+LEFT JOIN C_ElementValue ev4 ON ev4.C_ElementValue_ID = tn4.Node_ID
+LEFT JOIN AD_TreeNode tn5 ON tn5.AD_Tree_ID = e.AD_Tree_ID AND tn5.Parent_ID = tn4.Node_ID
+LEFT JOIN C_ElementValue ev5 ON ev5.C_ElementValue_ID = tn5.Node_ID;
 
-Create VIEW C_Element_Levels AS
-(
-SELECT
-	lvl1_C_ElementValue_ID as lvl1_C_ElementValue_ID, e1.value as lvl1_value, e1.name as lvl1_name, ( e1.value || ' ' || e1.name ) as lvl1_label,
-	lvl2_C_ElementValue_ID as lvl2_C_ElementValue_ID, e2.value as lvl2_value, e2.name as lvl2_name, ( e2.value || ' ' || e2.name ) as lvl2_label,
-	lvl3_C_ElementValue_ID as lvl3_C_ElementValue_ID, e3.value as lvl3_value, e3.name as lvl3_name, ( e3.value || ' ' || e3.name ) as lvl3_label,
-	lvl4_C_ElementValue_ID as lvl4_C_ElementValue_ID, e4.value as lvl4_value, e4.name as lvl4_name, ( e4.value || ' ' || e4.name ) as lvl4_label	
-FROM
-	(
-		SELECT
-			e1.C_ElementValue_ID as lvl1_C_ElementValue_ID, 		
-			CASE WHEN e4.C_ElementValue_ID IS NULL AND e3.C_ElementValue_ID IS NULL 
-				THEN NULL 
-				ELSE e2.C_ElementValue_ID 
-			END as lvl2_C_ElementValue_ID,
-			CASE WHEN e4.C_ElementValue_ID IS NULL 
-				THEN NULL 
-				ELSE e3.C_ElementValue_ID 
-			END as lvl3_C_ElementValue_ID,
-			COALESCE( e4.C_ElementValue_ID, e3.C_ElementValue_ID, e2.C_ElementValue_ID, e1.C_ElementValue_ID ) as lvl4_C_ElementValue_ID
-		FROM
-			(
-				SELECT	ev.C_ElementValue_ID
-				FROM	C_ElementValue ev
-					JOIN C_Element e ON e.C_Element_ID = ev.C_Element_ID
-					JOIN AD_TreeNode tn ON tn.AD_Tree_ID = e.AD_Tree_ID AND tn.Node_ID = ev.C_ElementValue_ID 
-					LEFT JOIN C_ElementValue evp ON evp.C_ElementValue_ID = tn.Parent_ID 
-				WHERE	evp.C_ElementValue_ID IS NULL
-			) e1
-			LEFT JOIN (
-				SELECT	evp.C_ElementValue_ID AS Parent_ElementValue_ID, ev.C_ElementValue_ID
-				FROM	C_ElementValue ev
-					JOIN C_Element e ON e.C_Element_ID = ev.C_Element_ID
-					JOIN AD_TreeNode tn ON tn.AD_Tree_ID = e.AD_Tree_ID AND tn.Node_ID = ev.C_ElementValue_ID 
-					JOIN C_ElementValue evp ON evp.C_ElementValue_ID = tn.Parent_ID 
-			) e2 ON e1.C_ElementValue_ID = e2.Parent_ElementValue_ID
-			LEFT JOIN (
-				SELECT	evp.C_ElementValue_ID AS Parent_ElementValue_ID,ev.C_ElementValue_ID
-				FROM	C_ElementValue ev
-					JOIN C_Element e ON e.C_Element_ID = ev.C_Element_ID
-					JOIN AD_TreeNode tn ON tn.AD_Tree_ID = e.AD_Tree_ID AND tn.Node_ID = ev.C_ElementValue_ID 
-					JOIN C_ElementValue evp ON evp.C_ElementValue_ID = tn.Parent_ID 
-			) e3 ON e2.C_ElementValue_ID = e3.Parent_ElementValue_ID
-			LEFT JOIN (
-				SELECT	evp.C_ElementValue_ID AS Parent_ElementValue_ID, ev.C_ElementValue_ID
-				FROM	C_ElementValue ev
-					JOIN C_Element e ON e.C_Element_ID = ev.C_Element_ID
-					JOIN AD_TreeNode tn ON tn.AD_Tree_ID = e.AD_Tree_ID AND tn.Node_ID = ev.C_ElementValue_ID 
-					JOIN C_ElementValue evp ON evp.C_ElementValue_ID = tn.Parent_ID 
-			) e4 ON e3.C_ElementValue_ID = e4.Parent_ElementValue_ID
-	) evl
-	INNER JOIN C_ElementValue e1 ON lvl1_C_ElementValue_ID = e1.C_ElementValue_ID 
-	LEFT OUTER JOIN C_ElementValue e2 ON lvl2_C_ElementValue_ID = e2.C_ElementValue_ID 
-	LEFT OUTER JOIN C_ElementValue e3 ON lvl3_C_ElementValue_ID = e3.C_ElementValue_ID 
-	INNER JOIN C_ElementValue e4 ON lvl4_C_ElementValue_ID = e4.C_ElementValue_ID 
-ORDER BY  
-	e1.value,
-	e2.value,
-	e3.value,
-	e4.value
-)
-;
+
