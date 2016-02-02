@@ -38,7 +38,7 @@ import de.metas.document.archive.esb.camel.cxf.jaxrs.RESTHttpArchiveEndpoint;
  */
 public class RESTHttpArchiveEndpointRoute extends RouteBuilder
 {
-	public static final String EP_CXF_RS = CamelConstants.EP_REST_HTTP_PREFIX + RESTHttpArchiveEndpoint.class.getName();
+	public static final String EP_CXF_RS = CamelConstants.EP_REST_HTTP;
 
 	public static final String EP_GetArchiveData = "direct:get_archive_data";
 	public static final String EP_SetArchiveData = "direct:set_archive_data";

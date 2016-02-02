@@ -46,7 +46,7 @@ public final class CamelConstants
 	 * 
 	 * See archive.properties
 	 */
-	public static final String EP_REST_HTTP_PREFIX = "{{ep.cxf.rs}}";
+	public static final String EP_REST_HTTP = "{{ep.cxf.rs}}";
 
 	/**
 	 * JMS endpoint URI for the topic where ADempiere listens for the transformation results.

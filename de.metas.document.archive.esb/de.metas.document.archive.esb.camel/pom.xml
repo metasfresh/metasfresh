@@ -1,5 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<artifactId>de.metas.document.archive.esb</artifactId>
@@ -7,12 +8,10 @@
 		<version>1.0_IT-SNAPSHOT</version>
 	</parent>
 
-	<modelVersion>4.0.0</modelVersion>
-
 	<artifactId>de.metas.document.archive.esb.camel</artifactId>
 	<packaging>bundle</packaging>
 
-	<description>Document Archive Management :: Camel ESB module</description>
+	<description>Metas :: Components :: Document Archive Management</description>
 
 	<dependencies>
 		<dependency>
@@ -21,58 +20,69 @@
 			<version>${project.version}</version>
 		</dependency>
 		
+		<dependency>
+			<groupId>de.metas.document.archive.esb</groupId>
+			<artifactId>de.metas.document.archive.esb.api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
 		<!-- Apache CAMEL dependencies -->
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-core</artifactId>
 			<version>${camel.version}</version>
-			<!--  scope>provided</scope -->
-		</dependency>
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-spring</artifactId>
-			<version>${camel.version}</version>
-			<!-- scope>provided</scope -->
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-camel</artifactId>
-			<!-- scope>provided</scope -->
+			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
-					<artifactId>camel-jms</artifactId>
-					<groupId>org.apache.camel</groupId>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>org.slf4j</groupId>
+					<!-- in camel version 2.16.1, this camel-jms dependency has version 2.15.x -->
+					<artifactId>camel-jms</artifactId>
+					<groupId>org.apache.camel</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-jms</artifactId>
+			<version>${camel.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-spring</artifactId>
+			<version>${camel.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-jaxb</artifactId>
 			<version>${camel.version}</version>
-			<!-- scope>provided</scope -->
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-cxf</artifactId>
 			<version>${camel.version}</version>
-			<!-- scope>provided</scope -->
+			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-javamail_1.4_spec</artifactId>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>com.sun.xml.bind</groupId>
 					<artifactId>jaxb-impl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -80,24 +90,27 @@
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-jackson</artifactId>
 			<version>${camel.version}</version>
-			<!-- scope>provided</scope -->
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- To install this dependency in servicemix/fuse-esb, open the console and enter 
-			osgi:install mvn:org.codehaus.jackson/jackson-jaxrs/1.9.10 -->
+			osgi:install mvn:org.codehaus.jackson/jackson-jaxrs/1.9.13 -->
+			<!-- 
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-jaxrs</artifactId>
-			<version>1.9.10</version>
+			<version>1.9.13</version>
 		</dependency>
-
-		<!-- To install this dependency in servicemix/fuse-esb, open the console and enter 
-			osgi:install mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-io/1.4_3 -->
+		-->
 		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>1.4</version>
-			<!--  scope>provided</scope -->
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<version>2.7.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.7.0</version>
 		</dependency>
 
 	</dependencies>

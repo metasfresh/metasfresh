@@ -158,7 +158,7 @@
 		</dependency>
 				
 		<!-- Problem: this ends up in customizations despite scope beeing "provided" 
-			  => crushes APO on server 
+			  => crashes AOP on server 
 			  => server won't start 
 			Current workaround in ant; 
 			TODO: consider replacing it with a not-all jboss-lib that just contains the 

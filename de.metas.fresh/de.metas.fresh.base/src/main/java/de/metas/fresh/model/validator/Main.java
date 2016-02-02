@@ -55,7 +55,6 @@ import org.compiere.util.Language;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.picking.form.swing.FreshSwingPickingTerminalPanel;
 import de.metas.picking.terminal.form.swing.PickingTerminal;
-import de.metas.printing.api.IPrintingQueueBL;
 
 public class Main extends AbstractModuleInterceptor
 {

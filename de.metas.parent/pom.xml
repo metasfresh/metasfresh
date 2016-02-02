@@ -299,12 +299,6 @@
 			</dependency>
 
 			<dependency>
-				<artifactId>de.metas.printing.base</artifactId>
-				<groupId>de.metas.printing</groupId>
-				<version>${project.version}</version>
-			</dependency>
-
-			<dependency>
 				<artifactId>de.metas.async</artifactId>
 				<groupId>de.metas.async</groupId>
 				<version>${project.version}</version>
