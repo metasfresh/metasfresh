@@ -909,7 +909,7 @@ public final class Ini implements Serializable
 		if (isClient())
 		{
 			final String userHomeDir = System.getProperty("user.home");
-			env = userHomeDir + File.separator + ".metas-fresh";
+			env = userHomeDir + File.separator + ".metasfresh";
 			return env;
 		}
 
