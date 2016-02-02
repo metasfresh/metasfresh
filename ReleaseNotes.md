@@ -17,8 +17,12 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh
 
 # The actual release notes
- 
+
 ## Upcoming Release
+ - 09771 Dunning docs mail (102929053917)
+    * small changes around the dunning jasper
+
+## it-S16_05-20160202
  - fixed the default location of the client properties file from <user.home>/.metas-fresh to <user.home>/.metasfresh
  - 09741 Problems with HU labels for split HUs (104680331233) +uat +fix
  - 09765 Process to manually re-open C_PAySelection records that were already prepared (108508031142) +uat +feature
