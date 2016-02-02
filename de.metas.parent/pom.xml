@@ -49,8 +49,10 @@
 		<cxf.version>3.1.4</cxf.version>
 		<activeMQ.version>5.12.1</activeMQ.version>
 		
+		<!-- these are the spring and jackson versions from the dependency tree of camel-2.16.1 -->
 		<spring.version>4.1.8.RELEASE</spring.version>
-			
+		<jackson.version>2.6.3</jackson.version>
+		
 		<!-- Tells SonarQube to run the unit tests -->
 		<sonar.dynamicAnalysis>true</sonar.dynamicAnalysis>
     	<!-- Tells SonarQube to use JaCoCo (formerly EclEmma) as our unit test coverage tool -->
