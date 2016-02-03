@@ -44,7 +44,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.interfaces.I_M_Movement;
-import de.metas.process.RunOutOfTrx;
 
 /**
  * Move selected HUs to to {@link IHUMovementBL#getDirectMove_Warehouse(java.util.Properties, boolean)}.

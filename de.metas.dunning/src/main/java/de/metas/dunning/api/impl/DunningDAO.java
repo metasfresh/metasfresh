@@ -39,6 +39,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.adempiere.util.CacheTrx;
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.api.IDunningCandidateQuery.ApplyAccessFilter;
 import de.metas.dunning.api.IDunningContext;
@@ -75,6 +76,25 @@ public class DunningDAO extends AbstractDunningDAO
 				.setClient_ID()
 				.setOnlyActiveRecords(true)
 				.list(I_C_Dunning.class);
+	}
+
+	@Override
+	public List<I_C_DunningLevel> retrieveDunningLevels(final I_C_Dunning dunning)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(dunning);
+		final String trxName = InterfaceWrapperHelper.getTrxName(dunning);
+		final int dunningId = dunning.getC_Dunning_ID();
+		return retrieveDunningLevels(ctx, dunningId, trxName);
+	}
+
+	@Cached(cacheName = I_C_DunningLevel.Table_Name + "_for_C_Dunning_ID")
+	/* package */ List<I_C_DunningLevel> retrieveDunningLevels(@CacheCtx Properties ctx, int dunningId, @CacheTrx String trxName)
+	{
+		final String whereClause = I_C_DunningLevel.COLUMNNAME_C_Dunning_ID + "=?";
+		return new Query(ctx, I_C_DunningLevel.Table_Name, whereClause, trxName)
+				.setParameters(dunningId)
+				.setOnlyActiveRecords(true)
+				.list(I_C_DunningLevel.class);
 	}
 
 	@Override

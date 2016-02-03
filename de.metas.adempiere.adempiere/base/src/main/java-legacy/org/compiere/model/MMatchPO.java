@@ -27,6 +27,7 @@ import java.util.logging.Level;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -35,7 +36,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderLineBL;
-import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.IMatchInvDAO;
 
 /**
@@ -572,7 +572,7 @@ public class MMatchPO extends X_M_MatchPO
 		int orderCurrency_ID = order.getC_Currency_ID();
 		if (invoiceCurrency_ID != orderCurrency_ID)
 		{
-			priceActual = Services.get(ICurrencyBL.class).convert(getCtx(), priceActual, invoiceCurrency_ID, orderCurrency_ID,
+			priceActual = MConversionRate.convert(getCtx(), priceActual, invoiceCurrency_ID, orderCurrency_ID,
 										invoice.getDateInvoiced(), invoice.getC_ConversionType_ID(),
 										getAD_Client_ID(), getAD_Org_ID());
 		}
@@ -1006,7 +1006,7 @@ public class MMatchPO extends X_M_MatchPO
 				//	Different currency
 				if (oLine.getC_Currency_ID() != as.getC_Currency_ID())
 				{
-					final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+					final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
 					
 					final I_C_Order order = oLine.getC_Order();
 					Timestamp dateAcct = order.getDateAcct();

@@ -40,6 +40,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -57,9 +58,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.allocation.api.IAllocationBL;
-import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
-import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.interfaces.I_C_BP_Group;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
@@ -148,7 +146,7 @@ public class PaymentBL implements IPaymentBL
 					+ C_Currency_ID + ", Date=" + ConvDate + ", Type="
 					+ C_ConversionType_ID);
 
-			CurrencyRate = Services.get(ICurrencyBL.class).getRate(C_Currency_Invoice_ID, C_Currency_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
+			CurrencyRate = Services.get(ICurrencyConversionBL.class).getRate(C_Currency_Invoice_ID, C_Currency_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
 			if (CurrencyRate == null || CurrencyRate.compareTo(Env.ZERO) == 0)
 			{
 				if (C_Currency_Invoice_ID == 0)
@@ -274,8 +272,7 @@ public class PaymentBL implements IPaymentBL
 			log.log(Level.FINE, "InvCurrency={0}, PayCurrency={1}, Date={2}, Type={3}"
 					, new Object[] { C_Currency_Invoice_ID, C_Currency_ID, C_Currency_ID, ConvDate, C_ConversionType_ID });
 
-			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-			CurrencyRate = currencyBL.getRate(C_Currency_Invoice_ID, C_Currency_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
+			CurrencyRate = Services.get(ICurrencyConversionBL.class).getRate(C_Currency_Invoice_ID, C_Currency_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
 			if (Check.isEmpty(CurrencyRate))
 			{
 				if (C_Currency_Invoice_ID <= 0)
@@ -283,8 +280,7 @@ public class PaymentBL implements IPaymentBL
 					return; // no error message when no invoice is selected
 				}
 
-				final ICurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
-				throw new NoCurrencyRateFoundException(conversionCtx, C_Currency_Invoice_ID, C_Currency_ID);
+				throw new AdempiereException("NoCurrencyConversion");
 			}
 
 		}

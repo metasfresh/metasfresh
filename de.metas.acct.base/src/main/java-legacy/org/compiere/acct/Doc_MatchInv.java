@@ -21,9 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.adempiere.currency.ICurrencyConversionContext;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.product.service.IProductBL;
+import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -42,8 +44,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
 
 /**
  * Post MatchInv Documents.
@@ -537,7 +537,7 @@ public class Doc_MatchInv extends Doc
 		{
 			final I_C_Invoice invoice = m_invoiceLine.getC_Invoice();
 			Check.assumeNotNull(invoice, "invoice not null");
-			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+			final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
 			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
 					invoice.getDateAcct(),
 					invoice.getC_ConversionType_ID(),

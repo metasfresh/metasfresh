@@ -21,19 +21,13 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MBankStatementLine;
-import org.compiere.model.MPeriod;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
-import de.metas.currency.ConversionType;
-import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
-import de.metas.currency.ICurrencyDAO;
 
 /**
  * Bank Statement Line
@@ -43,11 +37,6 @@ import de.metas.currency.ICurrencyDAO;
  */
 class DocLine_BankStatement extends DocLine
 {
-	// services
-	private final transient IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-	private final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-
 	/**
 	 * Constructor
 	 * 
@@ -76,21 +65,13 @@ class DocLine_BankStatement extends DocLine
 		setDateDoc(line.getValutaDate());
 		setC_BPartner_ID(line.getC_BPartner_ID());
 
-		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.retrieveLineReferences(line));
-		
-		//
-		// Period
-		final MPeriod period = MPeriod.get(getCtx(), line.getDateAcct(), line.getAD_Org_ID());
-		if (period != null && period.isOpen(Doc.DOCTYPE_BankStatement, line.getDateAcct(), line.getAD_Org_ID()))
-		{
-			setC_Period_ID(period.getC_Period_ID());
-		}
-
+		this._bankStatementLineReferences = ImmutableList.copyOf(Services.get(IBankStatementDAO.class).retrieveLineReferences(line));
 	}   // DocLine_Bank
 
 	private final List<I_C_BankStatementLine_Ref> _bankStatementLineReferences;
 	/** Reversal Flag */
 	private final boolean m_IsReversal;
+	// /** Payment */
 	private final I_C_Payment _payment;
 
 	private final BigDecimal m_TrxAmt;
@@ -116,23 +97,32 @@ class DocLine_BankStatement extends DocLine
 		InterfaceWrapperHelper.setTrxName(_payment, getTrxName());
 		return _payment;
 	}
-
-	/** @return payment org (if exists) or line's org */
-	public int getPaymentOrg_ID()
+	
+	/**
+	 * Get AD_Org_ID
+	 * 
+	 * @param usePaymentOrg if true get Org from payment
+	 * @return org
+	 */
+	public int getAD_Org_ID(final boolean usePaymentOrg)
 	{
-		final I_C_Payment paymentToUse = getC_Payment();
-		return getPaymentOrg_ID(paymentToUse);
+		final I_C_Payment paymentToUse = usePaymentOrg ? getC_Payment() : null;
+		return getAD_Org_ID(paymentToUse);
 	}	// getAD_Org_ID
-
-	/** @return C_Payment.AD_Org_ID (if any); fallback to {@link #getAD_Org_ID()} */
-	public final int getPaymentOrg_ID(final I_C_Payment paymentToUseOrNull)
+	
+	/**
+	 * Gets AD_Org_ID
+	 * @param paymentToUseOrNull if not null the C_Payment.AD_Org_ID will be used
+	 * @return C_Payment.AD_Org_ID (if any); fallback to {@link #getAD_Org_ID()}
+	 */
+	public final int getAD_Org_ID(final I_C_Payment paymentToUseOrNull)
 	{
 		if (paymentToUseOrNull != null)
 		{
 			return paymentToUseOrNull.getAD_Org_ID();
 		}
 		return super.getAD_Org_ID();
-
+		
 	}
 
 	/**
@@ -174,55 +164,4 @@ class DocLine_BankStatement extends DocLine
 	{
 		return m_TrxAmt;
 	}   // getTrxAmt
-
-	/**
-	 * @return <ul>
-	 *         <li>true if this line is an inbound transaction (i.e. we received money in our bank account)
-	 *         <li>false if this line is an outbound transaction (i.e. we paid money from our bank account)
-	 *         </ul>
-	 */
-	public boolean isInboundTrx()
-	{
-		return getStmtAmt().signum() >= 0;
-	}
-
-	private final I_C_BankStatementLine getC_BankStatementLine()
-	{
-		return getModel(I_C_BankStatementLine.class);
-	}
-
-	/**
-	 * @return the currency conversion used for bank transfer (i.e. Spot)
-	 */
-	public ICurrencyConversionContext getBankTransferCurrencyConversionCtx()
-	{
-		return getCurrencyConversionCtx(ConversionType.Spot);
-	}
-
-	private final ICurrencyConversionContext getCurrencyConversionCtx(final ConversionType type)
-	{
-		final int conversionTypeId = currencyDAO.retrieveConversionType(getCtx(), type).getC_ConversionType_ID();
-		return getCurrencyConversionCtx(conversionTypeId);
-	}
-
-	private final ICurrencyConversionContext getCurrencyConversionCtx(final int conversionTypeId)
-	{
-		return currencyConversionBL.createCurrencyConversionContext(
-				getDateAcct(),
-				conversionTypeId,
-				getAD_Client_ID(),
-				getAD_Org_ID());
-	}
-
-	public boolean isBankTransfer()
-	{
-		final I_C_BankStatementLine bsl = getC_BankStatementLine();
-		if (bsl.getC_BP_BankAccountTo_ID() <= 0 && bsl.getLink_BankStatementLine_ID() <= 0)
-		{
-			return false;
-		}
-
-		return true;
-	}
-}
-
+}   // DocLine_Bank

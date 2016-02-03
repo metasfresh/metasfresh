@@ -10,7 +10,7 @@ class ImportErrorTableColumnModel extends TableColumnModel
 	}
 
 	@Override
-	public String getColumnDisplayName()
+	public String getColumnName()
 	{
 		return "ErrMsg";
 	}

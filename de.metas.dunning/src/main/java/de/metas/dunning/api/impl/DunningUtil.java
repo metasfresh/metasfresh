@@ -27,9 +27,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Services;
 
-import de.metas.currency.ICurrencyBL;
 import de.metas.dunning.api.IDunningUtil;
 
 public class DunningUtil implements IDunningUtil
@@ -37,12 +37,12 @@ public class DunningUtil implements IDunningUtil
 	@Override
 	public BigDecimal currencyConvert(Properties ctx, BigDecimal Amt, int CurFrom_ID, int CurTo_ID, Timestamp ConvDate, int C_ConversionType_ID, int AD_Client_ID, int AD_Org_ID)
 	{
-		return Services.get(ICurrencyBL.class).convert(ctx, Amt, CurFrom_ID, CurTo_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
+		return Services.get(ICurrencyConversionBL.class).convert(ctx, Amt, CurFrom_ID, CurTo_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
 	}
 
 	@Override
 	public int getDefaultCurrencyConvertionTypeId()
 	{
-		return ICurrencyBL.DEFAULT_ConversionType_ID;
+		return ICurrencyConversionBL.DEFAULT_ConversionType_ID;
 	}
 }

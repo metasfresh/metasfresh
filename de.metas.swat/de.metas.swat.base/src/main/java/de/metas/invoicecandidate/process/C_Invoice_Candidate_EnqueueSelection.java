@@ -48,7 +48,6 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.form.InvoiceGenerate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.process.RunOutOfTrx;
 
 /**
  * @author cg

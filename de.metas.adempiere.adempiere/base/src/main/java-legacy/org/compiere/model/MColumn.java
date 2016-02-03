@@ -232,7 +232,7 @@ public class MColumn extends X_AD_Column
 					new Object[] {getAD_Table_ID(), getAD_Column_ID(), getSeqNo()});
 			if (cnt>0)
 			{
-				throw new AdempiereException("@SaveErrorNotUnique@ @" + COLUMNNAME_SeqNo + "@: "+getSeqNo());
+				throw new AdempiereException("@SaveErrorNotUnique@ @" + COLUMNNAME_SeqNo + "@");
 			}
 		}
 		

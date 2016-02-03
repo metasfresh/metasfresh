@@ -28,11 +28,10 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_Currency;
+import org.compiere.model.MCurrency;
 
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.impl.AbstractPaymentStringDataProvider;
-import de.metas.currency.ICurrencyDAO;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 
@@ -75,8 +74,7 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 		}
 		// bpBankAccount.setC_Bank_ID(C_Bank_ID); // introduce a standard ESR-Dummy-Bank, or leave it empty
 
-		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(contextProvider.getCtx(), "CHF"); // CHF, because it's ESR
-		bpBankAccount.setC_Currency(currency); 
+		bpBankAccount.setC_Currency(MCurrency.get(contextProvider.getCtx(), "CHF")); // CHF, because it's ESR
 		bpBankAccount.setIsEsrAccount(true); // ..because we are creating this from an ESR string
 		bpBankAccount.setIsACH(true);
 		bpBankAccount.setA_Name(bpBankAccount.getC_BPartner().getName());

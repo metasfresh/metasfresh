@@ -221,7 +221,6 @@ public class CalloutEngine implements Callout
 	 *  @deprecated
 	 *	@param active active
 	 */
-	@Deprecated
 	protected static void setCalloutActive (boolean active)
 	{
 		;
@@ -257,11 +256,8 @@ public class CalloutEngine implements Callout
 	 *	@param value value
 	 *	@return null or error message
 	 */
-	@Deprecated
 	public String rate (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
-		// NOTE: atm this method is used only by UOMConversions. When we will provide an implementation for that, we can get rid of this shit.
-		
 		if (isCalloutActive() || value == null)		//	assuming it is Conversion_Rate
 			return NO_ERROR;
 

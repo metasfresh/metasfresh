@@ -24,13 +24,10 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-
-import de.metas.currency.ICurrencyDAO;
 
 /**
  *	Invoice Payment Schedule Model 
@@ -155,7 +152,7 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 		setC_PaySchedule_ID(paySchedule.getC_PaySchedule_ID());
 		
 		//	Amounts
-		int scale = Services.get(ICurrencyDAO.class).getStdPrecision(getCtx(), invoice.getC_Currency_ID());
+		int scale = MCurrency.getStdPrecision(getCtx(), invoice.getC_Currency_ID());
 		BigDecimal due = invoice.getGrandTotal();
 		if (due.compareTo(Env.ZERO) == 0)
 		{
@@ -207,7 +204,6 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 	 * 	String Representation
 	 *	@return info
 	 */
-	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("MInvoicePaySchedule[");
@@ -224,7 +220,6 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 	 *	@param newRecord new
 	 *	@return true
 	 */
-	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (is_ValueChanged("DueAmt"))
@@ -241,7 +236,6 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 	 *	@param success success
 	 *	@return success
 	 */
-	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (is_ValueChanged("DueAmt"))

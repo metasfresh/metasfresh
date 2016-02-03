@@ -42,14 +42,12 @@ DECLARE
 	v_CurrencyTo		NUMERIC;
 	v_CurrencyEuro		NUMERIC;
 	--
-	v_ConvDate		timestamp with time zone := trunc(now(), 'DD');
+	v_ConvDate		timestamp with time zone := now();
 	v_ConversionType_ID	NUMERIC := 0;
 	v_Rate			NUMERIC;
 	c			RECORD;			
 
 BEGIN
-	-- NOTE to developer: keep in sync with org.adempiere.service.impl.CurrencyDAO.retrieveDefaultConversionType(Properties, int, int, Date)
-	
 --	No Conversion
 	IF (p_CurFrom_ID = p_CurTo_ID) THEN
 		RETURN 1;
@@ -58,21 +56,21 @@ BEGIN
 	IF (p_ConvDate IS NOT NULL) THEN
 		v_ConvDate := p_ConvDate;   --  SysDate
 	END IF;
-	
-	--
     --  Default Conversion Type
-	IF (p_ConversionType_ID IS NULL OR p_ConversionType_ID <= 0)
-	THEN
+	IF (p_ConversionType_ID IS NULL OR p_ConversionType_ID = 0) THEN
 		BEGIN
-			v_ConversionType_ID := getDefaultConversionType_ID(p_Client_ID, p_Org_ID, p_ConvDate);
-			if (v_ConversionType_ID is null) then
-				RAISE NOTICE 'Conversion Type Not Found';
-			end if;
+		    SELECT C_ConversionType_ID 
+		      INTO v_ConversionType_ID
+		    FROM C_ConversionType 
+		    WHERE IsDefault='Y'
+		      AND AD_Client_ID IN (0,p_Client_ID)
+		    ORDER BY AD_Client_ID DESC
+		    LIMIT 1;
 		EXCEPTION WHEN OTHERS THEN
 		    RAISE NOTICE 'Conversion Type Not Found';
 		END;
-    ELSE
-        v_ConversionType_ID := p_ConversionType_ID;
+    	ELSE
+        	v_ConversionType_ID := p_ConversionType_ID;
 	END IF;
 
 	--	Get Currency Info
@@ -151,7 +149,7 @@ BEGIN
 	END;
 	--	Not found
 	IF (v_Rate IS NULL) THEN
-		RAISE NOTICE 'Conversion Rate Not Found for C_Currency=%->%, C_ConversionType_ID=%, ConvDate=%, Client/Org=%/%', v_CurrencyFrom, v_CurrencyTo, v_ConversionType_ID, v_ConvDate, p_Client_ID, p_Org_ID;
+		RAISE NOTICE 'Conversion Rate Not Found';
 		RETURN NULL;
 	END IF;
 
@@ -175,5 +173,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 
 $BODY$
-LANGUAGE plpgsql STABLE
-COST 100;
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION currencyrate(numeric, numeric, timestamp with time zone, numeric, numeric, numeric)
+  OWNER TO adempiere;

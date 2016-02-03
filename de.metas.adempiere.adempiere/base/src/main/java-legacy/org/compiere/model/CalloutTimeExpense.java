@@ -24,11 +24,8 @@ import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-
-import de.metas.currency.ICurrencyBL;
 
 
 /**
@@ -200,7 +197,7 @@ public class CalloutTimeExpense extends CalloutEngine
 		{
 			int AD_Client_ID = Env.getContextAsInt (ctx, WindowNo, "AD_Client_ID");
 			int AD_Org_ID = Env.getContextAsInt (ctx, WindowNo, "AD_Org_ID");
-			ConvertedAmt = Services.get(ICurrencyBL.class).convert (ctx,
+			ConvertedAmt = MConversionRate.convert (ctx,
 				ConvertedAmt, C_Currency_From_ID.intValue(), C_Currency_To_ID, 
 				DateExpense, 0, AD_Client_ID, AD_Org_ID);
 		}

@@ -49,8 +49,8 @@ import javax.swing.SwingConstants;
 
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
+import org.compiere.model.MConversionRate;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.util.CLogger;
@@ -59,8 +59,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
-
-import de.metas.currency.ICurrencyBL;
 
 /**
  *  Calculator with currency conversion
@@ -381,7 +379,7 @@ public final class Calculator extends CDialog
 			//	convert
 			int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
 			int AD_Org_ID = Env.getAD_Org_ID(Env.getCtx());
-			m_number = Services.get(ICurrencyBL.class).convert(Env.getCtx(),
+			m_number = MConversionRate.convert(Env.getCtx(),
 				evaluate(), curFromID, curToID, AD_Client_ID, AD_Org_ID);
 			m_display = m_format.format(m_number);
 			display.setText(m_display);

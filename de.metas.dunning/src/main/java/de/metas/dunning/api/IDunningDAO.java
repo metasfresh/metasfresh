@@ -22,6 +22,7 @@ package de.metas.dunning.api;
  * #L%
  */
 
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -80,12 +81,6 @@ public interface IDunningDAO extends ISingletonService
 	 */
 	I_C_Dunning retrieveDunningByOrg(final Properties ctx, final int adOrgId);
 
-	/**
-	 * Retrieve the active dunning-levels of the given <code>dunning</code>, orderd by their <code>DaysAfterDue</code> value.
-	 * 
-	 * @param dunning
-	 * @return
-	 */
 	List<I_C_DunningLevel> retrieveDunningLevels(I_C_Dunning dunning);
 
 	I_C_Dunning_Candidate retrieveDunningCandidate(IDunningContext context, int tableId, int recordId, I_C_DunningLevel dunningLevel);
@@ -131,7 +126,7 @@ public interface IDunningDAO extends ISingletonService
 	Iterator<I_C_Dunning_Candidate> retrieveNotProcessedCandidatesIterator(IDunningContext dunningContext);
 
 	/**
-	 * Similar to {@link #retrieveNotProcessedCandidatesIterator(IDunningContext)}, but additionally
+	 * Similar to {@link #retrieveNotProcessedCandidatesIterator(IDunningContext)}, but additionally 
 	 * <ul>
 	 * <li>appends the given where clause to the final SQL query.
 	 * <li>only returns records to which the given user/role has read and write access

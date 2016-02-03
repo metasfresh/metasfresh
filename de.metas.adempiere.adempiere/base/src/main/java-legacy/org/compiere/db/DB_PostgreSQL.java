@@ -33,7 +33,6 @@ import java.util.logging.Level;
 
 import javax.sql.DataSource;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBConnectionAcquireTimeoutException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBNoConnectionException;
@@ -285,7 +284,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	/**
 	 * Get JDBC Schema
 	 *
-	 * @return null (->we will use the public/default schema)
+	 * @return schema (dbo)
 	 */
 	@Override
 	public String getSchema()
@@ -943,24 +942,17 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		return sb.toString();
 	}
 
-	private final boolean hasSequence(final String dbSequenceName, final String trxName)
-	{
-		final int cnt = DB.getSQLValueEx(trxName, "SELECT COUNT(*) FROM pg_class WHERE UPPER(relname)=? AND relkind='S'", dbSequenceName.toUpperCase());
-		return cnt > 0;
-	}
-
 	@Override
-	public boolean createSequence(String dbSequenceName, int increment, int minvalue, int maxvalue, int start, String trxName)
+	public boolean createSequence(String name, int increment, int minvalue, int maxvalue, int start, String trxName)
 	{
-		Check.assumeNotEmpty(dbSequenceName, "dbSequenceName not empty");
-		
+		// Check if Sequence exists
+		final int cnt = DB.getSQLValueEx(trxName, "SELECT COUNT(*) FROM pg_class WHERE UPPER(relname)=? AND relkind='S'", name.toUpperCase());
 		final int no;
-		
 		//
 		// New Sequence
-		if (!hasSequence(dbSequenceName, trxName))
+		if (cnt == 0)
 		{
-			no = DB.executeUpdate("CREATE SEQUENCE " + dbSequenceName.toUpperCase()
+			no = DB.executeUpdate("CREATE SEQUENCE " + name.toUpperCase()
 					+ " INCREMENT " + increment
 					+ " MINVALUE " + minvalue
 					+ " MAXVALUE " + maxvalue
@@ -970,7 +962,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		// Already existing sequence => ALTER
 		else
 		{
-			no = DB.executeUpdate("ALTER SEQUENCE " + dbSequenceName.toUpperCase()
+			no = DB.executeUpdate("ALTER SEQUENCE " + name.toUpperCase()
 					+ " INCREMENT " + increment
 					+ " MINVALUE " + minvalue
 					+ " MAXVALUE " + maxvalue
@@ -980,26 +972,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			return false;
 		else
 			return true;
-	}
-	
-	@Override
-	public void renameSequence(final String dbSequenceNameOld, final String dbSequenceNameNew)
-	{
-		Check.assumeNotEmpty(dbSequenceNameOld, "dbSequenceNameOld not empty");
-		Check.assumeNotEmpty(dbSequenceNameNew, "dbSequenceNameNew not empty");
-		
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
-		
-		// If there is no such sequence then do nothing.
-		// This is ok because the table name could be a view
-		if (!hasSequence(dbSequenceNameOld, trxName))
-		{
-			log.info("Cannot rename sequence " + dbSequenceNameOld + " to " + dbSequenceNameNew + " because the sequence does not exist. Ignore.");
-			return;
-		}
-		
-		// NOTE: we are not using parameters because this command will be logged in migration scripts.
-		DB.executeUpdateEx("ALTER SEQUENCE " + dbSequenceNameOld + " RENAME TO " + dbSequenceNameNew, trxName);
 	}
 
 	@Override

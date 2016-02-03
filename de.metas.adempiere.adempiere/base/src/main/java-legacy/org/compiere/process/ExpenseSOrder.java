@@ -22,8 +22,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 
-import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
+import org.compiere.model.MConversionRate;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProject;
@@ -31,8 +31,6 @@ import org.compiere.model.MTimeExpense;
 import org.compiere.model.MTimeExpenseLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-
-import de.metas.currency.ICurrencyBL;
 
 /**
  *	Create Sales Orders from Expense Reports
@@ -58,7 +56,6 @@ public class ExpenseSOrder extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
-	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -85,7 +82,6 @@ public class ExpenseSOrder extends SvrProcess
 	 *  @return Message to be translated
 	 *  @throws Exception
 	 */
-	@Override
 	protected String doIt() throws java.lang.Exception
 	{
 		StringBuffer sql = new StringBuffer("SELECT * FROM S_TimeExpenseLine el "
@@ -242,7 +238,7 @@ public class ExpenseSOrder extends SvrProcess
 		if (price != null && price.compareTo(Env.ZERO) != 0)
 		{
 			if (tel.getC_Currency_ID() != m_order.getC_Currency_ID())
-				price = Services.get(ICurrencyBL.class).convert(getCtx(), price, 
+				price = MConversionRate.convert(getCtx(), price, 
 					tel.getC_Currency_ID(), m_order.getC_Currency_ID(), 
 					m_order.getAD_Client_ID(), m_order.getAD_Org_ID());
 			ol.setPrice(price);

@@ -46,7 +46,6 @@ import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
-import de.metas.process.RunOutOfTrx;
 
 /**
  * task 09373

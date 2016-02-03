@@ -19,20 +19,21 @@ package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 /** Generated Model for C_Conversion_Rate
  *  @author Adempiere (generated) 
- */
-@SuppressWarnings("javadoc")
-public class X_C_Conversion_Rate extends org.compiere.model.PO implements I_C_Conversion_Rate, org.compiere.model.I_Persistent 
+ *  @version Release 3.5.4a - $Id$ */
+public class X_C_Conversion_Rate extends PO implements I_C_Conversion_Rate, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1654171835L;
+	private static final long serialVersionUID = 20090915L;
 
     /** Standard Constructor */
     public X_C_Conversion_Rate (Properties ctx, int C_Conversion_Rate_ID, String trxName)
@@ -56,20 +57,32 @@ public class X_C_Conversion_Rate extends org.compiere.model.PO implements I_C_Co
       super (ctx, rs, trxName);
     }
 
+    /** AccessLevel
+      * @return 6 - System - Client 
+      */
+    protected int get_AccessLevel()
+    {
+      return accessLevel.intValue();
+    }
 
     /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
+    protected POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
       return poi;
     }
 
-	/** Set Wechselkurs.
+    public String toString()
+    {
+      StringBuffer sb = new StringBuffer ("X_C_Conversion_Rate[")
+        .append(get_ID()).append("]");
+      return sb.toString();
+    }
+
+	/** Set Conversion Rate.
 		@param C_Conversion_Rate_ID 
 		Rate used for converting currencies
 	  */
-	@Override
 	public void setC_Conversion_Rate_ID (int C_Conversion_Rate_ID)
 	{
 		if (C_Conversion_Rate_ID < 1) 
@@ -78,10 +91,9 @@ public class X_C_Conversion_Rate extends org.compiere.model.PO implements I_C_Co
 			set_ValueNoCheck (COLUMNNAME_C_Conversion_Rate_ID, Integer.valueOf(C_Conversion_Rate_ID));
 	}
 
-	/** Get Wechselkurs.
+	/** Get Conversion Rate.
 		@return Rate used for converting currencies
 	  */
-	@Override
 	public int getC_Conversion_Rate_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Conversion_Rate_ID);
@@ -90,23 +102,23 @@ public class X_C_Conversion_Rate extends org.compiere.model.PO implements I_C_Co
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_ConversionType getC_ConversionType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_ConversionType_ID, org.compiere.model.I_C_ConversionType.class);
-	}
+    /** Get Record ID/ColumnName
+        @return ID/ColumnName pair
+      */
+    public KeyNamePair getKeyNamePair() 
+    {
+        return new KeyNamePair(get_ID(), String.valueOf(getC_Conversion_Rate_ID()));
+    }
 
-	@Override
-	public void setC_ConversionType(org.compiere.model.I_C_ConversionType C_ConversionType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_ConversionType_ID, org.compiere.model.I_C_ConversionType.class, C_ConversionType);
-	}
+	public I_C_ConversionType getC_ConversionType() throws RuntimeException
+    {
+		return (I_C_ConversionType)MTable.get(getCtx(), I_C_ConversionType.Table_Name)
+			.getPO(getC_ConversionType_ID(), get_TrxName());	}
 
-	/** Set Kursart.
+	/** Set Currency Type.
 		@param C_ConversionType_ID 
 		Currency Conversion Rate Type
 	  */
-	@Override
 	public void setC_ConversionType_ID (int C_ConversionType_ID)
 	{
 		if (C_ConversionType_ID < 1) 
@@ -115,10 +127,9 @@ public class X_C_Conversion_Rate extends org.compiere.model.PO implements I_C_Co
 			set_Value (COLUMNNAME_C_ConversionType_ID, Integer.valueOf(C_ConversionType_ID));
 	}
 
-	/** Get Kursart.
+	/** Get Currency Type.
 		@return Currency Conversion Rate Type
 	  */
-	@Override
 	public int getC_ConversionType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_ConversionType_ID);
@@ -127,23 +138,15 @@ public class X_C_Conversion_Rate extends org.compiere.model.PO implements I_C_Co
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
 
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
-
-	/** Set Währung.
+	/** Set Currency.
 		@param C_Currency_ID 
 		The Currency for this record
 	  */
-	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
@@ -152,10 +155,9 @@ public class X_C_Conversion_Rate extends org.compiere.model.PO implements I_C_Co
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
-	/** Get Währung.
+	/** Get Currency.
 		@return The Currency for this record
 	  */
-	@Override
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
@@ -164,32 +166,23 @@ public class X_C_Conversion_Rate extends org.compiere.model.PO implements I_C_Co
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency_To() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID_To, org.compiere.model.I_C_Currency.class);
-	}
+	public I_C_Currency getC_Currency_To() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID_To(), get_TrxName());	}
 
-	@Override
-	public void setC_Currency_To(org.compiere.model.I_C_Currency C_Currency_To)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID_To, org.compiere.model.I_C_Currency.class, C_Currency_To);
-	}
-
-	/** Set Zielwährung.
+	/** Set Currency To.
 		@param C_Currency_ID_To 
 		Target currency
 	  */
-	@Override
 	public void setC_Currency_ID_To (int C_Currency_ID_To)
 	{
 		set_Value (COLUMNNAME_C_Currency_ID_To, Integer.valueOf(C_Currency_ID_To));
 	}
 
-	/** Get Zielwährung.
+	/** Get Currency To.
 		@return Target currency
 	  */
-	@Override
 	public int getC_Currency_ID_To () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID_To);
@@ -198,21 +191,19 @@ public class X_C_Conversion_Rate extends org.compiere.model.PO implements I_C_Co
 		return ii.intValue();
 	}
 
-	/** Set Divisor.
+	/** Set Divide Rate.
 		@param DivideRate 
 		To convert Source number to Target number, the Source is divided
 	  */
-	@Override
-	public void setDivideRate (java.math.BigDecimal DivideRate)
+	public void setDivideRate (BigDecimal DivideRate)
 	{
 		set_Value (COLUMNNAME_DivideRate, DivideRate);
 	}
 
-	/** Get Divisor.
+	/** Get Divide Rate.
 		@return To convert Source number to Target number, the Source is divided
 	  */
-	@Override
-	public java.math.BigDecimal getDivideRate () 
+	public BigDecimal getDivideRate () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DivideRate);
 		if (bd == null)
@@ -220,21 +211,19 @@ public class X_C_Conversion_Rate extends org.compiere.model.PO implements I_C_Co
 		return bd;
 	}
 
-	/** Set Faktor.
+	/** Set Multiply Rate.
 		@param MultiplyRate 
 		Rate to multiple the source by to calculate the target.
 	  */
-	@Override
-	public void setMultiplyRate (java.math.BigDecimal MultiplyRate)
+	public void setMultiplyRate (BigDecimal MultiplyRate)
 	{
 		set_Value (COLUMNNAME_MultiplyRate, MultiplyRate);
 	}
 
-	/** Get Faktor.
+	/** Get Multiply Rate.
 		@return Rate to multiple the source by to calculate the target.
 	  */
-	@Override
-	public java.math.BigDecimal getMultiplyRate () 
+	public BigDecimal getMultiplyRate () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MultiplyRate);
 		if (bd == null)
@@ -242,41 +231,37 @@ public class X_C_Conversion_Rate extends org.compiere.model.PO implements I_C_Co
 		return bd;
 	}
 
-	/** Set Gültig ab.
+	/** Set Valid from.
 		@param ValidFrom 
 		Valid from including this date (first day)
 	  */
-	@Override
-	public void setValidFrom (java.sql.Timestamp ValidFrom)
+	public void setValidFrom (Timestamp ValidFrom)
 	{
 		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
 	}
 
-	/** Get Gültig ab.
+	/** Get Valid from.
 		@return Valid from including this date (first day)
 	  */
-	@Override
-	public java.sql.Timestamp getValidFrom () 
+	public Timestamp getValidFrom () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidFrom);
+		return (Timestamp)get_Value(COLUMNNAME_ValidFrom);
 	}
 
-	/** Set Gültig bis.
+	/** Set Valid to.
 		@param ValidTo 
 		Valid to including this date (last day)
 	  */
-	@Override
-	public void setValidTo (java.sql.Timestamp ValidTo)
+	public void setValidTo (Timestamp ValidTo)
 	{
 		set_Value (COLUMNNAME_ValidTo, ValidTo);
 	}
 
-	/** Get Gültig bis.
+	/** Get Valid to.
 		@return Valid to including this date (last day)
 	  */
-	@Override
-	public java.sql.Timestamp getValidTo () 
+	public Timestamp getValidTo () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidTo);
+		return (Timestamp)get_Value(COLUMNNAME_ValidTo);
 	}
 }

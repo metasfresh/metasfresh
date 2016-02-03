@@ -442,35 +442,6 @@ public interface I_Fact_Acct
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_DocType_ID (int C_DocType_ID);
-
-	/**
-	 * Get Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_DocType_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
-
-    /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_DocType>(I_Fact_Acct.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
-    /** Column name C_DocType_ID */
-    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
-
-	/**
 	 * Set Von Ort.
 	 * Location that inventory was moved from
 	 *
@@ -889,31 +860,6 @@ public interface I_Fact_Acct
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Document BaseType.
-	 * Logical type of document
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDocBaseType (java.lang.String DocBaseType);
-
-	/**
-	 * Get Document BaseType.
-	 * Logical type of document
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDocBaseType();
-
-    /** Column definition for DocBaseType */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocBaseType = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "DocBaseType", null);
-    /** Column name DocBaseType */
-    public static final String COLUMNNAME_DocBaseType = "DocBaseType";
-
-	/**
 	 * Set Belegstatus.
 	 * The current status of the document
 	 *
@@ -937,31 +883,6 @@ public interface I_Fact_Acct
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "DocStatus", null);
     /** Column name DocStatus */
     public static final String COLUMNNAME_DocStatus = "DocStatus";
-
-	/**
-	 * Set Beleg Nr..
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
-
-	/**
-	 * Get Beleg Nr..
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDocumentNo();
-
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Accounting Fact.
@@ -1389,27 +1310,4 @@ public interface I_Fact_Acct
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_UserElement2_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "UserElement2_ID", null);
     /** Column name UserElement2_ID */
     public static final String COLUMNNAME_UserElement2_ID = "UserElement2_ID";
-
-	/**
-	 * Set VAT Code.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setVATCode (java.lang.String VATCode);
-
-	/**
-	 * Get VAT Code.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getVATCode();
-
-    /** Column definition for VATCode */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_VATCode = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "VATCode", null);
-    /** Column name VATCode */
-    public static final String COLUMNNAME_VATCode = "VATCode";
 }

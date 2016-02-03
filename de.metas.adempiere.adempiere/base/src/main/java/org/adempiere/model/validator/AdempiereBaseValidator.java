@@ -81,12 +81,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new org.adempiere.server.rpl.model.validator.IMP_Processor(), client);
 
 		engine.addModelValidator(new org.compiere.wf.model.validator.AD_Workflow(), client);
-		
-		//
-		// Currency
-		{
-			engine.addModelValidator(new de.metas.currency.model.interceptor.C_Conversion_Rate(), client);
-		}
 
 		//
 		// Tax

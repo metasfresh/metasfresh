@@ -10,17 +10,18 @@ package org.adempiere.ad.table.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import java.util.List;
 import java.util.Properties;
@@ -36,7 +37,7 @@ public interface IADTableDAO extends ISingletonService
 	 * @param tableName
 	 * @param columnName
 	 * @return {@link I_AD_Column} if column was found
-	 *
+	 * 
 	 * @throws AdempiereException if table was not found
 	 * @throws AdempiereException if column was not found
 	 */
@@ -46,7 +47,7 @@ public interface IADTableDAO extends ISingletonService
 	 * @param tableName
 	 * @param columnName
 	 * @return {@link I_AD_Column} if column was found, or null otherwise
-	 *
+	 * 
 	 * @throws AdempiereException if table was not found
 	 */
 	I_AD_Column retrieveColumnOrNull(String tableName, String columnName);
@@ -55,13 +56,13 @@ public interface IADTableDAO extends ISingletonService
 	 * @param tableName
 	 * @param columnName
 	 * @return true if table contains selected column, false otherwise
-	 *
+	 * 
 	 * @throws AdempiereException if table was not found
 	 */
 	boolean hasColumnName(String tableName, String columnName);
 
 	/**
-	 *
+	 * 
 	 * @param adTableId
 	 * @return the name for the given <code>AD_Table_ID</code> or <code>null</code> if the given ID is less or equal zero
 	 */
@@ -83,7 +84,7 @@ public interface IADTableDAO extends ISingletonService
 
 	/**
 	 * Check if given AD_Table_ID and TableName are matching.
-	 *
+	 * 
 	 * @param tableName
 	 * @param adTableId
 	 * @return true if they are matching
@@ -95,17 +96,10 @@ public interface IADTableDAO extends ISingletonService
 
 	/**
 	 * Retrieves the default window name of given table.
-	 *
+	 * 
 	 * @param ctx
 	 * @param tableName
 	 * @return default window name, in context language.
 	 */
 	String retrieveWindowName(Properties ctx, String tableName);
-
-	/**
-	 * If the old and new <code>tableName</code> of the given <code>table</code> differ, then rename the table sequence too.
-	 *
-	 * @param table
-	 */
-	void onTableNameRename(final I_AD_Table table);
 }

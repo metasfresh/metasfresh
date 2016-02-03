@@ -31,18 +31,16 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.util.Services;
 import org.compiere.grid.VPayment.ProcessingCtx;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.I_C_Currency;
+import org.compiere.model.MConversionRate;
 import org.compiere.model.MPayment;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
-
-import de.metas.currency.ICurrencyBL;
 
 public abstract class AbstractPaymentCheck implements IVPaymentPanel
 {
@@ -140,7 +138,7 @@ public abstract class AbstractPaymentCheck implements IVPaymentPanel
 
 	public void setAmount()
 	{
-		BigDecimal amt = Services.get(ICurrencyBL.class).convert(getCtx(),
+		BigDecimal amt = MConversionRate.convert(getCtx(),
 				doc.getGrandTotal(), doc.getC_Currency_ID(), getC_Currency_ID(),
 				doc.getAD_Client_ID(), doc.getAD_Org_ID());
 		setAmount(amt);

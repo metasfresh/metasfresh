@@ -78,6 +78,32 @@ public class MAcctSchemaDefault extends X_C_AcctSchema_Default
 	}	//	MAcctSchemaDefault
 
 	/**
+	 * 	Get Realized Gain Acct for currency
+	 *	@param C_Currency_ID currency
+	 *	@return gain acct
+	 */
+	public int getRealizedGain_Acct (int C_Currency_ID)
+	{
+		MCurrencyAcct acct = MCurrencyAcct.get (this, C_Currency_ID);
+		if (acct != null)
+			return acct.getRealizedGain_Acct(); 
+		return super.getRealizedGain_Acct();
+	}	//	getRealizedGain_Acct
+	
+	/**
+	 * 	Get Realized Loss Acct for currency
+	 *	@param C_Currency_ID currency
+	 *	@return loss acct
+	 */
+	public int getRealizedLoss_Acct (int C_Currency_ID) 
+	{
+		MCurrencyAcct acct = MCurrencyAcct.get (this, C_Currency_ID);
+		if (acct != null)
+			return acct.getRealizedLoss_Acct(); 
+		return super.getRealizedLoss_Acct();
+	}	//	getRealizedLoss_Acct
+
+	/**
 	 * 	Get Acct Info list 
 	 *	@return list
 	 */
@@ -112,7 +138,6 @@ public class MAcctSchemaDefault extends X_C_AcctSchema_Default
 	 *	@param newRecord new
 	 *	@return true
 	 */
-	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (getAD_Org_ID() != 0)

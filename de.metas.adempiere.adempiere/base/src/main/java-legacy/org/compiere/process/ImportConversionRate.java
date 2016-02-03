@@ -17,14 +17,12 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 
-import org.compiere.model.PO;
-import org.compiere.model.X_C_Conversion_Rate;
+import org.compiere.model.MConversionRate;
 import org.compiere.model.X_I_Conversion_Rate;
 import org.compiere.util.DB;
 
@@ -53,7 +51,6 @@ public class ImportConversionRate extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
-	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -85,7 +82,6 @@ public class ImportConversionRate extends SvrProcess
 	 *  @return Message
 	 *  @throws Exception
 	 */
-	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("doIt - AD_Client_ID=" + p_AD_Client_ID
@@ -239,15 +235,14 @@ public class ImportConversionRate extends SvrProcess
 			+ "WHERE I_IsImported='N'").append (clientCheck)
 			.append(" ORDER BY C_Currency_ID, C_Currency_ID_To, ValidFrom");
 		PreparedStatement pstmt = null;
-		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
-			rs = pstmt.executeQuery();
+			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
 				X_I_Conversion_Rate imp = new X_I_Conversion_Rate (getCtx(), rs, get_TrxName());
-				X_C_Conversion_Rate rate = newConversionRate (imp, 
+				MConversionRate rate = new MConversionRate (imp, 
 					imp.getC_ConversionType_ID(), 
 					imp.getC_Currency_ID(), imp.getC_Currency_ID_To(),
 					imp.getMultiplyRate(), imp.getValidFrom());
@@ -263,7 +258,7 @@ public class ImportConversionRate extends SvrProcess
 					//
 					if (imp.isCreateReciprocalRate())
 					{
-						rate = newConversionRate(imp, 
+						rate = new MConversionRate (imp, 
 							imp.getC_ConversionType_ID(), 
 							imp.getC_Currency_ID_To(), imp.getC_Currency_ID(),
 							imp.getDivideRate(), imp.getValidFrom());
@@ -274,15 +269,22 @@ public class ImportConversionRate extends SvrProcess
 					}
 				}
 			}
+			rs.close();
+			pstmt.close();
+			pstmt = null;
 		}
 		catch (Exception e)
 		{
 			log.log(Level.SEVERE, sql.toString(), e);
 		}
-		finally
+		try
 		{
-			DB.close(rs, pstmt);
-			rs = null;
+			if (pstmt != null)
+				pstmt.close();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
 			pstmt = null;
 		}
 
@@ -296,23 +298,5 @@ public class ImportConversionRate extends SvrProcess
 		addLog (0, null, new BigDecimal (noInsert), "@C_Conversion_Rate_ID@: @Inserted@");
 		return "";
 	}	//	doIt
-	
-	private static X_C_Conversion_Rate newConversionRate(PO po,
-			int C_ConversionType_ID,
-			int C_Currency_ID, int C_Currency_ID_To,
-			BigDecimal MultiplyRate, Timestamp ValidFrom)
-	{
-		final BigDecimal divideRate = MultiplyRate != null && MultiplyRate.signum() != 0 ? BigDecimal.ONE.divide(MultiplyRate, 12, RoundingMode.HALF_UP) : BigDecimal.ZERO;
-		
-		final X_C_Conversion_Rate conversionRate = new X_C_Conversion_Rate(po.getCtx(), 0, po.get_TrxName());
-		conversionRate.setAD_Org_ID(po.getAD_Org_ID());
-		conversionRate.setC_ConversionType_ID(C_ConversionType_ID);
-		conversionRate.setC_Currency_ID(C_Currency_ID);
-		conversionRate.setC_Currency_ID_To(C_Currency_ID_To);
-		//
-		conversionRate.setMultiplyRate(MultiplyRate);
-		conversionRate.setDivideRate(divideRate);
-		conversionRate.setValidFrom(ValidFrom);
-		return conversionRate;
-	}
-}	// ImportConversionRate
+
+}	//	ImportConversionRate

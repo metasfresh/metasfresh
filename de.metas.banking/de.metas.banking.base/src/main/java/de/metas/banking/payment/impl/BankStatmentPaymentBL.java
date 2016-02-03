@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BankStatementLine;
@@ -52,7 +53,6 @@ import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
-import de.metas.currency.ICurrencyBL;
 
 public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 {
@@ -301,7 +301,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 				if (refLine.getC_Currency_ID() != bsl.getC_Currency_ID())
 				{
 					// convert amounts
-					final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+					final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
 
 					amount = currencyConversionBL.convert(ctx, amount, refLine.getC_Currency_ID(),
 							bsl.getC_Currency_ID(), bsl.getDateAcct(), inv.getC_ConversionType_ID(), bsl.getAD_Client_ID(),

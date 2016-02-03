@@ -35,7 +35,6 @@ import org.compiere.util.Env;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
-import de.metas.process.RunOutOfTrx;
 
 /**
  * @author tsa

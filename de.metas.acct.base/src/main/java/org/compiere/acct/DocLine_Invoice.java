@@ -87,7 +87,7 @@ public class DocLine_Invoice extends DocLine
 
 	public final I_C_InvoiceLine getC_InvoiceLine()
 	{
-		return getModel(I_C_InvoiceLine.class);
+		return (I_C_InvoiceLine)p_po;
 	}
 
 	@Override

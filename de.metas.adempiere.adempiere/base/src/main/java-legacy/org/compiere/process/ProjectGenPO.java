@@ -20,16 +20,14 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
-import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
+import org.compiere.model.MConversionRate;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProductPO;
 import org.compiere.model.MProject;
 import org.compiere.model.MProjectLine;
 import org.compiere.util.Env;
-
-import de.metas.currency.ICurrencyBL;
 
 /**
  *  Generate Purchase Order from Project.
@@ -51,7 +49,6 @@ public class ProjectGenPO extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
-	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -76,7 +73,6 @@ public class ProjectGenPO extends SvrProcess
 	 *  @return Message 
 	 *  @throws Exception if not successful
 	 */
-	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("doIt - C_Project_ID=" + m_C_Project_ID + " - C_ProjectLine_ID=" + m_C_ProjectLine_ID + " - Consolidate=" + m_ConsolidateDocument);
@@ -126,7 +122,7 @@ public class ProjectGenPO extends SvrProcess
 		//	try to find PO to C_BPartner
 		for (int i = 0; i < m_pos.size(); i++)
 		{
-			MOrder test = m_pos.get(i);
+			MOrder test = (MOrder)m_pos.get(i);
 			if (test.getC_BPartner_ID() == pos[0].getC_BPartner_ID())
 			{
 				order = test;
@@ -177,7 +173,7 @@ public class ProjectGenPO extends SvrProcess
 			if (poPrice != null && poPrice.signum() != 0)
 			{
 				if (order.getC_Currency_ID() != C_Currency_ID)
-					poPrice = Services.get(ICurrencyBL.class).convert(getCtx(), poPrice, 
+					poPrice = MConversionRate.convert(getCtx(), poPrice, 
 						C_Currency_ID, order.getC_Currency_ID(), 
 						order.getDateAcct(), order.getC_ConversionType_ID(), 
 						order.getAD_Client_ID(), order.getAD_Org_ID());

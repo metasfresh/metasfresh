@@ -23,7 +23,6 @@ package org.adempiere.acct.api;
  */
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.ISingletonService;
@@ -79,16 +78,4 @@ public interface IFactAcctDAO extends ISingletonService
 	 * @task http://dewiki908/mediawiki/index.php/09243_Stornobuchungen_ausblenden_%28Liste%2C_Konteninfo%29
 	 */
 	void updateDocStatusForDocument(Object document, String docStatus);
-
-	/**
-	 * Update directly all {@link I_Fact_Acct} records for given document line and sets the given activity.
-	 * 
-	 * @param ctx
-	 * @param adTableId document header's AD_Table_ID
-	 * @param recordId document header's ID
-	 * @param lineId document line's ID
-	 * @param activityId activity to set
-	 * @return how many {@link I_Fact_Acct} records were updated
-	 */
-	int updateActivityForDocumentLine(Properties ctx, int adTableId, int recordId, int lineId, int activityId);
 }

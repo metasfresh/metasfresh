@@ -38,7 +38,6 @@ import org.compiere.util.Env;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.process.RunOutOfTrx;
 
 /**
  * Creates missing invoice candidates. Note that the method {@link #retrieveHandlers()} can be overridden.

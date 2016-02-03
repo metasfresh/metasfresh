@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -297,7 +298,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.INFO, sql, e);
+			log.log(Level.SEVERE, sql, e);
 			throw new DBException(e, sql, getParametersEffective());
 		}
 		finally
@@ -405,8 +406,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.INFO, sql, e);
-			throw new DBException(e, sql, getParametersEffective());
+			log.log(Level.SEVERE, sql, e);
+			throw new DBException(e, sql);
 		}
 		finally
 		{
@@ -473,8 +474,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.INFO, sql, e);
-			throw new DBException(e, sql, getParametersEffective());
+			log.log(Level.SEVERE, sql, e);
+			throw new DBException(e, sql);
 		}
 		finally
 		{
@@ -666,9 +667,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		//
 		return result;
 	}
-	
+
 	@Override
-	protected final List<Map<String, Object>> listColumns(final boolean distinct, final String... columnNames)
+	public List<Map<String, Object>> listDistinct(final String... columnNames)
 	{
 		Check.assumeNotEmpty(columnNames, "columnNames not empty");
 
@@ -700,12 +701,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Build SQL query
-		final StringBuilder sqlSelect = new StringBuilder("SELECT ")
-				.append(distinct ? " DISTINCT " : "")
-				.append(sqlColumnNames)
+		final StringBuilder sqlSelect = new StringBuilder("SELECT DISTINCT ").append(sqlColumnNames)
 				.append(" FROM ").append(getSqlFrom());
-		final boolean useOrderByClause = !distinct;
-		final String sql = buildSQL(sqlSelect, useOrderByClause);
+		final String sql = buildSQL(sqlSelect, false);
 
 		final List<Map<String, Object>> result = new ArrayList<>();
 		PreparedStatement pstmt = null;
@@ -720,7 +718,31 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				for (final String columnName : columnNames)
 				{
 					final Class<?> columnClass = columnName2class.get(columnName);
-					final Object value = DB.retrieveValue(rs, columnName, columnClass);
+					final Object value;
+					if (Integer.class.equals(columnClass))
+					{
+						value = rs.getInt(columnName);
+					}
+					else if (Timestamp.class.equals(columnClass))
+					{
+						value = rs.getTimestamp(columnName);
+					}
+					else if (BigDecimal.class.equals(columnClass))
+					{
+						value = rs.getBigDecimal(columnName);
+					}
+					else if (String.class.equals(columnClass))
+					{
+						value = rs.getString(columnName);
+					}
+					else if (Boolean.class.equals(columnClass))
+					{
+						value = "Y".equals(rs.getString(columnName));
+					}
+					else
+					{
+						value = rs.getObject(columnName);
+					}
 					row.put(columnName, value);
 				}
 				result.add(row);
@@ -728,7 +750,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (SQLException e)
 		{
-			throw new DBException(e, sql, getParametersEffective());
+			throw new DBException(e, sql);
 		}
 		finally
 		{
@@ -738,6 +760,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		//
 		return result;
+
 	}
 
 	@Override
@@ -914,8 +937,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.INFO, sql, e);
-			throw new DBException(e, sql, getParametersEffective());
+			log.log(Level.SEVERE, sql, e);
+			throw new DBException(e, sql);
 		}
 		finally
 		{
@@ -955,8 +978,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (SQLException e)
 		{
-			log.log(Level.INFO, sql, e);
-			throw new DBException(e, sql, getParametersEffective());
+			log.log(Level.SEVERE, sql, e);
+			throw new DBException(e, sql);
 		}
 		finally
 		{
@@ -1158,7 +1181,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 
 		// metas: begin
-		if (hasLimitOrOffset())
+		if (this.limit > 0 || this.offset >= 0)
 		{
 			if (DB.getDatabase().isPagingSupported())
 			{
@@ -1180,7 +1203,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			log.finest("TableName = " + getTableName() + "... SQL = " + sql); // red1 - to assist in debugging SQL
 		return sql;
 	}
-	
+
 	private final ResultSet createResultSet(PreparedStatement pstmt) throws SQLException
 	{
 		final List<Object> parametersEffective = getParametersEffective();
@@ -1320,14 +1343,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		this.limit = limit;
 		this.offset = offset;
 		return this;
-	}
-	
-	/**
-	 * @return true if the query has the LIMIT or OFFSET set
-	 */
-	public boolean hasLimitOrOffset()
-	{
-		return this.limit > 0 || this.offset >= 0;
 	}
 
 	@Override

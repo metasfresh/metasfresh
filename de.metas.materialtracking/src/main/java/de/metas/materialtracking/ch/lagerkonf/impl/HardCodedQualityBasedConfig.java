@@ -35,6 +35,7 @@ import java.util.TreeMap;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.product.service.IProductPA;
+import org.adempiere.service.ICurrencyDAO;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -44,7 +45,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
-import de.metas.currency.ICurrencyDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
 

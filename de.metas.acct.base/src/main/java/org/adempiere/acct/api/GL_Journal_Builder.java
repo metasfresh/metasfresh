@@ -7,17 +7,14 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_GL_Category;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.I_GL_JournalLine;
+import org.compiere.model.MConversionType;
 import org.compiere.model.MGLCategory;
 import org.compiere.model.X_GL_Category;
 import org.compiere.util.TimeUtil;
-
-import de.metas.currency.ICurrencyDAO;
 
 /*
  * #%L
@@ -56,9 +53,6 @@ public class GL_Journal_Builder
 		return new GL_Journal_Builder(glJournalBatch);
 	}
 
-	// services
-	private final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-
 	private final I_GL_JournalBatch glJournalBatch;
 	private final I_GL_Journal glJournal;
 
@@ -81,7 +75,8 @@ public class GL_Journal_Builder
 		glJournal.setC_DocType_ID(glJournalBatch.getC_DocType_ID());
 
 		glJournal.setC_Currency_ID(glJournalBatch.getC_Currency_ID());
-		
+		setC_ConversionType_ID(MConversionType.getDefault(glJournal.getAD_Client_ID()));
+
 		if (glJournalBatch.getGL_Category_ID() > 0)
 		{
 			glJournal.setGL_Category_ID(glJournalBatch.getGL_Category_ID());
@@ -150,20 +145,6 @@ public class GL_Journal_Builder
 	public GL_Journal_Builder setC_ConversionType_ID(final int C_ConversionType_ID)
 	{
 		glJournal.setC_ConversionType_ID(C_ConversionType_ID);
-		return this;
-	}
-	
-	public GL_Journal_Builder setC_ConversionType(final I_C_ConversionType conversionType)
-	{
-		glJournal.setC_ConversionType(conversionType);
-		return this;
-	}
-	
-	public GL_Journal_Builder setC_ConversionType_Default()
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(glJournal);
-		final I_C_ConversionType conversionType = currencyDAO.retrieveDefaultConversionType(ctx, glJournal.getAD_Client_ID(), glJournal.getAD_Org_ID(), glJournal.getDateAcct());
-		setC_ConversionType(conversionType);
 		return this;
 	}
 

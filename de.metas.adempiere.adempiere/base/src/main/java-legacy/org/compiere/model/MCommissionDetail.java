@@ -21,10 +21,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
-
-import de.metas.currency.ICurrencyBL;
 
 /**
  *	Commission Run Amount Detail Model
@@ -102,7 +99,7 @@ public class MCommissionDetail extends X_C_CommissionDetail
 	 */
 	public void setConvertedAmt (Timestamp date)
 	{
-		BigDecimal amt = Services.get(ICurrencyBL.class).convertBase(getCtx(), 
+		BigDecimal amt = MConversionRate.convertBase(getCtx(), 
 			getActualAmt(), getC_Currency_ID(), date, 0, 	//	type
 			getAD_Client_ID(), getAD_Org_ID());
 		if (amt != null)
@@ -116,7 +113,6 @@ public class MCommissionDetail extends X_C_CommissionDetail
 	 *	@param success success
 	 *	@return success
 	 */
-	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (!newRecord)
@@ -129,7 +125,6 @@ public class MCommissionDetail extends X_C_CommissionDetail
 	 *	@param success success
 	 *	@return success
 	 */
-	@Override
 	protected boolean afterDelete (boolean success)
 	{
 		if (success)

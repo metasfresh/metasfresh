@@ -12,7 +12,7 @@ class ToImportTableColumnModel extends TableColumnModel
 	}
 
 	@Override
-	public String getColumnDisplayName()
+	public String getColumnName()
 	{
 		return "";
 	}

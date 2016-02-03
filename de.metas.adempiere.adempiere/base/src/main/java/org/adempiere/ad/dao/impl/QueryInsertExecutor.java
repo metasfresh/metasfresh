@@ -108,15 +108,6 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 		mapColumn(toColumnName, from);
 		return this;
 	}
-	
-	@Override
-	public QueryInsertExecutor<ToModelType, FromModelType> mapPrimaryKey()
-	{
-		final String toColumnName = InterfaceWrapperHelper.getKeyColumnName(toModelClass);
-		final IQueryInsertFromColumn from = new PrimaryKeyQueryInsertFromColumn(getToTableName());
-		mapColumn(toColumnName, from);
-		return this;
-	}
 
 	/**
 	 *

@@ -19,20 +19,21 @@ package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 /** Generated Model for C_Currency
  *  @author Adempiere (generated) 
- */
-@SuppressWarnings("javadoc")
-public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency, org.compiere.model.I_Persistent 
+ *  @version Release 3.5.4a - $Id$ */
+public class X_C_Currency extends PO implements I_C_Currency, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 943687438L;
+	private static final long serialVersionUID = 20090915L;
 
     /** Standard Constructor */
     public X_C_Currency (Properties ctx, int C_Currency_ID, String trxName)
@@ -62,20 +63,32 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
       super (ctx, rs, trxName);
     }
 
+    /** AccessLevel
+      * @return 6 - System - Client 
+      */
+    protected int get_AccessLevel()
+    {
+      return accessLevel.intValue();
+    }
 
     /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
+    protected POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
       return poi;
     }
 
-	/** Set Währung.
+    public String toString()
+    {
+      StringBuffer sb = new StringBuffer ("X_C_Currency[")
+        .append(get_ID()).append("]");
+      return sb.toString();
+    }
+
+	/** Set Currency.
 		@param C_Currency_ID 
 		The Currency for this record
 	  */
-	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
@@ -84,10 +97,9 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
-	/** Get Währung.
+	/** Get Currency.
 		@return The Currency for this record
 	  */
-	@Override
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
@@ -96,20 +108,18 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 		return ii.intValue();
 	}
 
-	/** Set Kostenrechnungsgenauigkeit.
+	/** Set Costing Precision.
 		@param CostingPrecision 
 		Rounding used costing calculations
 	  */
-	@Override
 	public void setCostingPrecision (int CostingPrecision)
 	{
 		set_Value (COLUMNNAME_CostingPrecision, Integer.valueOf(CostingPrecision));
 	}
 
-	/** Get Kostenrechnungsgenauigkeit.
+	/** Get Costing Precision.
 		@return Rounding used costing calculations
 	  */
-	@Override
 	public int getCostingPrecision () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CostingPrecision);
@@ -122,8 +132,7 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 		@param CurSymbol 
 		Symbol of the currency (opt used for printing only)
 	  */
-	@Override
-	public void setCurSymbol (java.lang.String CurSymbol)
+	public void setCurSymbol (String CurSymbol)
 	{
 		set_Value (COLUMNNAME_CurSymbol, CurSymbol);
 	}
@@ -131,34 +140,33 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 	/** Get Symbol.
 		@return Symbol of the currency (opt used for printing only)
 	  */
-	@Override
-	public java.lang.String getCurSymbol () 
+	public String getCurSymbol () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CurSymbol);
+		return (String)get_Value(COLUMNNAME_CurSymbol);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
-	@Override
-	public void setDescription (java.lang.String Description)
+	/** Set Description.
+		@param Description 
+		Optional short description of the record
+	  */
+	public void setDescription (String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
-	@Override
-	public java.lang.String getDescription () 
+	/** Get Description.
+		@return Optional short description of the record
+	  */
+	public String getDescription () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return (String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** Set EMU Entry Date.
 		@param EMUEntryDate 
 		Date when the currency joined / will join the EMU
 	  */
-	@Override
-	public void setEMUEntryDate (java.sql.Timestamp EMUEntryDate)
+	public void setEMUEntryDate (Timestamp EMUEntryDate)
 	{
 		set_Value (COLUMNNAME_EMUEntryDate, EMUEntryDate);
 	}
@@ -166,18 +174,16 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 	/** Get EMU Entry Date.
 		@return Date when the currency joined / will join the EMU
 	  */
-	@Override
-	public java.sql.Timestamp getEMUEntryDate () 
+	public Timestamp getEMUEntryDate () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_EMUEntryDate);
+		return (Timestamp)get_Value(COLUMNNAME_EMUEntryDate);
 	}
 
 	/** Set EMU Rate.
 		@param EMURate 
 		Official rate to the Euro
 	  */
-	@Override
-	public void setEMURate (java.math.BigDecimal EMURate)
+	public void setEMURate (BigDecimal EMURate)
 	{
 		set_Value (COLUMNNAME_EMURate, EMURate);
 	}
@@ -185,8 +191,7 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 	/** Get EMU Rate.
 		@return Official rate to the Euro
 	  */
-	@Override
-	public java.math.BigDecimal getEMURate () 
+	public BigDecimal getEMURate () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EMURate);
 		if (bd == null)
@@ -198,7 +203,6 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 		@param IsEMUMember 
 		This currency is member if the European Monetary Union
 	  */
-	@Override
 	public void setIsEMUMember (boolean IsEMUMember)
 	{
 		set_Value (COLUMNNAME_IsEMUMember, Boolean.valueOf(IsEMUMember));
@@ -207,7 +211,6 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 	/** Get EMU Member.
 		@return This currency is member if the European Monetary Union
 	  */
-	@Override
 	public boolean isEMUMember () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsEMUMember);
@@ -224,7 +227,6 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 		@param IsEuro 
 		This currency is the Euro
 	  */
-	@Override
 	public void setIsEuro (boolean IsEuro)
 	{
 		set_Value (COLUMNNAME_IsEuro, Boolean.valueOf(IsEuro));
@@ -233,7 +235,6 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 	/** Get The Euro Currency.
 		@return This currency is the Euro
 	  */
-	@Override
 	public boolean isEuro () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsEuro);
@@ -246,31 +247,36 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 		return false;
 	}
 
-	/** Set ISO Währungscode.
+	/** Set ISO Currency Code.
 		@param ISO_Code 
 		Three letter ISO 4217 Code of the Currency
 	  */
-	@Override
-	public void setISO_Code (java.lang.String ISO_Code)
+	public void setISO_Code (String ISO_Code)
 	{
 		set_Value (COLUMNNAME_ISO_Code, ISO_Code);
 	}
 
-	/** Get ISO Währungscode.
+	/** Get ISO Currency Code.
 		@return Three letter ISO 4217 Code of the Currency
 	  */
-	@Override
-	public java.lang.String getISO_Code () 
+	public String getISO_Code () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ISO_Code);
+		return (String)get_Value(COLUMNNAME_ISO_Code);
 	}
+
+    /** Get Record ID/ColumnName
+        @return ID/ColumnName pair
+      */
+    public KeyNamePair getKeyNamePair() 
+    {
+        return new KeyNamePair(get_ID(), getISO_Code());
+    }
 
 	/** Set Round Off Factor.
 		@param RoundOffFactor 
 		Used to Round Off Payment Amount
 	  */
-	@Override
-	public void setRoundOffFactor (java.math.BigDecimal RoundOffFactor)
+	public void setRoundOffFactor (BigDecimal RoundOffFactor)
 	{
 		set_Value (COLUMNNAME_RoundOffFactor, RoundOffFactor);
 	}
@@ -278,8 +284,7 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 	/** Get Round Off Factor.
 		@return Used to Round Off Payment Amount
 	  */
-	@Override
-	public java.math.BigDecimal getRoundOffFactor () 
+	public BigDecimal getRoundOffFactor () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RoundOffFactor);
 		if (bd == null)
@@ -287,20 +292,18 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 		return bd;
 	}
 
-	/** Set Standardgenauigkeit.
+	/** Set Standard Precision.
 		@param StdPrecision 
 		Rule for rounding  calculated amounts
 	  */
-	@Override
 	public void setStdPrecision (int StdPrecision)
 	{
 		set_Value (COLUMNNAME_StdPrecision, Integer.valueOf(StdPrecision));
 	}
 
-	/** Get Standardgenauigkeit.
+	/** Get Standard Precision.
 		@return Rule for rounding  calculated amounts
 	  */
-	@Override
 	public int getStdPrecision () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_StdPrecision);

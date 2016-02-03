@@ -717,7 +717,7 @@ public final class DisplayType
 	 *         <li><code>defaultValue</code> if value is null or other
 	 *         </ul>
 	 */
-	public static final Boolean toBoolean(final Object value, final Boolean defaultValue)
+	public static final boolean toBoolean(final Object value, final boolean defaultValue)
 	{
 		if (value == null)
 		{
@@ -725,7 +725,7 @@ public final class DisplayType
 		}
 		else if (value instanceof Boolean)
 		{
-			return (Boolean)value;
+			return (boolean)value;
 		}
 		else
 		{
@@ -733,12 +733,12 @@ public final class DisplayType
 			if ("true".equalsIgnoreCase(valueStr)
 					|| "Y".equalsIgnoreCase(valueStr))
 			{
-				return Boolean.TRUE;
+				return true;
 			}
 			else if ("false".equalsIgnoreCase(valueStr)
 					|| "N".equalsIgnoreCase(valueStr))
 			{
-				return Boolean.FALSE;
+				return false;
 			}
 			else
 			{

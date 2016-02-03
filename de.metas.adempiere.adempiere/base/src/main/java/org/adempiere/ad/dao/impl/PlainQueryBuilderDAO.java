@@ -44,9 +44,7 @@ public class PlainQueryBuilderDAO extends AbstractQueryBuilderDAO
 
 		final POJOQuery<T> query = new POJOQuery<T>(ctx, modelClass, trxName)
 				.setOrderBy(queryBuildCtx.getQueryOrderBy())
-				.setLimit(queryBuildCtx.getQueryLimit())
-				.setOnlySelection(queryBuildCtx.getQueryOnlySelectionId())
-				.setOptions(queryBuildCtx.getQueryOptions());
+				.setOnlySelection(queryBuildCtx.getQueryOnlySelectionId());
 
 		//
 		// Add the SQL filters
@@ -73,7 +71,7 @@ public class PlainQueryBuilderDAO extends AbstractQueryBuilderDAO
 
 		return query;
 	}
-
+	
 	@Override
 	protected <T> IPair<ISqlQueryFilter, IQueryFilter<T>> extractSqlAndNonSqlFilters(IQueryFilter<T> filter)
 	{

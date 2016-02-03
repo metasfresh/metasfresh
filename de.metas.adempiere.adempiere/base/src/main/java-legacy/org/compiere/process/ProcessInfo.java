@@ -29,8 +29,6 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.service.IADPInstanceDAO;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +37,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.compiere.model.MTable;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -47,8 +46,6 @@ import org.compiere.util.Language;
 import org.compiere.util.Util;
 
 import com.google.common.base.Optional;
-
-import de.metas.adempiere.model.I_AD_Process;
 
 /**
  * Process Information (Value Object)
@@ -107,7 +104,6 @@ public class ProcessInfo implements Serializable
 	private String m_Title;
 	/** Process ID */
 	private int m_AD_Process_ID;
-	private transient I_AD_Process _processModel;
 	/** Table ID if the Process */
 	private int m_Table_ID;
 	/** Record ID if the Process */
@@ -117,8 +113,7 @@ public class ProcessInfo implements Serializable
 	/** Client_ID */
 	private Integer m_AD_Client_ID;
 	/** Class Name */
-	private String _className = null;
-	private boolean _classNameSet = false;
+	private String m_ClassName = null;
 
 	// -- Optional --
 
@@ -165,8 +160,6 @@ public class ProcessInfo implements Serializable
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
 	private Throwable m_throwable = null;
 
-	private Boolean _refreshAllAfterExecution;
-
 	/**
 	 * String representation
 	 *
@@ -182,8 +175,8 @@ public class ProcessInfo implements Serializable
 			sb.append(",AD_PInstance_ID=").append(m_AD_PInstance_ID);
 		if (m_Record_ID > 0)
 			sb.append(",Record_ID=").append(m_Record_ID);
-		if (_className != null)
-			sb.append(",ClassName=").append(_className);
+		if (m_ClassName != null)
+			sb.append(",ClassName=").append(m_ClassName);
 		sb.append(",Error=").append(isError());
 		if (m_TransientObject != null)
 			sb.append(",Transient=").append(m_TransientObject);
@@ -438,25 +431,6 @@ public class ProcessInfo implements Serializable
 	{
 		return m_AD_Process_ID;
 	}
-	
-	/** Gets/Loads the underlying {@link I_AD_Process} definition */
-	private I_AD_Process getAD_ProcessOrNull()
-	{
-		final int processId = getAD_Process_ID();
-		if (processId <= 0)
-		{
-			return null;
-		}
-		if (_processModel != null && _processModel.getAD_Process_ID() != processId)
-		{
-			_processModel = null;
-		}
-		if (_processModel == null)
-		{
-			_processModel = InterfaceWrapperHelper.create(getCtx(), processId, I_AD_Process.class, ITrx.TRXNAME_None);
-		}
-		return _processModel;
-	}
 
 	/**
 	 * Method setAD_Process_ID
@@ -475,35 +449,20 @@ public class ProcessInfo implements Serializable
 	 */
 	public String getClassName()
 	{
-		if (!_classNameSet)
-		{
-			// Try to load it from underlying process definition (if available)
-			final I_AD_Process process = getAD_ProcessOrNull();
-			if (process != null)
-			{
-				setClassName(process.getClassname());
-			}
-		}
-		return _className;
+		return m_ClassName;
 	}
 
 	/**
 	 * Method setClassName
 	 *
-	 * @param classname String
+	 * @param ClassName String
 	 */
-	public void setClassName(final String classname)
+	public void setClassName(String ClassName)
 	{
-		if (Check.isEmpty(classname, true))
-		{
-			_className = null;
-		}
-		else
-		{
-			_className = classname.trim();
-		}
-		_classNameSet = true;
-	}
+		m_ClassName = ClassName;
+		if (m_ClassName != null && m_ClassName.length() == 0)
+			m_ClassName = null;
+	}	// setClassName
 
 	/**
 	 * Method getTransientObject
@@ -571,7 +530,7 @@ public class ProcessInfo implements Serializable
 		{
 			return null;
 		}
-		return Services.get(IADTableDAO.class).retrieveTableName(m_Table_ID);
+		return MTable.getTableName(getCtx(), m_Table_ID);
 	}
 
 	/**
@@ -602,7 +561,7 @@ public class ProcessInfo implements Serializable
 		}
 		else
 		{
-			m_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+			m_Table_ID = MTable.getTable_ID(tableName);
 		}
 	}
 
@@ -1183,17 +1142,11 @@ public class ProcessInfo implements Serializable
 	public ProcessClassInfo getProcessClassInfo()
 	{
 		Class<?> processClass = null;
-		final String classname = getClassName();
-		if (!Check.isEmpty(classname))
+		if (!Check.isEmpty(m_ClassName))
 		{
 			try
 			{
-				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-				if (classLoader == null)
-				{
-					classLoader = getClass().getClassLoader();
-				}
-				processClass = classLoader.loadClass(classname);
+				processClass = Class.forName(m_ClassName);
 			}
 			catch (ClassNotFoundException e)
 			{
@@ -1201,29 +1154,6 @@ public class ProcessInfo implements Serializable
 			}
 		}
 		return ProcessClassInfo.of(processClass);
-	}
-
-	/** @return if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window) */
-	public boolean isRefreshAllAfterExecution()
-	{
-		if(_refreshAllAfterExecution != null)
-		{
-			return _refreshAllAfterExecution;
-		}
-		
-		final I_AD_Process process = getAD_ProcessOrNull();
-		if (process == null)
-		{
-			return false;
-		}
-		
-		return process.isRefreshAllAfterExecution();
-	}
-	
-	/** Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window) */
-	public void setRefreshAllAfterExecution(final boolean refreshAllAfterExecution)
-	{
-		this._refreshAllAfterExecution = refreshAllAfterExecution;
 	}
 	
 	/**

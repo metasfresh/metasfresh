@@ -53,6 +53,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -74,7 +75,6 @@ import org.compiere.util.TimeUtil;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.aggregation.model.I_C_Aggregation;
-import de.metas.currency.ICurrencyBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -174,7 +174,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		query.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
 		query.setDateToInvoice(date);
 
-		final int targetCurrencyId = Services.get(ICurrencyBL.class).getBaseCurrency(ctx).getC_Currency_ID();
+		final int targetCurrencyId = Services.get(ICurrencyConversionBL.class).getBaseCurrency(ctx).getC_Currency_ID();
 		final int adClientId = billBPartner.getAD_Client_ID();
 		final int adOrgId = billBPartner.getAD_Org_ID();
 
@@ -1199,7 +1199,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			for (final Integer conversionTypeId : conversion2Amt.keySet())
 			{
 				final BigDecimal amt = conversion2Amt.get(conversionTypeId);
-				final BigDecimal amtConverted = Services.get(ICurrencyBL.class).convert(ctx,
+				final BigDecimal amtConverted = Services.get(ICurrencyConversionBL.class).convert(ctx,
 						amt,
 						currencyId, // CurFrom_ID,
 						targetCurrencyId, // CurTo_ID,

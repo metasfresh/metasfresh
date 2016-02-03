@@ -117,7 +117,6 @@ import org.compiere.model.MWindow;
 import org.compiere.model.PO;
 import org.compiere.print.AReport;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessClassInfo;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoUtil;
 import org.compiere.swing.CPanel;
@@ -131,7 +130,6 @@ import org.compiere.util.Util;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Process;
 /**
  *	Main Panel of application window.
@@ -2804,33 +2802,22 @@ public class APanel extends CPanel
 	 *  @param vButton button
 	 */
 	// metas: tsa: changed to protected
-		protected void actionButton (final VButton vButton)
+	protected void actionButton (VButton vButton)
 	{
-		try
-		{
-			actionButton0(vButton);
-		}
-		catch (Exception e)
-		{
-			Services.get(IClientUI.class).error(m_curWindowNo, e);
-		}
-	}
+		log.info(vButton.toString());
 
-	private final void actionButton0 (final VButton vButton) throws Exception
-	{
-		log.log(Level.INFO, "{0}", vButton);
-
-		if (m_curTab.hasChangedCurrentTabAndParents())
-		{
-			final String msg = CLogger.retrieveErrorString("Please ReQuery Window");
-			throw new AdempiereException(msg);
+		if (m_curTab.hasChangedCurrentTabAndParents()) {
+			String msg = CLogger.retrieveErrorString("Please ReQuery Window");
+			ADialog.error(m_curWindowNo, this, null, msg);
+			return;
 		}
 
 		boolean startWOasking = false;
-		final String columnName = vButton.getColumnName();
+//		boolean batch = false;
+		String col = vButton.getColumnName();
 
 		//  Zoom
-		if (columnName.equals("Record_ID"))
+		if (col.equals("Record_ID"))
 		{
 			int AD_Table_ID = Env.getContextAsInt (m_ctx, m_curWindowNo, "AD_Table_ID");
 			int Record_ID = Env.getContextAsInt (m_ctx, m_curWindowNo, "Record_ID");
@@ -2857,7 +2844,7 @@ public class APanel extends CPanel
 		// will not be correct
 		m_curTab.updateContext(); // metas
 		//
-		final int table_ID = m_curTab.getAD_Table_ID();
+		int table_ID = m_curTab.getAD_Table_ID();
 		//	Record_ID
 		int record_ID = m_curTab.getRecord_ID();
 		//	Record_ID - Language Handling
@@ -2870,20 +2857,19 @@ public class APanel extends CPanel
 			Integer id = (Integer)m_curTab.getValue("AD_ChangeLog_ID");
 			record_ID = id.intValue();
 		}
-		final boolean noRowFound = record_ID == -1 && m_curTab.getKeyColumnName().endsWith("_ID");
+		//	Ensure it's saved
+		if (record_ID == -1 && m_curTab.getKeyColumnName().endsWith("_ID"))
+		{
+			ADialog.error(m_curWindowNo, this, "SaveErrorRowNotFound");
+			return;
+		}
 		
 		boolean isProcessMandatory = false;
 
 		//	Pop up Payment Rules
-		if (columnName.equals("PaymentRule"))
+		if (col.equals("PaymentRule"))
 		{
-			//	Ensure it's saved
-			if(noRowFound)
-			{
-				throw new AdempiereException("@SaveErrorRowNotFound@");
-			}
-			
-			final VPayment vp = new VPayment(m_curWindowNo, m_curTab, vButton);
+			VPayment vp = new VPayment(m_curWindowNo, m_curTab, vButton);
 			if (vp.isInitOK())		//	may not be allowed
 				vp.setVisible(true);
 			vp.dispose();
@@ -2895,14 +2881,8 @@ public class APanel extends CPanel
 		}	//	PaymentRule
 
 		//	Pop up Document Action (Workflow)
-		else if (columnName.equals("DocAction"))
+		else if (col.equals("DocAction"))
 		{
-			//	Ensure it's saved
-			if(noRowFound)
-		{
-				throw new AdempiereException("@SaveErrorRowNotFound@");
-			}
-
 			isProcessMandatory = true;
 			final VDocAction vda = new VDocAction(m_curWindowNo, m_curTab, vButton, record_ID);
 			//	Something to select from?
@@ -2924,14 +2904,8 @@ public class APanel extends CPanel
 		}	//	DocAction
 
 		//  Pop up Create From
-		else if (columnName.equals("CreateFrom"))
+		else if (col.equals("CreateFrom"))
 		{
-			//	Ensure it's saved
-			if(noRowFound)
-		{
-				throw new AdempiereException("@SaveErrorRowNotFound@");
-			}
-			
 			// Run form only if the button has no process defined - teo_sarca [ 1974354 ] 
 			if (vButton.getProcess_ID() <= 0)
 			{
@@ -2953,17 +2927,11 @@ public class APanel extends CPanel
 		}	//	CreateFrom
 
 		//  Posting -----
-		else if (columnName.equals("Posted") && Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_ShowAcct))
+		else if (col.equals("Posted") && Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_ShowAcct))
 		{
-			//	Ensure it's saved
-			if(noRowFound)
-		{
-				throw new AdempiereException("@SaveErrorRowNotFound@");
-			}
-			
 			//  Check Doc Status
-			final String processed = Env.getContext(m_ctx, m_curWindowNo, "Processed");
-			if (!"Y".equals(processed))
+			String processed = Env.getContext(m_ctx, m_curWindowNo, "Processed");
+			if (!processed.equals("Y"))
 			{
 				String docStatus = Env.getContext(m_ctx, m_curWindowNo, "DocStatus");
 				if (DocAction.STATUS_Completed.equals(docStatus)
@@ -2973,7 +2941,8 @@ public class APanel extends CPanel
 					;
 				else
 				{
-					throw new AdempiereException("@PostDocNotComplete@");
+					ADialog.error(m_curWindowNo, this, "PostDocNotComplete");
+					return;
 				}
 			}
 
@@ -2991,7 +2960,8 @@ public class APanel extends CPanel
 			Object ps = m_curTab.getValue("Posted");
 			if (ps != null && ps.equals("Y"))
 			{
-				new org.compiere.acct.AcctViewer (Env.getContextAsInt (m_ctx, m_curWindowNo, "AD_Client_ID"), tableId, recordId);
+				new org.compiere.acct.AcctViewer (Env.getContextAsInt (m_ctx, m_curWindowNo, "AD_Client_ID"),
+					tableId, recordId);
 			}
 			else
 			{
@@ -3015,7 +2985,7 @@ public class APanel extends CPanel
 		{
 			if (isProcessMandatory)
 			{
-				throw new AdempiereException("@NotFound@ @AD_Process_ID@");
+				ADialog.error(m_curWindowNo, this, null, Services.get(IMsgBL.class).parseTranslation(m_ctx, "@NotFound@ @AD_Process_ID@"));
 			}
 			return;
 		}
@@ -3026,16 +2996,8 @@ public class APanel extends CPanel
 				return;
 		
 		//
-		// Load and check process requirements
+		// Call form
 		final I_AD_Process process = InterfaceWrapperHelper.create(Env.getCtx(), vButton.getProcess_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
-		final ProcessClassInfo processClassInfo = ProcessClassInfo.ofClassname(process.getClassname());
-		if (processClassInfo.isExistingCurrentRecordRequiredWhenCalledFromGear() && noRowFound)
-		{
-			throw new AdempiereException("@SaveErrorRowNotFound@");
-		}
-		
-		//
-		// Call Form
 		int form_ID = process.getAD_Form_ID();
 		if (form_ID > 0) 
 		{
@@ -3149,8 +3111,10 @@ public class APanel extends CPanel
 		// Process Result
 		if (notPrint) // refresh if not print
 		{
+			final I_AD_Process process = InterfaceWrapperHelper.create(Env.getCtx(), pi.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
+
 			// Refresh data
-			if (pi.isRefreshAllAfterExecution())
+			if (process.isRefreshAllAfterExecution())
 			{
 				m_curTab.dataRefreshAll();
 			}

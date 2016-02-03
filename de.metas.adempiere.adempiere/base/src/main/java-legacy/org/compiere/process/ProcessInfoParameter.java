@@ -20,8 +20,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.compiere.util.DisplayType;
-
 /**
  * Immutable Process Parameter
  *
@@ -231,7 +229,24 @@ public final class ProcessInfoParameter implements Serializable
 
 	private static final Boolean toBoolean(final Object value, final Boolean defaultValue)
 	{
-		return DisplayType.toBoolean(value, defaultValue);
+		if (value == null)
+		{
+			return defaultValue;
+		}
+		else if (value instanceof Boolean)
+		{
+			return ((Boolean)value).booleanValue();
+		}
+		else if ("Y".equals(value))
+		{
+			return true;
+		}
+		else if ("N".equals(value))
+		{
+			return false;
+		}
+
+		return defaultValue;
 	}
 
 	// metas

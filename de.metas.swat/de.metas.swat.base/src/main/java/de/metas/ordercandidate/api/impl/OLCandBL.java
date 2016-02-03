@@ -41,6 +41,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.misc.service.ICurrencyPA;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -78,7 +79,6 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IAttributeSetInstanceBL;
 import de.metas.adempiere.service.IOrderLineBL;
-import de.metas.currency.ICurrencyDAO;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.interfaces.I_C_OrderLine;
@@ -1231,8 +1231,6 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public IPricingResult computePriceActual(final I_C_OLCand olCand, final BigDecimal qtyOverride, final int pricingSystemIdOverride, final Timestamp date)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-		
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setReferencedObject(olCand);
@@ -1251,6 +1249,7 @@ public class OLCandBL implements IOLCandBL
 			final int bill_BPartner_ID = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
 			final int bill_Location_ID = effectiveValuesBL.getBill_Location_Effective_ID(olCand);
 
+			final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
 			final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
 
 			final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQty();
@@ -1325,7 +1324,7 @@ public class OLCandBL implements IOLCandBL
 					+ "\n Pricing result: " + pricingResult);
 		}
 
-		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, currencyId);
+		final I_C_Currency currency = Services.get(ICurrencyPA.class).retrieveCurrency(currencyId, ITrx.TRXNAME_None);
 		final BigDecimal priceActual = Services.get(IOrderLineBL.class).subtractDiscount(priceEntered, discount, currency.getStdPrecision());
 
 		pricingResult.setPriceStd(priceActual);

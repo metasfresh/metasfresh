@@ -24,15 +24,12 @@ package org.adempiere.acct.api.impl;
 
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IFactAcctListenersService;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -107,25 +104,5 @@ public class FactAcctDAO implements IFactAcctDAO
 				.updateDirectly()
 				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_DocStatus, docStatus)
 				.execute();
-	}
-
-	@Override
-	public int updateActivityForDocumentLine(final Properties ctx, final int adTableId, final int recordId, final int lineId, final int activityId)
-	{
-		// Make sure we are updating the Fact_Acct records in a transaction
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
-		
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final int countUpdated = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, lineId)
-				.addNotEqualsFilter(I_Fact_Acct.COLUMN_C_Activity_ID, activityId)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_C_Activity_ID, activityId)
-				.execute();
-		
-		return countUpdated;
 	}
 }

@@ -72,7 +72,7 @@ public class MUserDefField extends X_AD_UserDef_Field
 		if (this.getIsUpdateable() != null)
 			vo.IsUpdateable = "Y".equals(this.getIsUpdateable());
 		if (this.getIsMandatory() != null)
-			vo.setMandatory("Y".equals(this.getIsMandatory()));
+			vo.IsMandatory = "Y".equals(this.getIsMandatory());
 		if (this.getDisplayLength() > 0)
 		{
 			layoutConstraints.setDisplayLength(this.getDisplayLength());

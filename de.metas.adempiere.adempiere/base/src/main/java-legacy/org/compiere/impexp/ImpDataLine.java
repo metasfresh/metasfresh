@@ -94,12 +94,6 @@ public class ImpDataLine
 			{
 				_values = impFormat.parseDataCells(lineStr);
 			}
-
-			// Unset "To import" if at least one cell has errors
-			if (hasCellErrors())
-			{
-				setToImport(false);
-			}
 		}
 		return _values;
 	}
@@ -128,47 +122,14 @@ public class ImpDataLine
 		return index < values.size();
 	}
 
-	/**
-	 * Sets cell value
-	 * 
-	 * @param columnIndex cell's index
-	 * @param value value to set
-	 * @param flagToImport true if the line shall be flagged as "To import" if the line has no cell errors
-	 */
-	public void setValue(final int columnIndex, final Object value, final boolean flagToImport)
+	public void setValue(final int columnIndex, final Object value)
 	{
 		final List<ImpDataCell> values = getValues();
-		final ImpDataCell impDataCell = values.get(columnIndex);
-		impDataCell.setValue(value);
-
-		if (hasCellErrors())
-		{
-			setToImport(false);
-		}
-		else if (flagToImport)
-		{
-			setToImport(true);
-		}
-	}
-
-	public CellErrorMessage getCellErrorMessage(final int columnIndex)
-	{
-		if (columnIndex < 0)
-		{
-			return null;
-		}
-		final List<ImpDataCell> values = getValues();
-		if (columnIndex >= values.size())
-		{
-			return null;
-		}
-		return values.get(columnIndex).getCellErrorMessage();
+		values.get(columnIndex).setValue(value);
 	}
 
 	public boolean isToImport()
 	{
-		getValues(); // make sure the values are loaded
-
 		return toImport;
 	}
 
@@ -218,27 +179,7 @@ public class ImpDataLine
 			return false;
 		}
 
-		if (hasCellErrors())
-		{
-			return false;
-		}
-
 		return true;
-	}
-
-	/** @return true if at least one cell has errors */
-	private boolean hasCellErrors()
-	{
-		final List<ImpDataCell> values = getValues();
-		for (final ImpDataCell value : values)
-		{
-			if (value.isCellError())
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/** @return the import status of this line; never return null */

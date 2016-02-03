@@ -59,6 +59,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.acct.Fact;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -400,6 +401,8 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private Hashtable<String, ArrayList<ModelValidator>> m_modelChangeListeners = new Hashtable<String, ArrayList<ModelValidator>>();
 	/** Document Validation Listeners */
 	private Hashtable<String, ArrayList<ModelValidator>> m_docValidateListeners = new Hashtable<String, ArrayList<ModelValidator>>();
+	/** Accounting Facts Validation Listeners */
+	private Hashtable<String, ArrayList<FactsValidator>> m_factsValidateListeners = new Hashtable<String, ArrayList<FactsValidator>>();
 	/** Data Import Validation Listeners */
 	private Hashtable<String, ArrayList<IImportValidator>> m_impValidateListeners = new Hashtable<String, ArrayList<IImportValidator>>();
 
@@ -1114,6 +1117,31 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	/**************************************************************************
+	 * Add Accounting Facts Validation Listener
+	 *
+	 * @param tableName table name
+	 * @param listener listener
+	 */
+	public void addFactsValidate(String tableName, FactsValidator listener)
+	{
+		if (tableName == null || listener == null)
+			return;
+		//
+		if (listener.getAD_Client_ID() < 0)
+			registerGlobal(listener);
+		String propertyName = getPropertyName(tableName, listener);
+		ArrayList<FactsValidator> list = m_factsValidateListeners.get(propertyName);
+		if (list == null)
+		{
+			list = new ArrayList<FactsValidator>();
+			list.add(listener);
+			m_factsValidateListeners.put(propertyName, list);
+		}
+		else
+			list.add(listener);
+	}	// addFactsValidate
+
+	/**************************************************************************
 	 * Add Date Import Validation Listener
 	 *
 	 * @param tableName table name
@@ -1132,6 +1160,76 @@ public class ModelValidationEngine implements IModelValidationEngine
 		else
 		{
 			list.add(listener);
+		}
+	}
+
+	/**
+	 * Remove Accounting Facts Validation Listener
+	 *
+	 * @param tableName table name
+	 * @param listener listener
+	 */
+	public void removeFactsValidate(String tableName, FactsValidator listener)
+	{
+		if (tableName == null || listener == null)
+			return;
+		String propertyName = getPropertyName(tableName, listener);
+		ArrayList<FactsValidator> list = m_factsValidateListeners.get(propertyName);
+		if (list == null)
+			return;
+		list.remove(listener);
+		if (list.size() == 0)
+			m_factsValidateListeners.remove(propertyName);
+	}	// removeFactsValidate
+
+	/**
+	 * Fire Accounting Facts Validation. Call factsValidate method of added validators
+	 *
+	 * @param schema
+	 * @param facts
+	 * @param doc
+	 * @param po
+	 * @return error message or null
+	 */
+	public void fireFactsValidate(MAcctSchema schema, List<Fact> facts, PO po)
+	{
+		if (schema == null || facts == null || po == null || m_factsValidateListeners.size() == 0)
+			return;
+
+		String propertyName = getPropertyName(po.get_TableName());
+		ArrayList<FactsValidator> list = m_factsValidateListeners.get(propertyName);
+		if (list != null)
+		{
+			// ad_entitytype.modelvalidationclasses
+			fireFactsValidate(schema, facts, po, list);
+		}
+
+		propertyName = getPropertyName(po.get_TableName(), po.getAD_Client_ID());
+		list = m_factsValidateListeners.get(propertyName);
+		if (list != null)
+		{
+			// ad_client.modelvalidationclasses
+			fireFactsValidate(schema, facts, po, list);
+		}
+	}	// fireFactsValidate
+
+	private void fireFactsValidate(MAcctSchema schema, List<Fact> facts, PO po, ArrayList<FactsValidator> list)
+	{
+		for (int i = 0; i < list.size(); i++)
+		{
+			FactsValidator validator = null;
+			try
+			{
+				validator = list.get(i);
+				if (appliesFor(validator, po.getAD_Client_ID()))
+				{
+					validator.factsValidate(schema, facts, po);
+				}
+			}
+			catch (Exception e)
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
 		}
 	}
 
@@ -1303,7 +1401,22 @@ public class ModelValidationEngine implements IModelValidationEngine
 			m_globalValidators.add(validator);
 	}
 
+	private final void registerGlobal(FactsValidator validator)
+	{
+		if (!(validator instanceof ModelValidator))
+		{
+			log.warning("Can not global register " + validator + " because is not a ModelValidator");
+		}
+		registerGlobal((ModelValidator)validator);
+	}
+
 	private final boolean appliesFor(ModelValidator validator, int AD_Client_ID)
+	{
+		return AD_Client_ID == validator.getAD_Client_ID()
+				|| m_globalValidators.contains(validator);
+	}
+
+	private final boolean appliesFor(FactsValidator validator, int AD_Client_ID)
 	{
 		return AD_Client_ID == validator.getAD_Client_ID()
 				|| m_globalValidators.contains(validator);
@@ -1320,6 +1433,18 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	private final String getPropertyName(String tableName, ModelValidator listener)
+	{
+		if (m_globalValidators.contains(listener))
+		{
+			return getPropertyName(tableName);
+		}
+		else
+		{
+			return getPropertyName(tableName, listener.getAD_Client_ID());
+		}
+	}
+
+	private final String getPropertyName(String tableName, FactsValidator listener)
 	{
 		if (m_globalValidators.contains(listener))
 		{

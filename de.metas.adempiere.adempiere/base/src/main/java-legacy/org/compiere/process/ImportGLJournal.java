@@ -22,8 +22,6 @@ import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_I_GLJournal;
 
-import de.metas.process.RunOutOfTrx;
-
 /**
  * Import {@link I_I_GLJournal} records to {@link I_GLJournal}.
  * 

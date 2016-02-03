@@ -8,10 +8,8 @@ but since that spec doesn't (yet?) support multiple releases in one file,
 we only adhere to it as far as it's convenient in term of the documents structuring
 
 Meanings of the categories we currently use:
- * it: was developed in the it baseline
- * uat: was developed in the uat baseline (important: this baseline is discontinued!)
+ * uat: was migrated from the uat baseline
  * fix: a bugfix
- * feature: a new feature
 
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
@@ -21,25 +19,13 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
- - 09625 Costing short report incl Budget (105806249331) +it +fix
- - 09710 Report regarding effective prices (107746499502) +uat +fix
-    * layout/display fix rergarding the report's page number
- - 09766 VAT codes (107418136945) +uat +feature
-    * allow defining different VAT codes for sales and purchase, and matching them with each other
- - 09739 gain and loss during bank transfers in foreign currencies (108136874441) +uat +feature
-    * introducing default conversion type that can be specified to be active at a given time
-	* currency gain and loss from bank account transfers are computed by comparing default conversion type with the default conversion rate
- - 09110 Make activity mandatory in accounting documents and allow the user to select one on demand (105477200774) +uat +feature
- - 09775 Import GL Journal Number Format Exception (104021981594): +it +feature
-    * when importing values into a non-text filed that can't be parsed as number, date etc, then don't fail the whole import
- - minor, unrelated fix: when retrieving dunning levels, order them by +it +fix
-    *"DaysAfterDue" to make sure they are dealt with in chronological order.
-    *Actually, the order might not matter, but a counterintuitive ordering causes FUD.
+ - 09777 German Translations for Salesgroup (106405148729) +it +fix
+    * small changes for Salesgroup Translations
  - 09771 Dunning docs mail (102929053917)
     * small changes around the dunning jasper
 
 ## it-S16_05-20160202
- - fixed the default location of the client properties file from <user.home>/.metas-fresh to <user.home>/.metasfresh +it +fix
+ - fixed the default location of the client properties file from <user.home>/.metas-fresh to <user.home>/.metasfresh
  - 09741 Problems with HU labels for split HUs (104680331233) +uat +fix
  - 09765 Process to manually re-open C_PAySelection records that were already prepared (108508031142) +uat +feature
  - 09745 alternative jasper shipment document without ADR but explicit GMAA-values (107947997555) +uat +feature

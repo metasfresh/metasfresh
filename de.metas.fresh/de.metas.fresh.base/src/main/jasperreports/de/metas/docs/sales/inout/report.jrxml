@@ -162,9 +162,6 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 		<band height="36">
 			<subreport isUsingCache="true">
 				<reportElement uuid="8ec4ce73-64c9-452c-9abf-13e5efedb735" key="subreport-3" x="0" y="24" width="595" height="12"/>
-				<subreportParameter name="ad_org_id">
-					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>

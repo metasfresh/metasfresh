@@ -32,6 +32,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.TypedAccessor;
 import org.compiere.model.I_AD_Org;
@@ -44,7 +45,6 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.currency.ICurrencyBL;
 
 public class PlainInvoiceDAO extends AbstractInvoiceDAO
 {
@@ -164,7 +164,7 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 
 			if ((null != ah) && (ah.getC_Currency_ID() != invoice.getC_Currency_ID()))
 			{
-				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(ctx,
+				final BigDecimal lineAmtConv = Services.get(ICurrencyConversionBL.class).convert(ctx,
 						lineAmt, // Amt
 						ah.getC_Currency_ID(), // CurFrom_ID
 						invoice.getC_Currency_ID(), // CurTo_ID

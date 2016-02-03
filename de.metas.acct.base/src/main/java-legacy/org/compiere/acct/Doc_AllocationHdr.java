@@ -26,6 +26,7 @@ import java.util.logging.Level;
 
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.currency.ICurrencyConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -37,14 +38,13 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MAllocationLine;
+import org.compiere.model.MFactAcct;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MTax;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
-
-import de.metas.currency.ICurrencyConversionContext;
 
 /**
  * Post Allocation Documents.
@@ -810,6 +810,16 @@ public class Doc_AllocationHdr extends Doc
 		return allocationAccounted;
 	}	// createCashBasedAcct
 
+	private final MAccount getRealizedGainAcct(final MAcctSchema as)
+	{
+		return MAccount.get(as.getCtx(), as.getAcctSchemaDefault().getRealizedGain_Acct());
+	}
+
+	private final MAccount getRealizedLossAcct(final MAcctSchema as)
+	{
+		return MAccount.get(as.getCtx(), as.getAcctSchemaDefault().getRealizedLoss_Acct());
+	}
+
 	/**
 	 * Create the {@link FactLine} which is about booking the currency gain/loss between invoice and payment.
 	 *
@@ -1094,7 +1104,7 @@ public class Doc_AllocationHdr extends Doc
 		int invoiceGrandTotalIndex = -1;
 		for (int i = 0; i < m_facts.size(); i++)
 		{
-			final I_Fact_Acct factAcct = m_facts.get(i);
+			final MFactAcct factAcct = (MFactAcct)m_facts.get(i);
 			if (factAcct.getAmtSourceDr().compareTo(invoiceGrandTotalAmt) > 0)
 			{
 				invoiceGrandTotalAmt = factAcct.getAmtSourceDr();

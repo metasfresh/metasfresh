@@ -40,10 +40,10 @@ import javax.swing.border.TitledBorder;
 import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AppsAction;
 import org.compiere.model.I_C_POSKey;
+import org.compiere.model.MCurrency;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MPOS;
@@ -59,8 +59,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
-
-import de.metas.currency.ICurrencyDAO;
 
 public class PosPayment extends CDialog implements PosKeyListener, VetoableChangeListener, ActionListener {
 
@@ -434,7 +432,7 @@ public class PosPayment extends CDialog implements PosKeyListener, VetoableChang
 		
 		BigDecimal received = p_order.getPaidAmt();		
 		balance  = p_order.getGrandTotal().subtract(received);
-		balance = balance.setScale(Services.get(ICurrencyDAO.class).getStdPrecision(p_ctx, p_order.getC_Currency_ID()));
+		balance = balance.setScale(MCurrency.getStdPrecision(p_ctx, p_order.getC_Currency_ID()));
 		if ( balance.compareTo(Env.ZERO) <= 0 )
 		{
 			paid = true;

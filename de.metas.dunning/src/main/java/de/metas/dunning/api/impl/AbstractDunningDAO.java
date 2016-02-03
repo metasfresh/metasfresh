@@ -29,20 +29,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MTable;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
 import de.metas.dunning.api.IDunningCandidateQuery;
-import de.metas.dunning.api.IDunningCandidateQuery.ApplyAccessFilter;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
+import de.metas.dunning.api.IDunningCandidateQuery.ApplyAccessFilter;
 import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
@@ -184,30 +179,6 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 		return retrieveDunningCandidatesIterator(dunningContext, query);
 	}
 
-	@Override
-	public final List<I_C_DunningLevel> retrieveDunningLevels(final I_C_Dunning dunning)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(dunning);
-		final String trxName = InterfaceWrapperHelper.getTrxName(dunning);
-		final int dunningId = dunning.getC_Dunning_ID();
-		return retrieveDunningLevels(ctx, dunningId, trxName);
-	}
-
-	@Cached(cacheName = I_C_DunningLevel.Table_Name + "_for_C_Dunning_ID")
-	/* package */ List<I_C_DunningLevel> retrieveDunningLevels(@CacheCtx Properties ctx, int dunningId, @CacheTrx String trxName)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_DunningLevel.class, ctx, trxName)
-		.addEqualsFilter( I_C_DunningLevel.COLUMNNAME_C_Dunning_ID, dunningId)
-		.addOnlyActiveRecordsFilter()
-		.orderBy()
-			.addColumn(I_C_DunningLevel.COLUMNNAME_DaysAfterDue)
-			.addColumn(I_C_DunningLevel.COLUMNNAME_DaysBetweenDunning)
-			.addColumn(I_C_DunningLevel.COLUMNNAME_C_DunningLevel_ID)
-			.endOrderBy()
-			.create()
-			.list();
-	}
-	
 	protected abstract List<I_C_Dunning_Candidate> retrieveDunningCandidates(IDunningContext context, IDunningCandidateQuery query);
 
 	protected abstract I_C_Dunning_Candidate retrieveDunningCandidate(IDunningContext context, IDunningCandidateQuery query);

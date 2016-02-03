@@ -22,11 +22,8 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-
-import de.metas.currency.ICurrencyBL;
 
 /**
  * 	Time + Expense Line Model
@@ -105,7 +102,6 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 	 * 	Get Qty Invoiced
 	 *	@return entered or qty
 	 */
-	@Override
 	public BigDecimal getQtyInvoiced ()
 	{
 		BigDecimal bd = super.getQtyInvoiced ();
@@ -118,7 +114,6 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 	 * 	Get Qty Reimbursed
 	 *	@return entered or qty
 	 */
-	@Override
 	public BigDecimal getQtyReimbursed ()
 	{
 		BigDecimal bd = super.getQtyReimbursed ();
@@ -132,7 +127,6 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 	 * 	Get Price Invoiced
 	 *	@return entered or invoice price
 	 */
-	@Override
 	public BigDecimal getPriceInvoiced ()
 	{
 		BigDecimal bd = super.getPriceInvoiced ();
@@ -145,7 +139,6 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 	 * 	Get Price Reimbursed
 	 *	@return entered or converted amt
 	 */
-	@Override
 	public BigDecimal getPriceReimbursed ()
 	{
 		BigDecimal bd = super.getPriceReimbursed ();
@@ -209,7 +202,7 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 				setConvertedAmt(getExpenseAmt());
 			else
 			{
-				setConvertedAmt(Services.get(ICurrencyBL.class).convert (getCtx(),
+				setConvertedAmt(MConversionRate.convert (getCtx(),
 					getExpenseAmt(), getC_Currency_ID(), getC_Currency_Report_ID(), 
 					getDateExpense(), 0, getAD_Client_ID(), getAD_Org_ID()) );
 			}
@@ -278,7 +271,6 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 	 *	@param success success
 	 *	@return success
 	 */
-	@Override
 	protected boolean afterDelete (boolean success)
 	{
 		if (success)

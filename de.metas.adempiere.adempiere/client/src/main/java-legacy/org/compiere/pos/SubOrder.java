@@ -33,11 +33,11 @@ import javax.swing.KeyStroke;
 import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerInfo;
 import org.compiere.model.MBPartnerLocation;
+import org.compiere.model.MCurrency;
 import org.compiere.model.MOrder;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
@@ -53,8 +53,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
-
-import de.metas.currency.ICurrencyDAO;
 
 
 /**
@@ -559,7 +557,7 @@ public class SubOrder extends PosSubPanel
 				M_PriceList_ID = m_bpartner.getM_PriceList_ID();
 			//
 			MPriceList pl = MPriceList.get(p_ctx, M_PriceList_ID, null);
-			setCurrency(Services.get(ICurrencyDAO.class).getISO_Code(p_ctx, pl.getC_Currency_ID()));
+			setCurrency(MCurrency.getISO_Code(p_ctx, pl.getC_Currency_ID()));
 			f_name.setToolTipText(pl.getName());
 			//
 			MPriceListVersion plv = pl.getPriceListVersion (p_posPanel.getToday());

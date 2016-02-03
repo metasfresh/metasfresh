@@ -181,7 +181,6 @@ public class MElementValue extends X_C_ElementValue
 	 * 	User String Representation
 	 *	@return info value - name
 	 */
-	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ();
@@ -214,7 +213,7 @@ public class MElementValue extends X_C_ElementValue
 		{
 			//
 			// Check if we have accounting facts
-			boolean match = new Query(getCtx(), I_Fact_Acct.Table_Name, I_Fact_Acct.COLUMNNAME_Account_ID+"=?", get_TrxName())
+			boolean match = new Query(getCtx(), MFactAcct.Table_Name, MFactAcct.COLUMNNAME_Account_ID+"=?", get_TrxName())
 								.setParameters(new Object[]{getC_ElementValue_ID()})
 								.match();
 			if (match)

@@ -28,7 +28,6 @@ import javax.sql.DataSource;
 
 import oracle.jdbc.OracleDriver;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.compiere.dbPort.Convert;
@@ -776,13 +775,6 @@ public class DB_Oracle implements AdempiereDatabase
 		else 
 			return true;
 	}
-    
-    @Override
-    public void renameSequence(final String dbSequenceNameOld, final String dbSequenceNameNew)
-    {
-    	final String trxName = ITrx.TRXNAME_ThreadInherited;
-		DB.executeUpdateEx("RENAME " + dbSequenceNameOld.toUpperCase() + " TO " + dbSequenceNameNew.toUpperCase(), trxName);
-    }
 
 	@Override
 	public boolean isQueryTimeoutSupported() {

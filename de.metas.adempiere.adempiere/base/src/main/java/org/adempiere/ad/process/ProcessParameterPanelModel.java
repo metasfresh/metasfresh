@@ -49,7 +49,6 @@ import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.Lookup;
 import org.compiere.model.Null;
-import org.compiere.process.ProcessClassInfo;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
@@ -71,8 +70,6 @@ public class ProcessParameterPanelModel
 	private final int windowNo;
 	private final int tabNo;
 	private final int processId;
-	private final ProcessInfo processInfo;
-	private final ProcessClassInfo processClassInfo;
 	private final List<GridField> gridFields = new ArrayList<GridField>();
 	private final List<GridField> gridFieldsTo = new ArrayList<GridField>();
 	private final List<GridField> gridFieldsAll = new ArrayList<GridField>();
@@ -98,10 +95,6 @@ public class ProcessParameterPanelModel
 		this.processId = pi.getAD_Process_ID();
 		
 		this.defaultsProvider = createSvrProcessDefaultParametersProviderOrNull(pi.getClassName());
-
-		Check.assumeNotNull(pi, "pi not null");
-		this.processInfo = pi;
-		this.processClassInfo = pi.getProcessClassInfo();
 
 		createFields();
 	}
@@ -298,7 +291,7 @@ public class ProcessParameterPanelModel
 		{
 			defaultValue = gridField.getDefault();
 		}
-
+		
 		setFieldValue(gridField, defaultValue == Null.NULL ? null : defaultValue);
 	}
 
@@ -328,11 +321,6 @@ public class ProcessParameterPanelModel
 	{
 		// Create Field
 		final GridFieldVO gridFieldVO = GridFieldVO.createParameter(ctx, windowNo, tabNo, rs);
-		final boolean mandatoryOverride = processClassInfo.isParameterMandatory(gridFieldVO.getColumnName());
-		if (mandatoryOverride)
-		{
-			gridFieldVO.setMandatory(true);
-		}
 		final GridField gridField = new GridField(gridFieldVO);
 		gridFields.add(gridField);                      // add to Fields
 		gridFieldsAll.add(gridField);
@@ -342,10 +330,6 @@ public class ProcessParameterPanelModel
 		if (gridFieldVO.isRange)
 		{
 			final GridFieldVO gridFieldToVO = GridFieldVO.createParameterTo(gridFieldVO);
-			if (mandatoryOverride)
-			{
-				gridFieldToVO.setMandatory(true);
-			}
 			gridFieldTo = new GridField(gridFieldToVO);
 		}
 		else

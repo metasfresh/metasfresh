@@ -113,7 +113,6 @@ public class GL_Journal_GenerateYearEnding extends SvrProcess
 				.setDateDoc(p_DateTo)
 				.setC_AcctSchema_ID(p_C_AcctSchema.getC_AcctSchema_ID())
 				.setC_Currency_ID(p_C_AcctSchema.getC_Currency_ID())
-				.setC_ConversionType_Default()
 				.setDescription(getName());
 
 		BigDecimal accountBalanceSum = BigDecimal.ZERO;

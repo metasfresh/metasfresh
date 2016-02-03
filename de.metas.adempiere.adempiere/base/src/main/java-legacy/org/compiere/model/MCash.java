@@ -23,9 +23,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.CLogger;
@@ -34,8 +32,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
-
-import de.metas.currency.ICurrencyBL;
 
 /**
  *	Cash Journal Model
@@ -394,7 +390,7 @@ public class MCash extends X_C_Cash implements DocAction
 				difference = difference.add(line.getAmount());
 			else
 			{
-				BigDecimal amt = Services.get(ICurrencyBL.class).convert(getCtx(), line.getAmount(), 
+				BigDecimal amt = MConversionRate.convert(getCtx(), line.getAmount(), 
 					line.getC_Currency_ID(), C_Currency_ID, getDateAcct(), 0, 
 					getAD_Client_ID(), getAD_Org_ID());
 				if (amt == null)
@@ -662,7 +658,7 @@ public class MCash extends X_C_Cash implements DocAction
 		saveEx();
 			
 		//	Delete Posting
-		Services.get(IFactAcctDAO.class).deleteForDocument(this);
+		MFactAcct.deleteEx(Table_ID, getC_Cash_ID(), get_TrxName());
 		
 		return true;
 	}	//	reverse

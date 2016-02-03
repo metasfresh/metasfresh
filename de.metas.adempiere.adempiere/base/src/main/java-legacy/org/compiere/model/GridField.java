@@ -362,7 +362,7 @@ public class GridField
 		}
 
 		// Not mandatory
-		if (!m_vo.isMandatory() || isVirtualColumn())
+		if (!m_vo.IsMandatory || isVirtualColumn())
 			return false;
 
 		// Numeric Keys and Created/Updated as well as

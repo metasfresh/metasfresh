@@ -34,6 +34,7 @@ import org.adempiere.document.service.IDocumentNoBuilder;
 import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
@@ -47,7 +48,6 @@ import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.currency.ICurrencyBL;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
@@ -1094,7 +1094,7 @@ public final class MPayment extends X_C_Payment
 	{
 		if (C_Currency_ID == 0)
 		{
-			C_Currency_ID = Services.get(ICurrencyBL.class).getBaseCurrency(getCtx(), getAD_Client_ID(), getAD_Org_ID()).getC_Currency_ID();
+			C_Currency_ID = Services.get(ICurrencyConversionBL.class).getBaseCurrency(getCtx(), getAD_Client_ID(), getAD_Org_ID()).getC_Currency_ID();
 		}
 		setC_Currency_ID(C_Currency_ID);
 		setPayAmt(payAmt);
@@ -1514,6 +1514,16 @@ public final class MPayment extends X_C_Payment
 	}
 
 	/**
+	 * Get ISO Code of Currency
+	 *
+	 * @return Currency ISO
+	 */
+	public String getCurrencyISO()
+	{
+		return MCurrency.getISO_Code(getCtx(), getC_Currency_ID());
+	}	// getCurrencyISO
+
+	/**
 	 * Get Document Status
 	 *
 	 * @return Document Status Clear Text
@@ -1839,11 +1849,11 @@ public final class MPayment extends X_C_Payment
 			final MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
 			// Update total balance to include this payment
 			final BigDecimal payAmt =
-					Services.get(ICurrencyBL.class).convertBase(getCtx(), getPayAmt(), getC_Currency_ID(), getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
+					MConversionRate.convertBase(getCtx(), getPayAmt(), getC_Currency_ID(), getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
 			if (payAmt == null)
 			{
 				m_processMsg = "Could not convert C_Currency_ID=" + getC_Currency_ID() + " to base C_Currency = "
-						+ Services.get(ICurrencyBL.class).getBaseCurrency(getCtx(), getAD_Client_ID(), getAD_Org_ID()).getISO_Code();
+						+ Services.get(ICurrencyConversionBL.class).getBaseCurrency(getCtx(), getAD_Client_ID(), getAD_Org_ID()).getISO_Code();
 				return DocAction.STATUS_Invalid;
 			}
 			// Total Balance

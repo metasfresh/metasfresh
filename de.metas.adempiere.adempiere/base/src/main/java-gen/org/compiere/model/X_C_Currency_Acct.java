@@ -22,15 +22,14 @@ import java.util.Properties;
 
 /** Generated Model for C_Currency_Acct
  *  @author Adempiere (generated) 
- */
-@SuppressWarnings("javadoc")
-public class X_C_Currency_Acct extends org.compiere.model.PO implements I_C_Currency_Acct, org.compiere.model.I_Persistent 
+ *  @version Release 3.5.4a - $Id$ */
+public class X_C_Currency_Acct extends PO implements I_C_Currency_Acct, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 841852383L;
+	private static final long serialVersionUID = 20090915L;
 
     /** Standard Constructor */
     public X_C_Currency_Acct (Properties ctx, int C_Currency_Acct_ID, String trxName)
@@ -53,32 +52,37 @@ public class X_C_Currency_Acct extends org.compiere.model.PO implements I_C_Curr
       super (ctx, rs, trxName);
     }
 
+    /** AccessLevel
+      * @return 3 - Client - Org 
+      */
+    protected int get_AccessLevel()
+    {
+      return accessLevel.intValue();
+    }
 
     /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
+    protected POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
-	}
+    public String toString()
+    {
+      StringBuffer sb = new StringBuffer ("X_C_Currency_Acct[")
+        .append(get_ID()).append("]");
+      return sb.toString();
+    }
 
-	@Override
-	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
-	{
-		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
-	}
+	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+    {
+		return (I_C_AcctSchema)MTable.get(getCtx(), I_C_AcctSchema.Table_Name)
+			.getPO(getC_AcctSchema_ID(), get_TrxName());	}
 
-	/** Set Buchführungs-Schema.
+	/** Set Accounting Schema.
 		@param C_AcctSchema_ID 
 		Rules for accounting
 	  */
-	@Override
 	public void setC_AcctSchema_ID (int C_AcctSchema_ID)
 	{
 		if (C_AcctSchema_ID < 1) 
@@ -87,10 +91,9 @@ public class X_C_Currency_Acct extends org.compiere.model.PO implements I_C_Curr
 			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, Integer.valueOf(C_AcctSchema_ID));
 	}
 
-	/** Get Buchführungs-Schema.
+	/** Get Accounting Schema.
 		@return Rules for accounting
 	  */
-	@Override
 	public int getC_AcctSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
@@ -99,23 +102,15 @@ public class X_C_Currency_Acct extends org.compiere.model.PO implements I_C_Curr
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
 
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
-
-	/** Set Währung.
+	/** Set Currency.
 		@param C_Currency_ID 
 		The Currency for this record
 	  */
-	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
@@ -124,10 +119,9 @@ public class X_C_Currency_Acct extends org.compiere.model.PO implements I_C_Curr
 			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
-	/** Get Währung.
+	/** Get Currency.
 		@return The Currency for this record
 	  */
-	@Override
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
@@ -136,32 +130,23 @@ public class X_C_Currency_Acct extends org.compiere.model.PO implements I_C_Curr
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_ValidCombination getRealizedGain_A() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_RealizedGain_Acct, org.compiere.model.I_C_ValidCombination.class);
-	}
+	public I_C_ValidCombination getRealizedGain_A() throws RuntimeException
+    {
+		return (I_C_ValidCombination)MTable.get(getCtx(), I_C_ValidCombination.Table_Name)
+			.getPO(getRealizedGain_Acct(), get_TrxName());	}
 
-	@Override
-	public void setRealizedGain_A(org.compiere.model.I_C_ValidCombination RealizedGain_A)
-	{
-		set_ValueFromPO(COLUMNNAME_RealizedGain_Acct, org.compiere.model.I_C_ValidCombination.class, RealizedGain_A);
-	}
-
-	/** Set Realisierte Währungsgewinne.
+	/** Set Realized Gain Acct.
 		@param RealizedGain_Acct 
-		Konto für Realisierte Währungsgewinne
+		Realized Gain Account
 	  */
-	@Override
 	public void setRealizedGain_Acct (int RealizedGain_Acct)
 	{
 		set_Value (COLUMNNAME_RealizedGain_Acct, Integer.valueOf(RealizedGain_Acct));
 	}
 
-	/** Get Realisierte Währungsgewinne.
-		@return Konto für Realisierte Währungsgewinne
+	/** Get Realized Gain Acct.
+		@return Realized Gain Account
 	  */
-	@Override
 	public int getRealizedGain_Acct () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_RealizedGain_Acct);
@@ -170,32 +155,23 @@ public class X_C_Currency_Acct extends org.compiere.model.PO implements I_C_Curr
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_ValidCombination getRealizedLoss_A() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_RealizedLoss_Acct, org.compiere.model.I_C_ValidCombination.class);
-	}
+	public I_C_ValidCombination getRealizedLoss_A() throws RuntimeException
+    {
+		return (I_C_ValidCombination)MTable.get(getCtx(), I_C_ValidCombination.Table_Name)
+			.getPO(getRealizedLoss_Acct(), get_TrxName());	}
 
-	@Override
-	public void setRealizedLoss_A(org.compiere.model.I_C_ValidCombination RealizedLoss_A)
-	{
-		set_ValueFromPO(COLUMNNAME_RealizedLoss_Acct, org.compiere.model.I_C_ValidCombination.class, RealizedLoss_A);
-	}
-
-	/** Set Realisierte Währungsverluste.
+	/** Set Realized Loss Acct.
 		@param RealizedLoss_Acct 
-		Konto für realisierte Währungsverluste
+		Realized Loss Account
 	  */
-	@Override
 	public void setRealizedLoss_Acct (int RealizedLoss_Acct)
 	{
 		set_Value (COLUMNNAME_RealizedLoss_Acct, Integer.valueOf(RealizedLoss_Acct));
 	}
 
-	/** Get Realisierte Währungsverluste.
-		@return Konto für realisierte Währungsverluste
+	/** Get Realized Loss Acct.
+		@return Realized Loss Account
 	  */
-	@Override
 	public int getRealizedLoss_Acct () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_RealizedLoss_Acct);
@@ -204,32 +180,23 @@ public class X_C_Currency_Acct extends org.compiere.model.PO implements I_C_Curr
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_ValidCombination getUnrealizedGain_A() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_UnrealizedGain_Acct, org.compiere.model.I_C_ValidCombination.class);
-	}
+	public I_C_ValidCombination getUnrealizedGain_A() throws RuntimeException
+    {
+		return (I_C_ValidCombination)MTable.get(getCtx(), I_C_ValidCombination.Table_Name)
+			.getPO(getUnrealizedGain_Acct(), get_TrxName());	}
 
-	@Override
-	public void setUnrealizedGain_A(org.compiere.model.I_C_ValidCombination UnrealizedGain_A)
-	{
-		set_ValueFromPO(COLUMNNAME_UnrealizedGain_Acct, org.compiere.model.I_C_ValidCombination.class, UnrealizedGain_A);
-	}
-
-	/** Set Nicht realisierte Währungsgewinne.
+	/** Set Unrealized Gain Acct.
 		@param UnrealizedGain_Acct 
-		Konto für nicht realisierte Währungsgewinne
+		Unrealized Gain Account for currency revaluation
 	  */
-	@Override
 	public void setUnrealizedGain_Acct (int UnrealizedGain_Acct)
 	{
 		set_Value (COLUMNNAME_UnrealizedGain_Acct, Integer.valueOf(UnrealizedGain_Acct));
 	}
 
-	/** Get Nicht realisierte Währungsgewinne.
-		@return Konto für nicht realisierte Währungsgewinne
+	/** Get Unrealized Gain Acct.
+		@return Unrealized Gain Account for currency revaluation
 	  */
-	@Override
 	public int getUnrealizedGain_Acct () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_UnrealizedGain_Acct);
@@ -238,32 +205,23 @@ public class X_C_Currency_Acct extends org.compiere.model.PO implements I_C_Curr
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_ValidCombination getUnrealizedLoss_A() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_UnrealizedLoss_Acct, org.compiere.model.I_C_ValidCombination.class);
-	}
+	public I_C_ValidCombination getUnrealizedLoss_A() throws RuntimeException
+    {
+		return (I_C_ValidCombination)MTable.get(getCtx(), I_C_ValidCombination.Table_Name)
+			.getPO(getUnrealizedLoss_Acct(), get_TrxName());	}
 
-	@Override
-	public void setUnrealizedLoss_A(org.compiere.model.I_C_ValidCombination UnrealizedLoss_A)
-	{
-		set_ValueFromPO(COLUMNNAME_UnrealizedLoss_Acct, org.compiere.model.I_C_ValidCombination.class, UnrealizedLoss_A);
-	}
-
-	/** Set Nicht realisierte Währungsverluste.
+	/** Set Unrealized Loss Acct.
 		@param UnrealizedLoss_Acct 
-		Konto für nicht realisierte Währungsverluste
+		Unrealized Loss Account for currency revaluation
 	  */
-	@Override
 	public void setUnrealizedLoss_Acct (int UnrealizedLoss_Acct)
 	{
 		set_Value (COLUMNNAME_UnrealizedLoss_Acct, Integer.valueOf(UnrealizedLoss_Acct));
 	}
 
-	/** Get Nicht realisierte Währungsverluste.
-		@return Konto für nicht realisierte Währungsverluste
+	/** Get Unrealized Loss Acct.
+		@return Unrealized Loss Account for currency revaluation
 	  */
-	@Override
 	public int getUnrealizedLoss_Acct () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_UnrealizedLoss_Acct);

@@ -1,6 +1,5 @@
 package org.compiere.apps.form.fileimport;
 
-import org.compiere.impexp.CellErrorMessage;
 import org.compiere.impexp.ImpDataLine;
 
 abstract class TableColumnModel
@@ -18,8 +17,7 @@ abstract class TableColumnModel
 		return columnIndex;
 	}
 
-	/** @return column's display name (could be HTML) */
-	public abstract String getColumnDisplayName();
+	public abstract String getColumnName();
 
 	public abstract Class<?> getColumnClass();
 
@@ -31,12 +29,6 @@ abstract class TableColumnModel
 	public abstract Object getValue(final ImpDataLine dataLine);
 
 	public abstract void setValue(ImpDataLine dataLine, Object value);
-
-	/** @return cell's error message or null */
-	public CellErrorMessage getCellErrorMessage(ImpDataLine dataLine)
-	{
-		return null;
-	}
 
 	public int getWidth()
 	{

@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.logging.Level;
 
 import org.adempiere.model.engines.CostDimension;
+import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
@@ -54,8 +55,6 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.eevolution.exceptions.LiberoException;
 
-import de.metas.currency.ICurrencyBL;
-
 /**
  * CopyPriceToStandard
  *
@@ -65,7 +64,7 @@ import de.metas.currency.ICurrencyBL;
 public class CopyPriceToStandard extends SvrProcess
 {
 	// services
-	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final transient ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
 
 	// parameters
 	private int p_AD_Org_ID = 0;

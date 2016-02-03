@@ -32,7 +32,7 @@ public interface I_C_ElementValue
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 2 - Client
+    /** AccessLevel = 2 - Client 
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
 
@@ -247,6 +247,35 @@ public interface I_C_ElementValue
     public static final String COLUMNNAME_C_ElementValue_ID = "C_ElementValue_ID";
 
 	/**
+	 * Set Steuer.
+	 * Steuerart
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Tax_ID (int C_Tax_ID);
+
+	/**
+	 * Get Steuer.
+	 * Steuerart
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Tax_ID();
+
+	public org.compiere.model.I_C_Tax getC_Tax();
+
+	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax);
+
+    /** Column definition for C_Tax_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Tax>(I_C_ElementValue.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
+    /** Column name C_Tax_ID */
+    public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -275,35 +304,6 @@ public interface I_C_ElementValue
     public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_User>(I_C_ElementValue.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Steuer.
-	 * Steuerart
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Tax_ID (int C_Tax_ID);
-
-	/**
-	 * Get Steuer.
-	 * Steuerart
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Tax_ID();
-
-	public org.compiere.model.I_C_Tax getC_Tax();
-
-	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax);
-
-    /** Column definition for C_Tax_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Tax>(I_C_ElementValue.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
-    /** Column name C_Tax_ID */
-    public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
 	/**
 	 * Set Beschreibung.
@@ -452,29 +452,6 @@ public interface I_C_ElementValue
     public static final org.adempiere.model.ModelColumn<I_C_ElementValue, Object> COLUMN_IsForeignCurrency = new org.adempiere.model.ModelColumn<I_C_ElementValue, Object>(I_C_ElementValue.class, "IsForeignCurrency", null);
     /** Column name IsForeignCurrency */
     public static final String COLUMNNAME_IsForeignCurrency = "IsForeignCurrency";
-
-	/**
-	 * Set Kostenstelle ist Pflichtangabe.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsMandatoryActivity (boolean IsMandatoryActivity);
-
-	/**
-	 * Get Kostenstelle ist Pflichtangabe.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isMandatoryActivity();
-
-    /** Column definition for IsMandatoryActivity */
-    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, Object> COLUMN_IsMandatoryActivity = new org.adempiere.model.ModelColumn<I_C_ElementValue, Object>(I_C_ElementValue.class, "IsMandatoryActivity", null);
-    /** Column name IsMandatoryActivity */
-    public static final String COLUMNNAME_IsMandatoryActivity = "IsMandatoryActivity";
 
 	/**
 	 * Set Zusammenfassungseintrag.

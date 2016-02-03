@@ -25,7 +25,6 @@ package org.adempiere.ad.dao.impl;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -692,7 +691,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public POJOQuery<T> setLimit(final int limit)
+	public IQuery<T> setLimit(final int limit)
 	{
 		this.limit = limit;
 		return this;
@@ -753,20 +752,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	protected final List<Map<String, Object>> listColumns(final boolean distinct, String... columnNames)
+	public List<Map<String, Object>> listDistinct(final String... columnNames)
 	{
 		final List<T> records = list();
 
 		// Our result, will collect unique records
-		final Collection<Map<String, Object>> result;
-		if (distinct)
-		{
-			result = new HashSet<>();
-		}
-		else
-		{
-			result = new ArrayList<>();
-		}
+		final Set<Map<String, Object>> result = new HashSet<>();
 
 		for (final T record : records)
 		{

@@ -11,7 +11,7 @@ class RawDataTableColumnModel extends TableColumnModel
 	}
 
 	@Override
-	public String getColumnDisplayName()
+	public String getColumnName()
 	{
 		return "Raw line";
 	}

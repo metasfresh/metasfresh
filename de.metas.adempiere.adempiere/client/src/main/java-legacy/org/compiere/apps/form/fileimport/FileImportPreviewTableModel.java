@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.impexp.CellErrorMessage;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.util.Env;
@@ -17,16 +15,6 @@ import org.compiere.util.Env;
 public class FileImportPreviewTableModel extends AbstractTableModel
 {
 	private static final long serialVersionUID = 7464707521144987420L;
-	
-	public static final FileImportPreviewTableModel castOrNull(final TableModel tableModel)
-	{
-		if (tableModel instanceof FileImportPreviewTableModel)
-		{
-			return (FileImportPreviewTableModel)tableModel;
-		}
-		
-		return null;
-	}
 
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -119,7 +107,7 @@ public class FileImportPreviewTableModel extends AbstractTableModel
 	@Override
 	public String getColumnName(final int columnIndex)
 	{
-		return getColumnModel(columnIndex).getColumnDisplayName();
+		return getColumnModel(columnIndex).getColumnName();
 	}
 
 	@Override
@@ -172,16 +160,6 @@ public class FileImportPreviewTableModel extends AbstractTableModel
 
 		// Because in some cases, the table models are also updating others columns, it's safe to notify that entire row was changed.
 		fireTableRowsUpdated(rowIndex, rowIndex);
-	}
-	
-	public CellErrorMessage getCellErrorMessage(final int rowIndex, final int columnIndex)
-	{
-		final ImpDataLine dataLine = getImpDataLine(rowIndex);
-		if (dataLine == null)
-		{
-			return null;
-		}
-		return getColumnModel(columnIndex).getCellErrorMessage(dataLine);
 	}
 
 	public String getSummary()

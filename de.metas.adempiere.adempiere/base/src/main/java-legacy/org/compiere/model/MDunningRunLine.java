@@ -20,11 +20,8 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-
-import de.metas.currency.ICurrencyBL;
 
 /**
  *	Dunning Run Line Model
@@ -130,7 +127,7 @@ public class MDunningRunLine extends X_C_DunningRunLine
 			m_C_CurrencyFrom_ID = invoice.getC_Currency_ID();
 			setAmt(invoice.getGrandTotal());
 			setOpenAmt(getAmt());	//	not correct
-			setConvertedAmt (Services.get(ICurrencyBL.class).convert(getCtx(), getOpenAmt(), 
+			setConvertedAmt (MConversionRate.convert(getCtx(), getOpenAmt(), 
 				getC_CurrencyFrom_ID(), getC_CurrencyTo_ID(), getAD_Client_ID(), getAD_Org_ID()));
 		}
 		else
@@ -165,7 +162,7 @@ public class MDunningRunLine extends X_C_DunningRunLine
 		setAmt (GrandTotal);
 		setOpenAmt (Open);
 		setFeeAmt (FeeAmount);
-		setConvertedAmt (Services.get(ICurrencyBL.class).convert(getCtx(), getOpenAmt(), 
+		setConvertedAmt (MConversionRate.convert(getCtx(), getOpenAmt(), 
 			C_Currency_ID, getC_CurrencyTo_ID(), getAD_Client_ID(), getAD_Org_ID()));
 		setIsInDispute(IsInDispute);
 		setDaysDue(DaysDue);
@@ -185,7 +182,7 @@ public class MDunningRunLine extends X_C_DunningRunLine
 		setAmt (FeeAmount);
 		setOpenAmt (FeeAmount);
 		setFeeAmt (FeeAmount);
-		setConvertedAmt (Services.get(ICurrencyBL.class).convert(getCtx(), getOpenAmt(), 
+		setConvertedAmt (MConversionRate.convert(getCtx(), getOpenAmt(), 
 			C_Currency_ID, getC_CurrencyTo_ID(), getAD_Client_ID(), getAD_Org_ID()));
 	}	//	setInvoice
 	
@@ -238,7 +235,7 @@ public class MDunningRunLine extends X_C_DunningRunLine
 		m_C_CurrencyFrom_ID = C_Currency_ID;
 		setAmt (PayAmt);
 		setOpenAmt (OpenAmt);
-		setConvertedAmt (Services.get(ICurrencyBL.class).convert(getCtx(), getOpenAmt(), 
+		setConvertedAmt (MConversionRate.convert(getCtx(), getOpenAmt(), 
 			C_Currency_ID, getC_CurrencyTo_ID(), getAD_Client_ID(), getAD_Org_ID()));
 	}	//	setPayment
 
@@ -288,7 +285,7 @@ public class MDunningRunLine extends X_C_DunningRunLine
 		if (Env.ZERO.compareTo(getOpenAmt()) == 0)
 			setConvertedAmt (Env.ZERO);
 		else if (Env.ZERO.compareTo(getConvertedAmt()) == 0)
-			setConvertedAmt (Services.get(ICurrencyBL.class).convert(getCtx(), getOpenAmt(), 
+			setConvertedAmt (MConversionRate.convert(getCtx(), getOpenAmt(), 
 				getC_CurrencyFrom_ID(), getC_CurrencyTo_ID(), getAD_Client_ID(), getAD_Org_ID()));
 		//	Total
 		setTotalAmt(getConvertedAmt().add(getFeeAmt()).add(getInterestAmt()));
@@ -319,7 +316,6 @@ public class MDunningRunLine extends X_C_DunningRunLine
 	 *	@param success success
 	 *	@return success
 	 */
-	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		updateEntry();
@@ -331,7 +327,6 @@ public class MDunningRunLine extends X_C_DunningRunLine
 	 *	@param success success
 	 *	@return success
 	 */
-	@Override
 	protected boolean afterDelete (boolean success)
 	{
 		updateEntry();
