@@ -11,7 +11,7 @@ class LineNoTableColumnModel extends TableColumnModel
 	}
 
 	@Override
-	public String getColumnName()
+	public String getColumnDisplayName()
 	{
 		return "Line";
 	}

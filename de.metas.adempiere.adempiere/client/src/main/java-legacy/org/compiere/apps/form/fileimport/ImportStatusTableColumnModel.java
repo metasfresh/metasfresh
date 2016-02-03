@@ -11,7 +11,7 @@ class ImportStatusTableColumnModel extends TableColumnModel
 	}
 
 	@Override
-	public String getColumnName()
+	public String getColumnDisplayName()
 	{
 		return "Status";
 	}

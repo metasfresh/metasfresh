@@ -1,11 +1,20 @@
 package org.compiere.apps.form.fileimport;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
+import org.compiere.impexp.CellErrorMessage;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormatRow;
+import org.compiere.model.I_AD_ImpFormat_Row;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 class ImpDataLineRowTableColumnModel extends TableColumnModel
 {
+	// services
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	
 	private final ImpFormatRow impFormatRow;
 	private final int impFormatRowIdx;
 
@@ -17,9 +26,45 @@ class ImpDataLineRowTableColumnModel extends TableColumnModel
 	}
 
 	@Override
-	public String getColumnName()
+	public String getColumnDisplayName()
 	{
-		return impFormatRow.getName();
+		final StringBuilder displayName = new StringBuilder();
+		displayName.append("<html>");
+
+		// Name
+		{
+			final String name = impFormatRow.getName();
+			displayName.append("<b>").append(Util.maskHTML(name)).append("</b>");
+		}
+
+		// Data format
+		if (impFormatRow.isDate() || impFormatRow.isNumber())
+		{
+			final String dataFormat = impFormatRow.getDataFormat();
+			if (!Check.isEmpty(dataFormat))
+			{
+				displayName.append("<br>").append(Util.maskHTML(dataFormat));
+			}
+		}
+
+		// Decimal separator
+		if (impFormatRow.isNumber())
+		{
+			final String decimalPointName = msgBL.translate(Env.getCtx(), I_AD_ImpFormat_Row.COLUMNNAME_DecimalPoint);
+			final String decimalPoint = impFormatRow.getDecimalPoint();
+			displayName.append("<br>").append(Util.maskHTML(decimalPointName)).append(": ").append(Util.maskHTML(decimalPoint));
+		}
+		
+		// Divide by 100
+		if (impFormatRow.isNumber() && impFormatRow.isDivideBy100())
+		{
+			final String divideBy100 = msgBL.translate(Env.getCtx(), I_AD_ImpFormat_Row.COLUMNNAME_DivideBy100);
+			displayName.append("<br>").append(Util.maskHTML(divideBy100));
+		}
+		
+		displayName.append("</html>");
+		
+		return displayName.toString();
 	}
 
 	@Override
@@ -41,14 +86,16 @@ class ImpDataLineRowTableColumnModel extends TableColumnModel
 	}
 
 	@Override
-	public void setValue(ImpDataLine dataLine, Object value)
+	public void setValue(final ImpDataLine dataLine, final Object value)
 	{
 		final Object valueOld = getValue(dataLine);
-		dataLine.setValue(impFormatRowIdx, value);
-		
-		if (!Check.equals(valueOld, value))
-		{
-			dataLine.setToImport(true);
-		}
+		final boolean flagToImport = !Check.equals(valueOld, value);
+		dataLine.setValue(impFormatRowIdx, value, flagToImport);
+	}
+
+	@Override
+	public CellErrorMessage getCellErrorMessage(ImpDataLine dataLine)
+	{
+		return dataLine.getCellErrorMessage(impFormatRowIdx);
 	}
 }
