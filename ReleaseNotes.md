@@ -28,9 +28,9 @@ Additional notes:
  - 09739 gain and loss during bank transfers in foreign currencies (108136874441) +uat +feature
     * introducing default conversion type that can be specified to be active at a given time
 	* currency gain and loss from bank account transfers are computed by comparing default conversion type with the default conversion rate
+ - 09110 Make activity mandatory in accounting documents and allow the user to select one on demand (105477200774) +uat +feature
  - 09775 Import GL Journal Number Format Exception (104021981594): +it +feature
     * when importing values into a non-text filed that can't be parsed as number, date etc, then don't fail the whole import
- - 09110 Make activity mandatory in accounting documents and allow the user to select one on demand (105477200774) +uat +feature
  - minor, unrelated fix: when retrieving dunning levels, order them by +it +fix
     *"DaysAfterDue" to make sure they are dealt with in chronological order.
     *Actually, the order might not matter, but a counterintuitive ordering causes FUD.
