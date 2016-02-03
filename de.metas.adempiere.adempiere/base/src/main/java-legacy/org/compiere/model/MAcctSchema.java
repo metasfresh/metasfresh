@@ -32,6 +32,8 @@ import org.compiere.util.KeyNamePair;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
+import de.metas.currency.ICurrencyDAO;
+
 /**
  *  Accounting Schema Model (base)
  *
@@ -399,7 +401,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	{
 		if (m_stdPrecision < 0)
 		{
-			MCurrency cur = MCurrency.get(getCtx(), getC_Currency_ID());
+			final I_C_Currency cur = Services.get(ICurrencyDAO.class).retrieveCurrency(getCtx(), getC_Currency_ID());
 			m_stdPrecision = cur.getStdPrecision();
 			m_costPrecision = cur.getCostingPrecision();
 		}

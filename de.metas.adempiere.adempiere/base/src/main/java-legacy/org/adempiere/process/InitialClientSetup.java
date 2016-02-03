@@ -33,8 +33,9 @@ import java.io.File;
 import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.MCity;
-import org.compiere.model.MCurrency;
 import org.compiere.model.MSetup;
 import org.compiere.print.PrintUtil;
 import org.compiere.process.ProcessInfoParameter;
@@ -42,6 +43,8 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+
+import de.metas.currency.ICurrencyDAO;
 
 /**
  * 	Process to create a new client (tenant)
@@ -75,6 +78,7 @@ public class InitialClientSetup extends SvrProcess
 	/**
 	 * 	Prepare
 	 */
+	@Override
 	protected void prepare ()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -123,6 +127,7 @@ public class InitialClientSetup extends SvrProcess
 	 *	@return info
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("InitialClientSetup"
@@ -198,7 +203,7 @@ public class InitialClientSetup extends SvrProcess
 		addLog(ms.getInfo());
 
 		//  Generate Accounting
-		MCurrency currency = MCurrency.get(getCtx(), p_C_Currency_ID);
+		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(getCtx(), p_C_Currency_ID);
 		KeyNamePair currency_kp = new KeyNamePair(p_C_Currency_ID, currency.getDescription());
 		if (!ms.createAccounting(currency_kp,
 			p_IsUseProductDimension, p_IsUseBPDimension, p_IsUseProjectDimension, p_IsUseCampaignDimension, p_IsUseSalesRegionDimension,

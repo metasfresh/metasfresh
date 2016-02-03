@@ -46,19 +46,16 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.currency.ICurrencyConversionContext;
-import org.adempiere.currency.ICurrencyRate;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MCurrency;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -66,6 +63,11 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.currency.ConversionType;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.ICurrencyRate;
 
 public class CalloutBankStatement extends CalloutEngine
 {
@@ -272,7 +274,7 @@ public class CalloutBankStatement extends CalloutEngine
 		BigDecimal OverUnderAmt = lineOrRef.getOverUnderAmt();
 		log.fine("Pay=" + PayAmt + ", Discount=" + DiscountAmt + ", WriteOff=" + WriteOffAmt + ", OverUnderAmt=" + OverUnderAmt);
 		final int C_Currency_ID = lineOrRef.getC_Currency_ID();
-		final MCurrency currency = MCurrency.get(ctx, C_Currency_ID);
+		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, C_Currency_ID);
 		int C_ConversionType_ID = 0;
 		Integer ii = (Integer)mTab.getValue("C_ConversionType_ID"); // TODO: this column is missing?
 		if (ii != null)
@@ -286,7 +288,7 @@ public class CalloutBankStatement extends CalloutEngine
 			log.fine("InvInfo=" + invoiceInfo + ", PayCurrency=" + C_Currency_ID + ", Date=" + ConvDate + ", Type=" + C_ConversionType_ID);
 			if (invoiceInfo != null)
 			{
-				final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+				final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 				
 				CurrencyRate =  currencyConversionBL.getRate(invoiceInfo.currencyId,
 						C_Currency_ID, ConvDate, C_ConversionType_ID,
@@ -357,35 +359,21 @@ public class CalloutBankStatement extends CalloutEngine
 		return "";
 	} // amounts
 
-	public String bankAccountTo(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value, Object oldValue)
-	{
-		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine.class);
-		if (bsl.getC_BP_BankAccountTo_ID() <= 0)
-			return "";
-
-		bsl.setTrxAmt(bsl.getStmtAmt());
-		bsl.setChargeAmt(BigDecimal.ZERO);
-		bsl.setWriteOffAmt(BigDecimal.ZERO);
-		bsl.setDiscountAmt(BigDecimal.ZERO);
-		bsl.setOverUnderAmt(BigDecimal.ZERO);
-		bsl.setIsOverUnderPayment(false);
-
-		return NO_ERROR;
-	}
-
 	/**
 	 * C_BankStatementLine: C_BP_BankAccountTo_ID
 	 */
 	public String onC_BP_BankAccountTo_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value, Object oldValue)
 	{
-		I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine.class);
+		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine.class);
+		
+		// If user unselected the Bank account To => reset the linked Bank Statement Line
 		if (bsl.getC_BP_BankAccountTo_ID() <= 0)
 		{
 			bsl.setLink_BankStatementLine_ID(0);
-			return "";
+			return NO_ERROR;
 		}
-		return "";
+		
+		return NO_ERROR;
 	}
 
 	/**
@@ -396,6 +384,7 @@ public class CalloutBankStatement extends CalloutEngine
 		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine.class);
 		if (bsl.getLink_BankStatementLine_ID() <= 0)
 		{
+			bsl.setCurrencyRate(null); // reset
 			return NO_ERROR;
 		}
 
@@ -406,10 +395,10 @@ public class CalloutBankStatement extends CalloutEngine
 
 		final int trxAmtCurrencyId = bsl.getC_Currency_ID();
 
-		final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final ICurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				bsl.getValutaDate(),
-				ICurrencyConversionBL.DEFAULT_ConversionType_ID,
+				ConversionType.Spot,
 				bsl.getAD_Client_ID(),
 				bsl.getAD_Org_ID());
 

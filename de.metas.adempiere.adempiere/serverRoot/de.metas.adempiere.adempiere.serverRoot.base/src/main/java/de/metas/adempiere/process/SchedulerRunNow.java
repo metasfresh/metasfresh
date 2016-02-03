@@ -32,6 +32,8 @@ import org.compiere.model.MScheduler;
 import org.compiere.process.SvrProcess;
 import org.compiere.server.Scheduler;
 
+import de.metas.process.RunOutOfTrx;
+
 /**
  * @author tsa
  *

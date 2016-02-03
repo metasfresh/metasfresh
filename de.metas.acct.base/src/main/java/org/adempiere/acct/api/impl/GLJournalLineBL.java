@@ -40,8 +40,9 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.I_GL_JournalLine;
-import org.compiere.model.MCurrency;
 import org.compiere.model.X_GL_Journal;
+
+import de.metas.currency.ICurrencyDAO;
 
 public class GLJournalLineBL implements IGLJournalLineBL
 {
@@ -101,7 +102,7 @@ public class GLJournalLineBL implements IGLJournalLineBL
 		if (currencyId > 0)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(glJournalLine);
-			return MCurrency.getStdPrecision(ctx, currencyId);
+			return Services.get(ICurrencyDAO.class).getStdPrecision(ctx, currencyId);
 		}
 		else
 		{

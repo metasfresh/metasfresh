@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MAllocationLine;
@@ -36,6 +35,8 @@ import org.compiere.model.X_C_AllocationHdr;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.currency.ICurrencyBL;
 
 /**
  * Automatic Allocation Process
@@ -617,7 +618,7 @@ public class AllocationAuto extends SvrProcess
 	 */
 	private int allocateBPartnerAll() throws Exception
 	{
-		final int C_Currency_ID = Services.get(ICurrencyConversionBL.class).getBaseCurrency(getCtx()).getC_Currency_ID();
+		final int C_Currency_ID = Services.get(ICurrencyBL.class).getBaseCurrency(getCtx()).getC_Currency_ID();
 		
 		Timestamp dateAcct = null;
 		// Payments
@@ -766,7 +767,7 @@ public class AllocationAuto extends SvrProcess
 	 */
 	private int allocateBPOldestFirst() throws Exception
 	{
-		final int C_Currency_ID = Services.get(ICurrencyConversionBL.class).getBaseCurrency(getCtx()).getC_Currency_ID();
+		final int C_Currency_ID = Services.get(ICurrencyBL.class).getBaseCurrency(getCtx()).getC_Currency_ID();
 		
 		Timestamp dateAcct = null;
 		// Payments

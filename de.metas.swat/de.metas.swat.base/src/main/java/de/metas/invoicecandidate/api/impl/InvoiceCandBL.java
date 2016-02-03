@@ -53,7 +53,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.pricing.api.IPriceListBL;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
@@ -99,6 +98,7 @@ import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
@@ -292,7 +292,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		//
 		// services
-		final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 

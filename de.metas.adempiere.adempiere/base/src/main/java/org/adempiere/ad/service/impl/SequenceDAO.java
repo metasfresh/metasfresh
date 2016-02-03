@@ -22,7 +22,6 @@ package org.adempiere.ad.service.impl;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -32,9 +31,11 @@ import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.service.ITableSequenceChecker;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Sequence;
+import org.compiere.util.DB;
 
 public class SequenceDAO implements ISequenceDAO
 {
@@ -66,5 +67,26 @@ public class SequenceDAO implements ISequenceDAO
 	public ITableSequenceChecker createTableSequenceChecker(final Properties ctx)
 	{
 		return new TableSequenceChecker(ctx);
+	}
+
+	@Override
+	public void renameTableSequence(final Properties ctx, final String tableNameOld, final String tableNameNew)
+	{
+		//
+		// Rename the AD_Sequence
+		final I_AD_Sequence adSequence = retrieveTableSequenceOrNull(ctx, tableNameOld, ITrx.TRXNAME_ThreadInherited);
+		if (adSequence != null)
+		{
+			adSequence.setName(tableNameNew);
+			InterfaceWrapperHelper.save(adSequence);
+		}
+
+		//
+		// Rename the database native sequence
+		{
+			final String dbSequenceNameOld = DB.getTableSequenceName(tableNameOld);
+			final String dbSequenceNameNew = DB.getTableSequenceName(tableNameNew);
+			DB.getDatabase().renameSequence(dbSequenceNameOld, dbSequenceNameNew);
+		}
 	}
 }

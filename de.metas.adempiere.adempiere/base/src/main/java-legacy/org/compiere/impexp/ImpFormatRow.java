@@ -22,13 +22,18 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.Callout;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.util.CLogger;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 /**
  * Import Format Row with pasing capability
@@ -105,7 +110,7 @@ public final class ImpFormatRow
 	private int m_startNo = 0;
 	private int m_endNo = 0;
 	private String m_dataType;
-	private String m_dataFormat = "";
+	private String _dataFormat = "";
 	private String m_decimalPoint = ".";
 	private boolean m_divideBy100 = false;
 	private String m_constantValue = "";
@@ -114,7 +119,7 @@ public final class ImpFormatRow
 	private Callout m_callout = null;
 	private String m_method = null;
 	//
-	private SimpleDateFormat m_dformat = null;
+	private DateFormat _dateFormat = null;
 	private int m_maxLength = 0;
 
 	/** Logger */
@@ -296,20 +301,18 @@ public final class ImpFormatRow
 	 * @param constantValue constant value
 	 * @param callout Java callout
 	 */
-	public void setFormatInfo(String dataFormat, String decimalPoint, boolean divideBy100,
-			String constantValue, String callout)
+	public void setFormatInfo(final String dataFormat, final String decimalPoint, final boolean divideBy100, final String constantValue, final String callout)
 	{
-		if (dataFormat == null)
-			m_dataFormat = "";
-		else
-			m_dataFormat = dataFormat;
-		m_dformat = null; // ADD THIS LINE TO RESET date format
+		setDataFormat(dataFormat);
+
 		// number
 		if (decimalPoint == null || !decimalPoint.equals(","))
 			m_decimalPoint = ".";
 		else
 			m_decimalPoint = ",";
+
 		m_divideBy100 = divideBy100;
+
 		// constant
 		if (constantValue == null || constantValue.length() == 0 || !m_dataType.equals(DATATYPE_Constant))
 		{
@@ -338,7 +341,7 @@ public final class ImpFormatRow
 			{
 				if (methodStart != -1)      // no class
 				{
-					Class cClass = Class.forName(callout.substring(0, methodStart));
+					Class<?> cClass = Class.forName(callout.substring(0, methodStart));
 					m_callout = (Callout)cClass.newInstance();
 					m_method = callout.substring(methodStart + 1);
 				}
@@ -362,7 +365,40 @@ public final class ImpFormatRow
 	 */
 	public String getDataFormat()
 	{
-		return m_dataFormat;
+		return _dataFormat;
+	}
+
+	private void setDataFormat(final String dataFormat)
+	{
+		if (dataFormat == null)
+			_dataFormat = "";
+		else
+			_dataFormat = dataFormat;
+		_dateFormat = null; // reset date format
+	}
+
+	private final DateFormat getDateFormat()
+	{
+		if (_dateFormat == null)
+		{
+			final String dateFormatPattern = getDataFormat();
+			DateFormat dateFormat = null;
+			try
+			{
+				dateFormat = new SimpleDateFormat(dateFormatPattern);
+			}
+			catch (Exception e)
+			{
+				dateFormat = null;
+				log.log(Level.SEVERE, "ImpFormatRow.parseDate Format=" + dateFormatPattern, e);
+			}
+			if (dateFormat == null)
+				dateFormat = DateFormat.getDateInstance();
+			dateFormat.setLenient(true);
+
+			this._dateFormat = dateFormat;
+		}
+		return _dateFormat;
 	}
 
 	/**
@@ -405,31 +441,46 @@ public final class ImpFormatRow
 		m_maxLength = maxLength;
 	}	// setMaxLength
 
-	/*************************************************************************
-	 * Parse value. Field content in [] are treated as comments
+	/**
+	 * Parse value.
+	 * 
+	 * Field content in [] are treated as comments.
 	 * 
 	 * @param info data item
-	 * @return pased info
+	 * @return parsed info, never returns <code>null</code>
+	 * @throws Exception in case there was an error while parsing
 	 */
-	String parse(final String info)
+	String parse(final String info) throws Exception
 	{
 		if (info == null || info.length() == 0)
+		{
 			return "";
+		}
 
 		// Comment ?
 		if (info.startsWith("[") && info.endsWith("]"))
 			return "";
 		//
-		String retValue = null;
+		String retValue;
 		if (isNumber())
+		{
 			retValue = parseNumber(info);
+		}
 		else if (isDate())
+		{
 			retValue = parseDate(info);
+		}
 		else if (isConstant())
+		{
 			retValue = m_constantIsString ? parseString(m_constantValue) : m_constantValue;
+		}
 		else
+		{
 			retValue = parseString(info);
+		}
+
 		//
+		// Apply the callout's convert method
 		if (m_callout != null)
 		{
 			try
@@ -441,10 +492,10 @@ public final class ImpFormatRow
 				log.log(Level.SEVERE, "ImpFormatRow.parse - " + info + " (" + retValue + ")", e);
 			}
 		}
+
 		//
-		if (retValue == null)
-			retValue = "";
-		return retValue.trim();
+		// Return the value (make sure it's not null)
+		return retValue == null ? "" : retValue.trim();
 	}	// parse
 
 	/**
@@ -453,38 +504,32 @@ public final class ImpFormatRow
 	 * @param info data
 	 * @return date as JDBC format String
 	 */
-	private String parseDate(String info)
+	private String parseDate(final String info)
 	{
-		if (m_dformat == null)
-		{
-			try
-			{
-				m_dformat = new SimpleDateFormat(m_dataFormat);
-			}
-			catch (Exception e)
-			{
-				log.log(Level.SEVERE, "ImpFormatRow.parseDate Format=" + m_dataFormat, e);
-			}
-			if (m_dformat == null)
-				m_dformat = (SimpleDateFormat)DateFormat.getDateInstance();
-			m_dformat.setLenient(true);
-		}
-
-		Timestamp ts = null;
 		try
 		{
-			ts = new Timestamp(m_dformat.parse(info).getTime());
+			Timestamp ts = null;
+
+			if (!Check.isEmpty(info, true))
+			{
+				final DateFormat dateFormat = getDateFormat();
+				final Date date = dateFormat.parse(info.trim());
+				ts = TimeUtil.asTimestamp(date);
+			}
+
+			if (ts == null)
+			{
+				ts = SystemTime.asTimestamp();
+			}
+
+			final String dateString = ts.toString();
+			return dateString.substring(0, dateString.indexOf('.'));	// cut off miliseconds
 		}
-		catch (ParseException pe)
+		catch (ParseException e)
 		{
-			log.log(Level.SEVERE, "ImpFormatRow.parseDate - " + info, pe);
+			throw new AdempiereException("@Invalid@ @Date@: " + info);
 		}
-		if (ts == null)
-			ts = new Timestamp(System.currentTimeMillis());
-		//
-		String dateString = ts.toString();
-		return dateString.substring(0, dateString.indexOf('.'));	// cut off miliseconds
-	}	// parseNumber
+	}
 
 	/**
 	 * Return String. - clean ' and backslash - check max length
@@ -492,7 +537,7 @@ public final class ImpFormatRow
 	 * @param info data
 	 * @return info with in SQL format
 	 */
-	private String parseString(String info)
+	private String parseString(final String info)
 	{
 		String retValue = info;
 		// Length restriction
@@ -500,7 +545,7 @@ public final class ImpFormatRow
 			retValue = retValue.substring(0, m_maxLength);
 
 		// copy characters (wee need to look through anyway)
-		StringBuffer out = new StringBuffer(retValue.length());
+		final StringBuilder out = new StringBuilder(retValue.length());
 		for (int i = 0; i < retValue.length(); i++)
 		{
 			char c = retValue.charAt(i);
@@ -512,7 +557,7 @@ public final class ImpFormatRow
 				out.append(c);
 		}
 		return out.toString();
-	}	// parseString
+	}
 
 	/**
 	 * Return number with "." decimal
@@ -520,8 +565,34 @@ public final class ImpFormatRow
 	 * @param info data
 	 * @return converted number
 	 */
-	private String parseNumber(String info)
+	private String parseNumber(final String info)
 	{
+		try
+		{
+			final String numberStringNormalized = normalizeNumberString(info);
+			BigDecimal bd = new BigDecimal(numberStringNormalized);
+
+			if (m_divideBy100)
+			{
+				// NOTE: assumed two decimal scale
+				bd = bd.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
+			}
+
+			return bd.toString();
+		}
+		catch (NumberFormatException e)
+		{
+			throw new AdempiereException("@Invalid@ @Number@: " + info);
+		}
+	}
+
+	private final String normalizeNumberString(String info)
+	{
+		if (Check.isEmpty(info, true))
+		{
+			return "0";
+		}
+
 		boolean hasPoint = info.indexOf('.') != -1;
 		boolean hasComma = info.indexOf(',') != -1;
 		// delete thousands
@@ -537,17 +608,21 @@ public final class ImpFormatRow
 
 		// remove everything but digits & '.' & '-'
 		char[] charArray = info.toCharArray();
-		StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < charArray.length; i++)
+		{
 			if (Character.isDigit(charArray[i]) || charArray[i] == '.' || charArray[i] == '-')
 				sb.append(charArray[i]);
+		}
 
-		if (sb.length() == 0)
+		final String numberStringNormalized = sb.toString().trim();
+
+		if (numberStringNormalized.isEmpty())
+		{
 			return "0";
-		BigDecimal bd = new BigDecimal(sb.toString());
-		if (m_divideBy100)					// assumed two decimal scale
-			bd = bd.divide(new BigDecimal(100.0), 2, BigDecimal.ROUND_HALF_UP);
-		return bd.toString();
-	}	// parseNumber
+		}
+
+		return numberStringNormalized;
+	}
 
 }	// ImpFormatFow

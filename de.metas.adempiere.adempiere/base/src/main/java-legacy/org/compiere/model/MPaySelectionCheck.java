@@ -40,6 +40,7 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.banking.api.IBPBankAccountDAO;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.currency.ICurrencyDAO;
 
 /**
  * Payment Print/Export model.
@@ -346,7 +347,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 						// Payment Info
 						.append(x).append(mpp.getDocumentNo()).append(x).append(",")    // DocumentNo
 						.append(mpp.getParent().getPayDate()).append(",")               // PayDate
-						.append(x).append(MCurrency.getISO_Code(Env.getCtx(), mpp.getParent().getC_Currency_ID())).append(x).append(",")    // Currency
+						.append(x).append(Services.get(ICurrencyDAO.class).getISO_Code(Env.getCtx(), mpp.getParent().getC_Currency_ID())).append(x).append(",")    // Currency
 						.append(mpp.getPayAmt()).append(",")                // PayAmount
 						.append(x).append(comment.toString()).append(x)     // Comment
 						.append(Env.NL);

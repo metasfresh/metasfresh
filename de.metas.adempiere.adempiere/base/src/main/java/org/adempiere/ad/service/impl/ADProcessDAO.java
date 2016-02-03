@@ -41,6 +41,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Table_Process;
 
 public class ADProcessDAO implements IADProcessDAO
@@ -214,5 +215,16 @@ public class ADProcessDAO implements IADProcessDAO
 		return queryBuilder.create()
 				.setOnlyActiveRecords(true)
 				.firstOnly(I_AD_Process.class);
+	}
+
+	@Override
+	public int retrieveProcessParaLastSeqNo(final I_AD_Process process)
+	{
+		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Process_Para.class, process)
+				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, process.getAD_Process_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.aggregate(I_AD_Process_Para.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+		return lastSeqNo == null ? 0 : lastSeqNo;
 	}
 }

@@ -16,6 +16,7 @@ public class ImpDataCell
 {
 	private final ImpFormatRow impFormatRow;
 	private String value = "";
+	private CellErrorMessage errorMessage = null;
 
 	public ImpDataCell(final ImpFormatRow impFormatRow)
 	{
@@ -54,16 +55,37 @@ public class ImpDataCell
 		return value;
 	}
 
+	/** @return true if the cell has some errors (i.e. {@link #getCellErrorMessage()} is not null) */
+	public boolean isCellError()
+	{
+		return errorMessage != null;
+	}
+	
+	/** @return cell error message or null */
+	public CellErrorMessage getCellErrorMessage()
+	{
+		return errorMessage;
+	}
+
 	public void setValue(final Object value)
 	{
 		String valueStr = value == null ? "" : value.toString();
+		CellErrorMessage errorMessage = null;
 
 		if (impFormatRow != null)
 		{
-			valueStr = impFormatRow.parse(valueStr);
+			try
+			{
+				valueStr = impFormatRow.parse(valueStr);
+			}
+			catch (final Throwable ex)
+			{
+				errorMessage = CellErrorMessage.of(ex);
+			}
 		}
 
 		this.value = valueStr;
+		this.errorMessage = errorMessage;
 	}
 
 	public final String getValueAsSQL()

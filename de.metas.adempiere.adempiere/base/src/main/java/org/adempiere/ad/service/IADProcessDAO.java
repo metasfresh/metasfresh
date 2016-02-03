@@ -104,4 +104,6 @@ public interface IADProcessDAO extends ISingletonService
 	 * @throws DBException in case of any error or if the process was not found
 	 */
 	I_AD_Process retriveProcessByValue(Properties ctx, String processValue);
+
+	int retrieveProcessParaLastSeqNo(I_AD_Process process);
 }

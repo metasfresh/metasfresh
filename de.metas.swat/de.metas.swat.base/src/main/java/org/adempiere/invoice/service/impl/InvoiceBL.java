@@ -31,7 +31,6 @@ import org.adempiere.document.service.ICopyHandlerBL;
 import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.document.service.IDocLineCopyHandler;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.MiscUtils;
@@ -52,6 +51,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.currency.ICurrencyBL;
 
 public final class InvoiceBL extends AbstractInvoiceBL
 {
@@ -299,7 +299,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
 
 		final BigDecimal invAmt =
-				Services.get(ICurrencyConversionBL.class).convertBase(
+				Services.get(ICurrencyBL.class).convertBase(
 						ctx,
 						invoicePO.getGrandTotal(true),	// CM adjusted
 						invoice.getC_Currency_ID(),

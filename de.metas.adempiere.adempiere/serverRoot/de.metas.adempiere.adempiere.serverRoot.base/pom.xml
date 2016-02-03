@@ -28,6 +28,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<dependency>
+			<!-- Required for org.compiere.server.AcctProcessor -->
+			<groupId>de.metas.acct</groupId>
+			<artifactId>de.metas.acct.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- workaound, see 06687 Get rid of calls to non-API (107116288996) -->
 		<!-- if you are using badly written maven plugins then blame them and add
       	<scope>provided</scope>

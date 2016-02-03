@@ -111,7 +111,19 @@ public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 
 		final int contextClientId = Env.getAD_Client_ID(ctxToUse);
 
-		return adClientId == contextClientId;
+		// Context client
+		if (adClientId == contextClientId)
+		{
+			return true;
+		}
+
+		// System client
+		if (includeSystemClient && adClientId == IClientDAO.SYSTEM_CLIENT_ID)
+		{
+			return true;
+		}
+		
+		return false;
 	}
 
 	private int getAD_Client_ID(final T model)

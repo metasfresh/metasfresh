@@ -49,6 +49,7 @@ import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.X_EDI_Desadv;
+import de.metas.process.RunOutOfTrx;
 
 /**
  * Send EDI documents for selected desadv entries.

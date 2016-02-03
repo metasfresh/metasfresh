@@ -35,7 +35,6 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MCostDetail;
-import org.compiere.model.MCurrency;
 import org.compiere.model.MInOut;
 import org.compiere.model.MInOutLine;
 import org.compiere.model.MOrderLine;
@@ -722,7 +721,7 @@ public class Doc_InOut extends Doc
 			return BigDecimal.ZERO;
 		}
 
-		final int precision = MCurrency.getStdPrecision(getCtx(), C_Currency_ID);
+		final int precision = currencyDAO.getStdPrecision(getCtx(), C_Currency_ID);
 		return costs.setScale(precision, RoundingMode.HALF_UP);
 	}
 
@@ -733,6 +732,7 @@ public class Doc_InOut extends Doc
 	 * @param C_AcctSchema_ID accounting schema
 	 * @deprecated old costing
 	 */
+	@Deprecated
 	private void updateProductInfo(int C_AcctSchema_ID)
 	{
 		log.fine("M_InOut_ID=" + get_ID());

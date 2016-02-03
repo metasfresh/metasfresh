@@ -25,7 +25,6 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaDefault;
 import org.compiere.model.MDocType;
-import org.compiere.model.MFactAcct;
 import org.compiere.model.MGLCategory;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MJournal;
@@ -68,6 +67,7 @@ public class InvoiceNGL extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -85,7 +85,7 @@ public class InvoiceNGL extends SvrProcess
 			else if (name.equals("APAR"))
 				p_APAR = (String)para[i].getParameter();
 			else if (name.equals("IsAllCurrencies"))
-				p_IsAllCurrencies = "Y".equals((String)para[i].getParameter());
+				p_IsAllCurrencies = "Y".equals(para[i].getParameter());
 			else if (name.equals("C_Currency_ID"))
 				p_C_Currency_ID = para[i].getParameterAsInt();
 			else if (name.equals("C_DocTypeReval_ID"))
@@ -100,6 +100,7 @@ public class InvoiceNGL extends SvrProcess
 	 *	@return info
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		if (p_IsAllCurrencies)
@@ -276,8 +277,8 @@ public class InvoiceNGL extends SvrProcess
 			line.setLine((i+1) * 10);
 			line.setDescription(invoice.getSummary());
 			//
-			MFactAcct fa = new MFactAcct (getCtx(), gl.getFact_Acct_ID(), null);
 			// TODO: C_ValidCombination_ID is no longer a column because we have DR/CR accounts
+			// MFactAcct fa = new MFactAcct (getCtx(), gl.getFact_Acct_ID(), null);
 			// line.setC_ValidCombination(MAccount.get(fa));
 			BigDecimal dr = gl.getAmtRevalDrDiff();
 			BigDecimal cr = gl.getAmtRevalCrDiff();

@@ -29,16 +29,18 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.util.Services;
 import org.compiere.grid.VPayment.ProcessingCtx;
 import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MConversionRate;
 import org.compiere.model.MPayment;
 import org.compiere.model.MSysConfig;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+
+import de.metas.currency.ICurrencyBL;
 
 public abstract class AbstractPaymentCash implements IVPaymentPanel
 {
@@ -94,7 +96,7 @@ public abstract class AbstractPaymentCash implements IVPaymentPanel
 
 	public void setAmount()
 	{
-		BigDecimal amt = MConversionRate.convert(getCtx(),
+		BigDecimal amt = Services.get(ICurrencyBL.class).convert(getCtx(),
 				doc.getGrandTotal(), doc.getC_Currency_ID(), getC_Currency_ID(), doc.getAD_Client_ID(), doc.getAD_Org_ID());
 		setAmount(amt);
 	}
@@ -105,6 +107,7 @@ public abstract class AbstractPaymentCash implements IVPaymentPanel
 
 	protected abstract void loadCashBankAccounts();
 
+	@Override
 	public abstract void setAmount(BigDecimal amount);
 
 	public abstract int getC_BP_BankAccount_ID();
@@ -144,6 +147,7 @@ public abstract class AbstractPaymentCash implements IVPaymentPanel
 		}
 	}
 
+	@Override
 	public void onActivate()
 	{
 		loadCashBooks();

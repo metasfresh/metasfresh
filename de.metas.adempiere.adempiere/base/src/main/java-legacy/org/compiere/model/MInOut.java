@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.document.service.IDocumentNoBuilder;
 import org.adempiere.document.service.IDocumentNoBuilderFactory;
@@ -2530,7 +2531,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 		//
 		// Delete accounting
-		MFactAcct.deleteEx(I_M_InOut.Table_ID, getM_InOut_ID(), get_TrxName());
+		Services.get(IFactAcctDAO.class).deleteForDocument(this);
 		setPosted(false);
 
 		//

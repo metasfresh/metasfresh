@@ -33,7 +33,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -309972651L;
+	private static final long serialVersionUID = 1191479272L;
 
     /** Standard Constructor */
     public X_Fact_Acct (Properties ctx, int Fact_Acct_ID, String trxName)
@@ -478,6 +478,43 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
+	}
+
+	@Override
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
+	}
+
+	/** Set Belegart.
+		@param C_DocType_ID 
+		Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public void setC_DocType_ID (int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_Value (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+	}
+
+	/** Get Belegart.
+		@return Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public int getC_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -930,6 +967,97 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	}
 
 	/** 
+	 * DocBaseType AD_Reference_ID=183
+	 * Reference name: C_DocType DocBaseType
+	 */
+	public static final int DOCBASETYPE_AD_Reference_ID=183;
+	/** GLJournal = GLJ */
+	public static final String DOCBASETYPE_GLJournal = "GLJ";
+	/** GLDocument = GLD */
+	public static final String DOCBASETYPE_GLDocument = "GLD";
+	/** APInvoice = API */
+	public static final String DOCBASETYPE_APInvoice = "API";
+	/** APPayment = APP */
+	public static final String DOCBASETYPE_APPayment = "APP";
+	/** ARInvoice = ARI */
+	public static final String DOCBASETYPE_ARInvoice = "ARI";
+	/** ARReceipt = ARR */
+	public static final String DOCBASETYPE_ARReceipt = "ARR";
+	/** SalesOrder = SOO */
+	public static final String DOCBASETYPE_SalesOrder = "SOO";
+	/** ARProFormaInvoice = ARF */
+	public static final String DOCBASETYPE_ARProFormaInvoice = "ARF";
+	/** MaterialDelivery = MMS */
+	public static final String DOCBASETYPE_MaterialDelivery = "MMS";
+	/** MaterialReceipt = MMR */
+	public static final String DOCBASETYPE_MaterialReceipt = "MMR";
+	/** MaterialMovement = MMM */
+	public static final String DOCBASETYPE_MaterialMovement = "MMM";
+	/** PurchaseOrder = POO */
+	public static final String DOCBASETYPE_PurchaseOrder = "POO";
+	/** PurchaseRequisition = POR */
+	public static final String DOCBASETYPE_PurchaseRequisition = "POR";
+	/** MaterialPhysicalInventory = MMI */
+	public static final String DOCBASETYPE_MaterialPhysicalInventory = "MMI";
+	/** APCreditMemo = APC */
+	public static final String DOCBASETYPE_APCreditMemo = "APC";
+	/** ARCreditMemo = ARC */
+	public static final String DOCBASETYPE_ARCreditMemo = "ARC";
+	/** BankStatement = CMB */
+	public static final String DOCBASETYPE_BankStatement = "CMB";
+	/** CashJournal = CMC */
+	public static final String DOCBASETYPE_CashJournal = "CMC";
+	/** PaymentAllocation = CMA */
+	public static final String DOCBASETYPE_PaymentAllocation = "CMA";
+	/** MaterialProduction = MMP */
+	public static final String DOCBASETYPE_MaterialProduction = "MMP";
+	/** MatchInvoice = MXI */
+	public static final String DOCBASETYPE_MatchInvoice = "MXI";
+	/** MatchPO = MXP */
+	public static final String DOCBASETYPE_MatchPO = "MXP";
+	/** ProjectIssue = PJI */
+	public static final String DOCBASETYPE_ProjectIssue = "PJI";
+	/** MaintenanceOrder = MOF */
+	public static final String DOCBASETYPE_MaintenanceOrder = "MOF";
+	/** ManufacturingOrder = MOP */
+	public static final String DOCBASETYPE_ManufacturingOrder = "MOP";
+	/** QualityOrder = MQO */
+	public static final String DOCBASETYPE_QualityOrder = "MQO";
+	/** Payroll = HRP */
+	public static final String DOCBASETYPE_Payroll = "HRP";
+	/** DistributionOrder = DOO */
+	public static final String DOCBASETYPE_DistributionOrder = "DOO";
+	/** ManufacturingCostCollector = MCC */
+	public static final String DOCBASETYPE_ManufacturingCostCollector = "MCC";
+	/** Gehaltsrechnung (Angestellter) = AEI */
+	public static final String DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
+	/** Interne Rechnung (Lieferant) = AVI */
+	public static final String DOCBASETYPE_InterneRechnungLieferant = "AVI";
+	/** Speditionsauftrag/Ladeliste = MST */
+	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
+	/** CustomerContract = CON */
+	public static final String DOCBASETYPE_CustomerContract = "CON";
+	/** Set Document BaseType.
+		@param DocBaseType 
+		Logical type of document
+	  */
+	@Override
+	public void setDocBaseType (java.lang.String DocBaseType)
+	{
+
+		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
+	}
+
+	/** Get Document BaseType.
+		@return Logical type of document
+	  */
+	@Override
+	public java.lang.String getDocBaseType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocBaseType);
+	}
+
+	/** 
 	 * DocStatus AD_Reference_ID=131
 	 * Reference name: _Document Status
 	 */
@@ -976,6 +1104,25 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public java.lang.String getDocStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+	}
+
+	/** Set Beleg Nr..
+		@param DocumentNo 
+		Document sequence number of the document
+	  */
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
+	{
+		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
+	}
+
+	/** Get Beleg Nr..
+		@return Document sequence number of the document
+	  */
+	@Override
+	public java.lang.String getDocumentNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
 	/** Set Accounting Fact.
@@ -1402,5 +1549,21 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set VAT Code.
+		@param VATCode VAT Code	  */
+	@Override
+	public void setVATCode (java.lang.String VATCode)
+	{
+		set_Value (COLUMNNAME_VATCode, VATCode);
+	}
+
+	/** Get VAT Code.
+		@return VAT Code	  */
+	@Override
+	public java.lang.String getVATCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_VATCode);
 	}
 }

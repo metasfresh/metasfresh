@@ -45,7 +45,6 @@ import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
@@ -63,6 +62,8 @@ import org.compiere.util.Msg;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 
@@ -1181,7 +1182,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	 */
 	public String getCurrencyISO()
 	{
-		return MCurrency.getISO_Code (getCtx(), getC_Currency_ID());
+		return Services.get(ICurrencyDAO.class).getISO_Code (getCtx(), getC_Currency_ID());
 	}	//	getCurrencyISO
 
 	/**
@@ -1727,7 +1728,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 		// verify that we can deal with the invoice's currency
 		//	Update total revenue and balance / credit limit (reversed on AllocationLine.processIt)
-		final BigDecimal invAmt = Services.get(ICurrencyConversionBL.class).convertBase(
+		final BigDecimal invAmt = Services.get(ICurrencyBL.class).convertBase(
 						getCtx(),
 						getGrandTotal(true),	// CM adjusted
 						getC_Currency_ID(),
@@ -1739,7 +1740,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		if (invAmt == null)
 		{
 			final I_C_Currency currency = InterfaceWrapperHelper.create(getCtx(), getC_Currency_ID(), I_C_Currency.class, get_TrxName());
-			final I_C_Currency currencyTo = Services.get(ICurrencyConversionBL.class).getBaseCurrency(getCtx(), this.getAD_Client_ID(), this.getAD_Org_ID());
+			final I_C_Currency currencyTo = Services.get(ICurrencyBL.class).getBaseCurrency(getCtx(), this.getAD_Client_ID(), this.getAD_Org_ID());
 			final I_C_BPartner bp = getC_BPartner();
 
 			m_processMsg = Services.get(IMsgBL.class).getMsg(getCtx(),
@@ -1763,7 +1764,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			BigDecimal amt = getGrandTotal(true);
 			int C_CurrencyTo_ID = project.getC_Currency_ID();
 			if (C_CurrencyTo_ID != getC_Currency_ID())
-				amt = MConversionRate.convert(getCtx(), amt, getC_Currency_ID(), C_CurrencyTo_ID,
+				amt = Services.get(ICurrencyBL.class).convert(getCtx(), amt, getC_Currency_ID(), C_CurrencyTo_ID,
 					getDateAcct(), 0, getAD_Client_ID(), getAD_Org_ID());
 			if (amt == null)
 			{

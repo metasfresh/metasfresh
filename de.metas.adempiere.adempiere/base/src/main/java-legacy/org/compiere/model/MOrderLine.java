@@ -42,6 +42,7 @@ import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.currency.ICurrencyDAO;
 
 /**
  * Order Line Model. <code>
@@ -526,30 +527,35 @@ public class MOrderLine extends X_C_OrderLine
 	public int getPrecision()
 	{
 		if (m_precision != null)
-			return m_precision.intValue();
+		{
+			return m_precision;
+		}
+		
 		//
 		if (getC_Currency_ID() == 0)
 		{
 			setOrder(getParent());
 			if (m_precision != null)
-				return m_precision.intValue();
+				return m_precision;
 		}
-		if (getC_Currency_ID() != 0)
+		if (getC_Currency_ID() > 0)
 		{
-			MCurrency cur = MCurrency.get(getCtx(), getC_Currency_ID());
-			if (cur.get_ID() != 0)
+			final I_C_Currency cur = Services.get(ICurrencyDAO.class).retrieveCurrency(getCtx(), getC_Currency_ID());
+			if (cur.getC_Currency_ID() != 0)
 			{
-				m_precision = new Integer(cur.getStdPrecision());
-				return m_precision.intValue();
+				m_precision = cur.getStdPrecision();
+				return m_precision;
 			}
 		}
+		
+		//
 		// Fallback
-		String sql = "SELECT c.StdPrecision "
+		// FIXME: drop this, i guess is not used AT ALL
+		final String sql = "SELECT c.StdPrecision "
 				+ "FROM C_Currency c INNER JOIN C_Order x ON (x.C_Currency_ID=c.C_Currency_ID) "
 				+ "WHERE x.C_Order_ID=?";
-		int i = DB.getSQLValue(get_TrxName(), sql, getC_Order_ID());
-		m_precision = new Integer(i);
-		return m_precision.intValue();
+		m_precision = DB.getSQLValue(get_TrxName(), sql, getC_Order_ID());
+		return m_precision;
 	}	// getPrecision
 
 	/**

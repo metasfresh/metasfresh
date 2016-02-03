@@ -21,8 +21,11 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
+
+import de.metas.currency.ICurrencyDAO;
 
 /**
  *	Price List Model
@@ -51,7 +54,7 @@ public class MPriceList extends X_M_PriceList
 	public static MPriceList get (Properties ctx, int M_PriceList_ID, String trxName)
 	{
 		Integer key = new Integer (M_PriceList_ID);
-		MPriceList retValue = (MPriceList)s_cache.get(key);
+		MPriceList retValue = s_cache.get(key);
 		if (retValue == null)
 		{
 			retValue = new MPriceList (ctx, M_PriceList_ID, trxName);
@@ -108,11 +111,11 @@ public class MPriceList extends X_M_PriceList
 	public static MPriceList getDefault(Properties ctx, boolean IsSOPriceList, String ISOCurrency)
 	{
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		MCurrency currency = MCurrency.get(ctx, ISOCurrency);
+		I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(ctx, ISOCurrency);
 		// If currency is null, return the default without looking at currency
 		if (currency==null) return(getDefault(ctx, IsSOPriceList));
 
-		int M_Currency_ID = currency.get_ID();
+		final int C_Currency_ID = currency.getC_Currency_ID();
 		
 		MPriceList retValue = null;
 		//	Search for it in cache
@@ -123,7 +126,7 @@ public class MPriceList extends X_M_PriceList
 			if (retValue.isDefault()
 					&& retValue.getAD_Client_ID() == AD_Client_ID
 					&& retValue.isSOPriceList() == IsSOPriceList
-					&& retValue.getC_Currency_ID()==M_Currency_ID 
+					&& retValue.getC_Currency_ID()==C_Currency_ID 
 					)
 			{
 				return retValue;
@@ -133,7 +136,7 @@ public class MPriceList extends X_M_PriceList
 		//	Get from DB
 		final String whereClause = "AD_Client_ID=? AND IsDefault=? AND IsSOPriceList=? AND C_Currency_ID=?";
 		retValue = new Query(ctx, Table_Name, whereClause, null)
-						.setParameters(new Object[]{AD_Client_ID, "Y", IsSOPriceList ? "Y" : "N", Integer.valueOf(M_Currency_ID)})
+						.setParameters(new Object[]{AD_Client_ID, "Y", IsSOPriceList ? "Y" : "N", Integer.valueOf(C_Currency_ID)})
 						.setOrderBy("M_PriceList_ID")
 						.first();
 		

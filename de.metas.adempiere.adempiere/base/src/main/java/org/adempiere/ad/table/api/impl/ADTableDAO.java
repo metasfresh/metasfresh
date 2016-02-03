@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
+import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -179,5 +180,23 @@ public class ADTableDAO implements IADTableDAO
 		}
 		final I_AD_Window adWindowTrl = InterfaceWrapperHelper.translate(adWindow, I_AD_Window.class);
 		return adWindowTrl.getName();
+	}
+
+	@Override
+	public void onTableNameRename(final I_AD_Table table)
+	{
+		Check.assumeNotNull(table, "table not null");
+		final I_AD_Table tableOld = InterfaceWrapperHelper.createOld(table, I_AD_Table.class);
+		final String tableNameOld = tableOld.getTableName();
+		final String tableNameNew = table.getTableName();
+
+		// Do nothing if the table name was not actually changed
+		if (Check.equals(tableNameOld, tableNameNew))
+		{
+			return;
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(table);
+		Services.get(ISequenceDAO.class).renameTableSequence(ctx, tableNameOld, tableNameNew);
 	}
 }

@@ -28,11 +28,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.TypedAccessor;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+
+import de.metas.currency.ICurrencyBL;
 
 public class PlainAllocationDAO extends AllocationDAO
 {
@@ -73,7 +74,7 @@ public class PlainAllocationDAO extends AllocationDAO
 
 			if ((null != ah) && (ah.getC_Currency_ID() != invoice.getC_Currency_ID()))
 			{
-				final BigDecimal lineAmtConv = Services.get(ICurrencyConversionBL.class).convert(ctx,
+				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(ctx,
 						lineAmt, // Amt
 						ah.getC_Currency_ID(), // CurFrom_ID
 						invoice.getC_Currency_ID(), // CurTo_ID
@@ -122,7 +123,7 @@ public class PlainAllocationDAO extends AllocationDAO
 
 			if ((null != ah) && (ah.getC_Currency_ID() != invoice.getC_Currency_ID()))
 			{
-				final BigDecimal lineAmtConv = Services.get(ICurrencyConversionBL.class).convert(ctx,
+				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(ctx,
 						lineAmt, // Amt
 						ah.getC_Currency_ID(), // CurFrom_ID
 						invoice.getC_Currency_ID(), // CurTo_ID

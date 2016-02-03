@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -430,7 +431,8 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	@Override
 	public boolean voidIt()
 	{
-		log.info(toString());
+		log.log(Level.INFO, "{0}", this);
+		
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
@@ -460,10 +462,10 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 		}
 
 		// Set lines to 0
-		MBankStatementLine[] lines = getLines(true);
+		final MBankStatementLine[] lines = getLines(true);
 		for (int i = 0; i < lines.length; i++)
 		{
-			MBankStatementLine line = lines[i];
+			final MBankStatementLine line = lines[i];
 			if (line.getStmtAmt().compareTo(Env.ZERO) != 0)
 			{
 				String description = Msg.getMsg(getCtx(), "Voided") + " ("
@@ -481,6 +483,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 				line.setTrxAmt(Env.ZERO);
 				line.setChargeAmt(Env.ZERO);
 				line.setInterestAmt(Env.ZERO);
+				
 				//
 				// metas: tsa: cash/bank transfer
 				if (line.getLink_BankStatementLine_ID() > 0)

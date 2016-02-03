@@ -35,9 +35,9 @@ import java.util.logging.Level;
 import org.adempiere.webui.component.Listbox;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
-import org.compiere.model.MFactAcct;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MRefList;
+import org.compiere.model.X_Fact_Acct;
 import org.compiere.report.core.RColumn;
 import org.compiere.report.core.RModel;
 import org.compiere.util.CLogger;
@@ -553,7 +553,7 @@ public class WAcctViewerData
 		if (PostingType == null || PostingType.length() == 0)
 			rm.addColumn(new RColumn(ctx, "PostingType", DisplayType.List, // teo_sarca, [ 1664208 ]
 					RModel.TABLE_ALIAS+".PostingType",
-					MFactAcct.POSTINGTYPE_AD_Reference_ID,
+					X_Fact_Acct.POSTINGTYPE_AD_Reference_ID,
 					null));
 		return rm;
 	} // createRModel

@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
+import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.document.service.IDocumentNoBuilder;
 import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.exceptions.AdempiereException;
@@ -51,6 +52,7 @@ import org.compiere.util.Msg;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.currency.ICurrencyBL;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 
 /**
@@ -852,16 +854,6 @@ public class MOrder extends X_C_Order implements DocAction
 	}	// getShipments
 
 	/**
-	 * Get ISO Code of Currency
-	 *
-	 * @return Currency ISO
-	 */
-	public String getCurrencyISO()
-	{
-		return MCurrency.getISO_Code(getCtx(), getC_Currency_ID());
-	}	// getCurrencyISO
-
-	/**
 	 * Get Currency Precision
 	 *
 	 * @return precision
@@ -1344,7 +1336,7 @@ public class MOrder extends X_C_Order implements DocAction
 							+ ", @SO_CreditLimit@=" + bp.getSO_CreditLimit();
 					return DocAction.STATUS_Invalid;
 				}
-				BigDecimal grandTotal = MConversionRate.convertBase(getCtx(),
+				BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(getCtx(),
 						getGrandTotal(), getC_Currency_ID(), getDateOrdered(),
 						getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
 				if (MBPartner.SOCREDITSTATUS_CreditHold.equals(bp.getSOCreditStatus(grandTotal)))
@@ -2191,7 +2183,7 @@ public class MOrder extends X_C_Order implements DocAction
 			return false;
 
 		/* globalqss - 2317928 - Reactivating/Voiding order must reset posted */
-		MFactAcct.deleteEx(MOrder.Table_ID, getC_Order_ID(), get_TrxName());
+		Services.get(IFactAcctDAO.class).deleteForDocument(this);
 		setPosted(false);
 
 		// After Void
@@ -2487,7 +2479,7 @@ public class MOrder extends X_C_Order implements DocAction
 		}
 
 		/* globalqss - 2317928 - Reactivating/Voiding order must reset posted */
-		MFactAcct.deleteEx(MOrder.Table_ID, getC_Order_ID(), get_TrxName());
+		Services.get(IFactAcctDAO.class).deleteForDocument(this);
 		setPosted(false);
 		// metas: after reactivate put to the end of this method
 		setDocAction(DOCACTION_Complete);
