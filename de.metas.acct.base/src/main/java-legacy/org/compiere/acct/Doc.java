@@ -50,7 +50,6 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
-import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocumentEngine;
@@ -672,20 +671,6 @@ public abstract class Doc
 					.setC_AcctSchema(acctSchema)
 					.setPostingStatus(PostingStatus.Error)
 					.setDetailMessage("No facts");
-		}
-
-		//
-		// Fire FactsValidate event
-		final PO document = getPO();
-		try
-		{
-			ModelValidationEngine.get().fireFactsValidate(acctSchema, facts, document);
-		}
-		catch (Exception e)
-		{
-			throw newPostingException(e)
-					.setC_AcctSchema(acctSchema)
-					.setPostingStatus(PostingStatus.Error);
 		}
 
 		for (final Fact fact : facts)

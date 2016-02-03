@@ -42,7 +42,6 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MFactAcct;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MRefList;
 import org.compiere.model.X_Fact_Acct;
@@ -629,11 +628,12 @@ class AcctViewerData
 			rm.addColumn(new RColumn(ctx, "Record_ID", DisplayType.ID));
 			rm.addColumn(new RColumn(ctx, "Description", DisplayType.String));
 			rm.addColumn(new RColumn(ctx, I_Fact_Acct.COLUMNNAME_C_Tax_ID, DisplayType.TableDir));
+			rm.addColumn(new RColumn(ctx, I_Fact_Acct.COLUMNNAME_VATCode, DisplayType.String));
 		}
 		if (PostingType == null || PostingType.length() == 0)
 			rm.addColumn(new RColumn(ctx, "PostingType", DisplayType.List, // teo_sarca, [ 1664208 ]
 					RModel.TABLE_ALIAS + ".PostingType",
-					MFactAcct.POSTINGTYPE_AD_Reference_ID,
+					X_Fact_Acct.POSTINGTYPE_AD_Reference_ID,
 					null));
 		
 		// task 09243: add docstatus

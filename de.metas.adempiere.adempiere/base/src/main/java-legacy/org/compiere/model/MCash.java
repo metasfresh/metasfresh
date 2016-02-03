@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
@@ -661,7 +662,7 @@ public class MCash extends X_C_Cash implements DocAction
 		saveEx();
 			
 		//	Delete Posting
-		MFactAcct.deleteEx(Table_ID, getC_Cash_ID(), get_TrxName());
+		Services.get(IFactAcctDAO.class).deleteForDocument(this);
 		
 		return true;
 	}	//	reverse

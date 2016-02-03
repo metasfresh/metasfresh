@@ -21,6 +21,8 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09766 VAT codes (107418136945) +uat +feature
+    * allow defining different VAT codes for sales and purchase, and matching them with each other
  - 09739 gain and loss during bank transfers in foreign currencies (108136874441) +uat +feature
     * introducing default conversion type that can be specified to be active at a given time
 	* currency gain and loss from bank account transfers are computed by comparing default conversion type with the default conversion rate

@@ -33,7 +33,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 774475507L;
+	private static final long serialVersionUID = 1191479272L;
 
     /** Standard Constructor */
     public X_Fact_Acct (Properties ctx, int Fact_Acct_ID, String trxName)
@@ -1549,5 +1549,21 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set VAT Code.
+		@param VATCode VAT Code	  */
+	@Override
+	public void setVATCode (java.lang.String VATCode)
+	{
+		set_Value (COLUMNNAME_VATCode, VATCode);
+	}
+
+	/** Get VAT Code.
+		@return VAT Code	  */
+	@Override
+	public java.lang.String getVATCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_VATCode);
 	}
 }

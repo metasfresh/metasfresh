@@ -1389,4 +1389,27 @@ public interface I_Fact_Acct
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_UserElement2_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "UserElement2_ID", null);
     /** Column name UserElement2_ID */
     public static final String COLUMNNAME_UserElement2_ID = "UserElement2_ID";
+
+	/**
+	 * Set VAT Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setVATCode (java.lang.String VATCode);
+
+	/**
+	 * Get VAT Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVATCode();
+
+    /** Column definition for VATCode */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_VATCode = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "VATCode", null);
+    /** Column name VATCode */
+    public static final String COLUMNNAME_VATCode = "VATCode";
 }

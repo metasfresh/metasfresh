@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
+import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.document.service.IDocumentNoBuilder;
 import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.exceptions.AdempiereException;
@@ -2182,7 +2183,7 @@ public class MOrder extends X_C_Order implements DocAction
 			return false;
 
 		/* globalqss - 2317928 - Reactivating/Voiding order must reset posted */
-		MFactAcct.deleteEx(MOrder.Table_ID, getC_Order_ID(), get_TrxName());
+		Services.get(IFactAcctDAO.class).deleteForDocument(this);
 		setPosted(false);
 
 		// After Void
@@ -2478,7 +2479,7 @@ public class MOrder extends X_C_Order implements DocAction
 		}
 
 		/* globalqss - 2317928 - Reactivating/Voiding order must reset posted */
-		MFactAcct.deleteEx(MOrder.Table_ID, getC_Order_ID(), get_TrxName());
+		Services.get(IFactAcctDAO.class).deleteForDocument(this);
 		setPosted(false);
 		// metas: after reactivate put to the end of this method
 		setDocAction(DOCACTION_Complete);

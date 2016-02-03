@@ -37,7 +37,6 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MAllocationLine;
-import org.compiere.model.MFactAcct;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
@@ -1095,7 +1094,7 @@ public class Doc_AllocationHdr extends Doc
 		int invoiceGrandTotalIndex = -1;
 		for (int i = 0; i < m_facts.size(); i++)
 		{
-			final MFactAcct factAcct = (MFactAcct)m_facts.get(i);
+			final I_Fact_Acct factAcct = m_facts.get(i);
 			if (factAcct.getAmtSourceDr().compareTo(invoiceGrandTotalAmt) > 0)
 			{
 				invoiceGrandTotalAmt = factAcct.getAmtSourceDr();

@@ -1,10 +1,12 @@
-package org.compiere.model;
+package de.metas.acct;
+
+import org.adempiere.util.ISingletonService;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,23 +24,20 @@ package org.compiere.model;
  * #L%
  */
 
-
-import java.util.List;
-
-import org.compiere.acct.Fact;
-
-public interface FactsValidator {
-	
+/**
+ * {@link VATCode} DAO
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
+public interface IVATCodeDAO extends ISingletonService
+{
 	/**
-	 * 	Get Client to be monitored
-	 *	@return AD_Client_ID
-	 */
-	public int getAD_Client_ID();
-	
-	/**
+	 * Find matching {@link VATCode} for given context.
 	 * 
-	 * @param facts
-	 * @param po
+	 * @param request
+	 * @return vat code or {@link VATCode#NULL}; never returns null
 	 */
-	public void factsValidate(MAcctSchema schema, List<Fact> facts, PO po);
+	VATCode findVATCode(VATCodeMatchingRequest request);
+
 }

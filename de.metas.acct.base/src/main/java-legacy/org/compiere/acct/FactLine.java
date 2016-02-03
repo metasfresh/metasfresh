@@ -40,6 +40,10 @@ import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.acct.IVATCodeDAO;
+import de.metas.acct.VATCode;
+import de.metas.acct.VATCodeMatchingRequest;
+
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
@@ -1144,7 +1148,10 @@ final class FactLine extends X_Fact_Acct
 				setUser1_ID(m_acct.getUser1_ID());
 			if (getUser2_ID() == 0)
 				setUser2_ID(m_acct.getUser2_ID());
+			
+			setVATCodeIfApplies();
 
+			//
 			// Revenue Recognition for AR Invoices
 			if (m_doc.getDocumentType().equals(Doc.DOCTYPE_ARInvoice)
 					&& m_docLine != null
@@ -1390,4 +1397,22 @@ final class FactLine extends X_Fact_Acct
 		return success;
 	}   // updateReverseLine
 
+	private final void setVATCodeIfApplies()
+	{
+		final int taxId = getC_Tax_ID();
+		if (taxId <= 0)
+		{
+			return;
+		}
+		
+		final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
+		final VATCode vatCode = vatCodeDAO.findVATCode(VATCodeMatchingRequest.builder()
+				.setC_AcctSchema_ID(getC_AcctSchema_ID())
+				.setC_Tax_ID(taxId)
+				.setIsSOTrx(getDoc().isSOTrx())
+				.setDate(getDateAcct())
+				.build());
+		
+		this.setVATCode(vatCode.getCode());
+	}
 }	// FactLine

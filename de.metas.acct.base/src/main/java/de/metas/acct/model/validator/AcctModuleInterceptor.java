@@ -47,6 +47,8 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 
 import de.metas.acct.async.ScheduleFactAcctLogProcessingFactAcctListener;
+import de.metas.acct.model.I_C_VAT_Code;
+
 import de.metas.currency.ICurrencyDAO;
 
 /**
@@ -66,7 +68,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	{
 		Services.get(IFactAcctListenersService.class).registerListener(ScheduleFactAcctLogProcessingFactAcctListener.instance);
 	}
-
+	
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
@@ -90,16 +92,16 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	{
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_JournalLine());
 	}
-
+	
 	@Override
 	protected void setupCaching(IModelCacheService cachingService)
 	{
 		cachingService.addTableCacheConfigIfAbsent(I_C_AcctSchema.class);
-
+		
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_Period.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_PeriodControl.Table_Name);
-
+		
 		cacheMgt.enableRemoteCacheInvalidationForTableName(MAccount.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Product_Acct.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Product_Category_Acct.Table_Name);
@@ -107,6 +109,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		// GL Distribution: changes performed by Admin (on client) shall be visible to accounting engine (on server).
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_GL_Distribution.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_GL_DistributionLine.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_VAT_Code.Table_Name);
 	}
 
 	@Override
