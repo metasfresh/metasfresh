@@ -7,13 +7,14 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ICurrencyDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+
+import de.metas.currency.ICurrencyDAO;
 
 /*
  * #%L

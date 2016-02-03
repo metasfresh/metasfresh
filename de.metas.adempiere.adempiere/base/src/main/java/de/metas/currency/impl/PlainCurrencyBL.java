@@ -1,4 +1,4 @@
-package org.adempiere.currency;
+package de.metas.currency.impl;
 
 /*
  * #%L
@@ -23,32 +23,25 @@ package org.adempiere.currency;
  */
 
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.util.Properties;
 
-public interface ICurrencyConversionResult
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_Currency;
+
+import de.metas.currency.ICurrencyDAO;
+
+public class PlainCurrencyBL extends CurrencyBL
 {
-	int getAD_Client_ID();
+	private String defaultCurrencyISOCode = "CHF";
 
-	int getAD_Org_ID();
-
-	int getC_ConversionType_ID();
-
-	Date getConversionDate();
-
-	/**
-	 * @return source amount (in {@link #getSource_Currency_ID()})
-	 */
-	BigDecimal getSourceAmount();
-
-	/**
-	 * @return converted amount (in {@link #getC_Currency_ID()})
-	 */
-	BigDecimal getAmount();
-
-	int getC_Currency_ID();
-
-	int getSource_Currency_ID();
-
-	BigDecimal getConversionRate();
+	@Override
+	public I_C_Currency getBaseCurrency(Properties ctx, int adClientId, int adOrgId)
+	{
+		return Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(ctx, defaultCurrencyISOCode);
+	}
+	
+	public void setDefaultCurrencyISOCode(String defaultCurrencyISOCode)
+	{
+		this.defaultCurrencyISOCode = defaultCurrencyISOCode;
+	}
 }

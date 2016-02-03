@@ -28,10 +28,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.currency.ICurrencyConversionContext;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -52,6 +50,8 @@ import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyConversionContext;
 
 public class BankStatementBL implements IBankStatementBL
 {
@@ -165,7 +165,7 @@ public class BankStatementBL implements IBankStatementBL
 		}
 
 		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-		final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
 		//
 		// Aggregated amounts from reference lines:

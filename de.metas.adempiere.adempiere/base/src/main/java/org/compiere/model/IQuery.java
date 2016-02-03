@@ -117,6 +117,15 @@ public interface IQuery<T>
 	<ET extends T> ET first(Class<ET> clazz) throws DBException;
 
 	/**
+	 * Same as {@link #first(Class)}, but in case there is no record found an exception will be thrown too.
+	 * 
+	 * @param clazz
+	 * @return
+	 * @throws DBException
+	 */
+	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
+
+	/**
 	 * Return first PO that match query criteria. If there are more records that match criteria an exception will be thrown.
 	 * 
 	 * @return first PO or null.
@@ -328,10 +337,19 @@ public interface IQuery<T>
 	List<Integer> listIds();
 
 	/**
+	 * Selects given columns and return the result as a list of ColumnName to Value map.
+	 * 
+	 * @param columnNames
+	 * @return a list of rows, where each row is a {@link Map} having the required columns as keys.
+	 */
+	List<Map<String, Object>> listColumns(String... columnNames);
+
+	/**
 	 * Selects DISTINCT given columns and return the result as a list of ColumnName to Value map.
 	 * 
 	 * @param columnNames
-	 * @return
+	 * @return a list of rows, where each row is a {@link Map} having the required columns as keys.
+	 * @see #listColumns(String...) 
 	 */
 	List<Map<String, Object>> listDistinct(String... columnNames);
 

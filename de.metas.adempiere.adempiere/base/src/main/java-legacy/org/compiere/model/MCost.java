@@ -38,12 +38,13 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.product.service.IProductBL;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.currency.ICurrencyBL;
 
 /**
  * 	Product Cost Model
@@ -423,7 +424,7 @@ public class MCost extends X_M_Cost
 				price = pos[i].getPriceList();
 			if (price != null && price.signum() != 0)
 			{
-				final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+				final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 				price = currencyConversionBL.convert(ctx, price,
 					pos[i].getC_Currency_ID(), as.getC_Currency_ID(),
 					as.getAD_Client_ID(), Org_ID);
@@ -853,7 +854,7 @@ public class MCost extends X_M_Cost
 	public static BigDecimal calculateAverageInv (final I_M_Product product, int M_AttributeSetInstance_ID,
 		MAcctSchema as, int AD_Org_ID)
 	{
-		final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		
 		String sql = "SELECT t.MovementQty, mi.Qty, il.QtyInvoiced, il.PriceActual,"
@@ -949,7 +950,7 @@ public class MCost extends X_M_Cost
 	public static BigDecimal calculateAveragePO (I_M_Product product, int M_AttributeSetInstance_ID,
 		MAcctSchema as, int AD_Org_ID)
 	{
-		final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		
 		String sql = "SELECT t.MovementQty, mp.Qty, ol.QtyOrdered, ol.PriceCost, ol.PriceActual,"	//	1..5
@@ -1048,7 +1049,7 @@ public class MCost extends X_M_Cost
 	public static BigDecimal calculateFiFo (I_M_Product product, int M_AttributeSetInstance_ID,
 		MAcctSchema as, int AD_Org_ID)
 	{
-		final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		
 		String sql = "SELECT t.MovementQty, mi.Qty, il.QtyInvoiced, il.PriceActual,"
@@ -1188,7 +1189,7 @@ public class MCost extends X_M_Cost
 	public static BigDecimal calculateLiFo (I_M_Product product, int M_AttributeSetInstance_ID,
 		MAcctSchema as, int AD_Org_ID)
 	{
-		final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		
 		String sql = "SELECT t.MovementQty, mi.Qty, il.QtyInvoiced, il.PriceActual,"

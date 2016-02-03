@@ -24,10 +24,8 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.currency.ICurrencyConversionContext;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Cash;
@@ -38,6 +36,9 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAllocationLine;
 import org.compiere.util.DB;
+
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyConversionContext;
 
 /**
  * Allocation Line
@@ -520,7 +521,7 @@ class DocLine_Allocation extends DocLine
 		{
 			final I_C_Invoice invoice = getC_Invoice();
 			Check.assumeNotNull(invoice, "invoice not null");
-			final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
 					invoice.getDateAcct(),
 					invoice.getC_ConversionType_ID(),
@@ -534,7 +535,7 @@ class DocLine_Allocation extends DocLine
 	{
 		if (paymentCurrencyConversionCtx == null)
 		{
-			final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
 			final I_C_Payment payment = getC_Payment();
 			final I_C_CashLine cashLine = getC_CashLine();

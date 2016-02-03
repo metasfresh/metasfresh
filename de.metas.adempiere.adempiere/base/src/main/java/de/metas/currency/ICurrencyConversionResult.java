@@ -1,4 +1,4 @@
-package org.adempiere.currency;
+package de.metas.currency;
 
 /*
  * #%L
@@ -22,24 +22,38 @@ package org.adempiere.currency;
  * #L%
  */
 
-
+import java.math.BigDecimal;
 import java.util.Date;
 
-public interface ICurrencyConversionContext
+/**
+ * The result of a currency conversion.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
+public interface ICurrencyConversionResult
 {
-	// void setAD_Org_ID(int adOrgId);
+	int getAD_Client_ID();
 
 	int getAD_Org_ID();
 
-	// void setAD_Client_ID(int adClientId);
-
-	int getAD_Client_ID();
-
-	// void setC_ConversionType_ID(int conversionTypeId);
-
 	int getC_ConversionType_ID();
 
-	// void setConversionDate(Date conversionDate);
-
 	Date getConversionDate();
+
+	/**
+	 * @return source amount (in {@link #getSource_Currency_ID()})
+	 */
+	BigDecimal getSourceAmount();
+
+	/**
+	 * @return converted amount (in {@link #getC_Currency_ID()})
+	 */
+	BigDecimal getAmount();
+
+	int getC_Currency_ID();
+
+	int getSource_Currency_ID();
+
+	BigDecimal getConversionRate();
 }

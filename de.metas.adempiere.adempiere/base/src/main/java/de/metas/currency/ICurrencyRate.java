@@ -1,8 +1,8 @@
-package org.adempiere.misc.service;
+package de.metas.currency;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -22,11 +22,30 @@ package org.adempiere.misc.service;
  * #L%
  */
 
+import java.math.BigDecimal;
+import java.util.Date;
 
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_C_Currency;
+/**
+ * Currency rate, together with all informations (currency from/to, conversion type etc).
+ * 
+ * This class can also convert a given amount, by using {@link #convertAmount(BigDecimal)}.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
+public interface ICurrencyRate
+{
+	BigDecimal getConversionRate();
 
-public interface ICurrencyPA extends ISingletonService {
+	int getFrom_Currency_ID();
 
-	I_C_Currency retrieveCurrency(int currencyId, String trxName);
+	int getTo_Currency_ID();
+
+	int getC_ConversionType_ID();
+
+	Date getConversionDate();
+
+	int getCurrencyPrecision();
+
+	BigDecimal convertAmount(BigDecimal amount);
 }

@@ -35,7 +35,6 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
@@ -69,6 +68,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Trace;
 import org.compiere.util.Trx;
 import org.compiere.util.Util;
+
+import de.metas.currency.ICurrencyBL;
 
 /**
  * Workflow Activity Model.
@@ -728,7 +729,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				if (C_Currency_ID != amtApprovalCurrencyId
 						&& amtApprovalCurrencyId > 0)			// No currency = amt only
 				{
-					amtApproval = Services.get(ICurrencyConversionBL.class).convert(getCtx(),// today & default rate
+					amtApproval = Services.get(ICurrencyBL.class).convert(getCtx(),// today & default rate
 							amtApproval, amtApprovalCurrencyId,
 							C_Currency_ID, getAD_Client_ID(), AD_Org_ID);
 					if (amtApproval == null || amtApproval.signum() == 0)

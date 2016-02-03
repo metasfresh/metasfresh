@@ -51,6 +51,7 @@ import org.compiere.util.Msg;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.currency.ICurrencyBL;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 
 /**
@@ -852,16 +853,6 @@ public class MOrder extends X_C_Order implements DocAction
 	}	// getShipments
 
 	/**
-	 * Get ISO Code of Currency
-	 *
-	 * @return Currency ISO
-	 */
-	public String getCurrencyISO()
-	{
-		return MCurrency.getISO_Code(getCtx(), getC_Currency_ID());
-	}	// getCurrencyISO
-
-	/**
 	 * Get Currency Precision
 	 *
 	 * @return precision
@@ -1344,7 +1335,7 @@ public class MOrder extends X_C_Order implements DocAction
 							+ ", @SO_CreditLimit@=" + bp.getSO_CreditLimit();
 					return DocAction.STATUS_Invalid;
 				}
-				BigDecimal grandTotal = MConversionRate.convertBase(getCtx(),
+				BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(getCtx(),
 						getGrandTotal(), getC_Currency_ID(), getDateOrdered(),
 						getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
 				if (MBPartner.SOCREDITSTATUS_CreditHold.equals(bp.getSOCreditStatus(grandTotal)))

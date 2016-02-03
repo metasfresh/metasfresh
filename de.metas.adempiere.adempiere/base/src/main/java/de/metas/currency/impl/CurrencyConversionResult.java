@@ -1,4 +1,4 @@
-package org.adempiere.currency.impl;
+package de.metas.currency.impl;
 
 /*
  * #%L
@@ -23,14 +23,23 @@ package org.adempiere.currency.impl;
  */
 
 
+import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.currency.ICurrencyConversionContext;
+import org.adempiere.util.lang.ObjectUtils;
 
-import com.google.common.base.MoreObjects;
+import de.metas.currency.ICurrencyConversionResult;
 
-public class CurrencyConversionContext implements ICurrencyConversionContext
+public class CurrencyConversionResult implements ICurrencyConversionResult
 {
+	private BigDecimal amount;
+	private int currencyId;
+
+	private BigDecimal sourceAmount;
+	private int sourceCurrencyId;
+	
+	private BigDecimal conversionRate;
+
 	private Date conversionDate;
 	private int conversionTypeId = -1;
 	private int adClientId = -1;
@@ -39,11 +48,51 @@ public class CurrencyConversionContext implements ICurrencyConversionContext
 	@Override
 	public String toString()
 	{
-		// NOTE: keep it short because we want to append it to Fact_Acct.Description
-		return MoreObjects.toStringHelper(this)
-				.add("date", conversionDate)
-				.add("conversionTypeId", conversionTypeId)
-				.toString();
+		return ObjectUtils.toString(this);
+	}
+
+	@Override
+	public int getSource_Currency_ID()
+	{
+		return sourceCurrencyId;
+	}
+
+	public void setSource_Currency_ID(final int sourceCurrencyId)
+	{
+		this.sourceCurrencyId = sourceCurrencyId;
+	}
+
+	@Override
+	public int getC_Currency_ID()
+	{
+		return currencyId;
+	}
+
+	public void setC_Currency_ID(final int currencyId)
+	{
+		this.currencyId = currencyId;
+	}
+
+	@Override
+	public BigDecimal getAmount()
+	{
+		return amount;
+	}
+
+	public void setAmount(BigDecimal amount)
+	{
+		this.amount = amount;
+	}
+
+	@Override
+	public BigDecimal getSourceAmount()
+	{
+		return sourceAmount;
+	}
+
+	public void setSourceAmount(BigDecimal sourceAmount)
+	{
+		this.sourceAmount = sourceAmount;
 	}
 
 	@Override
@@ -52,7 +101,6 @@ public class CurrencyConversionContext implements ICurrencyConversionContext
 		return conversionDate;
 	}
 
-	// @Override
 	public void setConversionDate(Date conversionDate)
 	{
 		this.conversionDate = conversionDate;
@@ -64,7 +112,6 @@ public class CurrencyConversionContext implements ICurrencyConversionContext
 		return conversionTypeId;
 	}
 
-	// @Override
 	public void setC_ConversionType_ID(int conversionTypeId)
 	{
 		this.conversionTypeId = conversionTypeId;
@@ -76,7 +123,6 @@ public class CurrencyConversionContext implements ICurrencyConversionContext
 		return adClientId;
 	}
 
-	// @Override
 	public void setAD_Client_ID(int adClientId)
 	{
 		this.adClientId = adClientId;
@@ -88,10 +134,21 @@ public class CurrencyConversionContext implements ICurrencyConversionContext
 		return adOrgId;
 	}
 
-	// @Override
 	public void setAD_Org_ID(int adOrgId)
 	{
 		this.adOrgId = adOrgId;
 	}
 
+	@Override
+	public BigDecimal getConversionRate()
+	{
+		return conversionRate;
+	}
+
+	public void setConversionRate(BigDecimal conversionRate)
+	{
+		this.conversionRate = conversionRate;
+	}
+	
+	
 }

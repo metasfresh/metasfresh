@@ -1,10 +1,15 @@
-package org.adempiere.misc.service.impl;
+package org.adempiere.acct.api;
+
+import java.util.Properties;
+
+import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_Currency_Acct;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,18 +27,17 @@ package org.adempiere.misc.service.impl;
  * #L%
  */
 
+public interface ICurrencyAcctDAO extends ISingletonService
+{
 
-import org.adempiere.misc.service.ICurrencyPA;
-import org.compiere.model.I_C_Currency;
-import org.compiere.model.MCurrency;
-import org.compiere.util.Env;
-
-public final class CurrencyPA implements ICurrencyPA {
-
-	public I_C_Currency retrieveCurrency(final int currencyId,
-			final String trxName) {
-
-		return new MCurrency(Env.getCtx(), currencyId, trxName);
-	}
+	/**
+	 * Gets currency accounting record.
+	 * 
+	 * @param ctx
+	 * @param C_Currency_ID
+	 * @param C_AcctSchema_ID
+	 * @return currency accounting record or null
+	 */
+	I_C_Currency_Acct get(Properties ctx, int C_Currency_ID, int C_AcctSchema_ID);
 
 }

@@ -24,12 +24,12 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.invoice.IMatchInvDAO;
 
@@ -336,7 +336,7 @@ public class MMatchInv extends X_M_MatchInv
 			I_C_Invoice invoice = invoiceLine.getC_Invoice();
 			if (as.getC_Currency_ID() != invoice.getC_Currency_ID())
 			{
-				tAmt = Services.get(ICurrencyConversionBL.class).convert(getCtx(), tAmt, 
+				tAmt = Services.get(ICurrencyBL.class).convert(getCtx(), tAmt, 
 					invoice.getC_Currency_ID(), as.getC_Currency_ID(),
 					invoice.getDateAcct(), invoice.getC_ConversionType_ID(),
 					invoice.getAD_Client_ID(), invoice.getAD_Org_ID());

@@ -30,11 +30,12 @@ import java.util.Properties;
 import org.adempiere.ad.wrapper.IPOJOFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
+
+import de.metas.currency.ICurrencyBL;
 
 public class PlainPaymentDAO extends AbstractPaymentDAO
 {
@@ -78,7 +79,7 @@ public class PlainPaymentDAO extends AbstractPaymentDAO
 
 			if ((null != ah) && (ah.getC_Currency_ID() != payment.getC_Currency_ID()))
 			{
-				final BigDecimal lineAmtConv = Services.get(ICurrencyConversionBL.class).convert(ctx,
+				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(ctx,
 						lineAmt, // Amt
 						ah.getC_Currency_ID(), // CurFrom_ID
 						payment.getC_Currency_ID(), // CurTo_ID

@@ -23,12 +23,12 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IFactAcctListenersService;
@@ -38,7 +38,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -49,7 +48,6 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCurrency;
 import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
 import org.compiere.model.ModelValidationEngine;
@@ -61,6 +59,11 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
+
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 
 /**
  * Posting Document Root.
@@ -126,11 +129,13 @@ public abstract class Doc
 	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
 
 	// services
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	protected final transient ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+	protected final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	protected final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	protected final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	protected final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final IDocFactory docFactory;
 
 	/** AR Invoices - ARI */
@@ -647,12 +652,7 @@ public abstract class Doc
 		}
 
 		// rejectUnconvertible
-		if (!isConvertible(acctSchema))
-		{
-			throw newPostingException()
-					.setC_AcctSchema(acctSchema)
-					.setPostingStatus(PostingStatus.NotConvertible);
-		}
+		checkConvertible(acctSchema);
 
 		// rejectPeriodClosed
 		if (!isPeriodOpen())
@@ -1000,67 +1000,63 @@ public abstract class Doc
 		//
 		boolean retValue = getBalance().signum() == 0;
 		if (retValue)
-			log.fine("Yes " + toString());
+			log.log(Level.FINE, "Yes - {0}", this);
 		else
-			log.warning("NO - " + toString());
+			log.log(Level.WARNING, "NO - {0}", this);
 		return retValue;
 	}	// isBalanced
 
 	/**
-	 * Is Document convertible to currency and Conversion Type
+	 * Makes sure the document is convertible from it's currency to accounting currency.
 	 *
 	 * @param acctSchema accounting schema
-	 * @return true, if convertible to accounting currency
 	 */
-	private final boolean isConvertible(final I_C_AcctSchema acctSchema)
+	private final void checkConvertible(final I_C_AcctSchema acctSchema)
 	{
 		// No Currency in document
 		if (getC_Currency_ID() == NO_CURRENCY)
 		{
-			log.fine("(none) - " + toString());
-			return true;
+			log.log(Level.FINE, "(none) - {0}", this);
+			return;
 		}
+		
 		// Get All Currencies
-		final Set<Integer> set = new HashSet<Integer>();
-		set.add(new Integer(getC_Currency_ID()));
-		for (int i = 0; p_lines != null && i < p_lines.length; i++)
+		final Set<Integer> currencyIds = new HashSet<>();
+		currencyIds.add(getC_Currency_ID());
+		for (final DocLine docLine : p_lines)
 		{
-			int C_Currency_ID = p_lines[i].getC_Currency_ID();
-			if (C_Currency_ID != NO_CURRENCY)
-				set.add(new Integer(C_Currency_ID));
+			final int currencyId = docLine.getC_Currency_ID();
+			if (currencyId != NO_CURRENCY)
+				currencyIds.add(currencyId);
 		}
 
-		// just one and the same
-		if (set.size() == 1 && acctSchema.getC_Currency_ID() == getC_Currency_ID())
+		// Check
+		final int acctCurrencyId = acctSchema.getC_Currency_ID();
+		for (final int currencyId : currencyIds)
 		{
-			log.fine("(same) Cur=" + getC_Currency_ID() + " - " + toString());
-			return true;
-		}
-
-		boolean convertible = true;
-		final Iterator<Integer> it = set.iterator();
-		while (it.hasNext() && convertible)
-		{
-			final int C_Currency_ID = it.next().intValue();
-			if (C_Currency_ID != acctSchema.getC_Currency_ID())
+			if (currencyId <= 0)
 			{
-				BigDecimal amt = currencyConversionBL.getRate(C_Currency_ID, acctSchema.getC_Currency_ID(),
-						getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
-				if (amt == null)
-				{
-					convertible = false;
-					log.warning("NOT from C_Currency_ID=" + C_Currency_ID
-							+ " to " + acctSchema.getC_Currency_ID()
-							+ " - " + toString());
-				}
-				else
-					log.fine("From C_Currency_ID=" + C_Currency_ID);
+				continue;
+			}
+			
+			if (currencyId == acctCurrencyId)
+			{
+				continue;
+			}
+			
+			final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
+			try
+			{
+				currencyConversionBL.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
+			}
+			catch (NoCurrencyRateFoundException e)
+			{
+				throw newPostingException(e)
+						.setC_AcctSchema(acctSchema)
+						.setPostingStatus(PostingStatus.NotConvertible);
 			}
 		}
-
-		log.fine("Convertible=" + convertible + ", AcctSchema C_Currency_ID=" + acctSchema.getC_Currency_ID() + " - " + toString());
-		return convertible;
-	}	// isConvertible
+	}
 
 	/**
 	 * Calculate Period from DateAcct. m_C_Period_ID is set to -1 of not open to 0 if not found
@@ -1516,9 +1512,19 @@ public abstract class Doc
 		if (C_ValidCombination_ID <= 0)
 			return null;
 		// Return Account
-		final MAccount acct = MAccount.get(getCtx(), C_ValidCombination_ID);
+		final MAccount acct = accountDAO.retrieveAccountById(getCtx(), C_ValidCombination_ID);
 		return acct;
 	}	// getAccount
+
+	protected final MAccount getRealizedGainAcct(final MAcctSchema as)
+	{
+		return accountDAO.retrieveAccountById(as.getCtx(), as.getAcctSchemaDefault().getRealizedGain_Acct());
+	}
+
+	protected final MAccount getRealizedLossAcct(final MAcctSchema as)
+	{
+		return accountDAO.retrieveAccountById(as.getCtx(), as.getAcctSchemaDefault().getRealizedLoss_Acct());
+	}
 
 	/**
 	 * String Representation
@@ -1659,7 +1665,7 @@ public abstract class Doc
 			if (ii != null)
 				return ii.intValue();
 		}
-		return 0;
+		return ICurrencyBL.DEFAULT_ConversionType_ID;
 	}	// getC_ConversionType_ID
 
 	/**
@@ -1668,11 +1674,11 @@ public abstract class Doc
 	 * @return precision
 	 * @see #getC_Currency_ID()
 	 */
-	final int getStdPrecision()
+	protected final int getStdPrecision()
 	{
 		if (m_precision == -1)
 		{
-			m_precision = MCurrency.getStdPrecision(getCtx(), getC_Currency_ID());
+			m_precision = currencyDAO.getStdPrecision(getCtx(), getC_Currency_ID());
 		}
 		return m_precision;
 	}	// getPrecision

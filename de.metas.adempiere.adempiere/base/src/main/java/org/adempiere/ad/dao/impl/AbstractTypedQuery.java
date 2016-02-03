@@ -77,6 +77,19 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		return model;
 	}
 
+	@Override
+	public final <ET extends T> ET firstNotNull(final Class<ET> clazz) throws DBException
+	{
+		final ET model = first(clazz);
+		if (model == null)
+		{
+			throw new DBException("@NotFound@ @" + getTableName() + "@"
+					+ "\n\n@Query@: " + this);
+		}
+
+		return model;
+	}
+
 	/**
 	 * 
 	 * @param clazz
@@ -99,6 +112,30 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 
 		return map;
 	}
+	
+	
+	@Override
+	public final List<Map<String, Object>> listColumns(String... columnNames)
+	{
+		final boolean distinct = false;
+		return listColumns(distinct, columnNames);
+	}
+
+	@Override
+	public final List<Map<String, Object>> listDistinct(final String... columnNames)
+	{
+		final boolean distinct = true;
+		return listColumns(distinct, columnNames);
+	}
+
+	/**
+	 * Selects given columns and return the result as a list of ColumnName to Value map.
+	 *
+	 * @param distinct true if the value rows shall be district
+	 * @param columnNames
+	 * @return a list of rows, where each row is a {@link Map} having the required columns as keys.
+	 */
+	protected abstract List<Map<String, Object>> listColumns(final boolean distinct, final String... columnNames);
 
 	@Override
 	public <K, ET extends T> Map<K, ET> map(final Class<ET> modelClass, final Function<ET, K> keyFunction)

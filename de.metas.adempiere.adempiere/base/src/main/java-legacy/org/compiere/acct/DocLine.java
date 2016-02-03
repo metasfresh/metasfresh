@@ -23,6 +23,7 @@ import java.util.Properties;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.acct.api.ProductAcctType;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
@@ -78,7 +79,7 @@ public class DocLine
 	}	// DocLine
 
 	/** Persistent Object */
-	protected final PO p_po;
+	private final PO p_po;
 	/** Parent */
 	private final Doc m_doc;
 
@@ -151,6 +152,15 @@ public class DocLine
 	{
 		return m_doc.getAD_Client_ID();
 	}
+	
+	/**
+	 * @param modelType
+	 * @return underlying model
+	 */
+	protected final <T> T getModel(final Class<T> modelType)
+	{
+		return InterfaceWrapperHelper.create(p_po, modelType); 
+	}
 
 	/**
 	 * Get Currency
@@ -219,7 +229,7 @@ public class DocLine
 	 * 
 	 * @param sourceAmt source amt
 	 */
-	protected void setAmount(BigDecimal sourceAmt)
+	protected final void setAmount(BigDecimal sourceAmt)
 	{
 		m_AmtSourceDr = sourceAmt == null ? Env.ZERO : sourceAmt;
 		m_AmtSourceCr = Env.ZERO;
@@ -231,7 +241,7 @@ public class DocLine
 	 * @param amtSourceDr source amount dr
 	 * @param amtSourceCr source amount cr
 	 */
-	protected void setAmount(BigDecimal amtSourceDr, BigDecimal amtSourceCr)
+	protected final void setAmount(BigDecimal amtSourceDr, BigDecimal amtSourceCr)
 	{
 		m_AmtSourceDr = amtSourceDr == null ? Env.ZERO : amtSourceDr;
 		m_AmtSourceCr = amtSourceCr == null ? Env.ZERO : amtSourceCr;
@@ -250,7 +260,7 @@ public class DocLine
 	 * @param amtAcctDr acct amount dr
 	 * @param amtAcctCr acct amount cr
 	 */
-	public void setConvertedAmt(final BigDecimal amtAcctDr, final BigDecimal amtAcctCr)
+	public final void setConvertedAmt(final BigDecimal amtAcctDr, final BigDecimal amtAcctCr)
 	{
 		m_AmtAcctDr = amtAcctDr;
 		m_AmtAcctCr = amtAcctCr;
@@ -371,7 +381,7 @@ public class DocLine
 	 *
 	 * @param diff difference (to be subtracted)
 	 */
-	protected void setLineNetAmtDifference(final BigDecimal diff)
+	protected final void setLineNetAmtDifference(final BigDecimal diff)
 	{
 		final BigDecimal lineNetAmtOld = m_LineNetAmt;
 		m_LineNetAmt = m_LineNetAmt.subtract(diff);
@@ -386,7 +396,7 @@ public class DocLine
 	 * 
 	 * @param dateAcct acct date
 	 */
-	public void setDateAcct(Timestamp dateAcct)
+	public final void setDateAcct(Timestamp dateAcct)
 	{
 		m_DateAcct = dateAcct;
 	}   // setDateAcct
@@ -446,7 +456,7 @@ public class DocLine
 	 * 
 	 * @param acct account
 	 */
-	public void setAccount(MAccount acct)
+	public final void setAccount(MAccount acct)
 	{
 		m_account = acct;
 	}   // setAccount

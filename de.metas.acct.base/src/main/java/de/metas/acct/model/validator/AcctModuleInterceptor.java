@@ -22,6 +22,9 @@ package de.metas.acct.model.validator;
  * #L%
  */
 
+import java.util.Date;
+import java.util.Properties;
+import java.util.logging.Level;
 
 import org.adempiere.acct.api.IFactAcctListenersService;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -31,6 +34,7 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 import org.compiere.model.I_GL_Distribution;
@@ -38,9 +42,12 @@ import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
+import org.compiere.util.CLogger;
 import org.compiere.util.CacheMgt;
+import org.compiere.util.Env;
 
 import de.metas.acct.async.ScheduleFactAcctLogProcessingFactAcctListener;
+import de.metas.currency.ICurrencyDAO;
 
 /**
  * Accounting module activator
@@ -50,12 +57,16 @@ import de.metas.acct.async.ScheduleFactAcctLogProcessingFactAcctListener;
  */
 public class AcctModuleInterceptor extends AbstractModuleInterceptor
 {
+	private static final transient CLogger logger = CLogger.getCLogger(AcctModuleInterceptor.class);
+
+	private static final String CTXNAME_C_ConversionType_ID = "#" + I_C_ConversionType.COLUMNNAME_C_ConversionType_ID;
+
 	@Override
 	protected void onAfterInit()
 	{
 		Services.get(IFactAcctListenersService.class).registerListener(ScheduleFactAcctLogProcessingFactAcctListener.instance);
 	}
-	
+
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
@@ -79,16 +90,16 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	{
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_JournalLine());
 	}
-	
+
 	@Override
 	protected void setupCaching(IModelCacheService cachingService)
 	{
 		cachingService.addTableCacheConfigIfAbsent(I_C_AcctSchema.class);
-		
+
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_Period.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_PeriodControl.Table_Name);
-		
+
 		cacheMgt.enableRemoteCacheInvalidationForTableName(MAccount.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Product_Acct.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Product_Category_Acct.Table_Name);
@@ -96,5 +107,28 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		// GL Distribution: changes performed by Admin (on client) shall be visible to accounting engine (on server).
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_GL_Distribution.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_GL_DistributionLine.Table_Name);
+	}
+
+	@Override
+	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
+	{
+		final Properties ctx = Env.getCtx();
+		final int adClientId = Env.getAD_Client_ID(ctx);
+
+		//
+		// Set default conversion type to context
+		if (adClientId > 0 && adClientId != Env.CTXVALUE_AD_Client_ID_System)
+		{
+			try
+			{
+				final Date date = Env.getDate(ctx);
+				final I_C_ConversionType conversionType = Services.get(ICurrencyDAO.class).retrieveDefaultConversionType(ctx, adClientId, AD_Org_ID, date);
+				Env.setContext(ctx, CTXNAME_C_ConversionType_ID, conversionType.getC_ConversionType_ID());
+			}
+			catch (Exception e)
+			{
+				logger.log(Level.WARNING, "Failed finding the default conversion type. Skip", e);
+			}
+		}
 	}
 }

@@ -31,7 +31,6 @@ import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_OrderTax;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCurrency;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRequisitionLine;
@@ -41,6 +40,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.currency.ICurrencyDAO;
 
 /**
  *  Post Order Documents.
@@ -527,7 +527,7 @@ public class Doc_Order extends Doc
 				if (precision == -1)
 				{
 					doc.setC_Currency_ID(docLine.getC_Currency_ID());
-					precision = MCurrency.getStdPrecision(doc.getCtx(), docLine.getC_Currency_ID());
+					precision = Services.get(ICurrencyDAO.class).getStdPrecision(doc.getCtx(), docLine.getC_Currency_ID());
 				}
 				//	Qty
 				BigDecimal Qty = line.getQtyOrdered().max(maxQty);
@@ -667,7 +667,7 @@ public class Doc_Order extends Doc
 				if (precision == -1)
 				{
 					doc.setC_Currency_ID(docLine.getC_Currency_ID());
-					precision = MCurrency.getStdPrecision(doc.getCtx(), docLine.getC_Currency_ID());
+					precision = Services.get(ICurrencyDAO.class).getStdPrecision(doc.getCtx(), docLine.getC_Currency_ID());
 				}
 				//	Qty
 				BigDecimal Qty = line.getQtyOrdered().max(maxQty);
@@ -780,6 +780,7 @@ public class Doc_Order extends Doc
 	 *  @param C_AcctSchema_ID accounting schema
 	 *  @deprecated old costing
 	 */
+	@Deprecated
 	private void updateProductInfo (int C_AcctSchema_ID)
 	{
 		log.fine("C_Order_ID=" + get_ID());

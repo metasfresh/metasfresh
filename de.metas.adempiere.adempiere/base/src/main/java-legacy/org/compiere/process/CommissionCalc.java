@@ -24,18 +24,20 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.logging.Level;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MCommission;
 import org.compiere.model.MCommissionAmt;
 import org.compiere.model.MCommissionDetail;
 import org.compiere.model.MCommissionLine;
 import org.compiere.model.MCommissionRun;
-import org.compiere.model.MCurrency;
 import org.compiere.model.MUser;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Language;
+
+import de.metas.currency.ICurrencyDAO;
 
 /**
  *	Commission Calculation	
@@ -54,6 +56,7 @@ public class CommissionCalc extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -74,6 +77,7 @@ public class CommissionCalc extends SvrProcess
 	 *  @return Message (text with variables)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("C_Commission_ID=" + getRecord_ID() + ", StartDate=" + p_StartDate);
@@ -91,7 +95,7 @@ public class CommissionCalc extends SvrProcess
 		SimpleDateFormat format = DisplayType.getDateFormat(DisplayType.Date);
 		String description = format.format(p_StartDate) 
 			+ " - " + format.format(m_EndDate)
-			+ " - " + MCurrency.getISO_Code(getCtx(), m_com.getC_Currency_ID());
+			+ " - " + Services.get(ICurrencyDAO.class).getISO_Code(getCtx(), m_com.getC_Currency_ID());
 		comRun.setDescription(description);
 		if (!comRun.save())
 			throw new AdempiereSystemError ("Could not save Commission Run");

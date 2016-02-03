@@ -1,4 +1,4 @@
-package org.adempiere.currency;
+package de.metas.currency;
 
 /*
  * #%L
@@ -22,23 +22,26 @@ package org.adempiere.currency;
  * #L%
  */
 
-
-import java.math.BigDecimal;
 import java.util.Date;
 
-public interface ICurrencyRate
+/**
+ * Currency conversion context.
+ * 
+ * Implementations of this interface are usually immutable.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
+public interface ICurrencyConversionContext
 {
-	BigDecimal getConversionRate();
-
-	int getFrom_Currency_ID();
-
-	int getTo_Currency_ID();
-
 	int getC_ConversionType_ID();
 
 	Date getConversionDate();
 
-	int getCurrencyPrecision();
+	int getAD_Client_ID();
 
-	BigDecimal convertAmount(BigDecimal amount);
+	int getAD_Org_ID();
+
+	/** @return a summary, user friendly, string representation */
+	String getSummary();
 }

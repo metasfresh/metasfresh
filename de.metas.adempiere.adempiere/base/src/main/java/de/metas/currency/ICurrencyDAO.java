@@ -1,11 +1,14 @@
 /**
  * 
  */
-package org.adempiere.service;
+package de.metas.currency;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
 
 /*
@@ -38,33 +41,56 @@ public interface ICurrencyDAO extends ISingletonService
 {
 	/**
 	 * retrieves Currency by ID
+	 * 
 	 * @param ctx
 	 * @param currencyId
 	 * @return
 	 */
 	I_C_Currency retrieveCurrency(Properties ctx, int currencyId);
-	
+
 	/**
 	 * retrieves currency by ISO code
+	 * 
 	 * @param ctx
 	 * @param ISOCode
-	 * @return
+	 * @return currency or <code>null</code>
 	 */
 	I_C_Currency retrieveCurrencyByISOCode(Properties ctx, String ISOCode);
 
 	/**
-	 * 	Get Currency Iso Code.
-	 *	@param ctx Context
-	 *	@param C_Currency_ID currency
-	 *	@return ISO Code
+	 * Get Currency Iso Code.
+	 *
+	 * @param ctx Context
+	 * @param C_Currency_ID currency
+	 * @return ISO Code or <code>null</code>
 	 */
 	String getISO_Code(Properties ctx, int C_Currency_ID);
-	
+
 	/**
-	 * 	Get Standard Precision.
-	 *	@param ctx Context
-	 *	@param C_Currency_ID currency
-	 *	@return Standard Precision
+	 * Get Standard Precision.
+	 *
+	 * @param ctx Context
+	 * @param C_Currency_ID currency
+	 * @return Standard Precision
 	 */
-	int getStdPrecision (Properties ctx, int C_Currency_ID);
+	int getStdPrecision(Properties ctx, int C_Currency_ID);
+
+	/**
+	 * @param ctx
+	 * @param adClientId
+	 * @param adOrgId
+	 * @param date
+	 * @return default {@link I_C_ConversionType}; never returns null
+	 */
+	I_C_ConversionType retrieveDefaultConversionType(Properties ctx, int adClientId, int adOrgId, Date date);
+
+	/**
+	 * 
+	 * @param ctx
+	 * @param type
+	 * @return conversion type of given {@link ConversionType}; never returns null
+	 */
+	I_C_ConversionType retrieveConversionType(Properties ctx, ConversionType type);
+
+	BigDecimal retrieveRateOrNull(ICurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
 }

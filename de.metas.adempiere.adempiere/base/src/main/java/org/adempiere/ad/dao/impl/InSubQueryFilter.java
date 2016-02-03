@@ -22,7 +22,6 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -62,6 +61,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private List<Object> _subQueryValues = null;
 
 	private static final transient CLogger logger = CLogger.getCLogger(InSubQueryFilter.class);
+
 	/**
 	 * 
 	 * @param columnName this query match column
@@ -127,98 +127,166 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 
 		final TypedSqlQuery<?> subQueryImpl = TypedSqlQuery.cast(subQuery);
-
-		String subWhereClause;
+		
+		//
+		// Decide if we will render the SQL using "EXISTS (...)" (preferred option, at least of postresql) or "IN (...)".
+		final boolean useIN;
 		if (tableName == null || tableName.equals(subQuery.getTableName()))
-			
 		{
-			//task 08957
+			// task 08957
 			// In case the sub query is done on the same table as the parent table, we can't write it with "EXISTS"
-			// Because we don't have aliases. 
+			// Because we don't have aliases.
 			// Therefore, in such cases, we have to keep the writing with "IN"
+			logDevelopmentWarn("The query has to be written with IN instead of EXISTS because the tablename is the same for both query and sub query.");
+			useIN = true;
+		}
+		else if (subQueryImpl.hasLimitOrOffset())
+		{
+			// In case the sub-query is using LIMIT/OFFSET we cannot go with "EXISTS" because that one will not apply the LIMIT and ORDER BY, so we will get the wrong data.
+			useIN = true;
+		}
+		else
+		{
+			useIN = false;
+		}
+
+		//
+		// Build the final SQL and SQL parameters list
+		final String subWhereClause;
+		if (useIN)
+		{
 			subWhereClause = buildSql_UsingIN(subQueryImpl);
 		}
 		else
 		{
-			// For all the other cases it is more efficient to write the subquery using "EXISTS"
+			// For all the other cases it is more efficient to write the sub-query using "EXISTS"
 			subWhereClause = buildSql_UsingEXISTS(subQueryImpl);
 		}
-
 		final List<Object> subQueryParams = subQueryImpl.getParametersEffective();
 
+		//
+		// Assign them
 		this.sqlWhereClause = subWhereClause.toString();
 		this.sqlParams = subQueryParams;
 		this.sqlBuilt = true;
 	}
 
+	/**
+	 * Build the filter SQL using EXISTS.
+	 * 
+	 * e.g. EXISTS (SELECT 1 FROM SubTable WHERE ParentTable.JoinColumn=SubTable.JoinColumn AND .....)
+	 * 
+	 * @param subQueryImpl
+	 * @return sql
+	 */
 	private String buildSql_UsingEXISTS(final TypedSqlQuery<?> subQueryImpl)
 	{
 		final String subQueryColumnNameWithModifier = modifier.getColumnSql(this.subQueryColumnName);
 
+		//
+		// Build the new sub-query's SELECT FROM 
 		final StringBuilder subQuerySelectClause = new StringBuilder()
-				.append("SELECT ").append(1)
-				.append(" FROM ").append(subQueryImpl.getTableName());
+				.append("SELECT 1 FROM ").append(subQueryImpl.getTableName());
 		final boolean subQueryUseOrderByClause = false;
 
-		final StringBuilder linkingQuery = new StringBuilder()
-				.append(subQuery.getTableName() + "." + subQueryColumnName)
-				.append(" = ")
-				.append(this.tableName + "." + this.columnName);
+		//
+		// Build the new sub-query's where clause
+		final StringBuilder subQueryWhereClauseNew = new StringBuilder();
+		// Linking where clause
+		{
+			subQueryWhereClauseNew
+					.append(subQuery.getTableName() + "." + subQueryColumnName)
+					.append(" = ")
+					.append(this.tableName + "." + this.columnName);
+		}
+		//
+		// Make sure the ID column for which we are search for is NOT NULL.
+		// Otherwise, if there is any row where this column is null, PostgreSQL will return false no matter what (fuck you PG for that, btw).
+		{
+			subQueryWhereClauseNew.append(" and " + subQueryColumnNameWithModifier + " is not null");
+		}
+		// Sub-query's initial where clause
+		{
+			final String subQueryWhereClauseInitial = subQueryImpl.getWhereClause();
+			subQueryWhereClauseNew.append(" AND (").append(subQueryWhereClauseInitial).append(")");
+		}
 
-		final String initialWhereClause = subQueryImpl.getWhereClause();
-		final TypedSqlQuery<?> subQueryImpNew = subQueryImpl.setWhereClause(linkingQuery.toString() + " AND " + initialWhereClause);
-		final String subQuerySql = subQueryImpNew.buildSQL(subQuerySelectClause, subQueryUseOrderByClause)
-				//
-				// Make sure the ID column for which we are search for is NOT NULL.
-				// Otherwise, if there is any row where this column is null, PostgreSQL will return false no matter what (fuck you PG for that, btw).
-				+ " and " + subQueryColumnNameWithModifier + " is not null";
+		//
+		// Build the new sub-query SQL
+		final TypedSqlQuery<?> subQueryImpNew = subQueryImpl.setWhereClause(subQueryWhereClauseNew.toString());
+		final String subQuerySql = subQueryImpNew.buildSQL(subQuerySelectClause, subQueryUseOrderByClause);
 
-		final StringBuilder sqlWhereClause = new StringBuilder()
+		//
+		// Wrap the sub-query SQL in an EXISTS and return it
+		return new StringBuilder()
 				.append(" EXISTS (")
 				.append(subQuerySql)
-				.append(")");
-
-		return sqlWhereClause.toString();
+				.append(")")
+				.toString();
 	}
 
-	private String buildSql_UsingIN(final TypedSqlQuery<?> subQueryImpl) 
+	/**
+	 * Build the filter SQL using IN.
+	 * 
+	 * e.g. ParentTable.JoinColumn IN (SELECT 1 FROM SubTable WHERE ...)
+	 * 
+	 * @param subQueryImpl
+	 * @return sql
+	 */
+	private String buildSql_UsingIN(final TypedSqlQuery<?> subQueryImpl)
 	{
-		// warn the dev in case a query needs IN instead of EXISTS
-		if (Services.get(IDeveloperModeBL.class).isEnabled())
-		{
-			final AdempiereException e = new AdempiereException("The query has to be written with In instead of EXISTS because the tablename is the same for both query and sub query:"
-					+  this.toString());
-			
-			logger.log(Level.WARNING, e.getLocalizedMessage(), e);
-		}
-		
-		logger.log(Level.FINE, "The query has to be written with In instead of EXISTS because the tablename is the same for both query and sub query:"
-				+  this.toString());
-	
-		
 		final String subQueryColumnNameWithModifier = modifier.getColumnSql(this.subQueryColumnName);
 
+		//
+		// Build the new sub-query's SELECT FROM 
 		final StringBuilder subQuerySelectClause = new StringBuilder()
 				.append("SELECT ").append(subQueryColumnNameWithModifier)
 				.append(" FROM ").append(subQueryImpl.getTableName());
-		final boolean subQueryUseOrderByClause = false;
-		final String subQuerySql = subQueryImpl.buildSQL(subQuerySelectClause, subQueryUseOrderByClause)
-				//
-				// Make sure the ID column for which we are search for is NOT NULL.
-				// Otherwise, if there is any row where this column is null, PostgreSQL will return false no matter what (fuck you PG for that, btw).
-				+ " and " + subQueryColumnNameWithModifier + " is not null";
+		// We shall have ORDER BY in sub-query if the sub-query has a LIMIT/OFFSET set
+		final boolean subQueryUseOrderByClause = subQueryImpl.hasLimitOrOffset();
 
+		//
+		// Build the new sub-query's where clause
+		final StringBuilder subQueryWhereClauseNew = new StringBuilder("true");
+		// Sub-query's initial where clause
+		{
+			final String subQueryWhereClauseInitial = subQueryImpl.getWhereClause();
+			subQueryWhereClauseNew.append(" AND (").append(subQueryWhereClauseInitial).append(")");
+		}
+		//
+		// Make sure the ID column for which we are search for is NOT NULL.
+		// Otherwise, if there is any row where this column is null, PostgreSQL will return false no matter what (fuck you PG for that, btw).
+		{
+			subQueryWhereClauseNew.append(" and " + subQueryColumnNameWithModifier + " is not null");
+		}
+
+		//
+		// Build the new sub-query SQL
+		final TypedSqlQuery<?> subQueryImpNew = subQueryImpl.setWhereClause(subQueryWhereClauseNew.toString());
+		final String subQuerySql = subQueryImpNew.buildSQL(subQuerySelectClause, subQueryUseOrderByClause);
+
+		//
+		// Wrap the sub-query SQL in an IN (SELECT ...) and return it
 		final String columnNameWithModifier = modifier.getColumnSql(this.columnName);
-		final StringBuilder sqlWhereClause = new StringBuilder()
+		return new StringBuilder()
 				.append(columnNameWithModifier).append(" IN (")
 				.append(subQuerySql)
-				.append(")");
-
-		return sqlWhereClause.toString();
+				.append(")")
+				.toString();
+	}
+	
+	private final void logDevelopmentWarn(final String message)
+	{
+		if (Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			final AdempiereException e = new AdempiereException(message +"\n Filter: "+this);
+			logger.log(Level.WARNING, e.getLocalizedMessage(), e);
+		}
+		logger.log(Level.FINE, message +"\n Filter: {0}", this);
 	}
 
 	@Override
-	public boolean accept(T model)
+	public boolean accept(final T model)
 	{
 		final List<Object> subQueryValues = getSubQueryValues(model);
 		if (subQueryValues.isEmpty())

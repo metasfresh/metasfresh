@@ -1,4 +1,4 @@
-package org.adempiere.currency.exceptions;
+package de.metas.currency.exceptions;
 
 /*
  * #%L
@@ -22,10 +22,16 @@ package org.adempiere.currency.exceptions;
  * #L%
  */
 
-
-import org.adempiere.currency.ICurrencyConversionContext;
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.currency.ICurrencyConversionContext;
+
+/**
+ * Exception thrown when there was no currency rate found.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public class NoCurrencyRateFoundException extends AdempiereException
 {
 	/**
@@ -41,8 +47,8 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	private static String buildMsg(final ICurrencyConversionContext conversionCtx, final int currencyFromId, final int currencyToId)
 	{
 		return "@NotFound@ @C_Conversion_Rate_ID@"
-				+ "\n Context: " + conversionCtx
-				+ "\n Currency From: " + currencyFromId
-				+ "\n Currency To: " + currencyToId;
+				+ "\n @Context@: " + conversionCtx
+				+ "\n @C_Currency_ID@: " + currencyFromId
+				+ "\n @C_Currency_ID_To@: " + currencyToId;
 	}
 }

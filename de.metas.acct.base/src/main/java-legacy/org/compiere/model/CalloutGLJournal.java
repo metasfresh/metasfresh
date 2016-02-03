@@ -25,6 +25,8 @@ import org.adempiere.model.GridTabWrapper;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import de.metas.currency.ICurrencyBL;
+
 /**
  *	GL Journal Callout
  *	
@@ -64,7 +66,7 @@ public class CalloutGLJournal extends CalloutEngine
 		int AD_Client_ID = Env.getContextAsInt(ctx, WindowNo, "AD_Client_ID");
 		int AD_Org_ID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
 
-		BigDecimal CurrencyRate = MConversionRate.getRate(C_Currency_ID, as.getC_Currency_ID(), 
+		BigDecimal CurrencyRate = Services.get(ICurrencyBL.class).getRate(C_Currency_ID, as.getC_Currency_ID(), 
 			DateAcct, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
 		log.fine("rate = " + CurrencyRate);
 		if (CurrencyRate == null)

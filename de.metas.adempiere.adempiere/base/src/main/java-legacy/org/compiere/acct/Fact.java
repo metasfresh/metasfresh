@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.currency.ICurrencyConversionContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
@@ -36,6 +35,8 @@ import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MFactAcct;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+
+import de.metas.currency.ICurrencyConversionContext;
 
 /**
  * Accounting Fact
@@ -856,6 +857,7 @@ public final class Fact
 		@ToStringBuilder(skip = true)
 		private final Fact fact;
 		private DocLine docLine = null;
+		private Integer subLineId = null;
 
 		private MAccount account = null;
 
@@ -870,7 +872,7 @@ public final class Fact
 		private Integer AD_Org_ID;
 		private Integer C_BPartner_ID;
 		private Integer C_Tax_ID;
-
+		
 
 		private FactLineBuilder(final Fact fact)
 		{
@@ -916,8 +918,15 @@ public final class Fact
 					docLine == null ? 0 : docLine.get_ID(), // Line_ID
 					getTrxName());
 
-			// Set Info & Account
+			// Set Document, Line, Sub Line
 			line.setDocumentInfo(doc, docLine);
+			final Integer subLine_ID = getSubLine_ID();
+			if (subLine_ID != null)
+			{
+				line.setSubLine_ID(subLine_ID);
+			}
+			
+			// Account
 			line.setPostingType(getPostingType());
 			line.setAccount(getC_AcctSchema(), account);
 
@@ -953,7 +962,7 @@ public final class Fact
 			if (currencyConversionCtx != null)
 			{
 				line.setCurrencyConversionCtx(currencyConversionCtx);
-				line.addDescription("Conversion=" + currencyConversionCtx);
+				line.addDescription(currencyConversionCtx.getSummary());
 			}
 			line.convert();
 
@@ -1035,6 +1044,17 @@ public final class Fact
 		private final DocLine getDocLine()
 		{
 			return docLine;
+		}
+		
+		public final FactLineBuilder setSubLine_ID(final int subLineId)
+		{
+			this.subLineId = subLineId;
+			return this;
+		}
+		
+		private final Integer getSubLine_ID()
+		{
+			return subLineId;
 		}
 
 		private final MAcctSchema getC_AcctSchema()
@@ -1152,7 +1172,17 @@ public final class Fact
 			this.AD_Org_ID = adOrgId;
 			return this;
 		}
-		
+
+		public FactLineBuilder setAD_Org_ID_IfValid(final int adOrgId)
+		{
+			assertNotBuild();
+			if(adOrgId > 0 && adOrgId != Env.CTXVALUE_AD_Org_ID_System)
+			{
+				setAD_Org_ID(adOrgId);
+			}
+			return this;
+		}
+
 		private Integer getAD_Org_ID()
 		{
 			return AD_Org_ID;
@@ -1164,7 +1194,18 @@ public final class Fact
 			this.C_BPartner_ID = bpartnerId;
 			return this;
 		}
-		
+
+		public FactLineBuilder setC_BPartner_ID_IfValid(final int bpartnerId)
+		{
+			assertNotBuild();
+			if (bpartnerId > 0)
+			{
+				setC_BPartner_ID(bpartnerId);
+			}
+			return this;
+			
+		}
+
 		private Integer getC_BPartner_ID()
 		{
 			return C_BPartner_ID;

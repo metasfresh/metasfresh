@@ -49,7 +49,6 @@ import org.compiere.grid.ed.VButton;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MCashLine;
-import org.compiere.model.MCurrency;
 import org.compiere.model.MPayment;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
@@ -63,6 +62,8 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
+
+import de.metas.currency.ICurrencyDAO;
 
 /**
  * Display (and process) Payment Options.
@@ -335,7 +336,7 @@ public class VPayment extends CDialog
 			throw new AdempiereException("@PaymentZero@");
 		}
 
-		final int currencyPrecision = MCurrency.getStdPrecision(getCtx(), doc.getC_Currency_ID());
+		final int currencyPrecision = Services.get(ICurrencyDAO.class).getStdPrecision(getCtx(), doc.getC_Currency_ID());
 		payAmount.setScale(currencyPrecision, BigDecimal.ROUND_HALF_UP);
 
 		ProcessingCtx pctx = createContext(null);

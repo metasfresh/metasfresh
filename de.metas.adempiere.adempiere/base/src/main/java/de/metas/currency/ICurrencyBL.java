@@ -1,4 +1,4 @@
-package org.adempiere.service;
+package de.metas.currency;
 
 /*
  * #%L
@@ -25,14 +25,13 @@ package org.adempiere.service;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.currency.ICurrencyConversionContext;
-import org.adempiere.currency.ICurrencyConversionResult;
-import org.adempiere.currency.ICurrencyRate;
-import org.adempiere.currency.exceptions.NoCurrencyRateFoundException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Currency;
+
+import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 
 /**
  * Currency conversion services.
@@ -40,12 +39,13 @@ import org.compiere.model.I_C_Currency;
  * @author tsa
  * 
  */
-// TODO: move it to org.adempiere.currency package
-public interface ICurrencyConversionBL extends ISingletonService
+public interface ICurrencyBL extends ISingletonService
 {
 	int DEFAULT_ConversionType_ID = 0;
 
-	ICurrencyConversionContext createCurrencyConversionContext(Timestamp ConvDate, int ConversionType_ID, int AD_Client_ID, int AD_Org_ID);
+	ICurrencyConversionContext createCurrencyConversionContext(Date ConvDate, int ConversionType_ID, int AD_Client_ID, int AD_Org_ID);
+
+	ICurrencyConversionContext createCurrencyConversionContext(Date ConvDate, ConversionType conversionType, int AD_Client_ID, int AD_Org_ID);
 
 	/**
 	 * Gets base currency of AD_Client and AD_Org which are set in context.
@@ -129,7 +129,7 @@ public interface ICurrencyConversionBL extends ISingletonService
 	 * @param conversionCtx
 	 * @param currencyFromId
 	 * @param currencyToId
-	 * @return currency rate
+	 * @return currency rate; never returns null
 	 * @throws NoCurrencyRateFoundException
 	 */
 	ICurrencyRate getCurrencyRate(ICurrencyConversionContext conversionCtx, int currencyFromId, int currencyToId);

@@ -27,8 +27,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.ISingletonService;
+
+import de.metas.currency.ICurrencyBL;
 
 /**
  * Misc Dunning Utils which are referencing other projects.
@@ -41,7 +42,7 @@ import org.adempiere.util.ISingletonService;
 public interface IDunningUtil extends ISingletonService
 {
 	/**
-	 * Delegate to {@link ICurrencyConversionBL#convert(Properties, BigDecimal, int, int, Timestamp, int, int, int)}.
+	 * Delegate to {@link ICurrencyBL#convert(Properties, BigDecimal, int, int, Timestamp, int, int, int)}.
 	 * 
 	 * @param ctx
 	 * @param Amt

@@ -1,4 +1,4 @@
-package org.adempiere.currency.impl;
+package de.metas.currency.impl;
 
 /*
  * #%L
@@ -26,9 +26,10 @@ package org.adempiere.currency.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.currency.ICurrencyRate;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
+
+import de.metas.currency.ICurrencyRate;
 
 public final class CurrencyRate implements ICurrencyRate
 {

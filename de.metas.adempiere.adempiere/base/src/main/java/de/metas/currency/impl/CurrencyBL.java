@@ -1,4 +1,4 @@
-package org.adempiere.service.impl;
+package de.metas.currency.impl;
 
 /*
  * #%L
@@ -27,33 +27,26 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.currency.ICurrencyConversionContext;
-import org.adempiere.currency.ICurrencyConversionResult;
-import org.adempiere.currency.ICurrencyRate;
-import org.adempiere.currency.exceptions.NoCurrencyRateFoundException;
-import org.adempiere.currency.impl.CurrencyConversionContext;
-import org.adempiere.currency.impl.CurrencyConversionResult;
-import org.adempiere.currency.impl.CurrencyRate;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
-import org.compiere.model.MConversionType;
-import org.compiere.model.MCurrency;
-import org.compiere.util.CLogger;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-public class CurrencyConversionBL implements ICurrencyConversionBL
-{
-	private static final transient CLogger logger = CLogger.getCLogger(CurrencyConversionBL.class);
+import de.metas.currency.ConversionType;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.ICurrencyConversionResult;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.ICurrencyRate;
+import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 
+public class CurrencyBL implements ICurrencyBL
+{
 	@Override
 	public final I_C_Currency getBaseCurrency(final Properties ctx)
 	{
@@ -144,7 +137,7 @@ public class CurrencyConversionBL implements ICurrencyConversionBL
 		result.setConversionRate(currencyRate.getConversionRate());
 
 		//
-		// Calcualte the converted amount
+		// Calculate the converted amount
 		final BigDecimal amountConv = currencyRate.convertAmount(amt);
 		result.setAmount(amountConv);
 
@@ -153,7 +146,7 @@ public class CurrencyConversionBL implements ICurrencyConversionBL
 
 	protected int getCurrencyPrecision(final int currencyId)
 	{
-		return MCurrency.getStdPrecision(Env.getCtx(), currencyId);
+		return Services.get(ICurrencyDAO.class).getStdPrecision(Env.getCtx(), currencyId);
 	}
 
 	@Override
@@ -180,9 +173,9 @@ public class CurrencyConversionBL implements ICurrencyConversionBL
 	}
 
 	@Override
-	public final ICurrencyConversionContext createCurrencyConversionContext(final Timestamp ConvDate, final int ConversionType_ID, final int AD_Client_ID, final int AD_Org_ID)
+	public final ICurrencyConversionContext createCurrencyConversionContext(final Date ConvDate, final int ConversionType_ID, final int AD_Client_ID, final int AD_Org_ID)
 	{
-		final CurrencyConversionContext conversionCtx = new CurrencyConversionContext();
+		final CurrencyConversionContext.Builder conversionCtx = CurrencyConversionContext.builder();
 		conversionCtx.setAD_Client_ID(AD_Client_ID);
 		conversionCtx.setAD_Org_ID(AD_Org_ID);
 
@@ -193,7 +186,7 @@ public class CurrencyConversionBL implements ICurrencyConversionBL
 		}
 		else
 		{
-			final int defaultConversionTypeId = retrieveDefaultConversionTypeId(AD_Client_ID);
+			final int defaultConversionTypeId = retrieveDefaultConversionTypeId(ConvDate, AD_Client_ID, AD_Org_ID);
 			conversionCtx.setC_ConversionType_ID(defaultConversionTypeId);
 		}
 
@@ -207,12 +200,26 @@ public class CurrencyConversionBL implements ICurrencyConversionBL
 			conversionCtx.setConversionDate(SystemTime.asDate());
 		}
 
-		return conversionCtx;
+		return conversionCtx.build();
 	}
 
-	protected int retrieveDefaultConversionTypeId(final int adClientId)
+	@Override
+	public final ICurrencyConversionContext createCurrencyConversionContext(final Date ConvDate, final ConversionType conversionType, final int AD_Client_ID, final int AD_Org_ID)
 	{
-		return MConversionType.getDefault(adClientId);
+		// Find C_ConversionType_ID
+		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+		final I_C_ConversionType conversionTypeDef = currencyDAO.retrieveConversionType(Env.getCtx(), ConversionType.Spot);
+		final int conversionTypeId = conversionTypeDef.getC_ConversionType_ID();
+		
+		return createCurrencyConversionContext(ConvDate, conversionTypeId, AD_Client_ID, AD_Org_ID);
+	}
+
+	protected int retrieveDefaultConversionTypeId(final Date date, final int adClientId, final int adOrgId)
+	{
+		final Properties ctx = Env.getCtx();
+		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+		final I_C_ConversionType conversionType = currencyDAO.retrieveDefaultConversionType(ctx, adClientId, adOrgId, date);
+		return conversionType.getC_ConversionType_ID();
 	}
 
 	@Override
@@ -239,7 +246,7 @@ public class CurrencyConversionBL implements ICurrencyConversionBL
 			return new CurrencyRate(conversionRate, CurFrom_ID, CurTo_ID, currencyPrecision, conversionTypeId, conversionDate);
 		}
 
-		final BigDecimal rate = retrieveRateOrNull(conversionCtx, CurFrom_ID, CurTo_ID);
+		final BigDecimal rate = Services.get(ICurrencyDAO.class).retrieveRateOrNull(conversionCtx, CurFrom_ID, CurTo_ID);
 		if (rate == null)
 		{
 			return null;
@@ -258,39 +265,6 @@ public class CurrencyConversionBL implements ICurrencyConversionBL
 		return currencyRate;
 	}
 
-	protected BigDecimal retrieveRateOrNull(final ICurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
-	{
-		final int conversionTypeId = conversionCtx.getC_ConversionType_ID();
-		final Date conversionDate = conversionCtx.getConversionDate();
-
-		// Get Rate
-		final String sql = "SELECT MultiplyRate "
-				+ "FROM C_Conversion_Rate "
-				+ "WHERE C_Currency_ID=?"					// #1
-				+ " AND C_Currency_ID_To=?"					// #2
-				+ " AND	C_ConversionType_ID=?"				// #3
-				+ " AND	? BETWEEN ValidFrom AND ValidTo"	// #4 TRUNC (?) ORA-00932: inconsistent datatypes: expected NUMBER got TIMESTAMP
-				+ " AND AD_Client_ID IN (0,?)"				// #5
-				+ " AND AD_Org_ID IN (0,?) "				// #6
-				+ "ORDER BY AD_Client_ID DESC, AD_Org_ID DESC, ValidFrom DESC";
-		final Object[] sqlParams = new Object[] {
-				CurFrom_ID,
-				CurTo_ID,
-				conversionTypeId,
-				conversionDate,
-				conversionCtx.getAD_Client_ID(),
-				conversionCtx.getAD_Org_ID()
-		};
-		final BigDecimal rate = DB.getSQLValueBDEx(ITrx.TRXNAME_None, sql, sqlParams);
-		if (rate == null)
-		{
-			logger.log(Level.INFO, "currency rate not found - CurFrom={0}, CurTo={1}, context={2}", new Object[] { CurFrom_ID, CurTo_ID, conversionCtx });
-			return null;
-		}
-
-		return rate;
-	}
-
 	private final CurrencyConversionResult createCurrencyConversionResult(final ICurrencyConversionContext conversionCtx)
 	{
 		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
@@ -302,4 +276,6 @@ public class CurrencyConversionBL implements ICurrencyConversionBL
 		result.setC_ConversionType_ID(conversionCtx.getC_ConversionType_ID());
 		return result;
 	}
+	
+	
 }

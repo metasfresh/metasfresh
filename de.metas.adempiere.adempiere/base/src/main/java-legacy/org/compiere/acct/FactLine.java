@@ -23,10 +23,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.adempiere.currency.ICurrencyConversionContext;
-import org.adempiere.currency.ICurrencyRate;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ICurrencyConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
@@ -35,7 +32,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
-import org.compiere.model.MCurrency;
 import org.compiere.model.MFactAcct;
 import org.compiere.model.MMovement;
 import org.compiere.model.MRevenueRecognitionPlan;
@@ -43,6 +39,11 @@ import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.ICurrencyRate;
 
 /**
  * Accounting Fact Entry.
@@ -264,7 +265,7 @@ final class FactLine extends X_Fact_Acct
 		setC_Currency_ID(C_Currency_ID);
 
 		// Currency Precision
-		final int precision = MCurrency.getStdPrecision(getCtx(), C_Currency_ID);
+		final int precision = Services.get(ICurrencyDAO.class).getStdPrecision(getCtx(), C_Currency_ID);
 		setAmtSourceDr(roundAmountToPrecision("AmtSourceDr", AmtSourceDr, precision));
 		setAmtSourceCr(roundAmountToPrecision("AmtSourceCr", AmtSourceCr, precision));
 	}   // setAmtSource
@@ -344,7 +345,7 @@ final class FactLine extends X_Fact_Acct
 	 */
 	public void setAmtAcct(final int C_Currency_ID, final BigDecimal AmtAcctDr, final BigDecimal AmtAcctCr)
 	{
-		final int precision = MCurrency.getStdPrecision(getCtx(), C_Currency_ID);
+		final int precision = Services.get(ICurrencyDAO.class).getStdPrecision(getCtx(), C_Currency_ID);
 		setAmtAcctDr(roundAmountToPrecision("AmtAcctDr", AmtAcctDr, precision));
 		setAmtAcctCr(roundAmountToPrecision("AmtAcctCr", AmtAcctCr, precision));
 	}   // setAmtAcct
@@ -893,7 +894,7 @@ final class FactLine extends X_Fact_Acct
 			return;
 		}
 		
-		final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final ICurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
 		final ICurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(conversionCtx, getC_Currency_ID(), m_acctSchema.getC_Currency_ID());
 		final BigDecimal amtAcctDr = currencyRate.convertAmount(getAmtSourceDr());
@@ -918,7 +919,7 @@ final class FactLine extends X_Fact_Acct
 		}
 		
 		// Get Conversion Type from Line or Header
-		int C_ConversionType_ID = ICurrencyConversionBL.DEFAULT_ConversionType_ID;
+		int C_ConversionType_ID = ICurrencyBL.DEFAULT_ConversionType_ID;
 		int AD_Org_ID = 0;
 		if (m_docLine != null)			// get from line
 		{
@@ -933,7 +934,7 @@ final class FactLine extends X_Fact_Acct
 				AD_Org_ID = m_doc.getAD_Org_ID();
 		}
 
-		final ICurrencyConversionBL currencyConversionBL = Services.get(ICurrencyConversionBL.class);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(getDateAcct(), C_ConversionType_ID, m_doc.getAD_Client_ID(), AD_Org_ID);
 		return conversionCtx;
 	}
