@@ -8,8 +8,10 @@ but since that spec doesn't (yet?) support multiple releases in one file,
 we only adhere to it as far as it's convenient in term of the documents structuring
 
 Meanings of the categories we currently use:
- * uat: was migrated from the uat baseline
+ * it: was developed in the it baseline
+ * uat: was developed in the uat baseline (important: this baseline is discontinued!)
  * fix: a bugfix
+ * feature: a new feature
 
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
@@ -23,7 +25,13 @@ Additional notes:
     * small changes around the dunning jasper
 
 ## it-S16_05-20160202
- - fixed the default location of the client properties file from <user.home>/.metas-fresh to <user.home>/.metasfresh
+ - 09775 Import GL Journal Number Format Exception (104021981594): +it +feature
+    * when importing values into a non-text filed that can't be parsed as number, date etc, then don't fail the whole import
+ - 09110 Make activity mandatory in accounting documents and allow the user to select one on demand (105477200774) +uat +feature
+ - minor, unrelated fix: when retrieving dunning levels, order them by +it +fix
+    *"DaysAfterDue" to make sure they are dealt with in chronological order.
+    *Actually, the order might not matter, but a counterintuitive ordering causes FUD.
+ - fixed the default location of the client properties file from <user.home>/.metas-fresh to <user.home>/.metasfresh +it +fix
  - 09741 Problems with HU labels for split HUs (104680331233) +uat +fix
  - 09765 Process to manually re-open C_PAySelection records that were already prepared (108508031142) +uat +feature
  - 09745 alternative jasper shipment document without ADR but explicit GMAA-values (107947997555) +uat +feature
