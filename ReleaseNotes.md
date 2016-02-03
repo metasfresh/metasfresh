@@ -21,6 +21,7 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09625 Costing short report incl Budget (105806249331) +it +fix
  - 09710 Report regarding effective prices (107746499502) +uat +fix
     * layout/display fix rergarding the report's page number
  - 09766 VAT codes (107418136945) +uat +feature
