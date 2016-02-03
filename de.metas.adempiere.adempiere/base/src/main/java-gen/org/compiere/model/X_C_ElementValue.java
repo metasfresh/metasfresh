@@ -30,7 +30,7 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1107310511L;
+	private static final long serialVersionUID = -980702719L;
 
     /** Standard Constructor */
     public X_C_ElementValue (Properties ctx, int C_ElementValue_ID, String trxName)
@@ -45,6 +45,8 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 			setC_Element_ID (0);
 			setC_ElementValue_ID (0);
 			setIsAutoTaxAccount (false);
+// N
+			setIsMandatoryActivity (false);
 // N
 			setIsSummary (false);
 			setName (null);
@@ -427,6 +429,29 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	public boolean isForeignCurrency () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsForeignCurrency);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Kostenstelle ist Pflichtangabe.
+		@param IsMandatoryActivity Kostenstelle ist Pflichtangabe	  */
+	@Override
+	public void setIsMandatoryActivity (boolean IsMandatoryActivity)
+	{
+		set_Value (COLUMNNAME_IsMandatoryActivity, Boolean.valueOf(IsMandatoryActivity));
+	}
+
+	/** Get Kostenstelle ist Pflichtangabe.
+		@return Kostenstelle ist Pflichtangabe	  */
+	@Override
+	public boolean isMandatoryActivity () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsMandatoryActivity);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

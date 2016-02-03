@@ -19,6 +19,7 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.DB;
@@ -77,7 +78,7 @@ public class M_Element extends X_AD_Element
 	@Cached(cacheName = I_AD_Element.Table_Name + "#by#" + I_AD_Element.COLUMNNAME_ColumnName)
 	public static M_Element get (@CacheCtx Properties ctx, String columnName) 
 	{
-		return get(ctx, columnName, null);
+		return get(ctx, columnName, ITrx.TRXNAME_None);
 	}
 	
 	/**

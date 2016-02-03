@@ -1,5 +1,6 @@
 package org.adempiere.ad.dao;
 
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -61,4 +62,9 @@ public interface IQueryInsertExecutor<ToModelType, FromModelType>
 	 * @param constantValue
 	 */
 	IQueryInsertExecutor<ToModelType, FromModelType> mapColumnToConstant(String toColumnName, Object constantValue);
+
+	/**
+	 * Map the primary key column (so the ID will be generated)
+	 */
+	IQueryInsertExecutor<ToModelType, FromModelType> mapPrimaryKey();
 }

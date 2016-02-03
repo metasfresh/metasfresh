@@ -423,7 +423,10 @@ final class FactLine extends X_Fact_Acct
 		if (m_docLine != null)
 			setC_Tax_ID(m_docLine.getC_Tax_ID());
 		
-		// DocStatus
+		// Document infos
+		setDocumentNo(m_doc.getDocumentNo());
+		setC_DocType_ID(m_doc.getC_DocType_ID());
+		setDocBaseType(m_doc.getDocumentType());
 		setDocStatus(m_doc.getDocStatus());
 		
 		// Description

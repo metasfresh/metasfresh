@@ -22,7 +22,6 @@ package org.adempiere.ad.service;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
@@ -39,4 +38,13 @@ public interface ISequenceDAO extends ISingletonService
 	I_AD_Sequence retrieveTableSequenceOrNull(final Properties ctx, final String tableName);
 
 	ITableSequenceChecker createTableSequenceChecker(Properties ctx);
+
+	/**
+	 * Rename the sequence name when a given table name was changed
+	 * 
+	 * @param ctx
+	 * @param tableNameOld
+	 * @param tableNameNew
+	 */
+	void renameTableSequence(Properties ctx, String tableNameOld, String tableNameNew);
 }

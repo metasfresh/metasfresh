@@ -236,6 +236,13 @@ public interface AdempiereDatabase
 	public boolean createSequence(String name, int increment, int minvalue, int maxvalue, int start, String trxName);
 
 	/**
+	 * Rename the native sequence
+	 * @param dbSequenceNameOld sequence name
+	 * @param dbSequenceNameNew new sequence name
+	 */
+	public void renameSequence(String dbSequenceNameOld, String dbSequenceNameNew);
+
+	/**
 	 * Get Cached Connection on Server
 	 *
 	 * @param connection info

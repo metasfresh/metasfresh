@@ -16,12 +16,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -58,6 +52,10 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.process.Param;
+import de.metas.process.Process;
+import de.metas.process.RunOutOfTrx;
+
 /**
  * Server Process base class.
  *
@@ -66,6 +64,8 @@ import com.google.common.annotations.VisibleForTesting;
  * <li> {@link ISvrProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
  * <li> {@link ISvrProcessDefaultParametersProvider} if you want to provide some default values for parameters, when the UI parameters dialog is loaded
  * <li> {@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
+ * <li> {@link Process} annotation if you add more info about how the process shall be executed
+ * <li> {@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
  * </ul>
  *
  *
@@ -168,7 +168,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			{
 				assertOutOfTransaction(trx, "prepare"); // make sure we were asked to run out of transaction
 				prepareExecuted = true;
-				prepare();
+				prepareProcess();
 			}
 
 			//
@@ -191,7 +191,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 				if (!prepareExecuted)
 				{
 					prepareExecuted = true;
-					prepare();
+					prepareProcess();
 				}
 				if (!doItExecuted)
 				{
@@ -424,16 +424,38 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	}
 
 	/**
-	 * Prepare process run.
-	 *
+	 * Prepares process instance for execution.
+	 * <ul>
+	 * <li>loads parameters which were annotated with {@link Param}.
+	 * <li>calls {@link #prepare()}
+	 * </ul>
+	 */
+	private final void prepareProcess()
+	{
+		//
+		// Load annotated process parameters
+		final ProcessClassInfo processClassInfo = getProcessInfo().getProcessClassInfo();
+		processClassInfo.loadParameterValues(this, getParameterAsIParams());
+
+		//
+		// Call the actual prepare custom implementation
+		prepare();
+	}
+
+	/**
+	 * Prepare process run. See {@link Param} for a way to avoid having to implement this method.
+	 * <b>
 	 * Here you would implement process preparation business logic (e.g. parameters retrieval).
-	 *
+	 * <b>
 	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}. By default, this method is executed in transaction.
 	 *
 	 * @throws ProcessCanceledException in case there is a cancel request on prepare
 	 * @throws RuntimeException in case of any failure
 	 */
-	abstract protected void prepare();
+	protected void prepare()
+	{
+		// default implementation does nothing
+	}
 
 	/**
 	 * Actual process business logic to be executed.
@@ -683,10 +705,10 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	{
 		return m_pi.getParameterAsIParams();
 	}
-	
+
 	/**
 	 * Sets if the process logs (if any) shall be displayed to user
-	 * 
+	 *
 	 * @param showProcessLogsPolicy
 	 * @see ProcessInfo#setShowProcessLogs(ShowProcessLogs)
 	 */
@@ -857,19 +879,6 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 				.filter(selectedRecordsQueryFilter)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
-	}
-
-	/**
-	 * Used to annotate that {@link SvrProcess#prepare()} or {@link SvrProcess#doIt()} shall be executed out of transaction.
-	 *
-	 * If {@link SvrProcess#doIt()} is annotated then {@link SvrProcess#prepare()} will be executed out of transaction too.
-	 */
-	@Inherited
-	@Documented
-	@Retention(RetentionPolicy.RUNTIME)
-	@Target({ ElementType.METHOD, ElementType.TYPE })
-	protected @interface RunOutOfTrx
-	{
 	}
 
 	/**

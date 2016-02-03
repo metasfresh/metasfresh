@@ -1056,4 +1056,14 @@ public class GridFieldVO implements Serializable
 	{
 		return formatPattern;
 	}
+
+	public boolean isMandatory()
+	{
+		return IsMandatory;
+	}
+	
+	public void setMandatory(final boolean mandatory)
+	{
+		this.IsMandatory = mandatory;
+	}
 }

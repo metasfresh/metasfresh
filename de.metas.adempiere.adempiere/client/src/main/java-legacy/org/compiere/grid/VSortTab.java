@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 import javax.swing.DefaultListCellRenderer;
@@ -52,6 +53,7 @@ import javax.swing.event.MouseInputListener;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.images.Images;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -66,6 +68,7 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
+import org.compiere.util.TrxRunnableAdapter;
 
 /**
  *	Tab to maintain Order/Sequence
@@ -439,10 +442,19 @@ public class VSortTab extends CPanel implements APanelTab
 		if (m_ColumnYesNoName != null)
 			sql.append(",t.").append(m_ColumnYesNoName);			//	6
 		// metas: begin
-		final boolean developerModeEnabled = Services.get(IDeveloperModeBL.class).isEnabled();
-		if (developerModeEnabled && "AD_Field".equals(m_TableName))
+		boolean hasColumnName = false;
+		if (Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			if ("AD_Field".equals(m_TableName))
 		{
 			sql.append(", (SELECT c.ColumnName FROM AD_Column c WHERE c.AD_Column_ID=t.AD_Column_ID) AS ColumnName");
+				hasColumnName = true;
+			}
+			else if ("AD_Process_Para".equals(m_TableName))
+			{
+				sql.append(", t.ColumnName AS ColumnName");
+				hasColumnName = true;
+			}
 		}
 		// metas: end
 		//	Tables
@@ -506,7 +518,7 @@ public class VSortTab extends CPanel implements APanelTab
 					isYes = "Y".equals(rs.getString(6));
 				
 				// metas: begin
-				if (developerModeEnabled && "AD_Field".equals(m_TableName))
+				if (hasColumnName)
 				{
 					String columnName = rs.getString("ColumnName");
 					name = name == null ? columnName : columnName + " / " + name;
@@ -674,8 +686,15 @@ public class VSortTab extends CPanel implements APanelTab
 		if (!m_aPanel.aSave.isEnabled())
 			return;
 		log.fine("");
-		boolean ok = true;
-		StringBuffer info = new StringBuffer();
+		
+		final AtomicBoolean ok = new AtomicBoolean(true);
+		final StringBuffer info = new StringBuffer();
+		Services.get(ITrxManager.class)
+				.run(new TrxRunnableAdapter()
+				{
+					@Override
+					public void run(String localTrxName) throws Exception
+					{
 		//	noList - Set SortColumn to null and optional YesNo Column to 'N'
 		for (int i = 0; i < noModel.getSize(); i++)
 		{
@@ -687,7 +706,7 @@ public class VSortTab extends CPanel implements APanelTab
 			
 			if (!updateAndSaveListItem(pp, false, 0))
 			{
-				ok = false;
+								ok.set(false);
 				if (info.length() > 0)
 					info.append(", ");
 				info.append(pp.getName());
@@ -707,18 +726,23 @@ public class VSortTab extends CPanel implements APanelTab
 			//
 			if (!updateAndSaveListItem(pp, true, index))
 			{
-				ok = false;
+								ok.set(false);
 				if (info.length() > 0)
 					info.append(", ");
 				info.append(pp.getName());
 				log.log(Level.SEVERE, "YesModel - Not updated: " + m_KeyColumnName + "=" + pp.getKey());
 			}
 		}
+					}
+				});
+		
 		//
-		if (ok) {
+		if (ok.get())
+		{
 			setIsChanged(false);
 		}
-		else {
+		else
+		{
 			ADialog.error(m_WindowNo, null, "SaveError", info.toString());
 		}
 	}	//	saveData
@@ -731,7 +755,7 @@ public class VSortTab extends CPanel implements APanelTab
 		}
 		
 		final Properties ctx = Env.getCtx();
-		final String trxName = null;
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final PO po = new Query(ctx, m_TableName, m_KeyColumnName + "=?", trxName)
 				.setParameters(item.getKey())
 				.firstOnly();

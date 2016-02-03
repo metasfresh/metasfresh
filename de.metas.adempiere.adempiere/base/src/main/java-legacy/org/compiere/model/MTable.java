@@ -411,6 +411,11 @@ public class MTable extends X_AD_Table
 					.run();
 		}
 		
+		if (!newRecord && is_ValueChanged(COLUMNNAME_TableName))
+		{
+			Services.get(IADTableDAO.class).onTableNameRename(this);
+		}
+		
 		return success;
 	}	//	afterSave
 	

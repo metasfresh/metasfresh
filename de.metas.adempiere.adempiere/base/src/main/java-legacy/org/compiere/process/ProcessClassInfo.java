@@ -1,17 +1,30 @@
 package org.compiere.process;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
+import org.adempiere.util.Check;
+import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.process.SvrProcess.RunOutOfTrx;
+import org.compiere.util.CLogger;
+import org.compiere.util.Util.ArrayKey;
 import org.reflections.ReflectionUtils;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.process.Param;
+import de.metas.process.Process;
+import de.metas.process.RunOutOfTrx;
 
 /*
  * #%L
@@ -46,6 +59,8 @@ import com.google.common.cache.LoadingCache;
  */
 public final class ProcessClassInfo
 {
+	private static final transient CLogger logger = SvrProcess.s_log;
+	
 	/**
 	 * @return process class info or {@link #NULL} in case the given <code>processClass</code> is <code>null</code> or in case of failure.
 	 */
@@ -62,9 +77,34 @@ public final class ProcessClassInfo
 		catch (ExecutionException e)
 		{
 			// shall never happen
-			SvrProcess.s_log.log(Level.SEVERE, "Failed fetching ProcessClassInfo from cache for " + processClass, e);
+			logger.log(Level.SEVERE, "Failed fetching ProcessClassInfo from cache for " + processClass, e);
 		}
 		return ProcessClassInfo.NULL;
+	}
+	
+	/**
+	 * @return process class info or {@link #NULL} in case the given <code>processClass</code> is <code>null</code> or in case of failure.
+	 */
+	public static final ProcessClassInfo ofClassname(final String classname)
+	{
+		Class<?> processClass = null;
+		if (!Check.isEmpty(classname))
+		{
+			try
+			{
+				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+				if (classLoader == null)
+				{
+					classLoader = ProcessClassInfo.class.getClassLoader();
+				}
+				processClass = classLoader.loadClass(classname);
+			}
+			catch (ClassNotFoundException e)
+			{
+				// nothing
+			}
+		}
+		return of(processClass);
 	}
 
 	/** "Process class" to {@link ProcessClassInfo} cache */
@@ -89,20 +129,60 @@ public final class ProcessClassInfo
 	{
 		try
 		{
-			boolean runPrepareOutOfTransaction = isRunOutOfTrx(processClass, void.class, "prepare");
-			final boolean runDoItOutOfTransaction = isRunOutOfTrx(processClass, String.class, "doIt");
-			if (runDoItOutOfTransaction)
-			{
-				runPrepareOutOfTransaction = true;
-			}
-
-			return new ProcessClassInfo(runPrepareOutOfTransaction, runDoItOutOfTransaction);
+			return new ProcessClassInfo(processClass);
 		}
 		catch (Throwable e)
 		{
-			SvrProcess.s_log.log(Level.SEVERE, "Failed introspecting process class info: " + processClass + ". Fallback to defaults: " + NULL, e);
+			logger.log(Level.SEVERE, "Failed introspecting process class info: " + processClass + ". Fallback to defaults: " + NULL, e);
 			return NULL;
 		}
+	}
+
+	/** Retrieves the fields which were marked as process parameters */
+	private static final Set<Field> retrieveParameterFields(final Class<?> processClass)
+	{
+		@SuppressWarnings("unchecked")
+		final Set<Field> paramFields = ReflectionUtils.getAllFields(processClass, ReflectionUtils.withAnnotation(Param.class));
+		return paramFields;
+	}
+
+	/** Introspects given process class and creates the {@link ProcessClassParamInfo}s */
+	private static final List<ProcessClassParamInfo> createProcessClassParamInfos(final Class<?> processClass)
+	{
+		final Set<Field> paramFields = retrieveParameterFields(processClass);
+		if(paramFields.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
+		final List<ProcessClassParamInfo> paramInfos = new ArrayList<>(paramFields.size());
+		for (final Field paramField : paramFields)
+		{
+			final ProcessClassParamInfo paramInfo = createProcessClassParamInfo(paramField);
+			if (paramInfo == null)
+			{
+				continue;
+			}
+			paramInfos.add(paramInfo);
+		}
+
+		return paramInfos;
+	}
+	
+	private static ProcessClassParamInfo createProcessClassParamInfo(final Field paramField)
+	{
+		final Param paramAnn = paramField.getAnnotation(Param.class);
+		if (paramAnn == null)
+		{
+			// shall not happen...
+			return null;
+		}
+
+		return ProcessClassParamInfo.builder()
+				.setField(paramField)
+				.setParameterName(paramAnn.parameterName())
+				.setMandatory(paramAnn.mandatory())
+				.build();
 	}
 
 	private static final boolean isRunOutOfTrx(final Class<?> processClass, final Class<?> returnType, final String methodName)
@@ -140,23 +220,54 @@ public final class ProcessClassInfo
 
 	private final boolean runPrepareOutOfTransaction;
 	private final boolean runDoItOutOfTransaction;
+	private final List<ProcessClassParamInfo> parameterInfos;
+
+	private static final boolean DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear = true;
+	private final boolean existingCurrentRecordRequiredWhenCalledFromGear;
 
 	// NOTE: NEVER EVER store the process class as field because we want to have a weak reference to it to prevent ClassLoader memory leaks nightmare.
 	// Remember that we are caching this object.
 
 	/** null constructor */
-	ProcessClassInfo()
+	private ProcessClassInfo()
 	{
 		super();
 		runPrepareOutOfTransaction = false;
 		runDoItOutOfTransaction = false;
+		parameterInfos = ImmutableList.of();
+		existingCurrentRecordRequiredWhenCalledFromGear = DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear;
 	}
 
-	ProcessClassInfo(final boolean runPrepareOutOfTransaction, final boolean runDoItOutOfTransaction)
+	private ProcessClassInfo(final Class<?> processClass)
 	{
 		super();
+
+		//
+		// Load from @RunOutOfTrx annnotation
+		boolean runPrepareOutOfTransaction = isRunOutOfTrx(processClass, void.class, "prepare");
+		final boolean runDoItOutOfTransaction = isRunOutOfTrx(processClass, String.class, "doIt");
+		if (runDoItOutOfTransaction)
+		{
+			runPrepareOutOfTransaction = true;
+		}
 		this.runPrepareOutOfTransaction = runPrepareOutOfTransaction;
 		this.runDoItOutOfTransaction = runDoItOutOfTransaction;
+
+		//
+		// Load parameter infos
+		this.parameterInfos = ImmutableList.copyOf(createProcessClassParamInfos(processClass));
+
+		//
+		// Load from @Process annotation
+		final Process processAnn = processClass.getAnnotation(Process.class);
+		if (processAnn != null)
+		{
+			this.existingCurrentRecordRequiredWhenCalledFromGear = processAnn.requiresCurrentRecordWhenCalledFromGear();
+		}
+		else
+		{
+			this.existingCurrentRecordRequiredWhenCalledFromGear = DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear;
+		}
 	}
 
 	@Override
@@ -175,5 +286,63 @@ public final class ProcessClassInfo
 	public boolean isRunDoItOutOfTransaction()
 	{
 		return runDoItOutOfTransaction;
+	}
+	
+	public boolean isParameterMandatory(final String parameterName)
+	{
+		for (final ProcessClassParamInfo paramInfo : parameterInfos)
+		{
+			if (!paramInfo.getParameterName().equalsIgnoreCase(parameterName))
+			{
+				continue;
+			}
+			
+			if(paramInfo.isMandatory())
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public List<ProcessClassParamInfo> getParameterInfos()
+	{
+		return parameterInfos;
+	}
+	
+	public void loadParameterValues(final Object processInstance, final IRangeAwareParams source)
+	{
+		Check.assumeNotNull(processInstance, "processInstance not null");
+
+		// No parameters => nothing to do
+		if (parameterInfos.isEmpty())
+		{
+			return;
+		}
+
+		//
+		// Retrieve Fields from processInstance's class
+		final Map<ArrayKey, Field> processFields = new HashMap<>();
+		for (final Field processField : retrieveParameterFields(processInstance.getClass()))
+		{
+			final ArrayKey fieldKey = ProcessClassParamInfo.createFieldUniqueKey(processField);
+			processFields.put(fieldKey, processField);
+		}
+
+		//
+		// Iterate all process class info parameters and try to update the corresponding field
+		for (final ProcessClassParamInfo paramInfo : parameterInfos)
+		{
+			final ArrayKey fieldKey = paramInfo.getFieldKey();
+			final Field processField = processFields.get(fieldKey);
+			paramInfo.loadParameterValue(processInstance, processField, source);
+		}
+	}
+	
+	/** @return true if a current record needs to be selected when this process is called from gear/window. */
+	public boolean isExistingCurrentRecordRequiredWhenCalledFromGear()
+	{
+		return existingCurrentRecordRequiredWhenCalledFromGear;
 	}
 }
