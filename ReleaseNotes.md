@@ -21,6 +21,8 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09710 Report regarding effective prices (107746499502) +uat +fix
+    * layout/display fix rergarding the report's page number
  - 09766 VAT codes (107418136945) +uat +feature
     * allow defining different VAT codes for sales and purchase, and matching them with each other
  - 09739 gain and loss during bank transfers in foreign currencies (108136874441) +uat +feature
