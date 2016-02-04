@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -9,8 +11,8 @@
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
-	<groupId>de.metas.edi</groupId>
-	<artifactId>de.metas.edi.esb</artifactId>
+	<groupId>de.metas.edi.esb</groupId>
+	<artifactId>de.metas.edi.esb.camel</artifactId>
 
 	<description>metasfresh :: Components :: EDI (SMX-6.1.0)</description>
 
@@ -100,8 +102,13 @@
 			<scope>provided</scope>
 		</dependency>
  
-		<!-- EDI dependency to install in smx, enter the following from console features:addUrl mvn:org.milyn/milyn-smooks-all/1.5.1/xml/features 
-			features:install smooks -->
+		<!-- EDI dependency 
+			to install in smx, do the following:
+			extract the features.xml file from the smooks-all.jar and store it for example as /home/servicemix/esb/bundles/milyn-smooks-1.5.1-feature.xml
+			enter the following from smx-console 
+			feature:repo-add file:///home/servicemix/esb/bundles/milyn-smooks-1.5.1-feature.xml 
+			feature:install smooks 
+			-->
 		<dependency>
 			<groupId>org.milyn</groupId>
 			<artifactId>milyn-smooks-all</artifactId>
@@ -126,45 +133,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Apache POI: required for Excel importing support 
-			To install in the OSGI container (smx), do 
-				osgi:install org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:3.12_1
-				osgi:install mvn:commons-codec/commons-codec/1.9
-			If changing the version, please make sure there is also an OSGI bundle for the new version  
-		-->
-		<dependency>
-			<!-- 
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi</artifactId>
-			<version>3.12</version>
-			 -->
-			<groupId>org.apache.servicemix.bundles</groupId>
-			<artifactId>org.apache.servicemix.bundles.poi</artifactId>
-			<version>3.12_1</version>
-		</dependency>
-		<!-- a dependency of poi -->
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-		</dependency>
-
-		<!-- 
-		Needed to avoid the following error when deploying the bundle:
-		org.osgi.framework.BundleException: Unresolved constraint in bundle de.metas.edi.esb [254]: Unable to resolve 254.0: missing requirement [254.0] package; (&(package=org.apache.poi.hssf.usermodel)(version>=3.11.0)(!(version>=4.0.0))) [caused by: Unable to resolve 244.0: missing requirement [244.0] package; (package=org.etsi.uri.x01903.v14)]
-
-		To install in the OSGI container (smx), do 
-			osgi:install -s wrap:mvn:org.apache.poi/ooxml-security/1.0
-
-		Notes:
-		*org.apache.servicemix.bundles.poi - 3.12_1 only contains org.etsi.uri.x01903.v13
-		*i was not able to event find the particular part where v14 is actually declared as a requirement, so there might also be some glitch with servicemix
-		 -->
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>ooxml-security</artifactId>
-			<version>1.0</version>
-		</dependency>
-
 		<!-- Guava: needed for misc helper classes which ease development
 			To install in the OSGI container (smx), do 
 				bundle:install mvn:com.google.guava/guava/18.0
@@ -175,6 +143,47 @@
 			<artifactId>guava</artifactId>
 		</dependency>
 
+		<!-- Apache POI: required for Excel importing support. is included in this bundle directly -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.13</version>
+		</dependency>
+
+		<!--
+		The following is just for documentation. Installing the poi osgi bundle in servicemix 4 was a pain,
+		and i didn't event manage to do it in servicemix-6.1.0
+		Instead I'm directly including the poi classes in *this* bundle, see maven-bundle-plugin in the build section below. 
+		-->
+		<!-- 
+			To install in the OSGI container (smx), do 
+				bundle:install mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.poi/3.13_1
+			If changing the version, please make sure there is also an OSGI bundle for the new version  		
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.poi</artifactId>
+			<version>3.13_1</version>
+		</dependency>
+		<! a dependency of poi >
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+		</dependency>
+		<! 
+		Needed to avoid the following error when deploying the bundle:
+		org.osgi.framework.BundleException: Unresolved constraint in bundle de.metas.edi.esb [254]: Unable to resolve 254.0: missing requirement [254.0] package; (&(package=org.apache.poi.hssf.usermodel)(version>=3.11.0)(!(version>=4.0.0))) [caused by: Unable to resolve 244.0: missing requirement [244.0] package; (package=org.etsi.uri.x01903.v14)]
+		To install in the OSGI container (smx), do 
+			bundle:install -s wrap:mvn:org.apache.poi/ooxml-security/1.0
+		Notes:
+		*org.apache.servicemix.bundles.poi - 3.12_1 only contains org.etsi.uri.x01903.v13
+		*i was not able to event find the particular part where v14 is actually declared as a requirement, so there might also be some glitch with servicemix
+		>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>ooxml-security</artifactId>
+			<version>1.0</version>
+		</dependency>
+		-->
 	</dependencies>
 
 	<build>
@@ -206,31 +215,6 @@
 				</executions>
 			</plugin>
 
-			<!-- check our projects against the java1.6-API
-					 see http://mojo.codehaus.org/animal-sniffer-maven-plugin/index.html -->
-			<!-- 
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>animal-sniffer-maven-plugin</artifactId>
-				<version>1.11</version>
-				<executions>
-					<execution>
-						<id>check_against-java1.6-API</id>
-						<phase>test</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-						<configuration>
-							<signature>
-								<groupId>org.codehaus.mojo.signature</groupId>
-								<artifactId>java16</artifactId>
-								<version>1.1</version>
-							</signature>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			-->
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -238,6 +222,15 @@
 				<configuration>
 					<instructions>
 						<Bundle-Version>${project.version}-${env.BUILD_NUMBER}</Bundle-Version>
+						
+						<!-- Include de.metas.printing.esb.api in our bundle. Don't make it 
+							an extra bundle, unless there is *another* OSGI-bundle such as esb.printing 
+							that also needs de.metas.printing.esb.api -->
+						<Private-Package>
+							org.apache.poi.*,
+							{local-packages}
+						</Private-Package>
+
 					</instructions>
 				</configuration>
 			</plugin>

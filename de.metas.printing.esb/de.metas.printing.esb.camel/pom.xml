@@ -24,7 +24,6 @@
 		<dependency>
 			<artifactId>de.metas.printing.esb.api</artifactId>
 			<groupId>de.metas.printing.esb</groupId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
