@@ -1,0 +1,275 @@
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.edi.esb</groupId>
+	<artifactId>de.metas.edi.esb.camel</artifactId>
+
+	<description>metasfresh :: Components :: EDI (SMX-6.1.0)</description>
+
+	<packaging>bundle</packaging>
+
+	<properties>
+		<smooks.version>1.5.1</smooks.version>
+		<jaxb.packageName>de.metas.edi.esb.jaxb</jaxb.packageName>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<artifactId>camel-test</artifactId>
+			<groupId>org.apache.camel</groupId>
+			<version>${camel.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>3.1.2.RELEASE</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core</artifactId>
+			<version>${camel.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- ADDITIONAL DEPENDENCIES for our use cases -->
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-jms</artifactId>
+			<version>${camel.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-spring</artifactId>
+			<version>${camel.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-camel</artifactId>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>camel-jms</artifactId>
+					<groupId>org.apache.camel</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-script</artifactId>
+			<version>${camel.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-jaxb</artifactId>
+			<version>${camel.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-ftp</artifactId>
+			<version>${camel.version}</version>
+			<scope>provided</scope>
+		</dependency>
+ 
+		<!-- EDI dependency 
+			to install in smx, do the following:
+			extract the features.xml file from the smooks-all.jar and store it for example as /home/servicemix/esb/bundles/milyn-smooks-1.5.1-feature.xml
+			enter the following from smx-console 
+			feature:repo-add file:///home/servicemix/esb/bundles/milyn-smooks-1.5.1-feature.xml 
+			feature:install smooks 
+			-->
+		<dependency>
+			<groupId>org.milyn</groupId>
+			<artifactId>milyn-smooks-all</artifactId>
+			<version>${smooks.version}</version>
+			<exclusions>
+				<!-- excluding xercesImpl to get rid of
+				org.xml.sax.SAXNotRecognizedException: Feature 'http://javax.xml.XMLConstants/feature/secure-processing' is not recognized.
+				thx to http://stackoverflow.com/questions/25644023/error-unmarshalling-xml-in-java-8-secure-processing-org-xml-sax-saxnotrecognize
+				-->
+				<exclusion>
+					<artifactId>xercesImpl</artifactId>
+					<groupId>xerces</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+ 
+		<!-- SLF4J Logger dependency -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<version>1.6.6</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Guava: needed for misc helper classes which ease development
+			To install in the OSGI container (smx), do 
+				bundle:install mvn:com.google.guava/guava/18.0
+			If changing the version, please make sure there is also an OSGI bundle for the new version  
+		-->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+
+		<!-- Apache POI: required for Excel importing support. is included in this bundle directly -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.13</version>
+		</dependency>
+
+		<!--
+		The following is just for documentation. Installing the poi osgi bundle in servicemix 4 was a pain,
+		and i didn't event manage to do it in servicemix-6.1.0
+		Instead I'm directly including the poi classes in *this* bundle, see maven-bundle-plugin in the build section below. 
+		-->
+		<!-- 
+			To install in the OSGI container (smx), do 
+				bundle:install mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.poi/3.13_1
+			If changing the version, please make sure there is also an OSGI bundle for the new version  		
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.poi</artifactId>
+			<version>3.13_1</version>
+		</dependency>
+		<! a dependency of poi >
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+		</dependency>
+		<! 
+		Needed to avoid the following error when deploying the bundle:
+		org.osgi.framework.BundleException: Unresolved constraint in bundle de.metas.edi.esb [254]: Unable to resolve 254.0: missing requirement [254.0] package; (&(package=org.apache.poi.hssf.usermodel)(version>=3.11.0)(!(version>=4.0.0))) [caused by: Unable to resolve 244.0: missing requirement [244.0] package; (package=org.etsi.uri.x01903.v14)]
+		To install in the OSGI container (smx), do 
+			bundle:install -s wrap:mvn:org.apache.poi/ooxml-security/1.0
+		Notes:
+		*org.apache.servicemix.bundles.poi - 3.12_1 only contains org.etsi.uri.x01903.v13
+		*i was not able to event find the particular part where v14 is actually declared as a requirement, so there might also be some glitch with servicemix
+		>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>ooxml-security</artifactId>
+			<version>1.0</version>
+		</dependency>
+		-->
+	</dependencies>
+
+	<build>
+		<finalName>${project.artifactId}</finalName>
+
+		<defaultGoal>install</defaultGoal>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${servicemix.java.version}</source>
+					<target>${servicemix.java.version}</target>
+				</configuration>
+			</plugin>
+		
+			<!-- Create tests JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Bundle-Version>${project.version}-${env.BUILD_NUMBER}</Bundle-Version>
+						
+						<!-- Include de.metas.printing.esb.api in our bundle. Don't make it 
+							an extra bundle, unless there is *another* OSGI-bundle such as esb.printing 
+							that also needs de.metas.printing.esb.api -->
+						<Private-Package>
+							org.apache.poi.*,
+							{local-packages}
+						</Private-Package>
+
+					</instructions>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jaxb2-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>xjc</id>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<packageName>${jaxb.packageName}</packageName>
+					<sources>
+						<source>src/main/xsd/schema.xsd</source>
+					</sources>
+				</configuration>
+
+				<dependencies>
+					<dependency>
+						<groupId>org.jvnet.jaxb2_commons</groupId>
+						<artifactId>jaxb2-basics</artifactId>
+						<version>0.6.5</version>
+					</dependency>
+					<dependency>
+						<!-- explicitly using this version because if the plugin runs with e.g. xerces 2.6.2, we get this error:  
+						org.xml.sax.SAXNotRecognizedException: Feature 'http://javax.xml.XMLConstants/feature/secure-processing' is not recognized. -->
+						<groupId>xerces</groupId>
+						<artifactId>xercesImpl</artifactId>
+						<version>2.9.1</version>
+					</dependency>
+				</dependencies>
+
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
