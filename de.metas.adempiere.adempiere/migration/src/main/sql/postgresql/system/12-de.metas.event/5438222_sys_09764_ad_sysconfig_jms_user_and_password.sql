@@ -1,4 +1,5 @@
 
+delete from AD_SysConfig where name in ('de.metas.event.jms.User','de.metas.event.jms.Password'); --cleanup so we can reapply this SQL
 
 -- 29.01.2016 16:59
 -- URL zum Konzept
