@@ -430,33 +430,33 @@ public class APanel extends CPanel
 		//								File
 		final JMenu mFile = AEnv.getMenu("File");
 		menuBar.add(mFile);
-		aReport = 	addAction("Report",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0),	false);
-		aPrint = 	addAction("Print",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0),	false);
-		aPrintPreview = addAction("PrintPreview",	mFile, KeyStroke.getKeyStroke(KeyEvent.VK_P, Event.SHIFT_MASK+Event.ALT_MASK), false);
+		aReport = 	addAction("Report",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0),	false, false);
+		aPrint = 	addAction("Print",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0),	false, false);
+		aPrintPreview = addAction("PrintPreview",	mFile, KeyStroke.getKeyStroke(KeyEvent.VK_P, Event.SHIFT_MASK+Event.ALT_MASK), false, false);
 		if (role.isCanExport())
 		{
-			aExport = addAction("Export", mFile, null, false);
+			aExport = addAction("Export", mFile, null, false, false);
 		}
 		mFile.addSeparator();
-		aEnd =	 	addAction("End",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_X, Event.ALT_MASK),	false);
-		aLogout = 	addAction("Logout", 		mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_L, Event.SHIFT_MASK+Event.ALT_MASK), false);
-		aExit =		addAction("Exit",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_X, Event.SHIFT_MASK+Event.ALT_MASK),	false);
+		aEnd =	 	addAction("End",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_X, Event.ALT_MASK),	false, false);
+		aLogout = 	addAction("Logout", 		mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_L, Event.SHIFT_MASK+Event.ALT_MASK), false, false);
+		aExit =		addAction("Exit",			mFile, 	KeyStroke.getKeyStroke(KeyEvent.VK_X, Event.SHIFT_MASK+Event.ALT_MASK),	false, false);
 		//								Edit
 		final JMenu mEdit = AEnv.getMenu("Edit");
 		menuBar.add(mEdit);
-		aNew = 		addAction("New", 			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), false);
-		aSave = 	addAction("Save",			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0),	false);
+		aNew = 		addAction("New", 			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), false, false);
+		aSave = 	addAction("Save",			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0),	false, true);
 		mEdit.addSeparator();
-		aCopy =		addAction("Copy", 			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F2, Event.SHIFT_MASK),	false);
-		aCopyDetails = addAction("CopyDetails", mEdit, null, false); // metas: c.ghita@metas.ro
-		aDelete = 	addAction("Delete",			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0),	false);
-		aDeleteSelection = addAction("DeleteSelection", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_D, Event.CTRL_MASK), false);
-		aIgnore = 	addAction(CMD_Ignore,		mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),	false); // metas 02029: use constant instead of string
-		aRefresh = 	addAction("Refresh",		mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0),	false);
+		aCopy =		addAction("Copy", 			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F2, Event.SHIFT_MASK),	false, false);
+		aCopyDetails = addAction("CopyDetails", mEdit, null, false, false); // metas: c.ghita@metas.ro
+		aDelete = 	addAction("Delete",			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0),	false, false);
+		aDeleteSelection = addAction("DeleteSelection", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_D, Event.CTRL_MASK), false, false);
+		aIgnore = 	addAction(CMD_Ignore,		mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),	false, false);
+		aRefresh = 	addAction("Refresh",		mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0),	false, false);
 		mEdit.addSeparator();
-		aFind = 	addAction("Find",			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0), true);	//	toggle
+		aFind = 	addAction("Find",			mEdit, 	KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0), true, false);	//	toggle
 		if (m_isPersonalLock)			
-			aLock = addAction("Lock",			mEdit, 	null,	true);		//	toggle
+			aLock = addAction("Lock",			mEdit, 	null,	true, false);		//	toggle
 		//								View
 		final JMenu mView = AEnv.getMenu("View");
 		menuBar.add(mView);
@@ -467,26 +467,26 @@ public class APanel extends CPanel
 				.build();
 
 		mView.addSeparator();
-		aAttachment = addAction("Attachment",	mView, 	KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0),	true);		//	toggle
-		aChat = addAction("Chat",				mView, 	null,	true);		//	toggle
-		aHistory = 	addAction("History",		mView, 	KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0),	true);		//	toggle
+		aAttachment = addAction("Attachment",	mView, 	KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0),	true, false);		//	toggle
+		aChat = addAction("Chat",				mView, 	null,	true, false);		//	toggle
+		aHistory = 	addAction("History",		mView, 	KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0),	true, false);		//	toggle
 		mView.addSeparator();
-		aMulti =	addAction("Multi",			mView, 	KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0),	true);		//	toggle
+		aMulti =	addAction("Multi",			mView, 	KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0),	true, false);		//	toggle
 		//								Go
 		final JMenu mGo = AEnv.getMenu("Go");
 		menuBar.add(mGo);
-		aFirst =	addAction("First", 			mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, Event.ALT_MASK),	false);
-		aPrevious = addAction("Previous", 		mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.ALT_MASK),	false);
-		aNext = 	addAction("Next", 			mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.ALT_MASK),	false);
-		aLast =		addAction("Last",	 		mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, Event.ALT_MASK),	false);
+		aFirst =	addAction("First", 			mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, Event.ALT_MASK),	false, false);
+		aPrevious = addAction("Previous", 		mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.ALT_MASK),	false, false);
+		aNext = 	addAction("Next", 			mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.ALT_MASK),	false, false);
+		aLast =		addAction("Last",	 		mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, Event.ALT_MASK),	false, false);
 		mGo.addSeparator();
-		aParent =	addAction("Parent", 		mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Event.ALT_MASK),	false);
-		aDetail =	addAction("Detail", 		mGo,	KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Event.ALT_MASK),	false);
+		aParent =	addAction("Parent", 		mGo, 	KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Event.ALT_MASK),	false, false);
+		aDetail =	addAction("Detail", 		mGo,	KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Event.ALT_MASK),	false, false);
 		mGo.addSeparator();
-		aZoomAcross = addAction("ZoomAcross",	mGo, 	null,	false);
-		aRequest =  addAction("Request",		mGo, 	null,	false);
-		aArchive =  addAction("Archive",		mGo, 	null,	false);
-		aHome =		addAction("Home", 			mGo,	null,	false);
+		aZoomAcross = addAction("ZoomAcross",	mGo, 	null,	false, false);
+		aRequest =  addAction("Request",		mGo, 	null,	false, false);
+		aArchive =  addAction("Archive",		mGo, 	null,	false, false);
+		aHome =		addAction("Home", 			mGo,	null,	false, false);
 		//								Tools
 		final JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
@@ -504,12 +504,12 @@ public class APanel extends CPanel
 		//@formatter:on
 		
 		if ("Y".equals(Env.getContext(m_ctx, "#SysAdmin")))	//	set in DB.loginDB
-			aWinSize = addAction("WinSize",     mTools, 	null,	false);
+			aWinSize = addAction("WinSize",     mTools, 	null,	false, false);
 		AWindowSaveState.createAndAdd(this, mTools);
 		if (role.isShowPreference())
 		{
 			mTools.addSeparator();
-			aPreference = addAction("Preference",	mTools, 	null,	false);
+			aPreference = addAction("Preference",	mTools, 	null,	false, false);
 		}
 		
 		//Window
@@ -518,16 +518,16 @@ public class APanel extends CPanel
 		menuBar.add(m_WindowMenu);
 		if (m_WindowMenu.isDisplayShowAllAction())
 		{
-			addAction(WindowMenu.ShowAllWindows_ActionName, null, WindowMenu.ShowAllWindows_KeyStroke, false);
+			addAction(WindowMenu.ShowAllWindows_ActionName, null, WindowMenu.ShowAllWindows_KeyStroke, false, false);
 		}
 		
 		// Help
 		final JMenu mHelp = AEnv.getMenu("Help");
 		menuBar.add(mHelp);
-		aHelp = 	addAction("Help",			mHelp, 	KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),	false);
-		aOnline =	addAction("Online",			mHelp, 	null,	false);
-		aMailSupport = addAction("EMailSupport",	mHelp,	null,	false);
-		aAbout = 	addAction("About",			mHelp, 	null,	false);
+		aHelp = 	addAction("Help",			mHelp, 	KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),	false, false);
+		aOnline =	addAction("Online",			mHelp, 	null,	false, false);
+		aMailSupport = addAction("EMailSupport",	mHelp,	null,	false, false);
+		aAbout = 	addAction("About",			mHelp, 	null,	false, false);
 	}
 	
 	private final void createToolBar()
@@ -646,21 +646,23 @@ public class APanel extends CPanel
 
 
 	/**
-	 *	Add (Toggle) Action to Toolbar and Menu
-	 *  @param actionName action name
-	 *  @param menu manu
-	 *  @param accelerator accelerator
-	 *  @param toggle toggle button
-	 *  @return AppsAction
+	 * Add (Toggle) Action to Toolbar and Menu
+	 * 
+	 * @param actionName action name
+	 * @param menu manu
+	 * @param accelerator accelerator
+	 * @param toggle toggle button
+	 * @param alwaysRegisterAccelerator if the accelerator is specified, always register it, even if this is an included tab panel
+	 * @return AppsAction
 	 */
-	private AppsAction addAction (final String actionName, final JMenu menu, KeyStroke accelerator, final boolean toggle)
+	private AppsAction addAction (final String actionName, final JMenu menu, KeyStroke accelerator, final boolean toggle, final boolean alwaysRegisterAccelerator)
 	{
 		final boolean isWindowMenuAction = menu != null;
 		
 		//
 		// In case this is panel will be used for an included tab, it's better to not register the key binding
 		// because that would prevent the key bindings from the main panel to work.
-		if(isNested && isWindowMenuAction)
+		if(!alwaysRegisterAccelerator && isNested && isWindowMenuAction)
 		{
 			accelerator = null;
 		}
