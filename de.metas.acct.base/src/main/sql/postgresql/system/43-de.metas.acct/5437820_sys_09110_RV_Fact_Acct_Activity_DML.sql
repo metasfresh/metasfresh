@@ -1,3 +1,4 @@
+/* Commented out because it will be deleted in 5437821_sys_09110_delete_RV_Fact_Acct_Activity.sql
 -- 27.01.2016 18:21
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,Description,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,ReplicationType,TableName,Updated,UpdatedBy) VALUES ('3',0,0,0,540700,'N',TO_TIMESTAMP('2016-01-27 18:21:09','YYYY-MM-DD HH24:MI:SS'),100,'Displays Fact_Acct informations oriented to C_Activity_ID','de.metas.acct','N','Y','N','N','N','Y','N','Y',0,'Fact_Acct - Activity','L','RV_Fact_Acct_Activity',TO_TIMESTAMP('2016-01-27 18:21:09','YYYY-MM-DD HH24:MI:SS'),100)
@@ -440,7 +441,7 @@ UPDATE AD_Column SET AD_Reference_ID=13,Updated=TO_TIMESTAMP('2016-01-27 18:25:3
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET FieldLength=7,Updated=TO_TIMESTAMP('2016-01-27 18:25:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=553054
 ;
-
+*/
 
 
 
@@ -507,9 +508,11 @@ INSERT INTO AD_Window (AD_Client_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,Ent
 INSERT INTO AD_Window_Trl (AD_Language,AD_Window_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Window_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Window t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Window_ID=540283 AND NOT EXISTS (SELECT * FROM AD_Window_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Window_ID=t.AD_Window_ID)
 ;
 
+/* Commented out because it will be deleted in 5437821_sys_09110_delete_RV_Fact_Acct_Activity.sql
 -- 28.01.2016 10:39
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Tab (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,HasTree,ImportFields,IsActive,IsAdvancedTab,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,0,540717,540700,540283,TO_TIMESTAMP('2016-01-28 10:39:55','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','N','N','Y','N','Y','N','N','N','N','Y','N','N','Y','Y','N','N','N',0,'RV_Fact_Acct_Activity','N',10,0,TO_TIMESTAMP('2016-01-28 10:39:55','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Tab (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,HasTree,ImportFields,IsActive,IsAdvancedTab,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy)
+VALUES (0,0,540717,540700,540283,TO_TIMESTAMP('2016-01-28 10:39:55','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','N','N','Y','N','Y','N','N','N','N','Y','N','N','Y','Y','N','N','N',0,'RV_Fact_Acct_Activity','N',10,0,TO_TIMESTAMP('2016-01-28 10:39:55','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 28.01.2016 10:39
@@ -1194,6 +1197,25 @@ UPDATE AD_Field SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2016-
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Table SET AD_Window_ID=540283,Updated=TO_TIMESTAMP('2016-01-28 10:46:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540700
 ;
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- 28.01.2016 10:47
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1272,8 +1294,9 @@ UPDATE AD_TreeNodeMM SET Parent_ID=278, SeqNo=11, Updated=now(), UpdatedBy=100 W
 
 -- 28.01.2016 11:12
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy) VALUES (0,0,540644,540700,TO_TIMESTAMP('2016-01-28 11:12:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y',TO_TIMESTAMP('2016-01-28 11:12:03','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- NOTE: it will b e deleted anyways, in the next file.
+-- INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy) VALUES (0,0,540644,540700,TO_TIMESTAMP('2016-01-28 11:12:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y',TO_TIMESTAMP('2016-01-28 11:12:03','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 -- 28.01.2016 11:27
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
