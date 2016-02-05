@@ -39,7 +39,7 @@ Additional notes:
  - minor, unrelated fix: when retrieving dunning levels, order them by +it +fix
     *"DaysAfterDue" to make sure they are dealt with in chronological order.
     *Actually, the order might not matter, but a counterintuitive ordering causes FUD.
- - 09771 Dunning docs mail (102929053917)
+ - 09771 Dunning docs mail (102929053917) +it +fix +feature
     * small changes around the dunning jasper
 
 ## it-S16_05-20160202

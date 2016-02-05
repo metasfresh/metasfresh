@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="3.0"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="833"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -28,19 +28,19 @@
 	<field name="totalamt" class="java.math.BigDecimal"/>
 	<field name="duedate" class="java.sql.Timestamp"/>
 	<field name="daysdue" class="java.math.BigDecimal"/>
-		<background>
+	<background>
 		<band splitType="Stretch"/>
-		</background>
-		<title>
+	</background>
+	<title>
 		<band splitType="Stretch"/>
-		</title>
-		<pageHeader>
+	</title>
+	<pageHeader>
 		<band height="13" splitType="Stretch">
 			<line>
 				<reportElement uuid="76b8b71a-c8dc-4ce0-a046-831521655630" key="line-1" mode="Opaque" x="57" y="12" width="488" height="1" forecolor="#000000"/>
 			</line>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="126" y="0" width="37" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="125" y="0" width="37" height="11"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -48,10 +48,10 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-						<font size="8"/>
-					</textElement>
+					<font size="8"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{docno}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="5bae02b8-e382-4775-be1a-9aee3987ce92" key="textField-52" mode="Transparent" x="57" y="0" width="68" height="11"/>
 				<box rightPadding="5">
@@ -61,12 +61,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-						<font size="8"/>
-					</textElement>
+					<font size="8"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{doctype}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="218" y="0" width="60" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="216" y="0" width="60" height="11"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -74,77 +74,77 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-						<font size="8"/>
-					</textElement>
+					<font size="8"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{duedate}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="316" y="0" width="54" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="315" y="0" width="54" height="11"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-					<textElement textAlignment="Right">
+				<textElement textAlignment="Right">
 					<font size="8"/>
-					</textElement>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{doctotal}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="370" y="0" width="42" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="369" y="0" width="42" height="11"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-					<textElement textAlignment="Right">
+				<textElement textAlignment="Right">
 					<font size="8"/>
-					</textElement>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{paidamt}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="412" y="0" width="39" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="411" y="0" width="39" height="11"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-					<textElement textAlignment="Right">
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression><![CDATA[$R{openamt}]]></textFieldExpression>
-				</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="451" y="0" width="50" height="11"/>
-				<box rightPadding="1">
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-					<textElement textAlignment="Right">
+				<textElement textAlignment="Right">
 					<font size="8"/>
-					</textElement>
-				<textFieldExpression><![CDATA[$R{feeamt}]]></textFieldExpression>
-				</textField>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{openamt}]]></textFieldExpression>
+			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="500" y="0" width="45" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="450" y="0" width="52" height="11"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-					<textElement textAlignment="Right">
-						<font size="8"/>
-					</textElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{feeamt}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="501" y="0" width="45" height="11"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{totalamt}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="279" y="0" width="37" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="276" y="0" width="39" height="11"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -153,11 +153,11 @@
 				</box>
 				<textElement>
 					<font size="8"/>
-					</textElement>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="165" y="0" width="52" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="162" y="0" width="54" height="11"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -165,13 +165,13 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-						<font size="8"/>
-					</textElement>
+					<font size="8"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{docdate}]]></textFieldExpression>
-				</textField>
-			</band>
+			</textField>
+		</band>
 	</pageHeader>
-		<detail>
+	<detail>
 		<band height="11" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement uuid="fd32f53b-3a9b-471f-ba96-747c6f748a0e" key="textField-53" mode="Transparent" x="57" y="0" width="68" height="11" forecolor="#000000"/>
@@ -181,7 +181,7 @@
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="218" y="0" width="60" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="216" y="0" width="60" height="11"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -194,72 +194,72 @@
 				<textFieldExpression><![CDATA[$F{duedate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="322" y="0" width="48" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="315" y="0" width="54" height="11"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-					<textElement textAlignment="Right">
+				<textElement textAlignment="Right">
 					<font size="8"/>
-					</textElement>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="371" y="0" width="41" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="369" y="0" width="42" height="11"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-					<textElement textAlignment="Right">
+				<textElement textAlignment="Right">
 					<font size="8"/>
-					</textElement>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{paidamt}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="412" y="0" width="39" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="411" y="0" width="39" height="11"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-					<textElement textAlignment="Right">
+				<textElement textAlignment="Right">
 					<font size="8"/>
-					</textElement>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{openamt}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="451" y="0" width="50" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="450" y="0" width="52" height="11"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-					<textElement textAlignment="Right">
+				<textElement textAlignment="Right">
 					<font size="8"/>
-					</textElement>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{feeamt}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="500" y="0" width="45" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="501" y="0" width="45" height="11"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-					<textElement textAlignment="Right">
+				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{totalamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="279" y="0" width="37" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="276" y="0" width="39" height="11"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -272,14 +272,14 @@
 				<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="c180e3e7-35df-46c4-8b53-ec49039f850c" key="textField-53" mode="Transparent" x="126" y="0" width="37" height="11" isPrintWhenDetailOverflows="true" forecolor="#000000"/>
+				<reportElement uuid="c180e3e7-35df-46c4-8b53-ec49039f850c" key="textField-53" mode="Transparent" x="125" y="0" width="37" height="11" isPrintWhenDetailOverflows="true" forecolor="#000000"/>
 				<textElement markup="none">
 					<font fontName="SansSerif" size="8" isBold="false" pdfFontName="Helvetica"/>
-					</textElement>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
-				</textField>
+			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="165" y="0" width="52" height="11"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="162" y="0" width="54" height="11"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -294,7 +294,7 @@
 		</band>
 		<band height="11">
 			<textField pattern="###0" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="219" y="0" width="59" height="11" isRemoveLineWhenBlank="true"/>
+				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="216" y="0" width="60" height="11" isRemoveLineWhenBlank="true"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -303,21 +303,21 @@
 				</box>
 				<textElement>
 					<font size="8"/>
-					</textElement>
+				</textElement>
 				<textFieldExpression><![CDATA["(" + $F{daysdue} + " " + $R{days} + ")"]]></textFieldExpression>
-				</textField>
-			</band>
-		</detail>
-		<columnFooter>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
 		<band splitType="Stretch"/>
-		</columnFooter>
-		<pageFooter>
+	</columnFooter>
+	<pageFooter>
 		<band splitType="Stretch"/>
-		</pageFooter>
+	</pageFooter>
 	<lastPageFooter>
 		<band splitType="Stretch"/>
 	</lastPageFooter>
-		<summary>
+	<summary>
 		<band splitType="Stretch"/>
-		</summary>
+	</summary>
 </jasperReport>

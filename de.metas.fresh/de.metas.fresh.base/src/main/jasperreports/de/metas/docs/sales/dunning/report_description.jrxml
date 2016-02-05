@@ -80,7 +80,7 @@
 				<textFieldExpression><![CDATA[$F{doctype}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement uuid="b466abe4-d837-4f67-9e03-b8ac2f6c335d" key="textField-3" mode="Transparent" x="300" y="34" width="68" height="13"/>
+				<reportElement uuid="b466abe4-d837-4f67-9e03-b8ac2f6c335d" key="textField-3" mode="Transparent" x="305" y="34" width="68" height="13"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -93,7 +93,7 @@
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="08442526-03d3-4df3-96a7-6bb85e41e6df" key="textField-5" mode="Transparent" x="193" y="34" width="107" height="13"/>
+				<reportElement uuid="08442526-03d3-4df3-96a7-6bb85e41e6df" key="textField-5" mode="Transparent" x="193" y="34" width="112" height="13"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
