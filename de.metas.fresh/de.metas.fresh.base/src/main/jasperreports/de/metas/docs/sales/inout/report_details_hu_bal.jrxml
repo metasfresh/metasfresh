@@ -108,11 +108,7 @@ WHERE org.ad_org_id = $P{ad_org_id}]]>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Hinweis Zollrecht Art. 55 ZV: „Falls die Waren zu Beginn der Bewirtschaftungsphase noch auf Handelsstufe " +
-"vorhanden sind, ist für die entsprechende Menge über den gesicherten Internetzugang der Eidg. Zollverwaltung " +
-"eine neue Zollanmeldung einzureichen. \n" +
-"\n" +
-"Sämtliche Produkte mit der Herkunft CH entsprechen dem Standard SwissGAP \n"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{bottomnote}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="60">
@@ -124,11 +120,7 @@ WHERE org.ad_org_id = $P{ad_org_id}]]>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Remarque: „Quiconque dispose encore, dans le circuit de commercialisation, de produits agricoles au sens " +
-"de l'art. 7 de l'ordonnance du 7 décembre 1998 sur l'importation et l'exportation de légumes, de fruits et de " +
-"plantes horticoles (OIELFP)1 doit présenter une nouvelle déclaration en douane pour ces produits.“\n" +
-"\n" +
-"Les produits de provenance Suisse (CH) répondent au standard SwissGAP \n"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{bottomnote}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

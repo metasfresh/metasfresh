@@ -21,6 +21,7 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09773 Signature fix in shipment jasper (100363111538) +it +fix
  - 09782 remove note from purchase invoice (109638032503) +it +fix
  - 09788 Show isInfiniteCapacity in Pricelist (106197421720) +it +fix
  - 09785 F4-save does not work anymore in included invoice line tab +it +fix
