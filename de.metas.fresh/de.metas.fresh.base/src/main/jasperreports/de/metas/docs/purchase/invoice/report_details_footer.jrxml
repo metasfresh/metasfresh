@@ -111,7 +111,7 @@ WHERE
 			</textField>
 		</band>
 		<band height="24">
-			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("fr_CH") && true)]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("fr_CH") && false)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="37" y="12" width="485" height="12"/>
 				<textElement markup="none">
