@@ -22,6 +22,7 @@ Additional notes:
 
 ## Upcoming Release
  - 09785 F4-save does not work anymore in included invoice line tab +it +fix
+ - 09780 Sorting of List Reference for PriceListVersion (105389853564) +it +feature
  - 09777 German Translations for Salesgroup (106405148729) +it +fix
     * small changes for Salesgroup Translations
  - 09625 Costing short report incl Budget (105806249331) +it +fix
