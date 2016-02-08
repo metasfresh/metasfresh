@@ -29,7 +29,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
@@ -41,6 +40,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.product.IProductDAO;
 import de.metas.product.acct.api.IProductAcctDAO;
 
 /**

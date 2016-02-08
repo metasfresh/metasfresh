@@ -39,9 +39,7 @@ import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.model.POWrapper;
-import org.adempiere.order.service.IOrderPA;
 import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
@@ -77,6 +75,8 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderPA;
+import de.metas.product.IProductPA;
 
 public class OrderBL implements IOrderBL
 {
@@ -291,16 +291,14 @@ public class OrderBL implements IOrderBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 
-		if (order.isSOTrx())
+		int pricingSysId = order.getM_PricingSystem_ID();
+		if (pricingSysId <= 0)
 		{
-			int pricingSysId = order.getM_PricingSystem_ID();
-			if (pricingSysId <= 0)
-			{
-				pricingSysId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, order.getBill_BPartner_ID(), order.isSOTrx(), trxName);
-			}
-			order.setM_PricingSystem_ID(pricingSysId);
-			order.setM_PriceList_ID(retrievePriceListId(order));
+			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+			pricingSysId = bPartnerDAO.retrievePricingSystemId(ctx, order.getBill_BPartner_ID(), order.isSOTrx(), trxName);
 		}
+		order.setM_PricingSystem_ID(pricingSysId);
+		order.setM_PriceList_ID(retrievePriceListId(order));
 	}
 
 	@Override
@@ -318,14 +316,13 @@ public class OrderBL implements IOrderBL
 				trxName);
 	}
 
-	@Cached
 	/* package */int retrievePriceListId(
-			final @CacheCtx Properties ctx,
+			final Properties ctx,
 			final int C_BPartner_Location_ID,
 			final int Bill_Location_ID,
 			final int M_PricingSystem_ID,
 			final boolean isSOTrx,
-			final @CacheTrx String trxName)
+			final String trxName)
 	{
 		final int pricingSysId = M_PricingSystem_ID;
 
@@ -336,8 +333,8 @@ public class OrderBL implements IOrderBL
 			// order.getBill_Location_ID();
 			// TODO: why is not setting bPartnerLocationId to Bill_Location_ID?
 		}
-		final I_M_PriceList pl =
-				Services.get(IProductPA.class).retrievePriceListByPricingSyst(ctx, pricingSysId, bPartnerLocationId, isSOTrx, trxName);
+		final IProductPA productPA = Services.get(IProductPA.class);
+		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, pricingSysId, bPartnerLocationId, isSOTrx, trxName);
 		if (pl != null)
 		{
 			return pl.getM_PriceList_ID();
@@ -573,11 +570,11 @@ public class OrderBL implements IOrderBL
 		{
 			order.setDeliveryRule(deliveryRule);
 		}
-		
+
 		//
 		// Default Delivery Via Rule
 		final String deliveryViaRule;
-		if(isSOTrx)
+		if (isSOTrx)
 		{
 			deliveryViaRule = bp.getDeliveryViaRule();
 		}

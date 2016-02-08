@@ -24,12 +24,13 @@ package de.metas.adempiere.service;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
+
+import de.metas.product.IProductBL;
 
 /**
  * Service to create and update AttributeInstances and AttributeSetInstances.

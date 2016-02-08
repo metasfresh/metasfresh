@@ -26,7 +26,6 @@ package org.adempiere.impexp;
  */
 
 
-import org.adempiere.impexp.IImportProcess;
 
 /**
  * Import Validator Interface

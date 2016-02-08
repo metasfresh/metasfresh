@@ -35,7 +35,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
@@ -64,6 +63,8 @@ import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.IMRPSegment;
 
 import com.google.common.base.Optional;
+
+import de.metas.document.IDocActionBL;
 
 public class MRPDAO implements IMRPDAO
 {

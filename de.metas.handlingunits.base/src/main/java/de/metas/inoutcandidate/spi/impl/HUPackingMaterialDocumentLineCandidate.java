@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
@@ -43,6 +42,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.product.IProductBL;
 
 /**
  * Packing Material Document Line candidate.

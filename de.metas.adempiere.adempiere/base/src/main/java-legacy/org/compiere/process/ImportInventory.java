@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.MAttributeSetInstance;
@@ -34,6 +33,7 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.service.IAttributeSetInstanceBL;
+import de.metas.product.IProductBL;
 
 /**
  *	Import Physical Inventory fom I_Inventory

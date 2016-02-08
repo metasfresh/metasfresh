@@ -44,7 +44,6 @@ import java.util.Properties;
 import java.util.Vector;
 import java.util.logging.Level;
 
-import org.adempiere.document.service.IDocumentPA;
 import org.adempiere.model.MRelation;
 import org.adempiere.model.MRelationType;
 import org.adempiere.model.POWrapper;
@@ -65,6 +64,7 @@ import de.metas.commission.interfaces.I_C_BPartner_Location;
 import de.metas.commission.model.I_C_Invoice_VAT_Corr_Candidates_v1;
 import de.metas.commission.service.IBPartnerDAO;
 import de.metas.commission.util.CommissionConstants;
+import de.metas.document.IDocumentPA;
 import de.metas.tax.api.ITaxBL;
 
 /**

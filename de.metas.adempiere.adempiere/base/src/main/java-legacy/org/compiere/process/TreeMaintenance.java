@@ -16,19 +16,9 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.logging.Level;
 
 import org.compiere.model.MTree;
-import org.compiere.model.MTree_Base;
-import org.compiere.model.MTree_Node;
-import org.compiere.model.MTree_NodeBP;
-import org.compiere.model.MTree_NodeMM;
-import org.compiere.model.MTree_NodePR;
-import org.compiere.model.PO;
-import org.compiere.util.DB;
 
 /**
  *	Tree Maintenance	

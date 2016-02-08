@@ -32,7 +32,6 @@ import net.sf.jasperreports.engine.JasperPrint;
 import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -51,6 +50,7 @@ import org.compiere.util.Language;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.document.IDocActionBL;
 
 public class JRClient
 {

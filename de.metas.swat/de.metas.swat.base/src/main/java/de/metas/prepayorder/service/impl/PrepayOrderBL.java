@@ -35,7 +35,6 @@ import org.compiere.util.CLogger;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
-import de.metas.prepayorder.modelvalidator.PrepayOrderValidator;
 import de.metas.prepayorder.service.IPrepayOrderBL;
 
 public class PrepayOrderBL implements IPrepayOrderBL

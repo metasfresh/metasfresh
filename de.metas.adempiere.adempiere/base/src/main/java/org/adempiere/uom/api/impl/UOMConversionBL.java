@@ -34,7 +34,6 @@ import java.util.logging.Level;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.uom.api.IUOMBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
@@ -50,6 +49,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.product.IProductBL;
 
 public class UOMConversionBL implements IUOMConversionBL
 {

@@ -32,7 +32,6 @@ import java.util.Properties;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -51,6 +50,7 @@ import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.IPrintingService;
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.document.IDocActionBL;
 
 /**
  * @author tsa

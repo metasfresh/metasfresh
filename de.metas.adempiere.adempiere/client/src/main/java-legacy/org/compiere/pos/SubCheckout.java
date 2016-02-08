@@ -14,25 +14,18 @@
 
 package org.compiere.pos;
 
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.math.BigDecimal;
 
 import javax.swing.border.TitledBorder;
 
 import org.compiere.grid.ed.VNumber;
-import org.compiere.model.MOrder;
-import org.compiere.print.ReportCtl;
-import org.compiere.print.ReportEngine;
-import org.compiere.process.DocAction;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.compiere.swing.CTextField;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;

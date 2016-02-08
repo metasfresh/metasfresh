@@ -22,15 +22,20 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
+import org.compiere.model.I_AD_User;
 
 import de.metas.async.api.IWorkPackageBL;
+import de.metas.async.model.I_C_Queue_Block;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Log;
 
@@ -53,5 +58,41 @@ public class WorkPackageBL implements IWorkPackageBL
 				InterfaceWrapperHelper.save(logRecord);
 			}
 		};
+	}
+
+	@Override
+	public I_AD_User getUserInChargeOrNull(final I_C_Queue_WorkPackage workPackage)
+	{
+		Check.assumeNotNull(workPackage, "Param 'workPackage' is not null");
+
+		if (workPackage.getAD_User_InCharge_ID() > 0 && workPackage.getAD_User_InCharge() != null)
+		{
+			return workPackage.getAD_User_InCharge();
+		}
+
+		final I_C_Queue_Block block = workPackage.getC_Queue_Block();
+		Check.assumeNotNull(block, "C_Queue_Block is not null for param 'workPackage'={0}", workPackage);
+
+		final I_C_Queue_PackageProcessor packageProcessor = block.getC_Queue_PackageProcessor();
+		Check.assumeNotNull(packageProcessor, "C_Queue_PackageProcessor is not null for block={0} of param 'workPackage'={1}",
+				block, workPackage);
+
+		if (Check.isEmpty(packageProcessor.getInternalName()))
+		{
+			return null;
+		}
+
+		final String internalName = packageProcessor.getInternalName();
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		final int userInChargeID = sysConfigBL.getIntValue("de.metas.async.api." + internalName + ".AD_User_InCharge_ID", -1,
+				workPackage.getAD_Client_ID(),
+				workPackage.getAD_Org_ID());
+		if (userInChargeID < 0)
+		{
+			return null;
+		}
+		return InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(workPackage), userInChargeID, I_AD_User.class, InterfaceWrapperHelper.getTrxName(workPackage));
 	}
 }

@@ -26,12 +26,6 @@ package org.compiere.model;
  */
 
 
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-
-import org.compiere.util.Env;
 
 /**
  * PO Index Validator (optional)

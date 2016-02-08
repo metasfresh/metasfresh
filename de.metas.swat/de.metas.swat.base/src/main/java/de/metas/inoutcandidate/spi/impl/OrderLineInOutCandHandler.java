@@ -35,8 +35,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
-import org.adempiere.order.service.IOrderPA;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -51,6 +49,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderPA;
+import de.metas.product.IProductBL;
 
 /**
  * Default implementation for sales order lines.

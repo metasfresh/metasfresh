@@ -3,11 +3,11 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.process.DocAction;
 
+import de.metas.document.IDocActionBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IInvoicedSumProvider;

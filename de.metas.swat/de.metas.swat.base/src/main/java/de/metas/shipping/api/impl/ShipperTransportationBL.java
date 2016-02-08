@@ -25,11 +25,11 @@ package de.metas.shipping.api.impl;
 
 import java.util.Properties;
 
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
+import de.metas.document.IDocTypeDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;

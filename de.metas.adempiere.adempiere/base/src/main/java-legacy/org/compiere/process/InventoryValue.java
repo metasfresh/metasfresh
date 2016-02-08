@@ -21,7 +21,6 @@ import java.sql.Timestamp;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MClient;
 import org.compiere.model.MWarehouse;
 import org.compiere.util.DB;

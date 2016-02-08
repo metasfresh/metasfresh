@@ -33,11 +33,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -50,6 +48,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.document.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTrxBL;
@@ -65,6 +64,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.product.IProductBL;
 
 /**
  * Generate {@link I_M_Movement} to move given {@link I_M_HU}s

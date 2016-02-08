@@ -25,7 +25,6 @@ package de.metas.flatrate.modelvalidator;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
-import org.adempiere.order.service.IOrderPA;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
@@ -44,6 +43,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.IOrderPA;
 
 public class C_Order implements ModelValidator
 {

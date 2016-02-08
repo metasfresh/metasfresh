@@ -37,8 +37,6 @@ import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -65,6 +63,8 @@ import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.document.IDocActionBL;
+import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;

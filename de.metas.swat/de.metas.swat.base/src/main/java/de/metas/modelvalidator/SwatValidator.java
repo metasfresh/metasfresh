@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.modelvalidator;
 
@@ -13,12 +13,12 @@ package de.metas.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,6 +35,7 @@ import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.appdict.validation.model.validator.AD_JavaClass;
@@ -103,6 +104,7 @@ import de.metas.adempiere.modelvalidator.Payment;
 import de.metas.adempiere.modelvalidator.ProcessValidator;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.adempiere.service.ITriggerUIBL;
+import de.metas.document.ICounterDocBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.validator.M_InOut;
@@ -113,6 +115,7 @@ import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
 import de.metas.invoice.model.validator.C_Invoice;
 import de.metas.invoice.model.validator.C_InvoiceLine;
 import de.metas.invoice.model.validator.M_MatchInv;
+import de.metas.order.document.spi.impl.C_Order_CounterDocHandler;
 import de.metas.order.model.validator.C_Order;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute_Line;
@@ -121,9 +124,9 @@ import de.metas.shipping.model.validator.M_ShipperTransportation;
 
 /**
  * Model Validator for SWAT general features
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class SwatValidator implements ModelValidator
 {
@@ -140,7 +143,7 @@ public class SwatValidator implements ModelValidator
 
 	/**
 	 * Default SalesRep_ID
-	 * 
+	 *
 	 * @see http://dewiki908/mediawiki/index.php/US315:_Im_Mahntext_die_neuen_Textbausteine_verwenden_k%C3%B6nnen_%282010070510000495%29#SalesRep_issue_.28Teo_09:24.2C_26._Okt._2011_.28CEST.29.29
 	 */
 	private static final String SYSCONFIG_DEFAULT_SalesRep_ID = "DEFAULT_SalesRep_ID";
@@ -219,6 +222,11 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new de.metas.picking.modelvalidator.M_PickingSlot(), client); // 06178
 
 		engine.addModelValidator(new M_ShipperTransportation(), client); // 06899
+
+		// task 09700
+		final IModelInterceptor counterDocHandlerInterceptor =
+				Services.get(ICounterDocBL.class).registerHandler(C_Order_CounterDocHandler.instance, I_C_Order.Table_Name);
+		engine.addModelValidator(counterDocHandlerInterceptor, null);
 
 		// pricing
 		{

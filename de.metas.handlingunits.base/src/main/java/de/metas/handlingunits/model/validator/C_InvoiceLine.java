@@ -26,10 +26,10 @@ package de.metas.handlingunits.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.handlingunits.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_C_InvoiceLine;
+import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
 
 @Validator(I_C_InvoiceLine.class)

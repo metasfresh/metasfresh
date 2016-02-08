@@ -22,8 +22,6 @@ package de.metas.materialtracking.model.validator;
  * #L%
  */
 
-import de.metas.materialtracking.model.I_M_InOutLine;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.Services;
@@ -31,6 +29,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.materialtracking.model.I_M_InOutLine;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 @Interceptor(I_M_InOutLine.class)
 public class M_InOutLine

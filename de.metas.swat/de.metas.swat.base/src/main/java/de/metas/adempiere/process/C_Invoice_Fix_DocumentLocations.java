@@ -35,7 +35,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
-import org.adempiere.document.service.IDocumentLocationBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.tools.AdempiereToolsHelper;
 import org.adempiere.util.Services;
@@ -47,6 +46,7 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.IDocumentLocationBL;
 
 /**
  * @author ts

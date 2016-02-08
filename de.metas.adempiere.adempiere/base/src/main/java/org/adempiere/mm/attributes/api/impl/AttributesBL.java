@@ -38,7 +38,6 @@ import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -51,6 +50,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.interfaces.I_C_BPartner_Product;
+import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 public class AttributesBL implements IAttributesBL

@@ -73,7 +73,7 @@ public @interface Cached
 	boolean ignoreInstance() default false;
 
 	/**
-	 * Optional cache name. Generally you can use the table name of the object that is cached (if applies)
+	 * Cache name. This attribute is used to invalidate staled chaches. Please include the table name(s) of the object(s) that is (are) cached.
 	 * 
 	 * @return
 	 */

@@ -32,7 +32,6 @@ import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.service.IADProcessDAO;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
@@ -41,6 +40,8 @@ import org.compiere.util.Env;
 import org.eevolution.mrp.process.PP_MRP_RecreateForDocument;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
+
+import de.metas.document.IDocActionBL;
 
 /**
  * MRP Model Interceptors

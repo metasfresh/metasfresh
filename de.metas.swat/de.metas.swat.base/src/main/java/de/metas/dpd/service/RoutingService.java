@@ -49,7 +49,6 @@ import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.service.IInOutPA;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -76,6 +75,7 @@ import org.compiere.util.Trx;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.IPrintingService;
+import de.metas.document.IDocumentNoBuilderFactory;
 import de.metas.dpd.exception.DPDException;
 import de.metas.dpd.model.MDPDCountry;
 import de.metas.dpd.model.MDPDDepot;

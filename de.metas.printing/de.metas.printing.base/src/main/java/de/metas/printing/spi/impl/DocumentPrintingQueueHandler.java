@@ -29,7 +29,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
@@ -41,6 +40,7 @@ import org.compiere.util.CLogger;
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.IDocActionBL;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;

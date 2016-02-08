@@ -28,18 +28,16 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.document.service.IDocumentNoBuilder;
-import org.adempiere.document.service.IDocumentNoBuilderFactory;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.exceptions.BPartnerNoShipToAddressException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
-import org.adempiere.product.service.IStorageBL;
 import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.print.ReportEngine;
@@ -49,11 +47,17 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
+import de.metas.adempiere.service.IAttributeSetInstanceBL;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.IDocumentNoBuilder;
+import de.metas.document.IDocumentNoBuilderFactory;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.IStorageBL;
 
 /**
  * Order Model.
@@ -66,13 +70,15 @@ import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 2520591 ] Support multiples calendar for Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  * @version $Id: MOrder.java,v 1.5 2006/10/06 00:42:24 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro <li>BF [ 2419978 ] Voiding PO, requisition don't set on NULL <li>BF [ 2892578 ] Order should autoset only active price lists
  *         https://sourceforge.net/tracker/?func=detail&aid=2892578&group_id=176962&atid=879335
  * @author Michael Judd, www.akunagroup.com <li>BF [ 2804888 ] Incorrect reservation of products with attributes
  */
 public class MOrder extends X_C_Order implements DocAction
 {
+	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
+
 	/**
 	 * 
 	 */
@@ -84,6 +90,7 @@ public class MOrder extends X_C_Order implements DocAction
 	 * Create new Order by copying
 	 * 
 	 * @param from order
+	 * @param org the org of the new order
 	 * @param dateDoc date of the document date
 	 * @param C_DocTypeTarget_ID target document type
 	 * @param isSOTrx sales order
@@ -92,15 +99,23 @@ public class MOrder extends X_C_Order implements DocAction
 	 * @param trxName trx
 	 * @return Order
 	 */
-	public static MOrder copyFrom(MOrder from, Timestamp dateDoc,
-			int C_DocTypeTarget_ID, boolean isSOTrx, boolean counter, boolean copyASI,
+	public static MOrder copyFrom(MOrder from,
+			I_AD_Org org,
+			Timestamp dateDoc,
+			int C_DocTypeTarget_ID,
+			boolean isSOTrx,
+			boolean counter,
+			boolean copyASI,
 			String trxName)
 	{
-		MOrder to = new MOrder(from.getCtx(), 0, trxName);
+		final MOrder to = new MOrder(from.getCtx(), 0, trxName);
 		to.set_TrxName(trxName);
 		PO.copyValues(from, to, from.getAD_Client_ID(), from.getAD_Org_ID());
 		to.set_ValueNoCheck("C_Order_ID", I_ZERO);
 		to.set_ValueNoCheck("DocumentNo", null);
+
+		to.setAD_Org(org); // 09700
+
 		//
 		to.setDocStatus(DOCSTATUS_Drafted);		// Draft
 		to.setDocAction(DOCACTION_Complete);
@@ -109,10 +124,11 @@ public class MOrder extends X_C_Order implements DocAction
 		to.setC_DocTypeTarget_ID(C_DocTypeTarget_ID);
 		to.setIsSOTrx(isSOTrx);
 		//
-		// metas: the new order needs to figure out the pricing by itself
+		// the new order needs to figure out the pricing and also the warehouse (task 9700) by itself
 		InterfaceWrapperHelper.create(to, de.metas.adempiere.model.I_C_Order.class).setM_PricingSystem_ID(0);
 		to.setM_PriceList_ID(0);
-		// metas end
+		to.setM_Warehouse(null);
+
 		to.setIsSelected(false);
 		to.setDateOrdered(dateDoc);
 		to.setDateAcct(dateDoc);
@@ -135,17 +151,24 @@ public class MOrder extends X_C_Order implements DocAction
 		to.setPosted(false);
 		to.setProcessed(false);
 		if (counter)
+		{
 			to.setRef_Order_ID(from.getC_Order_ID());
+		}
 		else
+		{
 			to.setRef_Order_ID(0);
-		//
-		if (!to.save(trxName))
-			throw new IllegalStateException("Could not create Order");
-		if (counter)
-			from.setRef_Order_ID(to.getC_Order_ID());
+		}
 
+		InterfaceWrapperHelper.save(to);
+
+		if (counter)
+		{
+			from.setRef_Order_ID(to.getC_Order_ID());
+		}
 		if (to.copyLinesFrom(from, counter, copyASI) == 0)
+		{
 			throw new IllegalStateException("Could not create Order Lines");
+		}
 
 		// don't copy linked PO/SO
 		to.setLink_Order_ID(0);
@@ -155,7 +178,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**************************************************************************
 	 * Default Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param C_Order_ID order to load, (0 create new order)
 	 * @param trxName trx name
@@ -462,7 +485,7 @@ public class MOrder extends X_C_Order implements DocAction
 	 * 
 	 * @param bp business partner
 	 */
-	public void setBPartner(MBPartner bp)
+	public void setBPartner(I_C_BPartner bp)
 	{
 		// FIXME: keep in sync / merge with de.metas.adempiere.service.impl.OrderBL.setBPartner(I_C_Order, I_C_BPartner)
 		
@@ -504,22 +527,32 @@ public class MOrder extends X_C_Order implements DocAction
 		if (salesRepId > 0)
 			setSalesRep_ID(salesRepId);
 
+		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
 		// Set Locations
-		MBPartnerLocation[] locs = bp.getLocations(false);
-		if (locs != null)
+		final List<I_C_BPartner_Location> locs = InterfaceWrapperHelper.createList(
+				bPartnerDAO.retrieveBPartnerLocations(bp),
+				I_C_BPartner_Location.class);
+
+		for (final I_C_BPartner_Location loc : locs)
 		{
-			for (int i = 0; i < locs.length; i++)
+			if (loc.isShipTo())
+		{
+				super.setC_BPartner_Location_ID(loc.getC_BPartner_Location_ID());
+			}
+			if (loc.isBillTo())
 			{
-				if (locs[i].isShipTo())
-					super.setC_BPartner_Location_ID(locs[i].getC_BPartner_Location_ID());
-				if (locs[i].isBillTo())
-					setBill_Location_ID(locs[i].getC_BPartner_Location_ID());
+				setBill_Location_ID(loc.getC_BPartner_Location_ID());
+			}
 			}
 			// set to first
-			if (getC_BPartner_Location_ID() == 0 && locs.length > 0)
-				super.setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
-			if (getBill_Location_ID() == 0 && locs.length > 0)
-				setBill_Location_ID(locs[0].getC_BPartner_Location_ID());
+		if (getC_BPartner_Location_ID() == 0 && !locs.isEmpty())
+		{
+			super.setC_BPartner_Location_ID(locs.get(0).getC_BPartner_Location_ID());
+		}
+		if (getBill_Location_ID() == 0 && !locs.isEmpty())
+		{
+			setBill_Location_ID(locs.get(0).getC_BPartner_Location_ID());
 		}
 		if (getC_BPartner_Location_ID() == 0)
 		{
@@ -532,9 +565,11 @@ public class MOrder extends X_C_Order implements DocAction
 		}
 
 		// Set Contact
-		MUser[] contacts = bp.getContacts(false);
-		if (contacts != null && contacts.length == 1)
-			setAD_User_ID(contacts[0].getAD_User_ID());
+		final List<I_AD_User> contacts = InterfaceWrapperHelper.createList(bPartnerDAO.retrieveContacts(bp), I_AD_User.class);
+		if (!contacts.isEmpty())
+		{
+			setAD_User_ID(contacts.get(0).getAD_User_ID());
+		}
 	}	// setBPartner
 
 	/**
@@ -545,27 +580,47 @@ public class MOrder extends X_C_Order implements DocAction
 	 * @param copyASI copy line attributes Attribute Set Instance, Resaouce Assignment
 	 * @return number of lines copied
 	 */
-	// metas: split this method in 2 methods
-	public int copyLinesFrom(MOrder otherOrder, boolean counter, boolean copyASI)
+	public int copyLinesFrom(
+			final MOrder otherOrder, 
+			final boolean counter, 
+			final boolean copyASI)
 	{
 		if (isProcessed() || isPosted() || otherOrder == null)
+		{
 			return 0;
-		MOrderLine[] fromLines = otherOrder.getLines(false, null);
+		}
+		final MOrderLine[] fromLines = otherOrder.getLines(false, null);
 		int count = 0;
 		for (int i = 0; i < fromLines.length; i++)
 		{
 			count = count + copyLineFrom(counter, copyASI, fromLines[i]);
 		}
 		if (fromLines.length != count)
-			log.log(Level.SEVERE, "Line difference - From=" + fromLines.length
-					+ " <> Saved=" + count);
+		{
+			log.log(Level.SEVERE, "Line difference - From=" + fromLines.length + " <> Saved=" + count);
+		}
 		return count;
 	} // copyLinesFrom
 
-	public int copyLineFrom(boolean counter, boolean copyASI, MOrderLine fromLine)
+	/**
+	 * Creates a new order line for this order, using the given <code>fromLine</code> as a template.
+	 * 
+	 * @param counter if <code>true</code>, then
+	 *            <ul>
+	 *            <li>the new other line's <code>Ref_OrderLine_ID</code> is set to <code>fromLine</code>'s ID
+	 *            <li>if <code>fromLine</code> has a product with <code>AD_Org_ID!=0</code> and of fromLine's <code>AD_Org_ID</code> is different from this order's <code>AD_Org_ID</code>, then
+	 *            {@link IProductDAO#retrieveMappedProductOrNull(I_M_Product, I_AD_Org)} is called, to get the other org's pendant product.
+	 *            </ul>
+	 * @param copyASI
+	 * @param fromLine
+	 * @return <code>1</code>
+	 */
+	public int copyLineFrom(
+			final boolean counter, 
+			final boolean copyASI, 
+			final MOrderLine fromLine)
 	{
-		int count = 0;
-		MOrderLine line = new MOrderLine(this);
+		final MOrderLine line = new MOrderLine(this);
 		PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID());
 		line.setC_Order_ID(getC_Order_ID());
 		line.setOrder(this);
@@ -576,10 +631,39 @@ public class MOrder extends X_C_Order implements DocAction
 			line.setM_AttributeSetInstance_ID(0);
 			line.setS_ResourceAssignment_ID(0);
 		}
-		if (counter)
-			line.setRef_OrderLine_ID(fromLine.getC_OrderLine_ID());
 		else
+		{
+			final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+			attributeSetInstanceBL.cloneASI(line, fromLine);
+		}
+		if (counter)
+		{
+			line.setRef_OrderLine_ID(fromLine.getC_OrderLine_ID());
+			if (line.getM_Product_ID() > 0) // task 09700
+			{
+				final IProductDAO productDAO = Services.get(IProductDAO.class);
+				final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+				final I_M_Product lineProduct = line.getM_Product();
+				if(lineProduct.getAD_Org_ID() != 0)
+				{
+					// task 09700 the product from the original order is org specific, so we need to substitute it with the product from the counter-org.
+					final I_M_Product counterProduct = productDAO.retrieveMappedProductOrNull(lineProduct, getAD_Org());
+					if (counterProduct == null)
+					{
+						final String msg = msgBL.getMsg(getCtx(),
+								MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT,
+								new Object[] { lineProduct.getValue(), lineProduct.getAD_Org().getName(), getAD_Org().getName() });
+						throw new AdempiereException(msg);
+					}
+					line.setM_Product(counterProduct);
+				}
+			}
+		}
+		else
+		{
 			line.setRef_OrderLine_ID(0);
+		}
 		//
 		line.setQtyDelivered(Env.ZERO);
 		line.setQtyInvoiced(Env.ZERO);
@@ -596,15 +680,16 @@ public class MOrder extends X_C_Order implements DocAction
 		//
 		//
 		line.setProcessed(false);
-		if (line.save(get_TrxName()))
-			count++;
+		InterfaceWrapperHelper.save(line);
+	
 		// Cross Link
 		if (counter)
 		{
 			fromLine.setRef_OrderLine_ID(line.getC_OrderLine_ID());
 			fromLine.saveEx(get_TrxName());
 		}
-		return count;
+
+		return 1;
 	}	// copyLinesFrom
 
 	/**************************************************************************
@@ -615,11 +700,11 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MOrder[")
-				.append(get_ID()).append("-").append(getDocumentNo())
+		StringBuffer sb = new StringBuffer("C_Order[ID=").append(get_ID())
+				.append("-DocumentNo=").append(getDocumentNo())
 				.append(",IsSOTrx=").append(isSOTrx())
 				.append(",C_DocType_ID=").append(getC_DocType_ID())
-				.append(", GrandTotal=").append(getGrandTotal())
+				.append(",GrandTotal=").append(getGrandTotal())
 				.append("]");
 		return sb.toString();
 	}	// toString
@@ -951,7 +1036,7 @@ public class MOrder extends X_C_Order implements DocAction
 			setC_DocType_ID(0);
 
 		// Default Warehouse
-		if (getM_Warehouse_ID() == 0)
+		if (getM_Warehouse_ID() <= 0)
 		{
 			setM_Warehouse_ID(warehouseAdvisor.getDefaulWarehouseId(getCtx()));
 		}
@@ -993,17 +1078,7 @@ public class MOrder extends X_C_Order implements DocAction
 		// Default Price List
 		// metas: bpartner's pricing system (instead of price list)
 		Services.get(IOrderBL.class).setM_PricingSystem_ID(InterfaceWrapperHelper.create(this, de.metas.adempiere.model.I_C_Order.class));
-		/*
-		 * if (getM_PriceList_ID() == 0)
-		 * {
-		 * int ii = DB.getSQLValueEx(null,
-		 * "SELECT M_PriceList_ID FROM M_PriceList "
-		 * + "WHERE AD_Client_ID=? AND IsSOPriceList=? AND IsActive=?"
-		 * + "ORDER BY IsDefault DESC", getAD_Client_ID(), isSOTrx(), true);
-		 * if (ii != 0)
-		 * setM_PriceList_ID (ii);
-		 * }
-		 */
+
 		// metas end
 		// Default Currency
 		if (getC_Currency_ID() == 0)
@@ -1826,21 +1901,6 @@ public class MOrder extends X_C_Order implements DocAction
 				info.append(" (").append(msg).append(")");
 		}	// Invoice
 
-		// Counter Documents
-		MOrder counter = null;
-		// metas: add a context info so the user understands that a problem
-		// occured creating the *counter* doc
-		try
-		{
-			counter = createCounterDoc();
-		}
-		catch (AdempiereException e)
-		{
-			throw new AdempiereException("@CounterDoc@: " + e.getMessage(), e);
-		}
-		// metas end
-		if (counter != null)
-			info.append(" - @CounterDoc@: @Order@=").append(counter.getDocumentNo());
 		// User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -2043,88 +2103,6 @@ public class MOrder extends X_C_Order implements DocAction
 		}
 		return invoice;
 	}	// createInvoice
-
-	/**
-	 * Create Counter Document
-	 * 
-	 * @return counter order
-	 */
-	private MOrder createCounterDoc()
-	{
-		// Is this itself a counter doc ?
-		if (getRef_Order_ID() != 0)
-			return null;
-
-		// Org Must be linked to BPartner
-		MOrg org = MOrg.get(getCtx(), getAD_Org_ID());
-		int counterC_BPartner_ID = org.getLinkedC_BPartner_ID(get_TrxName());
-		if (counterC_BPartner_ID == 0)
-			return null;
-		// Business Partner needs to be linked to Org
-		MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-		int counterAD_Org_ID = bp.getAD_OrgBP_ID_Int();
-		if (counterAD_Org_ID == 0)
-			return null;
-
-		MBPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, null);
-		MOrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID);
-		log.info("Counter BP=" + counterBP.getName());
-
-		// Document Type
-		int C_DocTypeTarget_ID = 0;
-		MDocTypeCounter counterDT = MDocTypeCounter.getCounterDocType(getCtx(), getC_DocType_ID());
-		if (counterDT != null)
-		{
-			log.fine(counterDT.toString());
-			if (!counterDT.isCreateCounter() || !counterDT.isValid())
-				return null;
-			C_DocTypeTarget_ID = counterDT.getCounter_C_DocType_ID();
-		}
-		else
-		// indirect
-		{
-			C_DocTypeTarget_ID = MDocTypeCounter.getCounterDocType_ID(getCtx(), getC_DocType_ID());
-			log.fine("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
-			if (C_DocTypeTarget_ID <= 0)
-				return null;
-		}
-		// Deep Copy
-		MOrder counter = copyFrom(this, getDateOrdered(),
-				C_DocTypeTarget_ID, !isSOTrx(), true, false, get_TrxName());
-		//
-		counter.setAD_Org_ID(counterAD_Org_ID);
-		counter.setM_Warehouse_ID(counterOrgInfo.getM_Warehouse_ID());
-		//
-		counter.setBPartner(counterBP);
-		counter.setDatePromised(getDatePromised());		// default is date ordered
-		// Refernces (Should not be required
-		counter.setSalesRep_ID(getSalesRep_ID());
-		counter.saveEx(get_TrxName()); // metas: calling saveEx() instead of save()
-
-		// Update copied lines
-		MOrderLine[] counterLines = counter.getLines(true, null);
-		for (int i = 0; i < counterLines.length; i++)
-		{
-			MOrderLine counterLine = counterLines[i];
-			counterLine.setOrder(counter);	// copies header values (BP, etc.)
-			counterLine.setPrice();
-			counterLine.setTax();
-			counterLine.saveEx(get_TrxName()); // metas: calling saveEx() instead of save()
-		}
-		log.fine(counter.toString());
-
-		// Document Action
-		if (counterDT != null)
-		{
-			if (counterDT.getDocAction() != null)
-			{
-				counter.setDocAction(counterDT.getDocAction());
-				counter.processIt(counterDT.getDocAction());
-				counter.saveEx(get_TrxName()); // metas: calling saveEx() instead of save()
-			}
-		}
-		return counter;
-	}	// createCounterDoc
 
 	/**
 	 * Void Document.

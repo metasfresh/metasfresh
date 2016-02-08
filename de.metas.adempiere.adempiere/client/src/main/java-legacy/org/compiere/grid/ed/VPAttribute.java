@@ -40,7 +40,6 @@ import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -54,6 +53,8 @@ import org.compiere.model.MProduct;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+
+import de.metas.product.IProductBL;
 
 /**
  *  Product Attribute Set Instance Editor

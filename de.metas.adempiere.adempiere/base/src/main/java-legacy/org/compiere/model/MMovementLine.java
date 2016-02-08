@@ -23,12 +23,13 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.MDDOrderLine;
+
+import de.metas.product.IProductBL;
 
 /**
  *	Inventory Move Line Model

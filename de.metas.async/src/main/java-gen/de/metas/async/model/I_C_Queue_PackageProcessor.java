@@ -85,29 +85,6 @@ public interface I_C_Queue_PackageProcessor
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Java-Klasse.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setClassname (java.lang.String Classname);
-
-	/**
-	 * Get Java-Klasse.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getClassname();
-
-    /** Column definition for Classname */
-    public static final org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object> COLUMN_Classname = new org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object>(I_C_Queue_PackageProcessor.class, "Classname", null);
-    /** Column name Classname */
-    public static final String COLUMNNAME_Classname = "Classname";
-
-	/**
 	 * Set WorkPackage Processor.
 	 *
 	 * <br>Type: ID
@@ -129,6 +106,29 @@ public interface I_C_Queue_PackageProcessor
     public static final org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object> COLUMN_C_Queue_PackageProcessor_ID = new org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object>(I_C_Queue_PackageProcessor.class, "C_Queue_PackageProcessor_ID", null);
     /** Column name C_Queue_PackageProcessor_ID */
     public static final String COLUMNNAME_C_Queue_PackageProcessor_ID = "C_Queue_PackageProcessor_ID";
+
+	/**
+	 * Set Java-Klasse.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setClassname (java.lang.String Classname);
+
+	/**
+	 * Get Java-Klasse.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getClassname();
+
+    /** Column definition for Classname */
+    public static final org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object> COLUMN_Classname = new org.adempiere.model.ModelColumn<I_C_Queue_PackageProcessor, Object>(I_C_Queue_PackageProcessor.class, "Classname", null);
+    /** Column name Classname */
+    public static final String COLUMNNAME_Classname = "Classname";
 
 	/**
 	 * Get Erstellt.

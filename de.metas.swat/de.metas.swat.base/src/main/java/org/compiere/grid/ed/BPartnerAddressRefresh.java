@@ -22,12 +22,13 @@ package org.compiere.grid.ed;
  * #L%
  */
 
-import org.adempiere.document.model.IDocumentLocation;
-import org.adempiere.document.service.IDocumentLocationBL;
 import org.adempiere.model.GridTabWrapper;
 import org.adempiere.ui.AbstractContextMenuAction;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
+
+import de.metas.document.IDocumentLocationBL;
+import de.metas.document.model.IDocumentLocation;
 
 public class BPartnerAddressRefresh extends AbstractContextMenuAction
 {

@@ -26,7 +26,6 @@ package de.metas.purchasing.process;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.order.service.IOrderPA;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.Query;
@@ -34,6 +33,7 @@ import org.compiere.process.DocAction;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
 
+import de.metas.order.IOrderPA;
 import de.metas.purchasing.model.I_M_PurchaseSchedule;
 import de.metas.purchasing.model.MMPurchaseSchedule;
 import de.metas.purchasing.service.IPurchaseScheduleBL;

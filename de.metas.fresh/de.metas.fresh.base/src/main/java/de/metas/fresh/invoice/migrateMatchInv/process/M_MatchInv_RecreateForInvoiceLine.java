@@ -33,7 +33,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.IProcessor;
 import org.adempiere.util.Services;
@@ -48,6 +47,7 @@ import org.compiere.process.DocAction;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 
+import de.metas.document.IDocActionBL;
 import de.metas.printing.esb.base.util.Check;
 
 public class M_MatchInv_RecreateForInvoiceLine extends SvrProcess

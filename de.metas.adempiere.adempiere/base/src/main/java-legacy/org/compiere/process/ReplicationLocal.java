@@ -23,7 +23,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Properties;
 import java.util.logging.Level;
 
 import javax.sql.RowSet;

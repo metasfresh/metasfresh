@@ -44,11 +44,6 @@ import javax.swing.WindowConstants;
 
 import net.miginfocom.swing.MigLayout;
 
-import de.metas.event.Event;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
-import de.metas.event.IEventListener;
-import de.metas.event.Topic;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.SwingEventNotifierUI;
 import org.adempiere.util.Check;
@@ -57,6 +52,12 @@ import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
+
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.IEventListener;
+import de.metas.event.Topic;
 
 /**
  * Frame used to display notifications in the bottom right corner.

@@ -21,7 +21,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
@@ -30,7 +29,6 @@ import java.text.AttributedString;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 
 import org.compiere.util.CLogger;

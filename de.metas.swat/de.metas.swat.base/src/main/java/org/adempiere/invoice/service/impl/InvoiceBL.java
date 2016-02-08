@@ -27,9 +27,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.document.service.ICopyHandlerBL;
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocLineCopyHandler;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
@@ -52,6 +49,9 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.ICopyHandlerBL;
+import de.metas.document.IDocActionBL;
+import de.metas.document.IDocLineCopyHandler;
 
 public final class InvoiceBL extends AbstractInvoiceBL
 {

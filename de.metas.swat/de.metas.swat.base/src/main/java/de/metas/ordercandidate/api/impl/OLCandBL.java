@@ -50,7 +50,6 @@ import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
@@ -98,6 +97,7 @@ import de.metas.ordercandidate.spi.IOLCandListener;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAttributeAware;
 import de.metas.pricing.attributebased.ProductPriceAttributeAware;
+import de.metas.product.IProductPA;
 import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.workflow.api.IWFExecutionFactory;
 

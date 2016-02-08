@@ -24,8 +24,9 @@ package de.metas.materialtracking.model;
  * #L%
  */
 
-import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+
+import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 
 public interface I_C_Invoice_Detail extends de.metas.invoicecandidate.model.I_C_Invoice_Detail
 {

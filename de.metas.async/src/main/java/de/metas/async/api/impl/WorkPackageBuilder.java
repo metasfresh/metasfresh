@@ -10,12 +10,12 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,7 +53,7 @@ import de.metas.lock.api.ILockCommand;
 	private final WorkPackageBlockBuilder _blockBuilder;
 	private IWorkpackagePrioStrategy _priority = SizeBasedWorkpackagePrio.INSTANCE;
 	private I_C_Async_Batch asyncBatch = null;
-	private boolean asyncBatchSet = false; 
+	private boolean asyncBatchSet = false;
 	private WorkPackageParamsBuilder _parametersBuilder;
 	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _trxNameBound = false;
@@ -101,11 +101,11 @@ import de.metas.lock.api.ILockCommand;
 		final I_C_Queue_Block queueBlock = getC_Queue_Block();
 		final IWorkpackagePrioStrategy workpackagePriority = getPriority();
 
-		@SuppressWarnings("deprecation") // surpressing the warning, because *this class* is the workpackage builder to be used
+		@SuppressWarnings("deprecation") // Suppressing the warning, because *this class* is the workpackage builder to be used
 		final I_C_Queue_WorkPackage workpackage = workpackageQueue.enqueueWorkPackage(
-				queueBlock, 
+				queueBlock,
 				workpackagePriority);
-		
+
 		// Set the Async batch if provided
 		// TODO: optimize this and set everything in one shot and then save it.
 		if (asyncBatchSet)
@@ -113,7 +113,7 @@ import de.metas.lock.api.ILockCommand;
 			workpackage.setC_Async_Batch(asyncBatch);
 			Services.get(IQueueDAO.class).saveInLocalTrx(asyncBatch);
 		}
-		
+
 		// Create workpackage parameters
 		if (_parametersBuilder != null)
 		{
@@ -209,7 +209,7 @@ import de.metas.lock.api.ILockCommand;
 		{
 			addElement(model);
 		}
-		
+
 		return this;
 	}
 
@@ -263,7 +263,7 @@ import de.metas.lock.api.ILockCommand;
 		// TODO split the items of this WP from the main lock and unlock them.
 		markAsBuilt();
 	}
-	
+
 	@Override
 	public WorkPackageBuilder setC_Async_Batch(final I_C_Async_Batch asyncBatch)
 	{

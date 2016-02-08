@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.document.service.IDocumentPA;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
 import org.adempiere.service.ISysConfigBL;
@@ -68,6 +67,7 @@ import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.util.CommissionTools;
 import de.metas.commission.util.PrecedingFactFinder;
+import de.metas.document.IDocumentPA;
 import de.metas.prepayorder.service.IPrepayOrderBL;
 
 /**

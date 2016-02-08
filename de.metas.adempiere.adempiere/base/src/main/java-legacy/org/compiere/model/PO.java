@@ -59,8 +59,6 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
-import org.adempiere.document.service.IDocumentNoBuilder;
-import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -89,6 +87,9 @@ import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import de.metas.document.IDocumentNoBuilder;
+import de.metas.document.IDocumentNoBuilderFactory;
 
 /**
  *  Persistent Object.

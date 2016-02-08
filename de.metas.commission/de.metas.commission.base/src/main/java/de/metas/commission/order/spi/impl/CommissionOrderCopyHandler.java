@@ -23,13 +23,13 @@ package de.metas.commission.order.spi.impl;
  */
 
 
-import org.adempiere.document.service.ICopyHandlerBL;
-import org.adempiere.document.service.IDocCopyHandler;
-import org.adempiere.document.service.IDocLineCopyHandler;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.commission.interfaces.I_C_Order;
+import de.metas.document.ICopyHandlerBL;
+import de.metas.document.IDocCopyHandler;
+import de.metas.document.IDocLineCopyHandler;
 
 /**
  * This is mainly a copy and paste of the former jboss-aop aspect <code>de.metas.commission.aopp.MInvoiceLineAsp</code>. The purpose of that aspect was: Check where this handler is referenced (i.e.

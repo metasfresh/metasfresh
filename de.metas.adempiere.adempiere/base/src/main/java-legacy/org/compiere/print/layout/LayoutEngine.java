@@ -45,10 +45,7 @@ import javax.print.Doc;
 import javax.print.DocFlavor;
 import javax.print.attribute.DocAttributeSet;
 
-import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;

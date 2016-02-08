@@ -1,8 +1,9 @@
 package org.compiere.util;
 
 
-import java.math.BigDecimal;
 import static java.math.BigDecimal.valueOf;
+
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 /******************************************************************************

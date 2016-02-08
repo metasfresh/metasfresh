@@ -24,13 +24,14 @@ package de.metas.materialtracking;
 
 import java.util.Properties;
 
-import de.metas.materialtracking.model.I_M_Material_Tracking;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
+
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /**
  * Models the relation between {@link I_M_Material_Tracking} and {@link I_M_Attribute}.

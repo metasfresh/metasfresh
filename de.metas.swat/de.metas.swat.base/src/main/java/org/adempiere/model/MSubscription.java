@@ -26,7 +26,6 @@ package org.adempiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.X_C_Subscription;
 
 import de.metas.adempiere.util.CacheIgnore;

@@ -36,10 +36,10 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
 import org.compiere.util.Env;
+import org.compiere.util.Env.Scope;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.ValueNamePair;
-import org.compiere.util.Env.Scope;
 
 /**
  * Context (Properties) wrapper to be able to evaluate grid row context

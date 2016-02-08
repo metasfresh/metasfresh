@@ -75,7 +75,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
@@ -129,6 +128,8 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.MPPOrder;
 import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.PPOrderBOMLineModel;
+
+import de.metas.product.IProductBL;
 
 /**
  * 

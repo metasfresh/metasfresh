@@ -28,7 +28,6 @@ import java.math.BigDecimal;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.Quantity;
@@ -41,6 +40,7 @@ import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 
+import de.metas.product.IProductBL;
 import de.metas.product.acct.api.IProductAcctDAO;
 
 public class MovementBL implements IMovementBL

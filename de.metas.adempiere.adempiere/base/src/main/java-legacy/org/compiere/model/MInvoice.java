@@ -38,8 +38,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.adempiere.document.service.IDocumentNoBuilder;
-import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -64,6 +62,8 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.IDocumentNoBuilder;
+import de.metas.document.IDocumentNoBuilderFactory;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 

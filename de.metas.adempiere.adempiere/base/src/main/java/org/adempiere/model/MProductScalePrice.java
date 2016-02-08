@@ -30,7 +30,6 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.MProductPrice;
@@ -38,6 +37,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_M_ProductPrice;
+import de.metas.product.IProductPA;
 
 public final class MProductScalePrice extends X_M_ProductScalePrice {
 

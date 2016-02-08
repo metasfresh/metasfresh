@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.document.exception.DocumentActionException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -38,6 +37,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.service.IOrderDAO;
+import de.metas.document.exception.DocumentActionException;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;

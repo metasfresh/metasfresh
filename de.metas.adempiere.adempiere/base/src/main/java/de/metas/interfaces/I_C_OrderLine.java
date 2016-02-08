@@ -25,10 +25,11 @@ package de.metas.interfaces;
 
 import java.math.BigDecimal;
 
-import org.adempiere.document.model.IDocumentLocation;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
+
+import de.metas.document.model.IDocumentLocation;
 
 /**
  * {@link org.compiere.model.I_C_OrderLine} extension with Swat columns.

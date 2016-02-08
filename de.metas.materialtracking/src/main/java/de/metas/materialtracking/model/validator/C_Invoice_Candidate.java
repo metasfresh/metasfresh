@@ -23,12 +23,6 @@ package de.metas.materialtracking.model.validator;
  */
 
 
-import de.metas.materialtracking.IMaterialTrackingBL;
-import de.metas.materialtracking.model.IMaterialTrackingAware;
-import de.metas.materialtracking.model.I_C_Invoice_Candidate;
-import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
-import de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.MaterialTrackingInvoiceCandidateListener;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -40,7 +34,13 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
+import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
+import de.metas.materialtracking.model.IMaterialTrackingAware;
+import de.metas.materialtracking.model.I_C_Invoice_Candidate;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
+import de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.MaterialTrackingInvoiceCandidateListener;
 
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate

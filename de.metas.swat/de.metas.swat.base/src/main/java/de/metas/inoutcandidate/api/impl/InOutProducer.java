@@ -34,8 +34,6 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -51,6 +49,8 @@ import org.compiere.model.X_M_InOut;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
+import de.metas.document.IDocActionBL;
+import de.metas.document.IDocTypeDAO;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.event.InOutGeneratedEventBus;
 import de.metas.inout.model.I_M_InOut;

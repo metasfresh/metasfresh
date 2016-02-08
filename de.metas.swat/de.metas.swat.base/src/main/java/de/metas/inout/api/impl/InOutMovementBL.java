@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -44,6 +43,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
+import de.metas.document.IDocActionBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;

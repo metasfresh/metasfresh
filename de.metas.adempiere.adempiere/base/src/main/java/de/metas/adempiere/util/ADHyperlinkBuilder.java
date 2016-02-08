@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,6 +42,8 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+
+import de.metas.document.IDocActionBL;
 
 public class ADHyperlinkBuilder
 {

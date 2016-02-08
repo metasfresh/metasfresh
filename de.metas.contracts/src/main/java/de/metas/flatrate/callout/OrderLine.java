@@ -33,7 +33,6 @@ import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GridTabWrapper;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.CalloutOrder;
@@ -49,6 +48,7 @@ import de.metas.flatrate.api.ISubscriptionBL;
 import de.metas.flatrate.interfaces.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Matching;
+import de.metas.product.IProductPA;
 
 public class OrderLine extends CalloutEngine
 {

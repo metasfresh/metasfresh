@@ -34,7 +34,6 @@ import java.util.Set;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
-import org.adempiere.order.service.IOrderPA;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -63,6 +62,7 @@ import de.metas.commission.service.IOrderLineBL;
 import de.metas.commission.service.ISalesRepFactBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
+import de.metas.order.IOrderPA;
 
 public class OrderLineBL implements IOrderLineBL
 {

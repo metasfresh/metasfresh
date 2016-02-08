@@ -42,8 +42,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -60,6 +58,8 @@ import org.compiere.model.X_M_InOut;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
+import de.metas.document.IDocActionBL;
+import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;

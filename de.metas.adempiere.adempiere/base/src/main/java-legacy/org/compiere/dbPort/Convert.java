@@ -39,7 +39,6 @@ import java.util.regex.Pattern;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_MigrationScript;

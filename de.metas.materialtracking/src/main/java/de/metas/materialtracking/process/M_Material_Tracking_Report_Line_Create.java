@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -17,6 +16,7 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_InOut;
 import org.compiere.process.SvrProcess;
 
+import de.metas.document.IDocActionBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.IMaterialTrackingReportDAO;

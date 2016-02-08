@@ -29,13 +29,13 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.document.service.IDocumentLocationBL;
-import de.metas.event.IEventBusFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.ModelValidator;
 
+import de.metas.document.IDocumentLocationBL;
+import de.metas.event.IEventBusFactory;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;

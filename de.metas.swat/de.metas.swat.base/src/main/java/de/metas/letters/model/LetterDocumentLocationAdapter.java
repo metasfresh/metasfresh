@@ -23,11 +23,12 @@ package de.metas.letters.model;
  */
 
 
-import org.adempiere.document.model.IDocumentLocation;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Util;
+
+import de.metas.document.model.IDocumentLocation;
 
 public class LetterDocumentLocationAdapter implements IDocumentLocation
 {

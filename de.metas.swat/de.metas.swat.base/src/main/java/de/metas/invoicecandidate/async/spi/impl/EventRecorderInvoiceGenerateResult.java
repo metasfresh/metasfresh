@@ -25,11 +25,9 @@ package de.metas.invoicecandidate.async.spi.impl;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.event.InvoiceGeneratedEventBus;
-import org.compiere.util.CLogger;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
-import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.ForwardingInvoiceGenerateResult;
 
 /**

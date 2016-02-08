@@ -33,17 +33,12 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocumentNoBuilder;
-import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.inout.service.IMTransactionDAO;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
-import org.adempiere.product.service.IStorageBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -59,10 +54,15 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IAttributeSetInstanceBL;
+import de.metas.document.IDocActionBL;
+import de.metas.document.IDocumentNoBuilder;
+import de.metas.document.IDocumentNoBuilderFactory;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
 
 /**
  * Shipment Model

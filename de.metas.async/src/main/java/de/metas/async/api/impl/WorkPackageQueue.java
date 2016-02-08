@@ -43,12 +43,14 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_User;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
@@ -73,9 +75,10 @@ public class WorkPackageQueue implements IWorkPackageQueue
 {
 	private static final transient CLogger logger = CLogger.getCLogger(WorkPackageQueue.class);
 
-	private final IQueueDAO dao;
-	private final IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
-	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final transient IQueueDAO dao;
+	private final transient IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
+	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
 
 	private final Properties ctx;
 	private final List<Integer> packageProcessorIds;
@@ -463,7 +466,12 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		workPackage.setAD_User_ID(Env.getAD_User_ID(ctx));
 		workPackage.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 
-
+		// task 09700
+		final I_AD_User userInCharge = workPackageBL.getUserInChargeOrNull(workPackage);
+		if (userInCharge != null)
+		{
+			workPackage.setAD_User_InCharge(userInCharge);
+		}
 		dao.saveInLocalTrx(workPackage);
 
 		// increase enqueued counter

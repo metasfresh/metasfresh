@@ -33,10 +33,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.document.model.IDocumentBillLocation;
-import org.adempiere.document.model.IDocumentDeliveryLocation;
-import org.adempiere.document.model.IDocumentLocation;
-import org.adempiere.document.service.IDocumentLocationBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -51,6 +47,10 @@ import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.IDocumentLocationBL;
+import de.metas.document.model.IDocumentBillLocation;
+import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.document.model.IDocumentLocation;
 
 /**
  * @author cg

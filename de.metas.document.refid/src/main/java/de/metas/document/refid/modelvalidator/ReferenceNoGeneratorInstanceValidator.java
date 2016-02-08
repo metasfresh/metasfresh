@@ -23,7 +23,6 @@ package de.metas.document.refid.modelvalidator;
  */
 
 
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
@@ -34,6 +33,7 @@ import org.compiere.model.PO;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
+import de.metas.document.IDocActionBL;
 import de.metas.document.refid.api.IReferenceNoBL;
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 

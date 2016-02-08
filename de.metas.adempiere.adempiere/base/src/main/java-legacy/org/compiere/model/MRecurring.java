@@ -25,48 +25,49 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.util.DB;
 
 /**
- * 	Recurring Model
+ * Recurring Model
  *
- *	@author Jorg Janke
- *	@version $Id: MRecurring.java,v 1.2 2006/07/30 00:51:03 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: MRecurring.java,v 1.2 2006/07/30 00:51:03 jjanke Exp $
  */
 public class MRecurring extends X_C_Recurring
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -4003753259402759121L;
 
-	public MRecurring (Properties ctx, int C_Recurring_ID, String trxName)
+	public MRecurring(Properties ctx, int C_Recurring_ID, String trxName)
 	{
-		super (ctx, C_Recurring_ID, trxName);
+		super(ctx, C_Recurring_ID, trxName);
 		if (C_Recurring_ID == 0)
 		{
-		//	setC_Recurring_ID (0);		//	PK
-			setDateNextRun (new Timestamp(System.currentTimeMillis()));
-			setFrequencyType (FREQUENCYTYPE_Monthly);
+			// setC_Recurring_ID (0); // PK
+			setDateNextRun(new Timestamp(System.currentTimeMillis()));
+			setFrequencyType(FREQUENCYTYPE_Monthly);
 			setFrequency(1);
-		//	setName (null);
-		//	setRecurringType (null);
-			setRunsMax (1);
-			setRunsRemaining (0);
+			// setName (null);
+			// setRecurringType (null);
+			setRunsMax(1);
+			setRunsRemaining(0);
 		}
-	}	//	MRecurring
+	}	// MRecurring
 
-	public MRecurring (Properties ctx, ResultSet rs, String trxName)
+	public MRecurring(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MRecurring
+	}	// MRecurring
 
 	/**
-	 *	String representation
-	 * 	@return info
+	 * String representation
+	 *
+	 * @return info
 	 */
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("MRecurring[")
-			.append(get_ID()).append("-").append(getName());
+		StringBuffer sb = new StringBuffer("MRecurring[")
+				.append(get_ID()).append("-").append(getName());
 		if (getRecurringType().equals(MRecurring.RECURRINGTYPE_Order))
 			sb.append(",C_Order_ID=").append(getC_Order_ID());
 		else if (getRecurringType().equals(MRecurring.RECURRINGTYPE_Invoice))
@@ -78,71 +79,79 @@ public class MRecurring extends X_C_Recurring
 		sb.append(",Frequency=").append(getFrequencyType()).append("*").append(getFrequency());
 		sb.append("]");
 		return sb.toString();
-	}	//	toString
+	}	// toString
 
-	
 	/**************************************************************************
-	 * 	Execute Run.
-	 *	@return clear text info
+	 * Execute Run.
+	 *
+	 * @return clear text info
 	 */
 	public String executeRun()
 	{
 		Timestamp dateDoc = getDateNextRun();
 		if (!calculateRuns())
-			throw new IllegalStateException ("No Runs Left");
+			throw new IllegalStateException("No Runs Left");
 
-		//	log
-		MRecurringRun run = new MRecurringRun (getCtx(), this);
+		// log
+		MRecurringRun run = new MRecurringRun(getCtx(), this);
 		String msg = "@Created@ ";
 
-
-		//	Copy
+		// Copy
 		if (getRecurringType().equals(MRecurring.RECURRINGTYPE_Order))
 		{
-			MOrder from = new MOrder (getCtx(), getC_Order_ID(), get_TrxName());
-			MOrder order = MOrder.copyFrom (from, dateDoc, 
-				from.getC_DocType_ID(), from.isSOTrx(), false, false, get_TrxName());
+			MOrder from = new MOrder(getCtx(), getC_Order_ID(), get_TrxName());
+			final boolean counter = false;
+			final boolean copyASI = false;
+			MOrder order = MOrder.copyFrom(from,
+					from.getAD_Org(),
+					dateDoc,
+					from.getC_DocType_ID(),
+					from.isSOTrx(),
+					counter,
+					copyASI,
+					get_TrxName());
 			run.setC_Order_ID(order.getC_Order_ID());
 			msg += order.getDocumentNo();
 		}
 		else if (getRecurringType().equals(MRecurring.RECURRINGTYPE_Invoice))
 		{
-			MInvoice from = new MInvoice (getCtx(), getC_Invoice_ID(), get_TrxName());
-			MInvoice invoice = MInvoice.copyFrom (from, dateDoc, dateDoc,
-				from.getC_DocType_ID(), from.isSOTrx(), false, get_TrxName(), false);
+			MInvoice from = new MInvoice(getCtx(), getC_Invoice_ID(), get_TrxName());
+			MInvoice invoice = MInvoice.copyFrom(from, dateDoc, dateDoc,
+					from.getC_DocType_ID(), from.isSOTrx(), false, get_TrxName(), false);
 			run.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			msg += invoice.getDocumentNo();
 		}
 		else if (getRecurringType().equals(MRecurring.RECURRINGTYPE_Project))
 		{
-			MProject project = MProject.copyFrom (getCtx(), getC_Project_ID(), dateDoc, get_TrxName());
+			MProject project = MProject.copyFrom(getCtx(), getC_Project_ID(), dateDoc, get_TrxName());
 			run.setC_Project_ID(project.getC_Project_ID());
 			msg += project.getValue();
 		}
 		// metas-tsa: commented out because
 		// * we moved MJournalBatch to de.metas.acct
 		// * we are not using this functionality at all
-//		else if (getRecurringType().equals(MRecurring.RECURRINGTYPE_GLJournal))
-//		{
-//			MJournalBatch journal = MJournalBatch.copyFrom (getCtx(), getGL_JournalBatch_ID(), dateDoc, get_TrxName());
-//			run.setGL_JournalBatch_ID(journal.getGL_JournalBatch_ID());
-//			msg += journal.getDocumentNo();
-//		}
+		// else if (getRecurringType().equals(MRecurring.RECURRINGTYPE_GLJournal))
+		// {
+		// MJournalBatch journal = MJournalBatch.copyFrom (getCtx(), getGL_JournalBatch_ID(), dateDoc, get_TrxName());
+		// run.setGL_JournalBatch_ID(journal.getGL_JournalBatch_ID());
+		// msg += journal.getDocumentNo();
+		// }
 		else
 			return "Invalid @RecurringType@ = " + getRecurringType();
 		run.save(get_TrxName());
 
 		//
-		setDateLastRun (run.getUpdated());
-		setRunsRemaining (getRunsRemaining()-1);
+		setDateLastRun(run.getUpdated());
+		setRunsRemaining(getRunsRemaining() - 1);
 		setDateNextRun();
 		save(get_TrxName());
 		return msg;
-	}	//	execureRun
+	}	// execureRun
 
 	/**
-	 *	Calculate & set remaining Runs
-	 *	@return true if runs left
+	 * Calculate & set remaining Runs
+	 *
+	 * @return true if runs left
 	 */
 	private boolean calculateRuns()
 	{
@@ -152,10 +161,10 @@ public class MRecurring extends X_C_Recurring
 		setRunsRemaining(remaining);
 		save();
 		return remaining > 0;
-	}	//	calculateRuns
+	}	// calculateRuns
 
 	/**
-	 *	Calculate next run date
+	 * Calculate next run date
 	 */
 	private void setDateNextRun()
 	{
@@ -172,18 +181,19 @@ public class MRecurring extends X_C_Recurring
 		else if (getFrequencyType().equals(FREQUENCYTYPE_Monthly))
 			cal.add(Calendar.MONTH, frequency);
 		else if (getFrequencyType().equals(FREQUENCYTYPE_Quarterly))
-			cal.add(Calendar.MONTH, 3*frequency);
-		Timestamp next = new Timestamp (cal.getTimeInMillis());
+			cal.add(Calendar.MONTH, 3 * frequency);
+		Timestamp next = new Timestamp(cal.getTimeInMillis());
 		setDateNextRun(next);
-	}	//	setDateNextRun
+	}	// setDateNextRun
 
 	/**
-	 * 	Before Save
-	 *	@param newRecord new
-	 *	@return true
+	 * Before Save
+	 *
+	 * @param newRecord new
+	 * @return true
 	 */
 	@Override
-	protected boolean beforeSave (boolean newRecord)
+	protected boolean beforeSave(boolean newRecord)
 	{
 		String rt = getRecurringType();
 		if (rt == null)
@@ -191,26 +201,26 @@ public class MRecurring extends X_C_Recurring
 			throw new FillMandatoryException("RecurringType");
 		}
 		if (rt.equals(MRecurring.RECURRINGTYPE_Order)
-			&& getC_Order_ID() <= 0)
+				&& getC_Order_ID() <= 0)
 		{
 			throw new FillMandatoryException("C_Order_ID");
 		}
 		if (rt.equals(MRecurring.RECURRINGTYPE_Invoice)
-			&& getC_Invoice_ID() <= 0)
+				&& getC_Invoice_ID() <= 0)
 		{
 			throw new FillMandatoryException("C_Invoice_ID");
 		}
 		if (rt.equals(MRecurring.RECURRINGTYPE_GLJournal)
-			&& getGL_JournalBatch_ID() <= 0)
+				&& getGL_JournalBatch_ID() <= 0)
 		{
 			throw new FillMandatoryException("GL_JournalBatch_ID");
 		}
 		if (rt.equals(MRecurring.RECURRINGTYPE_Project)
-			&& getC_Project_ID() <= 0)
+				&& getC_Project_ID() <= 0)
 		{
 			throw new FillMandatoryException("C_Project_ID");
 		}
 		return true;
-	}	//	beforeSave
-	
-}	//	MRecurring
+	}	// beforeSave
+
+}	// MRecurring

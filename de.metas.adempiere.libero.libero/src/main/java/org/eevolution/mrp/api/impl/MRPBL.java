@@ -29,7 +29,6 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
@@ -55,6 +54,8 @@ import org.eevolution.mrp.api.IMRPContextRunnable;
 import org.eevolution.mrp.api.IMRPSegment;
 import org.eevolution.mrp.api.IMutableMRPContext;
 import org.eevolution.mrp.api.MRPFirmType;
+
+import de.metas.product.IProductBL;
 
 public class MRPBL implements IMRPBL
 {

@@ -32,8 +32,6 @@ import java.util.GregorianCalendar;
 
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.POWrapper;
-import org.adempiere.product.service.IProductPA;
-import org.adempiere.product.service.IStoragePA;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -44,6 +42,9 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_T_Replenish;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+
+import de.metas.product.IProductPA;
+import de.metas.product.IStoragePA;
 
 public final class ReplenishForFutureQty implements IReplenishForFutureQty {
 

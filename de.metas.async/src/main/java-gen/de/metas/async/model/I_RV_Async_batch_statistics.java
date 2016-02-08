@@ -112,6 +112,33 @@ public interface I_RV_Async_batch_statistics
     public static final String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
+	 * Set WorkPackage Processor.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Queue_PackageProcessor_ID (int C_Queue_PackageProcessor_ID);
+
+	/**
+	 * Get WorkPackage Processor.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Queue_PackageProcessor_ID();
+
+	public de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor();
+
+	public void setC_Queue_PackageProcessor(de.metas.async.model.I_C_Queue_PackageProcessor C_Queue_PackageProcessor);
+
+    /** Column definition for C_Queue_PackageProcessor_ID */
+    public static final org.adempiere.model.ModelColumn<I_RV_Async_batch_statistics, de.metas.async.model.I_C_Queue_PackageProcessor> COLUMN_C_Queue_PackageProcessor_ID = new org.adempiere.model.ModelColumn<I_RV_Async_batch_statistics, de.metas.async.model.I_C_Queue_PackageProcessor>(I_RV_Async_batch_statistics.class, "C_Queue_PackageProcessor_ID", de.metas.async.model.I_C_Queue_PackageProcessor.class);
+    /** Column name C_Queue_PackageProcessor_ID */
+    public static final String COLUMNNAME_C_Queue_PackageProcessor_ID = "C_Queue_PackageProcessor_ID";
+
+	/**
 	 * Set Enqueued.
 	 *
 	 * <br>Type: Integer
@@ -156,33 +183,6 @@ public interface I_RV_Async_batch_statistics
     public static final org.adempiere.model.ModelColumn<I_RV_Async_batch_statistics, Object> COLUMN_CountProcessed = new org.adempiere.model.ModelColumn<I_RV_Async_batch_statistics, Object>(I_RV_Async_batch_statistics.class, "CountProcessed", null);
     /** Column name CountProcessed */
     public static final String COLUMNNAME_CountProcessed = "CountProcessed";
-
-	/**
-	 * Set WorkPackage Processor.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Queue_PackageProcessor_ID (int C_Queue_PackageProcessor_ID);
-
-	/**
-	 * Get WorkPackage Processor.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Queue_PackageProcessor_ID();
-
-	public de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor();
-
-	public void setC_Queue_PackageProcessor(de.metas.async.model.I_C_Queue_PackageProcessor C_Queue_PackageProcessor);
-
-    /** Column definition for C_Queue_PackageProcessor_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_Async_batch_statistics, de.metas.async.model.I_C_Queue_PackageProcessor> COLUMN_C_Queue_PackageProcessor_ID = new org.adempiere.model.ModelColumn<I_RV_Async_batch_statistics, de.metas.async.model.I_C_Queue_PackageProcessor>(I_RV_Async_batch_statistics.class, "C_Queue_PackageProcessor_ID", de.metas.async.model.I_C_Queue_PackageProcessor.class);
-    /** Column name C_Queue_PackageProcessor_ID */
-    public static final String COLUMNNAME_C_Queue_PackageProcessor_ID = "C_Queue_PackageProcessor_ID";
 
 	/**
 	 * Get Erstellt.

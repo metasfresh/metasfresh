@@ -22,7 +22,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.util.Msg;
 
 /**
  *	Accounting Element Model.

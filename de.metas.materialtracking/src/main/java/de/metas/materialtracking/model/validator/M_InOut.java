@@ -25,7 +25,6 @@ package de.metas.materialtracking.model.validator;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.metas.materialtracking.IMaterialTrackingBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,6 +36,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.spi.impl.listeners.InOutLineMaterialTrackingListener;
 

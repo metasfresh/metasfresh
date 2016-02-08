@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Services;
@@ -38,6 +37,8 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.CLogger;
 import org.compiere.util.KeyNamePair;
+
+import de.metas.product.IProductBL;
 
 public class ProductQtyRModelAggregatedValue extends AbstractRModelAggregatedValue
 {

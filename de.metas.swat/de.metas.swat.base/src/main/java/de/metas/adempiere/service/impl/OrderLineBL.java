@@ -33,8 +33,6 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocTypeBL;
 import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
@@ -64,6 +62,8 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.document.IDocActionBL;
+import de.metas.document.IDocTypeBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.tax.api.ITaxBL;
 

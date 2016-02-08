@@ -43,7 +43,6 @@ package de.metas.commission.callout;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.adempiere.document.service.IDocumentPA;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GridTabWrapper;
 import org.adempiere.util.Constants;
@@ -58,6 +57,7 @@ import org.compiere.util.Msg;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.commission.util.CommissionConstants;
+import de.metas.document.IDocumentPA;
 
 /**
  * Shipper Transportation Callout

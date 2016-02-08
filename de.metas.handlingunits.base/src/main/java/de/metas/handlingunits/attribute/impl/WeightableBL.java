@@ -23,13 +23,13 @@ package de.metas.handlingunits.attribute.impl;
  */
 
 
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_UOM;
 
 import de.metas.handlingunits.attribute.IWeightableBL;
+import de.metas.product.IProductBL;
 
 public class WeightableBL implements IWeightableBL
 {

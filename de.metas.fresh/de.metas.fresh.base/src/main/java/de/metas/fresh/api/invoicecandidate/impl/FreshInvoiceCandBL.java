@@ -26,12 +26,12 @@ package de.metas.fresh.api.invoicecandidate.impl;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 
+import de.metas.document.IDocTypeDAO;
 import de.metas.fresh.api.invoicecandidate.IFreshInvoiceCandBL;
 import de.metas.fresh.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;

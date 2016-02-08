@@ -10,12 +10,12 @@ package de.metas.adempiere.addon.standard;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,14 +30,6 @@ import org.adempiere.bpartner.service.impl.BPartnerDAO;
 import org.adempiere.db.IDBService;
 import org.adempiere.db.IDatabaseBL;
 import org.adempiere.db.impl.DatabaseBL;
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocumentPA;
-import org.adempiere.document.service.IRecurringBL;
-import org.adempiere.document.service.IRecurringPA;
-import org.adempiere.document.service.impl.DocActionBL;
-import org.adempiere.document.service.impl.DocumentPA;
-import org.adempiere.document.service.impl.RecurringBL;
-import org.adempiere.document.service.impl.RecurringPA;
 import org.adempiere.inout.replenish.service.IReplenishForFutureQty;
 import org.adempiere.inout.replenish.service.ReplenishForFutureQty;
 import org.adempiere.inout.service.IInOutPA;
@@ -58,20 +50,12 @@ import org.adempiere.misc.service.impl.POService;
 import org.adempiere.misc.service.impl.PrintPA;
 import org.adempiere.misc.service.impl.ProcessPA;
 import org.adempiere.misc.service.impl.TablePA;
-import org.adempiere.order.service.IOrderPA;
-import org.adempiere.order.service.impl.OrderPA;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.impl.PriceListDAO;
 import org.adempiere.process.event.IProcessEventSupport;
 import org.adempiere.process.event.impl.ProcessEventSupport;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.processing.service.impl.ProcessingService;
-import org.adempiere.product.service.IProductBL;
-import org.adempiere.product.service.IProductPA;
-import org.adempiere.product.service.IStoragePA;
-import org.adempiere.product.service.impl.ProductBL;
-import org.adempiere.product.service.impl.ProductPA;
-import org.adempiere.product.service.impl.StoragePA;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.addon.IAddOn;
@@ -122,11 +106,6 @@ public class StandardServices implements IAddOn
 		// Services related to invoice
 		Services.registerService(IInvoiceBL.class, new InvoiceBL());
 		Services.registerService(IInvoiceDAO.class, new InvoiceDAO());
-		// Services related to documents
-		Services.registerService(IDocActionBL.class, new DocActionBL());
-		Services.registerService(IDocumentPA.class, new DocumentPA());
-		Services.registerService(IRecurringBL.class, new RecurringBL());
-		Services.registerService(IRecurringPA.class, new RecurringPA());
 
 		//
 		// misc services
@@ -138,7 +117,6 @@ public class StandardServices implements IAddOn
 		Services.registerService(IDBService.class, new org.adempiere.db.impl.DBService());
 		Services.registerService(IPackageInfoService.class, new RoutingService());
 		Services.registerService(IOrderBL.class, new OrderBL());
-		Services.registerService(IOrderPA.class, new OrderPA());
 		Services.registerService(IParameterBL.class, new ParameterBL());
 		Services.registerService(ICalendarDAO.class, new CalendarDAO());
 		Services.registerService(IPOService.class, new POService());
@@ -147,9 +125,7 @@ public class StandardServices implements IAddOn
 		Services.registerService(IProcessEventSupport.class, new ProcessEventSupport());
 		Services.registerService(IProcessingService.class, ProcessingService.get());
 		Services.registerService(IProcessPA.class, new ProcessPA());
-		Services.registerService(IProductBL.class, new ProductBL());
-		Services.registerService(IProductPA.class, new ProductPA());
-		Services.registerService(IStoragePA.class, new StoragePA());
+
 		Services.registerService(ISweepTableBL.class, new SweepTableBL());
 		Services.registerService(ITablePA.class, new TablePA());
 

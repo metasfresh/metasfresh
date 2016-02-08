@@ -33,14 +33,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductNotOnPriceListException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
-import org.adempiere.order.service.IOrderPA;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -64,6 +61,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.document.IDocActionBL;
 import de.metas.flatrate.Contracts_Constants;
 import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.api.ISubscriptionBL;
@@ -87,8 +85,10 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.monitoring.api.IMonitoringBL;
+import de.metas.order.IOrderPA;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
+import de.metas.product.IProductPA;
 import de.metas.workflow.api.IWFExecutionFactory;
 
 public class SubscriptionBL implements ISubscriptionBL

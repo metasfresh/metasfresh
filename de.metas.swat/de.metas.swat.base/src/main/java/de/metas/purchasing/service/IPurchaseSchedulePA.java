@@ -25,8 +25,9 @@ package de.metas.purchasing.service;
 
 import java.util.List;
 
-import de.metas.purchasing.model.I_M_PurchaseSchedule;
 import org.adempiere.util.ISingletonService;
+
+import de.metas.purchasing.model.I_M_PurchaseSchedule;
 
 public interface IPurchaseSchedulePA extends ISingletonService {
 

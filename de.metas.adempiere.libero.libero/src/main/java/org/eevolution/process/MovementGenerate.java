@@ -45,9 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
 
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Movement;
@@ -68,6 +66,9 @@ import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderMovementBuilder;
 import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
+
+import de.metas.document.IDocActionBL;
+import de.metas.product.IProductBL;
 
 
 

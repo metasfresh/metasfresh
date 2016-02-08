@@ -23,13 +23,14 @@ package org.adempiere.invoice.service.impl;
  */
 
 
-import org.adempiere.document.service.IDocLineCopyHandler;
 import org.adempiere.model.InterfaceWrapperHelper;
+
+import de.metas.document.IDocLineCopyHandler;
 
 /**
  * 
  * Note: This class is currently instantiated and called directly from BLs in this package.<br>
- * Please move this class to <code>org.adempiere.invoice.spi.impl</code> as soon as it is registered at and invoked via {@link org.adempiere.document.service.ICopyHandlerBL}.
+ * Please move this class to <code>org.adempiere.invoice.spi.impl</code> as soon as it is registered at and invoked via {@link de.metas.document.ICopyHandlerBL}.
  * 
  */
 public final class DefaultDocLineCopyHandler<LT> implements IDocLineCopyHandler<LT>

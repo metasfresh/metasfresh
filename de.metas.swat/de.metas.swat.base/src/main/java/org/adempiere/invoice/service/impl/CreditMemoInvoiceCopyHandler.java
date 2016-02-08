@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocCopyHandler;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceCreditContext;
 import org.adempiere.invoice.service.IInvoiceDAO;
@@ -49,11 +47,13 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.IDocActionBL;
+import de.metas.document.IDocCopyHandler;
 
 /**
  * 
  * Note: This class is currently instantiated and called directly from BLs in this package.<br>
- * Please move this class to <code>org.adempiere.invoice.spi.impl</code> as soon as it is registered at and invoked via {@link org.adempiere.document.service.ICopyHandlerBL}.
+ * Please move this class to <code>org.adempiere.invoice.spi.impl</code> as soon as it is registered at and invoked via {@link de.metas.document.ICopyHandlerBL}.
  * <p>
  * Also see the javadoc of {@link IInvoiceBL#creditInvoice(de.metas.adempiere.model.I_C_Invoice, IInvoiceCreditContext)}.
  */

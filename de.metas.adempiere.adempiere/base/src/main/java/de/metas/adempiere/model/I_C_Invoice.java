@@ -23,9 +23,10 @@ package de.metas.adempiere.model;
  */
 
 
-import org.adempiere.document.model.IDocumentLocation;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_C_DocType;
+
+import de.metas.document.model.IDocumentLocation;
 
 public interface I_C_Invoice extends org.compiere.model.I_C_Invoice, IDocumentLocation
 {

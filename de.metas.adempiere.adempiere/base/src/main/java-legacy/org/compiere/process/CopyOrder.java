@@ -25,7 +25,7 @@ import org.compiere.model.MOrder;
 
 /**
  *	Copy Order and optionally close
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: CopyOrder.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
@@ -39,10 +39,11 @@ public class CopyOrder extends SvrProcess
 	private Timestamp	p_DateDoc = null;
 	/** Close/Process Old Order		*/
 	private boolean 	p_IsCloseDocument = false;
-	
+
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -69,10 +70,11 @@ public class CopyOrder extends SvrProcess
 	 *  @return Message (clear text)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
-		log.info("C_Order_ID=" + p_C_Order_ID 
-			+ ", C_DocType_ID=" + p_C_DocType_ID 
+		log.info("C_Order_ID=" + p_C_Order_ID
+			+ ", C_DocType_ID=" + p_C_DocType_ID
 			+ ", CloseDocument=" + p_IsCloseDocument);
 		if (p_C_Order_ID == 0)
 			throw new IllegalArgumentException("No Order");
@@ -83,8 +85,17 @@ public class CopyOrder extends SvrProcess
 			p_DateDoc = new Timestamp (System.currentTimeMillis());
 		//
 		MOrder from = new MOrder (getCtx(), p_C_Order_ID, get_TrxName());
-		MOrder newOrder = MOrder.copyFrom (from, p_DateDoc, 
-			dt.getC_DocType_ID(), dt.isSOTrx(), false, true, get_TrxName());		//	copy ASI
+
+		final boolean counter = false;
+		final boolean copyASI = true;
+		MOrder newOrder = MOrder.copyFrom (
+				from,
+				from.getAD_Org(),
+				p_DateDoc,
+				dt.getC_DocType_ID(),
+				dt.isSOTrx(),
+				counter,
+				copyASI, get_TrxName());		//	copy ASI
 		newOrder.setC_DocTypeTarget_ID(p_C_DocType_ID);
 		boolean OK = newOrder.save();
 		if (!OK)

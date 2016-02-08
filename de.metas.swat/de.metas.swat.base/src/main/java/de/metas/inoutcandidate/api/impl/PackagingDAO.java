@@ -51,7 +51,6 @@ import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.MPackagingContainer;
 import org.adempiere.model.X_M_PackagingContainer;
-import org.adempiere.product.service.IStoragePA;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.BlindIterator;
 import org.adempiere.util.collections.IteratorUtils;
@@ -71,6 +70,7 @@ import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackageableQuery;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.product.IStoragePA;
 
 public class PackagingDAO implements IPackagingDAO
 {

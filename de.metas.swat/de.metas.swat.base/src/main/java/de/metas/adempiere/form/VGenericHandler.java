@@ -33,7 +33,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.adempiere.util.Services;
-import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.minigrid.IDColumn;

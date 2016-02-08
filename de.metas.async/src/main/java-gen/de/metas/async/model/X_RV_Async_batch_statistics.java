@@ -30,7 +30,7 @@ public class X_RV_Async_batch_statistics extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 704152327L;
+	private static final long serialVersionUID = 918920663L;
 
     /** Standard Constructor */
     public X_RV_Async_batch_statistics (Properties ctx, int RV_Async_batch_statistics_ID, String trxName)
@@ -127,6 +127,40 @@ public class X_RV_Async_batch_statistics extends org.compiere.model.PO implement
 		return ii.intValue();
 	}
 
+	@Override
+	public de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Queue_PackageProcessor_ID, de.metas.async.model.I_C_Queue_PackageProcessor.class);
+	}
+
+	@Override
+	public void setC_Queue_PackageProcessor(de.metas.async.model.I_C_Queue_PackageProcessor C_Queue_PackageProcessor)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Queue_PackageProcessor_ID, de.metas.async.model.I_C_Queue_PackageProcessor.class, C_Queue_PackageProcessor);
+	}
+
+	/** Set WorkPackage Processor.
+		@param C_Queue_PackageProcessor_ID WorkPackage Processor	  */
+	@Override
+	public void setC_Queue_PackageProcessor_ID (int C_Queue_PackageProcessor_ID)
+	{
+		if (C_Queue_PackageProcessor_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Queue_PackageProcessor_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Queue_PackageProcessor_ID, Integer.valueOf(C_Queue_PackageProcessor_ID));
+	}
+
+	/** Get WorkPackage Processor.
+		@return WorkPackage Processor	  */
+	@Override
+	public int getC_Queue_PackageProcessor_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Queue_PackageProcessor_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Enqueued.
 		@param CountEnqueued Enqueued	  */
 	@Override
@@ -160,40 +194,6 @@ public class X_RV_Async_batch_statistics extends org.compiere.model.PO implement
 	public int getCountProcessed () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CountProcessed);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Queue_PackageProcessor_ID, de.metas.async.model.I_C_Queue_PackageProcessor.class);
-	}
-
-	@Override
-	public void setC_Queue_PackageProcessor(de.metas.async.model.I_C_Queue_PackageProcessor C_Queue_PackageProcessor)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Queue_PackageProcessor_ID, de.metas.async.model.I_C_Queue_PackageProcessor.class, C_Queue_PackageProcessor);
-	}
-
-	/** Set WorkPackage Processor.
-		@param C_Queue_PackageProcessor_ID WorkPackage Processor	  */
-	@Override
-	public void setC_Queue_PackageProcessor_ID (int C_Queue_PackageProcessor_ID)
-	{
-		if (C_Queue_PackageProcessor_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Queue_PackageProcessor_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Queue_PackageProcessor_ID, Integer.valueOf(C_Queue_PackageProcessor_ID));
-	}
-
-	/** Get WorkPackage Processor.
-		@return WorkPackage Processor	  */
-	@Override
-	public int getC_Queue_PackageProcessor_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Queue_PackageProcessor_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

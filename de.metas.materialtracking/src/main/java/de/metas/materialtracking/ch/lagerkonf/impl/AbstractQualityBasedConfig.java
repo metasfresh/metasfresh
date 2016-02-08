@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -36,6 +35,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
+import de.metas.document.IDocTypeDAO;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.ch.lagerkonf.ILagerKonfQualityBasedConfig;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionLine;

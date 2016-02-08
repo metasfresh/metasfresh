@@ -29,9 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.order.service.IOrderPA;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -41,6 +39,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.CLogger;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.IDocActionBL;
 import de.metas.flatrate.api.IContractChangeBL;
 import de.metas.flatrate.api.IContractChangeDAO;
 import de.metas.flatrate.api.ISubscriptionBL;
@@ -53,6 +52,7 @@ import de.metas.flatrate.model.X_C_Contract_Change;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.order.IOrderPA;
 
 public class ContractChangeBL implements IContractChangeBL
 {

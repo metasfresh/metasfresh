@@ -25,8 +25,8 @@ package org.adempiere.ad.security.impl;
 
 import java.util.Set;
 
-import org.adempiere.ad.security.ISecurityRuleEngine;
 import org.adempiere.ad.security.ISecurityRule;
+import org.adempiere.ad.security.ISecurityRuleEngine;
 import org.adempiere.ad.security.IUserRolePermissions;
 
 public class SecurityRuleEngine implements ISecurityRuleEngine

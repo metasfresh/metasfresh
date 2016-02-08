@@ -24,7 +24,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.acct.api.ProductAcctType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -41,6 +40,8 @@ import org.compiere.model.ProductCost;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.product.IProductBL;
 
 /**
  * Standard Document Line

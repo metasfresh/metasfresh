@@ -24,7 +24,6 @@ package de.metas.edi.model.validator;
 
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.document.service.ICopyHandlerBL;
 import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
@@ -32,6 +31,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
+import de.metas.document.ICopyHandlerBL;
 import de.metas.edi.spi.impl.EdiInvoiceCandidateListener;
 import de.metas.edi.spi.impl.EdiInvoiceCopyHandler;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;

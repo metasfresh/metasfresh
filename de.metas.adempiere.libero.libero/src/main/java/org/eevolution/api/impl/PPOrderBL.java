@@ -27,10 +27,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Properties;
 
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
-import org.adempiere.product.service.IStorageBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -48,6 +45,10 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_Order_Workflow;
+
+import de.metas.document.IDocTypeDAO;
+import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
 
 public class PPOrderBL implements IPPOrderBL
 {

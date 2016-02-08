@@ -31,8 +31,6 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
-import org.adempiere.product.service.IStorageBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -53,6 +51,9 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
+
+import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
 
 public class PPOrderBOMBL implements IPPOrderBOMBL
 {

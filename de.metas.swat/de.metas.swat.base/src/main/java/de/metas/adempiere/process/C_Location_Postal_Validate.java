@@ -26,7 +26,6 @@ package de.metas.adempiere.process;
 import java.util.Iterator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.Query;

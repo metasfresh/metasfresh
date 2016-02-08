@@ -30,10 +30,10 @@ import java.util.Properties;
 
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.POWrapper;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.product.IProductPA;
 
 /**
  * 

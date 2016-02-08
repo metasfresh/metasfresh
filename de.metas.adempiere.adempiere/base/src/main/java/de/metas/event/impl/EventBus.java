@@ -27,11 +27,6 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 
-import de.metas.event.Event;
-import de.metas.event.EventBusConstants;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventListener;
-import de.metas.event.Type;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.CLogger;
@@ -39,6 +34,12 @@ import org.compiere.util.CLogger;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
+
+import de.metas.event.Event;
+import de.metas.event.EventBusConstants;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventListener;
+import de.metas.event.Type;
 
 final class EventBus implements IEventBus
 {

@@ -30,7 +30,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1107222488L;
+	private static final long serialVersionUID = -1741997145L;
 
     /** Standard Constructor */
     public X_C_Queue_WorkPackage (Properties ctx, int C_Queue_WorkPackage_ID, String trxName)
@@ -243,6 +243,43 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	public int getAD_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getAD_User_InCharge() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class, AD_User_InCharge);
+	}
+
+	/** Set Betreuer.
+		@param AD_User_InCharge_ID 
+		Person, die bei einem fachlichen Problem vom System informiert wird.
+	  */
+	@Override
+	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID)
+	{
+		if (AD_User_InCharge_ID < 1) 
+			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_InCharge_ID, Integer.valueOf(AD_User_InCharge_ID));
+	}
+
+	/** Get Betreuer.
+		@return Person, die bei einem fachlichen Problem vom System informiert wird.
+	  */
+	@Override
+	public int getAD_User_InCharge_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_InCharge_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -593,22 +630,6 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Zuletzt Übersprungen um.
-		@param SkippedAt Zuletzt Übersprungen um	  */
-	@Override
-	public void setSkippedAt (java.sql.Timestamp SkippedAt)
-	{
-		set_Value (COLUMNNAME_SkippedAt, SkippedAt);
-	}
-
-	/** Get Zuletzt Übersprungen um.
-		@return Zuletzt Übersprungen um	  */
-	@Override
-	public java.sql.Timestamp getSkippedAt () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_SkippedAt);
-	}
-
 	/** Set Skipped Count.
 		@param Skipped_Count Skipped Count	  */
 	@Override
@@ -658,6 +679,22 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	public java.lang.String getSkipped_Last_Reason () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Skipped_Last_Reason);
+	}
+
+	/** Set Zuletzt Übersprungen um.
+		@param SkippedAt Zuletzt Übersprungen um	  */
+	@Override
+	public void setSkippedAt (java.sql.Timestamp SkippedAt)
+	{
+		set_Value (COLUMNNAME_SkippedAt, SkippedAt);
+	}
+
+	/** Get Zuletzt Übersprungen um.
+		@return Zuletzt Übersprungen um	  */
+	@Override
+	public java.sql.Timestamp getSkippedAt () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_SkippedAt);
 	}
 
 	/** Set Skip Timeout (millis).

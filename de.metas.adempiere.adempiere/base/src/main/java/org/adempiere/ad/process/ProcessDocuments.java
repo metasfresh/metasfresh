@@ -32,7 +32,6 @@ import java.util.logging.Level;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.GenericPO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -42,6 +41,8 @@ import org.compiere.model.Query;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnable2;
+
+import de.metas.document.IDocActionBL;
 
 /**
  * Select all records from AD_Table_ID, with given optional WhereClause for each record, call processIt with given DocAction

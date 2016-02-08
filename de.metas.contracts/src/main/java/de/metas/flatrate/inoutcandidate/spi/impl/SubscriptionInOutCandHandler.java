@@ -31,11 +31,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.document.model.IDocumentLocation;
-import org.adempiere.document.service.IDocumentLocationBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -45,6 +42,8 @@ import org.compiere.model.Query;
 import org.compiere.util.CLogger;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.IDocumentLocationBL;
+import de.metas.document.model.IDocumentLocation;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
@@ -55,6 +54,7 @@ import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
+import de.metas.product.IProductBL;
 
 /**
  * Default implementation for sales order lines.

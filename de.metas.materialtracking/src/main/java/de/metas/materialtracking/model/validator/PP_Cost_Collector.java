@@ -24,10 +24,6 @@ package de.metas.materialtracking.model.validator;
 
 import java.util.List;
 
-import de.metas.materialtracking.IMaterialTrackingBL;
-import de.metas.materialtracking.IMaterialTrackingDAO;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.materialtracking.spi.impl.listeners.PPCostCollectorMaterialTrackingListener;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -38,7 +34,11 @@ import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.materialtracking.IMaterialTrackingBL;
+import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.MTLinkRequest;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.spi.impl.listeners.PPCostCollectorMaterialTrackingListener;
 
 @Interceptor(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector

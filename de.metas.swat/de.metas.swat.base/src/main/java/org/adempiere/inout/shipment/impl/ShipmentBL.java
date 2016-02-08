@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.inout.service.IInOutPA;
 import org.adempiere.inout.shipment.IShipmentBL;
 import org.adempiere.inout.shipment.ShipmentParams;
@@ -46,6 +45,7 @@ import org.compiere.util.CLogger;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.document.IDocActionBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;

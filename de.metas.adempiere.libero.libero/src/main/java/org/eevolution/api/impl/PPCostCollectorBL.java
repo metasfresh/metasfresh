@@ -28,7 +28,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -48,6 +47,8 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.MPPCostCollector;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Order_BOMLine;
+
+import de.metas.document.IDocTypeDAO;
 
 public class PPCostCollectorBL implements IPPCostCollectorBL
 {

@@ -28,6 +28,8 @@ import java.util.Properties;
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+
 /**
  * Implementations are called by
  * {@link IShipmentScheduleBL#updateSchedules(Properties, java.util.List, boolean, java.sql.Timestamp, CachedObjects, String)}

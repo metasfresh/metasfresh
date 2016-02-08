@@ -23,7 +23,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 /**
  *	Package Export Model

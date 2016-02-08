@@ -25,12 +25,13 @@ package org.eevolution.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_OrderLine;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Workflow;
+
+import de.metas.document.IDocTypeDAO;
 
 public interface IPPOrderBL extends ISingletonService
 {

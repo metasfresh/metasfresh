@@ -33,7 +33,6 @@ import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -81,6 +80,7 @@ import org.eevolution.mrp.api.IMRPSourceEvent;
 
 import de.metas.adempiere.service.IAttributeSetInstanceBL;
 import de.metas.adempiere.service.IOrderDAO;
+import de.metas.document.IDocActionBL;
 
 public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 {

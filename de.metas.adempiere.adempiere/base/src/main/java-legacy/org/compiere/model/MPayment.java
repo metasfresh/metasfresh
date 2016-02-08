@@ -30,8 +30,6 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
-import org.adempiere.document.service.IDocumentNoBuilder;
-import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
@@ -48,6 +46,8 @@ import org.compiere.util.ValueNamePair;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.IDocumentNoBuilder;
+import de.metas.document.IDocumentNoBuilderFactory;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;

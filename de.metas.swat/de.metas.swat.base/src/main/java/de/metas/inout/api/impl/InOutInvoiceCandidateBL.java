@@ -25,13 +25,13 @@ package de.metas.inout.api.impl;
 
 import java.util.List;
 
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.process.DocAction;
 
+import de.metas.document.IDocActionBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
 import de.metas.inout.model.I_M_InOut;

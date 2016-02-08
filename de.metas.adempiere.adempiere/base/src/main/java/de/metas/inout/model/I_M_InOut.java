@@ -26,10 +26,10 @@ package de.metas.inout.model;
  */
 
 
-import org.adempiere.document.model.IDocumentDeliveryLocation;
-import org.adempiere.document.model.IDocumentLocation;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.document.model.IDocumentLocation;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 
 /**

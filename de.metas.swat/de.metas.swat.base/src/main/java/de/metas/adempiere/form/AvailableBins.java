@@ -26,9 +26,10 @@ package de.metas.adempiere.form;
 import java.util.Properties;
 
 import org.adempiere.model.I_M_PackagingContainer;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
+
+import de.metas.product.IProductPA;
 
 public class AvailableBins implements Comparable<AvailableBins>
 {

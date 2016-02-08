@@ -33,7 +33,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -48,6 +47,7 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
+import de.metas.document.IDocActionBL;
 
 /**
  * Creates outbound payments to match the given inbound payments.

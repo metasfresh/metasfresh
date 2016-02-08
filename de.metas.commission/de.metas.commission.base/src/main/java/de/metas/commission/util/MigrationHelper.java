@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.adempiere.document.service.IDocumentPA;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelationType;
 import org.adempiere.model.POWrapper;
@@ -48,6 +47,8 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+
+import de.metas.document.IDocumentPA;
 
 /**
  * @author tsa

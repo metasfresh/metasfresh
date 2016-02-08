@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.IArchiveEventListener;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -36,6 +35,7 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.document.IDocActionBL;
 import de.metas.document.archive.api.IArchiveDAO;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;

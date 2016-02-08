@@ -26,7 +26,6 @@ package de.metas.storage.spi.hu.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.Quantity;
@@ -43,6 +42,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.product.IProductBL;
 import de.metas.storage.IStorageRecord;
 
 public final class HUStorageRecord implements IStorageRecord

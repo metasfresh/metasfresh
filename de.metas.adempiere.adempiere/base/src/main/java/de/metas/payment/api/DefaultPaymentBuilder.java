@@ -27,8 +27,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -39,6 +37,8 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
 
 import de.metas.builder.IBuilder;
+import de.metas.document.IDocActionBL;
+import de.metas.document.IDocTypeDAO;
 
 public class DefaultPaymentBuilder implements IBuilder
 {

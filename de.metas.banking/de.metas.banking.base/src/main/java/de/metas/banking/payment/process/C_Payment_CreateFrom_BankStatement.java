@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -60,6 +59,7 @@ import org.compiere.process.SvrProcess;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.document.IDocActionBL;
 
 /**
  * Renamed and refactored from <code>de.metas.banking.process.BankStatementPayment</code> (swat).

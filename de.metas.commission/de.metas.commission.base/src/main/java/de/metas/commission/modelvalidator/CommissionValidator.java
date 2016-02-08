@@ -36,9 +36,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.document.service.ICopyHandlerBL;
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocumentPA;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelation;
 import org.adempiere.pricing.api.IPriceListBL;
@@ -111,6 +108,9 @@ import de.metas.commission.service.impl.SponsorBL;
 import de.metas.commission.service.impl.SponsorCondition;
 import de.metas.commission.util.CommissionConstants;
 import de.metas.commission.util.Messages;
+import de.metas.document.ICopyHandlerBL;
+import de.metas.document.IDocActionBL;
+import de.metas.document.IDocumentPA;
 
 /**
  * Commission Module Main Validator

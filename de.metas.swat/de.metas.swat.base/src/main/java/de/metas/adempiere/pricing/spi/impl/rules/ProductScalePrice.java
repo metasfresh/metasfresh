@@ -32,7 +32,6 @@ import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.spi.impl.rules.AbstractPriceListBasedRule;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList_Version;
@@ -40,6 +39,7 @@ import org.compiere.model.MProduct;
 
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_ProductPrice;
+import de.metas.product.IProductPA;
 
 /**
  * Calculate price using {@link I_M_ProductScalePrice}

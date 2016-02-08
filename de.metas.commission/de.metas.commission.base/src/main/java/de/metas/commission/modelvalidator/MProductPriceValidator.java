@@ -26,7 +26,6 @@ package de.metas.commission.modelvalidator;
 import java.math.BigDecimal;
 
 import org.adempiere.model.POWrapper;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -35,6 +34,7 @@ import org.compiere.model.PO;
 
 import de.metas.commission.interfaces.I_M_ProductPrice;
 import de.metas.commission.interfaces.I_M_ProductScalePrice;
+import de.metas.product.IProductPA;
 
 public class MProductPriceValidator implements ModelValidator
 {

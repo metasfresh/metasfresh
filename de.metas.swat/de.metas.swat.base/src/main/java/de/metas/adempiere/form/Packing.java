@@ -52,7 +52,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.misc.service.IProcessPA;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IStoragePA;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
@@ -82,6 +81,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.product.IStoragePA;
 
 /**
  * Packing View

@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
@@ -54,6 +53,7 @@ import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.product.IProductBL;
 import de.metas.storage.IStorageRecord;
 
 /**

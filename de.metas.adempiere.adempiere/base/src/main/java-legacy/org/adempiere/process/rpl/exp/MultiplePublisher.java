@@ -2,8 +2,15 @@ package org.adempiere.process.rpl.exp;
 
 //MultiplePublisher.java
 
-import javax.jms.*;
-import javax.naming.*;
+import javax.jms.JMSException;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+import javax.naming.InitialContext;
 
 public class MultiplePublisher {
 	TopicConnection topicConnection = null;

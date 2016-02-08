@@ -29,9 +29,8 @@ import java.util.Set;
 
 import org.adempiere.model.MRelation;
 import org.adempiere.model.MRelationExplicitv1;
-import org.adempiere.model.MRelationType;
 import org.adempiere.model.MRelationExplicitv1.SourceOrTarget;
-import org.adempiere.product.service.IStoragePA;
+import org.adempiere.model.MRelationType;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Requisition;
@@ -45,6 +44,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.CLogger;
 
+import de.metas.product.IStoragePA;
 import de.metas.purchasing.model.MMPurchaseSchedule;
 import de.metas.purchasing.service.IPurchaseScheduleBL;
 

@@ -37,7 +37,6 @@ import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.comparator.ComparatorChain;
@@ -54,6 +53,7 @@ import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.product.IProductPA;
 
 public class InOutBL implements IInOutBL
 {

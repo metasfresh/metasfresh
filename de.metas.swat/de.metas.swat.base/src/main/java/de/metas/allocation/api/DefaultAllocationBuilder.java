@@ -31,7 +31,6 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -48,6 +47,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.builder.BuilderSupport;
+import de.metas.document.IDocActionBL;
 
 /**
  * Default allocation builder implementation. Other modules/project can subclass this if they need to build extended allocations.

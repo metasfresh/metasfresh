@@ -21,7 +21,6 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
 import org.compiere.model.MLocator;
 import org.compiere.model.MProduct;
@@ -39,6 +38,8 @@ import org.compiere.util.ValueNamePair;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
+
+import de.metas.product.IProductBL;
 
 /**
  * Production of BOMs

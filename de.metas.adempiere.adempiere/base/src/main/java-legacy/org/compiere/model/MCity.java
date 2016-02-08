@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.compiere.util.CCache;
-import org.compiere.util.CLogger;
 
 /**
  *	Location City Model (Value Object)

@@ -18,7 +18,6 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;

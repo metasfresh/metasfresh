@@ -133,6 +133,15 @@ public interface IOrderBL extends ISingletonService
 	 */
 	public boolean setBill_User_ID(org.compiere.model.I_C_Order order);
 
+	/**
+	 * Set the given order's pricing system and price list from the given <code>oder</code>'s
+	 * <ul>
+	 * <li><code>IsSOTrx</code> value
+	 * <li><code>Bill_BPartner</code>'s pricing system, see {@link org.adempiere.bpPartner.service.IBPartnerDAO#retrievePricingSystemId(Properties, int, boolean, String)}
+	 * <li>location's <code>C_Country</code>, see {@link #retrievePriceListId(I_C_Order)}
+	 * </ul> 
+	 * @param order
+	 */
 	void setM_PricingSystem_ID(I_C_Order order);
 
 	/**

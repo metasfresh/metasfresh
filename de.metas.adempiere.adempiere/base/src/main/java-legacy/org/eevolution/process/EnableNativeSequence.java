@@ -17,15 +17,12 @@
 package org.eevolution.process;
 
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.service.ITableSequenceChecker;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 
 /**

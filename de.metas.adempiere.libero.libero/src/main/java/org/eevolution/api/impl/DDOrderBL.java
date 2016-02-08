@@ -30,7 +30,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.IProcessor;
@@ -54,6 +53,8 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.I_PP_Order;
+
+import de.metas.document.IDocActionBL;
 
 public class DDOrderBL implements IDDOrderBL
 {

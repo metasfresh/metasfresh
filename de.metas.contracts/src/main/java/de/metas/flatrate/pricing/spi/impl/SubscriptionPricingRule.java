@@ -32,7 +32,6 @@ import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
@@ -40,6 +39,7 @@ import org.compiere.util.CLogger;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.flatrate.interfaces.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.product.IProductPA;
 
 /**
  * Pricing rule applies for order lines that have a subscription id set. If the rule is called and

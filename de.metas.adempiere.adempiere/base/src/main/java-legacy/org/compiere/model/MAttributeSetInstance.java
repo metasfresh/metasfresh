@@ -20,13 +20,13 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.service.IAttributeSetInstanceBL;
+import de.metas.product.IProductBL;
 
 /**
  * Product Attribute Set Instance

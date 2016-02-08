@@ -50,7 +50,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.exceptions.NoVendorForProductException;
 import org.adempiere.model.IContextAware;
@@ -58,7 +57,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.adempiere.model.engines.IDocumentLine;
 import org.adempiere.model.engines.StorageEngine;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -88,7 +86,9 @@ import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.exceptions.ActivityProcessedException;
 import org.eevolution.exceptions.LiberoException;
 
+import de.metas.document.IDocActionBL;
 import de.metas.interfaces.I_C_BPartner_Product;
+import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /**

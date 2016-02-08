@@ -50,7 +50,6 @@ import net.miginfocom.swing.MigLayout;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
-import org.adempiere.product.service.IStoragePA;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -102,6 +101,7 @@ import de.metas.picking.terminal.PickingOKPanel;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel.ResetFilters;
+import de.metas.product.IStoragePA;
 
 /**
  * Picking First Window Panel

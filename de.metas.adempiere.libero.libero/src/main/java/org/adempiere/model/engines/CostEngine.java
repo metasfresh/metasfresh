@@ -46,9 +46,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -81,6 +79,9 @@ import org.eevolution.model.MPPCostCollector;
 import org.eevolution.model.RoutingService;
 import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.X_PP_Cost_Collector;
+
+import de.metas.document.IDocActionBL;
+import de.metas.product.IProductBL;
 
 /**
  * Cost Engine

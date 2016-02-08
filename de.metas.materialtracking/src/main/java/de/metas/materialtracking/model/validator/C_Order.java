@@ -25,7 +25,6 @@ package de.metas.materialtracking.model.validator;
 import java.util.List;
 import java.util.Properties;
 
-import de.metas.materialtracking.IMaterialTrackingDAO;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,6 +38,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.service.IOrderDAO;
+import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.IMaterialTrackingQuery.OnMoreThanOneFound;
 import de.metas.materialtracking.model.I_M_Material_Tracking;

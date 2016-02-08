@@ -30,7 +30,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
@@ -42,6 +41,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.service.IAttributeSetInstanceBL;
+import de.metas.product.IProductBL;
 
 public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 {

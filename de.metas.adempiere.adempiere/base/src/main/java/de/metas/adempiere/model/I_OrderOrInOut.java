@@ -26,8 +26,9 @@ package de.metas.adempiere.model;
  */
 
 
-import org.adempiere.document.model.IDocumentLocation;
 import org.compiere.model.I_C_BPartner_Location;
+
+import de.metas.document.model.IDocumentLocation;
 
 public interface I_OrderOrInOut extends IDocumentLocation
 {

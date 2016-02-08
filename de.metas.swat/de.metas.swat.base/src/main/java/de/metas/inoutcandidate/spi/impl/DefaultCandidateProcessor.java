@@ -32,18 +32,16 @@ import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
 import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
 import org.adempiere.inout.util.IShipmentCandidates.PostageFreeStatus;
 import org.adempiere.model.POWrapper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.CLogger;
 
-
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.product.IProductBL;
 
 public class DefaultCandidateProcessor implements ICandidateProcessor
 {

@@ -41,8 +41,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.ILatchStragegy;

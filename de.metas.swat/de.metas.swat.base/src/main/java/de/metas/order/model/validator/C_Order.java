@@ -32,7 +32,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.order.service.IOrderPA;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
@@ -43,6 +42,7 @@ import de.metas.adempiere.service.IOrderDAO;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.adempiere.service.impl.OrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderPA;
 
 @Interceptor(I_C_Order.class)
 public class C_Order

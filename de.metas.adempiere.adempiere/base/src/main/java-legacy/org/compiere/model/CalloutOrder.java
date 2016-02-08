@@ -32,8 +32,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.Services;
@@ -49,6 +47,8 @@ import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductPA;
 
 /**
  * Order Callouts. metas 24.09.2008: Aenderungen durchgefuehrt um das Verhalten bei der Auswahl von Liefer- und Rechnungsadressen (sowie Geschaeftspartnern) zu beeinflussen. So werden jetzt im Feld

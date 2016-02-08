@@ -26,8 +26,8 @@ package org.compiere.session;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
+import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.ProcessUtil;

@@ -24,7 +24,6 @@ import org.adempiere.pdf.Document;
 import org.adempiere.util.Services;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.layout.LayoutEngine;
-import org.compiere.util.CLogger;
 
 
 /**

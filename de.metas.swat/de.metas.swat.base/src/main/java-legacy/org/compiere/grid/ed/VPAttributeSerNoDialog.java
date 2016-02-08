@@ -28,8 +28,6 @@ import java.util.logging.Level;
 
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductPA;
-import org.adempiere.product.service.impl.ProductPA;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
@@ -49,6 +47,9 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+
+import de.metas.product.IProductPA;
+import de.metas.product.impl.ProductPA;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor. Called from

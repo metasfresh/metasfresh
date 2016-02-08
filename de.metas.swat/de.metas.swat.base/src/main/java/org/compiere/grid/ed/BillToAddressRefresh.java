@@ -25,12 +25,13 @@ package org.compiere.grid.ed;
 
 import java.util.logging.Level;
 
-import org.adempiere.document.model.IDocumentBillLocation;
-import org.adempiere.document.service.IDocumentLocationBL;
 import org.adempiere.model.GridTabWrapper;
 import org.adempiere.ui.AbstractContextMenuAction;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
+
+import de.metas.document.IDocumentLocationBL;
+import de.metas.document.model.IDocumentBillLocation;
 
 public class BillToAddressRefresh extends AbstractContextMenuAction
 {

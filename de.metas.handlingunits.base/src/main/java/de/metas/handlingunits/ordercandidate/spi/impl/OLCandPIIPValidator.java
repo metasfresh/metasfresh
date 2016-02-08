@@ -34,7 +34,6 @@ import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
@@ -45,6 +44,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValdiator;
+import de.metas.product.IProductPA;
 
 public class OLCandPIIPValidator implements IOLCandValdiator
 {

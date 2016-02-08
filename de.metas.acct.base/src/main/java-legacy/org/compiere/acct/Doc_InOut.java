@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Services;
@@ -46,6 +45,7 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.inout.IInOutBL;
+import de.metas.product.IProductBL;
 
 /**
  * Post Shipment/Receipt Documents.

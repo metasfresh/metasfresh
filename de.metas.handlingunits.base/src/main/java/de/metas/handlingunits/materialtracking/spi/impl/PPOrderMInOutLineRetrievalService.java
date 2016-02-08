@@ -6,10 +6,10 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.model.util.ModelByIdComparator;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.util.Services;
 import org.eevolution.model.I_PP_Cost_Collector;
 
+import de.metas.document.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;

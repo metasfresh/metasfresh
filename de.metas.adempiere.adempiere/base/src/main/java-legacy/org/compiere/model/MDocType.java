@@ -20,11 +20,12 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.document.service.IDocTypeBL;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.document.IDocTypeBL;
 
 /**
  *	Document Type Model

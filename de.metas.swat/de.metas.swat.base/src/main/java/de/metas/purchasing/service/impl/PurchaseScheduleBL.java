@@ -36,8 +36,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.MRelation;
 import org.adempiere.model.MRelationType;
 import org.adempiere.model.POWrapper;
-import org.adempiere.order.service.IOrderPA;
-import org.adempiere.product.service.IProductPA;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.MiscUtils.ArrayKey;
 import org.adempiere.util.Services;
@@ -63,6 +61,8 @@ import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderPA;
+import de.metas.product.IProductPA;
 import de.metas.purchasing.model.I_M_PurchaseSchedule;
 import de.metas.purchasing.model.MMPurchaseSchedule;
 import de.metas.purchasing.service.IPurchaseScheduleBL;

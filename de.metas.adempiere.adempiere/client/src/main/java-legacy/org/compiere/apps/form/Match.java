@@ -22,7 +22,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.minigrid.IDColumn;
@@ -38,6 +37,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.invoice.IMatchInvBL;
+import de.metas.product.IProductBL;
 
 public class Match
 {

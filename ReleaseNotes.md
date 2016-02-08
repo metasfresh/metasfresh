@@ -21,6 +21,8 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09700 Counter orders with mapped products (100691234288) +it +feature
+    * allow counter orders (sames order in one org => purchase order in another) with org-internal products that are mapped against each other
  - 09773 Signature fix in shipment jasper (100363111538) +it +fix
  - 09782 remove note from purchase invoice (109638032503) +it +fix
  - 09788 Show isInfiniteCapacity in Pricelist (106197421720) +it +fix

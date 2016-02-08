@@ -27,9 +27,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.document.service.ICopyHandlerBL;
-import org.adempiere.document.service.IDocCopyHandler;
-import org.adempiere.document.service.IDocLineCopyHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.Pair;
@@ -41,6 +38,9 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.MInvoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.document.ICopyHandlerBL;
+import de.metas.document.IDocCopyHandler;
+import de.metas.document.IDocLineCopyHandler;
 
 public interface IInvoiceBL extends ISingletonService
 {
@@ -319,7 +319,7 @@ public interface IInvoiceBL extends ISingletonService
 	int getTaxCategory(I_C_InvoiceLine invoiceLine);
 
 	/**
-	 * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, org.adempiere.document.service.ICopyHandler)}, but makes sure that the correct types are used.
+	 * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, de.metas.document.service.ICopyHandler)}, but makes sure that the correct types are used.
 	 *
 	 * @param filter
 	 * @param copyHandler
@@ -329,7 +329,7 @@ public interface IInvoiceBL extends ISingletonService
 			IDocCopyHandler<I_C_Invoice, org.compiere.model.I_C_InvoiceLine> copyHandler);
 
 	/**
-	 * Basically this method delegates to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, org.adempiere.document.service.ICopyHandler)}, but makes sure that the correct types are used.
+	 * Basically this method delegates to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, de.metas.document.service.ICopyHandler)}, but makes sure that the correct types are used.
 	 * If this proves to be usefull, we can add similar methods e.g. to <code>IOrderBL</code>.
 	 *
 	 * @param filter

@@ -15,60 +15,29 @@
 package org.compiere.pos;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FocusTraversalPolicy;
-import java.awt.Frame;
-import java.awt.GridBagLayout;
 import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
-import java.awt.Point;
 import java.awt.PointerInfo;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.Timer;
 import java.util.logging.Level;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 
 import net.miginfocom.swing.MigLayout;
 
-import org.compiere.Adempiere;
 import org.compiere.apps.ADialog;
-import org.compiere.apps.AEnv;
-import org.compiere.apps.AKeyboardFocusManager;
-import org.compiere.apps.ALogin;
-import org.compiere.apps.AMenu;
-import org.compiere.apps.StatusBar;
-import org.compiere.apps.form.FormFrame;
-import org.compiere.apps.form.FormPanel;
-import org.compiere.apps.wf.WFActivity;
-import org.compiere.apps.wf.WFPanel;
-import org.compiere.grid.ed.VLocationDialog;
-import org.compiere.grid.tree.VTreePanel;
-import org.compiere.model.MBPartner;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
-import org.compiere.model.MOrderTax;
 import org.compiere.model.MPOS;
-import org.compiere.model.MSession;
-import org.compiere.swing.CDialog;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
 import org.compiere.util.CLogger;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.compiere.util.Msg;
-import org.compiere.util.Splash;
 
 /**
  *	Point of Sales Main Window.

@@ -23,8 +23,6 @@ package de.metas.adempiere.modelvalidator;
  */
 
 
-import org.adempiere.document.service.IDocumentLocationBL;
-import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.model.POWrapper;
@@ -44,6 +42,8 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.impl.OrderBL;
+import de.metas.document.IDocumentLocationBL;
+import de.metas.document.IDocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 

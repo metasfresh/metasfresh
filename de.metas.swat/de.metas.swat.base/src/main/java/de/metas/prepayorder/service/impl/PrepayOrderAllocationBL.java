@@ -31,7 +31,6 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
@@ -59,6 +58,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
+import de.metas.document.IDocActionBL;
 import de.metas.prepayorder.interfaces.I_C_PaymentAllocate;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.prepayorder.service.IPrepayOrderBL;

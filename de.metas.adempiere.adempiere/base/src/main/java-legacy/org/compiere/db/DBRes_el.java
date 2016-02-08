@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.db;
 
-import java.util.*;
+import java.util.ListResourceBundle;
 
 /**
  *  Connection Resource Strings

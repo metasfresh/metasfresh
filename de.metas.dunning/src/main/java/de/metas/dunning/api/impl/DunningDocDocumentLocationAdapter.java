@@ -23,12 +23,12 @@ package de.metas.dunning.api.impl;
  */
 
 
-import org.adempiere.document.model.IDocumentLocation;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 
+import de.metas.document.model.IDocumentLocation;
 import de.metas.dunning.model.I_C_DunningDoc;
 
 public class DunningDocDocumentLocationAdapter implements IDocumentLocation

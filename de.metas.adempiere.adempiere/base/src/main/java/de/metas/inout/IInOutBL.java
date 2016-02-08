@@ -29,8 +29,8 @@ import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
 
 /**

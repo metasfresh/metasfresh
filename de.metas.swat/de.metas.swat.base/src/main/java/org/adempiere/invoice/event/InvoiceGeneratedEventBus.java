@@ -25,12 +25,6 @@ package org.adempiere.invoice.event;
 
 import java.util.logging.Level;
 
-import de.metas.event.Event;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
-import de.metas.event.QueueableForwardingEventBus;
-import de.metas.event.Topic;
-import de.metas.event.Type;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -39,6 +33,13 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.util.CLogger;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.QueueableForwardingEventBus;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 
 /**
  * {@link IEventBus} wrapper implementation tailored for sending events about generated invoices.

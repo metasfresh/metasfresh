@@ -26,7 +26,6 @@ package de.metas.fresh.ordercheckup.process;
 import java.util.logging.Level;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -35,6 +34,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 
+import de.metas.document.IDocActionBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 
 public class C_Order_MFGWarehouse_Report_Generate extends SvrProcess implements ISvrProcessPrecondition

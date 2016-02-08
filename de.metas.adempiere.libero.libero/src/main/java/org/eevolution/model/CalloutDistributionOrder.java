@@ -41,7 +41,6 @@ package org.eevolution.model;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
@@ -53,6 +52,8 @@ import org.compiere.model.MUOM;
 import org.compiere.model.MUOMConversion;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+
+import de.metas.product.IProductBL;
 
 /**
  *	Distribution Order Callout

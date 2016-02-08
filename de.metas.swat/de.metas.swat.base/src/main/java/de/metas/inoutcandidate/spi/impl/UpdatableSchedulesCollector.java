@@ -32,8 +32,6 @@ import java.util.Set;
 
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.model.POWrapper;
-import org.adempiere.order.service.IOrderPA;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
@@ -45,6 +43,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IUpdatableSchedulesCollector;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderPA;
+import de.metas.product.IProductBL;
 
 /**
  * This collector is currently disabled, see the interface's javadoc.

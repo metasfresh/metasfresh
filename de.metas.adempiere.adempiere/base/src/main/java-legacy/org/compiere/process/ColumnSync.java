@@ -26,8 +26,6 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;
 import org.compiere.util.AdempiereUserError;
 
-import de.metas.prepayorder.service.IPrepayOrderBL;
-
 /**
  *	Synchronize Column with Database
  *	

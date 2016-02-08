@@ -35,8 +35,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
@@ -63,6 +61,9 @@ import org.eevolution.mrp.api.IMRPSegmentBL;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.eevolution.mrp.api.MRPFirmType;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
+
+import de.metas.document.IDocActionBL;
+import de.metas.document.IDocTypeDAO;
 
 public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 {

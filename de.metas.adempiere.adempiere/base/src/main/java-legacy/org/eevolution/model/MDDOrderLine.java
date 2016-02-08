@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
@@ -34,6 +33,8 @@ import org.compiere.model.MStorage;
 import org.compiere.model.MUOM;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.product.IProductBL;
 
 /**
  *  Order Line Model.

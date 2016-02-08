@@ -48,7 +48,6 @@ import org.compiere.util.Env;
 
 import de.metas.acct.async.ScheduleFactAcctLogProcessingFactAcctListener;
 import de.metas.acct.model.I_C_VAT_Code;
-
 import de.metas.currency.ICurrencyDAO;
 
 /**

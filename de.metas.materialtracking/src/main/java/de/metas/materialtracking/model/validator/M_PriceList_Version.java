@@ -25,8 +25,6 @@ package de.metas.materialtracking.model.validator;
 import java.util.List;
 import java.util.Map;
 
-import de.metas.materialtracking.IMaterialTrackingPPOrderDAO;
-import de.metas.materialtracking.model.I_C_Invoice_Detail;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -40,6 +38,8 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.materialtracking.IMaterialTrackingPPOrderDAO;
+import de.metas.materialtracking.model.I_C_Invoice_Detail;
 import de.metas.materialtracking.model.I_PP_Order;
 
 @Interceptor(I_M_PriceList_Version.class)

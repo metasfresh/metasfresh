@@ -28,7 +28,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Sequence;
 
 /**
- * Service to access the actual {@link I_AD_Sequence} table. To generate sequences, use {@link org.adempiere.document.service.impl.DocumentNoBuilder}.
+ * Service to access the actual {@link I_AD_Sequence} table. To generate sequences, use {@link de.metas.document.impl.DocumentNoBuilder}.
  *
  */
 public interface ISequenceDAO extends ISingletonService

@@ -26,7 +26,6 @@ import java.util.logging.Level;
 import org.adempiere.util.Services;
 import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MAllocationLine;
-import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPaySelectionCheck;
 import org.compiere.model.MPaySelectionLine;

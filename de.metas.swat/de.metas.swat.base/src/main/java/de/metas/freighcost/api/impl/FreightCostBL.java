@@ -35,7 +35,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.model.MFreightCostDetail;
 import org.adempiere.model.MFreightCostShipper;
-import org.adempiere.order.service.IOrderPA;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
@@ -57,6 +56,7 @@ import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.spi.IFreightCostFreeEvaluator;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderPA;
 
 // This class was formerly known as de.metas.adempiere.service.impl.FreightCostSubscriptionBL
 public class FreightCostBL implements IFreightCostBL

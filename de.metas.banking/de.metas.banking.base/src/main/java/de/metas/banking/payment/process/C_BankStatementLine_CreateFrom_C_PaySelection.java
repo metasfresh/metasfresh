@@ -24,7 +24,6 @@ package de.metas.banking.payment.process;
 
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -36,6 +35,7 @@ import org.compiere.process.SvrProcess;
 
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.document.IDocActionBL;
 
 public class C_BankStatementLine_CreateFrom_C_PaySelection extends SvrProcess implements ISvrProcessPrecondition
 {

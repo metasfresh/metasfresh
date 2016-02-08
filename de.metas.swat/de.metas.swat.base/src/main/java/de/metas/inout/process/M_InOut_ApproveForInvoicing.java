@@ -26,7 +26,6 @@ package de.metas.inout.process;
 import java.util.logging.Level;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
@@ -34,6 +33,7 @@ import org.compiere.process.DocAction;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 
+import de.metas.document.IDocActionBL;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
 import de.metas.inout.model.I_M_InOut;
 

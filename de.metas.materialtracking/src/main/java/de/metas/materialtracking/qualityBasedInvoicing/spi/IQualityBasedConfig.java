@@ -27,11 +27,11 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
 

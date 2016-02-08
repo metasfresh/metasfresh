@@ -20,7 +20,6 @@ package org.adempiere.webui.grid;
 import java.util.logging.Level;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.util.Services;
 import org.adempiere.webui.component.ConfirmPanel;
 import org.adempiere.webui.component.Label;
@@ -51,6 +50,8 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Hbox;
 import org.zkoss.zul.Separator;
+
+import de.metas.document.IDocumentNoBuilderFactory;
 
 /**
  * Business Partner : Based on VBPartner

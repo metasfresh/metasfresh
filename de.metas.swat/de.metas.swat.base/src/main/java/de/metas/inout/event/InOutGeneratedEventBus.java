@@ -26,12 +26,6 @@ package de.metas.inout.event;
 import java.util.Collection;
 import java.util.Collections;
 
-import de.metas.event.Event;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
-import de.metas.event.QueueableForwardingEventBus;
-import de.metas.event.Topic;
-import de.metas.event.Type;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -39,6 +33,12 @@ import org.compiere.model.I_C_BPartner;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.QueueableForwardingEventBus;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 import de.metas.inout.model.I_M_InOut;
 
 /**

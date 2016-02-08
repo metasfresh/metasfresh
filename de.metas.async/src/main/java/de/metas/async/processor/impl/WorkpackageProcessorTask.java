@@ -34,14 +34,17 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
+import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.util.CLogger;
@@ -66,9 +69,12 @@ import de.metas.async.spi.IWorkpackageProcessor2;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
+import de.metas.notification.INotificationBL;
 
 /* package */class WorkpackageProcessorTask implements Runnable
 {
+	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText";
+	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle";
 	// services
 	private static final transient CLogger logger = CLogger.getCLogger(WorkpackageProcessorTask.class);
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
@@ -174,16 +180,16 @@ import de.metas.lock.exceptions.LockFailedException;
 			if (skipRequest != null)
 			{
 				finallyReleaseElementLockIfAny = false; // task 08999: don't release the lock yet, because we are going to retry later
-				markSkipped(workPackage, skipRequest);
+				markSkipped(workPackage, skipRequest, loggable);
 			}
 			else
 			{
-				markError(workPackage, e);
+				markError(workPackage, e, loggable);
 			}
 		}
 		finally
 		{
-			afterWorkpackageProcessed(finallyReleaseElementLockIfAny);
+			afterWorkpackageProcessed(finallyReleaseElementLockIfAny, loggable);
 		}
 	}
 
@@ -244,7 +250,8 @@ import de.metas.lock.exceptions.LockFailedException;
 	 *
 	 * @param releaseElementLockIfAny if <code>true</code> (which is usually the case) and there is a lock on the work package elements, that lock is released in this method.
 	 */
-	protected void afterWorkpackageProcessed(final boolean releaseElementLockIfAny)
+	protected void afterWorkpackageProcessed(final boolean releaseElementLockIfAny,
+			final ILoggable loggable)
 	{
 		// get rid of inherited AsyncBatchId and priority
 		// actually it's not necessary, but we are doing it for safety reasons
@@ -269,7 +276,7 @@ import de.metas.lock.exceptions.LockFailedException;
 		}
 		catch (final Exception e)
 		{
-			markError(workPackage, e);
+			markError(workPackage, e, loggable);
 		}
 
 		// NOTE: when notifying, we shall use the original workpackage processor, because that one is known in exterior
@@ -337,7 +344,9 @@ import de.metas.lock.exceptions.LockFailedException;
 	 *
 	 * @param workPackage
 	 */
-	private void markSkipped(final I_C_Queue_WorkPackage workPackage, final IWorkpackageSkipRequest skipRequest)
+	private void markSkipped(final I_C_Queue_WorkPackage workPackage,
+			final IWorkpackageSkipRequest skipRequest,
+			final ILoggable loggable)
 	{
 		Check.assumeNotNull(workPackage, "Param 'workPackage' not null");
 		Check.assumeNotNull(skipRequest, "Param 'skipRequest' not null");
@@ -368,9 +377,12 @@ import de.metas.lock.exceptions.LockFailedException;
 
 		// log error to console (for later audit):
 		logger.log(Level.INFO, "Skipped while processing workpackage: " + workPackage, skipException);
+		loggable.addLog("Skipped while processing workpackage: {0}", workPackage);
 	}
 
-	private void markError(final I_C_Queue_WorkPackage workPackage, final Exception ex)
+	private void markError(final I_C_Queue_WorkPackage workPackage,
+			final Exception ex,
+			final ILoggable loggable)
 	{
 		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, ex);
 
@@ -386,6 +398,53 @@ import de.metas.lock.exceptions.LockFailedException;
 		// log error to console (for later audit):
 		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARNING : Level.INFO;
 		logger.log(logLevel, "Error while processing workpackage: " + workPackage, ex);
+		loggable.addLog("Error while processing workpackage: {0}", workPackage);
+
+		// 09700: notify the user in charge, if one was set
+		if (workPackage.getAD_User_InCharge_ID() > 0)
+		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
+			final int workPackageID = workPackage.getC_Queue_WorkPackage_ID();
+			final String trxName = InterfaceWrapperHelper.getTrxName(workPackage);
+
+			// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
+			notifyErrorAfterCommit(ctx, workPackageID, trxName);
+		}
+	}
+
+	/**
+	 *
+	 * @param ctx
+	 * @param workPackageID
+	 * @param trxName
+	 * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
+	 */
+	private void notifyErrorAfterCommit(final Properties ctx,
+			final int workPackageID,
+			final String trxName)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final INotificationBL notificationBL = Services.get(INotificationBL.class);
+
+		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
+				.registerListener(new TrxListenerAdapter()
+				{
+					@Override
+					public void afterCommit(final ITrx trx)
+					{
+						final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+						final I_C_Queue_WorkPackage wpReloaded = InterfaceWrapperHelper.create(ctx, workPackageID, I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
+
+						notificationBL.notifyUser(
+								wpReloaded.getAD_User_InCharge(),
+								MSG_PROCESSING_ERROR_NOTIFICATION_TITLE,
+								msgBL.getMsg(ctx,
+										MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
+										new Object[] { workPackageID, wpReloaded.getErrorMsg() }),
+								TableRecordReference.of(wpReloaded));
+					}
+				});
 	}
 
 	/**

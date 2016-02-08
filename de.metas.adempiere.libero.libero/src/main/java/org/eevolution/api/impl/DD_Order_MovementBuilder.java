@@ -29,8 +29,6 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.document.service.IDocActionBL;
-import org.adempiere.document.service.IDocTypeDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -53,6 +51,9 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
+
+import de.metas.document.IDocActionBL;
+import de.metas.document.IDocTypeDAO;
 
 public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 {

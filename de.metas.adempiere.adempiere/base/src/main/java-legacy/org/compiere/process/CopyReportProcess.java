@@ -19,7 +19,6 @@ import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MProcess;
-import org.compiere.model.MProcessPara;
 import org.compiere.util.Msg;
 
 /**

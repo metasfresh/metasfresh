@@ -16,7 +16,6 @@ package org.adempiere.webui.editor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.product.service.IProductBL;
 import org.adempiere.util.Services;
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.PAttributebox;
@@ -35,6 +34,8 @@ import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
+
+import de.metas.product.IProductBL;
 
 /**
  *

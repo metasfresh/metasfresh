@@ -30,7 +30,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.document.service.IDocumentNoBuilderFactory;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
@@ -50,6 +49,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+
+import de.metas.document.IDocumentNoBuilderFactory;
 
 /**
  *	Business Partner Editor.

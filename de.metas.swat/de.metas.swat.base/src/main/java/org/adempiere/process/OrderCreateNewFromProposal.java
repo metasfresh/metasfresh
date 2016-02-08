@@ -25,7 +25,6 @@ package org.adempiere.process;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.document.service.IDocActionBL;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +38,8 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+
+import de.metas.document.IDocActionBL;
 
 public final class OrderCreateNewFromProposal extends SvrProcess 
 {
