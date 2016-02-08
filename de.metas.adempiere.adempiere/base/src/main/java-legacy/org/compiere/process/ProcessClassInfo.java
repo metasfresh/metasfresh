@@ -107,6 +107,12 @@ public final class ProcessClassInfo
 		return of(processClass);
 	}
 
+	/** Reset {@link ProcessClassInfo} cache */
+	public static final void resetCache()
+	{
+		processClassInfoCache.invalidateAll();
+	}
+
 	/** "Process class" to {@link ProcessClassInfo} cache */
 	private static final LoadingCache<Class<?>, ProcessClassInfo> processClassInfoCache = CacheBuilder.newBuilder()
 			.weakKeys() // to prevent ClassLoader memory leaks nightmare
@@ -196,10 +202,13 @@ public final class ProcessClassInfo
 				, ReflectionUtils.withParameters()
 				, ReflectionUtils.withReturnType(returnType));
 
-		// No methods of given format were found. This can be problematic because we assume given method is declared somewhere.
+		// No methods of given format were found.
+		// This could be OK in case our process is NOT extending SvrProcess but the ProcessCall interface.
 		if (methods.isEmpty())
 		{
-			throw new IllegalStateException("Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types");
+			logger.log(Level.INFO, "Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types. Ignored.", new Object[]{methodName, returnType, processClass});
+			//throw new IllegalStateException("Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types");
+			return false;
 		}
 
 		// Iterate all methods and return on first RunOutOfTrx annotation found.
