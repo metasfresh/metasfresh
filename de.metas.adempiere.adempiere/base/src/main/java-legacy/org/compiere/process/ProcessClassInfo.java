@@ -206,7 +206,7 @@ public final class ProcessClassInfo
 		// This could be OK in case our process is NOT extending SvrProcess but the ProcessCall interface.
 		if (methods.isEmpty())
 		{
-			logger.log(Level.INFO, "Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types. Ignored.", new Object[]{methodName, returnType, processClass});
+			logger.log(Level.INFO, "Method {0} with return type {1} was not found in {2} or in its inerited types. Ignored.", new Object[] { methodName, returnType, processClass });
 			//throw new IllegalStateException("Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types");
 			return false;
 		}
