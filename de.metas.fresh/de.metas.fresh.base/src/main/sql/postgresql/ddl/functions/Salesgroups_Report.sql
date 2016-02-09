@@ -7,7 +7,7 @@ CREATE TABLE report.Salesgroups_Report_Sub
 (
 	
 	productsalesgroup character varying(60),
-	
+	uom character varying(60),
 	qtyinvoiceddiscounter numeric,			
 	qtyinvoicedgastro numeric,			
 	qtyinvoiceddetailhandel	numeric,	
@@ -26,6 +26,7 @@ $BODY$
 SELECT
 
 	productsalesgroup,
+	uom.name,
 	
 	sum(qtyinvoiceddiscounter),		
 	sum(qtyinvoicedgastro),	
@@ -35,9 +36,10 @@ SELECT
 	sum(revenuedetailhandel)
 	
 FROM report.RV_Salesgroups rv
+JOIN C_UOM uom on uom.C_UOM_ID = rv.uom
 WHERE rv.DateInvoiced >= $1 AND rv.DateInvoiced <= $2
 GROUP BY 	
-	productsalesgroup
+	productsalesgroup, uom.name
 	
 	
 	

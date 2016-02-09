@@ -10,6 +10,7 @@ we only adhere to it as far as it's convenient in term of the documents structur
 Meanings of the categories we currently use:
  * it: was developed in the it baseline
  * uat: was developed in the uat baseline (important: this baseline is discontinued!)
+ * prod: was deveoped in the prod baseline
  * fix: a bugfix
  * feature: a new feature
 
@@ -21,6 +22,7 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09783 Improve Salesgroups - migration and report (105684868719) +it +feature
  - 09801 Customer Individual Shipment change (104284980744) +it +feature
     * minor change to the alternative shipment jasper
  - 09804 Account-Information: don't show and sum Budget (106521617847) +it +fix
