@@ -22,6 +22,7 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09779 Report C Activity ID swap changes (101962781663) +it +feature
  - 09783 Improve Salesgroups - migration and report (105684868719) +it +feature
  - 09801 Customer Individual Shipment change (104284980744) +it +feature
     * minor change to the alternative shipment jasper

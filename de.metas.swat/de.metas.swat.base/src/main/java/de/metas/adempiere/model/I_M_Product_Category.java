@@ -44,4 +44,11 @@ public interface I_M_Product_Category extends org.compiere.model.I_M_Product_Cat
 
 	@Override
 	public de.metas.adempiere.model.I_M_Product_Category getM_Product_Category_Parent();
+	
+	//09779
+	public static final String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
+	
+	public void setIsPackagingMaterial(boolean IsPackagingMaterial);
+	
+	public boolean isPackagingMaterial();
 }
