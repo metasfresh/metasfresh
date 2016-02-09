@@ -21,6 +21,9 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09677 extending the BPartner changes report (107837562286) +it +feature
+ - 09502_Support quality based invoicing +it +fix
+    * directly refresh/recreate existing invoice candidates when a PP_Order is unclosed; don't wait for it to be closed again
  - 09700 Counter orders with mapped products (100691234288) +it +feature
     * allow counter orders (sames order in one org => purchase order in another) with org-internal products that are mapped against each other
  - 09773 Signature fix in shipment jasper (100363111538) +it +fix

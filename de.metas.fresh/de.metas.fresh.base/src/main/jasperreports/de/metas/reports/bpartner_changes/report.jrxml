@@ -5,24 +5,60 @@
 	<property name="ireport.y" value="0"/>
 	<parameter name="dateFrom" class="java.util.Date"/>
 	<parameter name="dateTo" class="java.util.Date"/>
+	<parameter name="isCBPartnerTable" class="java.lang.String"/>
+	<parameter name="isAdUserTable" class="java.lang.String"/>
+	<parameter name="isCBPartnerLocationTable" class="java.lang.String"/>
+	<parameter name="isCBPBankAccountTable" class="java.lang.String"/>
+	<parameter name="isC_BPCustomerAcctTable" class="java.lang.String"/>
+	<parameter name="isCBPVendorAcctTable" class="java.lang.String"/>
+	<parameter name="isCBPEmployeeAcctTable" class="java.lang.String"/>
+	<parameter name="isCBPartnerAllotmentTable" class="java.lang.String"/>
+	<parameter name="isCSponsorSalesRep" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[select *
 from RV_BP_Changes bpc
 where bpc.Created>= $P{dateFrom}
 and bpc.Created<= $P{dateTo}
-order By bpc.bpValue;]]>
+and
+(
+ bpc.isCBPartnerTable = $P{isCBPartnerTable}
+ or
+ bpc.isAdUserTable = $P{isAdUserTable}
+ or
+ bpc.isCBPartnerLocationTable = $P{isCBPartnerLocationTable}
+ or
+ bpc.isCBPBankAccountTable = $P{isCBPBankAccountTable}
+ or
+ bpc.isC_BPCustomerAcctTable = $P{isC_BPCustomerAcctTable}
+ or
+ bpc.isCBPVendorAcctTable = $P{isCBPVendorAcctTable}
+ or
+ bpc.isCBPEmployeeAcctTable = $P{isCBPEmployeeAcctTable}
+ or
+ bpc.isCBPartnerAllotmentTable = $P{isCBPartnerAllotmentTable}
+ or
+ bpc.isCSponsorSalesRep = $P{isCSponsorSalesRep}
+)
+order By bpc.bpValue, bpc.tablename;]]>
 	</queryString>
 	<field name="tablename" class="java.lang.String"/>
 	<field name="record_id" class="java.math.BigDecimal"/>
 	<field name="bpvalue" class="java.lang.String"/>
 	<field name="bpname" class="java.lang.String"/>
 	<field name="columnname" class="java.lang.String"/>
-	<field name="created" class="java.sql.Timestamp"/>
+	<field name="created" class="java.sql.Date"/>
 	<field name="createdby" class="java.math.BigDecimal"/>
-	<field name="updated" class="java.sql.Timestamp"/>
+	<field name="updated" class="java.sql.Date"/>
 	<field name="updatedby" class="java.math.BigDecimal"/>
 	<field name="oldvalue" class="java.lang.String"/>
 	<field name="newvalue" class="java.lang.String"/>
+	<field name="iscbpartnertable" class="java.lang.String"/>
+	<field name="isadusertable" class="java.lang.String"/>
+	<field name="iscbpartnerlocationtable" class="java.lang.String"/>
+	<field name="iscbpbankaccounttable" class="java.lang.String"/>
+	<field name="isc_bpcustomeraccttable" class="java.lang.String"/>
+	<field name="iscbpvendoraccttable" class="java.lang.String"/>
+	<field name="iscbpemployeeaccttable" class="java.lang.String"/>
 	<group name="bpartner">
 		<groupExpression><![CDATA[$F{bpvalue}]]></groupExpression>
 		<groupHeader>
@@ -51,7 +87,7 @@ order By bpc.bpValue;]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="60" splitType="Stretch">
+		<band height="138" splitType="Stretch">
 			<staticText>
 				<reportElement uuid="dde1f5c7-5f99-4c18-95b5-2b7816ad2154" x="0" y="0" width="225" height="20"/>
 				<textElement>
@@ -60,32 +96,158 @@ order By bpc.bpValue;]]>
 				<text><![CDATA[Revisionsstelle Geschäftspartner]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement uuid="0915ffcd-95d0-495a-a086-48b740900673" x="30" y="20" width="50" height="12"/>
+				<reportElement uuid="0915ffcd-95d0-495a-a086-48b740900673" x="41" y="20" width="50" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{dateFrom}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement uuid="08d58073-5bb3-4f55-900c-5b36c69fc796" x="81" y="20" width="50" height="12"/>
+				<reportElement uuid="08d58073-5bb3-4f55-900c-5b36c69fc796" x="100" y="20" width="50" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{dateTo}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="70d258c9-68ac-46ab-87bb-8ae55d1cbb82" x="0" y="20" width="30" height="12"/>
+				<reportElement uuid="70d258c9-68ac-46ab-87bb-8ae55d1cbb82" x="10" y="20" width="30" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Datum]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="36c36c8d-02e3-470f-a9f8-afa1eb687c34" x="71" y="20" width="10" height="12"/>
+				<reportElement uuid="36c36c8d-02e3-470f-a9f8-afa1eb687c34" x="90" y="20" width="10" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[ - ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="64488266-57de-4589-a0b2-04c6cab8a37e" x="10" y="44" width="95" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Kontakt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="b46e064f-eae1-43d1-b1c4-4bbd2ddcec19" x="10" y="56" width="95" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Adresse]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="b68805a8-8dac-44d5-bb27-629de8df232f" x="10" y="68" width="95" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Bankkonto]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="ac00b596-e245-4830-9a77-d20cc21fa148" x="10" y="80" width="95" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Kundenkonten]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="b7cda9a2-29be-48b7-af08-026f7bcc39e4" x="10" y="92" width="95" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Lieferantenkonten]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="f284a76c-bf7e-4db4-926d-edb3fdde2cb2" x="10" y="114" width="95" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Geschäftspartnerparzelle]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="406dd7df-eef2-4f85-9bfe-bf1543e85419" x="10" y="32" width="95" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Geschäftspartner]]></text>
+			</staticText>
+			<textField>
+				<reportElement uuid="09c41640-735a-498d-b7ea-73c2ed911cff" x="105" y="32" width="100" height="12"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{isCBPartnerTable}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="4c6bf194-e304-4864-bea0-1f61cdf1c4a3" x="105" y="44" width="100" height="12"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{isAdUserTable}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="12a8969d-c58d-4680-b69c-c807eb7643ef" x="105" y="56" width="115" height="12"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{isCBPartnerLocationTable}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b320ae31-da65-4cf3-9226-f7fa3ff0c18c" x="105" y="68" width="107" height="12"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{isCBPBankAccountTable}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="484914df-7231-4e86-b532-e57e066793c3" x="105" y="80" width="119" height="12"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{isC_BPCustomerAcctTable}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="2a42f79b-4dd0-451b-ac09-95f67585991b" x="105" y="92" width="119" height="12"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{isCBPVendorAcctTable}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="d42836ca-f4a7-46cb-a12d-3428611142b9" x="105" y="114" width="119" height="12"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{isCBPartnerAllotmentTable}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="004b7f0d-c699-4cd1-b068-1d400b0d9c91" x="105" y="125" width="119" height="12"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{isCSponsorSalesRep}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="acba4dd6-e85c-4058-8c0e-f9d0ca9e7e85" x="10" y="125" width="95" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Sponsor-Vertriebspartner]]></text>
+			</staticText>
+			<textField>
+				<reportElement uuid="a404976a-8575-4ec4-9ee8-415d2a493170" x="105" y="103" width="119" height="12"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{isCBPEmployeeAcctTable}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="fd5e28d7-549b-40b2-bda4-41e4e16a65e5" x="10" y="103" width="95" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Mitarbeiterkonten]]></text>
 			</staticText>
 		</band>
 	</title>
