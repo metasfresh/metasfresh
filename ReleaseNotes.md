@@ -21,6 +21,8 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09801 Customer Individual Shipment change (104284980744) +it +feature
+    * minor change to the alternative shipment jasper
  - 09804 Account-Information: don't show and sum Budget (106521617847) +it +fix
  - 09677 extending the BPartner changes report (107837562286) +it +feature
  - 09502_Support quality based invoicing +it +fix
