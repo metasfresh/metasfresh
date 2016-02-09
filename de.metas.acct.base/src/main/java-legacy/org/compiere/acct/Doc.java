@@ -1008,11 +1008,14 @@ public abstract class Doc
 		// Get All Currencies
 		final Set<Integer> currencyIds = new HashSet<>();
 		currencyIds.add(getC_Currency_ID());
-		for (final DocLine docLine : p_lines)
+		if (p_lines != null)
 		{
-			final int currencyId = docLine.getC_Currency_ID();
-			if (currencyId != NO_CURRENCY)
-				currencyIds.add(currencyId);
+			for (final DocLine docLine : p_lines)
+			{
+				final int currencyId = docLine.getC_Currency_ID();
+				if (currencyId != NO_CURRENCY)
+					currencyIds.add(currencyId);
+			}
 		}
 
 		// Check
