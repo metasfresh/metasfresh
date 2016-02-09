@@ -31,6 +31,8 @@ import net.sf.jasperreports.engine.export.CutsInfo;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
 
+import org.apache.poi.ss.SpreadsheetVersion;
+
 /**
  * Extension of {@link JRXlsExporter} which implements our custom features (e.g. {@link #PROPERTY_COLUMN_HIDDEN}).
  * 
@@ -72,7 +74,7 @@ public class MetasJRXlsExporter extends JRXlsExporter
 		setParameter(JRXlsAbstractExporterParameter.IS_COLLAPSE_ROW_SPAN, true);
 		setParameter(JRXlsAbstractExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_COLUMNS, true);
 		setParameter(JRXlsAbstractExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_ROWS, true);
-		setParameter(JRXlsAbstractExporterParameter.MAXIMUM_ROWS_PER_SHEET, 0);
+		setParameter(JRXlsAbstractExporterParameter.MAXIMUM_ROWS_PER_SHEET, SpreadsheetVersion.EXCEL97.getLastRowIndex());
 	}
 
 	@Override
