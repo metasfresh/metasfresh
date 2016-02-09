@@ -21,6 +21,7 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09804 Account-Information: don't show and sum Budget (106521617847) +it +fix
  - 09677 extending the BPartner changes report (107837562286) +it +feature
  - 09502_Support quality based invoicing +it +fix
     * directly refresh/recreate existing invoice candidates when a PP_Order is unclosed; don't wait for it to be closed again
