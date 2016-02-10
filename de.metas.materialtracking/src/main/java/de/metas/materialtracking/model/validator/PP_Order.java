@@ -38,7 +38,10 @@ import org.compiere.process.DocAction;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
@@ -72,7 +75,7 @@ public class PP_Order
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_CLOSE,
 			ModelValidator.TIMING_AFTER_UNCLOSE })
-	public void updateQualityFields(final I_PP_Order ppOrder)
+	public void updateQualityFields(final I_PP_Order ppOrder, final int timing)
 	{
 		// used services
 		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
@@ -96,7 +99,15 @@ public class PP_Order
 		ppOrder.setIsInvoiceCandidate(false);
 
 		final IMaterialTrackingDocuments materialTrackingDocuments = qualityBasedInvoicingDAO.retrieveMaterialTrackingDocuments(materialTracking);
-		materialTrackingDocuments.considerPPOrderAsClosed(ppOrder); // task 09657
+
+		if (timing == ModelValidator.TIMING_AFTER_CLOSE)
+		{
+			materialTrackingDocuments.considerPPOrderAsClosed(ppOrder); // task 09657
+		}
+		else if (timing == ModelValidator.TIMING_AFTER_UNCLOSE)
+		{
+			materialTrackingDocuments.considerPPOrderAsNotClosed(ppOrder);
+		}
 
 		final PPOrderQualityCalculator calculator = new PPOrderQualityCalculator();
 		calculator.update(materialTrackingDocuments);
@@ -145,16 +156,17 @@ public class PP_Order
 	/**
 	 * After a PP_Order was unclosed, this interceptor
 	 * <ul>
-	 * <li>deletes all <code>C_Invoice_Details</code> which reference it
 	 * <li>sets <code>PP_Order.IsInvoiceCandidate='N'</code>
 	 * <li>sets <code>M_InOutLine.IsInvoiceCandidate='N'</code> for the iols whose material was issued to the ppOrder.
+	 * <li>schedules the given <code>ppOrder</code>'s invoice candidates to be updated/recreated.
+	 * <li>deletes all <code>C_Invoice_Details</code> which reference it (somewhat redundant as the ICs will be recreated)
 	 * </ul>
-	 * All of this so that if the ppOrder is closed again, further invoice candidates can be created for it.
+	 * All of this so that if the ppOrder is closed again, further invoice candidates can be created for it and also that while it is unclosed, no incorrect ICs will be created.
 	 *
 	 * @param ppOrder
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_UNCLOSE })
-	public void deleteInvoiceDetailsAfterUnclose(final I_PP_Order ppOrder)
+	public void afterUnclose(final I_PP_Order ppOrder)
 	{
 		final IMaterialTrackingPPOrderDAO materialTrackingPPOrderDAO = Services.get(IMaterialTrackingPPOrderDAO.class);
 		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
@@ -173,5 +185,9 @@ public class PP_Order
 		}
 
 		new PPOrderReportWriter(ppOrder).deleteReportLines();
+
+		// task 09502 IT-2: make sure that existing invoice candidates are braught up to date
+		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+		invoiceCandidateHandlerBL.invalidateCandidatesFor(ppOrder);
 	}
 }

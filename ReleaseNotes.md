@@ -23,7 +23,8 @@ Additional notes:
 
 ## Upcoming Release
  - 09800 Scrolling in Picking terminal first window looks weird (106972300023) +it +fix
- 
+ - 09502 quality inspection: recompute invoice candidates, also on PP_Order unclose (100925494419)
+
 ## metasfresh ERP 4.2.1
  - 09809 Report direct costing Year Title wrong (103628559355) +it +fix
  - 09803 Revenue report fix (109269170462) +it +fix

@@ -75,6 +75,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 	 */
 	private Set<Integer> ppOrdersToBeConsideredClosed = new HashSet<>();
 
+	private Set<Integer> ppOrdersToBeConsideredNotClosed = new HashSet<>();
+
 	public MaterialTrackingDocuments(final I_M_Material_Tracking materialTracking)
 	{
 		super();
@@ -145,11 +147,16 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 		{
 			if (!DocAction.STATUS_Closed.equals(ppOrder.getDocStatus())
 					&& !ppOrdersToBeConsideredClosed.contains(ppOrder.getPP_Order_ID()) // task 09657
-					)
+			)
 			{
-				continue; // for the invoice candidates, only closed PP_Orders matter.
+				continue; // for the invoice candidates and also for the PP_Order report lines, only closed PP_Orders matter.
 			}
-
+			
+			if (ppOrdersToBeConsideredNotClosed.contains(ppOrder.getPP_Order_ID()))
+			{
+				continue; // only closed PP_Orders matter.
+			}
+			
 			final QualityInspectionOrder qiOrder = new QualityInspectionOrder(ppOrder, materialTracking);
 			qualityInspectionOrders.add(qiOrder);
 		}
@@ -208,12 +215,21 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 		ppOrdersToBeConsideredClosed.add(ppOrder.getPP_Order_ID());
 	}
 
-	@Override public Collection<I_M_PriceList_Version> getPriceListVersions()
+	@Override
+	public void considerPPOrderAsNotClosed(final I_PP_Order ppOrder)
+	{
+		Check.assumeNotNull(ppOrder, "Param 'ppOrder is not null");
+		ppOrdersToBeConsideredNotClosed.add(ppOrder.getPP_Order_ID());
+	}
+
+	@Override
+	public Collection<I_M_PriceList_Version> getPriceListVersions()
 	{
 		return getPricingInfo().getPriceListVersions();
 	}
 
-	@Override public IVendorInvoicingInfo getVendorInvoicingInfoForPLV(I_M_PriceList_Version plv)
+	@Override
+	public IVendorInvoicingInfo getVendorInvoicingInfoForPLV(I_M_PriceList_Version plv)
 	{
 		final MaterialTrackingAsVendorInvoicingInfo materialTrackingAsVendorInvoicingInfo = new MaterialTrackingAsVendorInvoicingInfo(getM_Material_Tracking());
 		materialTrackingAsVendorInvoicingInfo.setM_PriceList_Version(plv);

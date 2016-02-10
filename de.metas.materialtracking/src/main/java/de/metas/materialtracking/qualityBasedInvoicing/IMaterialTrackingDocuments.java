@@ -83,6 +83,12 @@ public interface IMaterialTrackingDocuments
 	 */
 	void considerPPOrderAsClosed(I_PP_Order ppOrder);
 
+	/**
+	 * This method is analog to {@link #considerPPOrderAsClosed(I_PP_Order)}.
+	 * @param ppOrder
+	 */
+	void considerPPOrderAsNotClosed(I_PP_Order ppOrder);
+	
 	Collection<I_M_PriceList_Version> getPriceListVersions();
 
 	IVendorInvoicingInfo getVendorInvoicingInfoForPLV(I_M_PriceList_Version plv);
