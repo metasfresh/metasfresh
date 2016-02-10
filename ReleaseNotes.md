@@ -22,9 +22,10 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
-
+ - 09800 Scrolling in Picking terminal first window looks weird (106972300023) +it +fix
+ 
 ## metasfresh ERP 4.2.1
- - 09809 Report direct costing Year Title wrong (103628559355) +it +fixture
+ - 09809 Report direct costing Year Title wrong (103628559355) +it +fix
  - 09803 Revenue report fix (109269170462) +it +fix
  - 09281 create report for packaging material balance (106483495857) +it +feature
  - 09779 Report C Activity ID swap changes (101962781663) +it +feature

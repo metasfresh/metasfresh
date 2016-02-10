@@ -80,6 +80,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		scrollPaneSwing.getVerticalScrollBar().setPreferredSize(new Dimension(SwingTerminalFactory.SCROLL_Size, 0));
 		scrollPaneSwing.getHorizontalScrollBar().setPreferredSize(new Dimension(0, SwingTerminalFactory.SCROLL_Size));
 
+		scrollPaneSwing.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
+		
 		this.scrollBorder = scrollPaneSwing.getBorder();
 
 		setBorderEnabled(true); // backward compatibility
