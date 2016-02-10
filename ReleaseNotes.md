@@ -22,6 +22,9 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09794 Metasfresh performance improvements (109453118224) +it +feature
+    * speedup for the check whether the client still has a DB connection
+	* not always loading each field's context menu items without them being needed
  - 09800 Scrolling in Picking terminal first window looks weird (106972300023) +it +fix
  - 09502 quality inspection: recompute invoice candidates, also on PP_Order unclose (100925494419)
 

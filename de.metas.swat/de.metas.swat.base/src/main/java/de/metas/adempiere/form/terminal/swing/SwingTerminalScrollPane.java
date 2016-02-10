@@ -30,6 +30,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 
 import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.border.Border;
 
 import org.compiere.swing.CScrollPane;

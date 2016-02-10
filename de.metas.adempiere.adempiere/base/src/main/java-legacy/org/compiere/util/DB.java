@@ -49,7 +49,6 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBConnectionAcquireTimeoutException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -61,7 +60,6 @@ import org.adempiere.sql.impl.StatementsFactory;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.Adempiere;
@@ -431,36 +429,14 @@ public final class DB
 	 */
 	public static boolean isConnected()
 	{
-		final CConnection s_cc = getCConnection();
-		if (s_cc == null)
+		final CConnection cc = getCConnection();
+		if (cc == null)
 		{
 			return false;
 		}
 
-		// direct connection
-		Connection conn = null;
-		try (final IAutoCloseable c = CLogMgt.getErrorBuffer().temporaryDisableIssueReporting())
-		{
-			try
-			{
-				conn = getConnectionRW();   // try to get a connection
-				return conn != null;
-			}
-			catch (DBConnectionAcquireTimeoutException timeoutException)
-			{
-				log.log(Level.WARNING, "Timeout while acquiring database connection. Ignored", timeoutException);
-				return false;
-			}
-			finally
-			{
-				close(conn);
-			}
-		}
-		catch (Exception e)
-		{
-			// ignore the error
-		}
-		return false;
+		final boolean checkIfUnknown = true;
+		return cc.isDatabaseOK(checkIfUnknown);
 	}   // isConnected
 
 	/**
@@ -2104,7 +2080,14 @@ public final class DB
 			rs.close();
 	}
 
-	public static void close(Connection conn)
+	/**
+	 * Silently close the given database connection.
+	 * 
+	 * This method will never throw {@link SQLException}s.
+	 * 
+	 * @param conn database connection.
+	 */
+	public static void close(final Connection conn)
 	{
 		if (conn != null)
 		{
@@ -2603,7 +2586,7 @@ public final class DB
 		}
 		else if (returnType.isAssignableFrom(Boolean.class) || returnType == boolean.class)
 		{
-			value = (AT)(Boolean)DisplayType.toBoolean(rs.getString(columnIndex), false);
+			value = (AT)DisplayType.toBoolean(rs.getString(columnIndex), false);
 			defaultValue = (AT)Boolean.FALSE;
 		}
 		else if (returnType.isAssignableFrom(String.class))

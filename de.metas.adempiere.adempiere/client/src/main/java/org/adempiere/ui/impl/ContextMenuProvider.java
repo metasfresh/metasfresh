@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -48,15 +49,18 @@ import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.adempiere.util.CacheCtx;
 
 public class ContextMenuProvider implements IContextMenuProvider
 {
 	private final CLogger logger = CLogger.getCLogger(getClass());
 
-	private CCache<Integer, Map<ArrayKey, List<Class<? extends IContextMenuAction>>>> actionClassesForClient =
-			new CCache<Integer, Map<ArrayKey, List<Class<? extends IContextMenuAction>>>>(I_AD_Field_ContextMenu.Table_Name + "#Classes", 2);
+	/** Cache: AD_Client_ID to ContextMenuKey to {@link IContextMenuAction} list */
+	private final CCache<Integer, Map<ArrayKey, List<Class<? extends IContextMenuAction>>>> actionClassesForClient = new CCache<>(I_AD_Field_ContextMenu.Table_Name + "#Classes", 2);
 
+	/** ContextMenuKey to {@link IContextMenuAction} list */
 	private final Map<ArrayKey, List<Class<? extends IContextMenuAction>>> actionClassesManual = new HashMap<ArrayKey, List<Class<? extends IContextMenuAction>>>();
 
 	private static final int DISPLAYTYPE_None = -100;
@@ -64,6 +68,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 
 	public ContextMenuProvider()
 	{
+		super();
 		// Here we can manually add actions to every context menu.
 	}
 
@@ -99,7 +104,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 		return new ArrayKey(displayType, adColumnId, adFieldId);
 	}
 
-	private void registerActionClass(ArrayKey key, Class<? extends IContextMenuAction> actionClass)
+	private void registerActionClass(final ArrayKey key, final Class<? extends IContextMenuAction> actionClass)
 	{
 		if (actionClass == null)
 		{
@@ -136,7 +141,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 		}
 
 		final Properties ctx = menuCtx.getCtx();
-		final List<Class<? extends IContextMenuAction>> actionClasses = new ArrayList<Class<? extends IContextMenuAction>>();
+		final List<Class<? extends IContextMenuAction>> actionClasses = new ArrayList<>();
 		addActionClassesToList(ctx, gridField, actionClasses, ACTIONCLASSKEY_Global);
 		addActionClassesToList(ctx, gridField, actionClasses, createActionClassKey(gridField.getDisplayType(), -1, -1));
 		addActionClassesToList(ctx, gridField, actionClasses, createActionClassKey(DISPLAYTYPE_None, gridField.getAD_Column_ID(), -1));
@@ -147,24 +152,38 @@ public class ContextMenuProvider implements IContextMenuProvider
 		return rootAction;
 	}
 
-	private void addActionClassesToList(final Properties ctx, GridField gridField, final List<Class<? extends IContextMenuAction>> list, final ArrayKey key)
+	private void addActionClassesToList(final Properties ctx, final GridField gridField, final List<Class<? extends IContextMenuAction>> list, final ArrayKey key)
 	{
 		final Map<ArrayKey, List<Class<? extends IContextMenuAction>>> actionClasses = getActionsClassesForClient(ctx);
 		addActionClassesToList(list, key, actionClasses);
 		addActionClassesToList(list, key, actionClassesManual);
 	}
 
-	private Map<ArrayKey, List<Class<? extends IContextMenuAction>>> getActionsClassesForClient(Properties ctx)
+	private Map<ArrayKey, List<Class<? extends IContextMenuAction>>> getActionsClassesForClient(final Properties ctx)
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
-		Map<ArrayKey, List<Class<? extends IContextMenuAction>>> actionClasses = actionClassesForClient.get(adClientId);
-		if (actionClasses != null)
+		final Map<ArrayKey, List<Class<? extends IContextMenuAction>>> actionClasses = actionClassesForClient.get(adClientId
+				, new Callable<Map<ArrayKey, List<Class<? extends IContextMenuAction>>>>()
 		{
-			return actionClasses;
-		}
 
+			@Override
+			public Map<ArrayKey, List<Class<? extends IContextMenuAction>>> call() throws Exception
+			{
+				return retrieveActionsClassesForClient(ctx, adClientId);
+			}
+		});
+		
+		if (actionClasses == null)
+		{
+			return ImmutableMap.of();
+		}
+		return actionClasses;
+	}
+	
+	private final Map<ArrayKey, List<Class<? extends IContextMenuAction>>> retrieveActionsClassesForClient(final Properties ctx, final int adClientId)
+	{
 		final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		final Map<ArrayKey, List<Class<? extends IContextMenuAction>>> loadActionClasses = new HashMap<ArrayKey, List<Class<? extends IContextMenuAction>>>();
+		final Map<ArrayKey, List<Class<? extends IContextMenuAction>>> loadActionClasses = new HashMap<>();
 		for (final I_AD_Field_ContextMenu item : retrieveContextMenuForClient(ctx, adClientId))
 		{
 			if (!item.isActive())
@@ -190,7 +209,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 					list.add(clazz);
 				}
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.log(Level.WARNING, "Could not load class for " + item + " (Classname:" + className + ")", e);
 			}
@@ -198,7 +217,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 		return loadActionClasses;
 	}
 
-	private ArrayKey createActionClassKeyFromItem(I_AD_Field_ContextMenu item)
+	private ArrayKey createActionClassKeyFromItem(final I_AD_Field_ContextMenu item)
 	{
 		if (item.getAD_Field_ID() > 0)
 		{
@@ -276,7 +295,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 	}
 
 	// @Cached(cacheName = I_AD_Field_ContextMenu.Table_Name + "#By#AD_Client_ID") // not needed, we are caching the classname lists
-	private List<I_AD_Field_ContextMenu> retrieveContextMenuForClient(@CacheCtx final Properties ctx, final int adClientId)
+	private final List<I_AD_Field_ContextMenu> retrieveContextMenuForClient(@CacheCtx final Properties ctx, final int adClientId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Field_ContextMenu.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayFilter(I_AD_Field_ContextMenu.COLUMN_AD_Client_ID, 0, adClientId)

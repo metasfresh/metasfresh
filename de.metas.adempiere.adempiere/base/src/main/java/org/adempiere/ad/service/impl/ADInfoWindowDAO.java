@@ -136,8 +136,7 @@ public class ADInfoWindowDAO implements IADInfoWindowDAO
 	}
 
 	@Override
-	public I_AD_InfoColumn retrieveInfoColumnByColumnName(final I_AD_InfoWindow infoWindow,
-			final String columnName)
+	public I_AD_InfoColumn retrieveInfoColumnByColumnName(final I_AD_InfoWindow infoWindow, final String columnName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(infoWindow);
 
@@ -228,19 +227,22 @@ public class ADInfoWindowDAO implements IADInfoWindowDAO
 	}
 
 	@Override
-	public List<I_AD_InfoWindow> retrieveInfoWindowsInMenu(final Properties ctx)
+	@Cached(cacheName = I_AD_InfoWindow.Table_Name + "#by#" + I_AD_InfoWindow.COLUMNNAME_ShowInMenu)
+	public List<I_AD_InfoWindow> retrieveInfoWindowsInMenu(@CacheCtx final Properties ctx)
 	{
-		final IQueryBuilder<I_AD_InfoWindow> queryBuilder = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_InfoWindow.class, ctx, ITrx.TRXNAME_None)
 				.addCompareFilter(I_AD_InfoWindow.COLUMNNAME_AD_InfoWindow_ID, CompareQueryFilter.Operator.NOT_EQUAL, 540008) // FIXME: hardcoded "Info Partner"
 				.addCompareFilter(I_AD_InfoWindow.COLUMNNAME_AD_InfoWindow_ID, CompareQueryFilter.Operator.NOT_EQUAL, 540009) // FIXME: hardcoded "Info Product"
 				.addEqualsFilter(I_AD_InfoWindow.COLUMNNAME_IsActive, true)
-				.addEqualsFilter(I_AD_InfoWindow.COLUMNNAME_ShowInMenu, true);
-
-		queryBuilder.orderBy()
-				.addColumn(I_AD_InfoWindow.COLUMNNAME_AD_InfoWindow_ID);
-
-		return queryBuilder.create()
+				.addEqualsFilter(I_AD_InfoWindow.COLUMNNAME_ShowInMenu, true)
+				.addOnlyContextClientOrSystem()
+				//
+				.orderBy()
+				.addColumn(I_AD_InfoWindow.COLUMNNAME_AD_InfoWindow_ID)
+				.endOrderBy()
+				//
+				.create()
 				.list(I_AD_InfoWindow.class);
 	}
 }

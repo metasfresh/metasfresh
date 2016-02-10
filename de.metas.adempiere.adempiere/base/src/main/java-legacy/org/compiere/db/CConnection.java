@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Hashtable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 import javax.naming.CommunicationException;
@@ -34,6 +35,7 @@ import org.adempiere.as.ASFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.interfaces.Server;
 import org.compiere.interfaces.Status;
@@ -208,8 +210,15 @@ public final class CConnection implements Serializable, Cloneable
 	private volatile AdempiereDatabase _database = null;
 	private Exception m_appsException = null;
 
-	/** Database Connection */
-	private boolean m_okDB = false;
+	/**
+	 * Is Database Connection OK flag. It can have following values
+	 * <ul>
+	 * <li>true - database connection is alive
+	 * <li>false - database connection is not alive
+	 * <li>null - database connection status is unknown
+	 * </ul>
+	 */
+	private Boolean _okDB = null;
 	/** Apps Server Connection */
 	private boolean m_okApps = false;
 
@@ -984,8 +993,65 @@ public final class CConnection implements Serializable, Cloneable
 	// Before changing this, check the caller, and mainly check in this class, because there are some methods which depends on this approach.
 	public final boolean isDatabaseOK()
 	{
-		return m_okDB;
+		final boolean checkifUnknown = false;
+		return isDatabaseOK(checkifUnknown);
 	} 	// isDatabaseOK
+	
+	/**
+	 * Is Database Connection OK.
+	 * 
+	 * @param checkifUnknown if true and the current connection status is not known, the system will try to contact the database and figure out if the db connection is really alive
+	 * @return true if the database connection is alive
+	 */
+	public final boolean isDatabaseOK(final boolean checkifUnknown)
+	{
+		if(checkifUnknown && this._okDB == null)
+		{
+			updateDatabaseOKStatus();
+		}
+		
+		final Boolean ok = this._okDB;
+		return ok != null && ok;
+	}
+	
+	/**
+	 * Sets the {@link #_okDB} flag.
+	 */
+	private final void updateDatabaseOKStatus()
+	{
+		// If we are currently running this method, don't run it again.
+		if (_runningUpdateDatabaseOKStatus.getAndSet(true))
+		{
+			return;
+		}
+		
+		//
+		// Actually try to aquire a new database connection.
+		// The getConnection(...) method will actually the the _okDB flag.
+		try (final IAutoCloseable c = CLogMgt.getErrorBuffer().temporaryDisableIssueReporting())
+		{
+			Connection conn = null;
+			try
+			{
+				conn = getConnection(true, Connection.TRANSACTION_READ_COMMITTED);
+			}
+			finally
+			{
+				DB.close(conn);
+			}
+		}
+		catch (Exception e)
+		{
+			// ignore the error
+		}
+		finally
+		{
+			_runningUpdateDatabaseOKStatus.set(false);
+		}
+		
+	}
+	
+	private final AtomicBoolean _runningUpdateDatabaseOKStatus = new AtomicBoolean(false);
 
 	/**************************************************************************
 	 * Create DB Connection
@@ -995,6 +1061,7 @@ public final class CConnection implements Serializable, Cloneable
 	public boolean setDataSource()
 	{
 		final DataSource dataSource = getDatabase().getDataSource(this);
+		_okDB = null; // unknown
 		return dataSource != null;
 	} 	// setDataSource
 
@@ -1010,7 +1077,7 @@ public final class CConnection implements Serializable, Cloneable
 		}
 
 		m_dbInfo = null;
-		m_okDB = false;
+		_okDB = false;
 	}
 
 	/**
@@ -1291,12 +1358,13 @@ public final class CConnection implements Serializable, Cloneable
 	} 	// getConnectionURL
 
 	/**
-	 * Create Connection - no not close.
-	 * Sets m_dbException
+	 * Acquires a database Connection.
 	 * 
-	 * @param autoCommit true if autocommit connection
+	 * Sets the {@link #isDatabaseOK()} flag.
+	 * 
+	 * @param autoCommit true if auto-commit connection
 	 * @param transactionIsolation Connection transaction level
-	 * @return Connection
+	 * @return database connection
 	 */
 	public Connection getConnection(final boolean autoCommit, final int transactionIsolation)
 	{
@@ -1318,20 +1386,20 @@ public final class CConnection implements Serializable, Cloneable
 			}
 
 			// Mark the database connection status as OK
-			m_okDB = true;
+			_okDB = true;
 
 			connOk = true;
 			return conn;
 		}
 		catch (UnsatisfiedLinkError ule)
 		{
-			m_okDB = false;
+			_okDB = false;
 			final String msg = "" + ule.getLocalizedMessage() + " -> Did you set the LD_LIBRARY_PATH ? - " + getConnectionURL();
 			throw new DBNoConnectionException(msg, ule);
 		}
 		catch (Exception ex)
 		{
-			m_okDB = false;
+			_okDB = false;
 			throw DBNoConnectionException.wrapIfNeeded(ex);
 		}
 		finally
