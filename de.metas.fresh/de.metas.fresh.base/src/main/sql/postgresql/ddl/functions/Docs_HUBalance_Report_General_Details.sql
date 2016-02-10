@@ -23,7 +23,7 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_De
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details OWNER TO adempiere;
+
 
 -- Function: de_metas_endcustomer_fresh_reports.docs_hubalance_report_general_details(numeric, numeric, numeric, numeric, character varying, date, date, date)
 
