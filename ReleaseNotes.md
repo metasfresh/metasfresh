@@ -22,6 +22,8 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09802 Docaction after Prepared shall be Completed (100319295346) +it +fix
+    * when createing purchase orders from sales orders, the drafted purchase orders' doc action is now "complete"
  - 09794 Metasfresh performance improvements (109453118224) +it +feature
     * speedup for the check whether the client still has a DB connection
 	* not always loading each field's context menu items without them being needed
