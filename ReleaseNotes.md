@@ -22,6 +22,7 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09811 EDI creating adjustment charge fails with NullPointerException (100746048824) +it +fix
  - 09797 Confirm completion of order with enter after popup (104892862993) +it +fix
  - 09802 Docaction after Prepared shall be Completed (100319295346) +it +fix
     * when createing purchase orders from sales orders, the drafted purchase orders' doc action is now "complete"
