@@ -136,6 +136,8 @@ public class VDocAction extends CDialog
 		mainPanel.setLayout(mainLayout);
 		actionLabel.setText(Msg.translate(Env.getCtx(), "DocAction"));
 		actionCombo.addActionListener(this);
+		// task 09797 The ComboBox for DocAction shall not have Autocomplete
+		actionCombo.disableAutoCompletion();
 		message.setLineWrap(true);
 		message.setPreferredSize(new Dimension(350, 35));
 		message.setWrapStyleWord(true);

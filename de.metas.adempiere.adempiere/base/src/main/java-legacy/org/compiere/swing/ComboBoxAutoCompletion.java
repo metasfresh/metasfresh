@@ -78,6 +78,29 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 		return ac;
 	}
 
+	/**
+	 * Remove all the listeners from the editor component and destroy it
+	 */
+	public final void destroyEditorComponent()
+	{
+		if (_editorComp == null)
+		{
+			return;
+		}
+		_editorComp.removeKeyListener(editorKeyListener);
+		_editorComp.removeFocusListener(editorFocusListener);
+		if (_editorComp.getInputVerifier() == editorInputVerifier)
+		{
+			_editorComp.setInputVerifier(null);
+		}
+		_editorComp = null;
+	}
+
+	public static <E> ComboBoxAutoCompletion<E> disable(final CComboBox<E> comboBox)
+	{
+		return new ComboBoxAutoCompletion<E>(comboBox, true);
+	}
+
 	private static final long serialVersionUID = 1449135613844313889L;
 
 	private static final String PROPERTY_AutoCompletionInstance = ComboBoxAutoCompletion.class.getName();
@@ -216,7 +239,7 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 			{
 				return false;
 			}
-			
+
 			return super.shouldYieldFocus(input);
 		};
 	};
@@ -224,27 +247,56 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 	private ComboBoxAutoCompletion(final CComboBox<E> comboBox)
 	{
 		super();
-
 		Check.assumeNotNull(comboBox, "comboBox not null");
+
+		this.comboBox = comboBox;
+		new ComboBoxAutoCompletion<E>(comboBox, false);
+	}
+
+	/**
+	 * Constructor for AutoCompletion disabling
+	 * 
+	 * @param comboBox
+	 * @param disable
+	 */
+	private ComboBoxAutoCompletion(final CComboBox<E> comboBox, final boolean disable)
+	{
+		super();
+		Check.assumeNotNull(comboBox, "comboBox not null");
+
 		this.comboBox = comboBox;
 
-		comboBox.addActionListener(comboBoxActionListener);
-
-		// When combobox's editor is changed, configure the new editor
-		comboBox.addPropertyChangeListener("editor", comboBoxEditorChangedListener);
-
-		//
-		// Setup the combobox editor
-		configureEditor();
-
-		//
-		// Handle initially selected object
-		final E selectedItem = comboBox.getSelectedItem();
-		if (selectedItem != null)
+		if (disable)
 		{
-			setText(valueToString(selectedItem));
+			destroyEditorComponent();
+
+			comboBox.putClientProperty(PROPERTY_AutoCompletionInstance, null);
+
+			// has to be editable
+			comboBox.setEditable(false);
 		}
-		highlightCompletedText(0);
+		
+		else
+		{
+			comboBox.addActionListener(comboBoxActionListener);
+
+			// When combobox's editor is changed, configure the new editor
+			comboBox.addPropertyChangeListener("editor", comboBoxEditorChangedListener);
+
+			//
+			// Setup the combobox editor
+			configureEditor();
+
+			//
+			// Handle initially selected object
+			final E selectedItem = comboBox.getSelectedItem();
+			if (selectedItem != null)
+			{
+				setText(valueToString(selectedItem));
+			}
+			highlightCompletedText(0);
+		}
+
 	}
 
 	/**
@@ -280,13 +332,8 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 		{
 			if (_editorComp != null)
 			{
-				_editorComp.removeKeyListener(editorKeyListener);
-				_editorComp.removeFocusListener(editorFocusListener);
-				if (_editorComp.getInputVerifier() == editorInputVerifier)
-				{
-					_editorComp.setInputVerifier(null);
-				}
-				_editorComp = null;
+				// destroy the old editor component in order to create a new one
+				destroyEditorComponent();
 			}
 
 			final ComboBoxEditor newEditor = comboBox.getEditor();

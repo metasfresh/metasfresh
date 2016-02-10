@@ -359,6 +359,16 @@ public class CComboBox<E> extends JComboBox<E>
 	{
 		return ComboBoxAutoCompletion.enable(this);
 	}
+	
+	/**
+	 * Disable autocompletion on this combobox
+	 * 
+	 * @return an instance of ComboBoxAutoCompletion but with autocompletion functionality disabled 
+	 */
+	public final ComboBoxAutoCompletion<E> disableAutoCompletion()
+	{
+		return ComboBoxAutoCompletion.disable(this);
+	}
 
 	@Override
 	public ICopyPasteSupportEditor getCopyPasteSupport()
