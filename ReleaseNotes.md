@@ -22,6 +22,7 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09803 Revenue report fix (109269170462) +it +fix
  - 09281 create report for packaging material balance (106483495857) +it +feature
  - 09779 Report C Activity ID swap changes (101962781663) +it +feature
  - 09783 Improve Salesgroups - migration and report (105684868719) +it +feature

@@ -96,9 +96,6 @@ ORDER BY
 $$ 
 LANGUAGE sql STABLE;
 
-ALTER FUNCTION report.fresh_Account_Info_Report_Sub ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0)  ) OWNER TO adempiere;
-
-
 
 DROP FUNCTION IF EXISTS report.fresh_Account_Info_Report ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0)  );
 
@@ -141,5 +138,3 @@ ORDER BY
 	Fact_Acct_ID
 $$ 
 LANGUAGE sql STABLE;
-
-ALTER FUNCTION report.fresh_Account_Info_Report ( IN Account_ID numeric (10,0), IN StartDate date, IN EndDate date, IN C_Activity_ID numeric(10,0)  ) OWNER TO adempiere;
