@@ -22,7 +22,6 @@ package de.metas.edi.api.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -93,17 +92,16 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			return document.isEdiEnabled();
 		}
 
-		
 		return document.isEdiEnabled();
-//		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(document.getC_BPartner(), I_C_BPartner.class);
-//		if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
-//		{
-//			// BPartner was not set yet, nothing to do
-//			return document.isEdiEnabled();
-//		}
-//
-//		document.setIsEdiEnabled(bpartner.isEdiRecipient());
-//		return bpartner.isEdiRecipient();
+		// final I_C_BPartner bpartner = InterfaceWrapperHelper.create(document.getC_BPartner(), I_C_BPartner.class);
+		// if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
+		// {
+		// // BPartner was not set yet, nothing to do
+		// return document.isEdiEnabled();
+		// }
+		//
+		// document.setIsEdiEnabled(bpartner.isEdiRecipient());
+		// return bpartner.isEdiRecipient();
 	}
 
 	@Override
@@ -136,8 +134,14 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		// }
 
 		// task 09182: for return material credit memos, we don't have or need an (imported) EDI ORDERS PoReference
-		final I_C_DocType docType = invoice.getC_DocType();
-		final boolean invoiceIsRMCreditMemo = Services.get(IInvoiceBL.class).isCreditMemo(docType.getDocBaseType()) && X_C_DocType.DOCSUBTYPE_GS_Retoure.equals(docType.getDocSubType());
+		// task 09811: guard against NPE when invoice is not yet completed and therefore doesn'T yet have a docType
+		final I_C_DocType docType = invoice.getC_DocType_ID() > 0
+				? invoice.getC_DocType()
+				: invoice.getC_DocTypeTarget();
+
+		final boolean invoiceIsRMCreditMemo = docType != null
+				&& Services.get(IInvoiceBL.class).isCreditMemo(docType.getDocBaseType())
+				&& X_C_DocType.DOCSUBTYPE_GS_Retoure.equals(docType.getDocSubType());
 
 		if (invoice.getC_Order_ID() <= 0 && !invoiceIsRMCreditMemo)
 		{
@@ -176,7 +180,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			if (il.getC_OrderLine_ID() <= 0
 					&& !invoiceIsRMCreditMemo)
 			{
-				// task 09182: on line level, we need an order line reference, 
+				// task 09182: on line level, we need an order line reference,
 				// only for docSubType='CS' an orderLine does not have to be linked to an invoiceLine for successful EDI export.
 				// note: if this changes in a new project, use AD_SysConfig
 				ilMissingFields.add(org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID);
@@ -394,7 +398,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ediPartner);
 		final boolean isSOTrx = true; // we are checking only Sales side (per Tobias advice)
 		final IAggregation soAggregation = Services.get(IInvoiceAggregationFactory.class).getAggregation(ctx, ediPartner, isSOTrx, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
-		
+
 		// Make sure that aggregation includes C_Order_ID or POReference
 		if (!soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
 				&& !soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_POReference))
