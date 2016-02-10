@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="729"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -1101,7 +1101,7 @@ ORDER BY
 				<textElement>
 					<font size="10" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Deckungsbeitragsrechnung 2015"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Deckungsbeitragsrechnung"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
 				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="440" y="37" width="50" height="9"/>
