@@ -28,6 +28,7 @@ import java.math.RoundingMode;
 import java.util.logging.Level;
 
 import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoiceLine;
@@ -36,7 +37,6 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MTax;
 
 import de.metas.invoice.IMatchInvDAO;
-import de.metas.tax.api.ITaxBL;
 
 public class DocLine_Invoice extends DocLine
 {

@@ -507,11 +507,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	}   // TO_CHAR
 
 	@Override
-	public String TO_CHAR(
-			final String columnName, 
-			final int displayType,
-			final String AD_Language, 
-			final String formatPattern)
+	public String TO_CHAR(String columnName, int displayType, String AD_Language, String formatPattern)
 	{
 		if (Check.isEmpty(formatPattern, false))
 		{

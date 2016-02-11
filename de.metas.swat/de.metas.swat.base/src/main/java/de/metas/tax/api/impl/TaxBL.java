@@ -39,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.TaxNoExemptFoundException;
 import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -63,9 +62,11 @@ import de.metas.adempiere.service.ICountryDAO;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.tax.api.ITaxDAO;
 
-public class TaxBL implements de.metas.tax.api.ITaxBL
+public class TaxBL implements de.metas.tax.api.ITaxBL, org.adempiere.tax.api.ITaxBL
 {
 	private static final transient Logger log = CLogger.getCLogger(TaxBL.class);
+
+	private final org.adempiere.tax.api.ITaxBL adempiereTaxBL = new org.adempiere.tax.api.impl.TaxBL();
 
 	/**
 	 * Do not attempt to retrieve the C_Tax for an order (i.e invoicing is done at a different time - 1 year - from the order)<br>
@@ -122,7 +123,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 					, billDate
 					, taxCategoryId
 					, isSOTrx
-					, trxName, false);
+					, trxName);
 			if (taxIdForCategory > 0)
 			{
 				return taxIdForCategory;
@@ -160,17 +161,16 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 * <ul>
 	 * <li>You are inside the EU</li>
 	 * </ul>
-	 */	
+	 */
 	@Override
 	public int retrieveTaxIdForCategory(final Properties ctx,
 			final int countryFromId,
 			final int orgId,
-			final I_C_BPartner_Location bpLocTo,
+			final org.compiere.model.I_C_BPartner_Location bpLocTo,
 			final Timestamp date,
 			final int taxCategoryId,
 			final boolean isSOTrx,
-			final String trxName, 
-			final boolean throwEx)
+			final String trxName)
 	{
 		Check.assumeNotNull(bpLocTo, "bpLocTo not null");
 		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(bpLocTo.getC_BPartner(), I_C_BPartner.class);
@@ -263,11 +263,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		if (taxId <= 0)
 		{
-			final AdempiereException ex = new AdempiereException("@NotFound@ @C_Tax_ID@" + "\nQuery: " + query);
-			if(throwEx)
-			{
-				throw ex;
-			}
+			final AdempiereException ex = new AdempiereException("@NotFound@ @C_Tax_ID@"
+					+ "\nQuery: " + query
+					);
 			log.log(Level.WARNING, "Tax not found. Return -1.", ex);
 			return -1;
 		}
@@ -478,32 +476,16 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 	}
 
-	/**
-	 * Get Exempt Tax Code
-	 * @param ctx context
-	 * @param AD_Org_ID org to find client
-	 * @return C_Tax_ID
-	 * @throws TaxNoExemptFoundException if no tax exempt found
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.adempiere.tax.api.ITaxBL#getExemptTax(java.util.Properties, int)
 	 */
 	@Override
-	public int getExemptTax (Properties ctx, int AD_Org_ID)
+	public int getExemptTax(final Properties ctx, final int AD_Org_ID)
 	{
-		final String sql = "SELECT t.C_Tax_ID "
-			+ "FROM C_Tax t"
-			+ " INNER JOIN AD_Org o ON (t.AD_Client_ID=o.AD_Client_ID) "
-			+ "WHERE t.IsTaxExempt='Y' AND o.AD_Org_ID=? "
-			+ "ORDER BY t.Rate DESC";
-		int C_Tax_ID = DB.getSQLValueEx(null, sql, AD_Org_ID);
-		log.fine("getExemptTax - TaxExempt=Y - C_Tax_ID=" + C_Tax_ID);
-		if (C_Tax_ID <= 0)
-		{
-			throw new TaxNoExemptFoundException(AD_Org_ID);
-		}
-		else
-		{
-			return C_Tax_ID;
-		}
-	}	//	getExemptTax
+		return adempiereTaxBL.getExemptTax(ctx, AD_Org_ID);
+	}
 
 	@Override
 	public BigDecimal calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)

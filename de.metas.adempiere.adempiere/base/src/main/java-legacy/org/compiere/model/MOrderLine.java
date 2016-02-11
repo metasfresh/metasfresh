@@ -28,6 +28,7 @@ import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductNotOnPriceListException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -43,7 +44,6 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.tax.api.ITaxBL;
 
 /**
  * Order Line Model. <code>
@@ -409,8 +409,7 @@ public class MOrderLine extends X_C_OrderLine
 				getDateOrdered(),
 				taxCategoryId,
 				m_IsSOTrx,
-				get_TrxName(),
-				true); // throwEx
+				get_TrxName());
 
 		if (taxId <= 0)
 		{

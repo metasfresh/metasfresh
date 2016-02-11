@@ -23,6 +23,7 @@ import java.util.logging.Level;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema_Element;
@@ -43,7 +44,6 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.product.IProductBL;
-import de.metas.tax.api.ITaxBL;
 
 /**
  * Post MatchInv Documents.

@@ -466,12 +466,23 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 							// "		LEFT JOIN T_Lock l ON l.Record_ID=s.M_ShipmentSchedule_ID AND l.AD_Table_ID=get_table_id('M_ShipmentSchedule') " +
 							// "	WHERE l.Record_ID Is NULL " +
 							") data " +
-							" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID "
-							+ " AND AD_PInstance_ID IS NULL" // only those which were not already tagged
-			;
-			final Object[] sqlUpdateParams = null;
-			final int countTagged = DB.executeUpdateEx(sqlUpdate, sqlUpdateParams, ITrx.TRXNAME_None);
-			logger.log(Level.INFO, "Marked {0} entries for AD_Pinstance_ID={1}",  new Object[]{countTagged, adPinstanceId});
+							" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID ";
+
+			final PreparedStatement pstmt = DB.prepareStatement(sqlUpdate, ITrx.TRXNAME_None);
+
+			try
+			{
+				final int result = pstmt.executeUpdate();
+				logger.info("Marked " + result + " entries for AD_Pinstance_ID=" + adPinstanceId);
+			}
+			catch (SQLException e)
+			{
+				throw new DBException(e);
+			}
+			finally
+			{
+				DB.close(pstmt);
+			}
 
 			sqlSched = SQL_SCHED_INVALID_3P;
 			sqlOlSched = SQL_OL_SCHED_INVALID_3P;
@@ -1047,16 +1058,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final String sql = "DELETE FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_Pinstance_ID=" + adPInstanceId;
 
 		final int result = DB.executeUpdateEx(sql, trxName);
-		logger.log(Level.INFO, "Deleted {0} {1} entries for AD_Pinstance_ID={2}", new Object[] { result, M_SHIPMENT_SCHEDULE_RECOMPUTE, adPInstanceId });
-	}
-
-	@Override
-	public void releaseRecomputeMarker(final int adPInstanceId, final String trxName)
-	{
-		final String sql = "UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " SET AD_PInstance_ID=NULL WHERE AD_PInstance_ID=" + adPInstanceId;
-
-		final int result = DB.executeUpdateEx(sql, trxName);
-		logger.log(Level.INFO, "Updated {0} {1} entries for AD_Pinstance_ID={2} and released the marker.", new Object[] { result, M_SHIPMENT_SCHEDULE_RECOMPUTE, adPInstanceId });
+		logger.log(Level.FINE, "Deleted " + result + " " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " entries for AD_Pinstance_ID=" + adPInstanceId);
 	}
 
 	@Override
@@ -1111,11 +1113,10 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		final List<Integer> result = new ArrayList<Integer>();
 
-		PreparedStatement pstmt = null;
+		final PreparedStatement pstmt = DB.prepareStatement(sql, trxName);
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, trxName);
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -1124,7 +1125,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		}
 		catch (SQLException e)
 		{
-			throw new DBException(e, sql);
+			throw new DBException(e);
 		}
 		finally
 		{

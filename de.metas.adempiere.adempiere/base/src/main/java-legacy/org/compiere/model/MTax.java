@@ -25,14 +25,13 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-
-import de.metas.tax.api.ITaxBL;
 
 /**
  *  Tax Model
