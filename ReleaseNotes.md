@@ -22,6 +22,8 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09700 Counter orders with mapped products (100691234288) +it +fix
+    *fixing a problem with inconsistencies between the newly copied counter order line's old PLV and its new order's PL
  - 09811 EDI creating adjustment charge fails with NullPointerException (100746048824) +it +fix
  - 09797 Confirm completion of order with enter after popup (104892862993) +it +fix
  - 09802 Docaction after Prepared shall be Completed (100319295346) +it +fix

@@ -40,6 +40,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TrxRunnableAdapter;
 
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
@@ -257,6 +258,9 @@ public class MOrderLine extends X_C_OrderLine
 		final int AD_User_ID = isDropShip && order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
 		oline.setAD_User_ID(AD_User_ID);
 		// metas: end
+		
+		oline.setM_PriceList_Version_ID(0); // the current PLV might be add or'd with the new order's PL.
+		
 		setM_Warehouse_ID(order.getM_Warehouse_ID());
 		setDateOrdered(order.getDateOrdered());
 		setDatePromised(order.getDatePromised());
@@ -269,21 +273,17 @@ public class MOrderLine extends X_C_OrderLine
 	/**
 	 * Set Header Info
 	 *
-	 * @param order order
+	 * @param orderPO order
 	 */
-	public void setHeaderInfo(MOrder order)
+	public void setHeaderInfo(final MOrder orderPO)
 	{
-		m_precision = order.getPrecision();
-		// metas set m_M_PriceList_ID from location and pricing system
-		if (order.isSOTrx())
-		{
-			m_M_PriceList_ID = Services.get(IOrderBL.class).retrievePriceListId(InterfaceWrapperHelper.create(order, de.metas.adempiere.model.I_C_Order.class));
-		}
-		else
-		{
-			m_M_PriceList_ID = order.getM_PriceList_ID();
-		}
-		// metas: end
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+		final I_C_Order order = InterfaceWrapperHelper.create(orderPO, de.metas.adempiere.model.I_C_Order.class);
+		
+		m_precision = orderBL.getPrecision(order);
+
+		m_M_PriceList_ID = orderBL.retrievePriceListId(order);
+
 		m_IsSOTrx = order.isSOTrx();
 	}	// setHeaderInfo
 
