@@ -32,7 +32,9 @@ Additional notes:
     * speedup for the check whether the client still has a DB connection
 	* not always loading each field's context menu items without them being needed
  - 09800 Scrolling in Picking terminal first window looks weird (106972300023) +it +fix
- - 09502 quality inspection: recompute invoice candidates, also on PP_Order unclose (100925494419)
+ - 09502 quality inspection (100925494419) +it +fix
+    * recompute invoice candidates, also on PP_Order unclose
+	* when computing the already-paid amount in the final settlement, don't take into account ordinary invoiced like packaging releated invoices
 
 ## metasfresh ERP 4.2.1
  - 09809 Report direct costing Year Title wrong (103628559355) +it +fix
