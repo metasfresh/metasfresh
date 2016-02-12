@@ -546,21 +546,29 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				qtyRequired = orderLine.getQtyOrdered().subtract(orderLine.getQtyDelivered());
 			}
 
+			//
+			// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
+			// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
+			// * QtyPicked from QtyPicked records
+			BigDecimal qtyUnconfirmedShipments;
+			{
+				qtyUnconfirmedShipments = qtyOnHands.getQtyUnconfirmedShipmentsPerOrderLine(orderLine.getC_OrderLine_ID());
+				
+				// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
+				final BigDecimal qtyPickedNotDelivered = shipmentScheduleAllocDAO.retrievePickedNotDeliveredQty(sched);
+				qtyUnconfirmedShipments = qtyUnconfirmedShipments.add(qtyPickedNotDelivered);
+				
+				// Update shipment schedule's field
+				sched.setQtyPickList(qtyUnconfirmedShipments);
+			}
+
+			//
+			// Check if there is any point to continue calculating how much we can deliever and also create those internal M_InOutLines.
 			final I_M_Product product = co.retrieveAndCacheProduct(orderLine);
 			if (isNothingToDo(product, qtyRequired, orderLine))
 			{
 				continue;
 			}
-
-			BigDecimal qtyUnconfirmedShipments = qtyOnHands.getQtyUnconfirmedShipmentsPerOrderLine(orderLine.getC_OrderLine_ID());
-
-			// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
-			final List<I_M_ShipmentSchedule_QtyPicked> pickedNotDeliveredRecords = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(sched, I_M_ShipmentSchedule_QtyPicked.class);
-			for (final I_M_ShipmentSchedule_QtyPicked record : pickedNotDeliveredRecords)
-			{
-				qtyUnconfirmedShipments = qtyUnconfirmedShipments.add(record.getQtyPicked());
-			}
-			sched.setQtyPickList(qtyUnconfirmedShipments);
 
 			final BigDecimal qtyToDeliver = mkQtyToDeliver(qtyRequired, qtyUnconfirmedShipments);
 
