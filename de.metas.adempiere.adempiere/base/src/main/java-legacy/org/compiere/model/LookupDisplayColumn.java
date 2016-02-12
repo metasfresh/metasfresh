@@ -45,10 +45,15 @@ public class LookupDisplayColumn implements ILookupDisplayColumn, Serializable
 	 * @param isTranslated translated
 	 * @param ad_Reference_ID display type
 	 * @param ad_Reference_Value_ID table/list reference id
+	 * @param formatPattern
 	 */
-	public LookupDisplayColumn(String columnName, String columnSQL, boolean isTranslated,
-		int ad_Reference_ID, int ad_Reference_Value_ID,
-		String formatPattern)
+	public LookupDisplayColumn(
+			final String columnName,
+			final String columnSQL,
+			final boolean isTranslated,
+			final int ad_Reference_ID,
+			final int ad_Reference_Value_ID,
+			final String formatPattern)
 	{
 		super();
 		ColumnName = columnName;
