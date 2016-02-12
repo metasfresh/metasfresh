@@ -22,6 +22,7 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09281 create report for packaging material balance (106483495857) +it +feature
  - 09740 ADR revenue report by product categories (101851459609) +it +feature
  - 09819 Eliminate duplicated TaxBL and throw an informative exception if... (103899585460) +it +feature
     * removed a code redundancy and source of FUD

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/hubalancegeneral/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.1204880918624327"/>
@@ -59,7 +59,7 @@ FROM
 		<initialValueExpression><![CDATA[$P{StartDate}]]></initialValueExpression>
 	</variable>
 	<group name="BPartner" minHeightToStartNewPage="24">
-		<groupExpression><![CDATA[$F{name}]]></groupExpression>
+		<groupExpression><![CDATA[$F{bpartner}]]></groupExpression>
 		<groupHeader>
 			<band height="15">
 				<staticText>
@@ -72,81 +72,86 @@ FROM
 				<textField>
 					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="195" y="0" width="187" height="12" forecolor="#000000"/>
 					<textElement markup="none">
-						<font size="9" isBold="false"/>
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bpartner}]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="20">
+		</groupHeader>
+	</group>
+	<group name="Gebinde Group">
+		<groupExpression><![CDATA[$F{name}]]></groupExpression>
+		<groupHeader>
+			<band height="15">
 				<staticText>
 					<reportElement uuid="578a9e2a-24cd-4647-806b-2d80c108ea91" key="textField-16" x="93" y="0" width="101" height="12" forecolor="#000000"/>
 					<textElement markup="none">
-						<font size="9" isBold="false"/>
+						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<text><![CDATA[Saldo]]></text>
 				</staticText>
-				<textField pattern="dd.MM.yyyy">
+				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 					<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="195" y="0" width="52" height="12" forecolor="#000000"/>
 					<textElement markup="none">
-						<font size="9" isBold="false"/>
+						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{StartDate}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="0" width="92" height="12" forecolor="#000000"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="false"/>
+						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{carryincoming}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="476" y="0" width="82" height="12" forecolor="#000000"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="false"/>
+						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{carryoutgoing}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="247" y="0" width="135" height="12" forecolor="#000000"/>
 					<textElement markup="none">
-						<font size="9" isBold="false"/>
+						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="28">
+			<band height="27">
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="476" y="0" width="82" height="12" forecolor="#000000"/>
+					<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="476" y="2" width="82" height="12" forecolor="#000000"/>
 					<textElement textAlignment="Right" markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{outgoingtotal}.add( $F{carryoutgoing} )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="0" width="92" height="12" forecolor="#000000"/>
+					<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="2" width="92" height="12" forecolor="#000000"/>
 					<textElement textAlignment="Right" markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{incomingtotal}.add( $F{carryincoming} )]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement uuid="578a9e2a-24cd-4647-806b-2d80c108ea91" key="textField-16" x="93" y="0" width="101" height="12" forecolor="#000000"/>
+					<reportElement uuid="578a9e2a-24cd-4647-806b-2d80c108ea91" key="textField-16" x="93" y="2" width="101" height="12" forecolor="#000000"/>
 					<textElement markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<text><![CDATA[Saldo]]></text>
 				</staticText>
-				<textField pattern="dd.MM.yyyy">
-					<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="194" y="0" width="53" height="12" forecolor="#000000"/>
+				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+					<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="194" y="2" width="53" height="12" forecolor="#000000"/>
 					<textElement markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{EndDate}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="247" y="0" width="135" height="12" forecolor="#000000"/>
+					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="247" y="2" width="135" height="12" forecolor="#000000"/>
 					<textElement markup="none">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -156,7 +161,7 @@ FROM
 		</groupFooter>
 	</group>
 	<pageHeader>
-		<band height="45" splitType="Stretch">
+		<band height="52" splitType="Stretch">
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="39" y="0" width="54" height="12" forecolor="#000000"/>
 				<textElement markup="none">
@@ -254,7 +259,7 @@ FROM
 				</textElement>
 				<textFieldExpression><![CDATA[$V{outgoingtotal}.add( $F{carryoutgoing} )]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd.MM.yyyy">
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="194" y="33" width="53" height="12" forecolor="#000000">
 					<printWhenExpression><![CDATA[new Boolean ( $V{BPartner_COUNT} != 0 )]]></printWhenExpression>
 				</reportElement>
@@ -293,7 +298,7 @@ FROM
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd.MM.yyyy">
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement uuid="0cf8dfcc-a972-406a-a213-67de086a92ca" key="textField-16" x="194" y="0" width="53" height="12" forecolor="#000000"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
