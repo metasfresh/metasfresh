@@ -29,7 +29,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
@@ -40,6 +39,7 @@ import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.tax.api.ITaxBL;
 
 /**
  * Invoice Line Model
@@ -596,7 +596,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				billDate,
 				taxCategoryId,
 				isSOTrx,
-				get_TrxName());
+				get_TrxName(),
+				true); // throwEx
 
 		if (taxId <= 0)
 		{

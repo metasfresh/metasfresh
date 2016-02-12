@@ -23,13 +23,13 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.tax.api.ITaxBL;
 
 /**
  * Order Tax Model

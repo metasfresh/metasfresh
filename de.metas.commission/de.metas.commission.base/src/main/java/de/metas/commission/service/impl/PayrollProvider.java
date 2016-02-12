@@ -259,7 +259,7 @@ public class PayrollProvider implements IPayrollProvider
 		if (MCVATSmallBusiness.retrieveIsTaxExempt(POWrapper.create(bpPayroll, I_C_BPartner.class), date))
 		{
 			// "Kleinunternehmer-Regel"
-			taxId = Services.get(org.adempiere.tax.api.ITaxBL.class).getExemptTax(ctx, bpPayroll.getAD_Org_ID());
+			taxId = Services.get(ITaxBL.class).getExemptTax(ctx, bpPayroll.getAD_Org_ID());
 
 			assert taxId > 0;
 		}
@@ -317,7 +317,7 @@ public class PayrollProvider implements IPayrollProvider
 						date,
 						triggerTaxCategoryId,
 						false,
-						instTrxName);
+						instTrxName, false);
 
 				Check.errorUnless(taxId > 0, 
 						"Missing C_Tax_ID for firstLine C_Country_ID={0}, AD_Org_ID={1}, C_BPartner_Location_ID={2}, Date={3} and trigger C_TaxCategory_ID={4}", 
@@ -357,7 +357,7 @@ public class PayrollProvider implements IPayrollProvider
 						date,
 						triggerTaxCategoryId,
 						false,
-						instTrxName);
+						instTrxName, false);
 
 				Check.errorUnless(taxId > 0, 
 						"Missing C_Tax_ID for trigger C_Country_ID={0}, AD_Org_ID={1}, C_BPartner_Location_ID={2}, Date={3} and trigger C_TaxCategory_ID={4}", 

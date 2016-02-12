@@ -22,6 +22,9 @@ Additional notes:
 # The actual release notes
 
 ## Upcoming Release
+ - 09819 Eliminate duplicated TaxBL and throw an informative exception if... (103899585460) +it +feature
+    * removed a code redundancy and source of FUD
+    * made it easier to understand why no C_Tax was found for a particular order line
  - 09799 Confusion around Picking Process (108712103881) +it +fix
     * fixing a problem that the picked quantity was sometimes not updated properly in the shipment schedule
  - 09700 Counter orders with mapped products (100691234288) +it +fix

@@ -27,7 +27,6 @@ import java.util.logging.Level;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
@@ -37,6 +36,7 @@ import org.compiere.util.Env;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.tax.api.ITaxBL;
 
 /**
  *	Match PO Model.

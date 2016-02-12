@@ -43,7 +43,6 @@ import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.tax.api.ITaxBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -66,6 +65,7 @@ import de.metas.document.IDocumentNoBuilder;
 import de.metas.document.IDocumentNoBuilderFactory;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
+import de.metas.tax.api.ITaxBL;
 
 
 /**

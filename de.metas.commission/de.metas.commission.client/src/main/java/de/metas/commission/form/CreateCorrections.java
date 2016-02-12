@@ -344,7 +344,7 @@ public class CreateCorrections extends CreateFrom
 			if (isSmallBusiness)
 			{
 				// "Kleinunternehmer-Regel"
-				plusTaxId = Services.get(org.adempiere.tax.api.ITaxBL.class).getExemptTax(ctx, lineToCorrect.getAD_Org_ID());
+				plusTaxId = Services.get(ITaxBL.class).getExemptTax(ctx, lineToCorrect.getAD_Org_ID());
 				assert plusTaxId > 0;
 			}
 			else
@@ -354,7 +354,7 @@ public class CreateCorrections extends CreateFrom
 						ctx,
 						countryID, thisInvoice.getAD_Org_ID(), payrollLoc, thisInvoice.getDateInvoiced(),
 						taxCategoryId, false,
-						trxName);
+						trxName, false);
 			}
 
 			if (plusTaxId == lineToCorrect.getC_Tax_ID())

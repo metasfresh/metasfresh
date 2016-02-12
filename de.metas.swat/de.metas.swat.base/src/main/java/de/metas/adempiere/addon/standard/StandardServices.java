@@ -129,11 +129,6 @@ public class StandardServices implements IAddOn
 		Services.registerService(ISweepTableBL.class, new SweepTableBL());
 		Services.registerService(ITablePA.class, new TablePA());
 
-		// need to manually register it here, for both APIs so it takes precedence over org.adempiere.tax.api.impl.TaxBL
-		final TaxBL taxBL = new de.metas.tax.api.impl.TaxBL();
-		Services.registerService(de.metas.tax.api.ITaxBL.class, taxBL);
-		Services.registerService(org.adempiere.tax.api.ITaxBL.class, taxBL); // replace ADempiere original Tax functionality
-
 		Services.registerService(IGlobalLockSystem.class, new GlobalLockSystem());
 		Services.registerService(IAppDictionaryBL.class, new AppDictionaryBL());
 		Services.registerService(ITableColumnPathBL.class, new TableColumnPathBL());
