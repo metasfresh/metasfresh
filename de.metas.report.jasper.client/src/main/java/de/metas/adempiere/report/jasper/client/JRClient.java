@@ -36,6 +36,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.print.MPrintFormat;
@@ -233,6 +235,20 @@ public class JRClient
 			if (C_BPartner_ID != null)
 			{
 				lang = Services.get(IBPartnerBL.class).getLanguage(ctx, C_BPartner_ID);
+			}
+		}
+
+		
+		// task 09740
+		// In case the report is not linked to a window but it has C_BPartner_ID as parameter and it is set, take the language of that bpartner
+		if (lang == null)
+		{
+			final IRangeAwareParams parameterAsIParams = pi.getParameterAsIParams();
+			final int bPartnerID = parameterAsIParams.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
+			if(bPartnerID > 0)
+			{
+				lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bPartnerID);
+				return lang;
 			}
 		}
 
