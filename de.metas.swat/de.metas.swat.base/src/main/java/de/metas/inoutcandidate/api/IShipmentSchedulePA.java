@@ -232,8 +232,13 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 */
 	void invalidateAll(Properties ctx);
 
+	/** Delete M_ShipmentSchedule_Recompute records for given tag */
 	void deleteRecomputeMarkers(int adPInstanceId, String trxName);
 
+	/** Untag M_ShipmentSchedule_Recompute records which were tagged with given tag */
+	void releaseRecomputeMarker(int adPInstanceId, String trxName);
+
+	/** @return a list of M_ShipmentSchedule_IDs which are in M_ShipmentSchedule_ShipmentRun and there are flagged as processed */
 	List<Integer> retrieveProcessedShipmentRunIds(String trxName);
 
 	void deleteProcessedShipmentRunIds(List<Integer> processedShipmentRunIds, String trxName);

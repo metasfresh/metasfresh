@@ -63,13 +63,16 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	@Override
 	public int updateShipmentSchedule(final Properties ctx, final int adClientId, final int adUserId, final int adPInstanceId, final boolean updateOnlyLocked, final String trxName)
 	{
+		// services
+		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		
 		final Boolean running = this.running.get();
 		Check.assume(running == null || running == false, "updateShipmentSchedule is not already running");
 		this.running.set(true);
 
 		try
 		{
-			final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 			shipmentSchedulePA.deleteSchedulesWithOutOl(trxName);
 
 			if (!updateOnlyLocked)
@@ -83,8 +86,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final List<Integer> processedShipmentRunIds = shipmentSchedulePA.retrieveProcessedShipmentRunIds(trxName);
 
 			final List<OlAndSched> collectResult = retrieveOlsAndSchedsToProcess(ctx, adClientId, adPInstanceId, updateOnlyLocked, trxName);
-
-			final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 			logger.info("Invoking shipmentScheduleBL to update " + collectResult.size() + " shipment schedule entries.");
 			final CachedObjects cachedObjects = new CachedObjects();
@@ -100,7 +101,16 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 		finally
 		{
-			this.running.set(false);
+			try
+			{
+				// Make sure the recompute tag is released, just in case any error occurs.
+				// Usually zero records will be deleted because, if everything goes fine, the tagged recompute records were already deleted.
+				shipmentSchedulePA.releaseRecomputeMarker(adPInstanceId, trxName);
+			}
+			finally
+			{
+				this.running.set(false);
+			}
 		}
 	}
 
