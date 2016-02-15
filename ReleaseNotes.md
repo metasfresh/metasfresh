@@ -19,9 +19,13 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/
  * You can also follow us on twitter: @metasfresh
 
-# The actual release notes
+The actual release notes
 
-## Upcoming Release
+# Upcoming Release
+##Features
+##Fixes
+
+# metasfresh 4.2.1
  - 09281 create report for packaging material balance (106483495857) +it +feature
  - 09740 ADR revenue report by product categories (101851459609) +it +feature
  - 09819 Eliminate duplicated TaxBL and throw an informative exception if... (103899585460) +it +feature
@@ -42,8 +46,6 @@ Additional notes:
  - 09502 quality inspection (100925494419) +it +fix
     * recompute invoice candidates, also on PP_Order unclose
 	* when computing the already-paid amount in the final settlement, don't take into account ordinary invoiced like packaging releated invoices
-
-## metasfresh ERP 4.2.1
  - 09809 Report direct costing Year Title wrong (103628559355) +it +fix
  - 09803 Revenue report fix (109269170462) +it +fix
  - 09281 create report for packaging material balance (106483495857) +it +feature
@@ -81,7 +83,7 @@ Additional notes:
  - 09771 Dunning docs mail (102929053917) +it +fix +feature
     * small changes around the dunning jasper
 
-## it-S16_05-20160202
+# it-S16_05-20160202
  - fixed the default location of the client properties file from <user.home>/.metas-fresh to <user.home>/.metasfresh +it +fix
  - 09741 Problems with HU labels for split HUs (104680331233) +uat +fix
  - 09765 Process to manually re-open C_PAySelection records that were already prepared (108508031142) +uat +feature
