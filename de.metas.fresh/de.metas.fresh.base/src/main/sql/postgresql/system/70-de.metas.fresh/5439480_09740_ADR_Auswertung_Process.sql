@@ -9,36 +9,6 @@ INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowPr
 INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Process_ID=540655 AND NOT EXISTS (SELECT * FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
 ;
 
--- 09.02.2016 18:48
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540655,1000000,TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 09.02.2016 18:48
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,0,540655,0,TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 09.02.2016 18:48
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540655,1000054,TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 09.02.2016 18:48
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540655,1000057,TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 09.02.2016 18:48
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540655,1000058,TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 09.02.2016 18:48
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540655,1000059,TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-09 18:48:12','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
 -- 09.02.2016 18:49
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/reports/umsatzreport_adr_bpartner/report.jasper',Updated=TO_TIMESTAMP('2016-02-09 18:49:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540655
