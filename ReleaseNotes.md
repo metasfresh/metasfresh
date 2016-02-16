@@ -27,6 +27,8 @@ The actual release notes
     * we now can specify a default POReference value for orders that is autumatically set by the system, unless there already was another POReference set by a users of from an importnert order
 	* for a DESADV lines with unknown CUperTU, we can now set a default-value such a "1" per C_BPartner.
 ##Fixes
+ - 09281 create report for packaging material balance (106483495857)
+    * the former version also showed for a partner also packgings that were not on a particular partner's contract
 
 # metasfresh 4.2.1
  - 09281 create report for packaging material balance (106483495857) +it +feature

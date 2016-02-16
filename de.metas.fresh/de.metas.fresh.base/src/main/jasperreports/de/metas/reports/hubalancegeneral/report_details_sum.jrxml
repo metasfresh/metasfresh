@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/hubalance/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/hubalance/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.3166562715304027"/>
@@ -17,14 +17,22 @@
 	<parameter name="StartDate" class="java.util.Date"/>
 	<parameter name="EndDate" class="java.util.Date"/>
 	<parameter name="M_Material_Balance_Config_ID" class="java.math.BigDecimal"/>
+	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="M_Product_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IsRefundableConditions" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT
 	*
 FROM
-	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_Details(
-		$P{M_Material_Balance_Config_ID}, $P{C_BPartner_ID}, $P{StartDate}, $P{EndDate}, now()::date
+	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details(
+		$P{M_Material_Balance_Config_ID}, $P{C_BPartner_ID},  $P{C_BP_Group_ID}, $P{M_Product_ID}, $P{IsRefundableConditions},$P{StartDate}, $P{EndDate}, now()::date
 	);]]>
 	</queryString>
+	<field name="bpartner" class="java.lang.String"/>
 	<field name="documentno" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
 	<field name="movementdate" class="java.sql.Date"/>
