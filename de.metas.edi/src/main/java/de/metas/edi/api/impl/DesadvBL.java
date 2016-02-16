@@ -10,12 +10,12 @@ package de.metas.edi.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -107,7 +107,10 @@ public class DesadvBL implements IDesadvBL
 		return desadv;
 	}
 
-	private I_EDI_DesadvLine retrieveOrCreateDesadvLine(final I_C_Order order, final I_EDI_Desadv desadv, final I_C_OrderLine orderLine)
+	private I_EDI_DesadvLine retrieveOrCreateDesadvLine(
+			final I_C_Order order,
+			final I_EDI_Desadv desadv,
+			final I_C_OrderLine orderLine)
 	{
 		final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
@@ -116,7 +119,7 @@ public class DesadvBL implements IDesadvBL
 		{
 			return existingDesadvLine; // done
 		}
-		
+
 		final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 		final I_EDI_DesadvLine newDesadvLine = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine.class, order);
@@ -133,7 +136,7 @@ public class DesadvBL implements IDesadvBL
 		{
 			// task 09776
 			final I_C_BPartner bpartner = InterfaceWrapperHelper.create(desadv.getC_BPartner(), I_C_BPartner.class);
-			lineItemCapacity = bpartner.getDESADVDefaultItemCapacity();
+			lineItemCapacity = bpartner.getEdiDESADVDefaultItemCapacity();
 		}
 		else
 		{
@@ -183,7 +186,7 @@ public class DesadvBL implements IDesadvBL
 
 	/**
 	 * Sets the given line's <code>MovementQty</code> and <code>QtyDeliveredInUOM</code>.
-	 * 
+	 *
 	 * @param desadvLine
 	 * @param newMovementQty
 	 */

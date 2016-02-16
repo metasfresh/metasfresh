@@ -95,10 +95,17 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 ;
 
 
+
+-- 16.02.2016 07:14
+-- URL zum Konzept
+UPDATE AD_Field SET DisplayLogic='@IsEdiRecipient@=Y',Updated=TO_TIMESTAMP('2016-02-16 07:14:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556622
+;
+
 -- 16.02.2016 09:01
 -- URL zum Konzept
 UPDATE AD_Column SET DefaultValue='1',Updated=TO_TIMESTAMP('2016-02-16 09:01:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=553173
 ;
+
 
 COMMIT;
 
