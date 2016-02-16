@@ -51,7 +51,7 @@ import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Hbox;
 import org.zkoss.zul.Separator;
 
-import de.metas.document.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 
 /**
  * Business Partner : Based on VBPartner

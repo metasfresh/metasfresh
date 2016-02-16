@@ -88,8 +88,9 @@ import org.compiere.util.ValueNamePair;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import de.metas.document.IDocumentNoBuilder;
-import de.metas.document.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.IDocumentNoBL;
+import de.metas.document.documentNo.IDocumentNoBuilder;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 
 /**
  *  Persistent Object.
@@ -3286,41 +3287,43 @@ public abstract class PO
 
 		//	Set new DocumentNo
 		{
-		final String columnName = "DocumentNo";
-		final int index = p_info.getColumnIndex(columnName);
-		if (index != -1 && p_info.isUseDocSequence(index))
-		{
-			String value = (String)get_Value(index);
-			if (value != null && value.startsWith("<") && value.endsWith(">"))
-				value = null;
-			if (value == null || value.length() == 0)
+			final String columnName = "DocumentNo";
+			final int index = p_info.getColumnIndex(columnName);
+			if (index != -1 && p_info.isUseDocSequence(index))
 			{
-				value = null; // metas: tsa: seq is not automatically fetched on tables with no docType if value is ""
-				int dt = p_info.getColumnIndex("C_DocTypeTarget_ID");
-				if (dt == -1)
+				String value = (String)get_Value(index);
+				if (value != null && value.startsWith("<") && value.endsWith(">"))
+					value = null;
+				if (value == null || value.length() == 0)
 				{
-					dt = p_info.getColumnIndex("C_DocType_ID");
+					value = null; // metas: tsa: seq is not automatically fetched on tables with no docType if value is ""
+					int dt = p_info.getColumnIndex("C_DocTypeTarget_ID");
+					if (dt == -1)
+					{
+						dt = p_info.getColumnIndex("C_DocType_ID");
+					}
+					if (dt != -1)		//	get based on Doc Type (might return null)
+					{
+						value = documentNoFactory.forDocType(get_ValueAsInt(dt), false) // useDefiniteSequence=false
+								.setTrxName(m_trxName)
+								.setPO(this)
+								.setFailOnError(false)
+								.build();
+					}
+					if (value == null || value == IDocumentNoBuilder.NO_DOCUMENTNO)	//	not overwritten by DocType and not manually entered
+					{
+						value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
+								.setTrxName(m_trxName)
+								.setPO(this)
+								.setFailOnError(false)
+								.build();
+						value = value == IDocumentNoBuilder.NO_DOCUMENTNO ? null : value; // just to make sure we get null in case no DocumentNo
+					}
+					set_ValueNoCheck(columnName, value);
+
+					Services.get(IDocumentNoBL.class).fireDocumentNoChange(this, value); // task 09776
 				}
-				if (dt != -1)		//	get based on Doc Type (might return null)
-				{
-					value = documentNoFactory.forDocType(get_ValueAsInt(dt), false) // useDefiniteSequence=false
-							.setTrxName(m_trxName)
-							.setPO(this)
-							.setFailOnError(false)
-							.build();
-				}
-				if (value == null || value == IDocumentNoBuilder.NO_DOCUMENTNO)	//	not overwritten by DocType and not manually entered
-				{
-					value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
-							.setTrxName(m_trxName)
-							.setPO(this)
-							.setFailOnError(false)
-							.build();
-					value = value == IDocumentNoBuilder.NO_DOCUMENTNO ? null : value; // just to make sure we get null in case no DocumentNo
-				}
-				set_ValueNoCheck(columnName, value);
 			}
-		}
 		}
 
 		//	Set empty Value

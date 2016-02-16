@@ -51,8 +51,9 @@ import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.IDocumentNoBuilder;
-import de.metas.document.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.IDocumentNoBL;
+import de.metas.document.documentNo.IDocumentNoBuilder;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -80,7 +81,7 @@ public class MOrder extends X_C_Order implements DocAction
 	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1575104995897726572L;
 
@@ -88,7 +89,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Create new Order by copying
-	 * 
+	 *
 	 * @param from order
 	 * @param org the org of the new order
 	 * @param dateDoc date of the document date
@@ -232,7 +233,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**************************************************************************
 	 * Project Constructor
-	 * 
+	 *
 	 * @param project Project to create Order from
 	 * @param IsSOTrx sales order
 	 * @param DocSubType if SO DocType Target (default DocSubType_OnCredit)
@@ -276,7 +277,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set record
 	 * @param trxName transaction
@@ -295,7 +296,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Overwrite Client/Org if required
-	 * 
+	 *
 	 * @param AD_Client_ID client
 	 * @param AD_Org_ID org
 	 */
@@ -428,7 +429,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Set Target Sales Document Type
-	 * 
+	 *
 	 * @param DocSubType_x SO sub type - see DocSubType_*
 	 */
 	public void setC_DocTypeTarget_ID(String DocSubType_x)
@@ -451,9 +452,9 @@ public class MOrder extends X_C_Order implements DocAction
 	/**
 	 * Set Target Document Type.
 	 * Standard Order or PO
-	 * 
+	 *
 	 * Please use {@link de.metas.adempiere.service.IOrderBL.setDocTypeTargetId(I_C_Order)}.
-	 * 
+	 *
 	 * Please, when changing this one, also change the  {@link de.metas.adempiere.service.IOrderBL.setDocTypeTargetId(I_C_Order)}.
 	 */
 	@Deprecated
@@ -482,13 +483,13 @@ public class MOrder extends X_C_Order implements DocAction
 	/**
 	 * Set Business Partner Defaults & Details.
 	 * SOTrx should be set.
-	 * 
+	 *
 	 * @param bp business partner
 	 */
 	public void setBPartner(I_C_BPartner bp)
 	{
 		// FIXME: keep in sync / merge with de.metas.adempiere.service.impl.OrderBL.setBPartner(I_C_Order, I_C_BPartner)
-		
+
 		if (bp == null)
 			return;
 
@@ -581,8 +582,8 @@ public class MOrder extends X_C_Order implements DocAction
 	 * @return number of lines copied
 	 */
 	public int copyLinesFrom(
-			final MOrder otherOrder, 
-			final boolean counter, 
+			final MOrder otherOrder,
+			final boolean counter,
 			final boolean copyASI)
 	{
 		if (isProcessed() || isPosted() || otherOrder == null)
@@ -604,7 +605,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Creates a new order line for this order, using the given <code>fromLine</code> as a template.
-	 * 
+	 *
 	 * @param counter if <code>true</code>, then
 	 *            <ul>
 	 *            <li>the new other line's <code>Ref_OrderLine_ID</code> is set to <code>fromLine</code>'s ID
@@ -616,8 +617,8 @@ public class MOrder extends X_C_Order implements DocAction
 	 * @return <code>1</code>
 	 */
 	public int copyLineFrom(
-			final boolean counter, 
-			final boolean copyASI, 
+			final boolean counter,
+			final boolean copyASI,
 			final MOrderLine fromLine)
 	{
 		final MOrderLine line = new MOrderLine(this);
@@ -667,7 +668,7 @@ public class MOrder extends X_C_Order implements DocAction
 		//
 		line.setQtyDelivered(Env.ZERO);
 		line.setQtyInvoiced(Env.ZERO);
-		//task 09358: get rid of this; instead, update qtyReserved at one central place	
+		//task 09358: get rid of this; instead, update qtyReserved at one central place
 		//line.setQtyReserved(Env.ZERO);
 		line.setDateDelivered(null);
 		line.setDateInvoiced(null);
@@ -681,7 +682,7 @@ public class MOrder extends X_C_Order implements DocAction
 		//
 		line.setProcessed(false);
 		InterfaceWrapperHelper.save(line);
-	
+
 		// Cross Link
 		if (counter)
 		{
@@ -757,7 +758,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Set Price List (and Currency, TaxIncluded) when valid
-	 * 
+	 *
 	 * @param M_PriceList_ID price list
 	 */
 	@Override
@@ -778,7 +779,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**************************************************************************
 	 * Get <b>active</b> Lines of Order
-	 * 
+	 *
 	 * @param whereClause where clause or null (starting with AND)
 	 * @param orderClause order clause
 	 * @return lines
@@ -806,7 +807,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Get <b>active</b> Lines of Order
-	 * 
+	 *
 	 * @param requery requery
 	 * @param orderBy optional order by column
 	 * @return lines
@@ -831,7 +832,7 @@ public class MOrder extends X_C_Order implements DocAction
 	/**
 	 * Get Lines of Order.
 	 * (used by web store)
-	 * 
+	 *
 	 * @return lines
 	 */
 	public MOrderLine[] getLines()
@@ -894,7 +895,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Get Invoices of Order
-	 * 
+	 *
 	 * @return invoices
 	 */
 	public MInvoice[] getInvoices()
@@ -912,7 +913,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Get latest Invoice of Order
-	 * 
+	 *
 	 * @return invoice id or 0
 	 */
 	public int getC_Invoice_ID()
@@ -926,7 +927,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Get Shipments of Order
-	 * 
+	 *
 	 * @return shipments
 	 * @deprecated Please use
 	 */
@@ -1238,7 +1239,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1251,7 +1252,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Invalidate Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1264,7 +1265,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**************************************************************************
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -1537,11 +1538,11 @@ public class MOrder extends X_C_Order implements DocAction
 //		return retValue;
 //	}	// explodeBOM
 	// @formatter:on
-	
+
 	/**
 	 * Reserve Inventory.
 	 * Counterpart: MInOut.completeIt()
-	 * 
+	 *
 	 * @param dt document type or null
 	 * @param lines order lines (ordered by M_Product_ID for deadlock prevention)
 	 * @return true if (un) reserved
@@ -1656,18 +1657,18 @@ public class MOrder extends X_C_Order implements DocAction
 					// task 08999: update it async
 					Services.get(IStorageBL.class).addAsync(
 							getCtx(),
-							lineWarehouseId, 
+							lineWarehouseId,
 							M_Locator_ID,
 							line.getM_Product_ID(),
-							line.getM_AttributeSetInstance_ID(), 
 							line.getM_AttributeSetInstance_ID(),
-							Env.ZERO, 
-							reserved, 
-							ordered, 
+							line.getM_AttributeSetInstance_ID(),
+							Env.ZERO,
+							reserved,
+							ordered,
 							get_TrxName());
 				}	// stockec
 				// update line
-				
+
 				// task 09358: get rid of this; instead, update qtyReserved only in IOrderLineBL.
 				// line.setQtyReserved(line.getQtyReserved().add(difference));
 				// line.saveEx(get_TrxName()); // metas: use saveEx
@@ -1685,7 +1686,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Calculate Tax and Total
-	 * 
+	 *
 	 * @return true if tax total calculated
 	 */
 	public boolean calculateTaxTotal()
@@ -1772,7 +1773,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Approve Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1785,7 +1786,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Reject Approval
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1798,7 +1799,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**************************************************************************
 	 * Complete Document
-	 * 
+	 *
 	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
 	@Override
@@ -1923,14 +1924,15 @@ public class MOrder extends X_C_Order implements DocAction
 	}	// completeIt
 
 	/**
-	 * Set the definite document number after completed
+	 * Set the definite <code>DocumentNo</code> and <code>DateOrdered</code> after completed, both according to this order's <code>C_DocType</code>.<br>
+	 * Also invokes {@link IOrderBL#setPOReferenceIfRequired(I_C_Order)} (task 09667).
 	 */
 	private void setDefiniteDocumentNo()
 	{
-		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		final I_C_DocType dt = getC_DocType();
 		if (dt.isOverwriteDateOnComplete())
 		{
-			setDateOrdered(new Timestamp(System.currentTimeMillis()));
+			setDateOrdered(SystemTime.asTimestamp());
 		}
 		if (dt.isOverwriteSeqOnComplete())
 		{
@@ -1941,7 +1943,10 @@ public class MOrder extends X_C_Order implements DocAction
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)
+			{
 				setDocumentNo(value);
+				Services.get(IDocumentNoBL.class).fireDocumentNoChange(this, value); // task 09776
+			}
 		}
 	}
 
@@ -2107,7 +2112,7 @@ public class MOrder extends X_C_Order implements DocAction
 	/**
 	 * Void Document.
 	 * Set Qtys to 0 - Sales: reverse all documents
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2176,7 +2181,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Create Shipment/Invoice Reversals
-	 * 
+	 *
 	 * @return true if success
 	 */
 	private boolean createReversals()
@@ -2261,7 +2266,7 @@ public class MOrder extends X_C_Order implements DocAction
 	/**
 	 * Close Document.
 	 * Cancel not delivered Qunatities
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2361,7 +2366,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Reverse Correction - same void
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2383,7 +2388,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Reverse Accrual - none
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -2405,7 +2410,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 	/**
 	 * Re-activate.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2578,20 +2583,9 @@ public class MOrder extends X_C_Order implements DocAction
 	// metas: begin
 	public static final String NO_DELIVARABLE_LINES_FOUND = "NoDeliverableLinesFound";
 
-	public static MOrder get(Properties ctx, String DocumentNo)
-	{
-		if (DocumentNo == null || DocumentNo.length() == 0)
-			return null;
-		String whereClause = COLUMNNAME_DocumentNo + "=? AND " + COLUMNNAME_AD_Client_ID + "=?";
-		MOrder retValue = new Query(ctx, MOrder.Table_Name, whereClause, null)
-				.setParameters(new Object[] { DocumentNo, Env.getAD_Client_ID(ctx) })
-				.firstOnly();
-		return retValue;
-	} // get
-
 	/**
 	 * Is Force Creation of this order enabled
-	 * 
+	 *
 	 * @return
 	 * @see #setDocAction(String, boolean)
 	 */

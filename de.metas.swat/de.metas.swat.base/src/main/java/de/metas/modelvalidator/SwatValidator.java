@@ -115,8 +115,7 @@ import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
 import de.metas.invoice.model.validator.C_Invoice;
 import de.metas.invoice.model.validator.C_InvoiceLine;
 import de.metas.invoice.model.validator.M_MatchInv;
-import de.metas.order.document.spi.impl.C_Order_CounterDocHandler;
-import de.metas.order.model.validator.C_Order;
+import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute_Line;
 import de.metas.pricing.attributebased.spi.impl.AttributePlvCreationListener;
@@ -195,7 +194,6 @@ public class SwatValidator implements ModelValidator
 		// the MV has been added to AD_ModelValidator, so that it can be enabled for certain customers *if* required.
 		// engine.addModelValidator(new PurchaseModelValidator(), client);
 
-		engine.addModelValidator(new C_Order(), client); // 03409: Context menu fixes (2012101810000086)
 		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(Services.get(ITriggerUIBL.class).createModelValidator(), client);
 		engine.addModelValidator(new MViewModelValidator(), client);
@@ -249,6 +247,8 @@ public class SwatValidator implements ModelValidator
 
 		// Note: de.metas.adempiere.modelvalidator.InvoiceLine is currently deactivated, so we leave it in
 		// AD_ModelValidator until its status is clear.
+
+		new de.metas.order.model.validator.ConfigValidator().initialize(engine, client);
 
 		new de.metas.invoicecandidate.modelvalidator.ConfigValidator().initialize(engine, client);
 

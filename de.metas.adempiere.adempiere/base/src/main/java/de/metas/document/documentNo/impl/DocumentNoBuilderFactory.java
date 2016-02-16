@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.metas.document.impl;
+package de.metas.document.documentNo.impl;
 
 /*
  * #%L
@@ -26,8 +26,8 @@ package de.metas.document.impl;
  */
 
 
-import de.metas.document.IDocumentNoBuilder;
-import de.metas.document.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.IDocumentNoBuilder;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 
 /**
  * @author cg

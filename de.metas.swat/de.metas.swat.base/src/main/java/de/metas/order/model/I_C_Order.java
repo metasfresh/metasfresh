@@ -29,17 +29,13 @@ import de.metas.impex.model.I_AD_InputDataSource;
 
 public interface I_C_Order extends de.metas.adempiere.model.I_C_Order
 {
-
+	// @formatter:off
 	public static String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
-
 	public int getAD_InputDataSource_ID();
-	
 	public I_AD_InputDataSource getAD_InputDataSource();
-
 	public void setAD_InputDataSource_ID(int AD_InputDataSource_ID);
-
 	public void setAD_InputDataSource(I_AD_InputDataSource AD_InputDataSource);
-	
+
 	public static final String COLUMNNAME_InvoiceStatus = "InvoiceStatus";
 	public String getInvoiceStatus();
 	public void setInvoiceStatus(String InvoiceStatus);
@@ -50,7 +46,7 @@ public interface I_C_Order extends de.metas.adempiere.model.I_C_Order
 	public static final String INVOICESTATUS_PartlyInvoiced = "PI";
 	/** Open = O */
 	public static final String INVOICESTATUS_Open = "O";
-	
+
 	public static final String COLUMNNAME_DeliveryStatus = "DeliveryStatus";
 	public String getDeliveryStatus();
 	public void setDeliveryStatus(String DeliveryStatus);
@@ -61,12 +57,10 @@ public interface I_C_Order extends de.metas.adempiere.model.I_C_Order
 	public static final String DELIVERYSTATUS_PartlyDelivered = "PD";
 	/** Open = O */
 	public static final String DELIVERYSTATUS_Open = "O";
-	
-	
+		
 	public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
 	public BigDecimal getQtyInvoiced();
 	public void setQtyInvoiced(BigDecimal QtyInvoiced);
-
 	
 	public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
 	public BigDecimal getQtyOrdered();
@@ -75,5 +69,5 @@ public interface I_C_Order extends de.metas.adempiere.model.I_C_Order
 	public static final String COLUMNNAME_QtyMoved = "QtyMoved";
 	public BigDecimal getQtyMoved();
 	public void setQtyMoved(BigDecimal QtyMoved);
-
+	// @formatter:on
 }

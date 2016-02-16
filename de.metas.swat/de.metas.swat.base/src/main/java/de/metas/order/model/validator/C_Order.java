@@ -10,12 +10,12 @@ package de.metas.order.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,10 +25,8 @@ package de.metas.order.model.validator;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,14 +45,6 @@ import de.metas.order.IOrderPA;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	@Init
-	public void setupCallouts()
-	{
-		// Setup callout C_Order
-		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		calloutProvider.registerAnnotatedCallout(new de.metas.callout.C_Order());
-	}
-
 	// 03409: Context menu fixes (2012101810000086)
 	@ModelChange(
 			timings = { ModelValidator.TYPE_AFTER_CHANGE },

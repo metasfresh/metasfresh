@@ -139,7 +139,8 @@ public interface IOrderBL extends ISingletonService
 	 * <li><code>IsSOTrx</code> value
 	 * <li><code>Bill_BPartner</code>'s pricing system, see {@link org.adempiere.bpPartner.service.IBPartnerDAO#retrievePricingSystemId(Properties, int, boolean, String)}
 	 * <li>location's <code>C_Country</code>, see {@link #retrievePriceListId(I_C_Order)}
-	 * </ul> 
+	 * </ul>
+	 *
 	 * @param order
 	 */
 	void setM_PricingSystem_ID(I_C_Order order);
@@ -254,7 +255,7 @@ public interface IOrderBL extends ISingletonService
 	 * <li>QtyInvoiced
 	 * </ul>
 	 * from the sums of the order's lines.
-	 * 
+	 *
 	 * @param orderLine
 	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */

@@ -1,12 +1,10 @@
-package de.metas.edi.model;
-
-import java.math.BigDecimal;
+package de.metas.order.model;
 
 /*
  * #%L
- * de.metas.edi
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,24 +22,15 @@ import java.math.BigDecimal;
  * #L%
  */
 
-
-public interface I_C_BPartner extends de.metas.invoicecandidate.model.I_C_BPartner
+public interface I_C_BPartner
 {
 	// @formatter:off
-	String COLUMNNAME_IsEdiRecipient = "IsEdiRecipient";
-	boolean isEdiRecipient();
-	void setIsEdiRecipient(boolean IsEdiRecipient);
-	// @formatter:on
+	public static final String COLUMNNAME_IsCreateDefaultPOReference = "IsCreateDefaultPOReference";
+	public boolean isCreateDefaultPOReference();
+	public void setCreateDefaultPOReference(boolean IsCreateDefaultPOReference);
 
-	// @formatter:off
-	String COLUMNNAME_EdiRecipientGLN = "EdiRecipientGLN";
-	String getEdiRecipientGLN();
-	void setEdiRecipientGLN(String EdiRecipientGLN);
-	// @formatter:on
-	
-	// @formatter:off
-	String COLUMNNAME_DESADVDefaultItemCapacity = "DESADVDefaultItemCapacity";
-	BigDecimal getDESADVDefaultItemCapacity();
-	void setDESADVDefaultItemCapacity(BigDecimal DESADVDefaultItemCapacity);
+	public static final String COLUMNNAME_POReferencePattern = "POReferencePattern";
+	public String getPOReferencePattern();
+	public void setPOReferencePattern(String POReferencePattern);
 	// @formatter:on
 }

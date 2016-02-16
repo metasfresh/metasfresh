@@ -22,7 +22,6 @@ package org.adempiere.util;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -158,9 +157,35 @@ public final class StringUtils
 		return s;
 		/*
 		 * JAVA6 behaviour * if (s == null) { return s; } String normStr = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD);
-		 *
+		 * 
 		 * StringBuffer sb = new StringBuffer(); for (int i = 0; i < normStr.length(); i++) { char ch = normStr.charAt(i); if (ch < 255) sb.append(ch); } return sb.toString(); /*
 		 */
+	}
+
+	/**
+	 * Overlays the given <code>string</code> with the given <code>overlay</code>, with the overlay's last character overylaying the string's last character.<br>
+	 * 
+	 * <pre>
+	 * 0000000000 + 123456 => 0000123456
+	 *        000 + 123456 =>     123456
+	 * </pre>
+	 * 
+	 * Note: if any parameter is <code>null</code>, then <code>""</code> is assumed isntead.
+	 * 
+	 * @param string
+	 * @param overlay
+	 * @return
+	 */
+	public static String overlayAtEnd(final String string, final String overlay)
+	{
+		final String overlayToUse = overlay == null ? "" : overlay;
+		final String stringToUse = string == null ? "" : string;
+
+		final int stringLength = stringToUse.length();
+		final int overlayLength = overlayToUse.length();
+
+		final String result = org.apache.commons.lang3.StringUtils.overlay(stringToUse, overlayToUse, stringLength - overlayLength, stringLength);
+		return result;
 	}
 
 	/**

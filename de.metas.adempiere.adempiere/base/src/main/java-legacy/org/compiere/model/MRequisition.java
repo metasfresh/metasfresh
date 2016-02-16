@@ -30,8 +30,8 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
-import de.metas.document.IDocumentNoBuilder;
-import de.metas.document.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.IDocumentNoBuilder;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 
 /**
  *	Requisition Model

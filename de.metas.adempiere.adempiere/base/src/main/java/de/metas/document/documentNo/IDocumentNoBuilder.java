@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.document;
+package de.metas.document.documentNo;
 
 /*
  * #%L
@@ -29,6 +29,9 @@ package de.metas.document;
 import org.compiere.model.PO;
 
 import com.google.common.base.Supplier;
+
+import de.metas.document.DocumentNoBuilderException;
+import de.metas.document.DocumentSequenceInfo;
 
 /**
  * @author cg

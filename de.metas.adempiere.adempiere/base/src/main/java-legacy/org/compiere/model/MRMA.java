@@ -33,8 +33,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
 import de.metas.adempiere.service.IOrderBL;
-import de.metas.document.IDocumentNoBuilder;
-import de.metas.document.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.IDocumentNoBuilder;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 
 /**
  *	RMA Model

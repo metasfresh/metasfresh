@@ -71,7 +71,7 @@ import org.compiere.util.Trx;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 
-import de.metas.document.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 
 /**
  *	Grid Table Model for JDBC access including buffering.

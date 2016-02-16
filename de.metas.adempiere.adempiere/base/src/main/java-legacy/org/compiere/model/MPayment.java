@@ -46,8 +46,8 @@ import org.compiere.util.ValueNamePair;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.IDocumentNoBuilder;
-import de.metas.document.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.IDocumentNoBuilder;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;

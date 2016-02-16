@@ -1,4 +1,4 @@
-package de.metas.order.document.spi.impl;
+package de.metas.order.document.counterDoc;
 
 import javax.annotation.concurrent.Immutable;
 

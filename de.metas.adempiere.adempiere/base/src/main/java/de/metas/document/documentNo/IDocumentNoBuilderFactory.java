@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.metas.document;
+package de.metas.document.documentNo;
 
 /*
  * #%L

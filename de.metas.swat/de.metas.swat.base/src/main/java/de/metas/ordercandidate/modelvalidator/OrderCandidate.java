@@ -10,12 +10,12 @@ package de.metas.ordercandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,7 +37,6 @@ import org.compiere.util.Ini;
 
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
-import de.metas.order.model.validator.C_OrderLine;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
@@ -59,7 +58,7 @@ public class OrderCandidate extends AbstractModuleInterceptor
 	public void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		super.onInit(engine, client);
-		
+
 		Services.get(IOLCandBL.class).registerCustomerGroupingValuesProvider(new DefaultGroupingProvider());
 
 		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandPriceValidator());
@@ -74,7 +73,6 @@ public class OrderCandidate extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_OLCand(), client);
 		engine.addModelValidator(new OLCandGenerator(), client);
 		engine.addModelValidator(new C_OLCandProcessor(), client);
-		engine.addModelValidator(new C_OrderLine(), client);
 
 		// task 08803: registering this listener *after* C_OLCand, because C_OLCand can call IOLCandValdiatorBL.validate, and this listener (which is actually a model interceptor) needs to be called
 		// after that (if there is any change).

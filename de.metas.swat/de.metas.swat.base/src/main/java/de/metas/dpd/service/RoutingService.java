@@ -75,7 +75,7 @@ import org.compiere.util.Trx;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.IPrintingService;
-import de.metas.document.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.dpd.exception.DPDException;
 import de.metas.dpd.model.MDPDCountry;
 import de.metas.dpd.model.MDPDDepot;

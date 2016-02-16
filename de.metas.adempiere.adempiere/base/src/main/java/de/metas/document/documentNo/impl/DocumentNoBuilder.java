@@ -1,4 +1,4 @@
-package de.metas.document.impl;
+package de.metas.document.documentNo.impl;
 
 /*
  * #%L
@@ -51,8 +51,8 @@ import com.google.common.base.Suppliers;
 
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
-import de.metas.document.IDocumentNoBuilder;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.documentNo.IDocumentNoBuilder;
 
 /**
  * Increment and builds document numbers.

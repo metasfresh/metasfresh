@@ -22,7 +22,6 @@ package de.metas.edi.api.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -49,6 +48,7 @@ import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -111,64 +111,82 @@ public class DesadvBL implements IDesadvBL
 	{
 		final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
-		I_EDI_DesadvLine desadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(desadv, orderLine.getLine());
-		if (desadvLine == null)
+		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(desadv, orderLine.getLine());
+		if (existingDesadvLine != null)
 		{
-			final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
+			return existingDesadvLine; // done
+		}
+		
+		final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
-			desadvLine = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine.class, order);
-			desadvLine.setEDI_Desadv(desadv);
-			// desadvLine.setC_OrderLine_ID(orderLine.getC_OrderLine_ID()); remove
-			desadvLine.setLine(orderLine.getLine());
+		final I_EDI_DesadvLine newDesadvLine = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine.class, order);
+		newDesadvLine.setEDI_Desadv(desadv);
+		newDesadvLine.setLine(orderLine.getLine());
 
-			desadvLine.setQtyEntered(orderLine.getQtyEntered());
-			desadvLine.setQtyDeliveredInUOM(BigDecimal.ZERO);
-			desadvLine.setC_UOM_ID(orderLine.getC_UOM_ID());
+		newDesadvLine.setQtyEntered(orderLine.getQtyEntered());
+		newDesadvLine.setQtyDeliveredInUOM(BigDecimal.ZERO);
+		newDesadvLine.setC_UOM_ID(orderLine.getC_UOM_ID());
 
-			desadvLine.setQtyItemCapacity(orderLine.getQtyItemCapacity());
+		final BigDecimal orderLineItemCapacity = orderLine.getQtyItemCapacity();
+		final BigDecimal lineItemCapacity;
+		if (orderLineItemCapacity.signum() <= 0)
+		{
+			// task 09776
+			final I_C_BPartner bpartner = InterfaceWrapperHelper.create(desadv.getC_BPartner(), I_C_BPartner.class);
+			lineItemCapacity = bpartner.getDESADVDefaultItemCapacity();
+		}
+		else
+		{
+			lineItemCapacity = orderLineItemCapacity;
+		}
+		newDesadvLine.setQtyItemCapacity(lineItemCapacity);
 
-			desadvLine.setMovementQty(BigDecimal.ZERO);
+		newDesadvLine.setMovementQty(BigDecimal.ZERO);
+		newDesadvLine.setM_Product_ID(orderLine.getM_Product_ID());
 
-			desadvLine.setM_Product_ID(orderLine.getM_Product_ID());
+		newDesadvLine.setProductDescription(orderLine.getProductDescription());
 
-			desadvLine.setProductDescription(orderLine.getProductDescription());
+		final I_C_BPartner_Product bPartnerProduct = InterfaceWrapperHelper.create(
+				bPartnerProductDAO.retrieveBPartnerProductAssociation(order.getC_BPartner(), orderLine.getM_Product()),
+				I_C_BPartner_Product.class);
 
-			final I_C_BPartner_Product bPartnerProduct = InterfaceWrapperHelper.create(
-					bPartnerProductDAO.retrieveBPartnerProductAssociation(order.getC_BPartner(), orderLine.getM_Product()),
-					I_C_BPartner_Product.class);
+		// don't throw an error for missing bPartnerProduct; it might prevent users from creating shipments
+		// instead, just don't set the values and let the user fix it in the DESADV window later on
+		// Check.assumeNotNull(bPartnerProduct, "there is a C_BPartner_Product for C_BPArtner {0} and M_Product {1}", inOut.getC_BPartner(), inOutLine.getM_Product());
+		if (bPartnerProduct != null)
+		{
+			newDesadvLine.setProductNo(bPartnerProduct.getProductNo());
+			newDesadvLine.setUPC(bPartnerProduct.getUPC());
 
-			// don't throw an error for missing bPartnerProduct; it might prevent users from creating shipments
-			// instead, just don't set the values and let the user fix it in the DESADV window later on
-			// Check.assumeNotNull(bPartnerProduct, "there is a C_BPartner_Product for C_BPArtner {0} and M_Product {1}", inOut.getC_BPartner(), inOutLine.getM_Product());
-			if (bPartnerProduct != null)
-			{
-				desadvLine.setProductNo(bPartnerProduct.getProductNo());
-				desadvLine.setUPC(bPartnerProduct.getUPC());
-
-				if (Check.isEmpty(desadvLine.getProductDescription(), true))
-				{
-					// fallback for product description
-					desadvLine.setProductDescription(bPartnerProduct.getProductDescription());
-				}
-				if (Check.isEmpty(desadvLine.getProductDescription(), true))
-				{
-					// fallback for product description
-					desadvLine.setProductDescription(bPartnerProduct.getProductName());
-				}
-			}
-			if (Check.isEmpty(desadvLine.getProductDescription(), true))
+			if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
 			{
 				// fallback for product description
-				desadvLine.setProductDescription(orderLine.getM_Product().getName());
+				newDesadvLine.setProductDescription(bPartnerProduct.getProductDescription());
 			}
-
-			desadvLine.setIsSubsequentDeliveryPlanned(false); // the default
+			if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
+			{
+				// fallback for product description
+				newDesadvLine.setProductDescription(bPartnerProduct.getProductName());
+			}
+		}
+		if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
+		{
+			// fallback for product description
+			newDesadvLine.setProductDescription(orderLine.getM_Product().getName());
 		}
 
-		InterfaceWrapperHelper.save(desadvLine);
-		return desadvLine;
+		newDesadvLine.setIsSubsequentDeliveryPlanned(false); // the default
+
+		InterfaceWrapperHelper.save(newDesadvLine);
+		return newDesadvLine;
 	}
 
+	/**
+	 * Sets the given line's <code>MovementQty</code> and <code>QtyDeliveredInUOM</code>.
+	 * 
+	 * @param desadvLine
+	 * @param newMovementQty
+	 */
 	private void setQty(final I_EDI_DesadvLine desadvLine, final BigDecimal newMovementQty)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);

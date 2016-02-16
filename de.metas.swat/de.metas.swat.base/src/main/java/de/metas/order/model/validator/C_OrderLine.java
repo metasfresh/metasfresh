@@ -10,12 +10,12 @@ package de.metas.order.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,9 +27,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -55,17 +53,10 @@ public class C_OrderLine
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
 
-	@Init
-	public void setupCallouts()
-	{
-		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		calloutProvider.registerAnnotatedCallout(new de.metas.ordercandidate.callout.C_OrderLine());
-	}
-
 	/**
 	 * Method is fired before an order line is deleted. It deletes all {@link I_C_Order_Line_Alloc} records referencing the order line and sets <code>Processed='N'</code> for all {@link I_C_OLCand}s
 	 * that were originally aggregated into the order line.
-	 * 
+	 *
 	 * @param ol
 	 */
 	// 03472
@@ -140,8 +131,8 @@ public class C_OrderLine
 	}
 
 	/**
-	 * 
-	 * @param orderLine	
+	 *
+	 * @param orderLine
 	 * @task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
 	 */
 	@ModelChange(
@@ -157,7 +148,7 @@ public class C_OrderLine
 
 	/**
 	 * Ported this method from de.metas.adempiere.modelvalidator.OrderLine
-	 * 
+	 *
 	 * @param ol
 	 */
 	@ModelChange(
@@ -200,9 +191,9 @@ public class C_OrderLine
 		// olPO.setIsManualPrice(true);
 		// olPO.setIsManualDiscount(true);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param orderLine
 	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
@@ -212,7 +203,7 @@ public class C_OrderLine
 					I_C_OrderLine.COLUMNNAME_QtyInvoiced,
 					I_C_OrderLine.COLUMNNAME_QtyDelivered
 			})
-	public void updateQuantities(final I_C_OrderLine orderLine) 
+	public void updateQuantities(final I_C_OrderLine orderLine)
 	{
 		Services.get(IOrderBL.class).updateOrderQtySums(orderLine.getC_Order());
 	}

@@ -47,7 +47,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.service.IPeriodBL;
-import de.metas.document.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.payment.esr.ESRConstants;
