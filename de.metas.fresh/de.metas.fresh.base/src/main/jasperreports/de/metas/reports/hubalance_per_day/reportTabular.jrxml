@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportTabular" language="groovy" pageWidth="1400" pageHeight="595" orientation="Landscape" columnWidth="1360" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/hubalance_per_day/report" uuid="97db45d5-efca-414e-835a-5d81c0144a0c">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="Date" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="M_Product_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="M_Material_Balance_Config_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day
+( $P{Date},
+  $P{C_BPartner_ID},
+  $P{C_BP_Group_ID},
+  $P{M_Product_ID},
+  $P{M_Material_Balance_Config_ID})
+;]]>
+	</queryString>
+	<field name="bpartnerno" class="java.lang.String"/>
+	<field name="bpartner" class="java.lang.String"/>
+	<field name="bpartner_group" class="java.lang.String"/>
+	<field name="art_contract" class="java.lang.String"/>
+	<field name="art_name" class="java.lang.String"/>
+	<field name="outgoing" class="java.math.BigDecimal"/>
+	<field name="incoming" class="java.math.BigDecimal"/>
+	<field name="bpartner_param" class="java.lang.String"/>
+	<field name="bpartner_group_param" class="java.lang.String"/>
+	<field name="product_param" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="111" splitType="Stretch">
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="0" y="0" width="386" height="20"/>
+				<textElement>
+					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="0" y="24" width="210" height="20"/>
+				<textElement>
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{referencedate}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement uuid="10860cf3-d395-405e-94d8-386769700156" x="210" y="24" width="176" height="20"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="0" y="44" width="210" height="20"/>
+				<textElement>
+					<font size="10" isBold="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{BPartner}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="84450a67-d68f-4283-8897-811897b68d95" x="210" y="44" width="176" height="20"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bpartner_param} !=null ? $F{bpartner_param} : $R{all}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="426dba01-ccc3-43bf-8dd0-6b8018e3a6e0" x="210" y="64" width="176" height="20"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bpartner_group_param} !=null ? $F{bpartner_group_param} : $R{all}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="81096bf1-c290-46d0-9405-d8282d79787e" x="210" y="84" width="176" height="20"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{product_param} != null ? $F{product_param} : $R{all}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="0" y="64" width="210" height="20"/>
+				<textElement>
+					<font size="10" isBold="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{BPartnergroup}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="0" y="84" width="210" height="20"/>
+				<textElement>
+					<font size="10" isBold="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{packageart}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="70" splitType="Stretch">
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="0" y="40" width="126" height="20"/>
+				<textElement>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{nr}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="126" y="40" width="260" height="20"/>
+				<textElement>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{BPartner}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="386" y="40" width="240" height="20"/>
+				<textElement>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{BPartnergroup}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="626" y="40" width="240" height="20"/>
+				<textElement>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{packagecontract}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="866" y="40" width="200" height="20"/>
+				<textElement>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{packageart}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="1066" y="0" width="120" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="1066" y="20" width="120" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{infavourof}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="1066" y="40" width="120" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{BPartner}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="1186" y="0" width="120" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="1186" y="20" width="120" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{infavourof}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="1186" y="40" width="120" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ofus}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="d6b20533-4171-4973-a384-8e7590d03fa4" x="0" y="0" width="126" height="20"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bpartnerno}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="b58c67c3-9fa1-456e-889f-d1ece1b1e3e9" x="126" y="0" width="260" height="20"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bpartner}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="cb4c538c-119e-424d-b8fb-5d32f5a698e8" x="386" y="0" width="240" height="20"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bpartner_group}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="63f13e70-0621-49b6-b1d3-e687a90af824" x="626" y="0" width="240" height="20"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{art_contract}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="25b9ac7f-76f3-462d-b1af-d3a57529c2f6" x="866" y="0" width="200" height="20"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{art_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="183b3899-3759-4972-af3a-7c9596baea5f" x="1066" y="0" width="120" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{incoming}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="8841ec60-f4c1-4f7e-b9a9-65c5c67f6464" x="1186" y="0" width="120" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{outgoing}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="40" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

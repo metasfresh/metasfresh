@@ -23,6 +23,7 @@ The actual release notes
 
 # Upcoming Release
 ##Features
+ - 09812 create report for daily packaging material balance (101400050316)
  - 09776 EDI - Receiver without ORDERS (100584995833)
     * we now can specify a default POReference value for orders that is autumatically set by the system, unless there already was another POReference set by a users of from an importnert order
 	* for a DESADV lines with unknown CUperTU, we can now set a default-value such a "1" per C_BPartner.
