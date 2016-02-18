@@ -64,7 +64,9 @@ public class MetasFreshTheme extends com.jgoodies.looks.plastic.theme.LightGray
 
 	static final ColorUIResource COLOR_RED_METAS = new ColorUIResource(135, 3, 0);
 	private static final ColorUIResource COLOR_RED_LIGHT = new ColorUIResource(255, 204, 204);
-	private static final ColorUIResource COLOR_RED = new ColorUIResource(Color.RED);
+	// task 09820
+	// make the color red be always the same shade
+	private static final ColorUIResource COLOR_RED = new ColorUIResource(new Color(204, 0, 0));
 	static final ColorUIResource COLOR_LightGray = new ColorUIResource(243, 242, 228);
 	static final ColorUIResource COLOR_Green = LOGO_TEXT_COLOR_LIGHT;
 	static final ColorUIResource COLOR_LightGreen = new ColorUIResource(235, 250, 217);
