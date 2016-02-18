@@ -15,6 +15,7 @@ package org.compiere.apps;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -267,8 +268,8 @@ public class ProcessParameterPanel extends CPanel
 		if (editor instanceof VImage)
 		{
 			final VImage imageEditor = (VImage)editor;
-			// Don't display image preview because it looks very crappy in process parameters panel, mainly when using big images
-			imageEditor.setDisplayImagePreview(false);
+			// Enforce a maximum size for image preview, because else it looks very crappy in process parameters panel, mainly when using big images
+			imageEditor.setPreviewMaxSize(new Dimension(300, 100));
 		}
 		
 		return editor;

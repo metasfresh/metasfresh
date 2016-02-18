@@ -17,15 +17,18 @@
 package org.compiere.grid.ed;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 
+import javax.swing.Icon;
 import javax.swing.JButton;
 
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.MImage;
@@ -92,6 +95,8 @@ public class VImage extends JButton
 	/** Column Name             */
 	private final String m_columnName;
 	private boolean displayImagePreview = true; // default=true, backward compatibility
+	private Dimension previewMaxSize = null;
+	
 	/**	Logger			*/
 	private static final transient CLogger log = CLogger.getCLogger(VImage.class);
 
@@ -99,6 +104,7 @@ public class VImage extends JButton
 	 * Sets if the loaded image shall be displayed on button, as an icon.
 	 * 
 	 * @param displayImagePreview
+	 * @see #setPreviewMaxSize(Dimension)
 	 */
 	public void setDisplayImagePreview(final boolean displayImagePreview)
 	{
@@ -108,6 +114,23 @@ public class VImage extends JButton
 		}
 
 		this.displayImagePreview = displayImagePreview;
+		updateButtonUI();
+	}
+	
+	/**
+	 * Sets image preview maximum size
+	 * 
+	 * @param previewMaxSize
+	 * @see #setDisplayImagePreview(boolean)
+	 */
+	public void setPreviewMaxSize(final Dimension previewMaxSize)
+	{
+		if (Check.equals(this.previewMaxSize, previewMaxSize))
+		{
+			return;
+		}
+		
+		this.previewMaxSize = (Dimension)previewMaxSize.clone();
 		updateButtonUI();
 	}
 
@@ -155,8 +178,9 @@ public class VImage extends JButton
 		// Case: we have an image and we shall display it's preview
 		else if (displayImagePreview)
 		{
+			final Icon icon = m_mImage.getIcon((Dimension)previewMaxSize.clone());
 			super.setText(null);
-			super.setIcon(m_mImage.getIcon());
+			super.setIcon(icon);
 			super.setToolTipText(m_mImage.getName());
 			invalidate();
 		}

@@ -16,8 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import java.awt.AlphaComposite;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
@@ -96,9 +101,9 @@ public class MImage extends X_AD_Image
 
 	
 	/** The Image                   */
-	private Image			m_image = null;
+	private Image m_image = null;
 	/** The Icon                   */
-	private Icon			m_icon = null;
+	private ImageIcon m_icon = null;
 
 	/**
 	 * 	Get Image
@@ -107,9 +112,12 @@ public class MImage extends X_AD_Image
 	public Image getImage ()
 	{
 		if (m_image != null)
+		{
 			return m_image;
+		}
+		
 		//	Via byte array
-		byte[] data = getBinaryData();
+		final byte[] data = getBinaryData();
 		if (data != null && data.length > 0)
 		{
 			try
@@ -145,40 +153,115 @@ public class MImage extends X_AD_Image
 	 * 	Get Icon
 	 *	@return icon or null
 	 */
-	public Icon getIcon ()
+	public Icon getIcon()
+	{
+		return getImageIcon();
+	}   //  getIcon
+	
+	private final ImageIcon getImageIcon()
 	{
 		if (m_icon != null)
-			return m_icon;
-		//	Via byte array
-		byte[] data = getBinaryData();
-		if (data != null && data.length > 0)
 		{
-			try
-			{
-				m_icon = new ImageIcon(data, getName());
-				return m_icon;
-			}
-			catch (Exception e)
-			{
-				log.log(Level.WARNING, "(byteArray)", e);
-				return null;
-			}
+			return m_icon;
 		}
-		//	Via URL
-		URL url = getURL();
-		if (url == null)
-			return null;
+
 		try
 		{
-			m_icon = new ImageIcon(url, getName());
-			return m_icon;
+			final Image image = getImage();
+			if (image == null)
+			{
+				return null;
+			}
+
+			m_icon = new ImageIcon(image, getName());
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "(URL)", e);
+			log.log(Level.WARNING, "Failed creating the icon from image on {0}. Returning null.", this);
+			m_icon = null;
 		}
-		return null;
-	}   //  getIcon
+		return m_icon;
+	}
+	
+	/**
+	 * Gets the icon, resized if needed to fit the given maximum size.
+	 * 
+	 * @param sizeMax
+	 */
+	public Icon getIcon(final Dimension sizeMax)
+	{
+		if (sizeMax == null)
+		{
+			return getIcon();
+		}
+		
+		final ImageIcon icon = getImageIcon();
+		if (icon == null)
+		{
+			return null;
+		}
+
+		final Dimension sizeOrig = new Dimension(icon.getIconWidth(), icon.getIconHeight());
+		final Dimension sizeNew = getScaledDimension(sizeOrig, sizeMax);
+		if (sizeNew.equals(sizeOrig))
+		{
+			return icon;
+		}
+
+//		int type = BufferedImage.TYPE_INT_ARGB;
+	    final BufferedImage resizedImage = new BufferedImage(sizeNew.width, sizeNew.height, BufferedImage.TYPE_INT_ARGB);
+	    final Graphics2D g = resizedImage.createGraphics();
+
+	    g.setComposite(AlphaComposite.Src);
+	    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+	    g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+	    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+		final Image image = icon.getImage();
+	    g.drawImage(image, 0, 0, sizeNew.width, sizeNew.height, null);
+	    g.dispose();
+
+
+	    return new ImageIcon(resizedImage, getName());
+	}
+	
+	private static final Dimension getScaledDimension(final Dimension size, final Dimension maxSize)
+	{
+		// credits: http://stackoverflow.com/questions/10245220/java-image-resize-maintain-aspect-ratio
+		
+	    final int widthOrig = size.width;
+	    final int heightOrig = size.height;
+	    final int widthMax = maxSize.width;
+	    final int heightMax = maxSize.height;
+	    
+	    int widthNew;
+	    int heightNew;
+
+	    // first check if we need to scale width
+	    if (widthMax > 0 && widthOrig > widthMax)
+	    {
+	        //scale width to fit
+	        widthNew = widthMax;
+	        //scale height to maintain aspect ratio
+	        heightNew = (widthNew * heightOrig) / widthOrig;
+	    }
+	    else
+	    {
+	    	widthNew = widthOrig;
+	    	heightNew = heightOrig;
+	    }
+
+	    // then check if we need to scale even with the new height
+	    if (heightMax > 0 && heightNew > heightMax)
+	    {
+	        //scale height to fit instead
+	        heightNew = heightMax;
+	        //scale width to maintain aspect ratio
+	        widthNew = (heightNew * widthOrig) / heightOrig;
+	    }
+
+	    return new Dimension(widthNew, heightNew);
+	}
 
 	/**
 	 * 	Get URL
