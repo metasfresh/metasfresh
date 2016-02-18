@@ -19,7 +19,7 @@ SELECT
 	bp.value as bpartnerno,
 	bp.name as bpartner, 
 	bpg.Name as bpartner_group,
-	CASE WHEN fm.C_Flatrate_Matching_ID IS NOT NULL THEN fc.name ELSE NULL END as art_contract,
+	fc.name as art_contract,
 	p.Name as art_name, --Product
 	SUM (mbd.QtyOutgoing) AS Outgoing,
 	SUM (mbd.QtyIncoming) AS Incoming,
@@ -37,7 +37,6 @@ FROM
 	LEFT OUTER JOIN C_FLatrate_Data fd on fd.C_BPartner_ID = mbd.C_BPartner_ID
 	LEFT OUTER JOIN C_FLatrate_Term ft ON ft.C_Flatrate_Data_ID = fd.C_Flatrate_Data_ID  and (ft.M_Product_ID is null or ft.M_Product_ID = p.M_Product_ID) and ft.startdate<=$1 and ft.enddate>=$1 
 	LEFT OUTER JOIN C_FLatrate_Conditions fc on ft.C_FLatrate_Conditions_ID = fc.C_FLatrate_Conditions_ID and fc.Type_Conditions = 'Refundable'
-	LEFT OUTER JOIN C_Flatrate_Matching fm on fm.C_FLatrate_Conditions_ID = fc.C_FLatrate_Conditions_ID AND  (fm.M_Product_ID = p.M_Product_ID OR ft.M_Product_ID = p.M_Product_ID OR (fm.M_Product_Category_Matching_ID  = p.M_Product_Category_ID AND fm.M_Product_ID IS NULL))
 WHERE
 	mbc.M_Material_Balance_Config_ID = $5
 	AND mbd.isActive = 'Y'
@@ -69,8 +68,7 @@ GROUP BY
 	bp.name, 
 	bpg.Name,
 	fc.name,
-	p.Name,
-	fm.C_Flatrate_Matching_ID
+	p.Name
 
 ORDER BY
     bp.name,
@@ -78,5 +76,3 @@ ORDER BY
 			
 $$
   LANGUAGE sql STABLE
-
-

@@ -216,7 +216,7 @@ class ClientSetup
 			return this;
 		}
 
-		companyName = getCompanyName().trim();
+		companyName = companyName.trim();
 
 		adClient.setValue(companyName);
 		adClient.setName(companyName);

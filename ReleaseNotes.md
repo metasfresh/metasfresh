@@ -27,9 +27,7 @@ The actual release notes
 
 ##Fixes
 
- - 09812 create report for daily packaging material balance (101400050316)
-
- ##Instructions
+##Instructions
 
 # metasfresh 4.3.2
 
