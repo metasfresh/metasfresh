@@ -32,6 +32,7 @@ The actual release notes
 ##Fixes
  - 09281 create report for packaging material balance (106483495857)
     * the former version also showed for a partner also packgings that were not on a particular partner's contract
+ - 09820 Header notification bar not shown in main menu (100919535984)
 
 # metasfresh 4.2.1
  - 09281 create report for packaging material balance (106483495857) +it +feature

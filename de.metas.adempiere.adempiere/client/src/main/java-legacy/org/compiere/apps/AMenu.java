@@ -373,8 +373,10 @@ public final class AMenu extends CFrame
 		mainPanel.setLayout(mainLayout);
 		mainLayout.setHgap(0);
 		mainLayout.setVgap(2);
-		//
-		setContentPane(mainPanel);
+		
+		// task 09820 
+		// make sure the main Panel is displayed in the content pane
+		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		mainPanel.add(Box.createHorizontalStrut(3), BorderLayout.EAST);
 		mainPanel.add(Box.createHorizontalStrut(3), BorderLayout.WEST);
 		
