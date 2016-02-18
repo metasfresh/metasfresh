@@ -24,6 +24,15 @@ The actual release notes
 # Upcoming Release
 
 ##Features
+
+##Fixes
+
+##Instructions
+
+# metasfresh 4.3.2
+
+##Features
+
  - 09832 Allow the printing client to retry on error (106406507107)
  - 09814 Send valid json to the printing client, also if there is an exception in the ESB (103239718792)
  - 09823 Tax Code Migration (107275491843)
@@ -34,6 +43,7 @@ The actual release notes
 	* for a DESADV lines with unknown CUperTU, we can now set a default-value such a "1" per C_BPartner.
 	
 ##Fixes
+
  - 09829 ESB sends HTTP code 204 to the printing client (108552946334)
  - 09281 create report for packaging material balance (106483495857)
     * the former version also showed for a partner also packgings that were not on a particular partner's contract
