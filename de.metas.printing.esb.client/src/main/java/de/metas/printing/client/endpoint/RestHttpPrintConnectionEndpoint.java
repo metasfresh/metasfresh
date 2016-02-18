@@ -63,6 +63,7 @@ import de.metas.printing.esb.api.PrinterHWList;
 
 /**
  * Endpoint that queries the printing system via http.
+ * 
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -303,7 +304,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 			{
 				Files.delete(dataFiletoDelete.toPath());
 			}
-			catch (IOException e)
+			catch (final IOException e)
 			{
 				log.log(Level.SEVERE, "IOException while trying to delete data file " + dataFiletoDelete, e);
 			}

@@ -43,6 +43,10 @@ public class PRTADPrinterHWTypeBean extends PRTADPrinterHWTypeConverter
 
 	public static final String METHOD_mkPRTADPrinterHWRequest = "mkPRTADPrinterHWRequest";
 
+	/**
+	 * Gets a list of printers and splits that list.
+	 * @param exchange
+	 */
 	public void mkPRTADPrinterHWRequest(Exchange exchange)
 	{
 		final PrinterHWList printerHWList = exchange.getIn().getBody(PrinterHWList.class);

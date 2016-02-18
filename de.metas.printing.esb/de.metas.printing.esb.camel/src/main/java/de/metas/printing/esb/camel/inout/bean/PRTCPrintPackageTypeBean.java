@@ -69,14 +69,14 @@ public class PRTCPrintPackageTypeBean extends PRTCPrintPackageTypeConverter
 	public void mkPrintPackageFromXMLBean(final Exchange exchange)
 	{
 		final PRTCPrintPackageType printPckgAD = exchange.getIn().getBody(PRTCPrintPackageType.class);
-
+		
 		final PrintPackage printPckgPC = createPackageTypeResponse(printPckgAD);
 
 		logger.log(Level.FINE, "OUT body: {0}", printPckgPC);
 
 		exchange.getOut().setBody(printPckgPC, PrintPackage.class);
 
-		logger.log(Level.FINE, "\n\n\n\n AFTER mkPrintPackage: PRTCPrintPackageType->PrintPackage\n\n\n\n");
+		logger.log(Level.FINE, "AFTER mkPrintPackage: PRTCPrintPackageType->PrintPackage");
 	}
 
 }

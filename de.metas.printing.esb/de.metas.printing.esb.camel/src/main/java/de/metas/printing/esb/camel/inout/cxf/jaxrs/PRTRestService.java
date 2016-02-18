@@ -10,12 +10,12 @@ package de.metas.printing.esb.camel.inout.cxf.jaxrs;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,32 +31,43 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import de.metas.printing.esb.api.LoginRequest;
+import de.metas.printing.esb.api.LoginResponse;
 import de.metas.printing.esb.api.PRTRestServiceConstants;
+import de.metas.printing.esb.api.PrintJobInstructionsConfirm;
+import de.metas.printing.esb.api.PrintPackage;
+import de.metas.printing.esb.api.PrinterHWList;
 
+/**
+ * This class defines the printing service's web service interface.
+ *
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 @Path("/printing/")
 public class PRTRestService
 {
 	/**
 	 * Sends feedback regarding the print job to ADempiere.
-	 * 
+	 *
 	 * @param transactionId
 	 * @param input
 	 */
 	@POST
 	@Path(PRTRestServiceConstants.PATH_Login)
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.TEXT_PLAIN)
-	public void login(
+	@Produces(MediaType.APPLICATION_JSON)
+	public LoginResponse login(
 			@PathParam(PRTRestServiceConstants.PARAM_SessionId) int sessionId,
-			String input)
+			LoginRequest input)
 	{
-		// No body
+		return null;
 	}
 
 	/**
-	 * 
+	 *
 	 * Sends to ADempiere one AD_PrinterHW record (including media tray and media sizes) as a json string.
-	 * 
+	 *
 	 * @param sessionId
 	 * @param input
 	 * @return
@@ -66,23 +77,22 @@ public class PRTRestService
 	@Consumes(MediaType.APPLICATION_JSON)
 	public void addPrinterHW(
 			@PathParam(PRTRestServiceConstants.PARAM_SessionId) int sessionId,
-			String input)
+			PrinterHWList input)
 	{
 		// No body
 	}
 
 	/**
 	 * Retrieves the next print package by print job.
-	 * 
+	 *
 	 * @param printJobID
 	 * @param adSessionId
 	 * @return
 	 */
 	@POST
 	@Path(PRTRestServiceConstants.PATH_GetNextPrintPackage)
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.TEXT_PLAIN)
-	public String getNextPrintPackage(
+	@Produces(MediaType.APPLICATION_JSON)
+	public PrintPackage getNextPrintPackage(
 			@PathParam(PRTRestServiceConstants.PARAM_SessionId) int sessionId,
 			@PathParam(PRTRestServiceConstants.PARAM_TransactionId) String transactionId)
 	{
@@ -91,14 +101,13 @@ public class PRTRestService
 
 	/**
 	 * Returns a binary stream of data to be printed.
-	 * 
+	 *
 	 * @param PrintPackageID
 	 * @param adSessionId
 	 * @return
 	 */
 	@POST
 	@Path(PRTRestServiceConstants.PATH_GetPrintPackageData)
-	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getPrintPackageData(
 			@PathParam(PRTRestServiceConstants.PARAM_SessionId) int sessionId,
@@ -109,18 +118,17 @@ public class PRTRestService
 
 	/**
 	 * Sends feedback regarding the print job to ADempiere.
-	 * 
+	 *
 	 * @param transactionId
 	 * @param input
 	 */
 	@POST
 	@Path(PRTRestServiceConstants.PATH_SendPrintPackageResponse)
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.TEXT_PLAIN)
 	public void sendPrintPackageResponse(
 			@PathParam(PRTRestServiceConstants.PARAM_SessionId) int sessionId,
 			@PathParam(PRTRestServiceConstants.PARAM_TransactionId) String transactionId,
-			String input)
+			PrintJobInstructionsConfirm input)
 	{
 		// No body
 	}

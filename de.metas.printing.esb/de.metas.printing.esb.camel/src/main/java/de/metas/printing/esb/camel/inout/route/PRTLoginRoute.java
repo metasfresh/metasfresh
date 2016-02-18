@@ -52,7 +52,7 @@ public class PRTLoginRoute extends Xml2JsonRequestResponseRouteBuilder<LoginRequ
 		setJsonRequestConverter(LoginRequestConverter.instance);
 		setXmlResponseConverter(LoginResponseConverter.instance);
 		
-		setMarshalUnmarshalJSON(true);
+		setMarshalUnmarshalJSON(false); // it's done by the cxf component
 	}
 
 }

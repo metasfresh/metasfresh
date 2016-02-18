@@ -24,10 +24,8 @@ package de.metas.printing.esb.camel.inout.route;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
-import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.spi.DataFormat;
 
-import de.metas.printing.esb.api.PrinterHWList;
 import de.metas.printing.esb.base.jaxb.JAXBConstants;
 import de.metas.printing.esb.camel.commons.Constants;
 import de.metas.printing.esb.camel.inout.bean.PRTADPrinterHWTypeBean;
@@ -54,8 +52,9 @@ public class PRTPrinterHWRoute extends RouteBuilder
 
 		from(PRTRestServiceRoute.EP_PrinterHW)
 				.routeId("add-printer-hw")
-				// unmarshal the POSTed arguments
-				.unmarshal().json(JsonLibrary.Jackson, PrinterHWList.class)
+				
+				// note: unmarshaling the POSTed arguments is already done by the cxf component
+								
 				// POST POJO to ADempiere POJO conversion
 				.split().method(PRTADPrinterHWTypeBean.class, PRTADPrinterHWTypeBean.METHOD_mkPRTADPrinterHWRequest)
 				// marshal to ADempiere request format

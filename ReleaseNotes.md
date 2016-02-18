@@ -24,6 +24,8 @@ The actual release notes
 # Upcoming Release
 
 ##Features
+ - 09832 Allow the printing client to retry on error (106406507107)
+ - 09814 Send valid json to the printing client, also if there is an exception in the ESB (103239718792)
  - 09823 Tax Code Migration (107275491843)
     * implemented the database function "de.metas.async".executeSqlAsync(p_Sql text) as a tool to perform time-consuming SQL-migrations in the background
  - 09812 create report for daily packaging material balance (101400050316)
@@ -32,12 +34,22 @@ The actual release notes
 	* for a DESADV lines with unknown CUperTU, we can now set a default-value such a "1" per C_BPartner.
 	
 ##Fixes
+ - 09829 ESB sends HTTP code 204 to the printing client (108552946334)
  - 09281 create report for packaging material balance (106483495857)
     * the former version also showed for a partner also packgings that were not on a particular partner's contract
  - 09820 Header notification bar not shown in main menu (100919535984)
  - 09831 Exception in the Initial Setup Wizard (108054071490)
 
+##Instructions
+
+ - to use the latest printing ESB bundle (tasks 09829 and 09814), one needs to install the jackson-jaxrs-json provider in the OSGI container (smx):
+ ```
+bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-base/2.6.3 
+bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider/2.6.3
+ ```
+ 
 # metasfresh 4.2.1
+
  - 09281 create report for packaging material balance (106483495857) +it +feature
  - 09740 ADR revenue report by product categories (101851459609) +it +feature
  - 09819 Eliminate duplicated TaxBL and throw an informative exception if... (103899585460) +it +feature

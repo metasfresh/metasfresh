@@ -158,12 +158,17 @@
 			<version>${camel.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- To install this dependency in servicemix/fuse-esb, open the console and enter 
-			osgi:install mvn:org.codehaus.jackson/jackson-jaxrs/1.9.10 -->
+
+		<!-- needed to convert between json-strings and POJOs
+			To install in the OSGI container (smx), do
+			    bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-base/2.6.3 
+				bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider/2.6.3
+			If changing the version, please make sure there is also an OSGI bundle for the new version  
+		-->
 		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-jaxrs</artifactId>
-			<version>1.9.10</version>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<version>${jackson.version}</version>
 		</dependency>
 
 		<!-- Guava: needed for misc helper classes which ease development
@@ -184,7 +189,8 @@
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

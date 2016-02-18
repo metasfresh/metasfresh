@@ -149,9 +149,10 @@ public class PrintingEngine
 		}
 	}
 
-	private void print(final PrintPackage printPackage,
+	private void print(
+			final PrintPackage printPackage,
 			final PrintPackageInfo printPackageInfo,
-			final PrintablePDF printable)
+			final PrintablePDF printable) throws PrinterException
 	{
 		logger.log(Level.FINE, "Printing {0}", printPackageInfo);
 
@@ -159,10 +160,6 @@ public class PrintingEngine
 		printRequest.setPrintJobName("adempiere-job-" + printPackageInfo.toString());
 		printRequest.setPrintable(printable);
 		printRequest.setNumPages(printable.getNumPages());
-		//
-		// Resolve print service
-		resolvePrintService(printRequest);
-
 		//
 		// Attribute: Page Range
 		printRequest.getAttributes().add(new PageRanges(printPackageInfo.getPageFrom(), printPackageInfo.getPageTo()));
@@ -183,14 +180,49 @@ public class PrintingEngine
 			printRequest.getAttributes().add(destination);
 		}
 
-		//
-		// Attribute: MediaTray
-		resolveMediaTray(printRequest);
+		// task 09832: retry on error
+		final Context context = Context.getContext();
+		final int retryCount = context.getPropertyAsInt(Context.CTX_Engine_RetryCount, Context.DEFAULT_RetryCount);
+		final int retryIntervalMS = context.getPropertyAsInt(Context.CTX_Engine_RetryIntervalMS, Context.DEFAULT_RetryIntervalMS);
 
-		print(printRequest);
+		for (int i = 0; i <= retryCount; i++)
+		{
+			try
+			{
+				// these might also throw an exception if the printer is not available temporarily. In this case we might also want to retry.
+				resolvePrintService(printRequest);
+				resolveMediaTray(printRequest);
+
+				print(printRequest);
+
+				break; // if we get here, we did the print and can stop retrying.
+			}
+			catch (final PrinterException e)
+			{
+				final int retriesLeft = retryCount - i;
+				if (retriesLeft <= 0)
+				{
+					throw e; // we exhausted our retries
+				}
+				logger.log(Level.WARNING, "Caught PrinterException while trying to print. " + retriesLeft + " retries left. Waiting " + retryIntervalMS + " millisseconds for the next retry", e);
+				sleep(retryIntervalMS);
+			}
+		}
 	}
 
-	private void print(final PrintPackageRequest request)
+	private void sleep(final int retryIntervalMS)
+	{
+		try
+		{
+			Thread.sleep(retryIntervalMS);
+		}
+		catch (final InterruptedException e1)
+		{
+			// do nothing
+		}
+	}
+
+	private void print(final PrintPackageRequest request) throws PrinterException
 	{
 		logger.log(Level.FINE, "Printing request {0}", request);
 
@@ -210,15 +242,8 @@ public class PrintingEngine
 		book.append(request.getPrintable(), pf, request.getNumPages());
 		pjob.setPageable(book);
 
-		try
-		{
-			pjob.setPrintService(request.getPrintService());
-			pjob.print(request.getAttributes());
-		}
-		catch (final PrinterException e)
-		{
-			throw new RuntimeException(e.getLocalizedMessage(), e);
-		}
+		pjob.setPrintService(request.getPrintService());
+		pjob.print(request.getAttributes());
 
 		// task 09618: allow us to configure the client to return an error even if everything went OK, so we can test
 		final String alwaysReturnError = Context.getContext().getProperty(Context.CTX_Testing_AlwaysReturnError, Context.DEFAULT_AlwaysReturnError);
@@ -227,11 +252,17 @@ public class PrintingEngine
 			logger.log(Level.INFO, "{0} is true, so we report an error, despite the print was OK", Context.CTX_Testing_AlwaysReturnError);
 
 			final String errorMsg = Context.getContext().getProperty(Context.CTX_Testing_ErrorMessage, Context.DEFAULT_ErrorMessage);
-			throw new RuntimeException(errorMsg);
+			throw new PrinterException(errorMsg);
 		}
 	}
 
-	private void resolvePrintService(final PrintPackageRequest request)
+	/**
+	 * Finds the {@link PrintService} for the name from the given <code>request</code>'s {@link PrintPackageInfo} and sets it to the request.
+	 *
+	 * @param request
+	 * @throws PrinterException
+	 */
+	private void resolvePrintService(final PrintPackageRequest request) throws PrinterException
 	{
 		final PrintPackageInfo printPackageInfo = request.getPrintPackageInfo();
 		final String requiredServiceName = printPackageInfo.getPrintService();
@@ -249,13 +280,12 @@ public class PrintingEngine
 
 		if (requiredService == null)
 		{
-			throw new RuntimeException("PrintService not found: " + requiredServiceName + ". Available print services are: " + Arrays.toString(printServices));
+			throw new PrinterException("PrintService not found: " + requiredServiceName + ". Available print services are: " + Arrays.toString(printServices));
 		}
-
 		request.setPrintService(requiredService);
 	}
 
-	private void resolveMediaTray(final PrintPackageRequest request)
+	private void resolveMediaTray(final PrintPackageRequest request) throws PrinterException
 	{
 		final int requiredTrayNo = request.getPrintPackageInfo().getTrayNumber();
 		// 04124 : Tray number 0 is used too. Use -1 for "No tray required".
@@ -285,7 +315,7 @@ public class PrintingEngine
 			}
 		}
 
-		throw new RuntimeException("No media tray '" + requiredTrayNo + "' found for " + printService + ". Available medias are: " + Arrays.toString(medias));
+		throw new PrinterException("No media tray '" + requiredTrayNo + "' found for " + printService + ". Available medias are: " + Arrays.toString(medias));
 	}
 
 	private PrintService[] _printServices = null;

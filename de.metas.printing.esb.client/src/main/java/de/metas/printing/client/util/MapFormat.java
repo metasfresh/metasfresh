@@ -81,7 +81,7 @@ import java.util.Set;
 public class MapFormat extends Format
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2846158232274136688L;
 
@@ -382,7 +382,7 @@ public class MapFormat extends Format
 	 */
 	public MapFormat setRightBrace(final String delimiter)
 	{
-		this.rightDelimiter = delimiter;
+		rightDelimiter = delimiter;
 		return this;
 	}
 
@@ -397,11 +397,11 @@ public class MapFormat extends Format
 	{
 		if (map == null)
 		{
-			this._argumentsMap = Collections.emptyMap();
+			_argumentsMap = Collections.emptyMap();
 		}
 		else
 		{
-			this._argumentsMap = new HashMap<>(map);
+			_argumentsMap = new HashMap<>(map);
 		}
 		return this;
 	}
@@ -412,10 +412,10 @@ public class MapFormat extends Format
 		private static final int BUFSIZE = 255;
 
 		/** Offsets to {} expressions */
-		private int[] offsets;
+		private final int[] offsets;
 
 		/** Keys enclosed by {} brackets */
-		private String[] arguments;
+		private final String[] arguments;
 
 		/** Max used offset */
 		private int maxOffset;
@@ -472,10 +472,10 @@ public class MapFormat extends Format
 
 			outpat.append(patternStr.substring(idx));
 
-			this.patternPrepared = outpat.toString();
+			patternPrepared = outpat.toString();
 		}
 
-		public String substring(int beginIndex, int endIndex)
+		public String substring(final int beginIndex, final int endIndex)
 		{
 			return patternPrepared.substring(beginIndex, endIndex);
 		}

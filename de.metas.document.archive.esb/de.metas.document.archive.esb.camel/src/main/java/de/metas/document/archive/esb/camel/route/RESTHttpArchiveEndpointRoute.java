@@ -29,7 +29,6 @@ import org.apache.camel.component.cxf.common.message.CxfConstants;
 
 import de.metas.document.archive.esb.api.IArchiveEndpoint;
 import de.metas.document.archive.esb.camel.commons.CamelConstants;
-import de.metas.document.archive.esb.camel.cxf.jaxrs.RESTHttpArchiveEndpoint;
 
 /**
  * RESTful routes for document archive
@@ -46,8 +45,6 @@ public class RESTHttpArchiveEndpointRoute extends RouteBuilder
 	@Override
 	public void configure() throws Exception
 	{
-//		org.apache.cxf.jaxrs.provider.ProviderFactory.getSharedInstance().setUserProviders(Arrays.asList(new JacksonJsonProvider()));
-
 		onException(Exception.class)
 				.handled(true)
 				// .transform(exceptionMessage())

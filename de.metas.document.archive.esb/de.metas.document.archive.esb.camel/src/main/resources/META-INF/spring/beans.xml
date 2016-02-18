@@ -115,7 +115,7 @@
 
 	<!-- notes: 
 	    ${http.domain} is taken from a properties file
-	    the id can be referen
+	    the id can be referenced in an endpoint URI
 	-->
 	<cxf:rsServer
 		id="rsServer"

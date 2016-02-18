@@ -25,14 +25,18 @@ package de.metas.printing.esb.camel.inout.route;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
-import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.spi.DataFormat;
 
-import de.metas.printing.esb.api.PrintJobInstructionsConfirm;
 import de.metas.printing.esb.base.jaxb.JAXBConstants;
 import de.metas.printing.esb.camel.commons.Constants;
 import de.metas.printing.esb.camel.inout.bean.PRTCPrintJobInstructionsConfirmTypeBean;
 
+/**
+ * This route forwards the printing client's response to metasfresh.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public class PRTPrinterPackageResponseRoute extends RouteBuilder
 {
 	@Override
@@ -49,8 +53,8 @@ public class PRTPrinterPackageResponseRoute extends RouteBuilder
 
 		from(PRTRestServiceRoute.EP_PrintPackageResponse)
 				.routeId("send-print-job-response")
-				// unmarshal the POSTed arguments
-				.unmarshal().json(JsonLibrary.Jackson, PrintJobInstructionsConfirm.class)
+				// unmarshalling was already done by cxf
+				// unmarshal().json(JsonLibrary.Jackson, PrintJobInstructionsConfirm.class)
 				// POST POJO to ADempiere POJO conversion
 				.split().method(PRTCPrintJobInstructionsConfirmTypeBean.class, PRTCPrintJobInstructionsConfirmTypeBean.METHOD_mkPRTADPrintPackageResponseRequest)
 				// marshal to ADempiere request format

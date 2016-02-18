@@ -22,21 +22,19 @@ package de.metas.printing.esb.camel.inout.route;
  * #L%
  */
 
-
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.common.message.CxfConstants;
 
 import de.metas.printing.esb.api.PRTRestServiceConstants;
 import de.metas.printing.esb.camel.commons.Constants;
-import de.metas.printing.esb.camel.processor.route.AddPrinterHWInputMessageProcessor;
 import de.metas.printing.esb.camel.processor.route.SessionIdProcessor;
 import de.metas.printing.esb.camel.processor.route.TransactionIdProcessor;
 
 /**
- * RESTful routes for the printing client
- *
- * @author al
+ * Sets up the cxf endpoint and decides to which specific routes the request shall be forwarded.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
  *
  */
 public class PRTRestServiceRoute extends RouteBuilder
@@ -51,10 +49,6 @@ public class PRTRestServiceRoute extends RouteBuilder
 	@Override
 	public void configure()
 	{
-		// FIXME: this is not recognize for some reason?!?!?!
-//		final org.apache.cxf.jaxrs.provider.ProviderFactory jaxrsProvidersFactory = org.apache.cxf.jaxrs.provider.ProviderFactory.getSharedInstance();
-//		jaxrsProvidersFactory.setUserProviders(Arrays.asList(new JacksonJsonProvider()));
-
 		onException(Exception.class)
 				.handled(true)
 				.transform(exceptionMessage())
@@ -65,18 +59,18 @@ public class PRTRestServiceRoute extends RouteBuilder
 		// @formatter:off
 		from(Constants.EP_CXF_RS)
 				.setExchangePattern(ExchangePattern.InOut)
-
+							
 				// store the sessionID in the header
 				.process(SessionIdProcessor.instance)
 
 				// detect from which RESTful controller the request is coming from
 				.choice()
 					.routeId("rest-operation-switch")
+					
 					.when(header(CxfConstants.OPERATION_NAME).isEqualTo(PRTRestServiceConstants.OPERATION_Login))
 						.to(PRTLoginRoute.EP_Client_Login)
+						
 					.when(header(CxfConstants.OPERATION_NAME).isEqualTo(PRTRestServiceConstants.OPERATION_AddPrinterHW))
-						// first make sure to set the body as the input string to prevent any unfortunate mishaps
-						.process(new AddPrinterHWInputMessageProcessor())
 						// send the data to adempiere
 						.to(EP_PrinterHW)
 						// return status 200 (success) regardless of the outcome
@@ -95,8 +89,9 @@ public class PRTRestServiceRoute extends RouteBuilder
 							//
 							.when(header(CxfConstants.OPERATION_NAME).isEqualTo(PRTRestServiceConstants.OPERATION_SendPrintPackageResponse))
 								.to(EP_PrintPackageResponse)
-								// return status 200 (success) regardless of the outcome
-								.process(RestHTTPResponse200.instance);
+								
+							// return status 200 (success) regardless of the outcome
+							.process(RestHTTPResponse200.instance);
 		// @formatter:on
 	}
 }

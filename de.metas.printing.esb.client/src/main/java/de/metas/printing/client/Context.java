@@ -59,6 +59,14 @@ public class Context implements IContext
 	public static final String DEFAULT_Dont_RespondAfterPrinting = Boolean.FALSE.toString();
 	// task 09618 end
 
+	// task 09832 begin
+	public static final String CTX_Engine_RetryCount = CTX_ROOT + ".engine.retryCount";
+	public static final int DEFAULT_RetryCount = 3;
+
+	public static final String CTX_Engine_RetryIntervalMS = CTX_ROOT + ".engine.retryIntervalMs";
+	public static final int DEFAULT_RetryIntervalMS = 5000;
+	// task 09832 end
+
 	/**
 	 * Used to get the {@link IUserInterface}
 	 */

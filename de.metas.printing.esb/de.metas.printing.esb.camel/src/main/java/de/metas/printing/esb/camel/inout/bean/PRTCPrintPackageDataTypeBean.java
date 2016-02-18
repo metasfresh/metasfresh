@@ -62,11 +62,11 @@ public class PRTCPrintPackageDataTypeBean extends PRTCPrintPackageDataTypeConver
 
 		final JAXBElement<PRTCPrintPackageDataType> outBody = factory.createPRTCPrintPackageData(printPackage);
 
-		logger.log(Level.INFO, "OUT body: {0}", outBody);
+		logger.log(Level.FINE, "OUT body: {0}", outBody);
 
 		exchange.getOut().setBody(outBody);
 
-		logger.log(Level.INFO, "\n\n\n\n AFTER createPRTCPrintPackageDataTypeRequest: initial request->PRTCPrintPackageLookupTransactionIDType\n\n\n\n");
+		logger.log(Level.FINE, "AFTER createPRTCPrintPackageDataTypeRequest: initial request->PRTCPrintPackageLookupTransactionIDType");
 	}
 
 	/**
