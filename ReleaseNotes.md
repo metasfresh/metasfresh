@@ -34,7 +34,7 @@ The actual release notes
 # metasfresh 4.3.2
 
 ##Features
-
+ - 09828 Salesgroups report add a filter for domestic/foreign country (101738461475)
  - 09832 Allow the printing client to retry on error (106406507107)
  - 09814 Send valid json to the printing client, also if there is an exception in the ESB (103239718792)
  - 09823 Tax Code Migration (107275491843)
