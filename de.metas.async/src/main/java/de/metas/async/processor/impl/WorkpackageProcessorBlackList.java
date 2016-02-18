@@ -102,11 +102,11 @@ public class WorkpackageProcessorBlackList
 
 	public void addToBlacklist(final int packageProcessorId, String packageProcessorClassname, Exception e)
 	{
-		final ConfigurationException exception = e instanceof ConfigurationException ? (ConfigurationException)e : new ConfigurationException(e.getLocalizedMessage(), e);
+		final ConfigurationException exception = ConfigurationException.wrapIfNeeded(e);
 		final BlackListItem blacklistItemToAdd = new BlackListItem(packageProcessorId, packageProcessorClassname, exception);
 		blacklist.put(packageProcessorId, blacklistItemToAdd);
 
-		logger.log(Level.WARNING, "Processor blacklisted: " + blacklistItemToAdd);
+		logger.log(Level.WARNING, "Processor blacklisted: " + blacklistItemToAdd, exception);
 	}
 
 	public void removeFromBlacklist(final int packageProcessorId)

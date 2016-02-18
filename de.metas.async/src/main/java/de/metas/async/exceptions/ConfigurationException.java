@@ -33,6 +33,26 @@ import org.adempiere.exceptions.AdempiereException;
  */
 public class ConfigurationException extends AdempiereException
 {
+	public static final ConfigurationException wrapIfNeeded(final Throwable throwable)
+	{
+		if (throwable == null)
+		{
+			return null;
+		}
+		else if (throwable instanceof ConfigurationException)
+		{
+			return (ConfigurationException)throwable;
+		}
+		
+		final Throwable cause = extractCause(throwable);
+		if (cause != throwable)
+		{
+			return wrapIfNeeded(cause);
+		}
+
+		// default
+		return new ConfigurationException(cause.getLocalizedMessage(), cause);
+	}
 	/**
 	 * 
 	 */

@@ -24,6 +24,8 @@ The actual release notes
 # Upcoming Release
 
 ##Features
+ - 09823 Tax Code Migration (107275491843)
+    * implemented the database function "de.metas.async".executeSqlAsync(p_Sql text) as a tool to perform time-consuming SQL-migrations in the background
  - 09812 create report for daily packaging material balance (101400050316)
  - 09776 EDI - Receiver without ORDERS (100584995833)
     * we now can specify a default POReference value for orders that is autumatically set by the system, unless there already was another POReference set by a users of from an importnert order
@@ -34,7 +36,7 @@ The actual release notes
     * the former version also showed for a partner also packgings that were not on a particular partner's contract
  - 09820 Header notification bar not shown in main menu (100919535984)
  - 09831 Exception in the Initial Setup Wizard (108054071490)
- 
+
 # metasfresh 4.2.1
  - 09281 create report for packaging material balance (106483495857) +it +feature
  - 09740 ADR revenue report by product categories (101851459609) +it +feature

@@ -1404,11 +1404,25 @@ final class FactLine extends X_Fact_Acct
 			return;
 		}
 		
+		//
+		// Get context
+		final boolean isSOTrx;
+		final DocLine docLine = getDocLine();
+		if (docLine != null)
+		{
+			isSOTrx = docLine.isSOTrx();
+		}
+		else
+		{
+			final Doc doc = getDoc();
+			isSOTrx = doc.isSOTrx();
+		}
+		
 		final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
 		final VATCode vatCode = vatCodeDAO.findVATCode(VATCodeMatchingRequest.builder()
 				.setC_AcctSchema_ID(getC_AcctSchema_ID())
 				.setC_Tax_ID(taxId)
-				.setIsSOTrx(getDoc().isSOTrx())
+				.setIsSOTrx(isSOTrx)
 				.setDate(getDateAcct())
 				.build());
 		

@@ -28,6 +28,8 @@ import de.metas.async.processor.IWorkpackageSkipRequest;
 
 /**
  * Implementation responsible for processing given workPackage.
+ * 
+ * NOTE: don't extend this interface directly, but use {@link WorkpackageProcessorAdapter}.
  */
 public interface IWorkpackageProcessor
 {

@@ -95,7 +95,7 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 		}
 		catch (final Exception e)
 		{
-			final ConfigurationException exception = e instanceof ConfigurationException ? (ConfigurationException)e : new ConfigurationException(e.getLocalizedMessage(), e);
+			final ConfigurationException exception = ConfigurationException.wrapIfNeeded(e);
 			if (checkBlacklist)
 			{
 				blacklist.addToBlacklist(packageProcessorId, packageProcessorClassname, exception);

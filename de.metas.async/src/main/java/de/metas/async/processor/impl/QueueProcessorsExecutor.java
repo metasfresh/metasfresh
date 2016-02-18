@@ -49,6 +49,8 @@ import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.concurrent.Threads;
 import org.compiere.util.CLogger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.jmx.JMXQueueProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
@@ -63,7 +65,8 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
  * @author tsa
  * 
  */
-class QueueProcessorsExecutor implements IQueueProcessorsExecutor
+@VisibleForTesting
+public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 {
 	private static final transient CLogger logger = CLogger.getCLogger(QueueProcessorsExecutor.class);
 
