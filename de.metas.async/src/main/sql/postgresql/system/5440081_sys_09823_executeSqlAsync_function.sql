@@ -100,5 +100,5 @@ LANGUAGE plpgsql VOLATILE COST 100;
 
 COMMENT ON FUNCTION "de.metas.async".executeSqlAsync(p_Sql text)
 IS 'Enqueues the given SQL to metasfresh async executor which will execute the query as many times until the SQL update count gets ZERO.
- Check the declared p_* valriables at the function head to see which which client, org etc the work packages are created;
+ Check the declared p_* valriables at the function head to see which which client, org etc the work packages are created;'
 
