@@ -48,6 +48,6 @@ GROUP BY
 	
 	
 ORDER BY
-	productsalesgroup ASC$BODY$
+	asi_inausland,productsalesgroup ASC$BODY$
 LANGUAGE sql STABLE;
 
