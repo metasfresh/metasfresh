@@ -33,7 +33,8 @@ The actual release notes
  - 09281 create report for packaging material balance (106483495857)
     * the former version also showed for a partner also packgings that were not on a particular partner's contract
  - 09820 Header notification bar not shown in main menu (100919535984)
-
+ - 09831 Exception in the Initial Setup Wizard (108054071490)
+ 
 # metasfresh 4.2.1
  - 09281 create report for packaging material balance (106483495857) +it +feature
  - 09740 ADR revenue report by product categories (101851459609) +it +feature

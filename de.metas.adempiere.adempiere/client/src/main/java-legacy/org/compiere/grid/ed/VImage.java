@@ -189,7 +189,7 @@ public class VImage extends JButton
 	@Override
 	public String getDisplay()
 	{
-		return m_mImage.getName();
+		return m_mImage == null ? "" : m_mImage.getName();
 	}   //  getDisplay
 
 	/**
