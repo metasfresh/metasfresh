@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="288"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -177,7 +177,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band height="75" splitType="Stretch">
+		<band height="93" splitType="Stretch">
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
 				<reportElement uuid="85172f8d-b93e-4eda-9c02-1a7cddd32913" key="textField-62" x="529" y="21" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
@@ -217,6 +217,16 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
 			</textField>
+			<subreport isUsingCache="true">
+				<reportElement uuid="a1ef87ac-5fb9-4f7e-a50e-e520bc29995d" key="subreport-7" x="0" y="0" width="595" height="93">
+					<printWhenExpression><![CDATA[new Boolean($R{showfooter}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
+			</subreport>
 		</band>
 	</pageFooter>
 	<summary>

@@ -34,6 +34,8 @@ The actual release notes
 # metasfresh 4.3.2
 
 ##Features
+ - 09826 Take out foot note in purchase order Jasper
+    * it's now configurable via property file
  - 09827 Do not show ADR Keine/Leer on HU material receipt label
  - 09828 Salesgroups report add a filter for domestic/foreign country (101738461475)
  - 09832 Allow the printing client to retry on error (106406507107)

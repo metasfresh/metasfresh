@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.1000000000000023"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="96"/>
+	<property name="ireport.y" value="136"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -178,7 +178,7 @@ LIMIT 1
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="75">
+		<band height="93">
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
 				<reportElement uuid="85172f8d-b93e-4eda-9c02-1a7cddd32913" key="textField-62" x="529" y="21" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
@@ -218,10 +218,20 @@ LIMIT 1
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
 			</textField>
+			<subreport isUsingCache="true">
+				<reportElement uuid="a1ef87ac-5fb9-4f7e-a50e-e520bc29995d" key="subreport-7" x="-1" y="0" width="595" height="93">
+					<printWhenExpression><![CDATA[new Boolean($R{showfooter}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
+			</subreport>
 		</band>
 	</pageFooter>
 	<lastPageFooter>
-		<band height="150">
+		<band height="160">
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement uuid="2b34c661-46f4-425a-8790-fe45f9153ba1" key="textField-63" x="508" y="96" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
@@ -281,6 +291,16 @@ LIMIT 1
 			<line>
 				<reportElement uuid="27908fa3-b612-4e95-b799-091a08d11d7c" x="156" y="18" width="397" height="1"/>
 			</line>
+			<subreport isUsingCache="true">
+				<reportElement uuid="a1ef87ac-5fb9-4f7e-a50e-e520bc29995d" key="subreport-7" x="0" y="67" width="595" height="93">
+					<printWhenExpression><![CDATA[new Boolean($R{showfooter}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
+			</subreport>
 		</band>
 	</lastPageFooter>
 </jasperReport>

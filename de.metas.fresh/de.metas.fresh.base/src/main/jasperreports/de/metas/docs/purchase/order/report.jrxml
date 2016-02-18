@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.1000000000000003"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="144"/>
+	<property name="ireport.y" value="240"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -245,7 +245,9 @@ WHERE
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<subreport isUsingCache="true">
-				<reportElement uuid="a1ef87ac-5fb9-4f7e-a50e-e520bc29995d" key="subreport-7" x="0" y="0" width="595" height="93"/>
+				<reportElement uuid="a1ef87ac-5fb9-4f7e-a50e-e520bc29995d" key="subreport-7" x="0" y="0" width="595" height="93">
+					<printWhenExpression><![CDATA[new Boolean($R{showfooter}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
