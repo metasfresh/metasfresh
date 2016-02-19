@@ -13,8 +13,7 @@ CREATE TABLE report.Salesgroups_Report_Sub
 	qtyinvoiceddetailhandel	numeric,	
 	revenuediscounter numeric,			
 	revenuegastro numeric,			
-	revenuedetailhandel numeric,
-	asi_inausland character varying
+	revenuedetailhandel numeric
 	
 )
 WITH (
@@ -34,14 +33,13 @@ SELECT
 	sum(qtyinvoiceddetailhandel),	
 	sum(revenuediscounter),		
 	sum(revenuegastro),		
-	sum(revenuedetailhandel),
-	asi_inausland
+	sum(revenuedetailhandel)
 	
 FROM report.RV_Salesgroups rv
 JOIN C_UOM uom on uom.C_UOM_ID = rv.uom
 WHERE rv.DateInvoiced >= $1 AND rv.DateInvoiced <= $2
 GROUP BY 	
-	asi_inausland, productsalesgroup, uom.name
+	productsalesgroup, uom.name
 	
 	
 	

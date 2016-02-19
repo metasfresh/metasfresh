@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="5ad069ca-070c-4a0d-8ec7-5bee6b8a2ff0">
-	<property name="ireport.zoom" value="2.1435888100000016"/>
+	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
 	<queryString>
-		<![CDATA[select * from report.Salesgroups($P{DateFrom}, $P{DateTo})]]>
+		<![CDATA[select * from report.Salesgroups($P{DateFrom}, $P{DateTo});]]>
 	</queryString>
 	<field name="productsalesgroup" class="java.lang.String"/>
 	<field name="uom" class="java.lang.String"/>
@@ -16,7 +16,6 @@
 	<field name="revenuediscounter" class="java.math.BigDecimal"/>
 	<field name="revenuegastro" class="java.math.BigDecimal"/>
 	<field name="revenuedetailhandel" class="java.math.BigDecimal"/>
-	<field name="asi_inausland" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -131,7 +130,7 @@
 			<staticText>
 				<reportElement uuid="3f7c01f5-8d31-42f5-b101-cb8b346efc94" x="226" y="36" width="55" height="30"/>
 				<textElement/>
-				<text><![CDATA[In/Ausland]]></text>
+				<text><![CDATA[Inland]]></text>
 			</staticText>
 		</band>
 	</pageHeader>
@@ -201,7 +200,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{asi_inausland}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Inland"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

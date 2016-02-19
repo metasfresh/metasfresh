@@ -24,7 +24,9 @@ The actual release notes
 # Upcoming Release
 
 ##Features
-
+ 
+ - 09837 Report Gebinde Übersicht change (103471986337)
+ 
 ##Fixes
 
 ##Instructions
