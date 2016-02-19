@@ -3,8 +3,8 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.1204880918624327"/>
-	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.x" value="256"/>
+	<property name="ireport.y" value="96"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -57,11 +57,11 @@ FROM
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
 	</variable>
-	<variable name="outgoingtotal" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
+	<variable name="outgoingtotal" class="java.math.BigDecimal" resetType="Group" resetGroup="Gebinde" calculation="Sum">
 		<variableExpression><![CDATA[$F{outgoing}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
-	<variable name="incomingtotal" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
+	<variable name="incomingtotal" class="java.math.BigDecimal" resetType="Group" resetGroup="Gebinde" calculation="Sum">
 		<variableExpression><![CDATA[$F{incoming}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>

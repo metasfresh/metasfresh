@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/hubalance/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.3166562715304027"/>
+	<property name="ireport.zoom" value="2.332536901048674"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -28,89 +28,25 @@
 		<![CDATA[SELECT
 	*
 FROM
-	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details(
+	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Recap(
 		$P{M_Material_Balance_Config_ID}, $P{C_BPartner_ID},  $P{C_BP_Group_ID}, $P{M_Product_ID}, $P{IsRefundableConditions},$P{StartDate}, $P{EndDate}, now()::date
-	);]]>
+	)
+	order by name;]]>
 	</queryString>
-	<field name="bpartner" class="java.lang.String"/>
-	<field name="documentno" class="java.lang.String"/>
-	<field name="printname" class="java.lang.String"/>
-	<field name="movementdate" class="java.sql.Date"/>
 	<field name="name" class="java.lang.String"/>
 	<field name="outgoing" class="java.math.BigDecimal"/>
 	<field name="incoming" class="java.math.BigDecimal"/>
-	<field name="carryoutgoing" class="java.math.BigDecimal"/>
 	<field name="carryincoming" class="java.math.BigDecimal"/>
-	<field name="uomsymbol" class="java.lang.String"/>
+	<field name="carryoutgoing" class="java.math.BigDecimal"/>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
 	</variable>
-	<variable name="TotalIncoming" class="java.math.BigDecimal" resetType="Group" resetGroup="Gebinde" calculation="Sum">
-		<variableExpression><![CDATA[$F{incoming}]]></variableExpression>
-		<initialValueExpression><![CDATA[new BigDecimal (0)]]></initialValueExpression>
-	</variable>
-	<variable name="TotalOutgoing" class="java.math.BigDecimal" resetType="Group" resetGroup="Gebinde" calculation="Sum">
-		<variableExpression><![CDATA[$F{outgoing}]]></variableExpression>
-	</variable>
 	<group name="Gebinde">
 		<groupExpression><![CDATA[$F{name}]]></groupExpression>
-		<groupFooter>
-			<band height="12">
-				<printWhenExpression><![CDATA[$F{carryincoming}
-    .add($V{TotalIncoming})
-    .subtract(
-        $F{carryoutgoing}
-        .add($V{TotalOutgoing})
-    ).floatValue() != 0]]></printWhenExpression>
-				<textField isBlankWhenNull="true">
-					<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="481" y="0" width="82" height="12" forecolor="#000000">
-						<printWhenExpression><![CDATA[$F{carryoutgoing}
-    .add($V{TotalOutgoing})
-    .subtract(
-        $F{carryincoming}
-        .add( $V{TotalIncoming} )
-    )
-    .floatValue() >= 0]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{carryoutgoing}
-    .add($V{TotalOutgoing})
-    .subtract(
-        $F{carryincoming}
-        .add($V{TotalIncoming})
-    )]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true">
-					<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="0" width="92" height="12" forecolor="#000000">
-						<printWhenExpression><![CDATA[$F{carryincoming}
-    .add($V{TotalIncoming})
-    .subtract(
-        $F{carryoutgoing}
-        .add($V{TotalOutgoing})
-    ).floatValue() >= 0]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{carryincoming}
-    .add($V{TotalIncoming})
-    .subtract(
-        $F{carryoutgoing}
-        .add($V{TotalOutgoing})
-    )]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="256" y="0" width="126" height="12" forecolor="#000000"/>
-					<textElement markup="none">
-						<font size="9" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
-				</textField>
-			</band>
-		</groupFooter>
+	</group>
+	<group name="gebindeRecap">
+		<groupExpression><![CDATA[$F{name}]]></groupExpression>
 	</group>
 	<pageHeader>
 		<band height="12" splitType="Stretch">
@@ -123,4 +59,56 @@ FROM
 			</textField>
 		</band>
 	</pageHeader>
+	<detail>
+		<band height="25">
+			<textField>
+				<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="247" y="0" width="126" height="12" forecolor="#000000"/>
+				<textElement markup="none">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0;-#,##0" isBlankWhenNull="true">
+				<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="0" width="92" height="12" forecolor="#000000">
+					<printWhenExpression><![CDATA[$F{carryincoming}
+    .add($F{incoming})
+    .subtract(
+        $F{carryoutgoing}
+        .add($F{outgoing})
+    )
+
+   .floatValue() >= 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{carryincoming}
+    .add($F{incoming})
+    .subtract(
+        $F{carryoutgoing}
+        .add($F{outgoing})
+    )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="476" y="0" width="82" height="12" forecolor="#000000">
+					<printWhenExpression><![CDATA[$F{carryoutgoing}
+    .add($F{outgoing})
+    .subtract(
+        $F{carryincoming}
+        .add($F{incoming})
+    )
+    .floatValue() >= 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{carryoutgoing}
+    .add($F{outgoing})
+    .subtract(
+        $F{carryincoming}
+        .add($F{incoming})
+    )]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
 </jasperReport>
