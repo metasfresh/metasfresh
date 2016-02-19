@@ -26,6 +26,8 @@ The actual release notes
 ##Features
  
  - 09837 Report Gebinde Übersicht change (103471986337)
+ - 09740 ADR revenue report by product categories (101851459609) +it +feature
+    * added french translations
  
 ##Fixes
 
