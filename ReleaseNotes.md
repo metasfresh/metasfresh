@@ -53,6 +53,8 @@ The actual release notes
     * the former version also showed for a partner also packgings that were not on a particular partner's contract
  - 09820 Header notification bar not shown in main menu (100919535984)
  - 09831 Exception in the Initial Setup Wizard (108054071490)
+ - In process parameter panel, display VImage preview, but bounded to a maximum size
+ - ClientSetup: company name chages were not persisted
 
 ##Instructions
 
