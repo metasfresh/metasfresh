@@ -114,16 +114,6 @@ public final class HUConstants
 	public static final String DIM_PP_Order_ProductAttribute_To_Transfer = "PP_Order_ProductAttribute_Transfer";
 
 	/**
-	 * The <code>M_Attribute.Value</code> of the HU attribute that contains the ID of the material receipt <code>M_InOutLine</code> with which the given HU was received.
-	 */
-	public static final String ATTRIBUTE_VALUE_HU_ReceiptInOutLine_ID = "HU_ReceiptInOutLine_ID";
-
-	/**
-	 * The <code>M_Attribute.Value</code> of the HU attribute that contains the ID of the purchase <code>C_OrderLine</code> where the given HU was ordered.
-	 */
-	public static final String ATTRIBUTE_VALUE_HU_PurchaseOrderLine_ID = "HU_PurchaseOrderLine_ID";
-
-	/**
 	 * @task http://dewiki908/mediawiki/index.php/09106_Material-Vorgangs-ID_nachtr%C3%A4glich_erfassen_%28101556035702%29
 	 */
 	public static final String PARAM_CHANGE_HU_MAterial_Tracking_ID = M_Material_Tracking_CreateOrUpdate_ID.class.getSimpleName() + ".CHANGE_HUs";

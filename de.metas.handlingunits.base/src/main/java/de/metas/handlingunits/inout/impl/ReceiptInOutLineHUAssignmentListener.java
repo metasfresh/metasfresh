@@ -10,12 +10,12 @@ package de.metas.handlingunits.inout.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -118,6 +118,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 	 * <li>changing the HU's status to {@link X_M_HU#HUSTATUS_Active}.
 	 * <li>setting HU's locator to <code>receiptLocatorId</code>
 	 * <li>reseting the vendor: HU's BPartner is set to null, subproducer attribute is set to HU's BPartner if it was not set before (see {@link #resetVendor(IHUContext, I_M_HU)})
+	 * <li>setting the HU's {@link Constants#ATTR_PurchaseOrderLine_ID} and {@link Constants#ATTR_ReceiptInOutLine_ID} attributes.
 	 * </ul>
 	 *
 	 * NOTE: we assume this method is executed in a {@link IHUContextProcessor}.
@@ -141,7 +142,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		//
 		// Update BPartner
 		resetVendor(huContext, hu);
-		
+
 		//
 		// Set PurchaseOrderLine_ID and ReceiptInOutLine_ID attributes (task 09741)
 		{
@@ -152,7 +153,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 			{
 				huAttributeStorage.setValue(attr_PurchaseOrderLine, receiptLine.getC_OrderLine_ID());
 			}
-			
+
 			final org.compiere.model.I_M_Attribute attr_ReceiptInOutLine = huAttributeStorage.getAttributeByValueKeyOrNull(Constants.ATTR_ReceiptInOutLine_ID);
 			if (attr_ReceiptInOutLine != null)
 			{

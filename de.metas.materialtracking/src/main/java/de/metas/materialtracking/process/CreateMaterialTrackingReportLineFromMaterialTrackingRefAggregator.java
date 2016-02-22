@@ -54,7 +54,8 @@ public class CreateMaterialTrackingReportLineFromMaterialTrackingRefAggregator e
 	}
 
 	@Override
-	protected I_M_Material_Tracking_Report_Line createGroup(final Object itemHashKey,
+	protected I_M_Material_Tracking_Report_Line createGroup(
+			final Object itemHashKey,
 			final MaterialTrackingReportAgregationItem items)
 	{
 		final IMaterialTrackingReportDAO materialTrackingReportDAO = Services.get(IMaterialTrackingReportDAO.class);

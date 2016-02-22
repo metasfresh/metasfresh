@@ -41,7 +41,7 @@ public interface IHUInOutDAO extends ISingletonService
 
 	/**
 	 * Returns the inoutline that is referenced by the given <code>hu</code>'s {@link HUConstants#ATTRIBUTE_VALUE_HU_ReceiptInOutLine_ID} value,<br>
-	 * or <code>null</code> if there is no such (active!) inout line.
+	 * or <code>null</code> if there is no such (active!) inout line, <b>or</b> if the inOutline dies not belong to an <code>MInOut</code> that is completed or closed.
 	 *
 	 * @param hu
 	 * @return

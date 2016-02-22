@@ -10,18 +10,19 @@ package de.metas.handlingunits.attribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import groovy.time.BaseDuration.From;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -60,14 +62,19 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
  * <li>automatically loads attributes from underlying {@link IHUAttributesDAO}, if they does not already exist in our local cache
  * <li>on save, instead of directly saving them we are just adding them to the cache/buffer. Later, on {@link #flush()} everything will be saved.
  * </ul>
- * 
+ *
  * NOTE to developer: Please make sure all public methods are synchronized.
- * 
+ *
  * @author tsa
  *
  */
 public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 {
+	/**
+	 * Set this to <code>true</code> in {@link ISysConfigBL} to avoid M_HU_Attributes {@link From} not beeing saved, depending on your trxactions and stuff.
+	 */
+	public static final String SYSCONFIG_AutoFlushEnabledInitial = SaveDecoupledHUAttributesDAO.class.getName() + ".AutoflushEnabledInitial";
+
 	// services
 	private static final transient CLogger logger = CLogger.getCLogger(SaveDecoupledHUAttributesDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -75,7 +82,8 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	// Parameters
 	@ToStringBuilder(skip = true)
 	private final IHUAttributesDAO db;
-	private boolean _autoflushEnabled = false; // backward compatibile
+
+	private boolean _autoflushEnabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_AutoFlushEnabledInitial, false); // false to be backward compatible;
 	private boolean _incrementalFlush = false;
 
 	// Status
@@ -130,6 +138,11 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		return this;
 	}
 
+	/**
+	 *
+	 * @return <code>false</code> by default, for performance reasons. Note that we do call {@link #flush()} on commit, see the <code>SaveOnCommitHUAttributesDAOTrxListener</code> in
+	 *         {@link SaveOnCommitHUAttributesDAO}.
+	 */
 	public synchronized final boolean isAutoflushEnabled()
 	{
 		return this._autoflushEnabled;
@@ -137,12 +150,12 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 	/**
 	 * Enables/Disabled incremental flush.
-	 * 
+	 *
 	 * Incremental flush means that {@link #flush()} will save only the objects which were enqueued to be saved after last flush.
 	 * If this functionality is not enabled (default), all objects from internal flush are tried to be saved on {@link #flush()}.
-	 * 
+	 *
 	 * NOTE: in future, i think we can consider to take out this method ALWAYS do incremental flush.
-	 * 
+	 *
 	 * @param incrementalFlush
 	 * @return
 	 */
@@ -462,7 +475,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 	/**
 	 * Debugging method which logs in console the given huAttribute.
-	 * 
+	 *
 	 * @param message
 	 * @param huAttribute
 	 */

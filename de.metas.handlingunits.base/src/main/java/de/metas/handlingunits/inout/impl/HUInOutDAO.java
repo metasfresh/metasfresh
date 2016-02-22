@@ -37,8 +37,9 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOut;
 
-import de.metas.handlingunits.HUConstants;
+import de.metas.document.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -99,11 +100,14 @@ public class HUInOutDAO implements IHUInOutDAO
 	public I_M_InOutLine retrieveInOutLineOrNull(final I_M_HU hu)
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-		final I_M_Attribute attrReceiptInOutLine = attributeDAO.retrieveAttributeByValue(ctx, HUConstants.ATTRIBUTE_VALUE_HU_ReceiptInOutLine_ID, I_M_Attribute.class);
+		final I_M_Attribute attrReceiptInOutLine = attributeDAO.retrieveAttributeByValue(ctx, Constants.ATTR_ReceiptInOutLine_ID, I_M_Attribute.class);
 
-		final I_M_HU_Attribute huAttrReceiptInOutLine = Services.get(IHUAttributesDAO.class).retrieveAttribute(hu, attrReceiptInOutLine);
+
+		final I_M_HU_Attribute huAttrReceiptInOutLine = huAttributesDAO.retrieveAttribute(hu, attrReceiptInOutLine);
 		if (huAttrReceiptInOutLine.getValueNumber() == null || huAttrReceiptInOutLine.getValueNumber().signum() <= 0)
 		{
 			return null;
@@ -116,6 +120,10 @@ public class HUInOutDAO implements IHUInOutDAO
 			return null;
 		}
 
+		if(!docActionBL.isStatusCompletedOrClosed(inoutLine.getM_InOut()))
+		{
+			return null;
+		}
 		return inoutLine;
 	}
 
