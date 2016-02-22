@@ -22,6 +22,8 @@ package de.metas.product.impl;
  * #L%
  */
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -105,6 +107,27 @@ public class ProductDAO implements IProductDAO
 				.addEqualsFilter(I_M_Product.COLUMN_AD_Org_ID, org.getAD_Org_ID())
 				.create()
 				.firstOnly(I_M_Product.class);
+	}
+
+	@Override
+	public List<de.metas.product.model.I_M_Product> retrieveAllMappedProducts(final I_M_Product product)
+	{
+		final IProductMappingAware productMappingAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(product, IProductMappingAware.class);
+		if (productMappingAware.getM_Product_Mapping_ID() <= 0)
+		{
+			return Collections.emptyList();
+		}
+		if (!productMappingAware.getM_Product_Mapping().isActive())
+		{
+			return Collections.emptyList();
+		}
+
+		return Services.get(IQueryBL.class).createQueryBuilder(de.metas.product.model.I_M_Product.class, product)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(IProductMappingAware.COLUMNNAME_M_Product_Mapping_ID, productMappingAware.getM_Product_Mapping_ID())
+				.addNotEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.create()
+				.list(de.metas.product.model.I_M_Product.class);
 	}
 
 }

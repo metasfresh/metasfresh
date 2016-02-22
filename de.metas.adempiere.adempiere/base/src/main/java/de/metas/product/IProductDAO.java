@@ -22,6 +22,7 @@ package de.metas.product;
  * #L%
  */
 
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
@@ -52,4 +53,12 @@ public interface IProductDAO extends ISingletonService
 	 * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
 	I_M_Product retrieveMappedProductOrNull(I_M_Product product, I_AD_Org org);
+
+	/**
+	 * Retrieve all the products from all the organizations that have the same mapping as the given product
+	 * 
+	 * @param product
+	 * @return list of the products if found, empty list otherwise
+	 */
+	List<de.metas.product.model.I_M_Product> retrieveAllMappedProducts(I_M_Product product);
 }
