@@ -165,6 +165,29 @@ public interface I_M_Material_Tracking_Report_Line
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Zeilen-Aggregationsmerkmal.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLineAggregationKey (java.lang.String LineAggregationKey);
+
+	/**
+	 * Get Zeilen-Aggregationsmerkmal.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLineAggregationKey();
+
+    /** Column definition for LineAggregationKey */
+    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line, Object> COLUMN_LineAggregationKey = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line, Object>(I_M_Material_Tracking_Report_Line.class, "LineAggregationKey", null);
+    /** Column name LineAggregationKey */
+    public static final String COLUMNNAME_LineAggregationKey = "LineAggregationKey";
+
+	/**
 	 * Set Ausprägung Merkmals-Satz.
 	 * Instanz des Merkmals-Satzes zum Produkt
 	 *

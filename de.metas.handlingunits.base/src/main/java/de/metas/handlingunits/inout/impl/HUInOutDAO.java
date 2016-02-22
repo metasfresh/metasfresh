@@ -10,32 +10,39 @@ package de.metas.handlingunits.inout.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOut;
 
+import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutDAO;
 
@@ -73,7 +80,7 @@ public class HUInOutDAO implements IHUInOutDAO
 		final IQueryBuilder<de.metas.handlingunits.model.I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(de.metas.handlingunits.model.I_M_InOutLine.class, inOut)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_IsPackagingMaterial, true);
+				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial, true);
 
 		queryBuilder.orderBy().addColumn(org.compiere.model.I_M_InOutLine.COLUMNNAME_Line);
 
@@ -87,4 +94,29 @@ public class HUInOutDAO implements IHUInOutDAO
 		return retrievePackingMaterialLinesQuery(inOut)
 				.match();
 	}
+
+	@Override
+	public I_M_InOutLine retrieveInOutLineOrNull(final I_M_HU hu)
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
+		final I_M_Attribute attrReceiptInOutLine = attributeDAO.retrieveAttributeByValue(ctx, HUConstants.ATTRIBUTE_VALUE_HU_ReceiptInOutLine_ID, I_M_Attribute.class);
+
+		final I_M_HU_Attribute huAttrReceiptInOutLine = Services.get(IHUAttributesDAO.class).retrieveAttribute(hu, attrReceiptInOutLine);
+		if (huAttrReceiptInOutLine.getValueNumber() == null || huAttrReceiptInOutLine.getValueNumber().signum() <= 0)
+		{
+			return null;
+		}
+
+		final int inOutLineId = huAttrReceiptInOutLine.getValueNumber().intValue();
+		final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(ctx, inOutLineId, I_M_InOutLine.class, ITrx.TRXNAME_ThreadInherited);
+		if (!inoutLine.isActive())
+		{
+			return null;
+		}
+
+		return inoutLine;
+	}
+
 }

@@ -5,7 +5,8 @@ import org.adempiere.util.ISingletonService;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line_Alloc;
-import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.materialtracking.model.I_M_InOutLine;
+import de.metas.materialtracking.process.MaterialTrackingReportAgregationItem;
 
 /*
  * #%L
@@ -31,22 +32,24 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 
 public interface IMaterialTrackingReportBL extends ISingletonService
 {
-	/**
-	 * Create a new report line based on a given material tracking ref
-	 * 
-	 * @param report
-	 * @param ref
-	 * @return the created line
-	 */
-	I_M_Material_Tracking_Report_Line createMaterialTrackingReportLine(I_M_Material_Tracking_Report report, I_M_Material_Tracking_Ref ref);
 
 	/**
-	 * Create {@link I_M_Material_Tracking_Report_Line_Alloc} entries between a material tracking line and a material tracking ref.
+	 * Create a new material tracking report line of the given report and an ASI created from the significant attribute instances of the given iol's ASI. Also set the lineAggregationKey in the new
+	 * line.
 	 * 
-	 * @param line
-	 * @param ref
-	 * @return
+	 * @param report
+	 * @param iol
+	 * @param lineAggregationKey
+	 * @return the created line
 	 */
-	I_M_Material_Tracking_Report_Line_Alloc createMaterialTrackingReportLineAllocation(I_M_Material_Tracking_Report_Line line, I_M_Material_Tracking_Ref ref);
+	I_M_Material_Tracking_Report_Line createMaterialTrackingReportLine(I_M_Material_Tracking_Report report, I_M_InOutLine iol, String lineAggregationKey);
+
+	/**
+	 * Create {@link I_M_Material_Tracking_Report_Line_Alloc} entries between a material tracking line and the given {@link MaterialTrackingReportAgregationItem}
+	 * 
+	 * @param reportLine
+	 * @param items
+	 */
+	void createMaterialTrackingReportLineAllocation(I_M_Material_Tracking_Report_Line reportLine, MaterialTrackingReportAgregationItem items);
 
 }

@@ -85,35 +85,6 @@ public interface I_M_Material_Tracking_Report_Line_Alloc
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set DB-Tabelle.
-	 * Database Table information
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Table_ID (int AD_Table_ID);
-
-	/**
-	 * Get DB-Tabelle.
-	 * Database Table information
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Table_ID();
-
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, org.compiere.model.I_AD_Table>(I_M_Material_Tracking_Report_Line_Alloc.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -167,6 +138,35 @@ public interface I_M_Material_Tracking_Report_Line_Alloc
     public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, Object>(I_M_Material_Tracking_Report_Line_Alloc.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Versand-/Wareneingangsposition.
+	 * Position auf Versand- oder Wareneingangsbeleg
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_InOutLine_ID (int M_InOutLine_ID);
+
+	/**
+	 * Get Versand-/Wareneingangsposition.
+	 * Position auf Versand- oder Wareneingangsbeleg
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_InOutLine_ID();
+
+	public org.compiere.model.I_M_InOutLine getM_InOutLine();
+
+	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
+
+    /** Column definition for M_InOutLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, org.compiere.model.I_M_InOutLine>(I_M_Material_Tracking_Report_Line_Alloc.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
+    /** Column name M_InOutLine_ID */
+    public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
 	 * Set Material-Vorgang-ID.
@@ -246,29 +246,77 @@ public interface I_M_Material_Tracking_Report_Line_Alloc
     public static final String COLUMNNAME_M_Material_Tracking_Report_Line_ID = "M_Material_Tracking_Report_Line_ID";
 
 	/**
-	 * Set Datensatz-ID.
-	 * Direct internal record ID
+	 * Set Produktionsauftrag.
 	 *
-	 * <br>Type: Button
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRecord_ID (int Record_ID);
+	public void setPP_Order_ID (int PP_Order_ID);
 
 	/**
-	 * Get Datensatz-ID.
-	 * Direct internal record ID
+	 * Get Produktionsauftrag.
 	 *
-	 * <br>Type: Button
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getRecord_ID();
+	public int getPP_Order_ID();
 
-    /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, Object>(I_M_Material_Tracking_Report_Line_Alloc.class, "Record_ID", null);
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
+	public org.eevolution.model.I_PP_Order getPP_Order();
+
+	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order);
+
+    /** Column definition for PP_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, org.eevolution.model.I_PP_Order>(I_M_Material_Tracking_Report_Line_Alloc.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
+    /** Column name PP_Order_ID */
+    public static final String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
+
+	/**
+	 * Set Ausgelagerte Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyIssued (java.math.BigDecimal QtyIssued);
+
+	/**
+	 * Get Ausgelagerte Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyIssued();
+
+    /** Column definition for QtyIssued */
+    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, Object> COLUMN_QtyIssued = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, Object>(I_M_Material_Tracking_Report_Line_Alloc.class, "QtyIssued", null);
+    /** Column name QtyIssued */
+    public static final String COLUMNNAME_QtyIssued = "QtyIssued";
+
+	/**
+	 * Set Empfangene Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyReceived (java.math.BigDecimal QtyReceived);
+
+	/**
+	 * Get Empfangene Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyReceived();
+
+    /** Column definition for QtyReceived */
+    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, Object> COLUMN_QtyReceived = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Report_Line_Alloc, Object>(I_M_Material_Tracking_Report_Line_Alloc.class, "QtyReceived", null);
+    /** Column name QtyReceived */
+    public static final String COLUMNNAME_QtyReceived = "QtyReceived";
 
 	/**
 	 * Get Aktualisiert.

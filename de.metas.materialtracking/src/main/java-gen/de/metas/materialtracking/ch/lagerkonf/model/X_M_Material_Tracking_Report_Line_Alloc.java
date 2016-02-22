@@ -17,8 +17,10 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.materialtracking.ch.lagerkonf.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import org.compiere.util.Env;
 
 /** Generated Model for M_Material_Tracking_Report_Line_Alloc
  *  @author Adempiere (generated) 
@@ -30,7 +32,7 @@ public class X_M_Material_Tracking_Report_Line_Alloc extends org.compiere.model.
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1071389059L;
+	private static final long serialVersionUID = 384831441L;
 
     /** Standard Constructor */
     public X_M_Material_Tracking_Report_Line_Alloc (Properties ctx, int M_Material_Tracking_Report_Line_Alloc_ID, String trxName)
@@ -58,37 +60,37 @@ public class X_M_Material_Tracking_Report_Line_Alloc extends org.compiere.model.
     }
 
 	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	public org.compiere.model.I_M_InOutLine getM_InOutLine() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
 	}
 
 	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine)
 	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
 	}
 
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
+	/** Set Versand-/Wareneingangsposition.
+		@param M_InOutLine_ID 
+		Position auf Versand- oder Wareneingangsbeleg
 	  */
 	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
+	public void setM_InOutLine_ID (int M_InOutLine_ID)
 	{
-		if (AD_Table_ID < 1) 
-			set_Value (COLUMNNAME_AD_Table_ID, null);
+		if (M_InOutLine_ID < 1) 
+			set_Value (COLUMNNAME_M_InOutLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_Value (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
 	}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
+	/** Get Versand-/Wareneingangsposition.
+		@return Position auf Versand- oder Wareneingangsbeleg
 	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getM_InOutLine_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutLine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -184,28 +186,75 @@ public class X_M_Material_Tracking_Report_Line_Alloc extends org.compiere.model.
 		return ii.intValue();
 	}
 
-	/** Set Datensatz-ID.
-		@param Record_ID 
-		Direct internal record ID
-	  */
 	@Override
-	public void setRecord_ID (int Record_ID)
+	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
 	{
-		if (Record_ID < 0) 
-			set_Value (COLUMNNAME_Record_ID, null);
-		else 
-			set_Value (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
+		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
 	}
 
-	/** Get Datensatz-ID.
-		@return Direct internal record ID
-	  */
 	@Override
-	public int getRecord_ID () 
+	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order)
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
+	}
+
+	/** Set Produktionsauftrag.
+		@param PP_Order_ID Produktionsauftrag	  */
+	@Override
+	public void setPP_Order_ID (int PP_Order_ID)
+	{
+		if (PP_Order_ID < 1) 
+			set_Value (COLUMNNAME_PP_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Order_ID, Integer.valueOf(PP_Order_ID));
+	}
+
+	/** Get Produktionsauftrag.
+		@return Produktionsauftrag	  */
+	@Override
+	public int getPP_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Ausgelagerte Menge.
+		@param QtyIssued Ausgelagerte Menge	  */
+	@Override
+	public void setQtyIssued (java.math.BigDecimal QtyIssued)
+	{
+		set_Value (COLUMNNAME_QtyIssued, QtyIssued);
+	}
+
+	/** Get Ausgelagerte Menge.
+		@return Ausgelagerte Menge	  */
+	@Override
+	public java.math.BigDecimal getQtyIssued () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyIssued);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Empfangene Menge.
+		@param QtyReceived Empfangene Menge	  */
+	@Override
+	public void setQtyReceived (java.math.BigDecimal QtyReceived)
+	{
+		set_Value (COLUMNNAME_QtyReceived, QtyReceived);
+	}
+
+	/** Get Empfangene Menge.
+		@return Empfangene Menge	  */
+	@Override
+	public java.math.BigDecimal getQtyReceived () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReceived);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 }

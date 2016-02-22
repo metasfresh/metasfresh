@@ -24,11 +24,11 @@ The actual release notes
 # Upcoming Release
 
 ##Features
- 
+ - 09661 Report "Statistik für monatliche Lagermeldung" - grouping per product and selected attributes (106566269211) +feature
  - 09837 Report Gebinde Übersicht change (103471986337)
  - 09740 ADR revenue report by product categories (101851459609) +it +feature
     * added french translations
- 
+
 ##Fixes
  
  - 09281 create report for packaging material balance (106483495857)

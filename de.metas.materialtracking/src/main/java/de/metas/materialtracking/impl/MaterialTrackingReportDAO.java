@@ -12,6 +12,8 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.materialtracking.IMaterialTrackingReportDAO;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 
@@ -63,5 +65,24 @@ public class MaterialTrackingReportDAO implements IMaterialTrackingReportDAO
 
 		return queryBuilder.create()
 				.iterate(I_M_Material_Tracking_Ref.class);
+	}
+
+	@Override
+	public I_M_Material_Tracking_Report_Line retrieveMaterialTrackingReportLineOrNull(final I_M_Material_Tracking_Report report, final String aggregationKey)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_M_Material_Tracking_Report_Line> queryBuilder = queryBL
+				.createQueryBuilder(I_M_Material_Tracking_Report_Line.class, report)
+				.addEqualsFilter(I_M_Material_Tracking_Report_Line.COLUMNNAME_M_Material_Tracking_Report_ID, report.getM_Material_Tracking_Report_ID())
+				.addEqualsFilter(I_M_Material_Tracking_Report_Line.COLUMNNAME_LineAggregationKey, aggregationKey);
+		queryBuilder
+
+				.orderBy()
+				.addColumn(I_M_Material_Tracking_Report_Line.COLUMNNAME_LineAggregationKey);
+
+		return queryBuilder
+				.create()
+				.firstOnly(I_M_Material_Tracking_Report_Line.class);
+
 	}
 }

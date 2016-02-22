@@ -1,6 +1,5 @@
 package de.metas.materialtracking.impl;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -16,8 +15,7 @@ import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line_Alloc;
 import de.metas.materialtracking.model.I_M_InOutLine;
-import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
-import de.metas.materialtracking.model.I_PP_Order;
+import de.metas.materialtracking.process.MaterialTrackingReportAgregationItem;
 
 /*
  * #%L
@@ -45,77 +43,61 @@ public class MaterialTrackingReportBL implements IMaterialTrackingReportBL
 {
 
 	@Override
-	public I_M_Material_Tracking_Report_Line createMaterialTrackingReportLine(final I_M_Material_Tracking_Report report, final I_M_Material_Tracking_Ref ref)
+	public I_M_Material_Tracking_Report_Line createMaterialTrackingReportLine(final I_M_Material_Tracking_Report report, final I_M_InOutLine iol, final String lineAggregationKey)
 	{
 
-		final I_M_Material_Tracking_Report_Line newLine = InterfaceWrapperHelper.newInstance(I_M_Material_Tracking_Report_Line.class, ref);
-
+		final I_M_Material_Tracking_Report_Line newLine = InterfaceWrapperHelper.newInstance(I_M_Material_Tracking_Report_Line.class, iol);
 		newLine.setM_Material_Tracking_Report(report);
 
-		final org.compiere.model.I_M_Product product = ref.getM_Material_Tracking().getM_Product();
-
+		final org.compiere.model.I_M_Product product = iol.getM_Product();
 		newLine.setM_Product(product);
 
-		final I_M_AttributeSetInstance asi = createASIFromRef(ref);
-
+		final I_M_AttributeSetInstance asi = createASIFromRef(iol);
 		newLine.setM_AttributeSetInstance(asi);
 
+		newLine.setLineAggregationKey(lineAggregationKey);
 		return newLine;
 
 	}
 
-	private I_M_AttributeSetInstance createASIFromRef(final I_M_Material_Tracking_Ref ref)
+	private I_M_AttributeSetInstance createASIFromRef(final I_M_InOutLine iol)
 	{
 		final IDimensionspecDAO dimSpecDAO = Services.get(IDimensionspecDAO.class);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final IDimensionSpecAttributeBL dimensionSpecAttributeBL = Services.get(IDimensionSpecAttributeBL.class);
 
-		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(ref);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ref);
+		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(iol);
 
-		final int table_ID = ref.getAD_Table_ID();
-
-		// the ASI of the ref's linked record (inoutLine or ppOrder)
-		final I_M_AttributeSetInstance refASI;
-		if (InterfaceWrapperHelper.getTableId(I_PP_Order.class) == table_ID)
-		{
-			final I_PP_Order ppOrder = InterfaceWrapperHelper.create(ctxAware.getCtx(), ref.getRecord_ID(), I_PP_Order.class, trxName);
-
-			refASI = ppOrder.getM_AttributeSetInstance();
-
-		}
-
-		else if (InterfaceWrapperHelper.getTableId(I_M_InOutLine.class) == table_ID)
-		{
-			final I_M_InOutLine iol = InterfaceWrapperHelper.create(ctxAware.getCtx(), ref.getRecord_ID(), I_M_InOutLine.class, trxName);
-			refASI = iol.getM_AttributeSetInstance();
-
-		}
-		else
-		{
-			throw new AdempiereException("Not supported for table ID" + table_ID);
-		}
-
-		final String internalName = Services.get(ISysConfigBL.class).getValue(MaterialTrackingConstants.SYSCONFIG_M_Material_Tracking_Report_Dimension);
+		final String internalName = sysConfigBL.getValue(MaterialTrackingConstants.SYSCONFIG_M_Material_Tracking_Report_Dimension);
 
 		final I_DIM_Dimension_Spec dimensionSpec = dimSpecDAO.retrieveForInternalName(internalName, ctxAware);
 
-		final I_M_AttributeSetInstance resultASI = Services.get(IDimensionSpecAttributeBL.class).createASIForDimensionSpec(refASI, dimensionSpec);
+		final I_M_AttributeSetInstance resultASI = dimensionSpecAttributeBL.createASIForDimensionSpec(iol.getM_AttributeSetInstance(), dimensionSpec);
 
 		return resultASI;
 	}
 
 	@Override
-	public I_M_Material_Tracking_Report_Line_Alloc createMaterialTrackingReportLineAllocation(final I_M_Material_Tracking_Report_Line line, final I_M_Material_Tracking_Ref ref)
+	public void createMaterialTrackingReportLineAllocation(final I_M_Material_Tracking_Report_Line reportLine,
+			final MaterialTrackingReportAgregationItem items)
 	{
-		final I_M_Material_Tracking_Report_Line_Alloc alloc = InterfaceWrapperHelper.newInstance(I_M_Material_Tracking_Report_Line_Alloc.class, ref);
+		final I_M_Material_Tracking_Report_Line_Alloc alloc = InterfaceWrapperHelper.newInstance(I_M_Material_Tracking_Report_Line_Alloc.class, reportLine);
 
-		alloc.setM_Material_Tracking_Report_Line(line);
-		alloc.setAD_Table(ref.getAD_Table());
-		alloc.setRecord_ID(ref.getRecord_ID());
-		alloc.setM_Material_Tracking(ref.getM_Material_Tracking());
+		alloc.setM_Material_Tracking_Report_Line(reportLine);
+		alloc.setPP_Order(items.getPPOrder());
+		alloc.setM_InOutLine(items.getInOutLine());
+		alloc.setM_Material_Tracking(items.getMaterialTracking());
 
+		if (items.getPPOrder() != null)
+		{
+			alloc.setQtyIssued(items.getQty());
+		}
+		else
+		{
+			alloc.setQtyReceived(items.getQty());
+		}
 		InterfaceWrapperHelper.save(alloc);
 
-		return alloc;
 	}
 
 }

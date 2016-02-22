@@ -1,16 +1,22 @@
 package de.metas.handlingunits.materialtracking.spi.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.adempiere.util.Services;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
 
-import de.metas.document.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -47,7 +53,6 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 		final Set<I_M_InOutLine> result = new TreeSet<>(ModelByIdComparator.getInstance());
 
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
 		List<I_M_HU_Assignment> huAssignmentsForModel = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(issueCostCollector)
 				.create()
@@ -82,18 +87,60 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 				continue;
 			}
 
-			final boolean topLevel = false; // we want the most detailed info, in case VHUs were rearranged.
-			final List<I_M_InOutLine> iolsForHU = huAssignmentDAO.retrieveModelsForHU(hu, I_M_InOutLine.class, topLevel);
-			for (final I_M_InOutLine iol : iolsForHU)
+			final I_M_InOutLine inoutLine = Services.get(IHUInOutDAO.class).retrieveInOutLineOrNull(hu);
+			if (inoutLine == null || !inoutLine.getM_InOut().isProcessed())
 			{
-				if (!docActionBL.isStatusCompletedOrClosed(iol.getM_InOut()))
-				{
-					continue;
-				}
-				result.add(iol);
+				// there is no iol
+				// or it's not processed (which should not happen)
+				continue;
 			}
+			result.add(inoutLine);
 		}
 		return new ArrayList<I_M_InOutLine>(result);
+	}
+
+	@Override
+	public Map<Integer, BigDecimal> retrieveIolAndQty(final I_PP_Order ppOrder)
+	{
+		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+		final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
+		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+		final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+
+		final Map<Integer, BigDecimal> iolMap = new HashMap<>();
+
+		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.retrieveForOrder(ppOrder);
+
+		for (final I_PP_Cost_Collector costCollector : costCollectors)
+		{
+			if (!ppCostCollectorBL.isMaterialIssue(costCollector, true))
+			{
+				continue;
+			}
+
+			final List<I_M_HU_Assignment> huAssignmentsForModel = huAssignmentDAO.retrieveHUAssignmentsForModel(costCollector);
+
+			for (final I_M_HU_Assignment assignment : huAssignmentsForModel)
+			{
+				final I_M_HU hu = assignment.getM_HU();
+				final I_M_InOutLine inoutLine = huInOutDAO.retrieveInOutLineOrNull(hu);
+				if (inoutLine == null || !inoutLine.getM_InOut().isProcessed())
+				{
+					// there is no iol
+					// or it's not processed (which should not happen)
+					continue;
+				}
+
+				BigDecimal qty = iolMap.get(inoutLine.getM_InOutLine_ID());
+				if (qty == null)
+				{
+					qty = BigDecimal.ZERO;
+				}
+				iolMap.put(inoutLine.getM_InOutLine_ID(), qty.add(costCollector.getMovementQty()));
+			}
+		}
+
+		return iolMap;
 	}
 
 }

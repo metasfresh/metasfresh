@@ -5,6 +5,8 @@ import java.util.Iterator;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.model.I_PP_Order;
@@ -41,5 +43,14 @@ public interface IMaterialTrackingReportDAO extends ISingletonService
 	 * @return an iterator of the found refs
 	 */
 	Iterator<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefsForMaterialTracking(I_M_Material_Tracking materialTracking);
+
+	/**
+	 * Search for a material tracking report line with the given report and aggregation key.
+	 * 
+	 * @param report
+	 * @param aggregationKey
+	 * @return the report line if found, null otherwise
+	 */
+	I_M_Material_Tracking_Report_Line retrieveMaterialTrackingReportLineOrNull(I_M_Material_Tracking_Report report, String aggregationKey);
 
 }

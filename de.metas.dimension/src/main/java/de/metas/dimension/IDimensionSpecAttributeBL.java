@@ -19,12 +19,12 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +36,7 @@ public interface IDimensionSpecAttributeBL extends ISingletonService
 
 	/**
 	 * Use this method any time you want to get DimensionConstants.DIM_EMPTY in case of empty attribute value
-	 * 
+	 *
 	 * @param attribute
 	 * @param asi can be null
 	 * @return the value of the given attribute in the given ASI if found, DIM_EMPTY otherwise
@@ -44,8 +44,8 @@ public interface IDimensionSpecAttributeBL extends ISingletonService
 	String getAttrValueFromASI(I_M_Attribute attribute, I_M_AttributeSetInstance asi);
 
 	/**
-	 * Create KeyNamePairs of attribute IDs and values taken from asi that are relevant for the given dimensionSpec.
-	 * In case of null asi or attributes not found or attributes with non relevant values, their values will be set to DimensionConstants.DIM_EMPTY
+	 * Create {@link KeyNamePair}s of attribute IDs and values taken from the given <code>asi</code> that are relevant for the given dimensionSpec.
+	 * In case of <code>null</code> asi or attributes not found or attributes with non relevant values, their values will be set to {@link DimensionConstants#DIM_EMPTY}.
 	 *
 	 * @param asi
 	 * @param dimensionSpec
@@ -55,7 +55,7 @@ public interface IDimensionSpecAttributeBL extends ISingletonService
 
 	/**
 	 * Create a new {@link I_M_AttributeSetInstance} containing instances for relevant attributes in dimensionSpec and values from the give asi
-	 * 
+	 *
 	 * @param asi
 	 * @param dimensionSpec
 	 * @return the new ASI if at least one of the relevant attribute/value couple in the given ASI, null otherwise

@@ -49,4 +49,8 @@ public interface IHUTrxQuery
 	void setRecord_ID(int record_ID);
 
 	int getRecord_ID();
+	
+	void setM_HU_ID(int m_hu_ID);
+	
+	int getM_HU_ID();
 }

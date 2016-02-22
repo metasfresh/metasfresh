@@ -1,9 +1,12 @@
 package de.metas.materialtracking.spi;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
 
 import de.metas.materialtracking.model.I_M_InOutLine;
 
@@ -45,4 +48,13 @@ public interface IPPOrderMInOutLineRetrievalService extends ISingletonService
 	 * @return
 	 */
 	List<I_M_InOutLine> provideIssuedInOutLines(I_PP_Cost_Collector issueCostCollector);
+
+	/**
+	 * Retrieve issued inout lines and their issued qty
+	 * 
+	 * @param ppOrder
+	 * @return
+	 */
+	Map<Integer, BigDecimal> retrieveIolAndQty(I_PP_Order ppOrder);
+
 }

@@ -22,12 +22,12 @@ package de.metas.handlingunits;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
@@ -53,5 +53,13 @@ public interface IHUTrxDAO extends ISingletonService
 	 * @return counterpart transaction; never returns null
 	 */
 	I_M_HU_Trx_Line retrieveCounterpartTrxLine(I_M_HU_Trx_Line trxLine);
+
+	/**
+	 * Retrieve all the M_HU_Trx_Line entries of the given hu
+	 * 
+	 * @param hu
+	 * @return
+	 */
+	List<I_M_HU_Trx_Line> retrieveReferencingTrxLinesForHU(I_M_HU hu);
 
 }

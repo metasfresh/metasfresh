@@ -1,10 +1,14 @@
 package de.metas.materialtracking.process;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -25,6 +29,7 @@ import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.model.I_PP_Order;
+import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 
 /*
  * #%L
@@ -71,23 +76,64 @@ public class M_Material_Tracking_Report_Line_Create
 		final CreateMaterialTrackingReportLineFromMaterialTrackingRefAggregator workpackageAggregator = new CreateMaterialTrackingReportLineFromMaterialTrackingRefAggregator(report);
 
 		workpackageAggregator.setItemAggregationKeyBuilder(new CreateMaterialTrackingReportLineFromMaterialTrackingRefKeyBuilder());
-		workpackageAggregator.setGroupsBufferSize(100);
 
 		// get all the material tracking entries that fit the given period
 		final List<I_M_Material_Tracking> materialTrackings = materialTrackingDAO.retrieveMaterialTrackingsForPeriod(period);
 
 		for (final I_M_Material_Tracking materialTracking : materialTrackings)
 		{
+			final int productID = materialTracking.getM_Product_ID();
+
 			final Iterator<I_M_Material_Tracking_Ref> it = materialTrackingReportDAO.retrieveMaterialTrackingRefsForMaterialTracking(materialTracking);
 
 			for (final I_M_Material_Tracking_Ref ref : IteratorUtils.asIterable(it))
 			{
-				if (isValid(ref, report))
+				if (!isValid(ref, report))
 				{
-					workpackageAggregator.add(ref);
+					continue;
+				}
+
+				if (InterfaceWrapperHelper.getTableId(I_M_InOutLine.class) == ref.getAD_Table_ID())
+				{
+					// add the material receipt lines with their *MovementQtys*
+					final I_M_InOutLine iol = InterfaceWrapperHelper.create(getCtx(), ref.getRecord_ID(), I_M_InOutLine.class, getTrxName());
+
+					final MaterialTrackingReportAgregationItem item = new MaterialTrackingReportAgregationItem(
+							null, // PP_Order
+							iol,
+							materialTracking,
+							iol.getMovementQty());
+					workpackageAggregator.add(item);
+				}
+				else if (InterfaceWrapperHelper.getTableId(I_PP_Order.class) == ref.getAD_Table_ID())
+				{
+					// add the PP_Orders with their *issued* qties
+					final I_PP_Order ppOrder = InterfaceWrapperHelper.create(getCtx(), ref.getRecord_ID(), I_PP_Order.class, getTrxName());
+
+					final Map<Integer, BigDecimal> iolAndQty = Services.get(IPPOrderMInOutLineRetrievalService.class).retrieveIolAndQty(ppOrder);
+
+					for (final Entry<Integer, BigDecimal> entry : iolAndQty.entrySet())
+					{
+						final I_M_InOutLine iol = InterfaceWrapperHelper.create(getCtx(), entry.getKey(), I_M_InOutLine.class, getTrxName());
+
+						if (productID != iol.getM_Product_ID())
+						{
+							continue;
+						}
+
+						final MaterialTrackingReportAgregationItem item = new MaterialTrackingReportAgregationItem(
+								ppOrder,
+								iol,
+								materialTracking,
+								entry.getValue());
+						workpackageAggregator.add(item);
+					}
+				}
+				else
+				{
+					throw new AdempiereException("Not suppoerted for table ID " + ref.getAD_Table_ID());
 				}
 			}
-
 		}
 
 		workpackageAggregator.closeAllGroups();
@@ -98,7 +144,9 @@ public class M_Material_Tracking_Report_Line_Create
 		return "Success";
 	}
 
-	private boolean isValid(final I_M_Material_Tracking_Ref ref, final I_M_Material_Tracking_Report report)
+	private boolean isValid(
+			final I_M_Material_Tracking_Ref ref,
+			final I_M_Material_Tracking_Report report)
 	{
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
@@ -193,7 +241,7 @@ public class M_Material_Tracking_Report_Line_Create
 	{
 		// This process is just for unprocessed reports
 		final I_M_Material_Tracking_Report report = InterfaceWrapperHelper.create(gridTab, I_M_Material_Tracking_Report.class);
-	
+
 		return !report.isProcessed();
 	}
 

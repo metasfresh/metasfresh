@@ -38,6 +38,7 @@ import org.compiere.model.IQuery;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUTrxDAO;
 import de.metas.handlingunits.IHUTrxQuery;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
@@ -96,6 +97,10 @@ public class HUTrxDAO implements IHUTrxDAO
 			filters.addEqualsFilter(I_M_HU_Trx_Line.COLUMNNAME_M_HU_Item_ID, huTrxQuery.getM_HU_Item_ID());
 		}
 
+		if(huTrxQuery.getM_HU_ID() > 0)
+		{
+			filters.addEqualsFilter(I_M_HU_Trx_Line.COLUMN_M_HU_ID, huTrxQuery.getM_HU_ID());
+		}
 		queryBuilder.orderBy()
 				.addColumn(I_M_HU_Trx_Line.COLUMNNAME_M_HU_Trx_Line_ID);
 
@@ -168,5 +173,16 @@ public class HUTrxDAO implements IHUTrxDAO
 		}
 
 		return trxLineCounterpart;
+	}
+	
+	@Override
+	public List<I_M_HU_Trx_Line> retrieveReferencingTrxLinesForHU(final I_M_HU hu)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
+		final String trxName = InterfaceWrapperHelper.getTrxName(hu);
+		final IHUTrxQuery huTrxQuery = createHUTrxQuery();
+		huTrxQuery.setM_HU_ID(hu.getM_HU_ID());
+		
+		return retrieveTrxLines(ctx, huTrxQuery, trxName);
 	}
 }

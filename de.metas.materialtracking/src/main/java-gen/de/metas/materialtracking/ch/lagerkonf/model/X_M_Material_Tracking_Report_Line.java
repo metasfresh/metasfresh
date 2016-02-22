@@ -32,7 +32,7 @@ public class X_M_Material_Tracking_Report_Line extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -937794722L;
+	private static final long serialVersionUID = 47217588L;
 
     /** Standard Constructor */
     public X_M_Material_Tracking_Report_Line (Properties ctx, int M_Material_Tracking_Report_Line_ID, String trxName)
@@ -81,6 +81,22 @@ public class X_M_Material_Tracking_Report_Line extends org.compiere.model.PO imp
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set Zeilen-Aggregationsmerkmal.
+		@param LineAggregationKey Zeilen-Aggregationsmerkmal	  */
+	@Override
+	public void setLineAggregationKey (java.lang.String LineAggregationKey)
+	{
+		set_Value (COLUMNNAME_LineAggregationKey, LineAggregationKey);
+	}
+
+	/** Get Zeilen-Aggregationsmerkmal.
+		@return Zeilen-Aggregationsmerkmal	  */
+	@Override
+	public java.lang.String getLineAggregationKey () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LineAggregationKey);
 	}
 
 	@Override

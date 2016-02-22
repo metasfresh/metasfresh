@@ -33,6 +33,7 @@ import de.metas.handlingunits.IHUTrxQuery;
 	private int Ref_HU_Item_ID = -1;
 	private int AD_Table_ID = -1;
 	private int Record_ID = -1;
+	private int M_HU_ID = -1;
 
 	@Override
 	public String toString()
@@ -116,5 +117,18 @@ import de.metas.handlingunits.IHUTrxQuery;
 	public void setRecord_ID(final int record_ID)
 	{
 		Record_ID = record_ID;
+	}
+
+	@Override
+	public void setM_HU_ID(int m_hu_ID)
+	{
+		M_HU_ID = m_hu_ID;
+		
+	}
+
+	@Override
+	public int getM_HU_ID()
+	{
+		return M_HU_ID;
 	}
 }

@@ -10,18 +10,17 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -115,8 +114,18 @@ public final class HUConstants
 	public static final String DIM_PP_Order_ProductAttribute_To_Transfer = "PP_Order_ProductAttribute_Transfer";
 
 	/**
+	 * The <code>M_Attribute.Value</code> of the HU attribute that contains the ID of the material receipt <code>M_InOutLine</code> with which the given HU was received.
+	 */
+	public static final String ATTRIBUTE_VALUE_HU_ReceiptInOutLine_ID = "HU_ReceiptInOutLine_ID";
+
+	/**
+	 * The <code>M_Attribute.Value</code> of the HU attribute that contains the ID of the purchase <code>C_OrderLine</code> where the given HU was ordered.
+	 */
+	public static final String ATTRIBUTE_VALUE_HU_PurchaseOrderLine_ID = "HU_PurchaseOrderLine_ID";
+
+	/**
 	 * @task http://dewiki908/mediawiki/index.php/09106_Material-Vorgangs-ID_nachtr%C3%A4glich_erfassen_%28101556035702%29
 	 */
 	public static final String PARAM_CHANGE_HU_MAterial_Tracking_ID = M_Material_Tracking_CreateOrUpdate_ID.class.getSimpleName() + ".CHANGE_HUs";
-	
+
 }

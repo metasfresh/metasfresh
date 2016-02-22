@@ -1,10 +1,14 @@
 package de.metas.materialtracking.spi.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -31,5 +35,12 @@ public class PlainPPOrderMInOutLineRetrievalService implements IPPOrderMInOutLin
 	public List<I_M_InOutLine> provideIssuedInOutLines(I_PP_Cost_Collector issueCostCollector)
 	{
 		return new ArrayList<>(costCollectorIdToInOutLines.get(issueCostCollector.getPP_Cost_Collector_ID()));
+	}
+
+	@Override
+	public Map<Integer, BigDecimal> retrieveIolAndQty(I_PP_Order ppOrder)
+	{
+		//TODO : this part shall be tested too
+		return Collections.emptyMap();
 	}
 }
