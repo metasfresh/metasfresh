@@ -2,8 +2,8 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.2100000000000009"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="220"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -18,7 +18,9 @@
 		<![CDATA[SELECT
 	COALESCE(pt.Name, p.name)		AS Name,
 	iol.MovementQty,
-	COALESCE(uomt.UOMSymbol, uom.UOMSymbol) 	AS UOMSymbol
+	COALESCE(uomt.UOMSymbol, uom.UOMSymbol) 	AS UOMSymbol,
+	dt.docbasetype,
+	dt.docsubtype
 FROM
 	M_InOutLine iol
 	-- Product and its translation
@@ -28,6 +30,9 @@ FROM
 	-- Unit of measurement & its translation
 	LEFT OUTER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID
 	LEFT OUTER JOIN C_UOM_Trl uomt			ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $P{ad_language}
+	-- inout and doctype
+	INNER JOIN M_InOut io                           ON iol.M_InOut_ID = io.M_InOut_ID
+	LEFT OUTER JOIN C_DocType dt                    ON io.C_DocType_ID = dt.C_DocType_ID
 WHERE
 	iol.M_InOut_ID = $P{RECORD_ID}
 	AND pc.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
@@ -38,6 +43,8 @@ ORDER BY
 	<field name="name" class="java.lang.String"/>
 	<field name="movementqty" class="java.math.BigDecimal"/>
 	<field name="uomsymbol" class="java.lang.String"/>
+	<field name="docbasetype" class="java.lang.String"/>
+	<field name="docsubtype" class="java.lang.String"/>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
@@ -53,21 +60,21 @@ ORDER BY
 			<staticText>
 				<reportElement uuid="0b5406d1-6f1e-465f-a8c5-0419139660ee" key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Gebinde]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="bdcd0f36-d176-4432-b674-244c49584d67" key="textField-20" x="394" y="0" width="40" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Einheit]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="d31bdd28-00a6-472e-a7c9-f39b473126e6" key="textField-19" x="332" y="0" width="57" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Menge]]></text>
 			</staticText>
@@ -84,7 +91,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="9" isBold="false" />
+					<font fontName="SansSerif" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
@@ -113,6 +120,31 @@ ORDER BY
 					<font fontName="SansSerif" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="bd7548de-f2ad-44fb-b535-48cfc0f7414f" x="434" y="0" width="129" height="12"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[("MMS").equals($F{docbasetype}) && ("EC").equals($F{docsubtype})
+&& $F{movementqty}.compareTo(BigDecimal.ZERO) > 0
+?
+$R{dtSaldokorrekturBpartner} :
+
+("MMS").equals($F{docbasetype}) && ("EC").equals($F{docsubtype})
+&& $F{movementqty}.compareTo(BigDecimal.ZERO) < 0
+?
+$R{dtSaldokorrekturVonUns}:
+
+("MMR").equals($F{docbasetype}) && ("EC").equals($F{docsubtype})
+&& $F{movementqty}.compareTo(BigDecimal.ZERO) < 0
+?
+$R{dtSaldokorrekturBpartner} :
+("MMR").equals($F{docbasetype}) && ("EC").equals($F{docsubtype})
+&& $F{movementqty}.compareTo(BigDecimal.ZERO) > 0
+?
+$R{dtSaldokorrekturVonUns}
+:""]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

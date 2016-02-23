@@ -2,8 +2,8 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="1a23dc24-c216-40e0-891b-a3648835dca6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="3.452271214393105"/>
-	<property name="ireport.x" value="385"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -15,7 +15,9 @@
 	io.DocumentNo,
 	bp.value,
 	io.movementDate,
-	COALESCE (dtt.Printname, dt.Printname) AS Printname
+	COALESCE (dtt.Printname, dt.Printname) AS Printname,
+	dt.docbasetype,
+	dt.docsubtype
 FROM
 	M_InOut io
 	INNER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID
@@ -29,18 +31,22 @@ WHERE
 	<field name="value" class="java.lang.String"/>
 	<field name="movementdate" class="java.sql.Timestamp"/>
 	<field name="printname" class="java.lang.String"/>
+	<field name="docbasetype" class="java.lang.String"/>
+	<field name="docsubtype" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="176" splitType="Stretch">
-			<staticText>
-				<reportElement uuid="73aa47b1-e122-4e68-8232-5cc2f9fa942f" key="textField-5" x="349" y="154" width="74" height="13"/>
+			<textField>
+				<reportElement uuid="a68323a7-6e92-4cbe-b0ca-59c458eebbbe" key="textField-5" x="349" y="154" width="74" height="13"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
-				<text><![CDATA[Anlieferdatum]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[((("MMR").equals($F{docbasetype}) || ("MMS").equals($F{docbasetype}))
+  &&
+  (("EC").equals($F{docsubtype}))) ? "Datum" : "Anlieferdatum"]]></textFieldExpression>
+			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="bb712730-1ec3-406c-b259-045c9e03f407" key="textField-10" x="180" y="154" width="91" height="13">
 					<printWhenExpression><![CDATA[new Boolean($F{value}!=null)]]></printWhenExpression>

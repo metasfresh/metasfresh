@@ -24,6 +24,8 @@ The actual release notes
 # Upcoming Release
 
 ## Features
+ - 09834 adjustment possibility for empties (105285329048)
+    * introducing a new doctype to be used for packaging material (empties) adjustments
  - 09839 Customer Individual InOut (109838130709)
     * another alternative shipment document that among other things also lists product which are generally delivered to the customer, even if they are not part of  this particular shipment.
  - 09822 Inter-Org Product Mapping Process (104151535488)
