@@ -31,7 +31,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.process.DocAction;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
 import de.metas.inout.model.I_M_InOut;

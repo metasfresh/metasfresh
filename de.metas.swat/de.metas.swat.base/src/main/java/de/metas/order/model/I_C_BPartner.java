@@ -4,7 +4,7 @@ package de.metas.order.model;
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2015 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,9 +22,12 @@ package de.metas.order.model;
  * #L%
  */
 
-public interface I_C_BPartner
+
+
+public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 {
 	// @formatter:off
+
 	public static final String COLUMNNAME_IsCreateDefaultPOReference = "IsCreateDefaultPOReference";
 	public boolean isCreateDefaultPOReference();
 	public void setCreateDefaultPOReference(boolean IsCreateDefaultPOReference);

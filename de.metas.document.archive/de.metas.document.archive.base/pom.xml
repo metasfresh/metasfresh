@@ -28,19 +28,16 @@
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		 <dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${project.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -48,13 +45,11 @@
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.document.archive.esb</groupId>
 			<artifactId>de.metas.document.archive.esb.api</artifactId>
-			<version>${de.metas.document.archive.esb.api.version}</version>
 		</dependency>
 
 		<dependency>

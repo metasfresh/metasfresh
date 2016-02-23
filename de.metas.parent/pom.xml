@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -262,12 +264,30 @@
 				<artifactId>de.metas.adempiere.libero.libero</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
+			<dependency>
+				<groupId>de.metas.adempiere.libero</groupId>
+				<artifactId>de.metas.adempiere.libero.libero</artifactId>
+				<version>${project.version}</version>
+				<classifier>tests</classifier>
+			</dependency>
+			
 			<dependency>
 				<artifactId> de.metas.handlingunits.base</artifactId>
 				<groupId>de.metas.handlingunits</groupId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>de.metas.business</groupId>
+				<artifactId>de.metas.business</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.metas.business</groupId>
+				<artifactId>de.metas.business</artifactId>
+				<classifier>tests</classifier>
+				<version>${project.version}</version>
+			</dependency>
+
 			<dependency>
 				<artifactId>de.metas.document.refid</artifactId>
 				<groupId>de.metas.document</groupId>
@@ -298,7 +318,13 @@
 				<groupId>de.metas.materialtracking</groupId>
 				<version>${project.version}</version>
 			</dependency>
-
+			<dependency>
+				<artifactId>de.metas.materialtracking</artifactId>
+				<groupId>de.metas.materialtracking</groupId>
+				<classifier>tests</classifier>
+				<version>${project.version}</version>
+			</dependency>
+			
 			<dependency>
 				<artifactId>de.metas.async</artifactId>
 				<groupId>de.metas.async</groupId>
@@ -356,7 +382,13 @@
 				<groupId>de.metas.swat</groupId>
 				<version>${project.version}</version>
 			</dependency>
-
+			<dependency>
+				<artifactId>de.metas.swat.base</artifactId>
+				<groupId>de.metas.swat</groupId>
+				<version>${project.version}</version>
+				<classifier>tests</classifier>
+			</dependency>
+			
 			<dependency>
 				<groupId>de.metas.storage</groupId>
 				<artifactId>de.metas.storage</artifactId>

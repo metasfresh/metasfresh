@@ -18,10 +18,11 @@
 package org.adempiere.webui.panel;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.webui.component.ConfirmPanel;
 import org.adempiere.webui.component.Grid;
@@ -32,10 +33,7 @@ import org.adempiere.webui.component.Rows;
 import org.adempiere.webui.component.Window;
 import org.adempiere.webui.window.FDialog;
 import org.compiere.model.GridTab;
-import org.compiere.process.DocumentEngine;
-import org.compiere.process.api.IDocActionOptionsBL;
-import org.compiere.process.api.IDocActionOptionsContext;
-import org.compiere.process.api.impl.DefaultDocActionOptionsContext;
+import org.compiere.model.I_AD_Ref_List;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -48,6 +46,11 @@ import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Space;
+
+import de.metas.document.engine.DefaultDocActionOptionsContext;
+import de.metas.document.engine.IDocActionOptionsBL;
+import de.metas.document.engine.IDocActionOptionsContext;
+
 
 public class WDocActionPanel extends Window implements EventListener
 {
@@ -215,7 +218,7 @@ public class WDocActionPanel extends Window implements EventListener
 		// setDefault
 		if (DocAction.equals("--"))		// If None, suggest closing
 		{
-			DocAction = DocumentEngine.ACTION_Close;
+			DocAction = org.compiere.process.DocAction.ACTION_Close;
 		}
 	}
 
@@ -339,22 +342,26 @@ public class WDocActionPanel extends Window implements EventListener
 
 	private void readReference()
 	{
-		ArrayList<String> v_value = new ArrayList<String>();
-		ArrayList<String> v_name = new ArrayList<String>();
-		ArrayList<String> v_description = new ArrayList<String>();
-
-		DocumentEngine.readReferenceList(v_value, v_name, v_description);
-
-		int size = v_value.size();
+		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+		final Properties ctx = Env.getCtx();
+		
+		final List<I_AD_Ref_List> docActions = referenceDAO.retrieveListItemsOrderedByName(ctx, 135);
+		
+		int size = docActions.size();
 		s_value = new String[size];
 		s_name = new String[size];
 		s_description = new String[size];
 
 		for (int i = 0; i < size; i++)
 		{
-			s_value[i] = (String)v_value.get(i);
-			s_name[i] = (String)v_name.get(i);
-			s_description[i] = (String)v_description.get(i);
+			final I_AD_Ref_List docAction = docActions.get(i);
+			final String adLanguage = Env.getAD_Language(ctx);
+			
+			final I_AD_Ref_List docActionTrl = InterfaceWrapperHelper.translate(docAction, I_AD_Ref_List.class, adLanguage);
+			
+			s_value[i] = docActionTrl.getValue();
+			s_name[i] = docActionTrl.getName();
+			s_description[i] = docActionTrl.getDescription();
 		}
 	}   // readReference
 

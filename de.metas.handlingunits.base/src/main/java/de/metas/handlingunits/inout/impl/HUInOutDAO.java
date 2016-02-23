@@ -37,7 +37,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOut;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;

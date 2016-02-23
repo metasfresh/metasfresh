@@ -58,7 +58,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.prepayorder.interfaces.I_C_PaymentAllocate;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.prepayorder.service.IPrepayOrderBL;

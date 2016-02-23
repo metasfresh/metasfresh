@@ -39,7 +39,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.CLogger;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.api.IContractChangeBL;
 import de.metas.flatrate.api.IContractChangeDAO;
 import de.metas.flatrate.api.ISubscriptionBL;

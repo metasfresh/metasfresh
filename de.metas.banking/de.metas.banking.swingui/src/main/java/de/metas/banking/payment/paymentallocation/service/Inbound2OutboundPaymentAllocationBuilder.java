@@ -47,7 +47,7 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * Creates outbound payments to match the given inbound payments.

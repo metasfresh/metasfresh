@@ -43,7 +43,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.async.api.impl;
 
@@ -13,12 +13,12 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,42 +27,27 @@ package de.metas.async.api.impl;
 
 
 import java.sql.Timestamp;
-import java.util.Map;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MClient;
-import org.compiere.model.MUser;
-import org.compiere.util.EMail;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchBuilder;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
-import de.metas.letters.model.IEMailEditor;
-import de.metas.letters.model.I_AD_BoilerPlate;
-import de.metas.letters.model.MADBoilerPlate;
 
 /**
  * @author cg
@@ -260,106 +245,106 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return true;
 	}
 
-	@Override
-	public void sendEMail(final I_C_Async_Batch asyncBatch)
-	{
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
-		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
-
-		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
-		Check.assumeNotNull(asyncBatchType, "Async Batch type should not be null for async batch! ", asyncBatch.getC_Async_Batch_ID());
-
-		// do nothing is the flag for sending mail is not checked
-		if (!asyncBatchType.isSendMail())
-		{
-			return;
-		}
-
-		final I_AD_BoilerPlate boilerPlate = asyncBatchType.getAD_BoilerPlate();
-		Check.assumeNotNull(boilerPlate, "Boiler plate should not be null for async batch type ! ", asyncBatchType.getC_Async_Batch_Type_ID());
-
-		final MADBoilerPlate text = InterfaceWrapperHelper.create(boilerPlate, MADBoilerPlate.class);
-		if (text == null)
-		{
-			return; // nothing to send
-		}
-
-		MADBoilerPlate.sendEMail(new IEMailEditor()
-		{
-			@Override
-			public Object getBaseObject()
-			{
-				return InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName);
-			}
-
-			@Override
-			public int getAD_Table_ID()
-			{
-				return InterfaceWrapperHelper.getTableId(I_C_Async_Batch.class);
-			}
-
-			@Override
-			public int getRecord_ID()
-			{
-				return asyncBatch.getC_Async_Batch_ID();
-			}
-
-			@Override
-			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
-			{
-				final MClient client = LegacyAdapters.convertToPO(Services.get(IClientDAO.class).retriveClient(ctx));
-
-				variables.put(MADBoilerPlate.VAR_UserPO, asyncBatch);
-
-				// try to set language; take first from partner; if does not exists, take it from client
-				final I_AD_User user = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);
-				final I_C_BPartner partner = user.getC_BPartner();
-				String language = "";
-				if (partner != null && partner.getC_BPartner_ID() > 0)
-				{
-					language = partner.getAD_Language();
-				}
-				if (Check.isEmpty(language, true))
-				{
-					language = client.getAD_Language();
-				}
-				variables.put(MADBoilerPlate.VAR_AD_Language, language);
-				//
-				final String message = text.getTextSnippetParsed(variables);
-				//
-				if (Check.isEmpty(message, true))
-					return null;
-				//
-
-				// prepare mail
-				final StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
-				String to = st.nextToken();
-
-				if (asyncBatch.getCreatedBy() > 0)
-					to = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName).getEMail();
-				final EMail email = client.createEMail(null,
-						to, // to
-						text.getSubject(), // subject
-						message, // message
-						true);
-				if (email == null)
-				{
-					throw new AdempiereException("Cannot create email. Check log.");
-				}
-				while (st.hasMoreTokens())
-					email.addTo(st.nextToken());
-
-				// now send mail
-				final String status = email.send();
-
-				if (!email.isSentOK())
-				{
-					throw new AdempiereException(status);
-				}
-
-				return email;
-			}
-		}, false);
-	}
+//	@Override
+//	public void sendEMail(final I_C_Async_Batch asyncBatch)
+//	{
+//
+//		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
+//		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
+//
+//		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
+//		Check.assumeNotNull(asyncBatchType, "Async Batch type should not be null for async batch! ", asyncBatch.getC_Async_Batch_ID());
+//
+//		// do nothing is the flag for sending mail is not checked
+//		if (!asyncBatchType.isSendMail())
+//		{
+//			return;
+//		}
+//
+//		final I_AD_BoilerPlate boilerPlate = asyncBatchType.getAD_BoilerPlate();
+//		Check.assumeNotNull(boilerPlate, "Boiler plate should not be null for async batch type ! ", asyncBatchType.getC_Async_Batch_Type_ID());
+//
+//		final MADBoilerPlate text = InterfaceWrapperHelper.create(boilerPlate, MADBoilerPlate.class);
+//		if (text == null)
+//		{
+//			return; // nothing to send
+//		}
+//
+//		MADBoilerPlate.sendEMail(new IEMailEditor()
+//		{
+//			@Override
+//			public Object getBaseObject()
+//			{
+//				return InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName);
+//			}
+//
+//			@Override
+//			public int getAD_Table_ID()
+//			{
+//				return InterfaceWrapperHelper.getTableId(I_C_Async_Batch.class);
+//			}
+//
+//			@Override
+//			public int getRecord_ID()
+//			{
+//				return asyncBatch.getC_Async_Batch_ID();
+//			}
+//
+//			@Override
+//			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
+//			{
+//				final MClient client = LegacyAdapters.convertToPO(Services.get(IClientDAO.class).retriveClient(ctx));
+//
+//				variables.put(MADBoilerPlate.VAR_UserPO, asyncBatch);
+//
+//				// try to set language; take first from partner; if does not exists, take it from client
+//				final I_AD_User user = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);
+//				final I_C_BPartner partner = user.getC_BPartner();
+//				String language = "";
+//				if (partner != null && partner.getC_BPartner_ID() > 0)
+//				{
+//					language = partner.getAD_Language();
+//				}
+//				if (Check.isEmpty(language, true))
+//				{
+//					language = client.getAD_Language();
+//				}
+//				variables.put(MADBoilerPlate.VAR_AD_Language, language);
+//				//
+//				final String message = text.getTextSnippetParsed(variables);
+//				//
+//				if (Check.isEmpty(message, true))
+//					return null;
+//				//
+//
+//				// prepare mail
+//				final StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
+//				String to = st.nextToken();
+//
+//				if (asyncBatch.getCreatedBy() > 0)
+//					to = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName).getEMail();
+//				final EMail email = client.createEMail(null,
+//						to, // to
+//						text.getSubject(), // subject
+//						message, // message
+//						true);
+//				if (email == null)
+//				{
+//					throw new AdempiereException("Cannot create email. Check log.");
+//				}
+//				while (st.hasMoreTokens())
+//					email.addTo(st.nextToken());
+//
+//				// now send mail
+//				final String status = email.send();
+//
+//				if (!email.isSentOK())
+//				{
+//					throw new AdempiereException(status);
+//				}
+//
+//				return email;
+//			}
+//		}, false);
+//	}
 }

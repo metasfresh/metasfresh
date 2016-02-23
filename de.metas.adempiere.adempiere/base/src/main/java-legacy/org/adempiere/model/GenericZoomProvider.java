@@ -22,9 +22,9 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_M_RMA;
 import org.compiere.model.MColumn;
 import org.compiere.model.MQuery;
-import org.compiere.model.MRMA;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.CLogger;
@@ -34,9 +34,9 @@ import org.compiere.util.Env;
 /**
  * Generic provider of zoom targets. Contains pieces of {@link org.compiere.apps.AZoomAcross}
  * methods <code>getZoomTargets</code> and <code>addTarget</code>
- * 
+ *
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194  ] Advanced Zoom and RelationTypes
- * 
+ *
  */
 public class GenericZoomProvider implements IZoomProvider {
 
@@ -141,7 +141,7 @@ public class GenericZoomProvider implements IZoomProvider {
 
 	private static MQuery evaluateQuery(String targetTableName,
 			int AD_Window_ID, String Name, Boolean isSO, final PO po) {
-		
+
 		MTable targetTable = MTable.get(Env.getCtx(), targetTableName);
 		if (targetTable == null)
 			return MQuery.getNoRecordQuery(targetTableName, false);
@@ -157,14 +157,14 @@ public class GenericZoomProvider implements IZoomProvider {
 			query.setZoomTableName(targetTableName);
 			//query.setZoomColumnName(po.get_KeyColumns()[0]);
 			query.setZoomValue(po.get_ID());
-			
+
 			final int count = DB.getSQLValue(ITrx.TRXNAME_None, "SELECT COUNT(*) FROM " + targetTableName + " WHERE "+ query.getWhereClause(false));
 			query.setRecordCount(count > 0 ? count : 0);
-			
+
 			return query;
 		}
 		// metas: end
-		
+
 		if (targetColumn == null)
 			return MQuery.getNoRecordQuery(targetTableName, false);
 
@@ -187,7 +187,7 @@ public class GenericZoomProvider implements IZoomProvider {
 			 * IsSOTrx=true and Shipment for IsSOTrx=false
 			 */
 
-			if (MRMA.Table_Name.equals(po.get_TableName())
+			if (I_M_RMA.Table_Name.equals(po.get_TableName())
 					&& (AD_Window_ID == 169 || AD_Window_ID == 184)) {
 				isSO = !isSO;
 			}

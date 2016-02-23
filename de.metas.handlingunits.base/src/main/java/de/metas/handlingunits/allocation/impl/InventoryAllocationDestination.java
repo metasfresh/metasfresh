@@ -44,7 +44,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.allocation.IAllocationDestination;

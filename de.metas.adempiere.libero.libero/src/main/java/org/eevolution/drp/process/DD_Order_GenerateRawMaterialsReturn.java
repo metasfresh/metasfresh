@@ -57,8 +57,8 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;

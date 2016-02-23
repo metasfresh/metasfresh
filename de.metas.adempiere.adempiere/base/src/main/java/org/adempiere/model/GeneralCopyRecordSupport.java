@@ -10,12 +10,12 @@ package org.adempiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -61,11 +61,9 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluator;
 
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
-
 /**
  * @author Cristina Ghita, METAS.RO
- * 
+ *
  */
 public class GeneralCopyRecordSupport implements CopyRecordSupport
 {
@@ -143,9 +141,9 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 	/**
 	 * Called after the record was copied, right before saving it. This default implementation makes sure that <b>if</b> both <code>to</code> and <code>from</code> have an ASI, then the ASI is cloned (see {@task http://dewiki908/mediawiki/index.php/08789_CopyWithDetails:_clone_ASI_instead_of_just_coyping_its_ID_%28100318477643%29}).
-	 * 
+	 *
 	 * Can be overridden by extending classes, but generally, please call this super-method.
-	 * 
+	 *
 	 * @param to the copy
 	 * @param from the source
 	 * @see IAttributeSetInstanceBL#cloneASI(Object, Object)
@@ -153,7 +151,10 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	@OverridingMethodsMustInvokeSuper
 	protected void onRecordCopied(final PO to, final PO from)
 	{
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(to,  from);
+		for(final IOnRecordCopiedListener listener: onRecordCopiedListeners)
+		{
+			listener.onRecordCopied(to, from);
+		}
 	}
 
 	@Override
@@ -336,7 +337,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 	/**
 	 * verify if a table can or not be copied
-	 * 
+	 *
 	 * @param tableName
 	 * @return true if the table can be copied
 	 */
@@ -412,7 +413,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 	/**
 	 * metas: same method in GridField. TODO: refactoring
-	 * 
+	 *
 	 * @param value
 	 * @param po
 	 * @param columnName
@@ -489,7 +490,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 	/**
 	 * Similar method to {@link org.compiere.model.GridField#getDefault()}, with one difference: the <code>AccessLevel</code> is only applied if the column has <code>IsCalculated='N'</code>.
-	 * 
+	 *
 	 * <pre>
 	 * 	(a) Key/Parent/IsActive/SystemAccess
 	 *      (b) SQL Default
@@ -497,11 +498,11 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 *      (d) User Preference
 	 * 	(e) System Preference
 	 * 	(f) DataType Defaults
-	 * 
+	 *
 	 *  Don't default from Context => use explicit defaultValue
 	 *  (would otherwise copy previous record)
 	 * </pre>
-	 * 
+	 *
 	 * @return default value or null
 	 */
 	protected Object getDefault(final PO po, final String columnName)
@@ -727,5 +728,18 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	public final void setParentPO(PO parentPO)
 	{
 		this.parentPO = parentPO;
+	}
+
+	private final List<IOnRecordCopiedListener> onRecordCopiedListeners = new ArrayList<>();
+
+	/**
+	 * Allows other modules to install customer code to be executed each time a record was copied.
+	 *
+	 * @param listener
+	 */
+	@Override
+	public void addOnRecordCopiedListener(IOnRecordCopiedListener listener)
+	{
+		onRecordCopiedListeners.add(listener);
 	}
 }

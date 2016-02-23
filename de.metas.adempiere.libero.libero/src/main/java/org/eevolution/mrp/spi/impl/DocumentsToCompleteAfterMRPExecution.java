@@ -47,7 +47,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPExecutorJobs;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 public class DocumentsToCompleteAfterMRPExecution implements Runnable
 {

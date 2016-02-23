@@ -33,7 +33,6 @@
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -47,7 +46,11 @@
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
-			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
 		</dependency>
 
 	</dependencies>

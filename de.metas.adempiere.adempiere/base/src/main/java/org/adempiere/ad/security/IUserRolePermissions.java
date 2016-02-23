@@ -34,10 +34,11 @@ import org.adempiere.ad.security.permissions.OrgResource;
 import org.adempiere.ad.security.permissions.Permission;
 import org.adempiere.ad.security.permissions.ResourceAsPermission;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
-import org.compiere.process.api.IDocActionOptionsContext;
 import org.compiere.util.Env;
 
 import com.google.common.base.Optional;
+
+import de.metas.document.engine.IDocActionOptionsContext;
 
 public interface IUserRolePermissions
 {

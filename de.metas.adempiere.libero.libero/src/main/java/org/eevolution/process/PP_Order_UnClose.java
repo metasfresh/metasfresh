@@ -46,7 +46,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * Unclose a manufacturing order.

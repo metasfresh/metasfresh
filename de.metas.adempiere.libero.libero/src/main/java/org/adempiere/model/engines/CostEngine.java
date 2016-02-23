@@ -80,7 +80,7 @@ import org.eevolution.model.RoutingService;
 import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.X_PP_Cost_Collector;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.product.IProductBL;
 
 /**

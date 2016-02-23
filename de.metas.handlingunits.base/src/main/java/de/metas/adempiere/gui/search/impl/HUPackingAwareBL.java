@@ -26,6 +26,7 @@ package de.metas.adempiere.gui.search.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.model.I_C_UOM;
@@ -33,7 +34,6 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;

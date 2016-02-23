@@ -49,8 +49,8 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocumentLocationBL;
+import de.metas.document.engine.IDocActionBL;
 
 @Interceptor(I_C_Invoice.class)
 public class C_Invoice

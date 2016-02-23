@@ -10,20 +10,21 @@ package org.adempiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordSupport.IOnRecordCopiedListener;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -38,7 +40,7 @@ import org.compiere.model.GridTab;
 
 /**
  * {@link CopyRecordSupport} factory.
- * 
+ *
  * @author Cristina Ghita, METAS.RO
  */
 @ThreadSafe
@@ -53,26 +55,36 @@ public class CopyRecordFactory
 
 	/**
 	 * Creates a new instance of {@link CopyRecordSupport}, used to assist while copying records.
-	 * 
+	 *
 	 * @param tableName
 	 * @return {@link CopyRecordSupport}; never returns null
 	 */
 	public static CopyRecordSupport getCopyRecordSupport(final String tableName)
 	{
+		CopyRecordSupport result = null;
+
 		final Class<? extends CopyRecordSupport> copyRecordSupportClass = tableName2copyRecordSupportClass.get(tableName);
 		if (copyRecordSupportClass == null)
 		{
-			return new GeneralCopyRecordSupport();
+			result = new GeneralCopyRecordSupport();
+		}
+		else
+		{
+			try
+			{
+				result = copyRecordSupportClass.newInstance();
+			}
+			catch (Exception e)
+			{
+				throw new AdempiereException("Failed creating " + CopyRecordSupport.class + " instance for " + tableName, e);
+			}
 		}
 
-		try
+		for (final IOnRecordCopiedListener listener : onRecordCopiedListeners)
 		{
-			return copyRecordSupportClass.newInstance();
+			result.addOnRecordCopiedListener(listener);
 		}
-		catch (Exception e)
-		{
-			throw new AdempiereException("Failed creating " + CopyRecordSupport.class + " instance for " + tableName, e);
-		}
+		return result;
 	}
 
 	public static void registerCopyRecordSupport(final String tableName, final Class<? extends CopyRecordSupport> copyRecordSupportClass)
@@ -92,7 +104,7 @@ public class CopyRecordFactory
 	}
 
 	/**
-	 * 
+	 *
 	 * @param gridTab
 	 * @return true if copy-with-details functionality is enabled for given {@link GridTab}'s table name
 	 * @see #isEnabledForTableName(String)
@@ -109,7 +121,7 @@ public class CopyRecordFactory
 	}
 
 	/**
-	 * 
+	 *
 	 * @param tableName
 	 * @return true if copy-with-details functionality is enabled for given <code>tableName</code>
 	 */
@@ -123,4 +135,18 @@ public class CopyRecordFactory
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		enabledTableNames.add(tableName);
 	}
+
+	private static final List<IOnRecordCopiedListener> onRecordCopiedListeners = new ArrayList<>();
+
+	/**
+	 * Allows other modules to install customer code to be executed each time a record was copied.
+	 * Add a listener here, and it will automatically be added to each {@link CopyRecordSupport} instance that is returned by {@link #getCopyRecordSupport(String)}.
+	 *
+	 * @param listener
+	 */
+	public static void addOnRecordCopiedListener(IOnRecordCopiedListener listener)
+	{
+		onRecordCopiedListeners.add(listener);
+	}
+
 }

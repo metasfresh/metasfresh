@@ -18,7 +18,6 @@
 	</properties>
 
 	<dependencies>
-		<!-- Adempiere -->
 		<dependency>
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>de.metas.ui.web.base</artifactId>
@@ -28,14 +27,12 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.client</artifactId>
-			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 

@@ -109,8 +109,8 @@ import de.metas.commission.service.impl.SponsorCondition;
 import de.metas.commission.util.CommissionConstants;
 import de.metas.commission.util.Messages;
 import de.metas.document.ICopyHandlerBL;
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocumentPA;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * Commission Module Main Validator

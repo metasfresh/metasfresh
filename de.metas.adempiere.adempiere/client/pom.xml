@@ -28,15 +28,11 @@
 			<classifier>tests</classifier>
 		</dependency>
 
-<!-- 
-not needed by us		
 		<dependency>
-			<groupId>org.adempiere.server</groupId>
-			<artifactId>glassfish-facet</artifactId>
-			<version>${project.version}</version>			
-			<scope>runtime</scope>
-		</dependency>		
--->
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+		</dependency>
+
 <!-- not needed
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>

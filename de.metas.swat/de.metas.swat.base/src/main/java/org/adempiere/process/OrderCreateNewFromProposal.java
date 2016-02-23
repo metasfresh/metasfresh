@@ -39,7 +39,7 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 public final class OrderCreateNewFromProposal extends SvrProcess 
 {

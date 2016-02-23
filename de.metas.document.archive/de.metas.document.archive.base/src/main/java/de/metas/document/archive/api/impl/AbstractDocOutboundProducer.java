@@ -35,11 +35,11 @@ import org.compiere.util.CLogger;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.document.IDocActionBL;
 import de.metas.document.archive.api.IDocOutboundProducer;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * {@link IDocOutboundProducer} base implementation.

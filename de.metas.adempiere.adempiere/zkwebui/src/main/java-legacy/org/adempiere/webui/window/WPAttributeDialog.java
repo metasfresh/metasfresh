@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.logging.Level;
 
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Button;
@@ -69,21 +70,19 @@ import org.zkoss.zul.Menuitem;
 import org.zkoss.zul.Menupopup;
 import org.zkoss.zul.impl.InputElement;
 
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
-
 /**
  *  Product Attribute Set Product/Instance Dialog Editor.
  * 	Called from VPAttribute.actionPerformed
  *
  *  @author Jorg Janke
- *  
+ *
  *  ZK Port
  *  @author Low Heng Sin
  */
 public class WPAttributeDialog extends Window implements EventListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -7810825026970615029L;
 
@@ -96,8 +95,8 @@ public class WPAttributeDialog extends Window implements EventListener
 	 * 	@param AD_Column_ID column
 	 * 	@param WindowNo window
 	 */
-	public WPAttributeDialog (int M_AttributeSetInstance_ID, 
-		int M_Product_ID, int C_BPartner_ID, 
+	public WPAttributeDialog (int M_AttributeSetInstance_ID,
+		int M_Product_ID, int C_BPartner_ID,
 		boolean productWindow, int AD_Column_ID, int WindowNo)
 	{
 		super ();
@@ -107,8 +106,8 @@ public class WPAttributeDialog extends Window implements EventListener
 		this.setWidth("500px");
 		this.setHeight("600px");
 		this.setSizable(true);
-		
-		log.config("M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID 
+
+		log.config("M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID
 			+ ", M_Product_ID=" + M_Product_ID
 			+ ", C_BPartner_ID=" + C_BPartner_ID
 			+ ", ProductW=" + productWindow + ", Column=" + AD_Column_ID);
@@ -122,12 +121,12 @@ public class WPAttributeDialog extends Window implements EventListener
 
 		//get columnName from ad_column
 		m_columnName = DB.getSQLValueString(null, "SELECT ColumnName FROM AD_Column WHERE AD_Column_ID = ?", m_AD_Column_ID);
-		if (m_columnName == null || m_columnName.trim().length() == 0) 
+		if (m_columnName == null || m_columnName.trim().length() == 0)
 		{
 			//fallback
 			m_columnName = "M_AttributeSetInstance_ID";
 		}
-		
+
 		try
 		{
 			init();
@@ -158,7 +157,7 @@ public class WPAttributeDialog extends Window implements EventListener
 	private boolean					m_productWindow = false;
 	/**	Change							*/
 	private boolean					m_changed = false;
-	
+
 	private CLogger					log = CLogger.getCLogger(getClass());
 	/** Row Counter					*/
 	private int						m_row = 0;
@@ -168,7 +167,7 @@ public class WPAttributeDialog extends Window implements EventListener
 	private static final int		INSTANCE_VALUE_LENGTH = 40;
 
 	private Checkbox	cbNewEdit = new Checkbox();
-	private Button		bSelect = new Button(); 
+	private Button		bSelect = new Button();
 	//	Lot
 //	private VString fieldLotString = new VString ("Lot", false, false, true, 20, 20, null, null);
 	private Textbox fieldLotString = new Textbox();
@@ -189,7 +188,7 @@ public class WPAttributeDialog extends Window implements EventListener
 	private Panel centerPanel = new Panel();
 	private Grid centerLayout = new Grid();
 	private ConfirmPanel confirmPanel = new ConfirmPanel (true);
-	
+
 	private String m_columnName = null;
 
 	/**
@@ -201,7 +200,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		mainLayout.setParent(this);
 		mainLayout.setWidth("100%");
 		mainLayout.setHeight("100%");
-		
+
 		Center center = new Center();
 		center.setParent(mainLayout);
 		center.setFlex(true);
@@ -210,7 +209,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		South south = new South();
 		south.setParent(mainLayout);
 		south.appendChild(confirmPanel);
-		
+
 		centerPanel.appendChild(centerLayout);
 		centerLayout.setOddRowSclass("even");
 		//
@@ -225,12 +224,12 @@ public class WPAttributeDialog extends Window implements EventListener
 	{
 		Rows rows = new Rows();
 		rows.setParent(centerLayout);
-		
+
 		if (m_M_Product_ID == 0 && !m_productWindow)
 			return false;
-		
+
 		MAttributeSet as = null;
-		
+
 		if (m_M_Product_ID != 0)
 		{
 			//	Get Model
@@ -241,19 +240,19 @@ public class WPAttributeDialog extends Window implements EventListener
 				return false;
 			}
 			Env.setContext(Env.getCtx(), m_WindowNo, "M_AttributeSet_ID", m_masi.getM_AttributeSet_ID());
-	
+
 			//	Get Attribute Set
 			as = m_masi.getMAttributeSet();
 		}
-		else 
+		else
 		{
 			int M_AttributeSet_ID = Env.getContextAsInt(Env.getCtx(), m_WindowNoParent, "M_AttributeSet_ID");
 			m_masi = new MAttributeSetInstance (Env.getCtx(), 0, M_AttributeSet_ID, null);
 			as = m_masi.getMAttributeSet();
 		}
-		
+
 		//	Product has no Attribute Set
-		if (as == null)		
+		if (as == null)
 		{
 			FDialog.error(m_WindowNo, this, "PAttributeNoAttributeSet");
 			return false;
@@ -281,7 +280,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		else	//	Set Instance Attributes
 		{
 			Row row = new Row();
-			
+
 			//	New/Edit - Selection
 			if (m_M_AttributeSetInstance_ID == 0)		//	new
 				cbNewEdit.setLabel(Msg.getMsg(Env.getCtx(), "NewRecord"));
@@ -294,7 +293,7 @@ public class WPAttributeDialog extends Window implements EventListener
 			bSelect.addEventListener(Events.ON_CLICK, this);
 			row.appendChild(bSelect);
 			rows.appendChild(row);
-			
+
 			//	All Attributes
 			MAttribute[] attributes = as.getMAttributes (true);
 			log.fine ("Instance Attributes=" + attributes.length);
@@ -319,7 +318,7 @@ public class WPAttributeDialog extends Window implements EventListener
 			fieldLotString.setText (m_masi.getLot());
 			//	M_Lot_ID
 		//	int AD_Column_ID = 9771;	//	M_AttributeSetInstance.M_Lot_ID
-		//	fieldLot = new VLookup ("M_Lot_ID", false,false, true, 
+		//	fieldLot = new VLookup ("M_Lot_ID", false,false, true,
 		//		MLookupFactory.get(Env.getCtx(), m_WindowNo, 0, AD_Column_ID, DisplayType.TableDir));
 			String sql = "SELECT M_Lot_ID, Name "
 				+ "FROM M_Lot l "
@@ -332,7 +331,7 @@ public class WPAttributeDialog extends Window implements EventListener
 			for (KeyNamePair pair : keyNamePairs) {
 				fieldLot.appendItem(pair.getName(), pair.getKey());
 			}
-						
+
 			label = new Label (Msg.translate(Env.getCtx(), "M_Lot_ID"));
 			row = new Row();
 			row.setParent(rows);
@@ -349,7 +348,7 @@ public class WPAttributeDialog extends Window implements EventListener
 						fieldLot.setSelectedIndex(i);
 						fieldLotString.setReadonly(true);
 						break;
-					} 
+					}
 				}
 			}
 			fieldLot.addEventListener(Events.ON_SELECT, this);
@@ -367,7 +366,7 @@ public class WPAttributeDialog extends Window implements EventListener
 					bLot.addEventListener(Events.ON_CLICK, this);
 				}
 			}
-			//	Popup 
+			//	Popup
 //			fieldLot.addMouseListener(new VPAttributeDialog_mouseAdapter(this));    //  popup
 			mZoom = new Menuitem(Msg.getMsg(Env.getCtx(), "Zoom"), "images/Zoom16.png");
 			mZoom.addEventListener(Events.ON_CLICK, this);
@@ -385,7 +384,7 @@ public class WPAttributeDialog extends Window implements EventListener
 			row.appendChild(label);
 			row.appendChild(fieldSerNo);
 			fieldSerNo.setText(m_masi.getSerNo());
-			
+
 			//	New SerNo Button
 			if (m_masi.getMAttributeSet().getM_SerNoCtl_ID() != 0)
 			{
@@ -418,7 +417,7 @@ public class WPAttributeDialog extends Window implements EventListener
 				fieldGuaranteeDate.setValue(m_masi.getGuaranteeDate());
 			}
 			row.appendChild(label);
-			row.appendChild(fieldGuaranteeDate);			
+			row.appendChild(fieldGuaranteeDate);
 		}	//	GuaranteeDate
 
 		if (m_row == 0)
@@ -443,7 +442,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		row.setParent(rows);
 		row.appendChild(label);
 		row.appendChild(fieldDescription);
-		
+
 		return true;
 	}	//	initAttribute
 
@@ -456,15 +455,15 @@ public class WPAttributeDialog extends Window implements EventListener
 	private void addAttributeLine (Rows rows, MAttribute attribute, boolean product, boolean readOnly)
 	{
 		log.fine(attribute + ", Product=" + product + ", R/O=" + readOnly);
-		
+
 		m_row++;
 		Label label = new Label (attribute.getName());
 		if (product)
 			label.setStyle("font-weight: bold");
-			
+
 		if (attribute.getDescription() != null)
 			label.setTooltiptext(attribute.getDescription());
-		
+
 		Row row = rows.newRow();
 		row.appendChild(label.rightAlign());
 		//
@@ -474,7 +473,7 @@ public class WPAttributeDialog extends Window implements EventListener
 			I_M_AttributeValue[] values = attribute.getMAttributeValues(Env.getSOTrxOrNull(Env.getCtx(), m_WindowNo));	//	optional = null
 			Listbox editor = new Listbox();
 			editor.setMold("select");
-			for (I_M_AttributeValue value : values) 
+			for (I_M_AttributeValue value : values)
 			{
 				ListItem item = new ListItem(value != null ? value.getName() : "", value);
 				editor.appendChild(item);
@@ -506,7 +505,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		}
 		else if (MAttribute.ATTRIBUTEVALUETYPE_Number.equals(attribute.getAttributeValueType()))
 		{
-//			VNumber editor = new VNumber(attribute.getName(), attribute.isMandatory(), 
+//			VNumber editor = new VNumber(attribute.getName(), attribute.isMandatory(),
 //				false, true, DisplayType.Number, attribute.getName());
 			NumberBox editor = new NumberBox(false);
 			if (instance != null)
@@ -521,7 +520,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		}
 		else	//	Text Field
 		{
-//			VString editor = new VString (attribute.getName(), attribute.isMandatory(), 
+//			VString editor = new VString (attribute.getName(), attribute.isMandatory(),
 //				false, true, 20, INSTANCE_VALUE_LENGTH, null, null);
 			Textbox editor = new Textbox();
 			if (instance != null)
@@ -542,16 +541,16 @@ public class WPAttributeDialog extends Window implements EventListener
 	{
 		Env.clearWinContext(m_WindowNo);
 		//
-		Env.setContext(Env.getCtx(), m_WindowNoParent, Env.TAB_INFO, m_columnName, 
+		Env.setContext(Env.getCtx(), m_WindowNoParent, Env.TAB_INFO, m_columnName,
 			String.valueOf(m_M_AttributeSetInstance_ID));
-		Env.setContext(Env.getCtx(), m_WindowNoParent, Env.TAB_INFO, "M_Locator_ID", 
+		Env.setContext(Env.getCtx(), m_WindowNoParent, Env.TAB_INFO, "M_Locator_ID",
 			String.valueOf(m_M_Locator_ID));
 		//
 		this.detach();
 	}	//	dispose
 
 	@Override
-	public void onEvent(Event e) throws Exception 
+	public void onEvent(Event e) throws Exception
 	{
 		//	Select Instance
 		if (e.getTarget() == bSelect)
@@ -588,7 +587,7 @@ public class WPAttributeDialog extends Window implements EventListener
 			{
 				ListItem item = new ListItem(pp.getName(), pp.getKey());
 				fieldLot.appendChild(item);
-				fieldLot.setSelectedItem(item);				
+				fieldLot.setSelectedItem(item);
 			}
 		}
 		//	Create New SerNo
@@ -596,7 +595,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		{
 			fieldSerNo.setText(m_masi.getSerNo(true));
 		}
-		
+
 		//	OK
 		else if (e.getTarget().getId().equals("Ok"))
 		{
@@ -627,9 +626,9 @@ public class WPAttributeDialog extends Window implements EventListener
 	private boolean cmd_select()
 	{
 		log.config("");
-		
+
 		int M_Warehouse_ID = Env.getContextAsInt(Env.getCtx(), m_WindowNoParent, "M_Warehouse_ID");
-		
+
 		int C_DocType_ID = Env.getContextAsInt(Env.getCtx(), m_WindowNoParent, "C_DocType_ID");
 		if (C_DocType_ID > 0) {
 			MDocType doctype = new MDocType (Env.getCtx(), C_DocType_ID, null);
@@ -637,13 +636,13 @@ public class WPAttributeDialog extends Window implements EventListener
 			if (docbase.equals(MDocType.DOCBASETYPE_MaterialReceipt))
 				M_Warehouse_ID = 0;
 		}
-		
+
 		// teo_sarca [ 1564520 ] Inventory Move: can't select existing attributes
 		int M_Locator_ID = 0;
 		if (m_AD_Column_ID == 8551) { // TODO: hardcoded: M_MovementLine[324].M_AttributeSetInstance_ID[8551]
 			M_Locator_ID = Env.getContextAsInt(Env.getCtx(), m_WindowNoParent, X_M_MovementLine.COLUMNNAME_M_Locator_ID, true); // only window
 		}
-		
+
 		String title = "";
 		//	Get Text
 		String sql = "SELECT p.Name, w.Name, w.M_Warehouse_ID FROM M_Product p, M_Warehouse w "
@@ -671,8 +670,8 @@ public class WPAttributeDialog extends Window implements EventListener
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		//		
-		WPAttributeInstance pai = new WPAttributeInstance(title, 
+		//
+		WPAttributeInstance pai = new WPAttributeInstance(title,
 			M_Warehouse_ID, M_Locator_ID, m_M_Product_ID, m_C_BPartner_ID);
 		if (pai.getM_AttributeSetInstance_ID() != -1)
 		{
@@ -710,7 +709,7 @@ public class WPAttributeDialog extends Window implements EventListener
 				((Listbox)editor).setEnabled(rw);
 			else if (editor instanceof NumberBox)
 				((NumberBox)editor).setEnabled(rw);
-		}	
+		}
 	}	//	cmd_newEdit
 
 	/**
@@ -839,7 +838,7 @@ public class WPAttributeDialog extends Window implements EventListener
 			}
 			m_changed = true;
 		}	//	for all attributes
-		
+
 		//	Save Model
 		if (m_changed)
 		{
@@ -857,7 +856,7 @@ public class WPAttributeDialog extends Window implements EventListener
 		return true;
 	}	//	saveSelection
 
-	
+
 	/**************************************************************************
 	 * 	Get Instance ID
 	 * 	@return Instance ID
@@ -875,14 +874,14 @@ public class WPAttributeDialog extends Window implements EventListener
 	{
 		return m_M_AttributeSetInstanceName;
 	}	//	getM_AttributeSetInstanceName
-	
+
 	/**
 	 * Get Locator ID
 	 * @return M_Locator_ID
 	 */
 	public int getM_Locator_ID()
 	{
-		return m_M_Locator_ID; 
+		return m_M_Locator_ID;
 	}
 
 	/**

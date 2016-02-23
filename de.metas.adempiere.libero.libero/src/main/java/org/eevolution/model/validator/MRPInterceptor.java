@@ -41,7 +41,7 @@ import org.eevolution.mrp.process.PP_MRP_RecreateForDocument;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * MRP Model Interceptors

@@ -47,8 +47,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.inout.IEmptiesInOutProducer;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.inout.IInOutBL;

@@ -47,7 +47,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.builder.BuilderSupport;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * Default allocation builder implementation. Other modules/project can subclass this if they need to build extended allocations.

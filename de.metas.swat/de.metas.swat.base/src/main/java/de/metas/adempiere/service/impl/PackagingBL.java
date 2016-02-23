@@ -69,7 +69,7 @@ import de.metas.adempiere.form.PackingItem;
 import de.metas.adempiere.form.UsedBin;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IPackagingBL;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;

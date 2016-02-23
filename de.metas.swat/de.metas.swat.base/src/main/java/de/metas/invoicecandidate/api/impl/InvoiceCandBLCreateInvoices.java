@@ -69,7 +69,7 @@ import org.compiere.util.TrxRunnable2;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoicecandidate.api.IAggregationEngine;

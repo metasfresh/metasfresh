@@ -59,9 +59,9 @@ import org.compiere.model.Query;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
-import org.compiere.process.api.IDocActionOptionsContext;
 import org.compiere.util.Env;
 
+import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.shipping.api.IShipperTransportationBL;
 
 /**

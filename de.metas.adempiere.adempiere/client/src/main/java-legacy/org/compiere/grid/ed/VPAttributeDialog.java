@@ -52,6 +52,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -97,7 +98,6 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.
@@ -110,7 +110,7 @@ public class VPAttributeDialog extends CDialog
 		implements ActionListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1062346984681892620L;
 
@@ -133,7 +133,7 @@ public class VPAttributeDialog extends CDialog
 	{
 		/**
 		 * Constructor
-		 * 
+		 *
 		 * @param adaptee adaptee
 		 */
 		VPAttributeDialog_mouseAdapter(VPAttributeDialog adaptee)
@@ -145,7 +145,7 @@ public class VPAttributeDialog extends CDialog
 
 		/**
 		 * Mouse Listener
-		 * 
+		 *
 		 * @param e MouseEvent
 		 */
 		@Override
@@ -267,7 +267,7 @@ public class VPAttributeDialog extends CDialog
 
 	/**
 	 * Layout
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void jbInit() throws Exception
@@ -315,7 +315,7 @@ public class VPAttributeDialog extends CDialog
 
 	/**
 	 * Loads the ASI template to be used.
-	 * 
+	 *
 	 * @param fromAttributeSetInstanceId
 	 * @return <ul>
 	 *         <li>ASI template
@@ -749,7 +749,7 @@ public class VPAttributeDialog extends CDialog
 
 	/**
 	 * Sets the given result (which will be returned to caller) and dispose this dialog.
-	 * 
+	 *
 	 * @param asi
 	 * @param M_Locator_ID
 	 */
@@ -769,7 +769,7 @@ public class VPAttributeDialog extends CDialog
 		removeAll();
 
 		Env.clearWinContext(m_WindowNo);
-		
+
 		//
 		// FIXME: we need to set the Info on parent's WindowNo
 		//
@@ -787,7 +787,7 @@ public class VPAttributeDialog extends CDialog
 
 	/**
 	 * ActionListener
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -875,7 +875,7 @@ public class VPAttributeDialog extends CDialog
 
 	/**
 	 * Existing Attribute Set Instance Selection Button
-	 * 
+	 *
 	 * @return true if selected
 	 */
 	private void cmd_select()
@@ -1008,7 +1008,7 @@ public class VPAttributeDialog extends CDialog
 
 	/**
 	 * Save Selection
-	 * 
+	 *
 	 * @return asi which was saved or null
 	 *
 	 * @return true if saved
@@ -1183,7 +1183,7 @@ public class VPAttributeDialog extends CDialog
 
 	/**
 	 * Get Locator ID
-	 * 
+	 *
 	 * @return M_Locator_ID
 	 */
 	public int getM_Locator_ID()
@@ -1193,7 +1193,7 @@ public class VPAttributeDialog extends CDialog
 
 	/**
 	 * Returns true if user selected/edited the ASI and he/she pressed OK (did not canceled).
-	 * 
+	 *
 	 * @return true if changed
 	 */
 	public boolean isChanged()

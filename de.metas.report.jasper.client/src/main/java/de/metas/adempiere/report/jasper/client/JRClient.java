@@ -52,7 +52,7 @@ import org.compiere.util.Language;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 public class JRClient
 {

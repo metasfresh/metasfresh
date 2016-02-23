@@ -20,7 +20,7 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_InOut;
 import org.compiere.process.SvrProcess;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.IMaterialTrackingReportDAO;

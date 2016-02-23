@@ -23,7 +23,6 @@
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		
 		<dependency>
@@ -43,7 +42,6 @@
 		<dependency>
 			<groupId>de.metas.document</groupId>
 			<artifactId>de.metas.document.refid</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- task 07789: we have this dependency to be able to augment SEPA_ExportLines with ESR account ID info -->

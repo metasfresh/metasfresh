@@ -50,7 +50,7 @@ import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.IPrintingService;
 import de.metas.adempiere.util.CacheCtx;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * @author tsa

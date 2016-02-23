@@ -43,7 +43,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;

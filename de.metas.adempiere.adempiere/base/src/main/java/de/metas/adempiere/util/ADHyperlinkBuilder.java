@@ -43,7 +43,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 public class ADHyperlinkBuilder
 {

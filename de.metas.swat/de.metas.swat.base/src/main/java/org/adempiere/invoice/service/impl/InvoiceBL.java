@@ -50,8 +50,8 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.ICopyHandlerBL;
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.document.engine.IDocActionBL;
 
 public final class InvoiceBL extends AbstractInvoiceBL
 {

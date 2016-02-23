@@ -10,12 +10,12 @@ package org.adempiere.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,9 +24,9 @@ package org.adempiere.util;
 
 
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_M_InOut;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_C_OrderLine;
 
 public final class CustomColNames {
@@ -45,7 +45,7 @@ public final class CustomColNames {
 	public static final String AD_USER_ISDEFAULTCONTACT = "IsDefaultContact";
 
 	public static final String C_BPartner_M_FREIGHTCOST_ID = "M_FreightCost_ID";
-	
+
 	@Deprecated
 	public static final String C_BPartner_POSTAGEFREEAMT = "PostageFreeAmt";
 	public static final String C_BPartner_VATaxID = "VATaxID";
@@ -109,7 +109,7 @@ public final class CustomColNames {
 	public static final String C_OrderLine_CHARGE = I_C_OrderLine.COLUMNNAME_C_Charge_ID;
 	@Deprecated
 	public static final String C_OrderLine_UOM = I_C_OrderLine.COLUMNNAME_C_UOM_ID;
-	
+
 //	@Deprecated
 //	public static final String C_Order_M_PRODUCT_ID_FASTINPUT = "M_Product_ID_FastInput";
 //	@Deprecated
@@ -126,9 +126,9 @@ public final class CustomColNames {
 	public static final String C_Tax_ISTO_EU_LOCATION = "IsToEULocation";
 
 	public static final String M_InOut_ISUSE_BPARTNER_ADDRESS = "IsUseBPartnerAddress";
-	
+
 	/**
-	 * @deprecated use {@link I_M_InOut} instead	
+	 * @deprecated use {@link I_M_InOut} instead
 	 */
 	@Deprecated
 	public static final String M_InOut_BPARTNERADDRESS = "BPartnerAddress";

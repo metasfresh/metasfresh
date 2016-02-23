@@ -22,6 +22,10 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import javax.swing.JButton;
@@ -29,17 +33,19 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
+import org.adempiere.util.TypedAccessor;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.comparator.AccessorComparator;
+import org.adempiere.util.comparator.ComparableComparator;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.GridTab;
-import org.compiere.process.DocumentEngine;
-import org.compiere.process.api.IDocActionOptionsBL;
-import org.compiere.process.api.IDocActionOptionsContext;
-import org.compiere.process.api.impl.DefaultDocActionOptionsContext;
+import org.compiere.model.I_AD_Ref_List;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
@@ -50,15 +56,18 @@ import org.compiere.util.Msg;
 import org.compiere.wf.MWFActivity;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.document.engine.DefaultDocActionOptionsContext;
+import de.metas.document.engine.IDocActionOptionsBL;
+import de.metas.document.engine.IDocActionOptionsContext;
 
 /**
- *	Displays valid Document Action Options based on context
+ * Displays valid Document Action Options based on context
  *
- * 	@author 	Jorg Janke
- * 	@version 	$Id: VDocAction.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: VDocAction.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
 public class VDocAction extends CDialog
-	implements ActionListener
+		implements ActionListener
 {
 	/**
 	 * 
@@ -76,7 +85,7 @@ public class VDocAction extends CDialog
 	 * @param button button
 	 * @param Record_ID record id
 	 */
-	public VDocAction (final int WindowNo, final GridTab mTab, final VButton button, final int Record_ID)
+	public VDocAction(final int WindowNo, final GridTab mTab, final VButton button, final int Record_ID)
 	{
 		super(Env.getWindow(WindowNo), Services.get(IMsgBL.class).translate(Env.getCtx(), "DocAction"), true);
 		log.config("");
@@ -86,8 +95,8 @@ public class VDocAction extends CDialog
 		try
 		{
 			jbInit();
-			
-			//	dynamic init preparation
+
+			// dynamic init preparation
 			m_AD_Table_ID = Env.getContextAsInt(Env.getCtx(), WindowNo, "BaseTable_ID");
 			if (s_value == null)
 				readReference();
@@ -96,24 +105,24 @@ public class VDocAction extends CDialog
 			//
 			AEnv.positionCenterWindow(Env.getWindow(WindowNo), this);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			Services.get(IClientUI.class).error(WindowNo, ex);
 		}
-	}	//	VDocAction
+	}	// VDocAction
 
 	//
-	private int					m_WindowNo = 0;
-	private int					m_AD_Table_ID;
-	private boolean				m_OKpressed = false;
-	private final boolean		batchProcessingEnabled = false; // metas-tsa: we disabled it because it's buggy
-	private boolean				m_batch = false;
-	private GridTab         		m_mTab;
+	private int m_WindowNo = 0;
+	private int m_AD_Table_ID;
+	private boolean m_OKpressed = false;
+	private final boolean batchProcessingEnabled = false; // metas-tsa: we disabled it because it's buggy
+	private boolean m_batch = false;
+	private GridTab m_mTab;
 	//
-	private static String[]		s_value = null;
-	private static String[]		s_name;
-	private static String[]		s_description;
-	/**	Logger			*/
+	private static String[] s_value = null;
+	private static String[] s_name;
+	private static String[] s_description;
+	/** Logger */
 	private static CLogger log = CLogger.getCLogger(VDocAction.class);
 	//
 	private CPanel mainPanel = new CPanel();
@@ -128,8 +137,9 @@ public class VDocAction extends CDialog
 	private JButton batchButton = ConfirmPanel.createProcessButton(Msg.getMsg(Env.getCtx(), "StartBackground"));
 
 	/**
-	 *	Static Init
-	 *  @throws Exception
+	 * Static Init
+	 * 
+	 * @throws Exception
 	 */
 	void jbInit() throws Exception
 	{
@@ -155,50 +165,52 @@ public class VDocAction extends CDialog
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
 		confirmPanel.setActionListener(this);
 
-		if(batchProcessingEnabled)
+		if (batchProcessingEnabled)
 		{
 			confirmPanel.addButton(batchButton);
 			batchButton.addActionListener(this);
 		}
-	}	//	jbInit
+	}	// jbInit
 
 	/**
-	 *	Dynamic Init - determine valid DocActions based on DocStatus for the different documents.
-	 *  <pre>
+	 * Dynamic Init - determine valid DocActions based on DocStatus for the different documents.
+	 * 
+	 * <pre>
 	 *  DocStatus (131)
-			??                         Unknown
-			AP *                       Approved
-			CH                         Changed
-			CL *                       Closed
-			CO *                       Completed
-			DR                         Drafted
-			IN                         Inactive
-			NA                         Not Approved
-			PE                         Posting Error
-			PO *                       Posted
-			PR *                       Printed
-			RE                         Reversed
-			TE                         Transfer Error
-			TR *                       Transferred
-			VO *                       Voided
-			XX                         Being Processed
-	 *
+	 * 			??                         Unknown
+	 * 			AP *                       Approved
+	 * 			CH                         Changed
+	 * 			CL *                       Closed
+	 * 			CO *                       Completed
+	 * 			DR                         Drafted
+	 * 			IN                         Inactive
+	 * 			NA                         Not Approved
+	 * 			PE                         Posting Error
+	 * 			PO *                       Posted
+	 * 			PR *                       Printed
+	 * 			RE                         Reversed
+	 * 			TE                         Transfer Error
+	 * 			TR *                       Transferred
+	 * 			VO *                       Voided
+	 * 			XX                         Being Processed
+	 * 
 	 *   DocAction (135)
-			--                         <None>
-			AP *                       Approve
-			CL *                       Close
-			CO *                       Complete
-			PO *                       Post
-			PR *                       Print
-			RA                         Reverse - Accrual
-			RC                         Reverse - Correction
-			RE                         RE-activate
-			RJ                         Reject
-			TR *                       Transfer
-			VO *                       Void
-			XL                         Unlock
-	 *  </pre>
-	 * 	@param Record_ID id
+	 * 			--                         <None>
+	 * 			AP *                       Approve
+	 * 			CL *                       Close
+	 * 			CO *                       Complete
+	 * 			PO *                       Post
+	 * 			PR *                       Print
+	 * 			RA                         Reverse - Accrual
+	 * 			RC                         Reverse - Correction
+	 * 			RE                         RE-activate
+	 * 			RJ                         Reject
+	 * 			TR *                       Transfer
+	 * 			VO *                       Void
+	 * 			XL                         Unlock
+	 * </pre>
+	 * 
+	 * @param Record_ID id
 	 */
 	private void dynInit(int Record_ID)
 	{
@@ -215,25 +227,25 @@ public class VDocAction extends CDialog
 			return;
 		}
 
-		log.fine("DocStatus=" + DocStatus 
-			+ ", DocAction=" + DocAction + ", OrderType=" + OrderType 
-			+ ", IsSOTrx=" + IsSOTrx + ", Processing=" + Processing 
-			+ ", AD_Table_ID=" + m_AD_Table_ID + ", Record_ID=" + Record_ID);
+		log.fine("DocStatus=" + DocStatus
+				+ ", DocAction=" + DocAction + ", OrderType=" + OrderType
+				+ ", IsSOTrx=" + IsSOTrx + ", Processing=" + Processing
+				+ ", AD_Table_ID=" + m_AD_Table_ID + ", Record_ID=" + Record_ID);
 		//
 		String[] options = new String[s_value.length];
 		int index = 0;
 
 		/**
-		 * 	Check Existence of Workflow Activities
+		 * Check Existence of Workflow Activities
 		 */
-		final String wfStatus = MWFActivity.getActiveInfo(Env.getCtx(), m_AD_Table_ID, Record_ID); 
+		final String wfStatus = MWFActivity.getActiveInfo(Env.getCtx(), m_AD_Table_ID, Record_ID);
 		if (wfStatus != null)
 		{
 			ADialog.error(m_WindowNo, this, "WFActiveForRecord", wfStatus);
 			return;
 		}
-		
-		//	Status Change
+
+		// Status Change
 		if (!checkStatus(m_mTab.getTableName(), Record_ID, DocStatus))
 		{
 			ADialog.error(m_WindowNo, this, "DocumentStatusChanged");
@@ -289,7 +301,7 @@ public class VDocAction extends CDialog
 		// setDefault
 		if (DocAction.equals("--")) // If None, suggest closing
 		{
-			DocAction = DocumentEngine.ACTION_Close;
+			DocAction = org.compiere.process.DocAction.ACTION_Close;
 		}
 
 		String defaultV = "";
@@ -308,77 +320,84 @@ public class VDocAction extends CDialog
 	}	// dynInit
 
 	/**
-	 * 	Check Status Change
-	 *	@param TableName table name
-	 *	@param Record_ID record
-	 *	@param DocStatus current doc status
-	 *	@return true if status not changed
+	 * Check Status Change
+	 *
+	 * @param TableName table name
+	 * @param Record_ID record
+	 * @param DocStatus current doc status
+	 * @return true if status not changed
 	 */
-	private boolean checkStatus (String TableName, int Record_ID, String DocStatus)
+	private boolean checkStatus(String TableName, int Record_ID, String DocStatus)
 	{
-		String sql = "SELECT 2 FROM " + TableName 
-			+ " WHERE " + TableName + "_ID=" + Record_ID
-			+ " AND DocStatus='" + DocStatus + "'";
+		String sql = "SELECT 2 FROM " + TableName
+				+ " WHERE " + TableName + "_ID=" + Record_ID
+				+ " AND DocStatus='" + DocStatus + "'";
 		int result = DB.getSQLValue(null, sql);
 		return result == 2;
-	}	//	checkStatusChange
+	}	// checkStatusChange
 
-	
 	/**
-	 *	Number of options available (to decide to display it)
-	 *  @return item count
+	 * Number of options available (to decide to display it)
+	 * 
+	 * @return item count
 	 */
 	public int getNumberOfOptions()
 	{
 		return actionCombo.getItemCount();
-	}	//	getNumberOfOptions
+	}	// getNumberOfOptions
 
 	/**
-	 *	Should the process be started?
-	 *  @return OK pressed
+	 * Should the process be started?
+	 * 
+	 * @return OK pressed
 	 */
 	public boolean isStartProcess()
 	{
 		return m_OKpressed;
-	}	//	isStartProcess
+	}	// isStartProcess
 
 	/**
-	 *	Should the process be started in batch?
-	 *  @return batch
+	 * Should the process be started in batch?
+	 * 
+	 * @return batch
 	 */
 	public boolean isBatch()
 	{
 		return m_batch;
-	}	//	IsBatch
+	}	// IsBatch
 
 	/**
-	 *	Fill Vector with DocAction Ref_List(135) values
+	 * Fill Vector with DocAction Ref_List(135) values
 	 */
 	private void readReference()
 	{
-		ArrayList<String> v_value = new ArrayList<String>();
-		ArrayList<String> v_name = new ArrayList<String>();
-		ArrayList<String> v_description = new ArrayList<String>();
-		
-		DocumentEngine.readReferenceList(v_value, v_name, v_description);
+		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+		final Properties ctx = Env.getCtx();
 
-		//	convert to arrays
-		int size = v_value.size();
+		final List<I_AD_Ref_List> docActions = referenceDAO.retrieveListItemsOrderedByName(ctx, 135);
+	
+		// convert to arrays
+		int size = docActions.size();
 		s_value = new String[size];
 		s_name = new String[size];
 		s_description = new String[size];
+
 		for (int i = 0; i < size; i++)
 		{
-			s_value[i] = v_value.get(i);
-			s_name[i] = v_name.get(i);
-			s_description[i] = v_description.get(i);
-		}
-	}	//	readReference
+			final I_AD_Ref_List docAction = docActions.get(i);
+			final String adLanguage = Env.getAD_Language(ctx);
+			final I_AD_Ref_List docActionTrl = InterfaceWrapperHelper.translate(docAction, I_AD_Ref_List.class, adLanguage);
 
-	
+			s_value[i] = docActionTrl.getValue();
+			s_name[i] = docActionTrl.getName();
+			s_description[i] = docActionTrl.getDescription();
+		}
+	}
+
 	/**
-	 *	ActionListener
-	 *  @param e event
+	 * ActionListener
+	 * 
+	 * @param e event
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e)
@@ -402,42 +421,43 @@ public class VDocAction extends CDialog
 			return;
 
 		/**
-		 *	ActionCombo: display the description for the selection
+		 * ActionCombo: display the description for the selection
 		 */
 		int index = getSelectedIndex();
-		//	Display description
+		// Display description
 		if (index != -1)
 		{
 			message.setText(s_description[index]);
-		//	log.finer("DocAction=" + s_name[index] + " - " + s_value[index]);
+			// log.finer("DocAction=" + s_name[index] + " - " + s_value[index]);
 		}
-	}	//	actionPerformed
-
+	}	// actionPerformed
 
 	/**
-	 *	Get index of selected choice
-	 *  @return index or -a
+	 * Get index of selected choice
+	 * 
+	 * @return index or -a
 	 */
 	private int getSelectedIndex()
 	{
 		int index = -1;
 
-		//	get Selection
+		// get Selection
 		String sel = actionCombo.getSelectedItem();
 		if (sel == null)
 			return index;
 
-		//	find it in vector
+		// find it in vector
 		for (int i = 0; i < s_name.length && index == -1; i++)
 			if (sel.equals(s_name[i]))
 				index = i;
 		//
 		return index;
-	}	//	getSelectedIndex
+	}	// getSelectedIndex
 
 	/**
-	 *	Save to Database
-	 *  @return true if saved to Tab
+	 * Save to Database
+	 * 
+	 * @return true if saved to Tab
 	 */
 	private boolean save()
 	{
@@ -445,10 +465,10 @@ public class VDocAction extends CDialog
 		if (index == -1)
 			return false;
 
-		//	Save Selection
+		// Save Selection
 		log.config("DocAction=" + s_value[index]);
 		m_mTab.setValue("DocAction", s_value[index]);
 		return true;
-	}	//	save
+	}	// save
 
-}	//	VDocAction
+}	// VDocAction

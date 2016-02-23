@@ -14,7 +14,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.document.ICounterDocBL;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 /*
  * #%L

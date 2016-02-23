@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -44,7 +45,6 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;

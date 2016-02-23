@@ -66,7 +66,6 @@ import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.MPrivateAccess;
 import org.compiere.model.X_C_Invoice;
-import org.compiere.process.api.IDocActionOptionsContext;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -75,6 +74,8 @@ import org.compiere.util.Env;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.document.engine.IDocActionOptionsContext;
 
 @Immutable
 class UserRolePermissions implements IUserRolePermissions

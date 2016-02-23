@@ -35,12 +35,12 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.document.IDocActionBL;
 import de.metas.document.archive.api.IArchiveDAO;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
+import de.metas.document.engine.IDocActionBL;
 
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
 {

@@ -35,7 +35,7 @@ import org.compiere.process.SvrProcess;
 
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 public class C_BankStatementLine_CreateFrom_C_PaySelection extends SvrProcess implements ISvrProcessPrecondition
 {

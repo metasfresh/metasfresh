@@ -22,11 +22,11 @@ package de.metas.lock.api;
  * #L%
  */
 
-
 import java.io.Closeable;
 
 /**
- * Implementations of this interface can be use in "try-with-resources" block to automatically call {@link ILock#close()}.
+ * Implementations of this interface can be used in "try-with-resources" block to automatically call {@link ILock#close()}.<br>
+ * Use {@link ILock#asAutoCloseable()} or {@link ILock#asAutocloseableOnTrxClose(String)} to obtain an instance.
  * 
  * @author tsa
  *

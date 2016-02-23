@@ -40,8 +40,8 @@ import org.compiere.util.CLogger;
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.document.IDocActionBL;
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;

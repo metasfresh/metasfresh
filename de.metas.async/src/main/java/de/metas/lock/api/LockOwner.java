@@ -31,7 +31,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 
 /**
- * Lock Owner
+ * Lock Owner.
  *
  * @author tsa
  *

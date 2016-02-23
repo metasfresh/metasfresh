@@ -58,8 +58,8 @@ import org.compiere.model.X_M_InOut;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;

@@ -40,7 +40,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;

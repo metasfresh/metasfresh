@@ -20,7 +20,6 @@
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		
 		<dependency>
@@ -34,8 +33,8 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${project.version}</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
@@ -43,17 +42,20 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
+				
+		<dependency>
+			<groupId>de.metas.async</groupId>
+			<artifactId>de.metas.async</artifactId>
+		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.monitoring</groupId>
 			<artifactId>de.metas.monitoring</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 	</dependencies>

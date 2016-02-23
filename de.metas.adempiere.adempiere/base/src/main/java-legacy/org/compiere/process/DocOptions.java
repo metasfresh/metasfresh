@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.compiere.process.api.IDocActionOptionsContext;
+import de.metas.document.engine.IDocActionOptionsContext;
 
 /**
  * Document Options Interface

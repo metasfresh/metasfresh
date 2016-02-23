@@ -47,8 +47,8 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocCopyHandler;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * 

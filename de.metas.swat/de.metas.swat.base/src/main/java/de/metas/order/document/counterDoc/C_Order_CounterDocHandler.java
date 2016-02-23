@@ -18,7 +18,7 @@ import org.compiere.model.MOrderLine;
 import org.compiere.process.DocAction;
 import org.compiere.util.CLogger;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.document.spi.CounterDocumentHandlerAdapter;
 import de.metas.document.spi.ICounterDocHandler;
 

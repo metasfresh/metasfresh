@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
@@ -36,8 +37,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Attribute;
-
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
 
 @Validator(I_M_AttributeInstance.class)
 public class M_AttributeInstance

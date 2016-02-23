@@ -49,8 +49,8 @@ import org.compiere.model.X_M_InOut;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.event.InOutGeneratedEventBus;
 import de.metas.inout.model.I_M_InOut;

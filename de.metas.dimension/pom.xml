@@ -1,12 +1,13 @@
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
- 		<version>1.0_IT-SNAPSHOT</version>
+		<version>1.0_IT-SNAPSHOT</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -19,11 +20,10 @@
 		<migration-sql-basedir>20-de.metas.dimension</migration-sql-basedir>
 	</properties>
 
-		<dependencies>
+	<dependencies>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
@@ -31,6 +31,11 @@
 			<version>${project.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
 		</dependency>
 	</dependencies>
 

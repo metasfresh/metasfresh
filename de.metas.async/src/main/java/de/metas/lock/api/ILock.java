@@ -26,9 +26,10 @@ package de.metas.lock.api;
 import de.metas.lock.exceptions.LockAlreadyClosedException;
 
 /**
- * Lock model.
+ * Lock model.<br>
  * 
- * A lock instance could be used to lock/unlock one or more models.
+ * A lock instance could be used to lock/unlock one or more models.<br>
+ * Use {@link ILockManager} to obaint an instance.
  * 
  * @author tsa
  *

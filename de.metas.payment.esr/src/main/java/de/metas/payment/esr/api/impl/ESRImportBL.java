@@ -77,7 +77,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.lock.api.ILockManager;
 import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
 import de.metas.payment.api.IPaymentBL;

@@ -23,11 +23,11 @@ package org.adempiere.invoice.service.impl;
  */
 
 
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_InvoiceLine;
 
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
 import de.metas.document.IDocLineCopyHandler;
 
 /**

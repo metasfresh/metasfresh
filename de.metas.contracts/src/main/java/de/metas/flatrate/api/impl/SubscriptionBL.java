@@ -61,7 +61,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IBPartnerOrgBL;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.Contracts_Constants;
 import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.api.ISubscriptionBL;

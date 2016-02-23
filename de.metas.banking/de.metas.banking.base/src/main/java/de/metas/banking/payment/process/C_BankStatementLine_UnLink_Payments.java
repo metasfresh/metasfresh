@@ -12,7 +12,7 @@ import org.compiere.process.SvrProcess;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 /*
  * #%L

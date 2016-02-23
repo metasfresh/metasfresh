@@ -67,7 +67,7 @@ import org.eevolution.api.IDDOrderMovementBuilder;
 import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.product.IProductBL;
 
 

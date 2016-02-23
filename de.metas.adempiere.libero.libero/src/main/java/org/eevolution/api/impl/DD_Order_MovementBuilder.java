@@ -52,8 +52,8 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocActionBL;
 
 public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 {

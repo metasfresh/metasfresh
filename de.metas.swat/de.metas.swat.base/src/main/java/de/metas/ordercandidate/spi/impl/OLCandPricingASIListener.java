@@ -27,13 +27,13 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 

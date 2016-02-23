@@ -22,8 +22,9 @@ package org.adempiere.ad.service.impl;
  * #L%
  */
 
-
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,9 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.TypedAccessor;
+import org.adempiere.util.comparator.AccessorComparator;
+import org.adempiere.util.comparator.ComparableComparator;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.util.Env;
@@ -70,6 +74,7 @@ public class ADReferenceDAO implements IADReferenceDAO
 			, expireMinutes = Cached.EXPIREMINUTES_Never)
 	/* package */Map<String, I_AD_Ref_List> retrieveListValuesMap(@CacheCtx final Properties ctx, final int adReferenceId)
 	{
+
 		final IQueryBuilder<I_AD_Ref_List> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Ref_List.class, ctx, ITrx.TRXNAME_None);
 
@@ -180,5 +185,25 @@ public class ADReferenceDAO implements IADReferenceDAO
 			return "";
 		}
 		return descriptionTrl;
+	}
+
+	@Override
+	public List<I_AD_Ref_List> retrieveListItemsOrderedByName(final Properties ctx, final int i)
+	{
+		final List<I_AD_Ref_List> docActions = new ArrayList<I_AD_Ref_List>(retrieveListItems(ctx, 135));
+
+		// order them by name
+		Collections.sort(docActions,
+				new AccessorComparator<I_AD_Ref_List, String>(
+						new ComparableComparator<String>(),
+						new TypedAccessor<String>()
+						{
+							@Override
+							public String getValue(final Object o)
+							{
+								return ((I_AD_Ref_List)o).getName();
+							}
+						}));
+		return docActions;
 	}
 }

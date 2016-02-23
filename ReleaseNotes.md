@@ -21,9 +21,10 @@ Additional notes:
 
 The actual release notes
 
-# 4.4.4 (Upcoming Release)
+# 4.5.4 (Upcoming Release)
 
 ## Features
+ - 09824 use locking API to prevent concurrent doc action on the same document (100066000843)
 
 ## Fixes
  - 09823 Tax Code Migration (107275491843)

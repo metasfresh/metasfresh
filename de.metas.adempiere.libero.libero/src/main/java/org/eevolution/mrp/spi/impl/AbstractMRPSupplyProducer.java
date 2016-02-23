@@ -62,8 +62,8 @@ import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.eevolution.mrp.api.MRPFirmType;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocActionBL;
 
 public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 {

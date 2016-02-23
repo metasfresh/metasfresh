@@ -13,6 +13,7 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -43,10 +44,9 @@ import org.eevolution.model.X_DD_Order;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
 import de.metas.adempiere.service.IBPartnerOrgBL;
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;

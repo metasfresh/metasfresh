@@ -10,7 +10,7 @@ import org.compiere.model.I_AD_Client;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 
 /*

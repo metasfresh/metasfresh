@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingAttribute;
@@ -46,7 +47,6 @@ import org.compiere.model.I_M_Product;
 
 import com.google.common.base.Optional;
 
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IAttributePricingDAO;
 import de.metas.pricing.attributebased.IProductPriceAttributeAware;

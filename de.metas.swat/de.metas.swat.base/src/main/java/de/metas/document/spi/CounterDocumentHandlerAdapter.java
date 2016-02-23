@@ -11,7 +11,7 @@ import org.compiere.model.MOrg;
 import org.compiere.process.DocAction;
 import org.compiere.util.CLogger;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 /*
  * #%L

@@ -62,8 +62,8 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.tax.api.ITaxBL;
 

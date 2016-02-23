@@ -22,7 +22,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 
-import org.compiere.model.MInOut;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.MSLAGoal;
 import org.compiere.model.MSLAMeasure;
 import org.compiere.util.CLogger;
@@ -33,10 +33,10 @@ import org.compiere.util.Env;
  *	SLA Delivery Accuracy.
  *	How accurate is the promise date?
  *	<p>
- *	The measure are the average days between promise date (PO/SO) and delivery date 
- *	(Material receipt/shipment) It is positive if before, negative if later. 
+ *	The measure are the average days between promise date (PO/SO) and delivery date
+ *	(Material receipt/shipment) It is positive if before, negative if later.
  *	The lower the number, the better
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: DeliveryAccuracy.java,v 1.2 2006/07/30 00:51:06 jjanke Exp $
  */
@@ -50,16 +50,17 @@ public class DeliveryAccuracy extends SLACriteria
 	{
 		super ();
 	}	//	DeliveryAccuracy
-	
+
 	/**	Logger			*/
 	protected CLogger	log = CLogger.getCLogger(getClass());
-	
-	
+
+
 	/**
 	 * 	Create new Measures for the Goal
 	 * 	@param goal the goal
 	 * 	@return number created
 	 */
+	@Override
 	public int createMeasures (MSLAGoal goal)
 	{
 		String sql = "SELECT M_InOut_ID, io.MovementDate-o.DatePromised," 	//	1..2
@@ -70,7 +71,7 @@ public class DeliveryAccuracy extends SLACriteria
 			+ " AND NOT EXISTS "
 				+ "(SELECT * FROM PA_SLA_Measure m "
 				+ "WHERE m.PA_SLA_Goal_ID=?"
-				+ " AND m.AD_Table_ID=" + MInOut.Table_ID
+				+ " AND m.AD_Table_ID=" + I_M_InOut.Table_ID
 				+ " AND m.Record_ID=io.M_InOut_ID)";
 		int counter = 0;
 		PreparedStatement pstmt = null;
@@ -89,9 +90,9 @@ public class DeliveryAccuracy extends SLACriteria
 				String Description = rs.getString(5) + ": " + rs.getTimestamp(4);
 				if (goal.isDateValid(MovementDate))
 				{
-					MSLAMeasure measure = new MSLAMeasure(goal, MovementDate, 
+					MSLAMeasure measure = new MSLAMeasure(goal, MovementDate,
 						MeasureActual, Description);
-					measure.setLink(MInOut.Table_ID, M_InOut_ID);
+					measure.setLink(I_M_InOut.Table_ID, M_InOut_ID);
 					if (measure.save())
 						counter++;
 				}
@@ -109,11 +110,12 @@ public class DeliveryAccuracy extends SLACriteria
 		return counter;
 	}	//	createMeasures
 
-	
+
 	/**************************************************************************
 	 * 	Calculate Goal Actual from unprocessed Measures
 	 *	@return goal actual measure
 	 */
+	@Override
 	public BigDecimal calculateMeasure (MSLAGoal goal)
 	{
 		//	Average
@@ -125,7 +127,7 @@ public class DeliveryAccuracy extends SLACriteria
 		for (int i = 0; i < measures.length; i++)
 		{
 			MSLAMeasure measure = measures[i];
-			if (!measure.isActive() 
+			if (!measure.isActive()
 				|| (goal.getValidFrom() != null && measure.getDateTrx().before(goal.getValidFrom()))
 				|| (goal.getValidTo() != null && measure.getDateTrx().after(goal.getValidTo())))
 				continue;
@@ -140,10 +142,10 @@ public class DeliveryAccuracy extends SLACriteria
 			}
 		}
 		//	Goal Expired
-		if (goal.getValidTo() != null 
+		if (goal.getValidTo() != null
 			&& goal.getValidTo().after(new Timestamp(System.currentTimeMillis())))
 			goal.setProcessed(true);
-			
+
 		//	Calculate with 2 digits precision
 		if (count != 0)
 			retValue = total.divide(new BigDecimal(count), 2, BigDecimal.ROUND_HALF_UP);

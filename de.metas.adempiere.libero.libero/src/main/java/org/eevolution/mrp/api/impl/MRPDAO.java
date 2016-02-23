@@ -64,7 +64,7 @@ import org.eevolution.mrp.api.IMRPSegment;
 
 import com.google.common.base.Optional;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 public class MRPDAO implements IMRPDAO
 {

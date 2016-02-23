@@ -42,7 +42,7 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnable2;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * Select all records from AD_Table_ID, with given optional WhereClause for each record, call processIt with given DocAction

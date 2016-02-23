@@ -86,7 +86,7 @@ import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.exceptions.ActivityProcessedException;
 import org.eevolution.exceptions.LiberoException;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;

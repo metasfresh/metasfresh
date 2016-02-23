@@ -63,8 +63,8 @@ import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.document.IDocActionBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;

@@ -26,6 +26,7 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.countryattribute.ICountryAware;
 import org.adempiere.mm.attributes.countryattribute.ICountryAwareAttributeService;
@@ -41,7 +42,6 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.service.IAttributeSetInstanceBL;
 
 /**
  * Creates/Updates model's {@link I_M_AttributeInstance}s based on {@link ICountryAware}.

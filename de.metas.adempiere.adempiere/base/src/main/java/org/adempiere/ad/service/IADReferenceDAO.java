@@ -22,8 +22,8 @@ package org.adempiere.ad.service;
  * #L%
  */
 
-
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -39,6 +39,15 @@ public interface IADReferenceDAO extends ISingletonService
 	 */
 	Collection<I_AD_Ref_List> retrieveListItems(Properties ctx, int adReferenceId);
 
+	/**
+	 * Invokes {@link #retrieveListItems(Properties, int)} and orders the result by <code>AD_Ref_List.Name</code>.
+	 * 
+	 * @param ctx
+	 * @param adReferenceId
+	 * @return
+	 */
+	List<I_AD_Ref_List> retrieveListItemsOrderedByName(Properties ctx, int adReferenceId);
+	
 	/**
 	 * @param ctx
 	 * @param adReferenceId
@@ -94,5 +103,5 @@ public interface IADReferenceDAO extends ISingletonService
 	 * @param value
 	 * @return existing active {@link I_AD_Ref_List} or null
 	 */
-	I_AD_Ref_List retrieveListItemOrNull(Properties ctx, int adReferenceId, String value);
+	I_AD_Ref_List retrieveListItemOrNull(Properties ctx, int adReferenceId, String value);	
 }

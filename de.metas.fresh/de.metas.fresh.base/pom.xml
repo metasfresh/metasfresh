@@ -45,6 +45,17 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
 			<groupId>de.metas.dimension</groupId>
 			<artifactId>de.metas.dimension</artifactId>
 		</dependency>
@@ -146,7 +157,7 @@
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
 		</dependency>
-
+		
 		<!-- The following dependencies are required to run the swing client from within eclipse -->
 
 		<!-- Required to connect to the jboss-ejb server (always needs to be in the client, not only from eclipse, but in this base module we leave it as "provided") -->

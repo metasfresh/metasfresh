@@ -47,7 +47,7 @@ import org.compiere.process.DocAction;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 
-import de.metas.document.IDocActionBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.printing.esb.base.util.Check;
 
 public class M_MatchInv_RecreateForInvoiceLine extends SvrProcess
