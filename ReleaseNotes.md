@@ -21,12 +21,14 @@ Additional notes:
 
 The actual release notes
 
-# Upcoming Release
+# 4.4.4 (Upcoming Release)
 
 ## Features
 
 ## Fixes
-
+ - 09823 Tax Code Migration (107275491843)
+    * making a fix to the work-package processor that is used by the database function "de.metas.async".executeSqlAsync(p_Sql text)
+	
 ## Instructions
 
 # metasfresh 4.4.3
