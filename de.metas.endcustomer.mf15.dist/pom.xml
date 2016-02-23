@@ -90,6 +90,14 @@ note: when adding new records, please roughly order them by alphabet.
 			<type>zip</type>
 		</dependency>
 
+		 <dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
