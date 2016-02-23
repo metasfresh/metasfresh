@@ -112,77 +112,77 @@
 			<textField>
 				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="0" y="40" width="50" height="20"/>
 				<textElement>
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{nr}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="50" y="40" width="161" height="20"/>
 				<textElement>
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BPartner}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="211" y="40" width="149" height="20"/>
 				<textElement>
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BPartnergroup}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="360" y="40" width="164" height="20"/>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="360" y="40" width="149" height="20"/>
 				<textElement>
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{packagecontract}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="524" y="40" width="140" height="20"/>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="509" y="40" width="140" height="20"/>
 				<textElement>
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{packageart}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="664" y="0" width="70" height="20"/>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="649" y="0" width="80" height="20"/>
 				<textElement textAlignment="Right">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="664" y="20" width="70" height="20"/>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="649" y="20" width="80" height="20"/>
 				<textElement textAlignment="Right">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{infavourof}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="664" y="40" width="70" height="20"/>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="649" y="40" width="80" height="20"/>
 				<textElement textAlignment="Right">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BPartner}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="734" y="0" width="70" height="20"/>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="729" y="0" width="75" height="20"/>
 				<textElement textAlignment="Right">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="734" y="20" width="70" height="20"/>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="729" y="20" width="75" height="20"/>
 				<textElement textAlignment="Right">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{infavourof}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="734" y="40" width="70" height="20"/>
+				<reportElement uuid="b0aca348-a1f6-40ea-b527-752a684fa23c" x="729" y="40" width="75" height="20"/>
 				<textElement textAlignment="Right">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ofus}]]></textFieldExpression>
 			</textField>
@@ -215,28 +215,28 @@
 				<textFieldExpression><![CDATA[$F{bpartner_group}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="63f13e70-0621-49b6-b1d3-e687a90af824" x="360" y="0" width="164" height="20"/>
+				<reportElement uuid="63f13e70-0621-49b6-b1d3-e687a90af824" x="360" y="0" width="149" height="20"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{art_contract}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="25b9ac7f-76f3-462d-b1af-d3a57529c2f6" x="524" y="0" width="140" height="20"/>
+				<reportElement uuid="25b9ac7f-76f3-462d-b1af-d3a57529c2f6" x="509" y="0" width="140" height="20"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{art_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="183b3899-3759-4972-af3a-7c9596baea5f" x="664" y="0" width="70" height="20"/>
+				<reportElement uuid="183b3899-3759-4972-af3a-7c9596baea5f" x="649" y="0" width="80" height="20"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{incoming}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="8841ec60-f4c1-4f7e-b9a9-65c5c67f6464" x="734" y="0" width="70" height="20"/>
+				<reportElement uuid="8841ec60-f4c1-4f7e-b9a9-65c5c67f6464" x="729" y="0" width="75" height="20"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>

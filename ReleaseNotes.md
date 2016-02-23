@@ -34,7 +34,8 @@ The actual release notes
     * added french translations
 
 ## Fixes
- 
+ - 09812 create report for daily packaging material balance (101400050316)
+    * minor layouting fixes
  - 09281 create report for packaging material balance (106483495857)
     * grouping/summing fixes
 
