@@ -24,6 +24,14 @@ The actual release notes
 # Upcoming Release
 
 ## Features
+
+## Fixes
+
+## Instructions
+
+# 4.4.3
+
+## Features
  - 09834 adjustment possibility for empties (105285329048)
     * introducing a new doctype to be used for packaging material (empties) adjustments
  - 09839 Customer Individual InOut (109838130709)
