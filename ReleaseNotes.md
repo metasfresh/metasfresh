@@ -28,6 +28,8 @@ The actual release notes
 ## Fixes
  - 09823 Tax Code Migration (107275491843)
     * making a fix to the work-package processor that is used by the database function "de.metas.async".executeSqlAsync(p_Sql text)
+ - 09812 create report for daily packaging material balance (101400050316)
+    * minor layouting fixes
 	
 ## Instructions
 
