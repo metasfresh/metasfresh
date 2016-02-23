@@ -30,6 +30,8 @@ The actual release notes
     * making a fix to the work-package processor that is used by the database function "de.metas.async".executeSqlAsync(p_Sql text)
  - 09812 create report for daily packaging material balance (101400050316)
     * minor layouting fixes
+ - 09834 adjustment possibility for empties (105285329048)	
+    * minor layouting fixes
 	
 ## Instructions
 
