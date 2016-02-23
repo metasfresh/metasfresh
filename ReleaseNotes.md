@@ -29,7 +29,7 @@ The actual release notes
 
 ## Instructions
 
-# 4.4.3
+# metasfresh 4.4.3
 
 ## Features
  - 09834 adjustment possibility for empties (105285329048)
@@ -49,8 +49,6 @@ The actual release notes
  - 09281 create report for packaging material balance (106483495857)
     * grouping/summing fixes
 
-## Instructions
-
 # metasfresh 4.3.2
 
 ## Features
@@ -68,7 +66,7 @@ The actual release notes
     * we now can specify a default POReference value for orders that is autumatically set by the system, unless there already was another POReference set by a users of from an importnert order
 	* for a DESADV lines with unknown CUperTU, we can now set a default-value such a "1" per C_BPartner.
 	
-##Fixes
+## Fixes
 
  - 09829 ESB sends HTTP code 204 to the printing client (108552946334)
  - 09281 create report for packaging material balance (106483495857)
@@ -78,7 +76,7 @@ The actual release notes
  - In process parameter panel, display VImage preview, but bound to a maximum size
  - ClientSetup: company name changes were not persisted
 
-##Instructions
+## Instructions
 
  - to use the latest printing ESB bundle (tasks 09829 and 09814), one needs to install the jackson-jaxrs-json provider in the OSGI container (smx):
  ```
