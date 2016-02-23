@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.100000000000005"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="61"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -105,6 +105,37 @@
 				<subreportExpression><![CDATA["de/metas/reports/hubalancegeneral/report_details.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
+		<band height="50">
+			<subreport isUsingCache="true">
+				<reportElement uuid="f4aecc68-d647-409b-bde5-65f943103dc3" key="subreport-3" x="0" y="36" width="595" height="14"/>
+				<subreportParameter name="EndDate">
+					<subreportParameterExpression><![CDATA[$P{EndDate}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="M_Material_Balance_Config_ID">
+					<subreportParameterExpression><![CDATA[$P{M_Material_Balance_Config_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="StartDate">
+					<subreportParameterExpression><![CDATA[$P{StartDate}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="M_Product_ID">
+					<subreportParameterExpression><![CDATA[$P{M_Product_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="IsRefundableConditions">
+					<subreportParameterExpression><![CDATA[$P{IsRefundableConditions}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="C_BP_Group_ID">
+					<subreportParameterExpression><![CDATA[$P{C_BP_Group_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="C_BPartner_ID">
+					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/hubalancegeneral/report_details_sum.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
 	</detail>
 	<columnFooter>
 		<band splitType="Stretch"/>
@@ -152,37 +183,4 @@
 			</textField>
 		</band>
 	</pageFooter>
-	<summary>
-		<band height="25" splitType="Stretch">
-			<subreport isUsingCache="true">
-				<reportElement uuid="f4aecc68-d647-409b-bde5-65f943103dc3" key="subreport-3" x="0" y="0" width="595" height="14"/>
-				<subreportParameter name="EndDate">
-					<subreportParameterExpression><![CDATA[$P{EndDate}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="M_Material_Balance_Config_ID">
-					<subreportParameterExpression><![CDATA[$P{M_Material_Balance_Config_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="StartDate">
-					<subreportParameterExpression><![CDATA[$P{StartDate}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="M_Product_ID">
-					<subreportParameterExpression><![CDATA[$P{M_Product_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="IsRefundableConditions">
-					<subreportParameterExpression><![CDATA[$P{IsRefundableConditions}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="C_BP_Group_ID">
-					<subreportParameterExpression><![CDATA[$P{C_BP_Group_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="C_BPartner_ID">
-					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/reports/hubalancegeneral/report_details_sum.jasper"]]></subreportExpression>
-			</subreport>
-		</band>
-	</summary>
 </jasperReport>
