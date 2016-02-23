@@ -23,7 +23,9 @@ The actual release notes
 
 # Upcoming Release
 
-##Features
+## Features
+ - 09839 Customer Individual InOut (109838130709)
+    * another alternative shipment document that among other things also lists product which are generally delivered to the customer, even if they are not part of  this particular shipment.
  - 09822 Inter-Org Product Mapping Process (104151535488)
     * allows a user to add and remove product mappings between different organisations
  - 09661 Report "Statistik für monatliche Lagermeldung" - grouping per product and selected attributes (106566269211)
@@ -31,16 +33,16 @@ The actual release notes
  - 09740 ADR revenue report by product categories (101851459609) +it +feature
     * added french translations
 
-##Fixes
+## Fixes
  
  - 09281 create report for packaging material balance (106483495857)
     * grouping/summing fixes
 
-##Instructions
+## Instructions
 
 # metasfresh 4.3.2
 
-##Features
+## Features
 
  - 09826 Take out foot note in purchase order Jasper
     * it's now configurable via property file
