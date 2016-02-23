@@ -108,7 +108,9 @@ public class HUInOutDAO implements IHUInOutDAO
 
 
 		final I_M_HU_Attribute huAttrReceiptInOutLine = huAttributesDAO.retrieveAttribute(hu, attrReceiptInOutLine);
-		if (huAttrReceiptInOutLine.getValueNumber() == null || huAttrReceiptInOutLine.getValueNumber().signum() <= 0)
+		if (huAttrReceiptInOutLine == null
+				|| huAttrReceiptInOutLine.getValueNumber() == null
+				|| huAttrReceiptInOutLine.getValueNumber().signum() <= 0)
 		{
 			return null;
 		}

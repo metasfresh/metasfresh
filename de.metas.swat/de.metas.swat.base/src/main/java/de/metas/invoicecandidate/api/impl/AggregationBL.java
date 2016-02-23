@@ -217,7 +217,6 @@ public class AggregationBL implements IAggregationBL
 			final IInvoiceLineAttribute invoiceLineAttribute = new InvoiceLineAttribute(attributeInstance);
 			invoiceLineAttributes.add(invoiceLineAttribute);
 		}
-
 		return invoiceLineAttributes;
 	}
 
