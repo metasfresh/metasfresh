@@ -5,8 +5,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>de.metas.reactor</artifactId>
-		<groupId>de.metas.reactor</groupId>
+		<artifactId>de.metas.parent.general</artifactId>
+		<groupId>de.metas</groupId>
 		<version>1.0_IT-SNAPSHOT</version>
 	</parent>
 
@@ -14,24 +14,7 @@
 	<artifactId>de.metas.parent</artifactId>
 	<packaging>pom</packaging>
 
-	<description>Default parent pom with common settings (e.g. java file encoding) to be used by all maven projects</description>
-
-	<url>http://www.metasfresh.com/</url>
-
-	<organization>
-		<name>metas GmbH</name>
-		<url>http://www.metasfresh.com/</url>
-	</organization>
-
-	<inceptionYear>2015</inceptionYear>
-
-	<developers>
-		<developer>
-			<name>metas developer</name>
-			<organizationUrl>http://www.metasfresh.com/</organizationUrl>
-			<email>info@metas.de</email>
-		</developer>
-	</developers>
+	<description>metasfresh parent pom with common settings (e.g. java file encoding, enforcer rules, depdendency management) to be used by all metasfreseh maven projects</description>
 
 	<!-- TODO: consider removing jasperreports.version and dependencyManagement 
 		from this pom. It will instead be handled by adempiereJasper-parent -->
@@ -944,84 +927,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<repositories>
-		<!-- The repositories that we relate on are defined in this parent POM, 
-			because whether an artifact is found should not depend on a specific user's 
-			settings.xml -->
-		<repository>
-			<id>metas-mvn-repo</id>
-			<name>Maven metas Repository</name>
-			<url>http://dedep901:8081/nexus/content/groups/public/</url>
-			<layout>default</layout>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-
-	</repositories>
-
-	<pluginRepositories>
-		<!-- We define our repos also as plugin repos, because at least the maven-assembly-plugin 
-			depends on our shared assembly descriptors, which are not in http://repository.apache.org -->
-		<pluginRepository>
-			<id>metas-mvn-repo</id>
-			<name>Maven metas Repository</name>
-			<url>http://dedep901:8081/nexus/content/groups/public/</url>
-			<layout>default</layout>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
-
-	</pluginRepositories>
-
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.8.1</version>
-				<configuration>
-					<!-- defining our nexus as sole remote repo, to omit mvn site plugin trying a lot of invalid repo URLs -->
-					<remoteRepositories>
-						<remoteRepository>http://dedep901:8081/nexus/content/groups/public/</remoteRepository>
-					</remoteRepositories>
-				</configuration>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<report>dependencies</report>
-							<report>license</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-<!--
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jxr-plugin</artifactId>
-				<version>2.3</version>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9</version>
-			</plugin>
--->
-		</plugins>
-	</reporting>
 
 	<profiles>
 		<profile>

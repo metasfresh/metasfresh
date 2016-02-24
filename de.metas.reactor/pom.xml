@@ -2,10 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>1.0_IT-SNAPSHOT</version>
+		<relativePath>../de.metas.parent/pom.xml</relativePath>
+	</parent>
+	
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.metas.reactor</groupId>
 	<artifactId>de.metas.reactor</artifactId>
-	<version>1.0_IT-SNAPSHOT</version>
+	
 
 	<description>all projects that are required for a customer rollout</description>
 
@@ -76,31 +83,7 @@
 		
 		<module>../de.metas.ui.web.base</module>
 	</modules>
-	
-	<distributionManagement>
-
-		<site>
-			<id>metas-mvn-site</id>
-			<url>scpexe://denas901:/var/www/localhost/htdocs/project-sites/${project.groupId}.${project.artifactId}</url>
-		</site>
-
-		<repository>
-			<id>metas-nexus-repo</id>
-			<name>Maven metas Repository</name>
-			<url>http://dedep901:8081/nexus/content/repositories/releases/</url>
-		</repository>
-
-		<!-- Publish the versioned releases here -->
-		<snapshotRepository>
-			<id>metas-nexus-repo</id>
-			<name>Maven metas Repository</name>
-			<url>http://dedep901:8081/nexus/content/repositories/snapshots/</url>
-			<uniqueVersion>true</uniqueVersion> <!-- just in case..we have maven ant-tasks around that might need this -->
-		</snapshotRepository>
-
-	</distributionManagement>
-	
-	
+			
 	  <build>
 		<plugins>
 		  <plugin>
