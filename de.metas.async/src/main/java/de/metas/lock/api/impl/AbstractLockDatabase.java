@@ -22,7 +22,6 @@ package de.metas.lock.api.impl;
  * #L%
  */
 
-
 import java.util.Iterator;
 import java.util.logging.Level;
 
@@ -39,6 +38,7 @@ import org.compiere.util.CLogger;
 
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
+import de.metas.lock.api.ILockCommand.AllowAdditionalLocks;
 import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.exceptions.LockFailedException;
@@ -58,7 +58,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	/** Asserts given lock owner is a valid owner to be used on for Locks */
 	protected final void assertValidLockOwner(final LockOwner lockOwner)
 	{
-		// NOTE: LockOwner.ANY is not tollerated because that's a filter criteria and not a LockOwner that we could use for assigning
+		// NOTE: LockOwner.ANY is not tolerated because that's a filter criteria and not a LockOwner that we could use for assigning
 
 		Check.assumeNotNull(lockOwner, "Lock owner shall not be null");
 		Check.assumeNotNull(lockOwner.isRealOwnerOrNoOwner(), "Lock owner shall be real owner or no owner but it was {0}", lockOwner);
@@ -346,6 +346,16 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
 				.filter(new TypedSqlQueryFilter<T>(lockedRecordsSQL));
+	}
+
+	/**
+	 *
+	 * @param allowAdditionalLocks
+	 * @return <code>true</code> if the given <code>allowAdditionalLocks</code> is <code>FOR_DIFFERENT_OWNERS</code>.
+	 */
+	protected final boolean isAllowMultipleOwners(final AllowAdditionalLocks allowAdditionalLocks)
+	{
+		return allowAdditionalLocks == AllowAdditionalLocks.FOR_DIFFERENT_OWNERS;
 	}
 
 	protected abstract <T> IQuery<T> retrieveNotLockedQuery(IQuery<T> query);

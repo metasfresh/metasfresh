@@ -35,6 +35,7 @@ import org.compiere.util.Env;
 import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
+import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 
@@ -283,12 +284,13 @@ public class DocumentEngine implements DocAction
 		final ILock lock = lockManager
 				.lock()
 				.setOwner(lockOwner)
+				.setAllowAdditionalLocks(ILockCommand.AllowAdditionalLocks.FOR_DIFFERENT_OWNERS) // task 09849
 				.setFailIfAlreadyLocked(true) // fail if the record was already locked
 				.setAutoCleanup(true) // remove possible stale locks, e.g. after a client crash
 				.addRecordByModel(m_document)
 				.acquire();
 		logger.log(Level.FINE, "Acquired Lock {0}", lock);
-		
+
 		try (final ILockAutoCloseable autoCloseableLock = lock.asAutoCloseable())
 		{
 			return processIt0(action);

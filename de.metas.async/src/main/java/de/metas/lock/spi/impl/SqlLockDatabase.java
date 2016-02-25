@@ -10,12 +10,12 @@ package de.metas.lock.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -186,7 +186,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 	/**
 	 * Implements the method for ISqlQueryFilters. Throws an error for other IQueryFilters
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
 	 */
 	@Override
@@ -210,6 +210,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 					+ ", " + I_T_Lock.COLUMNNAME_Record_ID
 					+ ", " + I_T_Lock.COLUMNNAME_Owner
 					+ ", " + I_T_Lock.COLUMNNAME_IsAutoCleanup
+					+ ", " + I_T_Lock.COLUMNNAME_IsAllowMultipleOwners
 					+ ")"
 					//
 					+ " SELECT "
@@ -217,6 +218,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 					+ ", " + tableName + "_ID" // Record_ID
 					+ ", " + toSqlParam(lockOwner.getOwnerName(), sqlParams) // Owner
 					+ ", " + toSqlParam(lockCommand.isAutoCleanup(), sqlParams) // IsAutoCleanup
+					+ ", " + toSqlParam(isAllowMultipleOwners(lockCommand.getAllowAdditionalLocks()), sqlParams) // IsAllowMultipleOwners
 					//
 					+ " FROM " + tableName
 					+ " WHERE " + sqlFilter.getSql();
@@ -246,6 +248,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				+ ", " + I_T_Lock.COLUMNNAME_Record_ID
 				+ ", " + I_T_Lock.COLUMNNAME_Owner
 				+ ", " + I_T_Lock.COLUMNNAME_IsAutoCleanup
+				+ ", " + I_T_Lock.COLUMNNAME_IsAllowMultipleOwners
 				+ ")"
 				//
 				+ " SELECT "
@@ -253,6 +256,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				+ ", T_Selection_ID" // Record_ID
 				+ ", " + toSqlParam(lockOwner.getOwnerName(), sqlParams) // Owner
 				+ ", " + toSqlParam(lockCommand.isAutoCleanup(), sqlParams) // IsAutoCleanup
+				+ ", " + toSqlParam(isAllowMultipleOwners(lockCommand.getAllowAdditionalLocks()), sqlParams) // IsAllowMultipleOwners
 				//
 				+ " FROM T_Selection"
 				+ " WHERE AD_PInstance_ID=" + toSqlParam(adPInstanceId, sqlParams);
@@ -317,11 +321,13 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				+ ", " + I_T_Lock.COLUMNNAME_Record_ID
 				+ ", " + I_T_Lock.COLUMNNAME_Owner
 				+ ", " + I_T_Lock.COLUMNNAME_IsAutoCleanup
+				+ ", " + I_T_Lock.COLUMNNAME_IsAllowMultipleOwners
 				+ ") VALUES ("
 				+ toSqlParam(adTableId, sqlParams)
 				+ ", " + toSqlParam(recordId, sqlParams)
 				+ ", " + toSqlParam(lockOwner.getOwnerName(), sqlParams)
 				+ ", " + toSqlParam(autoCleanup, sqlParams)
+				+ ", " + toSqlParam(isAllowMultipleOwners(lockCommand.getAllowAdditionalLocks()), sqlParams) // IsAllowMultipleOwners
 				+ ")";
 
 		try
@@ -368,6 +374,10 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		//
 		// Set AutoCleanup
 		sql.append(", ").append(I_T_Lock.COLUMNNAME_IsAutoCleanup).append("=").append(toSqlParam(lockCommand.isAutoCleanup(), sqlParams));
+
+		//
+		// Set AllowMultipleOwners
+		sql.append(", ").append(I_T_Lock.COLUMNNAME_IsAllowMultipleOwners).append("=").append(toSqlParam(isAllowMultipleOwners(lockCommand.getAllowAdditionalLocks()), sqlParams));
 
 		//
 		// Where Clause...

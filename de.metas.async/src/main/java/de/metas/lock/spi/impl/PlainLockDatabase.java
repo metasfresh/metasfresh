@@ -10,18 +10,17 @@ package de.metas.lock.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -73,11 +72,38 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return key;
 	}
 
-	private final ArrayKey createKey(final ITableRecordReference record)
+	private final ArrayKey createKey(final ITableRecordReference record, final ILockCommand lockCommand)
 	{
 		Check.assumeNotNull(record, "record not null");
-		final ArrayKey key = new ArrayKey(record.getAD_Table_ID(), record.getRecord_ID());
+		final ArrayKey key;
+		if (lockCommand != null && isAllowMultipleOwners(lockCommand.getAllowAdditionalLocks()))
+		{
+			final String ownerName = lockCommand.getOwner().getOwnerName();
+			key = createKeyForRecordAndOwner(record, ownerName);
+		}
+		else
+		{
+			key = createKeyforRecord(record);
+		}
+
 		return key;
+	}
+
+	private ArrayKey createKeyForRecordAndOwner(final ITableRecordReference record, final String ownerName)
+	{
+		final ArrayKey key;
+		key = new ArrayKey(
+				record.getAD_Table_ID(),
+				record.getRecord_ID(),
+				ownerName);
+		return key;
+	}
+
+	private ArrayKey createKeyforRecord(final ITableRecordReference record)
+	{
+		return new ArrayKey(
+				record.getAD_Table_ID(),
+				record.getRecord_ID());
 	}
 
 	@Override
@@ -123,7 +149,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	/**
 	 * TODO: Implement
-	 * 
+	 *
 	 * @throws UnsupportedOperationException allways.
 	 * @task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
 	 */
@@ -136,7 +162,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected boolean lockRecord(final ILockCommand lockCommand, final ITableRecordReference record)
 	{
-		final ArrayKey recordKey = createKey(record);
+		final ArrayKey recordKey = createKey(record, lockCommand);
 
 		try (final CloseableReentrantLock lock = mainLock.open())
 		{
@@ -154,7 +180,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected boolean changeLockRecord(final ILockCommand lockCommand, final ITableRecordReference record)
 	{
-		final ArrayKey recordKey = createKey(record);
+		final ArrayKey recordKey = createKey(record, lockCommand);
 
 		try (final CloseableReentrantLock lock = mainLock.open())
 		{
@@ -174,11 +200,18 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	protected boolean unlockRecord(final IUnlockCommand unlockCommand, final ITableRecordReference record)
 	{
 		final LockOwner ownerRequired = unlockCommand.getOwner();
-		final ArrayKey key = createKey(record);
 
+		final boolean unlockForRecord = unlockForKey(ownerRequired, createKeyforRecord(record));
+		final boolean unlockForRecordAndOwner = unlockForKey(ownerRequired, createKeyForRecordAndOwner(record, unlockCommand.getOwner().getOwnerName()));
+
+		return unlockForRecord || unlockForRecordAndOwner;
+	}
+
+	private boolean unlockForKey(final LockOwner ownerRequired, final ArrayKey recordKey)
+	{
 		try (final CloseableReentrantLock lock = mainLock.open())
 		{
-			final LockInfo lockInfo = locks.get(key);
+			final LockInfo lockInfo = locks.get(recordKey);
 			if (lockInfo == null)
 			{
 				return false;
@@ -191,7 +224,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 			}
 
 			// Actually remove the lock
-			locks.remove(key);
+			locks.remove(recordKey);
 			return true;
 		}
 	}

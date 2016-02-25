@@ -10,18 +10,17 @@ package de.metas.lock.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +58,8 @@ import de.metas.lock.spi.ILockDatabase;
 	private boolean failIfAlreadyLocked = true;
 
 	private final LockRecords _recordsToLock = new LockRecords();
+
+	private AllowAdditionalLocks _allowAdditionalLocks;
 
 	LockCommand(final ILockDatabase lockDatabase)
 	{
@@ -140,16 +141,29 @@ import de.metas.lock.spi.ILockDatabase;
 	}
 
 	@Override
+	public final LockOwner getOwner()
+	{
+		Check.assumeNotNull(owner, LockFailedException.class, "owner not null");
+		return owner;
+	}
+
+	@Override
 	public final Lock getParentLock()
 	{
 		return _parentLock;
 	}
 
 	@Override
-	public final LockOwner getOwner()
+	public ILockCommand setAllowAdditionalLocks(final AllowAdditionalLocks allowAdditionalLocks)
 	{
-		Check.assumeNotNull(owner, LockFailedException.class, "owner not null");
-		return owner;
+		_allowAdditionalLocks = allowAdditionalLocks;
+		return this;
+	}
+
+	@Override
+	public AllowAdditionalLocks getAllowAdditionalLocks()
+	{
+		return _allowAdditionalLocks;
 	}
 
 	@Override
@@ -209,7 +223,7 @@ import de.metas.lock.spi.ILockDatabase;
 		_recordsToLock.setRecordsBySelection(modelClass, adPIstanceId);
 		return this;
 	}
-	
+
 	@Override
 	public <T> ILockCommand setSetRecordsByFilter(final Class<T> clazz, final IQueryFilter<T> filters)
 	{
@@ -222,7 +236,7 @@ import de.metas.lock.spi.ILockDatabase;
 	{
 		return _recordsToLock.getSelection_Filters();
 	}
-	
+
 	@Override
 	public final int getSelectionToLock_AD_Table_ID()
 	{
