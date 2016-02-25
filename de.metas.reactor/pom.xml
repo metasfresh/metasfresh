@@ -32,6 +32,8 @@
 		
 		<module>../de.metas.business</module>
 		
+		<module>../de.metas.jax.rs</module>
+		
 		<module>../de.metas.report.jasper.client</module>
 		<module>../de.metas.report.jasper.commons</module>
 		<module>../de.metas.report.jasper.server</module>

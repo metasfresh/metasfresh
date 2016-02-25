@@ -181,6 +181,12 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.jax.rs</groupId>
+			<artifactId>de.metas.jax.rs</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
 		<!-- those two are required when we run with -Dorg.adempiere.server.embedded=true -->
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
