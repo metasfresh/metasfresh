@@ -178,7 +178,8 @@ public class VImage extends JButton
 		// Case: we have an image and we shall display it's preview
 		else if (displayImagePreview)
 		{
-			final Icon icon = m_mImage.getIcon((Dimension)previewMaxSize.clone());
+			final Dimension previewMaxSize = this.previewMaxSize == null ? null : (Dimension)this.previewMaxSize.clone();
+			final Icon icon = m_mImage.getIcon(previewMaxSize);
 			super.setText(null);
 			super.setIcon(icon);
 			super.setToolTipText(m_mImage.getName());

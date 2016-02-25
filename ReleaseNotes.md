@@ -27,6 +27,7 @@ The actual release notes
  - 09824 use locking API to prevent concurrent doc action on the same document (100066000843)
 
 ## Fixes
+ - 09850 Cannot Change the logo (108300604070) - fix NPE in VImage (preview)
  - 09823 Tax Code Migration (107275491843)
     * making a fix to the work-package processor that is used by the database function "de.metas.async".executeSqlAsync(p_Sql text)
  - 09812 create report for daily packaging material balance (101400050316)
