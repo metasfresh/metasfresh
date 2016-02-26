@@ -23,15 +23,16 @@ package de.metas.edi.api.impl;
  */
 
 
+import org.adempiere.util.Services;
+
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
+import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.api.IEDIOLCandBL;
 import de.metas.handlingunits.model.I_C_OLCand;
 import de.metas.impex.model.I_AD_InputDataSource;
 
 public class EDIOLCandBL implements IEDIOLCandBL
 {
-	public static final String EDI_AD_INPUT_DATASOURCE_DEFAULT = "DEST.de.metas.edi";
-
 	@Override
 	public boolean isManualQtyItemCapacity(final I_C_OLCand olCand)
 	{
@@ -65,6 +66,6 @@ public class EDIOLCandBL implements IEDIOLCandBL
 			return false;
 		}
 		final I_AD_InputDataSource dataSource = olCand.getAD_InputDataSource();
-		return EDI_AD_INPUT_DATASOURCE_DEFAULT.equalsIgnoreCase(dataSource.getInternalName());
+		return Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(dataSource);
 	}
 }

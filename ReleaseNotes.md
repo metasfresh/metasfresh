@@ -29,6 +29,8 @@ The actual release notes
  - 09824 use locking API to prevent concurrent doc action on the same document (100066000843)
 
 ## Fixes
+ - 09776 EDI - Receiver without ORDERS (100584995833)
+    * allow to distinguish between Edi-ORDERS and Excel files and allow both kinds to be processed in an EDI fashion
  - FRESH-20: 09661 Statistik für monatliche Lagermeldung - grouping per Product and ASI (106566269211)
     * fix for some quantities being counted multiple times
  - 09852 ESR-Import allow importing with invoice-partners that have AD Org ID 0 (109927070478):

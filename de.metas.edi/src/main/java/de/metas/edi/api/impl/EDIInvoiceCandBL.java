@@ -27,11 +27,13 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.model.X_M_InOut;
 import org.compiere.model.X_M_InOutLine;
 
+import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.api.IEDIInvoiceCandBL;
 import de.metas.edi.model.I_C_Invoice_Candidate;
 import de.metas.edi.model.I_C_OLCand;
@@ -86,15 +88,7 @@ public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 			Check.assumeNotNull(olcand, "Invoice candidate {0} has a record ID that points to an invalid order candidate", candidate);
 
 			final I_AD_InputDataSource inputDataSource = olcand.getAD_InputDataSource();
-
-			if (EDIOLCandBL.EDI_AD_INPUT_DATASOURCE_DEFAULT.equals(inputDataSource.getInternalName()))
-			{
-				isEdiEnabled = true;
-			}
-			else
-			{
-				isEdiEnabled = false;
-			}
+			isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(inputDataSource);
 		}
 
 		// case inout

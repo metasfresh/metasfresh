@@ -33,7 +33,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IDesadvBL;
-import de.metas.edi.api.impl.EDIOLCandBL;
+import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_EDI_Document;
@@ -131,7 +131,8 @@ public class C_Order
 			return;
 		}
 
-		if (EDIOLCandBL.EDI_AD_INPUT_DATASOURCE_DEFAULT.equals(orderInputDataSource.getInternalName()))
+		final boolean isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(orderInputDataSource);
+		if (isEdiEnabled)
 		{
 			order.setIsEdiEnabled(true);
 		}
