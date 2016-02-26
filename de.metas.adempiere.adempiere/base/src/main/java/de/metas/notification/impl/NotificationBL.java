@@ -19,6 +19,8 @@ import org.compiere.util.EMail;
 
 import de.metas.notification.IMailBL;
 import de.metas.notification.IMailBL.IMailbox;
+import de.metas.notification.spi.INotificationCtxProvider;
+import de.metas.notification.spi.impl.CompositePrintingNotificationCtxProvider;
 import de.metas.notification.INotificationBL;
 
 /*
@@ -45,6 +47,7 @@ import de.metas.notification.INotificationBL;
 
 public class NotificationBL implements INotificationBL
 {
+	private final CompositePrintingNotificationCtxProvider ctxProviders = new CompositePrintingNotificationCtxProvider();
 
 	@Override
 	public void notifyUser(final I_AD_User recipient,
@@ -53,7 +56,19 @@ public class NotificationBL implements INotificationBL
 			final ITableRecordReference referencedRecord
 			)
 	{
-		notifyUser0(recipient, adMessage, messageText, referencedRecord, new HashSet<Integer>());
+		// task 09833
+		// Provide more specific information to the user, in case there exists a notification context provider
+		final String specificInfo = ctxProviders.getTextMessageOrNull(referencedRecord);
+		final StringBuilder detailedMsgText = new StringBuilder();
+		detailedMsgText.append(messageText);
+		if (specificInfo != null)
+		{
+			detailedMsgText.append(specificInfo);
+		}
+
+		final String messageToUse = detailedMsgText.toString();
+
+		notifyUser0(recipient, adMessage, messageToUse, referencedRecord, new HashSet<Integer>());
 	}
 
 	private void notifyUser0(final I_AD_User recipient,
@@ -140,6 +155,12 @@ public class NotificationBL implements INotificationBL
 
 		final EMail mail = mailBL.createEMail(ctx, mailBox, recipient.getEMail(), subject, mailBody.toString(), false);
 		mailBL.send(mail);
+	}
+
+	@Override
+	public void addCtxProvider(final INotificationCtxProvider ctxProvider)
+	{
+		ctxProviders.addCtxProvider(ctxProvider);
 	}
 
 }

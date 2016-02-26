@@ -1,44 +1,40 @@
-package de.metas.notification;
+package de.metas.printing.api;
 
 import org.adempiere.util.ISingletonService;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.I_AD_User;
 
-import de.metas.notification.spi.INotificationCtxProvider;
+import de.metas.printing.model.I_C_Print_Job_Instructions;
+import de.metas.printing.model.I_C_Print_Job_Instructions_v;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.printing.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface INotificationBL extends ISingletonService
+public interface IPrintJobDAO extends ISingletonService
 {
-	void notifyUser(I_AD_User recipient,
-			String adMessage,
-			String messageText,
-			ITableRecordReference referencedrecord);
 
 	/**
-	 * This method will be used when a new <{@code INotificationCtxProvider} implementation is registered.
-	 * 
-	 * @param ctxProvider
+	 * @param pji
+	 * @return the (view) entry of <code>I_C_Print_Job_Instructions_v</code> that is linked with the given <code>I_C_Print_Job_Instructions</code> if any is found; null otherwise
+	 *         Note: there should only be one I_C_Print_Job_Instructions_v for the given pji
 	 */
-	void addCtxProvider(INotificationCtxProvider ctxProvider);
+	I_C_Print_Job_Instructions_v retrieveC_Print_Job_Instructions_Info(I_C_Print_Job_Instructions pji);
+
 }

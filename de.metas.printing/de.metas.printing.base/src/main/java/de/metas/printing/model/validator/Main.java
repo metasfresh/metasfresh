@@ -34,6 +34,7 @@ import org.compiere.report.IJasperServiceRegistry;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.util.CacheMgt;
 
+import de.metas.notification.INotificationBL;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_AD_Print_Clients;
@@ -53,6 +54,7 @@ import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.spi.impl.DefaultPrintingNotificationCtxProvider;
 import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
 
 /**
@@ -71,7 +73,7 @@ public class Main extends AbstractModuleInterceptor
 		{
 			return;
 		}
-		
+
 		//
 		// Configure tables which are skipped when we record migration scripts
 		{
@@ -135,6 +137,10 @@ public class Main extends AbstractModuleInterceptor
 
 		// task 09417
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.printing.callout.C_Doc_Outbound_Config.instance);
+
+		// task 09833
+		// Register the Default Printing Info ctx provider
+		Services.get(INotificationBL.class).addCtxProvider(new DefaultPrintingNotificationCtxProvider());
 	}
 
 	@Override
@@ -146,6 +152,5 @@ public class Main extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Config.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Matching.Table_Name);
 	}
-
 
 }

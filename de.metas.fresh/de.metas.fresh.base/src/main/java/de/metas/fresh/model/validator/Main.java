@@ -22,7 +22,6 @@ package de.metas.fresh.model.validator;
  * #L%
  */
 
-
 import java.text.DateFormat;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -54,6 +53,8 @@ import org.compiere.util.Language;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.picking.form.swing.FreshSwingPickingTerminalPanel;
+import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_NotificationCtxProvider;
+import de.metas.notification.INotificationBL;
 import de.metas.picking.terminal.form.swing.PickingTerminal;
 
 public class Main extends AbstractModuleInterceptor
@@ -105,6 +106,10 @@ public class Main extends AbstractModuleInterceptor
 		//
 		// Apply misc workarounds for GOLIVE
 		apply_Fresh_GOLIVE_Workarounds();
+
+		// task 09833
+		// Register the Printing Info ctx provider for C_Order_MFGWarehouse_Report
+		Services.get(INotificationBL.class).addCtxProvider(new C_Order_MFGWarehouse_Report_NotificationCtxProvider());
 	}
 
 	@Override
@@ -121,7 +126,7 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order_MFGWarehouse_ReportLine.instance, client); // task 09028
 
 		// task 09421
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.C_Order.INSTANCE, client); 
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.C_Order.INSTANCE, client);
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.Fresh_QtyOnHand.INSTANCE, client);
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_InOut.INSTANCE, client);
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Movement.INSTANCE, client);
