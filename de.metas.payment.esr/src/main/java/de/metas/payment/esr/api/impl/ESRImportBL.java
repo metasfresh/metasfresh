@@ -10,18 +10,17 @@ package de.metas.payment.esr.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -120,7 +119,7 @@ public class ESRImportBL implements IESRImportBL
 
 	/**
 	 * package visible constructor for testing. Allows it to set a mock-matcher.
-	 * 
+	 *
 	 * @param matcher
 	 */
 	/* package */ESRImportBL(final IESRLineMatcher matcher)
@@ -290,7 +289,7 @@ public class ESRImportBL implements IESRImportBL
 
 	/**
 	 * Groups the given lines so that we can create one payment for each line.
-	 * 
+	 *
 	 * to be more specific, the lines are grouped the following properties:
 	 * <ul>
 	 * <li>AD_Org_ID</li>
@@ -300,7 +299,7 @@ public class ESRImportBL implements IESRImportBL
 	 * <li>AccountingDate</li>
 	 * <li>PaymentDate</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param importedLines
 	 * @return
 	 */
@@ -392,7 +391,7 @@ public class ESRImportBL implements IESRImportBL
 
 	/**
 	 * Updates the ESR Line, if that line is not already processed. The BPartner value could have been changed. Also a new document could have been created)
-	 * 
+	 *
 	 * @param esrImportLine
 	 * @param trxRunConfig
 	 */
@@ -749,7 +748,7 @@ public class ESRImportBL implements IESRImportBL
 
 	/**
 	 * Creates a payment for the given lines. Assumes that all lines reference the same invoice. Method is default visible to make it testable.
-	 * 
+	 *
 	 * @param importLines
 	 * @param trxName
 	 * @param trxRunConfig
@@ -896,17 +895,15 @@ public class ESRImportBL implements IESRImportBL
 			{
 				// must assure that the invoice has transaction
 				InterfaceWrapperHelper.refresh(invoice, trxName);
-				
+
 				final boolean ignoreIsAutoAllocateAvailableAmt = true; // task 09167: when processing ESR lines (i.e. from this method) we always allocate the payment to the invoice.
-				Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice, 
-						InterfaceWrapperHelper.create(payment, de.metas.banking.model.I_C_Payment.class), 
+				Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice,
+						InterfaceWrapperHelper.create(payment, de.metas.banking.model.I_C_Payment.class),
 						ignoreIsAutoAllocateAvailableAmt);
 				InterfaceWrapperHelper.save(importLine); // saving, because updateLinesOpenAmt doesn't save the line it was called with
 			}
-		}); 
-		
+		});
 
-		
 	}
 
 	@Override
@@ -1164,7 +1161,7 @@ public class ESRImportBL implements IESRImportBL
 	 * the given {@code esrImportLine}.
 	 * <p>
 	 * <b>IMPORTANT:</b> as written this method might update the given {@code esrImportLine}, but does <b>not</b> save it. The decision to save or not is left to the caller.
-	 * 
+	 *
 	 * @param esrImportLine
 	 * @param invoice
 	 */

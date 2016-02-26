@@ -10,18 +10,17 @@ package de.metas.payment.esr.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -201,6 +200,7 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 
 					final int invoiceID = esrReferenceNumberDocument.getRecord_ID();
 					final I_C_Invoice invoice = InterfaceWrapperHelper.create(localCtx, invoiceID, I_C_Invoice.class, ITrx.TRXNAME_None);
+					final I_C_BPartner invoicePartner = invoice.getC_BPartner();
 
 					// check the org: should not match with invoices from other orgs
 					if (invoice.getAD_Org_ID() != importLine.getAD_Org_ID())
@@ -209,7 +209,8 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 								Services.get(IMsgBL.class).getMsg(localCtx, ESR_UNFIT_INVOICE_ORG));
 					}
 					// check the org: should not match with invoices which have the partner form other org
-					else if (invoice.getC_BPartner().getAD_Org_ID() != importLine.getAD_Org_ID())
+					else if (invoicePartner.getAD_Org_ID() > 0  // task 09852: a partner that has no org at all does not mean an inconsistency and is therefore OK
+							&& invoicePartner.getAD_Org_ID() != importLine.getAD_Org_ID())
 					{
 						Services.get(IESRImportBL.class).addErrorMsg(importLine,
 								Services.get(IMsgBL.class).getMsg(localCtx, ESR_UNFIT_BPARTNER_ORG));
@@ -286,7 +287,7 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 			}
 			catch (ParseException e)
 			{
-				esrImportBL.addErrorMsg(importLine,Services.get(IMsgBL.class).getMsg(localCtx, ERR_WRONG_ACCOUNT_DATE, new Object[] { accountDateStr }));
+				esrImportBL.addErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(localCtx, ERR_WRONG_ACCOUNT_DATE, new Object[] { accountDateStr }));
 			}
 		}
 
@@ -364,23 +365,24 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 		// try to format the value
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 		final String formattedBPValue = documentNoFactory.forTableName(I_C_BPartner.Table_Name, importLine.getAD_Client_ID(), importLine.getAD_Org_ID())
-							.setSequenceNo(Integer.valueOf(bpValue))
-							.setFailOnError(false)
-							.build();
-		
+				.setSequenceNo(Integer.valueOf(bpValue))
+				.setFailOnError(false)
+				.build();
+
 		I_C_BPartner bPartner = null;
 		if (!Check.isEmpty(formattedBPValue, true))
 		{
 			bPartner = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(ctx, formattedBPValue);
 		}
-		
+
 		importLine.setBPartner_Value(bpValue);
 
 		if (bPartner != null)
 		{
 			// check organization
 			// we should not allow matching form other org
-			if (bPartner.getAD_Org_ID() != importLine.getAD_Org_ID())
+			if (bPartner.getAD_Org_ID() > 0 // task 09852: a partner that has no org at all does not mean an inconsistency and is therefore OK
+					&& bPartner.getAD_Org_ID() != importLine.getAD_Org_ID())
 			{
 				Services.get(IESRImportBL.class).addErrorMsg(importLine,
 						Services.get(IMsgBL.class).getMsg(ctx, ESR_UNFIT_BPARTNER_ORG));
@@ -421,7 +423,8 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 						Services.get(IMsgBL.class).getMsg(ctx, ESR_UNFIT_INVOICE_ORG));
 			}
 			// check the org: should not match with invoices which have the partner from other org
-			else if (invoicePartner.getAD_Org_ID() != importLine.getAD_Org_ID())
+			else if (invoicePartner.getAD_Org_ID() > 0  // task 09852: a partner that has no org at all does not mean an inconsistency and is therefore OK
+					&& invoicePartner.getAD_Org_ID() != importLine.getAD_Org_ID())
 			{
 				Services.get(IESRImportBL.class).addErrorMsg(importLine,
 						Services.get(IMsgBL.class).getMsg(ctx, ESR_UNFIT_BPARTNER_ORG));
@@ -432,7 +435,7 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 				{
 					// task: 05799 also try with bpValue + one '0'
 					final String bpValueleftZero = '0' + bpValue;
-					
+
 					if (invoicePartner.getValue().endsWith(bpValueleftZero))
 					{
 						// if we have a match with bpValueleftZero, then we need to make sure that 'importLine' references invoice's partner

@@ -49,8 +49,8 @@ public interface IPaySelectionBL extends ISingletonService
 	void createBankStatementLines(I_C_BankStatement bankStatement, I_C_PaySelection paySelection);
 
 	/**
-	 * Create payments for each line of given pay selection. The payments are created only if they where not created before. For more informations, see
-	 * {@link #createPaymentIfNeeded(de.metas.banking.model.I_C_PaySelectionLine)}.
+	 * Create payments for each line of given pay selection. The payments are created only if they where not created before.<br>
+	 * For more informations, see {@link #createPaymentIfNeeded(de.metas.banking.model.I_C_PaySelectionLine)}.
 	 *
 	 * @param paySelection
 	 */
@@ -77,8 +77,10 @@ public interface IPaySelectionBL extends ISingletonService
 	 * @param bankStatementLine
 	 * @param bankStatementLineRef
 	 */
-	void linkBankStatementLine(de.metas.banking.model.I_C_PaySelectionLine psl, org.compiere.model.I_C_BankStatementLine bankStatementLine,
-			de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef);
+	void linkBankStatementLine(
+			final de.metas.banking.model.I_C_PaySelectionLine psl,
+			final org.compiere.model.I_C_BankStatementLine bankStatementLine,
+			final de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef);
 
 	/**
 	 * Unlink any bank statement line from given pay selection line.
@@ -97,7 +99,7 @@ public interface IPaySelectionBL extends ISingletonService
 
 	/**
 	 * ReActivate (open) given pay selection.
-	 * 
+	 *
 	 * @param paySelection
 	 */
 	void reActivate(I_C_PaySelection paySelection);

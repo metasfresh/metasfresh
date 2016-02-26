@@ -27,8 +27,9 @@ The actual release notes
  - 09824 use locking API to prevent concurrent doc action on the same document (100066000843)
 
 ## Fixes
- - 09850 Cannot Change the logo (108300604070) - fix NPE in VImage (preview)
- - 09823 Tax Code Migration (107275491843)
+ - 09852 ESR-Import allow importing with invoice-partners that have AD Org ID 0 (109927070478):
+	* when importing ESR-Data, we now accept C_BPartners with AD_Org_ID=0, because besides being a different number, it's not an inconsistency to have a partner with no org
+  - 09823 Tax Code Migration (107275491843)
     * making a fix to the work-package processor that is used by the database function "de.metas.async".executeSqlAsync(p_Sql text)
  - 09812 create report for daily packaging material balance (101400050316)
     * minor layouting fixes
