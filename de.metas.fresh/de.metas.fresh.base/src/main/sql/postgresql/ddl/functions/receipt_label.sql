@@ -22,7 +22,8 @@ CREATE FUNCTION report.receipt_label(IN M_HU_ID numeric) RETURNS TABLE
 	mhd Character Varying,
 	receiptdocno Character Varying,
 	PackingInstruction Character Varying,
-	deliverydate timestamp without time zone
+	deliverydate timestamp without time zone,
+	isQualityInspection Character Varying
 	)
 AS 
 $$
@@ -72,6 +73,7 @@ SELECT distinct
 		INNER JOIN M_InOut io on iol.M_InOut_ID = io.M_InOut_ID
 		WHERE iol.M_InOutLine_ID=(t.TU_Attrs).ReceiptInOutLine_Value
 	) AS deliverydate
+	, (t.TU_Attrs).isQualityInspection_Value AS isQualityInspection
 FROM (
  SELECT
   lu.M_HU_ID as LU_HU_ID

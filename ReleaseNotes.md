@@ -24,6 +24,7 @@ The actual release notes
 # 4.5.4 (Upcoming Release)
 
 ## Features
+ - 09836 Show on HU-Receipt label if a HU was flagged for quality instpection (104096142493)
  - 09833 Show additional infos in print problem notification (105117588718)
     * extending the API to allow addtional context info to be added to a notification
  - FRESH-22: 09847 Import adempiere terminology as english trl into metasfresh (107370493155)

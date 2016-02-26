@@ -4,7 +4,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="336"/>
+	<property name="ireport.y" value="488"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -39,10 +39,11 @@
 	<field name="receiptdocno" class="java.lang.String"/>
 	<field name="packinginstruction" class="java.lang.String"/>
 	<field name="deliverydate" class="java.sql.Timestamp"/>
+	<field name="isqualityinspection" class="java.lang.String"/>
 	<detail>
 		<band height="842" splitType="Stretch">
 			<image>
-				<reportElement uuid="c14f0b46-8276-4112-96b1-7bc016671b27" x="122" y="638" width="354" height="85"/>
+				<reportElement uuid="c14f0b46-8276-4112-96b1-7bc016671b27" x="122" y="651" width="354" height="85"/>
 				<imageExpression><![CDATA[new java.net.URL($P{barcodeURL} + "?Content=" + $F{receiptdocno} +
     "&Format=CODE_128&Width=500&Height=120")]]></imageExpression>
 			</image>
@@ -135,7 +136,7 @@
 				<textFieldExpression><![CDATA[($R{org}!= null ? $R{org} : "") +  "Artikelbezeichnung"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0b495f32-ff01-43c8-9278-a7f7ff3c1a3a" x="97" y="462" width="400" height="58"/>
+				<reportElement uuid="0b495f32-ff01-43c8-9278-a7f7ff3c1a3a" x="97" y="475" width="400" height="58"/>
 				<textElement markup="none">
 					<font size="22" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -184,14 +185,14 @@
 				<textFieldExpression><![CDATA[$F{producergap}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="3838508c-2b02-4f75-b9ad-90b13991ad44" x="97" y="521" width="67" height="17"/>
+				<reportElement uuid="3838508c-2b02-4f75-b9ad-90b13991ad44" x="97" y="534" width="67" height="17"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[Marke:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f" x="129" y="520" width="368" height="23"/>
+				<reportElement uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f" x="129" y="533" width="368" height="23"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -214,14 +215,14 @@
 				<textFieldExpression><![CDATA[$F{vendorgap}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="ae3863e5-0b37-4ea0-bf42-4ecdfadfb9b0" x="97" y="566" width="131" height="17"/>
+				<reportElement uuid="ae3863e5-0b37-4ea0-bf42-4ecdfadfb9b0" x="97" y="579" width="131" height="17"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[Eingangsdatum: ]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yy" isBlankWhenNull="true">
-				<reportElement uuid="0e3c222c-2aa1-42b7-9329-591c4561a831" x="228" y="564" width="269" height="27">
+				<reportElement uuid="0e3c222c-2aa1-42b7-9329-591c4561a831" x="228" y="577" width="269" height="27">
 					<printWhenExpression><![CDATA[new Boolean($F{deliverydate}==null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -230,7 +231,7 @@
 				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de" x="148" y="590" width="349" height="23"/>
+				<reportElement uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de" x="148" y="603" width="349" height="23"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -241,7 +242,7 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 "Ware Gesperrt"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="1e2c2df3-fd68-48b8-8c08-933650ce905d" x="97" y="592" width="95" height="17"/>
+				<reportElement uuid="1e2c2df3-fd68-48b8-8c08-933650ce905d" x="97" y="605" width="95" height="17"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
@@ -257,41 +258,41 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 				<textFieldExpression><![CDATA[$F{vendoraddress} + "\n"]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="c42e5a0a-24e1-4445-87b0-19296bcd8107" x="87" y="637" width="421" height="1"/>
+				<reportElement uuid="c42e5a0a-24e1-4445-87b0-19296bcd8107" x="87" y="650" width="421" height="1"/>
 				<graphicElement>
 					<pen lineWidth="2.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<textField>
-				<reportElement uuid="f308e4fd-b63e-4042-bb31-ea87b83d2407" x="243" y="722" width="106" height="14"/>
+				<reportElement uuid="f308e4fd-b63e-4042-bb31-ea87b83d2407" x="243" y="735" width="106" height="14"/>
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{receiptdocno}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="1e2c2df3-fd68-48b8-8c08-933650ce905d" x="97" y="615" width="179" height="17"/>
+				<reportElement uuid="1e2c2df3-fd68-48b8-8c08-933650ce905d" x="97" y="628" width="179" height="17"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[Qualitätsnotiz:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de" x="97" y="612" width="400" height="23"/>
+				<reportElement uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de" x="97" y="625" width="400" height="23"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{notiz}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="3838508c-2b02-4f75-b9ad-90b13991ad44" x="97" y="543" width="102" height="17"/>
+				<reportElement uuid="3838508c-2b02-4f75-b9ad-90b13991ad44" x="97" y="556" width="102" height="17"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[Packvorschrift:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f" x="129" y="542" width="368" height="23"/>
+				<reportElement uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f" x="129" y="555" width="368" height="23"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -340,7 +341,7 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 				<textFieldExpression><![CDATA[$F{mhd}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yy" isBlankWhenNull="true">
-				<reportElement uuid="027ed372-3ff8-480d-8773-e73d83259037" x="228" y="564" width="269" height="27"/>
+				<reportElement uuid="027ed372-3ff8-480d-8773-e73d83259037" x="228" y="577" width="269" height="27"/>
 				<textElement textAlignment="Right">
 					<font size="20" isBold="true"/>
 				</textElement>
@@ -359,6 +360,13 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{lotnumberdate}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="409e7eb9-f006-4462-9d03-18d8b17c5251" x="97" y="465" width="194" height="16"/>
+				<textElement markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[("Y").equals($F{isqualityinspection}) ?$R{isqualityinspection} : null]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
