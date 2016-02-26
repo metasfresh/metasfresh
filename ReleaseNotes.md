@@ -24,6 +24,8 @@ The actual release notes
 # 4.5.4 (Upcoming Release)
 
 ## Features
+ - FRESH-22: 09847 Import adempiere terminology as english trl into metasfresh (107370493155)
+    * imported current en_US language translations from adempiere ERP
  - 09824 use locking API to prevent concurrent doc action on the same document (100066000843)
 
 ## Fixes
