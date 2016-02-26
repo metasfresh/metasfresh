@@ -230,6 +230,18 @@ public class InterfaceWrapperHelper
 		return bean;
 	}
 
+	/**
+	 * Loads the record with the given <code>id</code>.
+	 * <p>
+	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
+	 * then it's probably better to use e.g. {@link org.adempiere.util.lang.impl.TableRecordReference#TableRecordReference(int, int)}.
+	 *
+	 * @param ctx
+	 * @param id
+	 * @param cl
+	 * @param trxName
+	 * @return
+	 */
 	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, final String trxName)
 	{
 		if (getInMemoryDatabaseForModel(cl) != null)
@@ -240,6 +252,20 @@ public class InterfaceWrapperHelper
 		return bean;
 	}
 
+	/**
+	 * Loads the record with the given <code>id</code>. Similar to {@link #create(Properties, String, int, Class, String)}, but explicitly specifies the table name.<br>
+	 * This is useful in case the table name can't be deduced from the given <code>cl</code>.
+	 * <p>
+	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
+	 * then it's probably better to use {@link org.adempiere.util.lang.impl.TableRecordReference#TableRecordReference(int, int)}.
+	 *
+	 * @param ctx
+	 * @param tableName
+	 * @param id
+	 * @param cl
+	 * @param trxName
+	 * @return
+	 */
 	public static <T> T create(final Properties ctx, final String tableName, final int id, final Class<T> cl, final String trxName)
 	{
 		if (getInMemoryDatabaseForTableName(tableName) != null)

@@ -14,6 +14,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Period;
@@ -25,6 +27,7 @@ import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.IMaterialTrackingReportDAO;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
+import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
@@ -57,18 +60,12 @@ public class M_Material_Tracking_Report_Line_Create
 		extends SvrProcess
 		implements ISvrProcessPrecondition
 {
-
-	@Override
-	protected void prepare()
-	{
-		// nothing to do
-	}
-
 	@Override
 	protected String doIt() throws Exception
 	{
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final IMaterialTrackingReportDAO materialTrackingReportDAO = Services.get(IMaterialTrackingReportDAO.class);
+		final IPPOrderMInOutLineRetrievalService ppOrderMInOutLineRetrievalService = Services.get(IPPOrderMInOutLineRetrievalService.class);
 
 		final I_M_Material_Tracking_Report report = getRecord(I_M_Material_Tracking_Report.class);
 		final I_C_Period period = report.getC_Period();
@@ -78,7 +75,7 @@ public class M_Material_Tracking_Report_Line_Create
 		workpackageAggregator.setItemAggregationKeyBuilder(new CreateMaterialTrackingReportLineFromMaterialTrackingRefKeyBuilder());
 
 		// get all the material tracking entries that fit the given period
-		final List<I_M_Material_Tracking> materialTrackings = materialTrackingDAO.retrieveMaterialTrackingsForPeriod(period);
+		final List<I_M_Material_Tracking> materialTrackings = materialTrackingDAO.retrieveMaterialTrackingsForPeriodAndOrg(period, report.getAD_Org());
 
 		for (final I_M_Material_Tracking materialTracking : materialTrackings)
 		{
@@ -110,7 +107,7 @@ public class M_Material_Tracking_Report_Line_Create
 					// add the PP_Orders with their *issued* qties
 					final I_PP_Order ppOrder = InterfaceWrapperHelper.create(getCtx(), ref.getRecord_ID(), I_PP_Order.class, getTrxName());
 
-					final Map<Integer, BigDecimal> iolAndQty = Services.get(IPPOrderMInOutLineRetrievalService.class).retrieveIolAndQty(ppOrder);
+					final Map<Integer, BigDecimal> iolAndQty = ppOrderMInOutLineRetrievalService.retrieveIolAndQty(ppOrder);
 
 					for (final Entry<Integer, BigDecimal> entry : iolAndQty.entrySet())
 					{
@@ -157,17 +154,27 @@ public class M_Material_Tracking_Report_Line_Create
 		final I_C_Period period = report.getC_Period();
 		final Timestamp periodEndDate = period.getEndDate();
 		final IContextAware reportCtx = InterfaceWrapperHelper.getContextAware(report);
-		final String trxName = InterfaceWrapperHelper.getTrxName(report);
 
-		int table_ID = ref.getAD_Table_ID();
+		final ITableRecordReference tableRecordReference = new TableRecordReference(ref.getAD_Table_ID(), ref.getRecord_ID());
 
-		if (InterfaceWrapperHelper.getTableId(I_PP_Order.class) == table_ID)
+		// skip references records with other material trackings
+		final IMaterialTrackingAware materialTrackingAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(tableRecordReference.getModel(reportCtx), IMaterialTrackingAware.class);
+		if(materialTrackingAware == null
+				|| materialTracking.getM_Material_Tracking_ID() != materialTrackingAware.getM_Material_Tracking_ID())
 		{
+			// should not happen because that would mean an inconsistent M_Material_Tracking_Ref
+			ILoggable.THREADLOCAL.getLoggable().addLog(
+					"Skipping {0} because it is referenced via M_Material_Tracking_Ref, but itself does not reference {1}",
+					materialTrackingAware, materialTracking);
+			return false;
+		}
 
-			final I_PP_Order ppOrder = InterfaceWrapperHelper.create(reportCtx.getCtx(), ref.getRecord_ID(), I_PP_Order.class, trxName);
+		if (I_PP_Order.Table_Name.equals(tableRecordReference.getTableName()))
+		{
+			final I_PP_Order ppOrder = tableRecordReference.getModel(reportCtx, I_PP_Order.class);
 
 			// shall never happen
-			Check.assumeNotNull(ppOrder, "PP_Order not null in M_Material_Tracking_Ref: ", ref);
+			Check.assumeNotNull(ppOrder, "PP_Order not null in M_Material_Tracking_Ref: {0}", ref);
 
 			// only closed pp_Orders are eligible
 			if (!docActionBL.isStatusClosed(ppOrder))
@@ -182,24 +189,14 @@ public class M_Material_Tracking_Report_Line_Create
 			{
 				return false; // this is a common and frequent case; don't pollute the loggable with it.
 			}
-
-			// skip pp_Orders with other material trackings
-			if (materialTracking.getM_Material_Tracking_ID() != ppOrder.getM_Material_Tracking_ID())
-			{
-				// should not happen because that would mean an inconsistent M_Material_Tracking_Ref
-				ILoggable.THREADLOCAL.getLoggable().addLog(
-						"Skipping {0} because it is referenced via M_Material_Tracking_Ref, but itself does not reference {1}",
-						ppOrder, materialTracking);
-				return false;
-			}
 		}
 
-		else if (InterfaceWrapperHelper.getTableId(I_M_InOutLine.class) == table_ID)
+		else if (I_M_InOutLine.Table_Name.equals(tableRecordReference.getTableName()))
 		{
-			final I_M_InOutLine iol = InterfaceWrapperHelper.create(reportCtx.getCtx(), ref.getRecord_ID(), I_M_InOutLine.class, trxName);
+			final I_M_InOutLine iol = tableRecordReference.getModel(reportCtx, I_M_InOutLine.class);
 
 			// shall never happen
-			Check.assumeNotNull(iol, "M_InOutLine not null in M_Material_Tracking_Ref: ", ref);
+			Check.assumeNotNull(iol, "M_InOutLine not null in M_Material_Tracking_Ref: {0}", ref);
 
 			final I_M_InOut io = iol.getM_InOut();
 
@@ -220,12 +217,6 @@ public class M_Material_Tracking_Report_Line_Create
 			if (productID != iol.getM_Product_ID())
 			{
 				return false;
-			}
-
-			// skip inout lines with other material tracking
-			if (materialTracking.getM_Material_Tracking_ID() != iol.getM_Material_Tracking_ID())
-			{
-				return false; // should not happen because that would mean an inconsistent M_Material_Tracking_Ref
 			}
 		}
 

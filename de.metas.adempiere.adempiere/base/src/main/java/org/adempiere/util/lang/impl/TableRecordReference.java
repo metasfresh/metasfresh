@@ -10,12 +10,12 @@ package org.adempiere.util.lang.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,16 +43,19 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
  * </ul>
  *
  * TODO: merge logic with {@link org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal}.
- * 
+ *
  * @author tsa
  *
  */
 public final class TableRecordReference implements ITableRecordReference
 {
 	/**
-	 * Creates an {@link ITableRecordReference}.
-	 * 
-	 * @param model model interface or {@link ITableRecordReference}; null is NOT allowed
+	 * Creates an {@link ITableRecordReference} from the given model.
+	 * <p>
+	 * <b>IMPORTANT:</b> if this method does not inspect the given model's <code>AD_Table_ID</code> and <code>Record_ID</code> but instead returns just <code>model</code>, wrapped up as
+	 * {@link ITableRecordReference}.
+	 *
+	 * @param model model interface or {@link ITableRecordReference}; <code>null</code> is NOT allowed
 	 * @return {@link ITableRecordReference}; never returns null
 	 */
 	public static final ITableRecordReference of(final Object model)
@@ -66,7 +69,7 @@ public final class TableRecordReference implements ITableRecordReference
 
 	/**
 	 * Same as {@link #of(Object)} but in case <code>model</code> is null then it will return null.
-	 * 
+	 *
 	 * @param model
 	 * @return {@link ITableRecordReference} or null
 	 */
@@ -88,6 +91,12 @@ public final class TableRecordReference implements ITableRecordReference
 	/** Cached model */
 	private transient Object model = null;
 
+	/**
+	 * Creates an instance that will be loaded on demand and is specified by the given <code>adTableId</code> and <code>recordId</code>.
+	 *
+	 * @param adTableId
+	 * @param recordId
+	 */
 	public TableRecordReference(final int adTableId, final int recordId)
 	{
 		super();
@@ -100,6 +109,12 @@ public final class TableRecordReference implements ITableRecordReference
 		this.recordId = recordId;
 	}
 
+	/**
+	 * Creates an instance that will be loaded on demand and is specified by the given <code>tableName</code> and <code>recordId</code>.
+	 *
+	 * @param tableName
+	 * @param recordId
+	 */
 	public TableRecordReference(final String tableName, final int recordId)
 	{
 		super();
@@ -201,7 +216,7 @@ public final class TableRecordReference implements ITableRecordReference
 
 	/**
 	 * Checks if underlying (and cached) model is still valid in given context. In case is no longer valid, it will be set to <code>null</code>.
-	 * 
+	 *
 	 * @param context
 	 */
 	private void checkModelStaled(final IContextAware context)

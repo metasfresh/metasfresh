@@ -39,6 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
@@ -321,15 +322,17 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForPeriod(final I_C_Period period)
+	public List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForPeriodAndOrg(
+			final I_C_Period period,
+			final I_AD_Org org)
 	{
-
 		final Timestamp periodEndDate = period.getEndDate();
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(de.metas.materialtracking.model.I_M_Material_Tracking.class, period)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(de.metas.materialtracking.model.I_M_Material_Tracking.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, periodEndDate)
 				.addCompareFilter(de.metas.materialtracking.model.I_M_Material_Tracking.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, periodEndDate)
+				.addInArrayFilter(I_M_Material_Tracking.COLUMN_AD_Org_ID, 0, org.getAD_Org_ID())
 				.create()
 				.list(de.metas.materialtracking.model.I_M_Material_Tracking.class);
 	}

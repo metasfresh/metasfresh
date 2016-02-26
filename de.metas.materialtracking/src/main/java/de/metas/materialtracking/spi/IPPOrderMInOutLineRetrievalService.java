@@ -50,8 +50,8 @@ public interface IPPOrderMInOutLineRetrievalService extends ISingletonService
 	List<I_M_InOutLine> provideIssuedInOutLines(I_PP_Cost_Collector issueCostCollector);
 
 	/**
-	 * Retrieve issued inout lines and their issued qty
-	 * 
+	 * Retrieve issued quantities and the <code>M_InOutLine_ID</code> of the material receipts from where the issued qtys came.
+	 *
 	 * @param ppOrder
 	 * @return
 	 */

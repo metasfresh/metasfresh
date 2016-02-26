@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
@@ -72,9 +73,9 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	I_M_Material_Tracking_Ref createMaterialTrackingRefNoSave(de.metas.materialtracking.model.I_M_Material_Tracking materialTracking, Object model);
 
 	/**
-	 * 
+	 *
 	 * Retrieve the material tracking refs for the given {@link de.metas.materialtracking.model.I_M_Material_Tracking} and model's {@link I_AD_Table}
-	 * 
+	 *
 	 * @param materialTracking
 	 * @param modelClass
 	 * @return
@@ -130,24 +131,26 @@ public interface IMaterialTrackingDAO extends ISingletonService
 
 	/**
 	 * Retrieve the <code>C_Flatrate_Term</code> that fits the partner, product and lager konf of the given <code>materialTracking</code>
-	 * 
+	 *
 	 * @param materialTracking
 	 * @return
 	 */
 	List<I_C_Flatrate_Term> retrieveC_Flatrate_Terms_For_MaterialTracking(I_M_Material_Tracking materialTracking);
 
 	/**
-	 * Retrieve all the material tracking entries that fit the given period.
-	 * For this logic only the period's end-date is used: Material tracking's ValidFrom must be <= periodEnd and validTO >= periodEnd
-	 * 
+	 * Retrieve all active the material tracking entries that fit the given period and org. Of the org's <code>AD_Org_ID > 0</code>, then also records (if any exist!) with <code>AD_Org_ID = 0</code>
+	 * are returned.<br>
+	 * For this logic only the period's end-date is used: Material tracking's validFrom must be <= periodEnd and validTO >= periodEnd
+	 *
 	 * @param period
+	 * @param org
 	 * @return list of the Material trackings that were found, EMpty list if none was found
 	 */
-	List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForPeriod(I_C_Period period);
+	List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForPeriodAndOrg(I_C_Period period, I_AD_Org org);
 
 	/**
 	 * Delete directly all the lines of the given {@link I_M_Material_Tracking_Report}
-	 * 
+	 *
 	 * @param report
 	 */
 	void deleteMaterialTrackingReportLines(I_M_Material_Tracking_Report report);

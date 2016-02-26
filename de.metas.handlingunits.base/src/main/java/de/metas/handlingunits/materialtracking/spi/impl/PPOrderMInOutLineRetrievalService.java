@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.model.util.ModelByIdComparator;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -114,11 +115,13 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 		for (final I_PP_Cost_Collector costCollector : costCollectors)
 		{
 			if (!ppCostCollectorBL.isMaterialIssue(costCollector, true))
-				{
-					continue;
-				}
+			{
+				continue;
+			}
 
 			final List<I_M_HU_Assignment> huAssignmentsForModel = huAssignmentDAO.retrieveHUAssignmentsForModel(costCollector);
+
+			final Map<Integer, I_M_InOutLine> id2iol = new HashMap<Integer, I_M_InOutLine>();
 
 			for (final I_M_HU_Assignment assignment : huAssignmentsForModel)
 			{
@@ -130,17 +133,23 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 					// or it's not processed (which should not happen)
 					continue;
 				}
+				id2iol.put(inoutLine.getM_InOutLine_ID(), inoutLine);
+			}
 
-				BigDecimal qty = iolMap.get(inoutLine.getM_InOutLine_ID());
-				if (qty == null)
-				{
-					qty = BigDecimal.ZERO;
-				}
-				iolMap.put(inoutLine.getM_InOutLine_ID(), qty.add(costCollector.getMovementQty()));
+			BigDecimal qtyToAllocate = costCollector.getMovementQty();
+			for (final I_M_InOutLine inoutLine : id2iol.values())
+			{
+				final BigDecimal qty = qtyToAllocate.min(inoutLine.getMovementQty());
+				iolMap.put(inoutLine.getM_InOutLine_ID(), qty);
+				qtyToAllocate = qtyToAllocate.subtract(inoutLine.getMovementQty()).max(BigDecimal.ZERO);
+			}
+
+			if (qtyToAllocate.signum() > 0)
+			{
+				ILoggable.THREADLOCAL.getLoggable().addLog("PROBLEM: PP_Cost_Collector {0} of PP_Order {1} has a remaining unallocated qty of {3}!", costCollector, ppOrder, qtyToAllocate);
 			}
 		}
 
 		return iolMap;
 	}
-
 }

@@ -106,7 +106,6 @@ public class HUInOutDAO implements IHUInOutDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
 		final I_M_Attribute attrReceiptInOutLine = attributeDAO.retrieveAttributeByValue(ctx, Constants.ATTR_ReceiptInOutLine_ID, I_M_Attribute.class);
 
-
 		final I_M_HU_Attribute huAttrReceiptInOutLine = huAttributesDAO.retrieveAttribute(hu, attrReceiptInOutLine);
 		if (huAttrReceiptInOutLine == null
 				|| huAttrReceiptInOutLine.getValueNumber() == null

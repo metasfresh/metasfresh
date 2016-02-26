@@ -29,6 +29,8 @@ The actual release notes
  - 09824 use locking API to prevent concurrent doc action on the same document (100066000843)
 
 ## Fixes
+ - FRESH-20: 09661 Statistik für monatliche Lagermeldung - grouping per Product and ASI (106566269211)
+    * fix for some quantities being counted multiple times
  - 09852 ESR-Import allow importing with invoice-partners that have AD Org ID 0 (109927070478):
 	* when importing ESR-Data, we now accept C_BPartners with AD_Org_ID=0, because besides being a different number, it's not an inconsistency to have a partner with no org
   - 09823 Tax Code Migration (107275491843)
