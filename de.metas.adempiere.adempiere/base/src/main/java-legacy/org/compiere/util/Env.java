@@ -73,10 +73,10 @@ import de.metas.adempiere.model.I_AD_Role;
 
 /**
  * System Environment and static variables.
- * 
+ *
  * @author Jorg Janke
  * @version $Id: Env.java,v 1.3 2006/07/30 00:54:36 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  *         <ul>
  *         <li>BF [ 1619390 ] Use default desktop browser as external browser
@@ -92,7 +92,7 @@ public final class Env
 	/**
 	 * This field is volatile because i encountered occasional NPEs in {@link #getCtx()} during adempiere startup and i suspect it'S related to multiple parts of adempiere starting concurrently. To
 	 * see why I hope that 'volatile' will help, you could start with this link: http://stackoverflow.com/questions/4934913/are-static-variables-shared-between-threads
-	 * 
+	 *
 	 * NOTE: we need to set it to a default value because else all other helpers like GenerateModels will fail or they need to be changes to setup a context provider.
 	 */
 	// private static volatile ContextProvider contextProvider = new DefaultContextProvider();
@@ -117,7 +117,7 @@ public final class Env
 	/**
 	 * Initializes the context provider if necessary. Multiple calls shall be no problem.
 	 * See ThreadLocalContextProvider#init(), because currently that is the only implementation which actually does something
-	 * 
+	 *
 	 * @task 08859
 	 */
 	public static void initContextProvider()
@@ -131,7 +131,7 @@ public final class Env
 
 	/**
 	 * Exit System
-	 * 
+	 *
 	 * @param status System exit status (usually 0 for no error)
 	 */
 	public static void exitEnv(final int status)
@@ -177,7 +177,7 @@ public final class Env
 
 	/**
 	 * Reset Cache
-	 * 
+	 *
 	 * @param finalCall everything otherwise login data remains
 	 */
 	public static void reset(final boolean finalCall)
@@ -269,7 +269,7 @@ public final class Env
 	 * i.e. the AD_Org_ID used to store records which don't belong to a particular organization.
 	 */
 	public static final int CTXVALUE_AD_Org_ID_System = 0;
-	
+
 	public static final String CTXNAME_AD_Role_ID = "#AD_Role_ID";
 	public static final int CTXVALUE_AD_Role_ID_NONE = -1;
 	public static final int CTXVALUE_AD_Role_ID_System = IUserRolePermissions.SYSTEM_ROLE_ID;
@@ -277,21 +277,21 @@ public final class Env
 	public static final String CTXNAME_AD_Role_UserLevel = "#User_Level";
 	/**
 	 * Comma separated list of AD_Org_IDs of which current User/Role has any access (ro/rw)
-	 * 
+	 *
 	 * NOTE: this is deprecated but we are keeping it for those application dictionary logics which require this information from context.
 	 */
 	public static final String CTXNAME_User_Org = "#User_Org";
-	
+
 	public static final String CTXNAME_AD_User_ID = "#AD_User_ID";
 	public static final String CTXNAME_AD_User_Name = "#AD_User_Name";
 	public static final String CTXNAME_SalesRep_ID = "#SalesRep_ID";
 
 	public static final String CTXNAME_Date = "#Date";
 	public static final String CTXNAME_IsAllowLoginDateOverride = "#" + I_AD_Role.COLUMNNAME_IsAllowLoginDateOverride;
-	
+
 	public static final String CTXNAME_AD_Session_ID = "#AD_Session_ID";
 	public static final int CTXVALUE_AD_SESSION_ID_NONE = -1;
-	
+
 	public static final String CTXNAME_M_Warehouse_ID = "#M_Warehouse_ID";
 	public static final String CTXNAME_AD_Language = "#AD_Language";
 	public static final String CTXNAME_AutoNew = "AutoNew";
@@ -334,7 +334,7 @@ public final class Env
 
 	/**
 	 * Get Context
-	 * 
+	 *
 	 * @return Properties
 	 */
 	public static final Properties getCtx()
@@ -344,7 +344,7 @@ public final class Env
 
 	/**
 	 * Creates and returns a new context instance which does not inherit current context and which shall be used temporary.
-	 * 
+	 *
 	 * @return new context to be used temporary
 	 */
 	public static final Properties newTemporaryCtx()
@@ -354,7 +354,7 @@ public final class Env
 
 	/**
 	 * Creates and returns a new empty context which fallbacks to given <code>ctx</code>.
-	 * 
+	 *
 	 * @param ctx
 	 * @return new context
 	 */
@@ -366,7 +366,7 @@ public final class Env
 
 	/**
 	 * Creates a special ctx that can be used to create system-level records.
-	 * 
+	 *
 	 * @param ctx the context that will be the base for the system context.
 	 * @return new temporary context
 	 */
@@ -386,7 +386,7 @@ public final class Env
 
 	/**
 	 * Can be used before calling {@link #getCtx()} during startup, to avoid {@link NullPointerException}s.
-	 * 
+	 *
 	 * @return
 	 */
 	public static final boolean isCtxAvailable()
@@ -396,9 +396,9 @@ public final class Env
 
 	/**
 	 * Temporary replace current context with the given one.
-	 * 
+	 *
 	 * This method will return an {@link IAutoCloseable} to be used in try-with-resources and which will restore the context back.
-	 * 
+	 *
 	 * @param ctx
 	 * @return auto-closeable used to put back the original context
 	 */
@@ -417,7 +417,7 @@ public final class Env
 
 	/**
 	 * Removes given key from context.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param key context key (property name)
 	 */
@@ -464,7 +464,7 @@ public final class Env
 
 	/**
 	 * Remove context variables of which the key is matched by given <code>keyMatcher</code>.
-	 * 
+	 *
 	 * @param ctx
 	 * @param keyMatcher
 	 */
@@ -492,7 +492,7 @@ public final class Env
 
 	/**
 	 * Set Global Context to Value
-	 * 
+	 *
 	 * @param ctx context
 	 * @param context context key
 	 * @param value context value
@@ -514,7 +514,7 @@ public final class Env
 
 	/**
 	 * Set Global Context to Value
-	 * 
+	 *
 	 * @param ctx context
 	 * @param context context key
 	 * @param value context value
@@ -539,7 +539,7 @@ public final class Env
 
 	/**
 	 * Set Global Context to (int) Value
-	 * 
+	 *
 	 * @param ctx context
 	 * @param context context key
 	 * @param value context value
@@ -556,7 +556,7 @@ public final class Env
 
 	/**
 	 * Set Global Context to Y/N Value
-	 * 
+	 *
 	 * @param ctx context
 	 * @param context context key
 	 * @param value context value
@@ -568,7 +568,7 @@ public final class Env
 
 	/**
 	 * Set Context for Window to Value
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param context context key
@@ -594,7 +594,7 @@ public final class Env
 
 	/**
 	 * Set Context for Window to Value
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param context context key
@@ -621,7 +621,7 @@ public final class Env
 
 	/**
 	 * Set Context for Window to int Value
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param context context key
@@ -640,7 +640,7 @@ public final class Env
 
 	/**
 	 * Set Context for Window to Y/N Value
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param context context key
@@ -653,7 +653,7 @@ public final class Env
 
 	/**
 	 * Set Context for Window & Tab to Value
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param TabNo tab no
@@ -680,7 +680,7 @@ public final class Env
 
 	/**
 	 * Creates fully qualified context name.
-	 * 
+	 *
 	 * @param windowNo
 	 * @param tabNo
 	 * @param name
@@ -700,7 +700,7 @@ public final class Env
 
 	/**
 	 * Set Auto Commit
-	 * 
+	 *
 	 * @param ctx context
 	 * @param autoCommit auto commit (save)
 	 */
@@ -716,7 +716,7 @@ public final class Env
 
 	/**
 	 * Set Auto Commit for Window
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param autoCommit auto commit (save)
@@ -730,7 +730,7 @@ public final class Env
 
 	/**
 	 * Set Auto New Record
-	 * 
+	 *
 	 * @param ctx context
 	 * @param autoNew auto new record
 	 */
@@ -743,7 +743,7 @@ public final class Env
 
 	/**
 	 * Set Auto New Record for Window
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param autoNew auto new record
@@ -757,7 +757,7 @@ public final class Env
 
 	/**
 	 * Set SO Trx
-	 * 
+	 *
 	 * @param ctx context
 	 * @param isSOTrx SO Context
 	 */
@@ -770,7 +770,7 @@ public final class Env
 
 	/**
 	 * Get global Value of Context
-	 * 
+	 *
 	 * @param ctx context
 	 * @param context context key
 	 * @return value or {@link #CTXVALUE_NullString}
@@ -782,7 +782,7 @@ public final class Env
 
 	/**
 	 * Get Value of Context for Window. if not found global context if available and enabled
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window
 	 * @param context context key
@@ -796,7 +796,7 @@ public final class Env
 
 	/**
 	 * Get Value of Context for Window. if not found global context if available
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window
 	 * @param context context key
@@ -810,7 +810,7 @@ public final class Env
 
 	/**
 	 * Get Value of Context for Window & Tab, if not found global context if available. If TabNo is TAB_INFO only tab's context will be checked.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param TabNo tab no
@@ -825,7 +825,7 @@ public final class Env
 
 	/**
 	 * Get Value of Context for Window & Tab, if not found global context if available. If TabNo is TAB_INFO only tab's context will be checked.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param TabNo tab no
@@ -840,7 +840,7 @@ public final class Env
 
 	/**
 	 * Get Context and convert it to an integer (0 if error)
-	 * 
+	 *
 	 * @param ctx context
 	 * @param context context key
 	 * @return value
@@ -868,7 +868,7 @@ public final class Env
 
 	/**
 	 * Get Context and convert it to an integer (0 if error)
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param context context key
@@ -893,7 +893,7 @@ public final class Env
 
 	/**
 	 * Get Context and convert it to an integer (0 if error)
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param context context key
@@ -919,7 +919,7 @@ public final class Env
 
 	/**
 	 * Get Context and convert it to an integer (0 if error)
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param TabNo tab no
@@ -945,7 +945,7 @@ public final class Env
 
 	/**
 	 * Is AutoCommit
-	 * 
+	 *
 	 * @param ctx context
 	 * @return true if auto commit
 	 */
@@ -962,7 +962,7 @@ public final class Env
 
 	/**
 	 * Is Window AutoCommit (if not set use default)
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @return true if auto commit
@@ -987,7 +987,7 @@ public final class Env
 
 	/**
 	 * Is Auto New Record
-	 * 
+	 *
 	 * @param ctx context
 	 * @return true if auto new
 	 */
@@ -1003,7 +1003,7 @@ public final class Env
 
 	/**
 	 * Is Window Auto New Record (if not set use default)
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @return true if auto new record
@@ -1025,7 +1025,7 @@ public final class Env
 
 	/**
 	 * Is Sales Order Trx
-	 * 
+	 *
 	 * @param ctx context
 	 * @return true if SO (default)
 	 */
@@ -1039,7 +1039,7 @@ public final class Env
 
 	/**
 	 * Is Sales Order Trx
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @return true if SO (default)
@@ -1052,7 +1052,7 @@ public final class Env
 
 	/**
 	 * Is Sales Order Trx (returns <code>null</code>)
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @return true if {@link CTXNAME_IsSOTrx} = <code>Y</code>, false if {@link CTXNAME_IsSOTrx} = <code>N</code> and <code>null</code> if {@link CTXNAME_IsSOTrx} is not set.
@@ -1070,7 +1070,7 @@ public final class Env
 
 	/**
 	 * Get Context and convert it to a Timestamp if error return today's date
-	 * 
+	 *
 	 * @param ctx context
 	 * @param context context key
 	 * @return Timestamp
@@ -1082,7 +1082,7 @@ public final class Env
 
 	/**
 	 * Get Context and convert it to a Timestamp if error return today's date
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @param context context key
@@ -1109,7 +1109,7 @@ public final class Env
 
 	/**
 	 * Get Login AD_Client_ID
-	 * 
+	 *
 	 * @param ctx context
 	 * @return login AD_Client_ID
 	 */
@@ -1120,7 +1120,7 @@ public final class Env
 
 	/**
 	 * Get Login AD_Org_ID
-	 * 
+	 *
 	 * @param ctx context
 	 * @return login AD_Org_ID
 	 */
@@ -1131,7 +1131,7 @@ public final class Env
 
 	/**
 	 * Get Login AD_User_ID
-	 * 
+	 *
 	 * @param ctx context
 	 * @return login AD_User_ID
 	 */
@@ -1142,7 +1142,7 @@ public final class Env
 
 	/**
 	 * Get Login AD_Role_ID
-	 * 
+	 *
 	 * @param ctx context
 	 * @return login AD_Role_ID
 	 */
@@ -1178,7 +1178,7 @@ public final class Env
 
 	/**************************************************************************
 	 * Get Preference.
-	 * 
+	 *
 	 * <pre>
 	 * 	0)	Current Setting
 	 * 	1) 	Window Preference
@@ -1186,7 +1186,7 @@ public final class Env
 	 * 	3)	Login settings
 	 * 	4)	Accounting settings
 	 * </pre>
-	 * 
+	 *
 	 * @param ctx context
 	 * @param AD_Window_ID window no
 	 * @param context Entity to search
@@ -1239,7 +1239,7 @@ public final class Env
 
 	/**
 	 * Check Base Language
-	 * 
+	 *
 	 * @param ctx context
 	 * @param tableName table to be translated
 	 * @return true if base language and table not translated
@@ -1250,11 +1250,11 @@ public final class Env
 		 * if (isBaseTranslation(tableName)) return Language.isBaseLanguage (getAD_Language(ctx)); else // No AD Table if (!isMultiLingualDocument(ctx)) return true; // access base table
 		 **/
 		return Language.isBaseLanguage(getAD_Language(ctx));
-	}	// isBaseLanguage
+	}
 
 	/**
 	 * Check Base Language
-	 * 
+	 *
 	 * @param AD_Language language
 	 * @param tableName table to be translated
 	 * @return true if base language and table not translated
@@ -1269,7 +1269,7 @@ public final class Env
 
 	/**
 	 * Check Base Language
-	 * 
+	 *
 	 * @param language language
 	 * @param tableName table to be translated
 	 * @return true if base language and table not translated
@@ -1284,7 +1284,7 @@ public final class Env
 
 	/**
 	 * Table is in Base Translation (AD)
-	 * 
+	 *
 	 * @param tableName table
 	 * @return true if base trl
 	 */
@@ -1298,7 +1298,7 @@ public final class Env
 
 	/**
 	 * Do we have Multi-Lingual Documents. Set in DB.loadOrgs
-	 * 
+	 *
 	 * @param ctx context
 	 * @return true if multi lingual documents
 	 */
@@ -1311,9 +1311,9 @@ public final class Env
 
 	/**
 	 * Get System AD_Language.
-	 * 
+	 *
 	 * <b>IMPORTANT: </b>While the language is not yet known (early stages of startup), this method can return <code>null</code>
-	 * 
+	 *
 	 * @param ctx context
 	 * @return AD_Language eg. en_US
 	 */
@@ -1341,9 +1341,9 @@ public final class Env
 
 	/**
 	 * Get System Language.
-	 * 
+	 *
 	 * <b>IMPORTANT: </b>While the language is not yet known (early stages of startup), this method can return <code>null</code>
-	 * 
+	 *
 	 * @param ctx context
 	 * @return Language
 	 */
@@ -1365,7 +1365,7 @@ public final class Env
 
 	/**
 	 * Get Login Language
-	 * 
+	 *
 	 * @param ctx context
 	 * @return Language
 	 * @deprecated Please use {@link #getLanguage(Properties)} instead
@@ -1379,7 +1379,7 @@ public final class Env
 
 	/**
 	 * Verify Language. Check that language is supported by the system
-	 * 
+	 *
 	 * @param ctx might be updated with new AD_Language
 	 * @param language language
 	 */
@@ -1454,7 +1454,7 @@ public final class Env
 
 	/**************************************************************************
 	 * Get Context as String array with format: key == value
-	 * 
+	 *
 	 * @param ctx context
 	 * @return context string
 	 */
@@ -1477,9 +1477,9 @@ public final class Env
 
 	/**
 	 * Get Header info (connection, org, user).
-	 * 
+	 *
 	 * Uses {@link #CTXNAME_WindowName} from context to fetch the window name.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window
 	 * @return Header String
@@ -1526,7 +1526,7 @@ public final class Env
 
 	/**
 	 * Clean up context for Window (i.e. delete it)
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo window
 	 */
@@ -1551,7 +1551,7 @@ public final class Env
 
 	/**
 	 * Parse Context replaces global or Window context @tag@ with actual value.
-	 * 
+	 *
 	 * @tag@ are ignored otherwise "" is returned
 	 * @param ctx context
 	 * @param WindowNo Number of Window
@@ -1587,7 +1587,7 @@ public final class Env
 
 	/**
 	 * Parse Context replaces global or Window context @tag@ with actual value.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param WindowNo Number of Window
 	 * @param value Message to be parsed
@@ -1608,7 +1608,7 @@ public final class Env
 
 	/**
 	 * Parse expression, replaces global or PO properties @tag@ with actual value.
-	 * 
+	 *
 	 * @param expression
 	 * @param po
 	 * @param trxName
@@ -1715,7 +1715,7 @@ public final class Env
 
 	/**
 	 * Add Container and return WindowNo. The container is a APanel, AWindow or JFrame/JDialog
-	 * 
+	 *
 	 * @param win window
 	 * @return WindowNo used for context
 	 */
@@ -1728,7 +1728,7 @@ public final class Env
 
 	/**
 	 * Search Window by comparing the Frames
-	 * 
+	 *
 	 * @param container container or <code>null</code>
 	 * @return WindowNo of container or {@link #WINDOW_MAIN} if no WindowNo found for container.
 	 */
@@ -1781,7 +1781,7 @@ public final class Env
 
 	/**
 	 * Return the JFrame pointer of WindowNo.
-	 * 
+	 *
 	 * @param WindowNo window
 	 * @return JFrame of WindowNo or <code>null</code> if not found or windowNo is invalid
 	 */
@@ -1806,7 +1806,7 @@ public final class Env
 
 	/**
 	 * Remove window from active list
-	 * 
+	 *
 	 * @param WindowNo window
 	 */
 	private static void removeWindow(final int WindowNo)
@@ -1822,7 +1822,7 @@ public final class Env
 				&& windowNo != WINDOW_None
 				&& windowNo != WINDOW_MAIN;
 	}
-	
+
 	/** @return true if given windowNo is a valid windowNo and is for a regular window or for main window */
 	public static final boolean isRegularOrMainWindowNo(final int windowNo)
 	{
@@ -1832,7 +1832,7 @@ public final class Env
 
 	/**
 	 * Clean up context for Window (i.e. delete it)
-	 * 
+	 *
 	 * @param WindowNo window
 	 */
 	public static void clearWinContext(int WindowNo)
@@ -1842,7 +1842,7 @@ public final class Env
 
 	/**************************************************************************
 	 * Get Frame of Window
-	 * 
+	 *
 	 * @param component AWT component
 	 * @return JFrame of component or null
 	 */
@@ -1860,7 +1860,7 @@ public final class Env
 
 	/**
 	 * Get Graphics of container or its parent. The element may not have a Graphic if not displayed yet, but the parent might have.
-	 * 
+	 *
 	 * @param container Container
 	 * @return Graphics of container or null
 	 */
@@ -1879,7 +1879,7 @@ public final class Env
 
 	/**
 	 * Return JDialog or JFrame Parent
-	 * 
+	 *
 	 * @param container Container
 	 * @return JDialog or JFrame of container
 	 */
@@ -1899,7 +1899,7 @@ public final class Env
 
 	/**
 	 * Start Browser
-	 * 
+	 *
 	 * @param url url
 	 * @see IClientUI#showURL(String).
 	 */
@@ -1911,7 +1911,7 @@ public final class Env
 
 	/**
 	 * Do we run on Apple
-	 * 
+	 *
 	 * @return true if Mac
 	 */
 	public static boolean isMac()
@@ -1923,7 +1923,7 @@ public final class Env
 
 	/**
 	 * Do we run on Windows
-	 * 
+	 *
 	 * @return true if windows
 	 */
 	public static boolean isWindows()
@@ -1940,7 +1940,7 @@ public final class Env
 
 	/**
 	 * Hide Window
-	 * 
+	 *
 	 * @param window window
 	 * @return true if window is hidden, otherwise close it
 	 */
@@ -1983,7 +1983,7 @@ public final class Env
 
 	/**
 	 * Show Window
-	 * 
+	 *
 	 * @param AD_Window_ID window
 	 * @return {@link CFrame} or <code>null</code> if not found
 	 */
@@ -2026,7 +2026,7 @@ public final class Env
 
 	/**
 	 * Sleep
-	 * 
+	 *
 	 * @param sec seconds
 	 */
 	public static void sleep(int sec)
@@ -2045,7 +2045,7 @@ public final class Env
 
 	/**
 	 * Update all windows after look and feel changes.
-	 * 
+	 *
 	 * @since 2006-11-27
 	 */
 	public static Set<Window> updateUI()
@@ -2092,7 +2092,7 @@ public final class Env
 	/**
 	 * Prepare the context for calling remote server (for e.g, ejb), only default and global variables are pass over.
 	 * It is too expensive and also can have serialization issue if every remote call to server is passing the whole client context.
-	 * 
+	 *
 	 * @param ctx
 	 * @return Properties
 	 */
@@ -2147,7 +2147,7 @@ public final class Env
 	/* package */static final int CTXVALUE_NoValueInt = 0;
 	/**
 	 * Marker used to flag a NULL String
-	 * 
+	 *
 	 * NOTE: this is the value returned by getContext methods when no value found
 	 */
 	// NOTE: before changing this to some other value, please evaluate where the result of getContext variables is compared with hardcoded ""
@@ -2176,7 +2176,7 @@ public final class Env
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @param WindowNo
 	 * @param TabNo
@@ -2191,7 +2191,7 @@ public final class Env
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @param WindowNo
 	 * @param TabNo
@@ -2381,7 +2381,7 @@ public final class Env
 
 	/**
 	 * Convert the string value to integer
-	 * 
+	 *
 	 * @param s string value
 	 * @param context context name that was required (used only for logging)
 	 * @return int value
@@ -2404,7 +2404,7 @@ public final class Env
 
 	/**
 	 * Convert given timestamp to string.
-	 * 
+	 *
 	 * @param timestamp
 	 * @return timestamp as string (JDBC Format 2005-05-09 00:00:00, without nanos) or <code>null</code> if timestamp was null
 	 * @see #parseTimestamp(String)
@@ -2434,7 +2434,7 @@ public final class Env
 
 	/**
 	 * Parse context value as Timestamp
-	 * 
+	 *
 	 * @param timestampStr Timestamp string representation (JDBC format)
 	 * @return Timestamp or <code>null</code> if value is empty
 	 * @see #toString(Timestamp)
@@ -2476,7 +2476,7 @@ public final class Env
 
 	/**
 	 * Checks if <code>value</code> of property <code>propertyName</code> shall be considered null (i.e. missing).
-	 * 
+	 *
 	 * @param propertyName
 	 * @param value
 	 * @return true if value shall be considered null
@@ -2503,7 +2503,7 @@ public final class Env
 	}
 
 	/**
-	 * 
+	 *
 	 * @param propertyName
 	 * @return true if given propertyName is for a numeric value (i.e. if it ends with "_ID")
 	 */
@@ -2532,9 +2532,9 @@ public final class Env
 
 	/**
 	 * Checks if given contexts are about same session.
-	 * 
+	 *
 	 * Being the same means that they have the same AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID and AD_Session_ID.
-	 * 
+	 *
 	 * @param ctx1
 	 * @param ctx2
 	 * @return
@@ -2554,7 +2554,7 @@ public final class Env
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ctx1
 	 * @param ctx2
 	 * @return true if given contexts are exactly the same (compared by reference)
@@ -2573,7 +2573,7 @@ public final class Env
 
 	/**
 	 * Gets Login/System date
-	 * 
+	 *
 	 * @param ctx
 	 * @return login/system date; never return null
 	 */
@@ -2584,12 +2584,12 @@ public final class Env
 
 	/**
 	 * Gets the value identified by <code>propertyName</code> from given <code>ctx</code>.
-	 * 
+	 *
 	 * If the value is <code>null</code> (or not present) and a value initializer is provided
 	 * than that value initializer will be used to initialize the value.
-	 * 
+	 *
 	 * This method is thread safe.
-	 * 
+	 *
 	 * @param ctx
 	 * @param propertyName
 	 * @param valueInitializer optional value initializer to be used when the value was not found or it's null in <code>ctx</code>
@@ -2601,17 +2601,17 @@ public final class Env
 		final Predicate<V> validator = null; // no validator
 		return getAndValidate(ctx, propertyName, validator, valueInitializer);
 	}
-	
+
 	/**
 	 * Gets the value identified by <code>propertyName</code> from given <code>ctx</code>.
-	 * 
-	 * If an validator is provided then it will be used to check if the cached value (if any) is still valid. 
-	 * 
+	 *
+	 * If an validator is provided then it will be used to check if the cached value (if any) is still valid.
+	 *
 	 * If the value is <code>null</code> (or not present, or not valid) and a value initializer is provided
 	 * than that value initializer will be used to initialize the value.
-	 * 
+	 *
 	 * This method is thread safe.
-	 * 
+	 *
 	 * @param ctx
 	 * @param propertyName
 	 * @param validator optional value validator
@@ -2662,9 +2662,9 @@ public final class Env
 
 	/**
 	 * Checks if given key is contained in context.
-	 * 
+	 *
 	 * WARNING: this method is NOT checking the key exists in underlying "defaults". Before changing this please check the API which depends on this logic
-	 * 
+	 *
 	 * @param ctx
 	 * @param key
 	 * @return true if given key is contained in context
@@ -2676,7 +2676,7 @@ public final class Env
 
 	/**
 	 * Returns given <code>ctx</code> or {@link #getCtx()} if null.
-	 * 
+	 *
 	 * @param ctx
 	 * @return ctx or {@link #getCtx()}; never returns null
 	 */

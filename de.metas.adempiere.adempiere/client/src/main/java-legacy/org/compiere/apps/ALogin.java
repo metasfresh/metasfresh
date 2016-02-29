@@ -85,7 +85,7 @@ import de.metas.adempiere.service.IPrinterRoutingBL;
 
 /**
  * Application Login Window
- * 
+ *
  * @author Jorg Janke
  * @version $Id: ALogin.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
  */
@@ -93,7 +93,7 @@ public final class ALogin extends CDialog
 		implements ActionListener, ChangeListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 7789299589024390163L;
 
@@ -102,7 +102,7 @@ public final class ALogin extends CDialog
 
 	/**
 	 * Construct the dialog. Need to call initLogin for dynamic start
-	 * 
+	 *
 	 * @param parent parent
 	 */
 	public ALogin(final Frame parent, final Properties ctx)
@@ -112,7 +112,7 @@ public final class ALogin extends CDialog
 
 		this.ctx = ctx;
 		this.m_WindowNo = Env.createWindowNo(this);
-		
+
 		//
 		try
 		{
@@ -122,7 +122,7 @@ public final class ALogin extends CDialog
 		{
 			log.log(Level.SEVERE, "Failed initializing the login window", e);
 		}
-		
+
 		// Focus to OK
 		this.getRootPane().setDefaultButton(confirmPanel.getOKButton());
 		parent.setIconImage(Adempiere.getProductIconSmall());
@@ -197,7 +197,7 @@ public final class ALogin extends CDialog
 
 	/**************************************************************************
 	 * Component initialization
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void jbInit() throws Exception
@@ -301,7 +301,7 @@ public final class ALogin extends CDialog
 		connectionPanel.add(languageCombo, new GridBagConstraints(1, 5, 3, 1, 1.0, 0.0
 				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
 		// @Trifon - end
-		
+
 		// Panel top: Logo, version, compile date
 		connectionPanel.add(titleLabel, new GridBagConstraints(0, 0, 2, 2, 0.0, 0.0
 				, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(12, 12, 5, 5), 0, 0));
@@ -323,7 +323,6 @@ public final class ALogin extends CDialog
 			connectionPanel.add(copy1Label, new GridBagConstraints(1, 6, 2, 1, 0.0, 0.0
 					, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 12, 12), 0, 0));
 		}
-
 
 		loginTabPane.add(connectionPanel, res.getString("Connection"));
 
@@ -414,7 +413,7 @@ public final class ALogin extends CDialog
 
 	/**
 	 * Set Initial & Ini Parameters Optional Automatic login
-	 * 
+	 *
 	 * @return true, if connected & parameters set
 	 */
 	public boolean initLogin()
@@ -438,11 +437,11 @@ public final class ALogin extends CDialog
 		{
 			passwordField.setText("");
 		}
-		
+
 		//
 		// fresh_06664 show the language selection combo box only if the System property org.adempiere.client.lang is not set.
 		final boolean displayLanguageCombo;
-		final String adLanguageToPreselect;		
+		final String adLanguageToPreselect;
 		final String defaultClientLanguage = System.getProperty(Adempiere.PROPERTY_DefaultClientLanguage);
 		if (!Check.isEmpty(defaultClientLanguage, true))
 		{
@@ -472,7 +471,7 @@ public final class ALogin extends CDialog
 
 	/**
 	 * Window Events - requestFocus
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -511,8 +510,9 @@ public final class ALogin extends CDialog
 
 	/**
 	 * Load available languages from database (if available) and update the {@link #languageCombo}.
-	 * 
-	 * @param adLanguageToPreselect AD_Language to preselect or <code>null</code> if no suggestion
+	 *
+	 * @param adLanguageToPreselect AD_Language to preselect or <code>null</code> if no suggestion.<br>
+	 *            Note that both "name" (e.g. <code>"Deutsch (Schweiz)"</code>) and "value (e.g. <code>"de_CH"</code>) are OK.
 	 */
 	private void loadLanguagesFromDatabase(final String adLanguageToPreselect)
 	{
@@ -523,14 +523,14 @@ public final class ALogin extends CDialog
 
 		// Language suggested to be preselected
 		ValueNamePair languageToPreselect = null;
-		
+
 		// Language which was previously selected on language combo
 		final ValueNamePair languagePreviouslySelectedOld = languageCombo.getSelectedItem(); // old value
 		ValueNamePair languagePreviouslySelected = null; // the new value, after languages are loaded
-		
+
 		// Base language
 		ValueNamePair baseLanguage = null;
-		
+
 		//
 		// Load all available languages
 		// and find out which is the language to preselect, language previously selected and base language
@@ -542,9 +542,13 @@ public final class ALogin extends CDialog
 			{
 				final ValueNamePair languageVNP = new ValueNamePair(language.getAD_Language(), language.getName());
 				availableLanguageNames.add(languageVNP);
-				
-				if (adLanguageToPreselect != null && adLanguageToPreselect.equals(languageVNP.getValue()))
+
+				if (adLanguageToPreselect != null
+						&& (
+						adLanguageToPreselect.equals(languageVNP.getValue())
+						|| adLanguageToPreselect.equals(languageVNP.getName())))
 				{
+					// we allow the preselected language to be identified by both name and value.
 					languageToPreselect = languageVNP;
 				}
 				if (languagePreviouslySelectedOld != null && Check.equals(languageVNP.getValue(), languagePreviouslySelectedOld.getValue()))
@@ -561,7 +565,7 @@ public final class ALogin extends CDialog
 		//
 		// Decide which language to preselect
 		languageToPreselect = Util.coalesce(languageToPreselect, languagePreviouslySelected, baseLanguage);
-		
+
 		//
 		// Update language combo's model and preselect the language
 		languageCombo.setModel(new DefaultComboBoxModel<>(availableLanguageNames));
@@ -597,7 +601,7 @@ public final class ALogin extends CDialog
 
 	/**
 	 * Return true, if logged in
-	 * 
+	 *
 	 * @return true if connected
 	 */
 	public boolean isConnected()
@@ -607,7 +611,7 @@ public final class ALogin extends CDialog
 
 	/**
 	 * Did the user press OK
-	 * 
+	 *
 	 * @return true if user pressed final OK button
 	 */
 	public boolean isOKpressed()
@@ -617,7 +621,7 @@ public final class ALogin extends CDialog
 
 	/**************************************************************************
 	 * Action Event handler
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -758,7 +762,7 @@ public final class ALogin extends CDialog
 
 	/**
 	 * Change of tab <->
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -783,7 +787,7 @@ public final class ALogin extends CDialog
 
 	/**************************************************************************
 	 * Defaults OK pressed
-	 * 
+	 *
 	 * @return true if ok
 	 */
 	private boolean defaultsOK()
@@ -796,10 +800,10 @@ public final class ALogin extends CDialog
 
 		// Set Properties
 		Ini.setProperty(Ini.P_CONNECTION, CConnection.get().toStringLong());
-		
+
 		ValueNamePair selectedLanguage = languageCombo.getSelectedItem();
 		Ini.setProperty(Ini.P_LANGUAGE, selectedLanguage == null ? null : selectedLanguage.getValue());
-		
+
 		String error = m_login.validateLogin(org);
 		if (error != null && error.length() > 0)
 		{
@@ -827,7 +831,7 @@ public final class ALogin extends CDialog
 
 	/**************************************************************************
 	 * Try to connect. - Get Connection - Compare User info
-	 * 
+	 *
 	 * @return true if connected
 	 */
 	private boolean tryConnection()
@@ -1071,7 +1075,7 @@ public final class ALogin extends CDialog
 
 	/**
 	 * Check Version
-	 * 
+	 *
 	 * @return true if version is OK and false if version could not be checked or is not the same
 	 * @see AEnv#getServerVersion
 	 */
@@ -1117,7 +1121,7 @@ public final class ALogin extends CDialog
 			txt_UserPwdError = "Invalid user or password",
 			txt_RoleError = "No user roles found",
 			txt_LoggedIn = "Logged in";
-	
+
 	private void setLanguageComboVisible(final boolean visible)
 	{
 		languageLabel.setVisible(visible);
@@ -1145,7 +1149,7 @@ public final class ALogin extends CDialog
 		{
 			this.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		}
-		
+
 		// Locales
 		final Locale loc = language.getLocale();
 		Locale.setDefault(loc);
