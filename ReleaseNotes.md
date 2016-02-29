@@ -32,6 +32,9 @@ The actual release notes
  - 09824 use locking API to prevent concurrent doc action on the same document (100066000843)
 
 ## Fixes
+  - FRESH-22: 09847 Import adempiere terminology as english trl into metasfresh (107370493155):
+     * fixed a bug in metasfresh that prevented to select the language by its name
+      (just its value would have worked) as soon as "English" is available
  - 09776 EDI - Receiver without ORDERS (100584995833)
     * allow to distinguish between Edi-ORDERS and Excel files and allow both kinds to be processed in an EDI fashion
  - FRESH-20: 09661 Statistik für monatliche Lagermeldung - grouping per Product and ASI (106566269211)
