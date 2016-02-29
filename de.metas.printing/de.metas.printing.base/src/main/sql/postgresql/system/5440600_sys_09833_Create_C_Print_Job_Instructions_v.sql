@@ -13,14 +13,15 @@ CREATE VIEW C_Print_Job_Instructions_v AS
 		sess.AD_Session_ID,
 		p.S_Resource_ID,
 		wh.M_Warehouse_ID,
+		a.ad_archive_ID,
 		pji.C_Print_Job_Instructions_ID,
 		pp.C_Print_Package_ID,
-		pp.Created,
-		pp.CreatedBy,
-		pp.AD_Org_ID,
-		pp.AD_Client_ID,
-		pp.Updated,
-		pp.UpdatedBy
+		pji.Created,
+		pji.CreatedBy,
+		pji.AD_Org_ID,
+		pji.AD_Client_ID,
+		pji.Updated,
+		pji.UpdatedBy
 
 	FROM C_Print_Job_Instructions pji
 		LEFT JOIN C_Print_Package pp ON pp.C_Print_Job_Instructions_ID=pji.C_Print_Job_Instructions_ID

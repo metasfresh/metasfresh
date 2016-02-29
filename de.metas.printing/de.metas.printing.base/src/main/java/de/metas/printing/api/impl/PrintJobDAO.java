@@ -1,6 +1,7 @@
 package de.metas.printing.api.impl;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.util.Services;
 
 import de.metas.printing.api.IPrintJobDAO;
@@ -37,9 +38,15 @@ public class PrintJobDAO implements IPrintJobDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+		final IQueryOrderBy orderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_C_Print_Job_Instructions_v.class)
+				.addColumn(I_C_Print_Job_Instructions_v.COLUMNNAME_C_Print_Job_Instructions_ID)
+				.createQueryOrderBy();
+
 		return queryBL.createQueryBuilder(I_C_Print_Job_Instructions_v.class, pji)
 				.addEqualsFilter(I_C_Print_Job_Instructions_v.COLUMNNAME_C_Print_Job_Instructions_ID, pji.getC_Print_Job_Instructions_ID())
 				.create()
+				.setOrderBy(orderBy)
+
 				.first(I_C_Print_Job_Instructions_v.class); // there should not be more than one
 
 	}
