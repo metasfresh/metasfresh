@@ -21,12 +21,13 @@ Additional notes:
 
 The actual release notes
 
-# (Upcoming Release)
+# metasfresh 4.5.5 (Upcoming Release)
 
 ## Features
 
 ## Fixes
-
+ - adding an index to C_InvoiceTax to solve a performance issue
+ 
 ## Instructions
 
 # metasfresh 4.5.4
