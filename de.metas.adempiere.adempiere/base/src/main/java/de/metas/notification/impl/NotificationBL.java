@@ -63,6 +63,10 @@ public class NotificationBL implements INotificationBL
 		detailedMsgText.append(messageText);
 		if (specificInfo != null)
 		{
+			if(!messageText.isEmpty())
+			{
+				detailedMsgText.append(" ");
+			}
 			detailedMsgText.append(specificInfo);
 		}
 

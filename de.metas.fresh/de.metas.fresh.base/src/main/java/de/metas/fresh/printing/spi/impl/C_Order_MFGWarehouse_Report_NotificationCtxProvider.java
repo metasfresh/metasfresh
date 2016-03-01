@@ -122,8 +122,11 @@ public class C_Order_MFGWarehouse_Report_NotificationCtxProvider implements INot
 
 		final I_C_Order order = printingInfo.getC_Order();
 		final String orderDocNo = order == null ? ""  : order.getDocumentNo();
+		
+		final StringBuilder mfgWarehouseReportID = new StringBuilder();
+		mfgWarehouseReportID.append(mfgWarehouseReport.getC_Order_MFGWarehouse_Report_ID());
 
-		final String textMessge = Services.get(IMsgBL.class).getMsg(ctx, MSG_PrintingInfo_MFGWarehouse_Report, new Object[] { orderDocNo, mfgWarehouseReport.getC_Order_MFGWarehouse_Report_ID() });
+		final String textMessge = Services.get(IMsgBL.class).getMsg(ctx, MSG_PrintingInfo_MFGWarehouse_Report, new Object[] { orderDocNo, mfgWarehouseReportID.toString() });
 
 		return textMessge;
 	}
