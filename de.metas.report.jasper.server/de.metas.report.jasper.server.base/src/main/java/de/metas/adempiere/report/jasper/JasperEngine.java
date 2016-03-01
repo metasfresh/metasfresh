@@ -22,7 +22,6 @@ package de.metas.adempiere.report.jasper;
  * #L%
  */
 
-
 import java.io.InputStream;
 import java.sql.Connection;
 import java.util.HashMap;
@@ -60,6 +59,9 @@ public class JasperEngine
 	private static final String PARAM_RECORD_ID = "RECORD_ID";
 	private static final String PARAM_AD_PINSTANCE_ID = "AD_PINSTANCE_ID";
 	private static final String PARAM_BARCODE_URL = "barcodeURL";
+
+	private static final String JRPROPERTY_ReportPath = JasperEngine.class.getName() + ".ReportPath";
+	
 	/**
 	 * Desired output type.
 	 * 
@@ -91,8 +93,16 @@ public class JasperEngine
 		Connection conn = null;
 		try
 		{
+			//
+			// Create jasper's JDBC connection
 			conn = getConnection();
-			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, conn);
+			final String sqlQueryInfo = "main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
+					+ ", AD_PInstance_ID=" + pi.getAD_PInstance_ID();
+			final JasperJdbcConnection jasperConn = new JasperJdbcConnection(conn, sqlQueryInfo);
+
+			//
+			// Fill the report
+			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, jasperConn);
 			return jasperPrint;
 		}
 		finally
@@ -144,6 +154,8 @@ public class JasperEngine
 			final String resourceBundleName = getResourceBundleName(jasperReport, reportDir);
 			loadJasperReportResourceBundle(resourceBundleName, jrParameters, jasperLoader);
 		}
+
+		jasperReport.setProperty(JRPROPERTY_ReportPath, reportPath);
 
 		return jasperReport;
 	}
