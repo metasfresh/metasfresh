@@ -361,13 +361,13 @@ public class CComboBox<E> extends JComboBox<E>
 	}
 	
 	/**
-	 * Disable autocompletion on this combobox
+	 * Disable autocompletion on this combobox.
 	 * 
-	 * @return an instance of ComboBoxAutoCompletion but with autocompletion functionality disabled 
+	 * If the autocompletion was not enabled, this method does nothing.
 	 */
-	public final ComboBoxAutoCompletion<E> disableAutoCompletion()
+	public final void disableAutoCompletion()
 	{
-		return ComboBoxAutoCompletion.disable(this);
+		ComboBoxAutoCompletion.disable(this);
 	}
 
 	@Override
