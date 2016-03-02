@@ -27,6 +27,7 @@ The actual release notes
 ## Features
 
 ## Fixes
+ - 09862 Report Footer missing in inout jasper from Wareneingang POS
  - 09861 Error ESR Import with Partner that has Value bigger than 1000
  - when creating an accounting fact_acct for a C_BankStatementLine_Ref, we now set the fact_acct's C_BPartner_ID correctly
  - 09643 Zahlung und Zahlung-Zuordnung Datum unterschiedlich (108395556223)
