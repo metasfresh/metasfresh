@@ -26,6 +26,7 @@ package de.metas.allocation.api.impl;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -39,6 +40,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
 import org.compiere.process.DocAction;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.DefaultAllocationBuilder;
@@ -105,11 +107,11 @@ public class AllocationBL implements IAllocationBL
 
 		final BigDecimal invoiceOpenAmt = invoiceDAO.retrieveOpenAmt(invoice);
 
+		Timestamp dateAcct = invoice.getDateAcct();
+		Timestamp dateTrx = invoice.getDateInvoiced();
 		IAllocationBuilder allocBuilder = allocationBL
 				.newBuilder(InterfaceWrapperHelper.getContextAware(invoice))
-				.setC_Currency_ID(invoice.getC_Currency_ID())
-				.setDateAcct(invoice.getDateAcct())
-				.setDateTrx(invoice.getDateInvoiced());
+				.setC_Currency_ID(invoice.getC_Currency_ID());
 
 		BigDecimal sumAmt = BigDecimal.ZERO;
 
@@ -118,6 +120,9 @@ public class AllocationBL implements IAllocationBL
 			final BigDecimal currentAmt = paymentDAO.getAvailableAmount(payment);
 
 			sumAmt = sumAmt.add(currentAmt);
+			
+			dateAcct = TimeUtil.max(dateAcct, payment.getDateAcct());
+			dateTrx = TimeUtil.max(dateTrx, payment.getDateTrx());
 
 			Check.assume(invoice.getC_BPartner_ID() == payment.getC_BPartner_ID(), "{0} and {1} have the same C_BPartner_ID", invoice, payment);
 			final IAllocationLineBuilder lineBuilder = allocBuilder.addLine()
@@ -141,7 +146,12 @@ public class AllocationBL implements IAllocationBL
 				break;
 			}
 		}
-		return allocBuilder.create(true);
+
+		// Set allocation dates and create it
+		return allocBuilder
+				.setDateAcct(dateAcct)
+				.setDateTrx(dateTrx)
+				.createAndComplete();
 	}
 
 	@Override
@@ -204,11 +214,13 @@ public class AllocationBL implements IAllocationBL
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 		final BigDecimal invoiceOpenAmt = invoiceDAO.retrieveOpenAmt(invoice);
+		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), payment.getDateAcct());
+		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), payment.getDateTrx());
 
 		IAllocationBuilder allocBuilder = allocationBL.newBuilder(InterfaceWrapperHelper.getContextAware(invoice))
 				.setC_Currency_ID(invoice.getC_Currency_ID())
-				.setDateAcct(invoice.getDateAcct())
-				.setDateTrx(invoice.getDateInvoiced());
+				.setDateAcct(dateAcct)
+				.setDateTrx(dateTrx);
 
 		BigDecimal sumAmt = BigDecimal.ZERO;
 

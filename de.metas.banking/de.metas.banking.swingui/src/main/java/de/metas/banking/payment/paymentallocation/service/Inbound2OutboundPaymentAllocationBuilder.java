@@ -194,14 +194,18 @@ public class Inbound2OutboundPaymentAllocationBuilder
 		InterfaceWrapperHelper.save(paymentOut);
 		Check.assume(!paymentOut.isReceipt(), "payment is not receipt: {0}", paymentOut);
 		docActionBL.processEx(paymentOut, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		
+		
+		final Timestamp dateAcct = TimeUtil.max(paymentIn.getDateAcct(), paymentOut.getDateAcct());
+		final Timestamp dateTrx = TimeUtil.max(paymentIn.getDateTrx(), paymentOut.getDateTrx());
 
 		//
 		// Allocate the inbound payment against outbound payment
 		allocationBL.newBuilder(new PlainContextAware(ctx, trxName))
 				.setAD_Org_ID(paymentOut.getAD_Org_ID())
 				.setC_Currency_ID(paymentOut.getC_Currency_ID())
-				.setDateAcct(paymentOut.getDateTrx())
-				.setDateTrx(paymentOut.getDateTrx())
+				.setDateAcct(dateAcct)
+				.setDateTrx(dateTrx)
 				.setManual(false) // not manual
 				//
 				// Allocate: Inbound receipt

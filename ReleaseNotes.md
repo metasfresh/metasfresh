@@ -28,6 +28,8 @@ The actual release notes
 
 ## Fixes
  - when creating an accounting fact_acct for a C_BankStatementLine_Ref, we now set the fact_acct's C_BPartner_ID correctly
+ - 09643 Zahlung und Zahlung-Zuordnung Datum unterschiedlich (108395556223)
+    * when allocating an invoice with a payment, we now use the later date of the two documents in that allocation
 
 ## Instructions
 

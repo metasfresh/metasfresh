@@ -1352,14 +1352,17 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final I_C_Invoice creditMemo,
 			final BigDecimal openAmt)
 	{
+		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), creditMemo.getDateInvoiced());
+		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), creditMemo.getDateAcct());
+		
 		//
 		// allocate the invoice against the credit memo
 		// @formatter:off
 		Services.get(IAllocationBL.class)
 			.newBuilder(InterfaceWrapperHelper.getContextAware(invoice))
 			.setAD_Org_ID(invoice.getAD_Org_ID())
-			.setDateTrx(SystemTime.asDayTimestamp())
-			.setDateAcct(SystemTime.asDayTimestamp())
+			.setDateTrx(dateTrx)
+			.setDateAcct(dateAcct)
 			.setC_Currency_ID(invoice.getC_Currency_ID())
 			.addLine()
 				.setAD_Org_ID(invoice.getAD_Org_ID())
