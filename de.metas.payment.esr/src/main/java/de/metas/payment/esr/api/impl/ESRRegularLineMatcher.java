@@ -443,6 +443,14 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 						importLine.setBPartner_Value(bpValueleftZero);
 						importLine.setC_BPartner(invoicePartner);
 					}
+					//task 09861
+					//Make sure the bpartners with values bigger than 1000 are correctly handled.
+					// For this, check if the invoice's bp value doesn't end with the string bpvalue as it is
+					else if(invoicePartner.getValue().endsWith(bpValue))
+					{
+						importLine.setBPartner_Value(bpValue);
+						importLine.setC_BPartner(invoicePartner);
+					}
 					else
 					{
 						Services.get(IESRImportBL.class).addErrorMsg(importLine,
