@@ -26,6 +26,7 @@ The actual release notes
 ## Features
  - 09873 translate all of the metasfresh UI to english (105052594715)
     * translated more than 300 window, tab and field names that don't exist in adempiere and therefore weren't translated in task 09847
+
 ## Fixes
  - adding an index to C_InvoiceTax to solve a performance issue
  
