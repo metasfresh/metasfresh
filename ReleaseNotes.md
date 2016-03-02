@@ -21,7 +21,18 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.6.5 (Upcoming Release)
+
+# (Upcoming Release)
+
+## Features
+
+## Fixes
+ - when creating an accounting fact_acct for a C_BankStatementLine_Ref, we now set the fact_acct's C_BPartner_ID correctly
+
+## Instructions
+
+
+# metasfresh 4.6.5
 
 ## Features
  - 09873 translate all of the metasfresh UI to english (105052594715)
@@ -29,8 +40,6 @@ The actual release notes
 
 ## Fixes
  - adding an index to C_InvoiceTax to solve a performance issue
- 
-## Instructions
 
 # metasfresh 4.5.4
 

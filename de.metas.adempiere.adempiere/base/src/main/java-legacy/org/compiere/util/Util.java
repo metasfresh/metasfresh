@@ -1363,6 +1363,28 @@ public class Util
 		return null;
 	}
 
+	/**
+	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greter than 0.
+	 *
+	 * @param values
+	 * @return
+	 */
+	public static final int coalesceInt(int... values)
+	{
+		if (values == null || values.length == 0)
+		{
+			return 0;
+		}
+		for (int value : values)
+		{
+			if (value > 0)
+			{
+				return value;
+			}
+		}
+		return 0;
+	}
+
 	public static String replaceNonDigitCharsWithZero(String stringToModify)
 	{
 		final int size = stringToModify.length();

@@ -28,30 +28,31 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 
 /**
  * Post Bank Statement Documents.
- * 
+ *
  * <pre>
  *  Table:              C_BankStatement (392)
  *  Document Types:     CMB
  * </pre>
- * 
+ *
  * @author Jorg Janke
  * @version $Id: Doc_Bank.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
- * 
+ *
  *          FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts BankAsset and BankInTransit are equal
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 2520591 ] Support multiples calendar for Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
- * 
+ *
  */
 public class Doc_BankStatement extends Doc
 {
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param ass accounting schemata
 	 * @param rs record
 	 * @param trxName trx
@@ -63,7 +64,7 @@ public class Doc_BankStatement extends Doc
 
 	/**
 	 * Load Specific Document Details
-	 * 
+	 *
 	 * @return error message or null
 	 */
 	@Override
@@ -73,7 +74,7 @@ public class Doc_BankStatement extends Doc
 		setDateDoc(bs.getStatementDate());
 		setDateAcct(bs.getStatementDate());	// Overwritten on Line Level
 		setC_BP_BankAccount_ID(bs.getC_BP_BankAccount_ID());
-		
+
 		// Amounts
 		setAmount(AMTTYPE_Gross, bs.getStatementDifference());
 
@@ -92,13 +93,13 @@ public class Doc_BankStatement extends Doc
 		for (final MBankStatementLine line : bs.getLines(false))
 		{
 			final DocLine_BankStatement docLine = new DocLine_BankStatement(line, this);
-			
+
 			// Set DateAcct from first line
 			if (docLines.isEmpty())
 			{
 				setDateAcct(line.getDateAcct());
 			}
-			
+
 			docLines.add(docLine);
 		}
 
@@ -109,30 +110,30 @@ public class Doc_BankStatement extends Doc
 	public final BigDecimal getBalance()
 	{
 		BigDecimal retValue = BigDecimal.ZERO;
-		
+
 		// Total
 		retValue = retValue.add(getAmount(Doc.AMTTYPE_Gross));
-		
+
 		// minus Lines
 		for (int i = 0; i < p_lines.length; i++)
 		{
 			final BigDecimal lineBalance = ((DocLine_BankStatement)p_lines[i]).getStmtAmt();
 			retValue = retValue.subtract(lineBalance);
 		}
-		
+
 		return retValue;
 	}   // getBalance
 
 	/**
 	 * Create Facts (the accounting logic) for CMB.
-	 * 
+	 *
 	 * <pre>
 	 *      BankAsset       DR      CR  (Statement)
 	 *      BankInTransit   DR      CR              (Payment)
 	 *      Charge          DR          (Charge)
 	 *      Interest        DR      CR  (Interest)
 	 * </pre>
-	 * 
+	 *
 	 * @param as accounting schema
 	 * @return Fact
 	 */
@@ -230,7 +231,7 @@ public class Doc_BankStatement extends Doc
 
 	/**
 	 * Create facts for bank transfer
-	 * 
+	 *
 	 * @param fact
 	 * @param line
 	 * @param factLine_BankAsset
@@ -251,14 +252,14 @@ public class Doc_BankStatement extends Doc
 			return;
 		}
 		// NOTE: atm we support only the case when StmtAmt=TrxAmt because we also have to calculate the currency gain and loss (i.e. BankAsset minus BankInTransit),
-		// and the factLine_BankAsset is booking the StmtAmt. 
+		// and the factLine_BankAsset is booking the StmtAmt.
 		Check.assume(trxAmt.compareTo(line.getStmtAmt()) == 0, "StmtAmt equals = TrxAmt for line {0}", line);
 
 		//
 		// Book the transfer to/from BankInTransit.
 		// We are using the currency conversion for bank transfers (e.g. Spot) and not the default one which could be different (e.g. Company conversion type).
 		//
-		
+
 		final MAcctSchema as = fact.getAcctSchema();
 		final int bankOrgId = getBank_Org_ID();	// Bank Account Org
 		final FactLineBuilder factLine_BankTransfer_Builder = fact.createLine()
@@ -302,7 +303,7 @@ public class Doc_BankStatement extends Doc
 
 	/**
 	 * Create facts for bank transfer's currency gain/loss
-	 * 
+	 *
 	 * @param fact
 	 * @param line
 	 * @param amtAcct_BankAssetMinusTransferred
@@ -373,7 +374,7 @@ public class Doc_BankStatement extends Doc
 
 	/**
 	 * Create facts for booking the payments.
-	 * 
+	 *
 	 * @param fact
 	 * @param line
 	 */
@@ -407,7 +408,8 @@ public class Doc_BankStatement extends Doc
 						.setAmtSourceDrOrCr(lineRef.getTrxAmt().negate())
 						.setC_Currency_ID(lineRef.getC_Currency_ID())
 						.setAD_Org_ID(bankOrgId > 0 ? bankOrgId : line.getPaymentOrg_ID(lineRef.getC_Payment())) // bank org, payment org
-						.setC_BPartner_ID_IfValid(C_BPartner_ID)
+						.setC_BPartner_ID_IfValid(
+								Util.coalesceInt(lineRef.getC_BPartner_ID(), C_BPartner_ID)) // if the lineref has a C_BPartner, then use it
 						.buildAndAdd();
 			}
 		}
@@ -416,7 +418,7 @@ public class Doc_BankStatement extends Doc
 
 	/**
 	 * Get AD_Org_ID from Bank Account
-	 * 
+	 *
 	 * @return AD_Org_ID or {@link Env#CTXVALUE_AD_Org_ID_System}
 	 */
 	private final int getBank_Org_ID()
