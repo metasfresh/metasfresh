@@ -5,4 +5,4 @@ INSERT INTO AD_EntityType (AD_Client_ID,AD_EntityType_ID,AD_Org_ID,Created,Creat
 ;
 
 -- deactivated by default; actiavate it where you need it, e.g. in endcustomer.mf15
-UPDATE SET IsDisplayed='N' WHERE EntityType='de.metas.contracts.subscription';
+UPDATE AD_EntityType SET IsDisplayed='N' WHERE EntityType='de.metas.contracts.subscription';
