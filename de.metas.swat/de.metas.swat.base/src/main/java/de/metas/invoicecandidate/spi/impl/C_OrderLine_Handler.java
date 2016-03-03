@@ -60,12 +60,18 @@ import de.metas.tax.api.ITaxBL;
  */
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
+	/**
+	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
+	 */
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically()
 	{
 		return false;
 	}
 
+	/**
+	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
+	 */
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically(Object model)
 	{

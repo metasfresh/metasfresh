@@ -34,7 +34,7 @@ public class FlatrateOLCandListener implements IOLCandListener
 {
 
 	/**
-	 * This method sets the {@link de.metas.flatrate.interfaces.I_C_OrderLine#COLUMNNAME_C_Flatrate_Conditions_ID} value
+	 * This method sets the {@link de.metas.contracts.subscription.model.I_C_OrderLine#COLUMNNAME_C_Flatrate_Conditions_ID} value
 	 * from the given <code>olCand</code>.
 	 * 
 	 * If the given order line already has a <code>C_Flatrate_Conditions_ID</code>, then the method assumes that the
@@ -48,8 +48,8 @@ public class FlatrateOLCandListener implements IOLCandListener
 	@Override
 	public void onOrderLineCreated(final I_C_OLCand olCand, final I_C_OrderLine orderLine)
 	{
-		final de.metas.flatrate.interfaces.I_C_OrderLine flatrateOrderLine =
-				InterfaceWrapperHelper.create(orderLine, de.metas.flatrate.interfaces.I_C_OrderLine.class);
+		final de.metas.contracts.subscription.model.I_C_OrderLine flatrateOrderLine =
+				InterfaceWrapperHelper.create(orderLine, de.metas.contracts.subscription.model.I_C_OrderLine.class);
 
 		final de.metas.flatrate.interfaces.I_C_OLCand flatrateOlCand =
 				InterfaceWrapperHelper.create(olCand, de.metas.flatrate.interfaces.I_C_OLCand.class);

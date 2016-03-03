@@ -10,18 +10,17 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -52,7 +51,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 
 	/**
 	 * Creates a filter which keeps {@link I_M_ShipmentSchedule_QtyPicked} all records (active or not), for given shipment schedule, which were <b>not</b> already delivered.
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 */
 	private final IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createPickedNotDeliveredFilter(final I_M_ShipmentSchedule shipmentSchedule)
@@ -60,10 +59,10 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		final boolean delivered = false; // NOT delivered ONLY
 		return createPickedAndDeliveredStatusFilter(shipmentSchedule, delivered);
 	}
-	
+
 	/**
 	 * Creates a filter which keeps {@link I_M_ShipmentSchedule_QtyPicked} all records (active or not), for given shipment schedule <b>AND</b> which were already delivered.
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 */
 	private final IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createPickedAndDeliveredFilter(final I_M_ShipmentSchedule shipmentSchedule)
@@ -75,20 +74,22 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	/**
 	 * Creates a filter which keeps {@link I_M_ShipmentSchedule_QtyPicked} all records (active or not), for given shipment schedule, which were:
 	 * <ul>
-	 * <li>already delivered, if <code>delivered</code> is true 
+	 * <li>already delivered, if <code>delivered</code> is true
 	 * <li>or NOT delivered, if <code>delivered</code> is false
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 * @param delivered
 	 * @return filter
 	 */
-	private final IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createPickedAndDeliveredStatusFilter(final I_M_ShipmentSchedule shipmentSchedule, final boolean delivered)
+	private final IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createPickedAndDeliveredStatusFilter(
+			final I_M_ShipmentSchedule shipmentSchedule,
+			final boolean delivered)
 	{
 		final ICompositeQueryFilter<I_M_ShipmentSchedule_QtyPicked> filter = Services.get(IQueryBL.class)
 				.createCompositeQueryFilter(I_M_ShipmentSchedule_QtyPicked.class)
 				// For given shipment schedule
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
-		
+
 		// Case: only delivered (i.e. M_InOutLine_ID set)
 		if (delivered)
 		{
@@ -99,30 +100,29 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		{
 			filter.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, null);
 		}
-		
+
 		return filter;
 	}
 
 	@Override
 	public IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrievePickedAndDeliveredRecordsQuery(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(shipmentSchedule);
-		final String trxName = InterfaceWrapperHelper.getTrxName(shipmentSchedule);
 
-		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
-				.filter(createPickedAndDeliveredFilter(shipmentSchedule))
-				.addOnlyActiveRecordsFilter();
+		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder =
+				Services.get(IQueryBL.class)
+						.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, shipmentSchedule)
+						.filter(createPickedAndDeliveredFilter(shipmentSchedule))
+						.addOnlyActiveRecordsFilter();
 
 		queryBuilder.orderBy()
 				.addColumn(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID);
-		
+
 		return queryBuilder;
 	}
 
-
-	@Override
-	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedNotDeliveredRecords(final I_M_ShipmentSchedule shipmentSchedule, Class<T> clazz, final String trxName)
+	private <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedNotDeliveredRecords(
+			final I_M_ShipmentSchedule shipmentSchedule, Class<T> clazz,
+			final String trxName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(shipmentSchedule);
 
@@ -148,12 +148,25 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.create()
 				.aggregate(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked, IQuery.AGGREGATE_SUM, BigDecimal.class);
 
-		if (qty == null)
-		{
-			return BigDecimal.ZERO;
-		}
+		return qty != null ? qty : BigDecimal.ZERO;
+	}
 
-		return qty;
+	@Override
+	public BigDecimal retrieveQtyDelivered(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final BigDecimal qty = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, shipmentSchedule)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+				.andCollect(I_M_InOutLine.COLUMN_M_InOutLine_ID, I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_Processed, true)
+				.create()
+				.aggregate(I_M_InOutLine.COLUMNNAME_MovementQty, IQuery.AGGREGATE_SUM, BigDecimal.class);
+
+		return qty != null ? qty : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -170,7 +183,8 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		queryBuilder.orderBy()
 				.addColumn(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID);
 
-		return queryBuilder.create()
+		return queryBuilder
+				.create()
 				.list(modelClass);
 	}
 
@@ -200,6 +214,22 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		final IQueryBuilder<I_M_ShipmentSchedule> linesBuilder =
 				queryBL.createQueryBuilder(I_M_InOutLine.class, inOut)
 						.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inOut.getM_InOut_ID())
+						.andCollectChildren(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, I_M_ShipmentSchedule_QtyPicked.class)
+						.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID);
+		return linesBuilder.
+				addOnlyActiveRecordsFilter().
+				create().
+				list(I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public List<I_M_ShipmentSchedule> retrieveSchedulesForInOutLine(I_M_InOutLine inoutLine)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_M_ShipmentSchedule> linesBuilder =
+				queryBL.createQueryBuilder(I_M_InOutLine.class, inoutLine)
+						.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOutLine_ID, inoutLine.getM_InOutLine_ID())
 						.andCollectChildren(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, I_M_ShipmentSchedule_QtyPicked.class)
 						.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID);
 		return linesBuilder.

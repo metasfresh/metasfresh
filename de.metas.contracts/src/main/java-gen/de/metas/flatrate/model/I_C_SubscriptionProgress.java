@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.flatrate.model;
 
 
@@ -112,29 +96,6 @@ public interface I_C_SubscriptionProgress
     public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
-	 * Set Abo-Verlauf.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
-
-	/**
-	 * Get Abo-Verlauf.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_SubscriptionProgress_ID();
-
-    /** Column definition for C_SubscriptionProgress_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_C_SubscriptionProgress_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "C_SubscriptionProgress_ID", null);
-    /** Column name C_SubscriptionProgress_ID */
-    public static final String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
-
-	/**
 	 * Set Vertrags-Status.
 	 *
 	 * <br>Type: List
@@ -186,6 +147,29 @@ public interface I_C_SubscriptionProgress
     public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_User>(I_C_SubscriptionProgress.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Abo-Verlauf.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
+
+	/**
+	 * Get Abo-Verlauf.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_SubscriptionProgress_ID();
+
+    /** Column definition for C_SubscriptionProgress_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_C_SubscriptionProgress_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "C_SubscriptionProgress_ID", null);
+    /** Column name C_SubscriptionProgress_ID */
+    public static final String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
 
 	/**
 	 * Set Lieferempfänger.

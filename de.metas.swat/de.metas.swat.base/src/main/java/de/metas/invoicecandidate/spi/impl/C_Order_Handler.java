@@ -64,20 +64,23 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 * Loads the request's order's order lines and returns a line of order line requests. the given request is not part of the returned list.
-	 * 
+	 * Loads the request's order's order lines and returns a line of order line requests. The given request is not part of the returned list.
+	 *
 	 * @see C_OrderLine_Handler#getModelForInvoiceCandidateGenerateScheduling(Object)
 	 */
 	@Override
 	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)
 	{
+		final IC_OrderLine_HandlerDAO orderLineHandlerDAO = Services.get(IC_OrderLine_HandlerDAO.class);
+		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+
 		final I_C_Order order = request.getModel(I_C_Order.class);
 
 		//
 		// Retrieve order lines
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		final List<I_C_OrderLine> orderLines = Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(ctx, trxName)
+		final List<I_C_OrderLine> orderLines = orderLineHandlerDAO.retrieveMissingOrderLinesQuery(ctx, trxName)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
 				.create()
 				.list(I_C_OrderLine.class);
@@ -88,7 +91,7 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Retrieve order line handlers
-		final List<IInvoiceCandidateHandler> orderLineHandlers = Services.get(IInvoiceCandidateHandlerBL.class).retrieveImplementationsForTable(ctx, org.compiere.model.I_C_OrderLine.Table_Name);
+		final List<IInvoiceCandidateHandler> orderLineHandlers = invoiceCandidateHandlerBL.retrieveImplementationsForTable(ctx, org.compiere.model.I_C_OrderLine.Table_Name);
 
 		//
 		// Create the order line requests and return them
@@ -116,16 +119,16 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Order order = InterfaceWrapperHelper.create(model, I_C_Order.class);
 		invalidateCandidatesFor(order);
 	}
-	
+
 	private void invalidateCandidatesFor(final I_C_Order order)
 	{
 		// services
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final List<IInvoiceCandidateHandler> invalidators = invoiceCandidateHandlerBL.retrieveImplementationsForTable(ctx, I_C_OrderLine.Table_Name);
-		
+
 		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order))
 		{
 			for (final IInvoiceCandidateHandler invalidator : invalidators)

@@ -1,4 +1,4 @@
-package de.metas.flatrate.api.impl;
+package de.metas.contracts.subscription.impl;
 
 /*
  * #%L
@@ -53,9 +53,9 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.flatrate.api.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.interfaces.I_C_OLCand;
-import de.metas.flatrate.interfaces.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Contract_Term_Alloc;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;

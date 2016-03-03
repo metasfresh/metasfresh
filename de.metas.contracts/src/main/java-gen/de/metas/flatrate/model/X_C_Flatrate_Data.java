@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.flatrate.model;
 
@@ -30,7 +14,7 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1010205011L;
+	private static final long serialVersionUID = -481569685L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Data (Properties ctx, int C_Flatrate_Data_ID, String trxName)
@@ -97,6 +81,22 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
 		return ii.intValue();
 	}
 
+	/** Set C_Flatrate_DataEntry_IncludedTab.
+		@param C_Flatrate_DataEntry_IncludedT C_Flatrate_DataEntry_IncludedTab	  */
+	@Override
+	public void setC_Flatrate_DataEntry_IncludedT (java.lang.String C_Flatrate_DataEntry_IncludedT)
+	{
+		set_Value (COLUMNNAME_C_Flatrate_DataEntry_IncludedT, C_Flatrate_DataEntry_IncludedT);
+	}
+
+	/** Get C_Flatrate_DataEntry_IncludedTab.
+		@return C_Flatrate_DataEntry_IncludedTab	  */
+	@Override
+	public java.lang.String getC_Flatrate_DataEntry_IncludedT () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_C_Flatrate_DataEntry_IncludedT);
+	}
+
 	/** Set Datenerfassung.
 		@param C_Flatrate_Data_ID Datenerfassung	  */
 	@Override
@@ -117,22 +117,6 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set C_Flatrate_DataEntry_IncludedTab.
-		@param C_Flatrate_DataEntry_IncludedT C_Flatrate_DataEntry_IncludedTab	  */
-	@Override
-	public void setC_Flatrate_DataEntry_IncludedT (java.lang.String C_Flatrate_DataEntry_IncludedT)
-	{
-		set_Value (COLUMNNAME_C_Flatrate_DataEntry_IncludedT, C_Flatrate_DataEntry_IncludedT);
-	}
-
-	/** Get C_Flatrate_DataEntry_IncludedTab.
-		@return C_Flatrate_DataEntry_IncludedTab	  */
-	@Override
-	public java.lang.String getC_Flatrate_DataEntry_IncludedT () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_C_Flatrate_DataEntry_IncludedT);
 	}
 
 	/** Set Verarbeitet.

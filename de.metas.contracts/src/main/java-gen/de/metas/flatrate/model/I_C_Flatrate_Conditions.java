@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.flatrate.model;
 
 
@@ -160,35 +144,6 @@ public interface I_C_Flatrate_Conditions
     public static final String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_UOM>(I_C_Flatrate_Conditions.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Set Basis für Verrechnungs-Zahlbetrag.
 	 * Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird.
 	 *
@@ -242,6 +197,35 @@ public interface I_C_Flatrate_Conditions
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_AD_User>(I_C_Flatrate_Conditions.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_UOM>(I_C_Flatrate_Conditions.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Belegverarbeitung.
@@ -538,6 +522,52 @@ public interface I_C_Flatrate_Conditions
     public static final String COLUMNNAME_IsSimulation = "IsSimulation";
 
 	/**
+	 * Set Korridor - Überschreitung.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMargin_Max (java.math.BigDecimal Margin_Max);
+
+	/**
+	 * Get Korridor - Überschreitung.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getMargin_Max();
+
+    /** Column definition for Margin_Max */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Max = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "Margin_Max", null);
+    /** Column name Margin_Max */
+    public static final String COLUMNNAME_Margin_Max = "Margin_Max";
+
+	/**
+	 * Set Korridor - Unterschreitung.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMargin_Min (java.math.BigDecimal Margin_Min);
+
+	/**
+	 * Get Korridor - Unterschreitung.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getMargin_Min();
+
+    /** Column definition for Margin_Min */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Min = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "Margin_Min", null);
+    /** Column name Margin_Min */
+    public static final String COLUMNNAME_Margin_Min = "Margin_Min";
+
+	/**
 	 * Set Preissystem.
 	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
@@ -652,52 +682,6 @@ public interface I_C_Flatrate_Conditions
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_M_Product> COLUMN_M_Product_Flatrate_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_M_Product>(I_C_Flatrate_Conditions.class, "M_Product_Flatrate_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_Flatrate_ID */
     public static final String COLUMNNAME_M_Product_Flatrate_ID = "M_Product_Flatrate_ID";
-
-	/**
-	 * Set Korridor - Überschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMargin_Max (java.math.BigDecimal Margin_Max);
-
-	/**
-	 * Get Korridor - Überschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getMargin_Max();
-
-    /** Column definition for Margin_Max */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Max = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "Margin_Max", null);
-    /** Column name Margin_Max */
-    public static final String COLUMNNAME_Margin_Max = "Margin_Max";
-
-	/**
-	 * Set Korridor - Unterschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMargin_Min (java.math.BigDecimal Margin_Min);
-
-	/**
-	 * Get Korridor - Unterschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getMargin_Min();
-
-    /** Column definition for Margin_Min */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Min = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "Margin_Min", null);
-    /** Column name Margin_Min */
-    public static final String COLUMNNAME_Margin_Min = "Margin_Min";
 
 	/**
 	 * Set Name.

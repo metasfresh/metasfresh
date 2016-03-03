@@ -10,18 +10,17 @@ package de.metas.inoutcandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -39,31 +38,19 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	 * Retrieves not-delivered QtyPicked records for given <code>shipmentSchedule</code>.
 	 * <p>
 	 * Records are ordered by ID. Only active records are returned.
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 * @param clazz
 	 * @return QtyPicked records
 	 * @see #retrievePickedNotDeliveredRecords(I_M_ShipmentSchedule, String)
 	 */
-	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedNotDeliveredRecords(I_M_ShipmentSchedule shipmentSchedule,  Class<T> clazz);
-
-	/**
-	 * Retrieves not-delivered QtyPicked records for given <code>shipmentSchedule</code>.
-	 * <p>
-	 * Records are ordered by ID. Only active records are returned.
-	 * 
-	 * @param shipmentSchedule
-	 * @param clazz
-	 * @param trxName transaction name to be used when retrieving records
-	 * @return QtyPicked records
-	 */
-	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedNotDeliveredRecords(I_M_ShipmentSchedule shipmentSchedule, Class<T> clazz, String trxName);
+	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedNotDeliveredRecords(I_M_ShipmentSchedule shipmentSchedule, Class<T> clazz);
 
 	/**
 	 * Retrieves delivered ONLY QtyPicked records for given <code>shipmentSchedule</code>.
 	 * <p>
 	 * Records are ordered by ID. Only active records are returned.
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 * @return QtyPicked records
 	 */
@@ -71,7 +58,7 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 
 	/**
 	 * Retrieves Picked (but not delivered) Qty for given <code>shipmentSchedule</code>.
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 * @return QtyPicked value; never return null
 	 */
@@ -79,7 +66,7 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 
 	/**
 	 * Retrieve all Picked records (delivered or not, active or not)
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 * @param modelClass
 	 * @return picked records
@@ -90,9 +77,20 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 
 	/**
 	 * Retrieve all the schedules of the given InOut, based on the M_ShipmentSchedule_QtyPicked entries
-	 * 
+	 *
 	 * @param inout
 	 * @return the schedules if found, null otherwise.
 	 */
-	List<I_M_ShipmentSchedule>  retrieveSchedulesForInOut(org.compiere.model.I_M_InOut inout);
+	List<I_M_ShipmentSchedule> retrieveSchedulesForInOut(org.compiere.model.I_M_InOut inout);
+
+	List<I_M_ShipmentSchedule> retrieveSchedulesForInOutLine(org.compiere.model.I_M_InOutLine inoutLine);
+
+	/**
+	 * Retrieves the summed <code>MovementQty</code>s of all <b>processed</p> <code>M_I_InOutLines</code> which are linkned to the given <code>shipmentSchedule</code> via
+	 * <code>M_ShipmentSchedule_QtyPicked</code>.
+	 *
+	 * @param shipmentSchedule
+	 * @return
+	 */
+	BigDecimal retrieveQtyDelivered(I_M_ShipmentSchedule shipmentSchedule);
 }

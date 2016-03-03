@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -171,7 +172,7 @@ public class M_ShipmentSchedule
 
 	/**
 	 * Updates the given candidate's QtyOrdered and
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 */
 	@ModelChange(
@@ -180,17 +181,23 @@ public class M_ShipmentSchedule
 	public void updateQtyOrdered(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		shipmentScheduleBL.updateQtyOrdered(shipmentSchedule);
 
 		final BigDecimal qtyDelivered = shipmentSchedule.getQtyDelivered();
 
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(shipmentSchedule);
-
+		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.getQtyOrdered(shipmentSchedule);
 		if (qtyDelivered.compareTo(qtyOrdered) > 0)
 		{
 			throw new AdempiereException(ERR_QtyDeliveredGreatedThanQtyOrdered, new Object[] { qtyDelivered });
+		}
+
+		if(adTableDAO.retrieveTableId(I_C_OrderLine.Table_Name) != shipmentSchedule.getAD_Table_ID())
+		{
+			return;
 		}
 
 		final I_C_OrderLine orderLine = shipmentSchedule.getC_OrderLine();
@@ -198,6 +205,7 @@ public class M_ShipmentSchedule
 		{
 			return;
 		}
+
 		if (orderLine.getQtyOrdered().compareTo(qtyOrdered) == 0)
 		{
 			return; // avoid unnecessary changes

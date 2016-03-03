@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.flatrate.model;
 
@@ -32,7 +16,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -388839260L;
+	private static final long serialVersionUID = 645800718L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
@@ -64,9 +48,9 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 // Y
 			setIsSimulation (false);
 // N
-			setM_Product_Flatrate_ID (0);
 			setMargin_Max (Env.ZERO);
 			setMargin_Min (Env.ZERO);
+			setM_Product_Flatrate_ID (0);
 			setName (null);
 			setProcessed (false);
 // N
@@ -170,6 +154,35 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
+	/** 
+	 * ClearingAmtBaseOn AD_Reference_ID=540278
+	 * Reference name: ClearingAmtBaseOn
+	 */
+	public static final int CLEARINGAMTBASEON_AD_Reference_ID=540278;
+	/** Produktpreis = ProductPrice */
+	public static final String CLEARINGAMTBASEON_Produktpreis = "ProductPrice";
+	/** Pauschalenpreis = FlatrateAmount */
+	public static final String CLEARINGAMTBASEON_Pauschalenpreis = "FlatrateAmount";
+	/** Set Basis für Verrechnungs-Zahlbetrag.
+		@param ClearingAmtBaseOn 
+		Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
+	  */
+	@Override
+	public void setClearingAmtBaseOn (java.lang.String ClearingAmtBaseOn)
+	{
+
+		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
+	}
+
+	/** Get Basis für Verrechnungs-Zahlbetrag.
+		@return Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
+	  */
+	@Override
+	public java.lang.String getClearingAmtBaseOn () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ClearingAmtBaseOn);
+	}
+
 	@Override
 	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
 	{
@@ -205,35 +218,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** 
-	 * ClearingAmtBaseOn AD_Reference_ID=540278
-	 * Reference name: ClearingAmtBaseOn
-	 */
-	public static final int CLEARINGAMTBASEON_AD_Reference_ID=540278;
-	/** Produktpreis = ProductPrice */
-	public static final String CLEARINGAMTBASEON_Produktpreis = "ProductPrice";
-	/** Pauschalenpreis = FlatrateAmount */
-	public static final String CLEARINGAMTBASEON_Pauschalenpreis = "FlatrateAmount";
-	/** Set Basis für Verrechnungs-Zahlbetrag.
-		@param ClearingAmtBaseOn 
-		Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
-	  */
-	@Override
-	public void setClearingAmtBaseOn (java.lang.String ClearingAmtBaseOn)
-	{
-
-		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
-	}
-
-	/** Get Basis für Verrechnungs-Zahlbetrag.
-		@return Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
-	  */
-	@Override
-	public java.lang.String getClearingAmtBaseOn () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ClearingAmtBaseOn);
 	}
 
 	/** 
@@ -570,6 +554,44 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return false;
 	}
 
+	/** Set Korridor - Überschreitung.
+		@param Margin_Max Korridor - Überschreitung	  */
+	@Override
+	public void setMargin_Max (java.math.BigDecimal Margin_Max)
+	{
+		set_Value (COLUMNNAME_Margin_Max, Margin_Max);
+	}
+
+	/** Get Korridor - Überschreitung.
+		@return Korridor - Überschreitung	  */
+	@Override
+	public java.math.BigDecimal getMargin_Max () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Max);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Korridor - Unterschreitung.
+		@param Margin_Min Korridor - Unterschreitung	  */
+	@Override
+	public void setMargin_Min (java.math.BigDecimal Margin_Min)
+	{
+		set_Value (COLUMNNAME_Margin_Min, Margin_Min);
+	}
+
+	/** Get Korridor - Unterschreitung.
+		@return Korridor - Unterschreitung	  */
+	@Override
+	public java.math.BigDecimal getMargin_Min () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Min);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	@Override
 	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
 	{
@@ -716,44 +738,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Korridor - Überschreitung.
-		@param Margin_Max Korridor - Überschreitung	  */
-	@Override
-	public void setMargin_Max (java.math.BigDecimal Margin_Max)
-	{
-		set_Value (COLUMNNAME_Margin_Max, Margin_Max);
-	}
-
-	/** Get Korridor - Überschreitung.
-		@return Korridor - Überschreitung	  */
-	@Override
-	public java.math.BigDecimal getMargin_Max () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Max);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Korridor - Unterschreitung.
-		@param Margin_Min Korridor - Unterschreitung	  */
-	@Override
-	public void setMargin_Min (java.math.BigDecimal Margin_Min)
-	{
-		set_Value (COLUMNNAME_Margin_Min, Margin_Min);
-	}
-
-	/** Get Korridor - Unterschreitung.
-		@return Korridor - Unterschreitung	  */
-	@Override
-	public java.math.BigDecimal getMargin_Min () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Min);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
 	}
 
 	/** Set Name.

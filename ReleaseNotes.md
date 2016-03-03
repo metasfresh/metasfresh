@@ -25,6 +25,9 @@ The actual release notes
 # metasfresh 4.6.6 (Upcoming Release)
 
 ## Features
+ - FRESH-28: 09869 Enable subscription contracts (104949638829)
+    * re-enabling a on-the-fly creation of subscription contracts with automated regular deliveries (via shipment schedule, of course).
+	  We implemented this some years ago, but it was in use only briefly, so in this task, adapt and polish the old code.
  - 09859 Fix open items report - the whole query shall go in the reporting function (103228618621)
     * refactored the reports to be more maintainable and easier to support
  - 09766 VAT codes (107418136945)

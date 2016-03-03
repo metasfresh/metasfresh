@@ -79,12 +79,12 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.IDocumentPA;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.api.ISubscriptionBL;
-import de.metas.flatrate.interfaces.I_C_OrderLine;
 import de.metas.flatrate.invoicecandidate.spi.impl.FlatrateDataEntryHandler;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Data;
@@ -1656,8 +1656,9 @@ public class FlatrateBL implements IFlatrateBL
 			return null;
 		}
 
-		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.create(ctx, I_C_Flatrate_Term.class, trxName);
+		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, bPartner);
 		newTerm.setC_Flatrate_Conditions(contract);
+		newTerm.setC_UOM_ID(contract.getC_UOM_ID());
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);

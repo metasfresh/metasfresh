@@ -10,12 +10,12 @@ package org.adempiere.inout.shipment.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,6 +48,7 @@ import org.compiere.util.Util.ArrayKey;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -147,7 +148,7 @@ public class ShipmentBL implements IShipmentBL
 
 	/**
 	 * Creates shipments and adds them to 'candidates' based on the data from 'olsAndScheds'.
-	 * 
+	 *
 	 * @param shipmentParams
 	 * @param candidates
 	 * @param olsAndScheds
@@ -187,7 +188,7 @@ public class ShipmentBL implements IShipmentBL
 	}
 
 	/**
-	 * 
+	 *
 	 * @param olsAndScheds
 	 * @param factory
 	 * @param shipmentParams are required in case a new inOutLine needs to be made
@@ -215,9 +216,10 @@ public class ShipmentBL implements IShipmentBL
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
 			final I_C_OrderLine ol = olAndSched.getOl();
+			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
-			if (sched.getQtyToDeliver().compareTo(ol.getQtyOrdered()) >= 0)
+			if (sched.getQtyToDeliver().compareTo(deliverRequest.getQtyOrdered()) >= 0)
 			{
 				// the current line doesn't need redistribution
 				continue;
@@ -243,7 +245,7 @@ public class ShipmentBL implements IShipmentBL
 			}
 
 			final BigDecimal qtyCurrent = inOutLine.getMovementQty();
-			final BigDecimal qtyDemand = ol.getQtyOrdered().subtract(qtyCurrent);
+			final BigDecimal qtyDemand = deliverRequest.getQtyOrdered().subtract(qtyCurrent);
 
 			final BigDecimal qtyAvail = qtys.get(currentKey);
 
@@ -341,7 +343,7 @@ public class ShipmentBL implements IShipmentBL
 
 	/**
 	 * Computes the {@link OlAndSched} instances that are later used to create shipments.
-	 * 
+	 *
 	 * @param params
 	 * @param trxName
 	 * @return
@@ -506,7 +508,7 @@ public class ShipmentBL implements IShipmentBL
 		catch (Exception e)
 		{
 			Services.get(IShipmentSchedulePA.class).deleteLocksForShipmentRun(params.getAdPInstanceId(), params.getAdUserId());
-			
+
 			throw new ShipmentGenerateException(e);
 		}
 	}

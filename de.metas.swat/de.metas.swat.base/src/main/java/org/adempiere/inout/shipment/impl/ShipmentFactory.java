@@ -10,18 +10,17 @@ package org.adempiere.inout.shipment.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -56,9 +55,9 @@ import de.metas.interfaces.I_C_OrderLine;
 
 /**
  * Tool class that does the actual work of creating {@link I_M_InOut}s and {@link I_M_InOutLine}s. It caches all required POs (e.g. Orders) to make sure the need to be loaded from DB only once.
- * 
+ *
  * @author ts
- * 
+ *
  */
 public class ShipmentFactory
 {
@@ -341,7 +340,19 @@ public class ShipmentFactory
 		return inOutLine;
 	}
 
-	private void mkLineNo(final I_C_OrderLine ol, final boolean consolidate, final I_M_InOut inOut, final I_M_InOutLine inOutLine)
+	/**
+	 * Assign a <code>M_InOut.Line</code> value to the given <code>inOutLine</code>.
+	 *
+	 * @param ol
+	 * @param consolidate
+	 * @param inOut
+	 * @param inOutLine
+	 */
+	private void mkLineNo(
+			final I_C_OrderLine ol,
+			final boolean consolidate,
+			final I_M_InOut inOut,
+			final I_M_InOutLine inOutLine)
 	{
 		if (!consolidate)
 		{
@@ -371,11 +382,11 @@ public class ShipmentFactory
 		final ArrayKey key = createKey(ctx, bpartnerLocationId, warehouseId, shipmentParams, null, trxName);
 
 		final I_M_InOut inOut = locOrder2InOut.get(key);
-		
+
 		//
 		// create the inOutLine
 		final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(inOutPA.createNewLine(inOut, trxName), I_M_InOutLine.class);
-		
+
 		inOutPA.setLineQty(inOutLine, qtyTU);
 		// TODO Auto-generated method stub
 

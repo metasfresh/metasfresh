@@ -10,18 +10,19 @@ package de.metas.flatrate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
@@ -36,9 +37,9 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.flatrate.api.ISubscriptionBL;
-import de.metas.flatrate.api.ISubscriptionDAO;
-import de.metas.flatrate.interfaces.I_C_OrderLine;
+import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -50,7 +51,7 @@ public class C_Order implements ModelValidator
 	private static final CLogger logger = CLogger.getCLogger(C_OrderLine.class);
 
 	private static final String MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = "Order_DateOrdered_Change_Forbidden";
-	
+
 	private int m_AD_Client_ID = -1;
 
 	@Override
@@ -145,38 +146,47 @@ public class C_Order implements ModelValidator
 		return null;
 	}
 
-	private void handleOrderLineComplete(final I_C_Order order,
+	private void handleOrderLineComplete(
+			final I_C_Order order,
 			final I_C_OrderLine ol,
 			final String trxName)
 	{
+		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 
-		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
-
-		final I_C_Flatrate_Term existingSc = subscriptionPA.retrieveTermForOl(ol);
+		final I_C_Flatrate_Term existingSc = subscriptionDAO.retrieveTermForOl(ol);
 		if (existingSc != null)
 		{
-			logger.fine(ol + " has already " + existingSc);
+			logger.log(Level.FINE, "{0} has already {1}", ol, existingSc);
 			return;
 		}
-		logger.info("Creating new " + I_C_Flatrate_Term.Table_Name + " entry");
-		
+
+		logger.log(Level.INFO, "Creating new {0} entry", I_C_Flatrate_Term.Table_Name);
+
 		// Note that order.getDocStatus() might still return 'IP' at this point
 		final I_C_Flatrate_Term newSc = Services.get(ISubscriptionBL.class).createSubscriptionTerm(ol, true, order);
-		
-		Check.assume(X_C_Flatrate_Term.DOCSTATUS_Completed.equals(newSc.getDocStatus()), 
-				newSc + " has DocStatus='" + newSc.getDocStatus() + "'");
-		logger.info("Created and completed " + newSc);
+
+		Check.assume(
+				X_C_Flatrate_Term.DOCSTATUS_Completed.equals(newSc.getDocStatus()),
+				"{0} has DocStatus={1}", newSc, newSc.getDocStatus());
+		logger.log(Level.INFO, "Created and completed {0}", newSc);
 	}
 
-	private void handleOrderLineReactivate(final I_C_OrderLine ol,
+	/**
+	 * Make sure the orderLine still has processed='Y', even if the order is reactivated. <br>
+	 * This was apparently added in task 03152.<br>
+	 * I can guess that if an order line already has a C_Flatrate_Term, then we don't want that order line to be editable, because it could create inconsistencies with the term.
+	 *
+	 * @param ol
+	 * @param trxName
+	 */
+	private void handleOrderLineReactivate(
+			final I_C_OrderLine ol,
 			final String trxName)
 	{
+		logger.info("Setting processed status of subscription order line " + ol + " back to Processed='Y'");
 
-		logger.info("Setting processed status of subscription order line " + ol
-				+ " back to Processed='Y'");
 		final String sql = "UPDATE C_OrderLine SET Processed='Y' WHERE C_OrderLine_ID=?";
-		final int no = DB.executeUpdateEx(sql, new Object[] { ol
-				.getC_OrderLine_ID() }, trxName);
+		final int no = DB.executeUpdateEx(sql, new Object[] { ol.getC_OrderLine_ID() }, trxName);
 		logger.finer("Update result: " + no);
 	}
 }

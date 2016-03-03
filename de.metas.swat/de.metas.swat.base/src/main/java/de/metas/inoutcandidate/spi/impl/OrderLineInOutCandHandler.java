@@ -10,18 +10,17 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.compiere.model.X_C_Order.DELIVERYRULE_CompleteOrder;
 
@@ -45,6 +44,7 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
@@ -54,9 +54,9 @@ import de.metas.product.IProductBL;
 
 /**
  * Default implementation for sales order lines.
- * 
+ *
  * @author ts
- * 
+ *
  */
 public class OrderLineInOutCandHandler implements IInOutCandHandler
 {
@@ -88,7 +88,8 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 		newSched.setQtyReserved(BigDecimal.ZERO.max(orderLine.getQtyReserved())); // task 09358: making sure that negative qtyOrdered are not proagated to the shipment sched
 		newSched.setQtyOrdered_Calculated(qtyOrdered_Effective);
 		newSched.setDateOrdered(orderLine.getDateOrdered());
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(newSched, orderLine);;
+		Services.get(IAttributeSetInstanceBL.class).cloneASI(newSched, orderLine);
+		;
 
 		//
 		// 08255 : initialize the qty order calculated
@@ -165,7 +166,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 
 		POWrapper.save(newSched);
 
-		// FIXME: disabled invalidation for 
+		// FIXME: disabled invalidation for
 		// invalidateForOrderLine(orderLine, order, trxName);
 
 		// Note: AllowConsolidateInOut and PostageFreeAmt is set on the first update of this schedule
@@ -175,7 +176,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 	/**
 	 * For a given order line this method invalidates all shipment schedule lines that have the same product or (if the given order has a "complete order" delivery rule) even does the same with all
 	 * order lines of the given order.
-	 * 
+	 *
 	 * @param orderLine
 	 * @param order
 	 * @param trxName
@@ -194,7 +195,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 	public void invalidateForOrderLine(final I_C_OrderLine orderLine, final I_C_Order order, final String trxName)
 	{
 		final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
-		
+
 		if (DELIVERYRULE_CompleteOrder.equals(order.getDeliveryRule()))
 		{
 			final IOrderPA orderPA = Services.get(IOrderPA.class);
@@ -222,49 +223,49 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 			final Properties ctx,
 			final String trxName)
 	{
-		// task 08896: don't use the where clause with all those INs. 
-		// It's performance can turn catastrophic for large numbers or orderlines and orders. 
-		// Instead use an efficient view (i.e. C_OrderLine_ID_With_Missing_ShipmentSchedule) and (bad enough) use an in because we still need to select from *one* table. 
+		// task 08896: don't use the where clause with all those INs.
+		// It's performance can turn catastrophic for large numbers or orderlines and orders.
+		// Instead use an efficient view (i.e. C_OrderLine_ID_With_Missing_ShipmentSchedule) and (bad enough) use an in because we still need to select from *one* table.
 		// i keep the original where for reference. The view is similar, but used inner joins to do the job. See the screeshot of this task to see how bad it was with that where-clause
 		// Note: still, this polling sucks, but that's a bigger task
 		final String wc = " C_OrderLine_ID IN ( select C_OrderLine_ID from C_OrderLine_ID_With_Missing_ShipmentSchedule_v ) ";
-//				// only if the ol is not yet fully delivered
-//				"    QtyOrdered <> QtyDelivered \n" +
-//
-//						// only if the schedule doesn't exist yet
-//						"   AND NOT EXISTS ( select * from M_ShipmentSchedule s where s.C_OrderLine_ID=C_OrderLine.C_OrderLine_ID )" +
-//
-//						"	AND C_Order_ID IN (" +
-//						"      select o.C_Order_ID " +
-//						"      from C_Order o" +
-//						"      where " +
-//
-//						// only for sales orders
-//						"      o.IsSOTrx='Y' \n" +
-//
-//						// not for Proposals, Quotations and POS-Orders
-//						"      AND o.C_DocType_ID IN ( \n" +
-//						"        SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType='SOO' AND DocSubType NOT IN ('ON','OB','WR') \n" +
-//						"      )\n" +
-//
-//						// only for completed orders
-//						"      AND o.docstatus='CO' \n" +
-//						"   )" +
-//
-//						// only if we didn't yet look at the order
-//						"   AND NOT EXISTS (" +
-//						"      select 1 from " + I_M_IolCandHandler_Log.Table_Name + " log " +
-//						"      where log." + I_M_IolCandHandler_Log.COLUMNNAME_M_IolCandHandler_ID + "=?" +
-//						"        and log." + I_M_IolCandHandler_Log.COLUMNNAME_AD_Table_ID + "=?" +
-//						"        and log." + I_M_IolCandHandler_Log.COLUMNNAME_Record_ID + "=C_OrderLine.C_OrderLine_ID" +
-//						"        and log." + I_M_IolCandHandler_Log.COLUMNNAME_IsActive + "='Y'" +
-//						"   )";
+		// // only if the ol is not yet fully delivered
+		// "    QtyOrdered <> QtyDelivered \n" +
+		//
+		// // only if the schedule doesn't exist yet
+		// "   AND NOT EXISTS ( select * from M_ShipmentSchedule s where s.C_OrderLine_ID=C_OrderLine.C_OrderLine_ID )" +
+		//
+		// "	AND C_Order_ID IN (" +
+		// "      select o.C_Order_ID " +
+		// "      from C_Order o" +
+		// "      where " +
+		//
+		// // only for sales orders
+		// "      o.IsSOTrx='Y' \n" +
+		//
+		// // not for Proposals, Quotations and POS-Orders
+		// "      AND o.C_DocType_ID IN ( \n" +
+		// "        SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType='SOO' AND DocSubType NOT IN ('ON','OB','WR') \n" +
+		// "      )\n" +
+		//
+		// // only for completed orders
+		// "      AND o.docstatus='CO' \n" +
+		// "   )" +
+		//
+		// // only if we didn't yet look at the order
+		// "   AND NOT EXISTS (" +
+		// "      select 1 from " + I_M_IolCandHandler_Log.Table_Name + " log " +
+		// "      where log." + I_M_IolCandHandler_Log.COLUMNNAME_M_IolCandHandler_ID + "=?" +
+		// "        and log." + I_M_IolCandHandler_Log.COLUMNNAME_AD_Table_ID + "=?" +
+		// "        and log." + I_M_IolCandHandler_Log.COLUMNNAME_Record_ID + "=C_OrderLine.C_OrderLine_ID" +
+		// "        and log." + I_M_IolCandHandler_Log.COLUMNNAME_IsActive + "='Y'" +
+		// "   )";
 
 		final List<I_C_OrderLine> ols = new Query(ctx, getSourceTable(), wc, trxName)
-// task 08896: no params anymore, they are hardcoded in the view.		
-//				.setParameters(
-//						Services.get(IInOutCandHandlerBL.class).retrieveHandlerRecordOrNull(ctx, this.getClass().getName(), trxName).getM_IolCandHandler_ID(),
-//						MTable.getTable_ID(I_C_OrderLine.Table_Name))
+				// task 08896: no params anymore, they are hardcoded in the view.
+				// .setParameters(
+				// Services.get(IInOutCandHandlerBL.class).retrieveHandlerRecordOrNull(ctx, this.getClass().getName(), trxName).getM_IolCandHandler_ID(),
+				// MTable.getTable_ID(I_C_OrderLine.Table_Name))
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
 				.setOrderBy(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
@@ -273,5 +274,23 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 		logger.info("Identified " + ols.size() + " C_OrderLines that need a shipment schedule");
 
 		return new ArrayList<Object>(ols);
+	}
+
+	/**
+	 * Returns an instance which in turn just returns as <ul>
+	 * <li><code>QtyOrdered</code>: the sched's order line's QtyOrdered value
+	 * </ul>
+	 */
+	@Override
+	public IDeliverRequest createDeliverReques(final I_M_ShipmentSchedule sched)
+	{
+		return new IDeliverRequest()
+		{
+			@Override
+			public BigDecimal getQtyOrdered()
+			{
+				return sched.getC_OrderLine().getQtyOrdered();
+			}
+		};
 	}
 }

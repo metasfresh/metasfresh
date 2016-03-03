@@ -29,8 +29,8 @@ import java.util.List;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
+import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.flatrate.api.IContractChangeDAO;
-import de.metas.flatrate.api.ISubscriptionBL;
 import de.metas.flatrate.model.I_C_Contract_Change;
 
 public abstract class AbstractContractChangeDAO implements IContractChangeDAO

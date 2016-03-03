@@ -37,7 +37,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
 
 import de.metas.adempiere.model.I_M_PriceList;
-import de.metas.flatrate.interfaces.I_C_OrderLine;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.product.IProductPA;
 

@@ -81,6 +81,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -117,7 +118,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final static CLogger logger = CLogger.getCLogger(ShipmentScheduleBL.class);
 
 	private final CompositeCandidateProcessor candidateProcessors = new CompositeCandidateProcessor();
-	
+
 	/**
 	 * Listeners for delivery Qty updates  (task 08959)
 	 */
@@ -215,6 +216,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final boolean isSOTrx = order.isSOTrx();
 
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
+			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
 			final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(sched); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the
 																							// shipment.
 
@@ -231,11 +233,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			shipmentScheduleDeliveryDayBL.updateDeliveryDayInfo(olAndSched.getSched());
 
 			// task 09358: ol.qtyReserved should be as correct as QtyOrdered and QtyDelivered, but in some cases isn't. this here is a workaround to the problem
-			// sched.setQtyReserved(ol.getQtyReserved());
-			sched.setQtyReserved(BigDecimal.ZERO.max(ol.getQtyOrdered().subtract(ol.getQtyDelivered())));
+			// task 09869: don't rely on ol anyways
+			final BigDecimal qtyDelivered = Services.get(IShipmentScheduleAllocDAO.class).retrieveQtyDelivered(sched);
+			sched.setQtyDelivered(qtyDelivered);
+			sched.setQtyReserved(BigDecimal.ZERO.max(deliverRequest.getQtyOrdered().subtract(sched.getQtyDelivered())));
 
-			sched.setQtyDelivered(ol.getQtyDelivered());
-			
 			// task 08959
 			// Additional qty updates from other projects
 			listeners.updateQtys(sched);
@@ -255,7 +257,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				setQtyToDeliverWhenNullInoutLine(sched);
 			}
-			
+
 			final BigDecimal newQtyToDeliverOverrideFulfilled = mkQtyToDeliverOverrideFulFilled(olAndSched);
 
 			if (olAndSched.getQtyOverride() != null)
@@ -522,6 +524,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		{
 			final I_C_OrderLine orderLine = olAndSched.getOl();
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
+			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
+
 			final I_C_Order order = co.retrieveAndCacheOrder(orderLine, trxName);
 			final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(sched);
 
@@ -543,7 +547,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 			else
 			{
-				qtyRequired = orderLine.getQtyOrdered().subtract(orderLine.getQtyDelivered());
+				final BigDecimal qtyDelivered = Services.get(IShipmentScheduleAllocDAO.class).retrieveQtyDelivered(sched);
+				qtyRequired = deliverRequest.getQtyOrdered().subtract(qtyDelivered);
 			}
 
 			//
@@ -552,12 +557,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// * QtyPicked from QtyPicked records
 			BigDecimal qtyUnconfirmedShipments;
 			{
-				qtyUnconfirmedShipments = qtyOnHands.getQtyUnconfirmedShipmentsPerOrderLine(orderLine.getC_OrderLine_ID());
-				
+				qtyUnconfirmedShipments = qtyOnHands.getQtyUnconfirmedShipmentsPerShipmentSchedule(sched);
+
 				// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
 				final BigDecimal qtyPickedNotDelivered = shipmentScheduleAllocDAO.retrievePickedNotDeliveredQty(sched);
 				qtyUnconfirmedShipments = qtyUnconfirmedShipments.add(qtyPickedNotDelivered);
-				
+
 				// Update shipment schedule's field
 				sched.setQtyPickList(qtyUnconfirmedShipments);
 			}
@@ -761,7 +766,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		if (candidates.getInOutLineFor(orderLine) != null)
 		{
-			logger.fine("candidates contains already an inoutLine for orderLine " + orderLine);
+			logger.log(Level.FINE,"candidates contains already an inoutLine for orderLine {0}", orderLine);
 			return;
 		}
 
@@ -1021,7 +1026,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final Collection<I_C_OrderLine> orderLines,
 			final String trxName)
 	{
-
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 		final Set<Integer> alreadyDone = new HashSet<Integer>();
@@ -1067,10 +1071,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public BigDecimal updateQtyOrdered(final I_M_ShipmentSchedule shipmentSchedule)
 	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
 		final BigDecimal qtyOrderedOld = shipmentSchedule.getQtyOrdered(); // going to return it in the end
-
-		final BigDecimal qtyOrderedToSet = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(shipmentSchedule);
-
+		final BigDecimal qtyOrderedToSet = shipmentScheduleEffectiveBL.getQtyOrdered(shipmentSchedule);
 		shipmentSchedule.setQtyOrdered(qtyOrderedToSet);
 
 		// Return the old value

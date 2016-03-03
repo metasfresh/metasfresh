@@ -26,7 +26,7 @@ package de.metas.flatrate.pricing.spi.impl;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.flatrate.interfaces.IFlatrateConditionsProvider;
+import de.metas.flatrate.interfaces.IFlatrateConditionsAware;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 
 public final class ContractPricingUtil
@@ -48,14 +48,14 @@ public final class ContractPricingUtil
 			return null;
 		}
 
-		if (referencedObject instanceof IFlatrateConditionsProvider)
+		if (referencedObject instanceof IFlatrateConditionsAware)
 		{
-			return ((IFlatrateConditionsProvider)(referencedObject)).getC_Flatrate_Conditions();
+			return ((IFlatrateConditionsAware)(referencedObject)).getC_Flatrate_Conditions();
 		}
 
 		try
 		{
-			final IFlatrateConditionsProvider flatrateConditionsProvider = InterfaceWrapperHelper.create(referencedObject, IFlatrateConditionsProvider.class);
+			final IFlatrateConditionsAware flatrateConditionsProvider = InterfaceWrapperHelper.create(referencedObject, IFlatrateConditionsAware.class);
 			return flatrateConditionsProvider.getC_Flatrate_Conditions();
 		}
 		catch (AdempiereException e)

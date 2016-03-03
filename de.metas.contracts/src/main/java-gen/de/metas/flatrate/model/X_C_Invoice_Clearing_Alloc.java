@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.flatrate.model;
 
@@ -30,7 +14,7 @@ public class X_C_Invoice_Clearing_Alloc extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2048207167L;
+	private static final long serialVersionUID = -1022638505L;
 
     /** Standard Constructor */
     public X_C_Invoice_Clearing_Alloc (Properties ctx, int C_Invoice_Clearing_Alloc_ID, String trxName)
@@ -128,40 +112,6 @@ public class X_C_Invoice_Clearing_Alloc extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Cand_ToClear() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Invoice_Cand_ToClear_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
-	}
-
-	@Override
-	public void setC_Invoice_Cand_ToClear(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Cand_ToClear)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Invoice_Cand_ToClear_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class, C_Invoice_Cand_ToClear);
-	}
-
-	/** Set Zu verrechnender Rechn-Kand..
-		@param C_Invoice_Cand_ToClear_ID Zu verrechnender Rechn-Kand.	  */
-	@Override
-	public void setC_Invoice_Cand_ToClear_ID (int C_Invoice_Cand_ToClear_ID)
-	{
-		if (C_Invoice_Cand_ToClear_ID < 1) 
-			set_Value (COLUMNNAME_C_Invoice_Cand_ToClear_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Invoice_Cand_ToClear_ID, Integer.valueOf(C_Invoice_Cand_ToClear_ID));
-	}
-
-	/** Get Zu verrechnender Rechn-Kand..
-		@return Zu verrechnender Rechn-Kand.	  */
-	@Override
-	public int getC_Invoice_Cand_ToClear_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Cand_ToClear_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
@@ -193,6 +143,40 @@ public class X_C_Invoice_Clearing_Alloc extends org.compiere.model.PO implements
 	public int getC_Invoice_Candidate_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Cand_ToClear() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_Cand_ToClear_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
+	}
+
+	@Override
+	public void setC_Invoice_Cand_ToClear(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Cand_ToClear)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Invoice_Cand_ToClear_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class, C_Invoice_Cand_ToClear);
+	}
+
+	/** Set Zu verrechnender Rechn-Kand..
+		@param C_Invoice_Cand_ToClear_ID Zu verrechnender Rechn-Kand.	  */
+	@Override
+	public void setC_Invoice_Cand_ToClear_ID (int C_Invoice_Cand_ToClear_ID)
+	{
+		if (C_Invoice_Cand_ToClear_ID < 1) 
+			set_Value (COLUMNNAME_C_Invoice_Cand_ToClear_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Invoice_Cand_ToClear_ID, Integer.valueOf(C_Invoice_Cand_ToClear_ID));
+	}
+
+	/** Get Zu verrechnender Rechn-Kand..
+		@return Zu verrechnender Rechn-Kand.	  */
+	@Override
+	public int getC_Invoice_Cand_ToClear_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Cand_ToClear_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.inout.util.CachedObjects;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -65,7 +66,7 @@ public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 			final String trxName)
 	{
 		return seed;
-// @formatter:off		
+// @formatter:off
 //		final CachedObjects coToUse = mkCoToUse(co);
 //
 //		final Set<Integer> productsSeen = new HashSet<Integer>();
@@ -88,7 +89,7 @@ public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 
 	/**
 	 * Collect all products that are referred to by the order lines of the given <code>olsAndScheds</code>.
-	 * 
+	 *
 	 * @param olsAndScheds
 	 * @param productSeen
 	 *            set where the different product ids are stored while the given <code>olsAndScheds</code> are iterated.
@@ -125,8 +126,8 @@ public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 	 * <li>the order line's product is an item, but the order also has a non-item position</li>
 	 * </ul>
 	 * In both cases the shipment scheduling doesn't only depend on the given line, but on further lines as well.
-	 * 
-	 * 
+	 *
+	 *
 	 * @param olsAndScheds
 	 * @param productsSeen
 	 * @param bPartnersSeen
@@ -222,7 +223,7 @@ public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 		I_M_Product product = co.getProductCache().get(ol.getM_Product_ID());
 		if (product == null)
 		{
-			product = POWrapper.create(ctx, ol.getM_Product_ID(), I_M_Product.class, trxName);
+			product = InterfaceWrapperHelper.create(ol.getM_Product(), I_M_Product.class);
 			Check.assume(product != null, "C_OrderLine.M_Product_ID has an FK-constraint on M_Product and therefore 'product' is not null");
 
 			co.getProductCache().put(ol.getM_Product_ID(), product);
@@ -246,7 +247,7 @@ public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 	/**
 	 * Adds those shipment schedules (A) that have the given bPartnerId. For each of theses scheds (A), it then adds all
 	 * further shipment schedules (B) that have the same M_Product_ID as (A).
-	 * 
+	 *
 	 * @param ctx
 	 * @param bPartnerId
 	 * @param newOlAndScheds

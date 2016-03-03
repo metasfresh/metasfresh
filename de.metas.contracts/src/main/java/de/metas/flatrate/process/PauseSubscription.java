@@ -37,7 +37,7 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.Msg;
 
-import de.metas.flatrate.api.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;

@@ -1,4 +1,4 @@
-package de.metas.flatrate.inoutcandidate.spi.impl;
+package de.metas.contracts.subscription.inoutcandidate.spi.impl;
 
 /*
  * #%L
@@ -10,12 +10,12 @@ package de.metas.flatrate.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,8 +31,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.interfaces.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
 import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
@@ -40,9 +40,9 @@ import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
 /**
  * This implementation vetoes the creation of shipment schedule records for {@link I_C_OrderLine}s if those order lines
  * are handled by a flatrate contract.
- * 
+ *
  * @author ts
- * 
+ *
  */
 public class InOutCandFlatrateListener implements IInOutCandHandlerListener
 {

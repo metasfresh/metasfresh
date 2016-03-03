@@ -35,9 +35,9 @@ import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
 import org.compiere.util.Env;
 
-import de.metas.flatrate.api.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.interfaces.I_C_OLCand;
-import de.metas.flatrate.interfaces.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;

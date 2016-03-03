@@ -424,31 +424,33 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updateLineNetAmt(final I_C_OrderLine ol, final BigDecimal qtyEntered, final BigDecimal factor)
+	public void updateLineNetAmt(
+			final I_C_OrderLine ol,
+			final BigDecimal qty,
+			final BigDecimal factor)
 	{
-		if (qtyEntered != null)
-		{
+			Check.assumeNotNull(qty, "Param qtyEntered not null. Param ol={0}", ol);
+
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 			final I_C_Order order = ol.getC_Order();
 			final int priceListId = order.getM_PriceList_ID();
 
 			//
 			// We need to get the quantity in the pricing's UOM (if different)
-			final BigDecimal convertedQty = calculateQtyEnteredInPriceUOM(ol);
+			final BigDecimal convertedQty = convertToPriceUOM(qty, ol);
 
 			// this code has been borrowed from
 			// org.compiere.model.CalloutOrder.amt
 			final int stdPrecision = MPriceList.getStandardPrecision(ctx, priceListId);
 
 			BigDecimal lineNetAmt = convertedQty.multiply(factor.multiply(ol.getPriceActual()));
-
 			if (lineNetAmt.scale() > stdPrecision)
 			{
 				lineNetAmt = lineNetAmt.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
 			}
 			logger.info("LineNetAmt=" + lineNetAmt);
 			ol.setLineNetAmt(lineNetAmt);
-		}
+
 	}
 
 	@Override

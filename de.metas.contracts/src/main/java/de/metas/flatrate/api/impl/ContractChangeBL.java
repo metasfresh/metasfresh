@@ -39,12 +39,12 @@ import org.compiere.process.DocAction;
 import org.compiere.util.CLogger;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.api.IContractChangeBL;
 import de.metas.flatrate.api.IContractChangeDAO;
-import de.metas.flatrate.api.ISubscriptionBL;
-import de.metas.flatrate.api.ISubscriptionDAO;
-import de.metas.flatrate.interfaces.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Contract_Change;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;

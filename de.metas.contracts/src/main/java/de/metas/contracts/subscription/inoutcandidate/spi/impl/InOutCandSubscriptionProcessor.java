@@ -1,4 +1,4 @@
-package de.metas.flatrate.inoutcandidate.spi.impl;
+package de.metas.contracts.subscription.inoutcandidate.spi.impl;
 
 /*
  * #%L

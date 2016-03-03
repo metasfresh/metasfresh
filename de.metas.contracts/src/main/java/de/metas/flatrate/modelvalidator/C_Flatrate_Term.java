@@ -51,11 +51,11 @@ import org.compiere.util.Ini;
 import org.compiere.util.Msg;
 
 import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.document.IDocumentPA;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.api.ISubscriptionBL;
-import de.metas.flatrate.api.ISubscriptionDAO;
 import de.metas.flatrate.interfaces.I_C_DocType;
 import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.flatrate.model.I_C_Contract_Term_Alloc;

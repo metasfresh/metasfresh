@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.flatrate.model;
 
 
@@ -114,29 +98,6 @@ public interface I_C_Flatrate_Data
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Datenerfassung.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Flatrate_Data_ID (int C_Flatrate_Data_ID);
-
-	/**
-	 * Get Datenerfassung.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Flatrate_Data_ID();
-
-    /** Column definition for C_Flatrate_Data_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_C_Flatrate_Data_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "C_Flatrate_Data_ID", null);
-    /** Column name C_Flatrate_Data_ID */
-    public static final String COLUMNNAME_C_Flatrate_Data_ID = "C_Flatrate_Data_ID";
-
-	/**
 	 * Set C_Flatrate_DataEntry_IncludedTab.
 	 *
 	 * <br>Type: String
@@ -158,6 +119,29 @@ public interface I_C_Flatrate_Data
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_C_Flatrate_DataEntry_IncludedT = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "C_Flatrate_DataEntry_IncludedT", null);
     /** Column name C_Flatrate_DataEntry_IncludedT */
     public static final String COLUMNNAME_C_Flatrate_DataEntry_IncludedT = "C_Flatrate_DataEntry_IncludedT";
+
+	/**
+	 * Set Datenerfassung.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Flatrate_Data_ID (int C_Flatrate_Data_ID);
+
+	/**
+	 * Get Datenerfassung.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Flatrate_Data_ID();
+
+    /** Column definition for C_Flatrate_Data_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_C_Flatrate_Data_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "C_Flatrate_Data_ID", null);
+    /** Column name C_Flatrate_Data_ID */
+    public static final String COLUMNNAME_C_Flatrate_Data_ID = "C_Flatrate_Data_ID";
 
 	/**
 	 * Get Erstellt.

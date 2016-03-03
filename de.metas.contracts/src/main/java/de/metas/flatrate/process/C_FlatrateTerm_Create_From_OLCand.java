@@ -33,8 +33,8 @@ import org.compiere.model.MTable;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 
+import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.flatrate.Contracts_Constants;
-import de.metas.flatrate.api.ISubscriptionBL;
 import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;

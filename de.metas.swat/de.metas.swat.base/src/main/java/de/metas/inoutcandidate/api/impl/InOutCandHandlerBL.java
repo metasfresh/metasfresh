@@ -10,18 +10,17 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +41,7 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
@@ -76,7 +76,6 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 
 		// make sure that there is an M_IolCandHandler record for the handler
 		final I_M_IolCandHandler existingRecord = retrieveHandlerRecordOrNull(ctx, handler.getClass().getName(), null);
-
 		if (existingRecord != null)
 		{
 			return; // nothing to do
@@ -227,7 +226,11 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 	}
 
 	@Override
-	public List<I_M_IolCandHandler_Log> retrieveOLHandlerLogs(final @CacheCtx Properties ctx, final int M_IolCandHandler_ID, final int recordID, final @CacheTrx String trxName)
+	public List<I_M_IolCandHandler_Log> retrieveOLHandlerLogs(
+			final @CacheCtx Properties ctx,
+			final int M_IolCandHandler_ID,
+			final int recordID,
+			final @CacheTrx String trxName)
 	{
 		// FIXME: use querybuilder
 		final String wc = I_M_IolCandHandler_Log.COLUMNNAME_M_IolCandHandler_ID + " = ? AND "
@@ -240,5 +243,17 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 				.setOnlyActiveRecords(true)
 				.setOrderBy(I_M_IolCandHandler_Log.COLUMNNAME_M_IolCandHandler_Log_ID)
 				.list(I_M_IolCandHandler_Log.class);
+	}
+
+	@Override
+	public IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched)
+	{
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
+
+		final IInOutCandHandler inOutCandHandler = tableName2Handler.get(tableName);
+		Check.assumeNotNull(inOutCandHandler, "IInOutCandHandler for {0} with table name {1} is not null", sched, tableName);
+
+		return inOutCandHandler.createDeliverReques(sched);
 	}
 }

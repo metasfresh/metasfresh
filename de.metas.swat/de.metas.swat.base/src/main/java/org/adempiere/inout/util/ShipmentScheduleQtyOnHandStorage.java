@@ -10,18 +10,17 @@ package org.adempiere.inout.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -56,6 +55,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inout.IInOutDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -96,7 +96,7 @@ public class ShipmentScheduleQtyOnHandStorage
 	private final IStorageEngine storageEngine;
 	/**
 	 * Loaded storage records (map of StorageId to "mutable storage record")
-	 * 
+	 *
 	 * NOTE: we are using a {@link LinkedHashMap} to preserve the order.
 	 */
 	private final LinkedHashMap<String, ShipmentScheduleStorageRecord> _storageRecords = new LinkedHashMap<>(50);
@@ -104,7 +104,7 @@ public class ShipmentScheduleQtyOnHandStorage
 	//
 	// Unconfirmed Quantities
 	private Set<Integer> unconfirmedQtys_consideredInOutLineIds = new HashSet<>();
-	private Map<Integer, BigDecimal> unconfirmedQtys_orderLineId2qty = new HashMap<>();
+	private Map<Integer, BigDecimal> unconfirmedQtys_shipmentScheduleId2qty = new HashMap<>();
 
 	public ShipmentScheduleQtyOnHandStorage()
 	{
@@ -293,11 +293,12 @@ public class ShipmentScheduleQtyOnHandStorage
 			}
 
 			//
-			// Update unconfirmed quantities per Order Line
-			final int orderLineId = shipmentLine.getC_OrderLine_ID();
-			if (orderLineId > 0)
+			// Update unconfirmed quantities per shipment schedule
+			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+			final List<I_M_ShipmentSchedule> schedulesForInOutLine = shipmentScheduleAllocDAO.retrieveSchedulesForInOutLine(shipmentLine);
+			for (final I_M_ShipmentSchedule sched : schedulesForInOutLine)
 			{
-				addQtyUnconfirmedShipmentsPerOrderLine(orderLineId, qtyUnconfirmedPerShipmentLine);
+				addQtyUnconfirmedShipmentsPerShipmentSchedule(sched.getM_ShipmentSchedule_ID(), qtyUnconfirmedPerShipmentLine);
 			}
 
 			// remember this shipment line because we don't want to subtract it twice
@@ -469,22 +470,24 @@ public class ShipmentScheduleQtyOnHandStorage
 		return null;
 	}
 
-	private final void addQtyUnconfirmedShipmentsPerOrderLine(final int orderLineId, final BigDecimal qtyUnconfirmedToAdd)
+	private void addQtyUnconfirmedShipmentsPerShipmentSchedule(int m_ShipmentSchedule_ID, BigDecimal qtyUnconfirmedToAdd)
 	{
-		Check.assume(orderLineId > 0, "orderLineId > 0");
+		Check.assume(m_ShipmentSchedule_ID > 0, "m_ShipmentSchedule_ID > 0");
 
-		BigDecimal qtyUnconfirmedOld = unconfirmedQtys_orderLineId2qty.get(orderLineId);
+		BigDecimal qtyUnconfirmedOld = unconfirmedQtys_shipmentScheduleId2qty.get(m_ShipmentSchedule_ID);
 		if (qtyUnconfirmedOld == null)
 		{
 			qtyUnconfirmedOld = BigDecimal.ZERO;
 		}
 		final BigDecimal qtyUnconfirmedNew = qtyUnconfirmedOld.add(qtyUnconfirmedToAdd);
-		unconfirmedQtys_orderLineId2qty.put(orderLineId, qtyUnconfirmedNew);
+		unconfirmedQtys_shipmentScheduleId2qty.put(m_ShipmentSchedule_ID, qtyUnconfirmedNew);
 	}
 
-	public BigDecimal getQtyUnconfirmedShipmentsPerOrderLine(final int orderLineId)
+	public BigDecimal getQtyUnconfirmedShipmentsPerShipmentSchedule(final I_M_ShipmentSchedule sched)
 	{
-		final BigDecimal qtyUnconfirmed = unconfirmedQtys_orderLineId2qty.get(orderLineId);
+		Check.assumeNotNull(sched, "Param 'sched' is not null");
+
+		final BigDecimal qtyUnconfirmed = unconfirmedQtys_shipmentScheduleId2qty.get(sched.getM_ShipmentSchedule_ID());
 		if (qtyUnconfirmed == null)
 		{
 			return BigDecimal.ZERO;

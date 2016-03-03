@@ -80,8 +80,6 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 			filters.addFilter(notQueryFilter);
 		}
 
-		//
-		//
 		{
 			//
 			// Excluding docTypes. We ignore for Proposals, Quotations, POS-Orders (SO) or delivery RMAs (PO)

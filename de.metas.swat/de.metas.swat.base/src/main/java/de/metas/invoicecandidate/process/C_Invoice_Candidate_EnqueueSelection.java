@@ -13,12 +13,12 @@ package de.metas.invoicecandidate.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -76,7 +76,7 @@ public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
 		// NOTE: we do that because this process is called from window Gear and user shall only see how many ICs where enqueued, in status line,
 		// and no popup shall be displayed.
 		setShowProcessLogs(ShowProcessLogs.OnError);
-		
+
 		final IParams params = getParameterAsIParams();
 		this.invoicingParams = new InvoicingParams(params);
 
@@ -96,16 +96,16 @@ public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
 			final Properties ctx = getCtx();
 			throw new AdempiereException(msgBL.getMsg(ctx, InvoiceGenerate.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
 		}
-		
+
 		//
 		// Ask user if we shall enqueue the invoice candidates.
 		checkPerformEnqueuing();
 	}
-	
+
 	/**
 	 * Before enqueuing the candidates, check how many partners they have.
 	 * In case there are more that one partner, ask the user if he really wants to invoice for so many partners.
-	 * 
+	 *
 	 * @task 08961
 	 * @throws ProcessCanceledException if user canceled
 	 */
@@ -128,13 +128,12 @@ public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
 		}
 	}
 
-
 	@Override
 	protected String doIt() throws Exception
 	{
 		final int adPInstanceId = getAD_PInstance_ID();
 		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
-		
+
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 				.setContext(getCtx(), get_TrxName())
 				.setLoggable(this)

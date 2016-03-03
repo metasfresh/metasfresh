@@ -1,4 +1,4 @@
-package de.metas.flatrate.api;
+package de.metas.contracts.subscription;
 
 /*
  * #%L
@@ -29,8 +29,8 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.interfaces.I_C_OLCand;
-import de.metas.flatrate.interfaces.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;

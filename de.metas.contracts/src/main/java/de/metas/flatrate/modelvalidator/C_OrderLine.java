@@ -10,12 +10,12 @@ package de.metas.flatrate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,10 +33,10 @@ import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
-import de.metas.flatrate.interfaces.I_C_OrderLine;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 
 /**
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Abonnement_Auftragsverwaltung_(2009_0015_G36)'>(2009_0015_G36)</a>"
  */
@@ -47,11 +47,13 @@ public class C_OrderLine implements ModelValidator
 
 	private int ad_Client_ID = -1;
 
+	@Override
 	public int getAD_Client_ID()
 	{
 		return ad_Client_ID;
 	}
 
+	@Override
 	public final void initialize(final ModelValidationEngine engine,
 			final MClient client)
 	{
@@ -63,6 +65,7 @@ public class C_OrderLine implements ModelValidator
 		engine.addModelChange(I_C_OrderLine.Table_Name, this);
 	}
 
+	@Override
 	public String login(final int AD_Org_ID, final int AD_Role_ID,
 			final int AD_User_ID)
 	{
@@ -70,11 +73,13 @@ public class C_OrderLine implements ModelValidator
 		return null;
 	}
 
+	@Override
 	public String docValidate(final PO po, final int timing)
 	{
 		return null; // nothing to do
 	}
 
+	@Override
 	public String modelChange(final PO po, final int type) throws Exception
 	{
 		if (type == TYPE_BEFORE_DELETE)
