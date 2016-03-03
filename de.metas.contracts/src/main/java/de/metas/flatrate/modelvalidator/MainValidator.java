@@ -107,6 +107,9 @@ public class MainValidator implements ModelValidator
 		// 05197 : Functionality not required anymore.
 //		engine.addModelValidator(new M_InOutLine_HU(), client);
 
+		// 09869
+		engine.addModelValidator(new de.metas.contracts.subscription.model.interceptor.M_ShipmentSchedule(), client);
+
 		// material balance matcher
 		Services.get(IMaterialBalanceConfigBL.class).addMaterialBalanceConfigMather(new FlatrateMaterialBalanceConfigMatcher());
 
