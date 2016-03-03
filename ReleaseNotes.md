@@ -25,6 +25,8 @@ The actual release notes
 # metasfresh 4.6.6 (Upcoming Release)
 
 ## Features
+ - 09859 Fix open items report - the whole query shall go in the reporting function (103228618621)
+    * refactored the reports to be more maintainable and easier to support
  - 09766 VAT codes (107418136945)
     * new accounting report centered on VAT codes
 

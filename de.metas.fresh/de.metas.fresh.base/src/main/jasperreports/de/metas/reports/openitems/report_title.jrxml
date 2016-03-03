@@ -19,21 +19,7 @@
 	<parameter name="PassForPayment" class="java.lang.String"/>
 	<parameter name="switchDate" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT
-	getDate() AS today,
-	COALESCE((SELECT Name FROM AD_Org WHERE $P{AD_Org_ID} = AD_Org_ID), 'Alle') AS org,
-	COALESCE((
-		SELECT Value || ' ' || Name FROM C_BPartner WHERE $P{C_BPartner_ID} = C_BPartner_ID
-	), 'Alle') as BPartner,
-	COALESCE((SELECT Name FROM AD_Ref_List WHERE $P{InvoiceCollectionType} = Value AND AD_Reference_ID = (
-		SELECT AD_Reference_ID FROM AD_Reference WHERE name = 'C_Invoice InvoiceCollectionType')
-	), 'Alle') AS InvColType,
-	CASE
-		WHEN $P{IsSOTrx} = 'Y' THEN 'Ja'
-		WHEN $P{IsSOTrx} = 'N' THEN 'Nein'
-		WHEN $P{IsSOTrx} IS NULL THEN 'Alle'
-	END AS IsSOTrx
-;]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.OpenItems_Report_Title($P{AD_Org_ID}, $P{C_BPartner_ID}, $P{IsSOTrx}, $P{InvoiceCollectionType});]]>
 	</queryString>
 	<field name="today" class="java.sql.Timestamp"/>
 	<field name="org" class="java.lang.String"/>

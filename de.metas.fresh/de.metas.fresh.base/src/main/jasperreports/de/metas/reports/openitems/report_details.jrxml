@@ -27,49 +27,13 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	oi.CurrencyCode as iso_code,
-	oi.DocumentNo,
-	oi.DateInvoiced::date,
-	oi.DateAcct::date,
-	oi.NetDays,
-	oi.DiscountDays,
-	oi.DueDate::date,
-	oi.DaysDue,
- 	oi.DiscountDate::date,
-	oi.GrandTotal,
-	oi.PaidAmt,
-	oi.OpenAmt,
-	oi.BPValue as Value,
-	oi.BPName as Name,
-	oi.IsInPaySelection as PassForPayment
-FROM de_metas_endcustomer_fresh_reports.OpenItems_Report($P{Reference_Date}) oi
-WHERE
-	oi.AD_Org_ID = (CASE WHEN $P{AD_Org_ID} IS NULL THEN oi.AD_Org_ID ELSE $P{AD_Org_ID} END)
-	AND oi.IsSOTrx = (CASE WHEN $P{IsSOTrx} IS NULL THEN oi.IsSOTrx ELSE $P{IsSOTrx} END)
-	AND oi.C_BPartner_ID = (CASE WHEN $P{C_BPartner_ID} IS NULL THEN oi.C_BPartner_ID ELSE $P{C_BPartner_ID} END)
-	AND ($P{DaysDue} IS NULL OR $P{DaysDue} <= 0 OR oi.daysdue >= $P{DaysDue})
-	AND COALESCE( oi.InvoiceCollectionType, '') =
-		(CASE WHEN COALESCE($P{InvoiceCollectionType}, '') = '' THEN COALESCE( oi.InvoiceCollectionType, '' ) ELSE $P{InvoiceCollectionType} END)
-	AND (
-	--09738 if flag is set then switches the given date to dateacct instead of dateinvoiced
-	CASE WHEN $P{switchDate} = 'Y' THEN
-		(oi.DateAcct >= ( CASE WHEN $P{StartDate}::date IS NULL THEN oi.DateAcct ELSE $P{StartDate}::date END )
-		AND oi.DateAcct <= ( CASE WHEN $P{EndDate}::date IS NULL THEN oi.DateAcct ELSE $P{EndDate}::date END ))
-	ELSE
-		(oi.DateInvoiced >= ( CASE WHEN $P{StartDate}::date IS NULL THEN oi.DateInvoiced ELSE $P{StartDate}::date END )
-		AND oi.DateInvoiced <= ( CASE WHEN $P{EndDate}::date IS NULL THEN oi.DateInvoiced ELSE $P{EndDate}::date END ))
-	END
-	)
-	-- 08394: If Flag is not set, only display invoices that are not part of a processed PaySelection
-	AND ( $P{PassForPayment} = 'Y' OR NOT oi.IsInPaySelection )
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.OpenItems_Report_Details($P{AD_Org_ID}, $P{C_BPartner_ID}, $P{IsSOTrx}, $P{DaysDue}, $P{InvoiceCollectionType}, $P{StartDate}, $P{EndDate}, $P{Reference_Date}, $P{PassForPayment}, $P{switchDate})
 ORDER BY
-	oi.CurrencyCode,
-	oi.BPName,
-	oi.BPValue,
-	oi.DateInvoiced,
-	oi.DocumentNo
-;]]>
+iso_code,
+Name,
+Value,
+DateInvoiced,
+DocumentNo]]>
 	</queryString>
 	<field name="iso_code" class="java.lang.String"/>
 	<field name="documentno" class="java.lang.String"/>
