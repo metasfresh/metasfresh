@@ -25,6 +25,8 @@ The actual release notes
 # metasfresh 4.6.6 (Upcoming Release)
 
 ## Features
+ - 09766 VAT codes (107418136945)
+    * new accounting report centered on VAT codes
 
 ## Fixes
  - 09862 Report Footer missing in inout jasper from Wareneingang POS
