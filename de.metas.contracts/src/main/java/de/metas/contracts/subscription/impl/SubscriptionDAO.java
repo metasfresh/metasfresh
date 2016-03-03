@@ -10,18 +10,17 @@ package de.metas.contracts.subscription.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static de.metas.flatrate.model.I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID;
 import static de.metas.flatrate.model.I_C_SubscriptionProgress.COLUMNNAME_EventDate;
@@ -42,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.db.IDBService;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -321,9 +321,9 @@ public class SubscriptionDAO implements ISubscriptionDAO
 				.list(I_C_Flatrate_Term.class);
 
 	}
-	
+
 	@Override
-	public <T extends I_C_OLCand> List<T>  retrieveOLCands(final I_C_Flatrate_Term term, final Class<T> clazz)
+	public <T extends I_C_OLCand> List<T> retrieveOLCands(final I_C_Flatrate_Term term, final Class<T> clazz)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 		final String trxName = InterfaceWrapperHelper.getTrxName(term);
@@ -346,20 +346,17 @@ public class SubscriptionDAO implements ISubscriptionDAO
 				.list(clazz);
 	}
 
-	
 	@Override
 	public List<I_C_SubscriptionProgress> retrieveSubscriptionProgress(final I_C_Flatrate_Term term)
 	{
 		Check.assumeNotNull(term, "Param 'term' not null");
-		
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
 
-		return new Query(ctx, I_C_SubscriptionProgress.Table_Name, I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID + "=?", trxName)
-				.setParameters(term.getC_Flatrate_Term_ID())
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(ORDER_SEQNO)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_SubscriptionProgress.class, term)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo).endOrderBy()
+				.create()
 				.list(I_C_SubscriptionProgress.class);
 	}
 
