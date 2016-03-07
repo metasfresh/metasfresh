@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="368dee7e-3f75-4062-a55c-84e201083d00">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="288"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="c_period_id" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
-	<parameter name="vatcode" class="java.math.BigDecimal">
+	<parameter name="C_VAT_Code_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="account_id" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
-	<parameter name="org_id" class="java.math.BigDecimal">
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="showdetails" class="java.lang.String">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select * from report.tax_accounting_report($P{c_period_id},$P{vatcode},$P{account_id},$P{org_id},$P{showdetails});]]>
+		<![CDATA[select * from report.tax_accounting_report($P{c_period_id},$P{C_VAT_Code_ID},$P{account_id},$P{AD_Org_ID},$P{showdetails});]]>
 	</queryString>
 	<field name="kontono" class="java.lang.String"/>
 	<field name="kontoname" class="java.lang.String"/>
