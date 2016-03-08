@@ -24,6 +24,28 @@ CREATE SCHEMA de_metas_procurement;
 
 SET search_path = de_metas_procurement, pg_catalog;
 
+
+-- View: pmm_purchasecandidate_weekly
+
+-- DROP VIEW pmm_purchasecandidate_weekly;
+
+CREATE OR REPLACE VIEW public.pmm_purchasecandidate_weekly AS 
+SELECT 
+	c.c_bpartner_id, 
+	c.m_product_id, 
+	date_trunc('week'::text, c.datepromised) AS datepromised, 
+	sum(c.qtypromised) AS qtypromised, 
+	sum(c.qtyordered) AS qtyordered, 
+	c.ad_client_id, 
+	min(c.ad_org_id) AS ad_org_id, 
+	min(c.created) AS created, 
+	0 AS createdby, 
+	max(c.updated) AS updated, 
+	0 AS updatedby, 
+	'Y'::character(1) AS isactive
+FROM public.pmm_purchasecandidate c
+GROUP BY c.ad_client_id, c.c_bpartner_id, c.m_product_id, date_trunc('week'::text, c.datepromised);
+
 --
 -- TOC entry 2911 (class 1255 OID 7262125)
 -- Dependencies: 7670 7688 26
