@@ -21,10 +21,32 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.7 (Upcoming Release)
-
+# metasfresh 4.8.7 (Upcoming Release)
+  - 09628 procurement management (106716240958)
+     * still a work in progress
+	 * standalone procurement web application that is optimized for mobile and communicated with metasfresh
+	 * procurement management in metasfresh
+	    * manintain vendor contracts
+		* create purchase orders for the supplies reproced via the web app
+  
 ## Features
- 
+  - FRESH-21: 09848 enable metasfresh to provide jax-rs services (101763395402) 
+    *Moved and extended the AD_JavaClasses framework
+    *Removed javax.jnlp (it was only needed because there was some code wrt WebStart, 
+     but that's not done anymore)
+    *Removed javax.ejb (we now use jax.rs for the invokations)
+     CConnection now also uses a proxy provided by jax-rs to query the application 
+     server state
+     The next step can be to change jboss for a less old & heavy environment,
+     like tomcat or something else
+    *Extracted de.metas.event's JMS coded into de.metas.jms, because it's now also
+     used by de.metas.jax.rs
+    *Added table AD_JAXRS_Enpoint to manage our endpoints
+    *moving replication and metas-esb folgers into a new ad_menu folder called 
+     "communication". Also moving the new AD_JAXRS_Enpoint windo to that folder
+    *Changed startup-behavior so that when running in embedded-server-mode, the 
+     client always starts a local jms broker and also connects to it
+	 
 ## Fixes
  - 09901 Report for packaging material balance: recap differences
  - 09890 Manual Fixing of voided Bankstatement after ESR Import (108847010077)
@@ -44,22 +66,6 @@ The actual release notes
     * refactored the reports to be more maintainable and easier to support
  - 09766 VAT codes (107418136945)
     * new accounting report centered on VAT codes
- - FRESH-21: 09848 enable metasfresh to provide jax-rs services (101763395402) 
-    *Moved and extended the AD_JavaClasses framework
-    *Removed javax.jnlp (it was only needed because there was some code wrt WebStart, 
-     but that's not done anymore)
-    *Removed javax.ejb (we now use jax.rs for the invokations)
-     CConnection now also uses a proxy provided by jax-rs to query the application 
-     server state
-     The next step can be to change jboss for a less old & heavy environment,
-     like tomcat or something else
-    *Extracted de.metas.event's JMS coded into de.metas.jms, because it's now also
-     used by de.metas.jax.rs
-    *Added table AD_JAXRS_Enpoint to manage our endpoints
-    *moving replication and metas-esb folgers into a new ad_menu folder called 
-     "communication". Also moving the new AD_JAXRS_Enpoint windo to that folder
-    *Changed startup-behavior so that when running in embedded-server-mode, the 
-     client always starts a local jms broker and also connects to it
 
 ## Fixes
  - 09862 Report Footer missing in inout jasper from Wareneingang POS
