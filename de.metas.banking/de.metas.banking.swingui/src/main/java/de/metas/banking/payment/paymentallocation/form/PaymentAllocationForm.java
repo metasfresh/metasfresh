@@ -800,7 +800,7 @@ public class PaymentAllocationForm
 					.setPayableDocuments(payableDocuments)
 					.setPaymentDocuments(paymentDocuments)
 					.setAllowOnlyOneVendorDoc(isAllowOnlyOneVendorDoc())
-					.setDate(getDate())
+					.setDate(getAllocDate()) // task it_09643. Use allocation Date
 					.build();
 			statusBar.setStatusLine(summary);
 

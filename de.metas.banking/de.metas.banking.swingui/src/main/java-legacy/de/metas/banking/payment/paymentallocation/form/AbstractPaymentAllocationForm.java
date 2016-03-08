@@ -58,12 +58,12 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 	private boolean _isMultiCurrency = false;
 	private int _filterPaymentId = -1;
 	private String _filterPOReference = null;
-	
+
 	private InvoicesTableModel invoicesTableModel = new InvoicesTableModel();
 	private PaymentsTableModel paymentsTableModel = new PaymentsTableModel();
 	//
 	private final Multimap<AllocableDocType, Integer> foreignDocumentIds = ArrayListMultimap.create();
-	
+
 	private BigDecimal totalPaymentCandidatesAmt = BigDecimal.ZERO;
 	// @formatter:on
 
@@ -110,13 +110,13 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 
 	protected final void addForeignDocumentId(final AllocableDocType docType, final int documentId)
 	{
-		final Object[] documentIds = new Object[]{documentId};
+		final Object[] documentIds = new Object[] { documentId };
 		addForeignDocumentIds(docType, documentIds);
 	}
 
 	/**
 	 * Drops all Documents in the Foreigners List.
-	 * 
+	 *
 	 * This is called when a new BP is chosen, so that the old Documents do not appear in the tables of the next chosen BP.
 	 */
 	private void clearForeignDocuments()
@@ -126,9 +126,9 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 
 	/**
 	 * Sets a value and calculates allocation and over-/under payment amounts.
-	 * 
+	 *
 	 * Invoice sum and payment sum are recalculated, too.
-	 * 
+	 *
 	 * If a row is being selected, Applied amount is set to maximum, if its deselected, Applied amount is set to zero.
 	 *
 	 * @param modelRowIndex
@@ -156,7 +156,7 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 			final InvoiceWriteOffAmountType writeOffType = InvoiceWriteOffAmountType.valueOfColumnName(modelColumnName);
 			onRowWriteOffAmtChanged(invoiceRow, writeOffType);
 		}
-		
+
 		else if ((row instanceof IPaymentRow)
 				&& PaymentRow.PROPERTY_DiscountAmt.equals(modelColumnName))
 		{
@@ -169,7 +169,7 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 
 	/**
 	 * Called when user selected/deselected a row.
-	 * 
+	 *
 	 * @param row
 	 */
 	private void onRowSelectedChanged(final IAllocableDocRow row)
@@ -191,7 +191,7 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 			{
 				invoiceRow.resetAllWriteOffAmounts();
 			}
-			
+
 			// Reset payment's discount amount
 			final IPaymentRow paymentRow = PaymentRow.castOrNull(row);
 			if (paymentRow != null)
@@ -240,7 +240,7 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 		// Notify the UI that we changed this row
 		invoicesTableModel.fireTableRowsUpdated(Collections.singleton(invoiceRow));
 	}
-	
+
 	/**
 	 * Called when user changed discount amount
 	 */
@@ -258,7 +258,7 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 
 	/**
 	 * Called when user enabled/disabled one of the allow write-off flags.
-	 * 
+	 *
 	 * @param type write-off type of which status was changed
 	 * @param allowed new status (true if allowed, false if not allowed)
 	 */
@@ -289,13 +289,13 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 		}
 		invoicesTableModel.fireTableRowsUpdated(invoiceRows);
 	}
-	
+
 	/** @return true if given write-off type is allowed */
 	protected final boolean isAllowWriteOffAmountOfType(final InvoiceWriteOffAmountType type)
 	{
 		return invoicesTableModel.isAllowWriteOffAmountOfType(type);
 	}
-	
+
 	protected final void setIsMultiCurrency(final boolean multiCurrency)
 	{
 		this._isMultiCurrency = multiCurrency;
@@ -316,29 +316,29 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 
 		return changed;
 	}
-	
+
 	protected final boolean setFilter_Payment_ID(final int filterPaymentId)
 	{
 		final int filterPaymentIdOld = this._filterPaymentId;
 		final int filterPaymentIdNew = filterPaymentId > 0 ? filterPaymentId : 0;
-		if(filterPaymentIdOld == filterPaymentIdNew)
+		if (filterPaymentIdOld == filterPaymentIdNew)
 		{
 			return false;
 		}
 		this._filterPaymentId = filterPaymentIdNew;
 		return true;
 	}
-	
+
 	protected final boolean setFilter_POReference(final String poReference)
 	{
 		final String filterPOReferenceOld = _filterPOReference;
 		final String filterPOReferenceNew = Check.isEmpty(poReference, true) ? null : poReference.trim();
-		
+
 		if (Check.equals(filterPOReferenceOld, filterPOReferenceNew))
 		{
 			return false;
 		}
-		
+
 		this._filterPOReference = filterPOReferenceNew;
 		return true;
 	}
@@ -442,6 +442,9 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 		invoicesTableModel.fireTableRowsUpdated(balancer.getInvoiceRowsChanged());
 	}
 
+	/**
+	 * Returns the latest document date of all invoices and payments, or <code>null</code> if {@link #isMultiCurrency()} returns <code>true</code>.
+	 */
 	@Override
 	protected final Date calculateAllocationDate()
 	{

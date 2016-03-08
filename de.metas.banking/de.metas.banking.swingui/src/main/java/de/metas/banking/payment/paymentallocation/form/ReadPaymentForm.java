@@ -10,18 +10,17 @@ package de.metas.banking.payment.paymentallocation.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -110,7 +109,7 @@ import de.metas.payment.model.I_C_Payment_Request;
  * <li>Possibility of discount (skonto and so on, same as in Zahlung-Zuordnung ({@link de.metas.banking.payment.paymentallocation.form.PaymentAllocationForm}))</li>
  * <li>After user presses ok, check if selected amount matches read amount. Choice for Zahlung anweisen Document. Create invoice and Zahlung anweisen line.</li>
  * </ul>
- * 
+ *
  * WARNING: atm this functionality is NOT used!!!!
  *
  * @author al
@@ -187,7 +186,7 @@ final class ReadPaymentForm
 			jbInit();
 			frame.getContentPane().add(mainPanel, BorderLayout.CENTER);
 			frame.getContentPane().add(statusBar, BorderLayout.SOUTH);
-			
+
 			updateInfos(true); // re-query
 		}
 		catch (final Exception e)
@@ -440,7 +439,7 @@ final class ReadPaymentForm
 
 		final ReadPaymentDocumentDialog readPaymentDocumentDialog = ReadPaymentDocumentDialog.create(ctx, m_frame, getAD_Org_ID());
 		readPaymentDocumentDialog.setTitle(msgBL.getMsg(ctx, PROPERTY_ReadPaymentStringButton));
-		
+
 		final ReadPaymentDocumentPanel dialogComponent = readPaymentDocumentDialog.getDialogComponent();
 		readPaymentDocumentDialog.pack();
 		readPaymentDocumentDialog.addWindowListener(new WindowAdapter()
@@ -732,6 +731,9 @@ final class ReadPaymentForm
 
 	}
 
+	/**
+	 * @returns the latest date of all selected invoice candidates.
+	 */
 	@Override
 	protected final Date calculateAllocationDate()
 	{
