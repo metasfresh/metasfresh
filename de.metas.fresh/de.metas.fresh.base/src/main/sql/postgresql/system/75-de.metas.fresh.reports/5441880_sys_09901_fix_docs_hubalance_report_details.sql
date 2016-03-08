@@ -1,30 +1,4 @@
 
-
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_Details(numeric, numeric, date, date, date);
-
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_Details;
-
--- Table: de_metas_endcustomer_fresh_reports.docs_hubalance_report_details
-
-CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_Details
-(
-  documentno character varying,
-  printname character varying,
-  movementdate date,
-  "name" character varying,
-  outgoing numeric,
-  incoming numeric,
-  carryoutgoing numeric,
-  carryincoming numeric,
-  uomsymbol character varying
-)
-WITH (
-  OIDS=FALSE
-);
-
-
--- Function: de_metas_endcustomer_fresh_reports.docs_hubalance_report_details(numeric, numeric, date, date, date)
-
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_Details(m_material_balance_config_id numeric, c_bpartner_id numeric, startdate date, enddate date, refdate date)
   RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_Details AS
 $BODY$

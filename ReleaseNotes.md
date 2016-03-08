@@ -26,6 +26,7 @@ The actual release notes
 ## Features
  
 ## Fixes
+ - 09901 Report for packaging material balance: recap differences
  - 09890 Manual Fixing of voided Bankstatement after ESR Import (108847010077)
     * when a bankstatement is voided, all ESR import lines (if any) are unlinked from the bank statement
 	
