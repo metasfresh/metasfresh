@@ -27,9 +27,7 @@ import java.lang.management.ManagementFactory;
 import java.util.UUID;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.compiere.Adempiere;
 import org.compiere.util.CLogger;
 
@@ -82,41 +80,7 @@ public final class EventBusConstants
 		getLogger().info("Distributed events broadcasting disabled");
 	}
 
-	private static final String SYSCONFIG_JMS_URL = "de.metas.event.jms.URL";
 
-	public static final String getJmsURL()
-	{
-		final String jmsURL = Services.get(ISysConfigBL.class).getValue(EventBusConstants.SYSCONFIG_JMS_URL, ActiveMQConnectionFactory.DEFAULT_BROKER_BIND_URL);
-		Check.assumeNotEmpty(jmsURL, "sysconfig '{0}' shall not be empty", EventBusConstants.SYSCONFIG_JMS_URL);
-		return jmsURL;
-	}
-
-	private static final String SYSCONFIG_JMS_USER = "de.metas.event.jms.User";
-
-	public static final String getJmsUser()
-	{
-		final String jmsUser = Services.get(ISysConfigBL.class).getValue(EventBusConstants.SYSCONFIG_JMS_USER, ActiveMQConnectionFactory.DEFAULT_USER);
-		return jmsUser;
-	}
-
-	private static final String SYSCONFIG_JMS_PASSWORD = "de.metas.event.jms.Password";
-
-	public static final String getJmsPassword()
-	{
-		final String jmsPassword = Services.get(ISysConfigBL.class).getValue(EventBusConstants.SYSCONFIG_JMS_PASSWORD, ActiveMQConnectionFactory.DEFAULT_PASSWORD);
-		return jmsPassword;
-	}
-
-	private static final String SYSCONFIG_JMS_UseEmbeddedBroker = "de.metas.event.jms.UseEmbeddedBroker";
-
-	/**
-	 * @return true if we shall start and embedded JMS broker (i.e. a JMS server), using {@link #getJmsURL()} as the URL where it shall be bound
-	 */
-	public static boolean isUseEmbeddedBroker()
-	{
-		final boolean defaultValue = false; // by default don't start the embedded broker if we were not asked
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_JMS_UseEmbeddedBroker, defaultValue);
-	}
 
 	/**
 	 * Topic used for general notifications. To be used mainly for broadcasting messages to everybody.

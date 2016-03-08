@@ -38,8 +38,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.ProcessUtil;
 import org.adempiere.util.Services;
-import org.compiere.db.CConnection;
-import org.compiere.interfaces.Server;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
@@ -51,6 +49,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 import de.metas.notification.IMailBL;
+import de.metas.session.jaxrs.IServerService;
 
 /**
  * @author Cristina Ghita, Metas.RO
@@ -287,31 +286,24 @@ public class MailBL implements IMailBL
 		if (mailbox.isSendFromServer() && Ini.isClient())
 		{
 			log.fine("Creating on server");
-			final Server server = CConnection.get().getServer();
+			final IServerService server = Services.get(IServerService.class);
 			try
 			{
-				if (server != null)
-				{ // See ServerBean
-					if (html && message != null)
-					{
-						message = EMail.HTML_MAIL_MARKER + message;
-					}
+				if (html && message != null)
+				{
+					message = EMail.HTML_MAIL_MARKER + message;
+				}
 
-					if (mailbox.getAD_User_ID() < 0)
-					{
-						email = server.createEMail(Env.getRemoteCallCtx(ctx), mailbox.getAD_Client_ID(),
-								to, subject, message);
-					}
-					else
-					{
-						email = server.createEMail(Env.getRemoteCallCtx(ctx), mailbox.getAD_Client_ID(),
-								mailbox.getAD_User_ID(),
-								to, subject, message);
-					}
+				if (mailbox.getAD_User_ID() < 0)
+				{
+					email = server.createEMail(Env.getRemoteCallCtx(ctx), mailbox.getAD_Client_ID(),
+							to, subject, message);
 				}
 				else
 				{
-					log.log(Level.WARNING, "No AppsServer");
+					email = server.createEMail(Env.getRemoteCallCtx(ctx), mailbox.getAD_Client_ID(),
+							mailbox.getAD_User_ID(),
+							to, subject, message);
 				}
 			}
 			catch (final Exception ex)

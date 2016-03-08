@@ -24,6 +24,7 @@ package de.metas.lock.api;
 
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
 
@@ -111,6 +112,11 @@ public interface ILockManager extends ISingletonService
 	String getNotLockedWhereClause(String tableName, String joinColumnNameFQ);
 
 	/**
+	 * @see #getNotLockedWhereClause(String, String)
+	 */
+	<T> IQueryFilter<T> getNotLockedFilter(Class<T> modelClass);
+
+	/**
 	 * Builds a SQL where clause used to filter records locked by a given {@link ILock}. Also see {@link #getNotLockedWhereClause(String, String)} for information.
 	 *
 	 * @param modelClass
@@ -119,6 +125,11 @@ public interface ILockManager extends ISingletonService
 	 * @return SQL where clause
 	 */
 	String getLockedWhereClause(Class<?> modelClass, String joinColumnNameFQ, ILock lock);
+
+	/**
+	 * @see #getLockedWhereClause(Class, String, ILock)
+	 */
+	<T> IQueryFilter<T> getLockedByFilter(Class<T> modelClass, ILock lock);
 
 	/**
 	 * Gets existing lock for given owner name

@@ -10,12 +10,12 @@ package org.adempiere.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,9 +49,9 @@ import com.google.common.cache.RemovalNotification;
 
 /**
  * ADempiere service registry.
- * 
+ *
  * @author ts
- * 
+ *
  */
 public class Services
 {
@@ -62,7 +62,7 @@ public class Services
 
 	/**
 	 * Map from "service interface class" to "service implementation constructor"
-	 * 
+	 * <p>
 	 * NOTE:
 	 * <ul>
 	 * <li>the service implementation classes are already intercepted, if it was needed. See {@link #interceptor}.
@@ -129,7 +129,7 @@ public class Services
 	}
 
 	/**
-	 * 
+	 *
 	 * @param serviceInterfaceClass
 	 * @return <ul>
 	 *         <li>if <code>T</code> extends {@link ISingletonService} then this method returns a cached instance of that service implementation
@@ -152,14 +152,14 @@ public class Services
 		}
 		else
 		{
-			final T service = (T)getSingleton(serviceInterfaceClass);
+			final T service = getSingleton(serviceInterfaceClass);
 			return service;
 		}
 	}
 
 	/**
 	 * Create a new instance of given multiton service.
-	 * 
+	 *
 	 * @param multitonServiceClass
 	 * @return multiton service; never returns <code>null</code>
 	 */
@@ -201,7 +201,7 @@ public class Services
 
 			//
 			// Create service implementation instance
-			final T serviceImpl = (T)serviceImplConstructor.newInstance();
+			final T serviceImpl = serviceImplConstructor.newInstance();
 			assertValidServiceImpl(serviceInterfaceClass, serviceImpl);
 
 			//
@@ -260,7 +260,7 @@ public class Services
 
 	/**
 	 * Use this method to find out if a service is available.
-	 * 
+	 *
 	 * @param serviceInterfaceClass
 	 * @return <code>true</code> if the service was previously registered or could be auto-detected.
 	 */
@@ -274,9 +274,9 @@ public class Services
 	/**
 	 * Register a new service class and an implementing instance.
 	 * If there is another implementation already registered, it will be silently replaced with the given implementation.
-	 * 
+	 *
 	 * WARNING: the service implementation WILL NOT be intercepted.
-	 * 
+	 *
 	 * @param serviceInterfaceClass the API class that will later on be used to get the implementation.
 	 * @param serviceImpl an actual instance of a class extending 'clazz'.
 	 * @return the implementation that was previously registered or <code>null</code>.

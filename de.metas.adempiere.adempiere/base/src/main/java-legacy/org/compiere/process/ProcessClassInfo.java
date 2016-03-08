@@ -60,7 +60,7 @@ import de.metas.process.RunOutOfTrx;
 public final class ProcessClassInfo
 {
 	private static final transient CLogger logger = SvrProcess.s_log;
-	
+
 	/**
 	 * @return process class info or {@link #NULL} in case the given <code>processClass</code> is <code>null</code> or in case of failure.
 	 */
@@ -81,7 +81,7 @@ public final class ProcessClassInfo
 		}
 		return ProcessClassInfo.NULL;
 	}
-	
+
 	/**
 	 * @return process class info or {@link #NULL} in case the given <code>processClass</code> is <code>null</code> or in case of failure.
 	 */
@@ -156,11 +156,11 @@ public final class ProcessClassInfo
 	private static final List<ProcessClassParamInfo> createProcessClassParamInfos(final Class<?> processClass)
 	{
 		final Set<Field> paramFields = retrieveParameterFields(processClass);
-		if(paramFields.isEmpty())
+		if (paramFields.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-		
+
 		final List<ProcessClassParamInfo> paramInfos = new ArrayList<>(paramFields.size());
 		for (final Field paramField : paramFields)
 		{
@@ -174,7 +174,7 @@ public final class ProcessClassInfo
 
 		return paramInfos;
 	}
-	
+
 	private static ProcessClassParamInfo createProcessClassParamInfo(final Field paramField)
 	{
 		final Param paramAnn = paramField.getAnnotation(Param.class);
@@ -207,7 +207,7 @@ public final class ProcessClassInfo
 		if (methods.isEmpty())
 		{
 			logger.log(Level.INFO, "Method {0} with return type {1} was not found in {2} or in its inerited types. Ignored.", new Object[] { methodName, returnType, processClass });
-			//throw new IllegalStateException("Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types");
+			// throw new IllegalStateException("Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types");
 			return false;
 		}
 
@@ -296,7 +296,7 @@ public final class ProcessClassInfo
 	{
 		return runDoItOutOfTransaction;
 	}
-	
+
 	public boolean isParameterMandatory(final String parameterName)
 	{
 		for (final ProcessClassParamInfo paramInfo : parameterInfos)
@@ -305,21 +305,21 @@ public final class ProcessClassInfo
 			{
 				continue;
 			}
-			
-			if(paramInfo.isMandatory())
+
+			if (paramInfo.isMandatory())
 			{
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	public List<ProcessClassParamInfo> getParameterInfos()
 	{
 		return parameterInfos;
 	}
-	
+
 	public void loadParameterValues(final Object processInstance, final IRangeAwareParams source)
 	{
 		Check.assumeNotNull(processInstance, "processInstance not null");
@@ -348,8 +348,11 @@ public final class ProcessClassInfo
 			paramInfo.loadParameterValue(processInstance, processField, source);
 		}
 	}
-	
-	/** @return true if a current record needs to be selected when this process is called from gear/window. */
+
+	/**
+	 * @return true if a current record needs to be selected when this process is called from gear/window.
+	 * @see Process annotation
+	 */
 	public boolean isExistingCurrentRecordRequiredWhenCalledFromGear()
 	{
 		return existingCurrentRecordRequiredWhenCalledFromGear;

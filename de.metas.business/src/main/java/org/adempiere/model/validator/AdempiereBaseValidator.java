@@ -22,6 +22,7 @@ package org.adempiere.model.validator;
  * #L%
  */
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
@@ -91,6 +92,9 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(new org.compiere.wf.model.validator.AD_Workflow(), client);
 
+		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass(), client); // 04599
+		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type(), client); // 04599
+
 		//
 		// Currency
 		{
@@ -120,6 +124,12 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// Task 09548
 		engine.addModelValidator(de.metas.inout.model.validator.M_InOutLine.INSTANCE, client);
 
+	}
+
+	@Override
+	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
+	{
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type());
 	}
 
 	@Override

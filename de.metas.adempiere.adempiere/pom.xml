@@ -15,7 +15,6 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>jbossfacet</module>
 		<module>tools</module>
 		<module>base</module>
 		<module>serverRoot</module>

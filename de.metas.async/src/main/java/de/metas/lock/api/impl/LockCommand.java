@@ -55,11 +55,13 @@ import de.metas.lock.spi.ILockDatabase;
 	private LockOwner owner = null;
 	private Boolean _autoCleanup = null;
 	private static final boolean DEFAULT_AutoCleanup = true;
-	private boolean failIfAlreadyLocked = true;
+	private boolean failIfAlreadyLocked = DEFAULT_FailIfNothingLocked;
 
 	private final LockRecords _recordsToLock = new LockRecords();
 
 	private AllowAdditionalLocks _allowAdditionalLocks;
+
+	private boolean failIfNothingLocked;
 
 	LockCommand(final ILockDatabase lockDatabase)
 	{
@@ -201,6 +203,19 @@ import de.metas.lock.spi.ILockDatabase;
 	public final boolean isFailIfAlreadyLocked()
 	{
 		return failIfAlreadyLocked;
+	}
+	
+	@Override
+	public ILockCommand setFailIfNothingLocked(final boolean failIfNothingLocked)
+	{
+		this.failIfNothingLocked = failIfNothingLocked;
+		return this;
+	}
+
+	@Override
+	public boolean isFailIfNothingLocked()
+	{
+		return failIfNothingLocked;
 	}
 
 	@Override

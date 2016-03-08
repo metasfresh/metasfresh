@@ -1,4 +1,0 @@
-org.compiere.client
-org.compiere.session
-org.compiere.server
-org.compiere.web

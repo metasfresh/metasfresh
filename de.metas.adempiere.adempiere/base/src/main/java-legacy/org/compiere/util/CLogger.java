@@ -118,6 +118,14 @@ public class CLogger extends Logger implements Serializable
 		return LOGGERNAME_MODULE_PREFIX + moduleName.trim();
 	}
 	
+	public static final String createModuleLoggerNameForPackage(final Class<?> packageClass)
+	{
+		Check.assumeNotNull(packageClass, "packageClass not null");
+		final String moduleName = packageClass.getPackage().getName();
+		return createModuleLoggerName(moduleName);
+	}
+
+	
 	/**
 	 * Get default Adempiere Logger.
 	 * Need to be used in serialized objects

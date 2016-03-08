@@ -41,18 +41,18 @@ import de.metas.adempiere.form.IClientUI;
 /**
  *	Session Model.
  *	Maintained in AMenu.
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MSession.java,v 1.3 2006/07/30 00:58:05 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- * 			<li>BF [ 1810182 ] Session lost after cache reset 
- * 			<li>BF [ 1892156 ] MSession is not really cached 
+ * 			<li>BF [ 1810182 ] Session lost after cache reset
+ * 			<li>BF [ 1892156 ] MSession is not really cached
  */
 public class MSession extends X_AD_Session
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 480745219310430126L;
 
@@ -77,7 +77,7 @@ public class MSession extends X_AD_Session
 				AD_Session_ID = session.getAD_Session_ID();
 				s_sessions.put(AD_Session_ID, session);
 			}
-		}	
+		}
 		return session;
 	}	//	get
 
@@ -86,39 +86,39 @@ public class MSession extends X_AD_Session
 	{
 		return get(ctx, AD_Session_ID, false);
 	}
-	
+
 	private static MSession get(Properties ctx, int AD_Session_ID, boolean updateCtx)
 	{
 		if (AD_Session_ID <= 0)
 		{
 			return null;
 		}
-		
+
 		MSession session = getFromCache(ctx, AD_Session_ID);
-		
+
 		// Try to load
 		if (session == null)
 		{
 			session = new MSession(ctx, AD_Session_ID, ITrx.TRXNAME_None);
 			if (session.getAD_Session_ID() != AD_Session_ID)
 			{
-				// no session found for given AD_Session_ID, a warning shall be already logged 
+				// no session found for given AD_Session_ID, a warning shall be already logged
 				return null;
 			}
 			s_sessions.put(AD_Session_ID, session);
 		}
-		
+
 		// Update context
 		if (updateCtx)
 		{
 			session.updateContext(true); // force=true
 		}
 
-		
+
 		return session;
 	}
 	// end of t.schoeneberg@metas.de, task 03132
-	
+
 	/**
 	 * 	Get existing or create remote session
 	 *	@param ctx context
@@ -137,17 +137,17 @@ public class MSession extends X_AD_Session
 			session.save();
 			session.updateContext(true); // force=true
 			s_sessions.put(AD_Session_ID, session);
-		}	
+		}
 		return session;
 	}	//	get
-	
+
 	private static final MSession getFromCache(Properties ctx, int AD_Session_ID)
 	{
 		if (AD_Session_ID <= 0)
 		{
 			return null;
 		}
-		
+
 		final MSession session = s_sessions.get(AD_Session_ID);
 		if (session == null)
 		{
@@ -168,16 +168,16 @@ public class MSession extends X_AD_Session
 			// we must check this because else we can corrupt other's context
 			return null;
 		}
-		
+
 		return session;
 	}
 
 	/**	Sessions					*/
-	private static CCache<Integer, MSession> s_sessions = Ini.isClient() 
-		? new CCache<Integer, MSession>("AD_Session_ID", 1, 0)		//	one client session 
-		: new CCache<Integer, MSession>("AD_Session_ID", 30, 0);	//	no time-out	
-	
-	
+	private static CCache<Integer, MSession> s_sessions = Ini.isClient()
+		? new CCache<Integer, MSession>("AD_Session_ID", 1, 0)		//	one client session
+		: new CCache<Integer, MSession>("AD_Session_ID", 30, 0);	//	no time-out
+
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -190,10 +190,10 @@ public class MSession extends X_AD_Session
 		if (AD_Session_ID == 0)
 		{
 			setProcessed (false);
-			
+
 			//
 			// Set Client Info if available - 04442
-			if ((Ini.isClient() || Ini.isWebStartClient())  // task 08569: only try it if we are running in any client mode
+			if ((Ini.isClient())  // task 08569: only try it if we are running in any client mode
 					&& Services.isAvailable(IClientUI.class))
 			{
 				setClient_Info(Services.get(IClientUI.class).getClientInfo());
@@ -264,7 +264,7 @@ public class MSession extends X_AD_Session
 
 	/**	Web Store Session		*/
 	private boolean		m_webStoreSession = false;
-	
+
 	/**
 	 * 	Is it a Web Store Session
 	 *	@return Returns true if Web Store Session.
@@ -273,7 +273,7 @@ public class MSession extends X_AD_Session
 	{
 		return m_webStoreSession;
 	}	//	isWebStoreSession
-	
+
 	/**
 	 * 	Set Web Store Session
 	 *	@param webStoreSession The webStoreSession to set.
@@ -282,7 +282,7 @@ public class MSession extends X_AD_Session
 	{
 		m_webStoreSession = webStoreSession;
 	}	//	setWebStoreSession
-	
+
 	/**
 	 * 	String Representation
 	 *	@return info
@@ -300,7 +300,7 @@ public class MSession extends X_AD_Session
 			sb.append(",").append(s);
 		if (m_webStoreSession)
 			sb.append(",WebStoreSession");
-		
+
 		// metas: display also exported attributes
 		for (int i = 0, cols = get_ColumnCount(); i < cols; i++)
 		{
@@ -316,9 +316,9 @@ public class MSession extends X_AD_Session
 		{
 			sb.append(",trxName=" + get_TrxName());
 		}
-		
+
 		sb.append(",Processed=" + isProcessed());
-		
+
 		sb.append("]");
 		return sb.toString();
 	}	//	toString
@@ -335,12 +335,12 @@ public class MSession extends X_AD_Session
 		{
 			ModelValidationEngine.get().fireBeforeLogout(this);
 		}
-				
+
 		setProcessed(true);
 		save();
 		s_sessions.remove(new Integer(getAD_Session_ID()));
 		log.info(TimeUtil.formatElapsed(getCreated(), getUpdated()));
-		
+
 		// Fire AfterLogout event only if current session was closed right now
 		if (!processedOld && isProcessed())
 		{
@@ -406,7 +406,7 @@ public class MSession extends X_AD_Session
 				+ ": " + OldValue + " -> " + NewValue);
 		try
 		{
-			MChangeLog cl = new MChangeLog(getCtx(), 
+			MChangeLog cl = new MChangeLog(getCtx(),
 				AD_ChangeLog_ID, TrxName, getAD_Session_ID(),
 				AD_Table_ID, AD_Column_ID, Record_ID, AD_Client_ID, AD_Org_ID,
 				OldValue, NewValue, event);
@@ -425,9 +425,9 @@ public class MSession extends X_AD_Session
 			+ ", AD_Table_ID=" + AD_Table_ID + ", AD_Column_ID=" + AD_Column_ID);
 		return null;
 	}	//	changeLog
-	
+
 	public void logMigration(PO po, POInfo pinfo, String event)
-	{	
+	{
 		Services.get(IMigrationLogger.class).logMigration(this, po, pinfo, event);
 	}
 
@@ -441,7 +441,7 @@ public class MSession extends X_AD_Session
 	{
 		set_ValueNoCheck(COLUMNNAME_CreatedBy, AD_User_ID);
 	}
-	
+
 	/**
 	 * @return Logged in user (i.e. CreatedBy)
 	 */
@@ -450,17 +450,17 @@ public class MSession extends X_AD_Session
 	{
 		return getCreatedBy();
 	}
-	
-	
+
+
 	public static final String CTX_Prefix = "#AD_Session.";
 
 	/**
 	 * Export attributes from session to context.
-	 * 
+	 *
 	 * Used context prefix is {@link #CTX_Prefix}.
-	 * 
+	 *
 	 * Attributes that will be exported to context are: String with FieldLength <= 60.
-	 * 
+	 *
 	 * @param force if true, update even if current AD_Session_ID from context differs from this one.
 	 * @return true if context was updated
 	 */
@@ -472,22 +472,22 @@ public class MSession extends X_AD_Session
 			log.log(Level.WARNING, "Cannot update context because session is not saved yet");
 			return false;
 		}
-		
+
 		if (!isActive())
 		{
 			log.log(Level.FINE, "Cannot update context because session is not active");
 			return false;
 		}
-		
+
 		if (isProcessed())
 		{
 			log.log(Level.FINE, "Cannot update context because session is processed");
 			return false;
 		}
 
-		
+
 		final Properties ctx = getCtx();
-		
+
 		//
 		// If not force, update the context only if the context #AD_Session_ID is same as our session ID.
 		// Even if there is no value in context, the session won't be updated.
@@ -500,7 +500,7 @@ public class MSession extends X_AD_Session
 		}
 
 		Env.setContext(ctx, Env.CTXNAME_AD_Session_ID, sessionId);
-		
+
 		final int cols = get_ColumnCount();
 		for (int i = 0; i < cols; i++)
 		{
@@ -512,17 +512,17 @@ public class MSession extends X_AD_Session
 			final String value = get_ValueAsString(columnName);
 			Env.setContext(ctx, CTX_Prefix + columnName, value);
 		}
-		
+
 		return true;
 	}
-	
+
 	private boolean isContextAttribute(final int columnIndex)
 	{
 		if (columnIndex < 0)
 		{
 			return false;
 		}
-		
+
 		final List<String> ignoredColumnNames = Arrays.asList(
 				COLUMNNAME_AD_Session_ID // this one will be exported particularly
 				, COLUMNNAME_AD_Client_ID
@@ -536,25 +536,25 @@ public class MSession extends X_AD_Session
 				, COLUMNNAME_Remote_Addr
 				, COLUMNNAME_Remote_Host
 				, COLUMNNAME_WebSession);
-		
+
 		final String columnName = get_ColumnName(columnIndex);
 		if(columnName == null)
 		{
 			return false;
 		}
-		
+
 		if(ignoredColumnNames.contains(columnName))
 		{
 			return false;
 		}
-		
+
 		final POInfo poInfo = getPOInfo();
 		final int displayType = poInfo.getColumnDisplayType(columnIndex);
 		if (displayType == DisplayType.String)
 		{
 			return poInfo.getFieldLength(columnIndex) <= 60;
 		}
-		
+
 		return true;
 	}
 
@@ -565,13 +565,13 @@ public class MSession extends X_AD_Session
 		{
 			return false;
 		}
-		
+
 		// Update context only if it's for same session
 		updateContext(false);
-		
+
 		return true;
 	}
-	
-	
+
+
 }	//	MSession
 

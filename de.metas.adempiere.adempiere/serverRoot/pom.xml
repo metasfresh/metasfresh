@@ -18,7 +18,6 @@
 	<modules>
 		<module>de.metas.adempiere.adempiere.serverRoot.base</module>
 		<module>de.metas.adempiere.adempiere.serverRoot.webui</module>
-		<module>de.metas.adempiere.adempiere.serverRoot.ejb</module>
 	</modules>
 
 

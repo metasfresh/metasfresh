@@ -61,15 +61,15 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
     }
 
 	@Override
-	public org.adempiere.appdict.model.I_AD_JavaClass getAD_JavaClass() throws RuntimeException
+	public de.metas.javaclasses.model.I_AD_JavaClass getAD_JavaClass() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_AD_JavaClass_ID, org.adempiere.appdict.model.I_AD_JavaClass.class);
+		return get_ValueAsPO(COLUMNNAME_AD_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class);
 	}
 
 	@Override
-	public void setAD_JavaClass(org.adempiere.appdict.model.I_AD_JavaClass AD_JavaClass)
+	public void setAD_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass AD_JavaClass)
 	{
-		set_ValueFromPO(COLUMNNAME_AD_JavaClass_ID, org.adempiere.appdict.model.I_AD_JavaClass.class, AD_JavaClass);
+		set_ValueFromPO(COLUMNNAME_AD_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class, AD_JavaClass);
 	}
 
 	/** Set AD_JavaClass.

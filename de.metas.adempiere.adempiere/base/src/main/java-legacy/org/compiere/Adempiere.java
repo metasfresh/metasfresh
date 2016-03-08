@@ -24,9 +24,6 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import javax.jnlp.BasicService;
-import javax.jnlp.ServiceManager;
-import javax.jnlp.UnavailableServiceException;
 import javax.swing.ImageIcon;
 
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
@@ -71,10 +68,10 @@ import de.metas.adempiere.util.cache.CacheInterceptor;
 
 /**
  * Adempiere Control Class
- * 
+ *
  * @author Jorg Janke
  * @version $Id: Adempiere.java,v 1.8 2006/08/11 02:58:14 jjanke Exp $
- * 
+ *
  */
 public final class Adempiere
 {
@@ -116,7 +113,7 @@ public final class Adempiere
 	/** Product logo name (large) */
 	private static String _productLogoLargeName = null;
 	private static Image _productLogoLargeImage = null;
-	
+
 	//
 	// Product License
 	private static String _productLicenseURL = null;
@@ -237,7 +234,7 @@ public final class Adempiere
 
 	/**
 	 * Get Product Version
-	 * 
+	 *
 	 * @return Application Version
 	 */
 	public static String getVersion()
@@ -248,7 +245,7 @@ public final class Adempiere
 	/**
 	 * Summary (Windows). Adempiere(tm) Version 2.5.1a_2004-03-15 - Smart ERP & CRM - Copyright (c) 1999-2005 Jorg Janke; Implementation: 2.5.1a 20040417-0243 - (C) 1999-2005 Jorg Janke, Adempiere
 	 * Inc. USA
-	 * 
+	 *
 	 * @return Summary in Windows character set
 	 */
 	public static String getSummary()
@@ -283,7 +280,7 @@ public final class Adempiere
 
 	/**
 	 * Get Jar Implementation Version
-	 * 
+	 *
 	 * @return Implementation-Version
 	 */
 	public static String getImplementationVersion()
@@ -295,7 +292,7 @@ public final class Adempiere
 
 	/**
 	 * Get Jar Implementation Vendor
-	 * 
+	 *
 	 * @return Implementation-Vendor
 	 */
 	public static String getImplementationVendor()
@@ -307,7 +304,7 @@ public final class Adempiere
 
 	/**
 	 * Get Checksum
-	 * 
+	 *
 	 * @return checksum
 	 */
 	public static int getCheckSum()
@@ -319,7 +316,7 @@ public final class Adempiere
 
 	/**
 	 * Summary in ASCII
-	 * 
+	 *
 	 * @return Summary in ASCII
 	 */
 	public static String getSummaryAscii()
@@ -339,7 +336,7 @@ public final class Adempiere
 
 	/**
 	 * Get Java VM Info
-	 * 
+	 *
 	 * @return VM info (e.g. Java HotSpot(TM) 64-Bit Server VM 1.7.0_21/23.21-b01)
 	 */
 	public static String getJavaInfo()
@@ -352,7 +349,7 @@ public final class Adempiere
 
 	/**
 	 * Get Operating System Info
-	 * 
+	 *
 	 * @return OS info (e.g. Windows 7 6.1 Service Pack 1)
 	 */
 	public static String getOSInfo()
@@ -384,7 +381,7 @@ public final class Adempiere
 		}
 		return _productIconSmall;
 	}
-	
+
 	/** @return product's logo (large, high resolution) */
 	public static Image getProductLogoLarge()
 	{
@@ -398,7 +395,7 @@ public final class Adempiere
 		}
 		return _productLogoLargeImage;
 	}   // getImageLogoSmall
-	
+
 	/** @return product large logo resource URL */
 	public static URL getProductLogoLargeURL()
 	{
@@ -433,12 +430,12 @@ public final class Adempiere
 		}
 		return _productLogoSmallImageIcon;
 	}   // getImageIconLogo
-	
+
 	public static String getProductLicenseURL()
 	{
 		return _productLicenseURL;
 	}
-	
+
 	public static String getProductLicenseResourceName()
 	{
 		return _productLicenseResourceName;
@@ -446,7 +443,7 @@ public final class Adempiere
 
 	/**
 	 * Get default (Home) directory
-	 * 
+	 *
 	 * @return Home directory
 	 */
 	public static String getAdempiereHome()
@@ -456,53 +453,13 @@ public final class Adempiere
 
 	/**
 	 * Get Support Email
-	 * 
+	 *
 	 * @return Support mail address
 	 */
 	public static String getSupportEMail()
 	{
 		return _supportEmail;
 	}   // getSupportEMail
-
-	/**
-	 * Get JNLP CodeBase
-	 * 
-	 * @return code base or null
-	 */
-	public static URL getCodeBase()
-	{
-		try
-		{
-			BasicService bs = (BasicService)ServiceManager.lookup("javax.jnlp.BasicService");
-			URL url = bs.getCodeBase();
-			return url;
-		}
-		catch (UnavailableServiceException ue)
-		{
-			return null;
-		}
-	}	// getCodeBase
-
-	/**
-	 * @return True if client is started using web start
-	 */
-	public static boolean isWebStartClient()
-	{
-		return getCodeBase() != null;
-	}
-
-	/**
-	 * Get JNLP CodeBase Host
-	 * 
-	 * @return code base or null
-	 */
-	public static String getCodeBaseHost()
-	{
-		URL url = getCodeBase();
-		if (url == null)
-			return null;
-		return url.getHost();
-	}	// getCodeBase
 
 	/**
 	 * Set to true if startup() was successfully executed.
@@ -518,7 +475,7 @@ public final class Adempiere
 	 * <li>"UniTestMode" mode is not a runmode because the system can be unit tested beeing in every run mode</li>
 	 * <li>This concept might be refined further (e.g. multiple runmodes), and might be combined with the functionality of {@link ModelValidationEngine#CTX_InitEntityTypes}</li>
 	 * </ul>
-	 * 
+	 *
 	 * @task 04585
 	 * @see Ini#getRunMode()
 	 */
@@ -544,7 +501,7 @@ public final class Adempiere
 	/*************************************************************************
 	 * Startup Client/Server. - Print greeting, - Check Java version and - load ini parameters If it is a client, load/set PLAF and exit if error. If Client, you need to call startupEnvironment
 	 * explicitly! For testing call method startupEnvironment
-	 * 
+	 *
 	 * @param isClient true for client
 	 * @return successful startup
 	 * @deprecated use {@link #startup(RunMode)}
@@ -557,7 +514,7 @@ public final class Adempiere
 
 	/**
 	 * Immediately returns if the member <code>started</code> is already true. Also calls {@link #startupEnvironment(RunMode)}, <b>unless the given runMode is {@link RunMode#SWING_CLIENT}</b>
-	 * 
+	 *
 	 * @param runMode
 	 * @return
 	 */
@@ -637,7 +594,7 @@ public final class Adempiere
 
 		MLanguage.setBaseLanguage(); // metas
 
-		startAddOns(); // metas
+		// startAddOns(); // metas
 
 		// if (isClient) // don't test connection
 		// return false; // need to call
@@ -658,7 +615,7 @@ public final class Adempiere
 
 	/**
 	 * Startup Adempiere Environment. Automatically called for Server connections For testing call this method.
-	 * 
+	 *
 	 * @param isSwingClient true if client connection
 	 * @return successful startup
 	 * @deprecated pls use {@link #startup(RunMode)} instead
@@ -763,11 +720,13 @@ public final class Adempiere
 
 	/**
 	 * Main Method
-	 * 
+	 *
 	 * @param args optional start class
 	 */
 	public static void main(String[] args)
 	{
+		startAddOns();
+
 		//
 		// Make sure first thing that we do is to initialize ADempiere.
 		// Mainly because we want to have the ContextProvider correctly setup. (task 08859).
@@ -827,7 +786,7 @@ public final class Adempiere
 		final Boolean enabled = zkWebUIServerEnabledSupplier.get();
 		return enabled != null && enabled.booleanValue();
 	}
-	
+
 	private static final Supplier<Boolean> zkWebUIServerEnabledSupplier = Suppliers.memoize(new Supplier<Boolean>()
 	{
 		@Override
@@ -837,7 +796,7 @@ public final class Adempiere
 			{
 				return false;
 			}
-			
+
 			try
 			{
 				Thread.currentThread().getContextClassLoader()
@@ -848,9 +807,9 @@ public final class Adempiere
 			{
 				// ignore any exception
 			}
-			
+
 			return false;
 		}
 	});
-	
+
 }	// Adempiere

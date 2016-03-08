@@ -85,11 +85,15 @@ class CConnectionDialog extends CDialog implements ActionListener
 
 	/** Resources							*/
 	private static final transient ResourceBundle res = ResourceBundle.getBundle("org.compiere.db.DBRes");
-	
+
 	/**	 Default HTTP Port					*/
-	public static final String	APPS_PORT_HTTP = "80";
+	//public static final String	APPS_PORT_HTTP = "80";
 	/** Default RMI Port					*/
-	public static final String	APPS_PORT_JNP = "1099";
+	//public static final String	APPS_PORT_JNP = "1099";
+	/** Default RMI Port					*/
+	public static final String	APPS_PORT_JMS = "61616";
+
+
 	/** Connection							*/
 	private CConnection 	m_cc = null;
 	private CConnection 	m_ccResult = null;
@@ -144,7 +148,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 	{
 		this.setTitle(res.getString("CConnectionDialog"));
 		this.setIconImage(Images.getImage2("Database16"));
-		
+
 		mainPanel.setLayout(mainLayout);
 		southPanel.setLayout(southLayout);
 		southLayout.setAlignment(FlowLayout.RIGHT);
@@ -191,7 +195,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
 		centerPanel.add(appsHostField, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0
 			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
-		
+
 		centerPanel.add(appsPortLabel, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0
 			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
 		centerPanel.add(appsPortField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0
@@ -256,7 +260,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 		bTestDB.addActionListener(this);
 		bOK.addActionListener(this);
 		bCancel.addActionListener(this);
-		
+
 		//	Server
 		if (!Ini.isClient())
 		{
@@ -296,7 +300,8 @@ class CConnectionDialog extends CDialog implements ActionListener
 			m_cc.setName();
 		}
 		//	Should copy values
-		try {
+		try
+		{
 			m_ccResult = (CConnection)m_cc.clone();
 		} catch (CloneNotSupportedException e) {
 			// should not happen
@@ -305,9 +310,13 @@ class CConnectionDialog extends CDialog implements ActionListener
 		//
 		String type = m_cc.getType();
 		if (type == null || type.length() == 0)
+		{
 			dbTypeField.setSelectedItem(null);
+		}
 		else
+		{
 			m_cc.setType(m_cc.getType());   //  sets defaults
+		}
 		updateInfo();
 	}   //  setConnection
 
@@ -334,7 +343,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 		if (src == bOK)
 		{
 			updateCConnection();
-			m_cc.setName();			
+			m_cc.setName();
 			m_ccResult = m_cc;
 			dispose();
 			isCancel = false;
@@ -384,9 +393,13 @@ class CConnectionDialog extends CDialog implements ActionListener
 		{
 			//hengsin: avoid unnecessary requery of application server status
 			if (!appsHostField.getText().equals(m_cc.getAppsHost()))
+			{
 				m_cc.setAppsHost(appsHostField.getText());
+			}
 			if (!appsPortField.getText().equals(Integer.toString(m_cc.getAppsPort())))
+			{
 				m_cc.setAppsPort(appsPortField.getText());
+			}
 		}
 		else
 			m_cc.setAppsHost("localhost");
@@ -412,9 +425,15 @@ class CConnectionDialog extends CDialog implements ActionListener
 		try
 		{
 			nameField.setText(m_cc.getName());
+
+			final boolean appsEnabled = !CConnection.isServerEmbedded(); // editing those fields makes no sense when we run in embedded-server-mode
+			appsHostField.setReadWrite(appsEnabled);
 			appsHostField.setText(m_cc.getAppsHost());
+
+			appsPortField.setReadWrite(appsEnabled);
 			appsPortField.setText(String.valueOf(m_cc.getAppsPort()));
-			//
+
+			bTestApps.setReadWrite(appsEnabled);
 			bTestApps.setIcon(getStatusIcon(m_cc.isAppsServerOK(false)));
 			// bTestApps.setToolTipText(m_cc.getRmiUri());
 

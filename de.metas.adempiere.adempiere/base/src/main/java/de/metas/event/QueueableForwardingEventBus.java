@@ -142,6 +142,19 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 		return this;
 	}
 
+	/**
+	 * Start queuing events until current transaction is committed.
+	 * 
+	 * When transaction is committed, all queued events will be flushed and queuing disabled.
+	 *
+	 * @see #queueEventsUntilTrxCommit(String)
+	 */
+	@OverridingMethodsMustInvokeSuper
+	public QueueableForwardingEventBus queueEventsUntilCurrentTrxCommit()
+	{
+		return queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited);
+	}
+
 	private final void clearQueuedEvents()
 	{
 		queuedEvents.clear();

@@ -61,7 +61,6 @@ import org.compiere.apps.form.FormFrame;
 import org.compiere.db.CConnection;
 import org.compiere.grid.ed.Calculator;
 import org.compiere.grid.ed.Calendar;
-import org.compiere.interfaces.Server;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.MQuery;
@@ -77,6 +76,7 @@ import org.compiere.util.Ini;
 import org.compiere.util.Splash;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
+import de.metas.session.jaxrs.IServerService;
 
 /**
  * Windows Application Environment and utilities
@@ -329,7 +329,7 @@ public final class AEnv
 		final Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(config);
 		final int width = screenSize.width - screenInsets.left - screenInsets.right;
 		final int height = screenSize.height - screenInsets.top - screenInsets.bottom;
-		
+
 		window.setMaximumSize(new Dimension(width, height));
 	}
 
@@ -471,9 +471,9 @@ public final class AEnv
 		{
 			icon = Images.getImageIcon2(defaultIconName + "16");
 		}
-		
+
 		final String text = Services.get(IMsgBL.class).getMsg(Env.getCtx(), actionName);
-		
+
 		final CMenuItem mi = new CMenuItem(text, icon);
 		mi.setActionCommand(actionName);
 		if (ks != null)
@@ -956,8 +956,7 @@ public final class AEnv
 
 	/** Server Re-tries */
 	private static int s_serverTries = 0;
-	/** Server Session */
-	private static Server s_server = null;
+
 	/** Logger */
 	private static final transient CLogger log = CLogger.getCLogger(AEnv.class);
 
@@ -968,7 +967,7 @@ public final class AEnv
 	 */
 	public static boolean isServerActive()
 	{
-		final boolean contactAgain = s_server == null && s_serverTries == 0;
+		final boolean contactAgain = s_serverTries == 0;
 		boolean ok = CConnection.get().isAppsServerOK(contactAgain);
 		if (ok)
 		{
@@ -995,7 +994,6 @@ public final class AEnv
 		catch (final Exception ex)
 		{
 			ok = false;
-			s_server = null;
 		}
 		finally
 		{
@@ -1077,9 +1075,9 @@ public final class AEnv
 
 	/**
 	 * Post Immediate.
-	 * 
+	 *
 	 * If there is any error, an error dialog will be displayed to user.
-	 * 
+	 *
 	 * Always use this method when you want to post a document from UI and you want to give instant feedback to user.
 	 *
 	 * @param WindowNo window
@@ -1128,16 +1126,12 @@ public final class AEnv
 			log.config("trying server");
 			try
 			{
-				final Server server = CConnection.get().getServer();
-				if (server != null)
-				{
-					server.cacheReset(tableName, Record_ID);
-				}
+				final IServerService server = Services.get(IServerService.class);
+				server.cacheReset(tableName, Record_ID);
 			}
 			catch (final Exception e)
 			{
 				log.log(Level.SEVERE, "ex", e);
-				s_server = null;
 			}
 		}
 	}   // cacheReset
@@ -1189,7 +1183,7 @@ public final class AEnv
 	}
 
 	/**
-	 * 
+	 *
 	 * @param comp
 	 * @param parentType
 	 * @return parent component which implements given type

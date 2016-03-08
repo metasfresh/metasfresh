@@ -22,12 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -37,12 +32,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.jnlp.BasicService;
-import javax.jnlp.FileContents;
-import javax.jnlp.PersistenceService;
-import javax.jnlp.ServiceManager;
-import javax.jnlp.UnavailableServiceException;
 
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.MetasFreshTheme;
@@ -57,16 +46,16 @@ import com.google.common.collect.ImmutableSet;
  * Load & Save INI Settings from property file
  * Initiated in Adempiere.startup
  * Settings activated in ALogin.getIni
- * 
+ *
  * @author Jorg Janke
  * @version $Id$
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro <li>FR [ 1658127 ] Select charset encoding on import <li>FR [ 2406123 ] Ini.saveProperties fails if target directory does not exist
  */
 public final class Ini implements Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 3666529972922769528L;
 
@@ -186,7 +175,7 @@ public final class Ini implements Serializable
 
 	/** Open new windows as maximized **/
 	public static final String P_OPEN_WINDOW_MAXIMIZED = "OpenWindowMaximized";
-	
+
 	// task 09355: Open everything as maximized from the beginning
 	public static final boolean DEFAULT_OPEN_WINDOW_MAXIMIZED = true;
 	//
@@ -285,7 +274,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Save INI parameters to disk
-	 * 
+	 *
 	 * @param tryUserHome get user home first
 	 */
 	public static void saveProperties(boolean tryUserHome)
@@ -296,192 +285,40 @@ public final class Ini implements Serializable
 			ModelValidationEngine.get().beforeSaveProperties();
 		}
 
-		if (isWebStartClient())
+		String fileName = getFileName(tryUserHome);
+		FileOutputStream fos = null;
+		try
 		{
-			saveWebStartProperties();
+			File f = new File(fileName);
+			f.getParentFile().mkdirs(); // Create all dirs if not exist - teo_sarca FR [ 2406123 ]
+			fos = new FileOutputStream(f);
+			s_prop.store(fos, "Adempiere");
+			fos.flush();
+			fos.close();
 		}
-		else
+		catch (Exception e)
 		{
-			String fileName = getFileName(tryUserHome);
-			FileOutputStream fos = null;
-			try
-			{
-				File f = new File(fileName);
-				f.getParentFile().mkdirs(); // Create all dirs if not exist - teo_sarca FR [ 2406123 ]
-				fos = new FileOutputStream(f);
-				s_prop.store(fos, "Adempiere");
-				fos.flush();
-				fos.close();
-			}
-			catch (Exception e)
-			{
-				log.log(Level.SEVERE, "Cannot save Properties to " + fileName + " - " + e.toString());
-				return;
-			}
-			catch (Throwable t)
-			{
-				log.log(Level.SEVERE, "Cannot save Properties to " + fileName + " - " + t.toString());
-				return;
-			}
-			log.finer(fileName);
+			log.log(Level.SEVERE, "Cannot save Properties to " + fileName + " - " + e.toString());
+			return;
 		}
+		catch (Throwable t)
+		{
+			log.log(Level.SEVERE, "Cannot save Properties to " + fileName + " - " + t.toString());
+			return;
+		}
+		log.finer(fileName);
+
 	}	// save
 
 	/**
 	 * Load INI parameters from disk
-	 * 
+	 *
 	 * @param reload reload
 	 */
 	public static void loadProperties(boolean reload)
 	{
-		if (reload || s_prop.size() == 0)
-		{
-			if (isWebStartClient())
-			{
-				loadWebStartProperties();
-			}
-			else
-			{
-				loadProperties(getFileName(isClient()));
-			}
-		}
+		loadProperties(getFileName(isClient()));
 	}	// loadProperties
-
-	private static boolean loadWebStartProperties()
-	{
-		boolean loadOK = true;
-		boolean firstTime = false;
-		s_prop = new Properties();
-
-		PersistenceService ps;
-
-		try
-		{
-			ps = (PersistenceService)ServiceManager.lookup("javax.jnlp.PersistenceService");
-		}
-		catch (UnavailableServiceException e)
-		{
-			ps = null;
-			log.log(Level.SEVERE, e.toString());
-			return false;
-		}
-
-		FileContents fc = null;
-		try
-		{
-			fc = ps.get(getCodeBase());
-		}
-		catch (MalformedURLException e)
-		{
-			log.log(Level.SEVERE, e.toString());
-			return false;
-		}
-		catch (FileNotFoundException e)
-		{
-			try
-			{
-				ps.create(getCodeBase(), 16 * 1024);
-				ps.setTag(getCodeBase(), PersistenceService.DIRTY);
-				fc = ps.get(getCodeBase());
-			}
-			catch (Exception e1)
-			{
-
-			}
-		}
-		catch (IOException e)
-		{
-			log.log(Level.SEVERE, e.toString());
-			return false;
-		}
-
-		try
-		{
-			InputStream is = fc.getInputStream();
-			s_prop.load(is);
-			is.close();
-		}
-		catch (Throwable t)
-		{
-			log.log(Level.SEVERE, t.toString());
-			loadOK = false;
-		}
-		if (!loadOK || s_prop.getProperty(P_TODAY, "").equals(""))
-		{
-			firstTime = true;
-			if (isShowLicenseDialog())
-				if (!IniDialog.accept())
-					System.exit(-1);
-		}
-
-		checkProperties();
-
-		// Save if not exist or could not be read
-		if (!loadOK || firstTime)
-			saveWebStartProperties();
-		s_loaded = true;
-		s_propertyFileName = getCodeBase().toString();
-
-		return firstTime;
-
-	}
-
-	private static void saveWebStartProperties()
-	{
-		PersistenceService ps;
-
-		try
-		{
-			ps = (PersistenceService)ServiceManager.lookup("javax.jnlp.PersistenceService");
-		}
-		catch (UnavailableServiceException e)
-		{
-			ps = null;
-			log.log(Level.SEVERE, e.toString());
-			return;
-		}
-
-		try
-		{
-			OutputStream os = ps.get(getCodeBase()).getOutputStream(true);
-			s_prop.store(os, "Adempiere");
-			os.flush();
-			os.close();
-		}
-		catch (Throwable t)
-		{
-			log.log(Level.SEVERE, "Cannot save Properties to " + getCodeBase() + " - " + t.toString());
-			return;
-		}
-
-	}
-
-	/**
-	 * Get JNLP CodeBase
-	 *
-	 * @return code base or null
-	 */
-	public static URL getCodeBase()
-	{
-		try
-		{
-			BasicService bs = (BasicService)ServiceManager.lookup("javax.jnlp.BasicService");
-			URL url = bs.getCodeBase();
-			return url;
-		}
-		catch (UnavailableServiceException ue)
-		{
-			return null;
-		}
-	}	// getCodeBase
-
-	/**
-	 * @return True if client is started using web start
-	 */
-	public static boolean isWebStartClient()
-	{
-		return getCodeBase() != null;
-	}
 
 	/**
 	 * Load INI parameters from filename.
@@ -617,17 +454,17 @@ public final class Ini implements Serializable
 
 	/**
 	 * Return File Name of INI file
-	 * 
+	 *
 	 * <pre>
 	 *  Examples:
 	 *     C:\WinNT\Profiles\jjanke\Adempiere.properties
 	 *      D:\Adempiere\Adempiere.properties
 	 *      Adempiere.properties
 	 * </pre>
-	 * 
+	 *
 	 * Can be overwritten by -DPropertyFile=myFile allowing multiple
 	 * configurations / property files.
-	 * 
+	 *
 	 * @param tryUserHome get user home first
 	 * @return file name
 	 */
@@ -651,7 +488,7 @@ public final class Ini implements Serializable
 
 	/**************************************************************************
 	 * Set Property
-	 * 
+	 *
 	 * @param key Key
 	 * @param value Value
 	 */
@@ -692,7 +529,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Set Property
-	 * 
+	 *
 	 * @param key Key
 	 * @param value Value
 	 */
@@ -703,7 +540,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Set Property
-	 * 
+	 *
 	 * @param key Key
 	 * @param value Value
 	 */
@@ -714,7 +551,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Get Property
-	 * 
+	 *
 	 * @param key Key
 	 * @return Value
 	 */
@@ -743,7 +580,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Get Property as Boolean
-	 * 
+	 *
 	 * @param key Key
 	 * @return Value
 	 */
@@ -774,7 +611,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * toString
-	 * 
+	 *
 	 * @return String representation
 	 */
 	public static String getAsString()
@@ -800,7 +637,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Internal run mode marker. Note that the inital setting is equivalent to the old initialization of <code>s_client = true</code>
-	 * 
+	 *
 	 * @task 04585
 	 */
 	private static RunMode s_runMode = RunMode.SWING_CLIENT;
@@ -812,7 +649,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Are we running within the swing client?
-	 * 
+	 *
 	 * @return <code>true</code> if running in the swing client.
 	 */
 	public static boolean isClient()
@@ -822,9 +659,9 @@ public final class Ini implements Serializable
 
 	/**
 	 * Set Client Mode
-	 * 
+	 *
 	 * @param client if true, then global run mode is set to {@code SWING_CLIENT}, else to {@code BACKEND}
-	 * 
+	 *
 	 */
 	public static void setClient(boolean client)
 	{
@@ -832,7 +669,7 @@ public final class Ini implements Serializable
 	}   // setClient
 
 	/**
-	 * 
+	 *
 	 * @return global run mode
 	 * @task 04585
 	 */
@@ -844,7 +681,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Set global run mode.
-	 * 
+	 *
 	 * @param mode
 	 * @task 04585
 	 */
@@ -855,7 +692,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Set show license dialog for new setup
-	 * 
+	 *
 	 * @param b
 	 */
 	public static void setShowLicenseDialog(boolean b)
@@ -865,7 +702,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Is show license dialog for new setup
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public static boolean isShowLicenseDialog()
@@ -875,7 +712,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Are the properties loaded?
-	 * 
+	 *
 	 * @return true if properties loaded.
 	 */
 	public static boolean isLoaded()
@@ -885,7 +722,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Get Adempiere Home from Environment
-	 * 
+	 *
 	 * @return Adempiere home directory; never returns <code>null</code>
 	 */
 	public static String getAdempiereHome()
@@ -921,7 +758,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Set Adempiere Home
-	 * 
+	 *
 	 * @param AdempiereHome ADEMPIERE_HOME
 	 */
 	public static void setAdempiereHome(String AdempiereHome)
@@ -1032,7 +869,7 @@ public final class Ini implements Serializable
 		String value = (String)s_prop.get(key);
 		if (value == null || value.length() == 0)
 			return defaultValue;
-		
+
 		int valueInt = defaultValue;
 		try
 		{
@@ -1041,7 +878,7 @@ public final class Ini implements Serializable
 		catch (Exception e)
 		{
 		}
-		
+
 		return valueInt <= 0 ? defaultValue : valueInt;
 	}	// getDividerLocation
 
@@ -1059,7 +896,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Get Available Encoding Charsets
-	 * 
+	 *
 	 * @return array of available encoding charsets
 	 * @since 3.1.4
 	 */
@@ -1073,7 +910,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Get current charset
-	 * 
+	 *
 	 * @return current charset
 	 * @since 3.1.4
 	 */

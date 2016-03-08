@@ -141,19 +141,19 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		super(message);
 	}
 
-	public AdempiereException(final String language, final String message, final Object[] params)
+	public AdempiereException(final String language, final String adMessage, final Object[] params)
 	{
-		super(Services.get(IMsgBL.class).getMsg(language, message, params));
+		super(Services.get(IMsgBL.class).getMsg(language, adMessage, params));
 	}
 
-	public AdempiereException(final Properties ctx, final String message, final Object[] params)
+	public AdempiereException(final Properties ctx, final String adMessage, final Object[] params)
 	{
-		this(Env.getAD_Language(ctx), message, params);
+		this(Env.getAD_Language(ctx), adMessage, params);
 	}
 
-	public AdempiereException(final String message, final Object[] params)
+	public AdempiereException(final String adMessage, final Object[] params)
 	{
-		this(Env.getCtx(), message, params);
+		this(Env.getCtx(), adMessage, params);
 	}
 
 	/**

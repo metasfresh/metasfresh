@@ -25,7 +25,7 @@ package org.adempiere.mm.attributes.model;
 
 import java.math.BigDecimal;
 
-import org.adempiere.appdict.model.I_AD_JavaClass;
+import de.metas.javaclasses.model.I_AD_JavaClass;
 
 public interface I_M_Attribute extends org.compiere.model.I_M_Attribute
 {

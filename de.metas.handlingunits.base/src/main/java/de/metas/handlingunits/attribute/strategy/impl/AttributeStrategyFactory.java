@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.appdict.IJavaClassDAO;
-import org.adempiere.appdict.model.I_AD_JavaClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -39,6 +37,8 @@ import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeStrategyFactory;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
+import de.metas.javaclasses.IJavaClassDAO;
+import de.metas.javaclasses.model.I_AD_JavaClass;
 
 public class AttributeStrategyFactory implements IAttributeStrategyFactory
 {

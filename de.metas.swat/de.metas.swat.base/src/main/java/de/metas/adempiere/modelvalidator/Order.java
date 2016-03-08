@@ -23,6 +23,7 @@ package de.metas.adempiere.modelvalidator;
  */
 
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.model.POWrapper;
@@ -235,14 +236,10 @@ public class Order implements ModelValidator
 			String result = orderBL.checkFreightCost(po.getCtx(), order, true, po.get_TrxName());
 			if (result != null)
 			{
-				return result;
+				throw new AdempiereException(result);
 			}
 
-			result = orderBL.checkForPriceList(order, true, po.get_TrxName());
-			if (result != null)
-			{
-				return result;
-			}
+			orderBL.checkForPriceList(order, po.get_TrxName());
 
 			// 01717
 			if (po.is_ValueChanged(I_C_Order.COLUMNNAME_IsDropShip))

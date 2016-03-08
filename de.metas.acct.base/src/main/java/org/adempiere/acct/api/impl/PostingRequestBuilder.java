@@ -10,12 +10,12 @@ package org.adempiere.acct.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,7 +45,6 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.acct.Doc;
 import org.compiere.acct.PostingExecutionException;
 import org.compiere.db.CConnection;
-import org.compiere.interfaces.Server;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.CLogger;
@@ -56,6 +55,7 @@ import com.google.common.base.Optional;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInvoker;
+import de.metas.session.jaxrs.IServerService;
 
 /* package */class PostingRequestBuilder implements IPostingRequestBuilder
 {
@@ -109,7 +109,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 		setExecuted();
 
 		final String trxName = getTrxName();
-		
+
 		//
 		// Check if we shall post the document immediately by checking PostImmediate option
 		// If not, we will enqueue it.
@@ -145,7 +145,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 		}
 
 		//
-		// Check if EJB Server is available
+		// Check if application Server is available
 		final boolean serverAvailable = CConnection.get().isAppsServerOK(true);
 		if (!serverAvailable)
 		{
@@ -165,7 +165,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 		try
 		{
 			// Should work on Client and Server
-			final Server server = CConnection.get().getServer();
+			final IServerService server = Services.get(IServerService.class);
 			Check.assumeNotNull(server, "server not null");
 
 			//
@@ -181,8 +181,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 					final String error = server.postImmediate(ctxReduced,
 							AD_Client_ID,
 							AD_Table_ID, Record_ID,
-							force,
-							ITrx.TRXNAME_None // out of transaction because we are after-commit so the document shall be accessible for anyone
+							force
 							);
 					setPostedError(error);
 					log.log(Level.CONFIG, "from Server: {0}", error == null ? "OK" : error);
@@ -209,8 +208,8 @@ import de.metas.adempiere.form.IClientUIInvoker;
 
 		// NOTE: when you will handle this part, also keep in mind:
 		// * if Client Accounting is Queue => do nothing because there is a manual process which will do the job
-		
-		
+
+
 		// NOTE: we are reaching this method, also when !postingService.isEnabled()
 
 		postingComplete();
@@ -218,7 +217,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 
 	/**
 	 * Directly Post the document (without contacting the server!)
-	 * 
+	 *
 	 * @param trxName transaction to be used for posting; NOTE: it could be different from {@link #getTrxName()}.
 	 */
 	private final void postIt_Directly(final String trxName)
@@ -381,7 +380,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 		final String trxName = InterfaceWrapperHelper.getTrxName(document);
 		final Optional<Integer> adClientId = InterfaceWrapperHelper.getValue(document, "AD_Client_ID");
 		Check.assume(adClientId.isPresent(), "document={0} has an AD_Client_ID value", document);
-		
+
 		final ITableRecordReference documentRef = TableRecordReference.of(document);
 
 		setContext(ctx, trxName);
@@ -428,7 +427,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 			{
 				return false;
 			}
-			
+
 			//
 			// Case: we are running on Client side
 			// => post immediate if ClientAccouting is saying so
@@ -522,9 +521,9 @@ import de.metas.adempiere.form.IClientUIInvoker;
 
 	/**
 	 * Method called when the posting is complete (with or without errors).
-	 * 
+	 *
 	 * This method will set the {@link #isPosted()} flag and it will also throw the posting exception in case is configured to do so
-	 * 
+	 *
 	 * @throws PostingExecutionException in case there was a posting exception and {@link #isFailOnError()}
 	 */
 	private final void postingComplete()
@@ -549,7 +548,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 	/**
 	 * Execute the posting after given transaction is commited.
 	 * If the transaction was already commited, the posting is executed right away (synchronously).
-	 * 
+	 *
 	 * @param trxName
 	 * @param postRunnable runnable that shall do the actual posting; it is assumed that the runnable WILL NOT throw any exceptions.
 	 */

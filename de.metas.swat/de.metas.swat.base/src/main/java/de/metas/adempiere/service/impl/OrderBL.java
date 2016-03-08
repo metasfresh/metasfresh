@@ -35,10 +35,10 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
-import org.adempiere.model.POWrapper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
@@ -55,6 +55,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -187,38 +188,34 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public String checkForPriceList(final I_C_Order order, final boolean nullIfOk, final String trxName)
+	public void checkForPriceList(final I_C_Order order, final String trxName)
 	{
 		final int bPartnerLocId = order.getC_BPartner_Location_ID();
 		final int pricingSysId = order.getM_PricingSystem_ID();
 
 		if (bPartnerLocId <= 0 || pricingSysId <= 0)
 		{
-			return nullIfOk ? null : "";
+			return;
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final IProductPA productPA = Services.get(IProductPA.class);
 
-		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(
-				ctx, pricingSysId, bPartnerLocId, order.isSOTrx(), trxName);
+		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, pricingSysId, bPartnerLocId, order.isSOTrx(), trxName);
 
 		if (pl == null)
 		{
-			final String adMsg = order.isSOTrx() ? OrderBL.MSG_NO_SO_PRICELIST_FOUND : OrderBL.MSG_NO_PO_PRICELIST_FOUND;
-			final MPricingSystem pricingSystem = new MPricingSystem(Env.getCtx(), pricingSysId, trxName);
-
-			final Object[] args = { pricingSystem.getName() };
-
-			return Services.get(IMsgBL.class).getMsg(Env.getCtx(), adMsg, args);
+			final I_M_PricingSystem pricingSystem = order.getM_PricingSystem();
+			final String pricingSystemName = pricingSystem == null ? "-" : pricingSystem.getName();
+			final String adMessage = order.isSOTrx() ? OrderBL.MSG_NO_SO_PRICELIST_FOUND : OrderBL.MSG_NO_PO_PRICELIST_FOUND;
+			throw new AdempiereException(ctx, adMessage, new Object[]{pricingSystemName});
 		}
-		return nullIfOk ? null : "";
 	}
 
 	@Override
 	public BigDecimal retrieveTaxAmt(final I_C_Order order)
 	{
-		final PO po = POWrapper.getPO(order);
+		final PO po = InterfaceWrapperHelper.getPO(order);
 		final Properties ctx = po == null ? Env.getCtx() : po.getCtx();
 		final String trxName = po == null ? null : po.get_TrxName();
 
@@ -261,14 +258,14 @@ public class OrderBL implements IOrderBL
 		// Case: Bill Location is set, we can use it to retrieve the contact for that location
 		if (order.getBill_Location_ID() > 0)
 		{
-			final I_C_BPartner_Location billLocation = POWrapper.create(order.getBill_Location(), I_C_BPartner_Location.class);
+			final I_C_BPartner_Location billLocation = InterfaceWrapperHelper.create(order.getBill_Location(), I_C_BPartner_Location.class);
 			billContact = bpartnerService.retrieveUserForLoc(billLocation);
 		}
 		// Case: Bill Location is NOT set, we search for default bill contact
 		else
 		{
-			final Properties ctx = POWrapper.getCtx(order);
-			final String trxName = POWrapper.getTrxName(order);
+			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
+			final String trxName = InterfaceWrapperHelper.getTrxName(order);
 			final int bPartnerId = order.getBill_BPartner_ID();
 			billContact = bpartnerService.retrieveBillContact(ctx, bPartnerId, trxName);
 		}

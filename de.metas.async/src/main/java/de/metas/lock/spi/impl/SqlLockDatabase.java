@@ -269,11 +269,8 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		try
 		{
 			final int countLocked = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
-			if (countLocked <= 0)
+			if (countLocked <= 0 && lockCommand.isFailIfNothingLocked())
 			{
-				// NOTE: we decided to do so because in most of the cases, when there is nothing inserted
-				// it's because the selection is created in a transaction which is not commited yet,
-				// and debugging this issue could be quite hard.
 				throw new LockFailedException("Nothing locked for selection");
 			}
 

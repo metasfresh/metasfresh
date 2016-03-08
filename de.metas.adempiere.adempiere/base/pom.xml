@@ -1,4 +1,6 @@
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -23,7 +25,6 @@
 			<version>1.7.10</version>
 		</dependency>
 
-		<!-- Adempiere -->
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
@@ -48,36 +49,21 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- J2EE -->
-		<!-- Working on "java.lang.IncompatibleClassChangeError: Class org.jnp.server.NamingServer 
-			does not implement the requested interface org.jnp.interfaces.Naming" <dependency> 
-			<groupId>org.jboss.client</groupId> <artifactId>jbossall-client</artifactId> 
-			<version>4.2.3.GA</version> </dependency> -->
-
-		<!-- We don't use javaee-api, because it contains a version of javax.mail 
-			that is different from 1.4.3 which is used by the code. Instead we declare 
-			the API libs that we really need. <dependency> <groupId>javaee</groupId> 
-			<artifactId>javaee-api</artifactId> <version>5</version> <scope>provided</scope> 
-			</dependency> -->
-
 		<!-- we use javax.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 		</dependency>
 
-		<!-- Required for org.compiere.interfaces.* -->
+		<!--
+		task 09848: 
+		Required so that we can annotate services to be jax-rs restful web services.
+		Note that the actual magic happens in the module de.metas.jax.rs 
+		-->
 		<dependency>
-			<groupId>javax.ejb</groupId>
-			<artifactId>ejb-api</artifactId>
-			<version>3.0</version>
-		</dependency>
-
-		<!-- Mainly required by org.compiere.Adempiere.getCodeBase* methods -->
-		<dependency>
-			<groupId>javax.jnlp</groupId>
-			<artifactId>jnlp</artifactId>
-			<version>1.0</version>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>javax.ws.rs-api</artifactId>
+			<version>2.0.1</version>
 		</dependency>
 
 		<dependency>

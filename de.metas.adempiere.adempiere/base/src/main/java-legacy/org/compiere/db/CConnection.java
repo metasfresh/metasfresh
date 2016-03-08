@@ -20,32 +20,23 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.Hashtable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 import javax.naming.CommunicationException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.swing.JOptionPane;
 
-import org.adempiere.as.ASFactory;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.Adempiere;
-import org.compiere.interfaces.Server;
-import org.compiere.interfaces.Status;
-import org.compiere.session.ServerBase;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.ValueNamePair;
+
+import de.metas.session.jaxrs.IStatusService;
 
 /**
  * Adempiere Connection Descriptor
@@ -57,7 +48,7 @@ import org.compiere.util.ValueNamePair;
 public final class CConnection implements Serializable, Cloneable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -7893119456331485444L;
 	/** Singleton Connection */
@@ -66,39 +57,16 @@ public final class CConnection implements Serializable, Cloneable
 	private static final transient CLogger log = CLogger.getCLogger(CConnection.class)
 			.setSkipIssueReporting();
 
-	/** Connection profiles */
-	@Deprecated
-	public static ValueNamePair[] CONNECTIONProfiles = new ValueNamePair[] {
-			new ValueNamePair("L", "LAN") };
-
-	/** Connection Profile LAN */
-	@Deprecated
-	public static final String PROFILE_LAN = "L";
-	/**
-	 * Connection Profile Terminal Server
-	 * 
-	 * @deprecated
-	 **/
-	@Deprecated
-	public static final String PROFILE_TERMINAL = "T";
-	/** Connection Profile VPM */
-	@Deprecated
-	public static final String PROFILE_VPN = "V";
-	/** Connection Profile WAN */
-	@Deprecated
-	public static final String PROFILE_WAN = "W";
-
-	private final static String COMPONENT_NS = "java:comp/env";
-
-	/** Prefer component namespace when running at server **/
-	private boolean useComponentNamespace = !Ini.isClient();
-
 	/** System property flag to embed server bean in process **/
-	public final static String SERVER_EMBEDDED = "org.adempiere.server.embedded";
+	public final static String SERVER_EMBEDDED_PROPERTY = "org.adempiere.server.embedded";
+
+	public final static String SERVER_EMBEDDED_APPSERVER_HOSTNAME = "localhost";
+
+	public final static int SERVER_EMBEDDED_APPSERVER_PORT = 61616;
 
 	/**
 	 * Get/Set default client/server Connection
-	 * 
+	 *
 	 * @return Connection Descriptor
 	 */
 	public static CConnection get()
@@ -119,63 +87,47 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Creates and setups a new CConnection instance.
-	 * 
+	 *
 	 * @return Connection Descriptor; never returns null.
 	 */
 	private static final CConnection createInstance()
 	{
-		final String apps_host = Adempiere.getCodeBaseHost();
 		CConnection cc;
 
 		//
 		// Case: no connection settings found in Ini/config file
 		final String attributes = Ini.getProperty(Ini.P_CONNECTION);
-		if (attributes == null || attributes.length() == 0)
+		if (Check.isEmpty(attributes))
 		{
-			// hengsin, zero setup for webstart client
-			if (apps_host != null && Adempiere.isWebStartClient() && !CConnection.isServerEmbedded())
-			{
-				cc = new CConnection(apps_host);
-				cc.setConnectionProfile(CConnection.PROFILE_LAN);
-				cc.setAppsPort(ASFactory.getApplicationServer().getDefaultNamingServicePort());
-				if (cc.testAppsServer() == null)
-				{
-					Ini.setProperty(Ini.P_CONNECTION, cc.toStringLong());
-					Ini.saveProperties();
-				}
-			}
 			// Case: create a new connection from scratch
-			else
+			cc = new CConnection(null);
+
+			// Ask the user (UI!) to provide the parameters
+			final CConnectionDialog ccd = new CConnectionDialog(cc);
+			cc = ccd.getConnection();
+
+			// If user canceled this dialog, there is NO point to go forward because it will propagate the wrong connection (task 09327)
+			if (ccd.isCancel())
 			{
-				cc = new CConnection(apps_host);
-
-				// Ask the user (UI!) to provide the parameters
-				final CConnectionDialog ccd = new CConnectionDialog(cc);
-				cc = ccd.getConnection();
-				
-				// If user canceled this dialog, there is NO point to go forward because it will propagate the wrong connection (task 09327)
-				if (ccd.isCancel())
-				{
-					throw new DBNoConnectionException("User canceled the connection dialog");
-				}
-
-				// Test database connection
-				if (!ccd.isCancel() && !cc.isDatabaseOK())
-				{
-					try
-					{
-						cc.testDatabase();
-					}
-					catch (Exception e)
-					{
-						log.log(Level.SEVERE, e.getMessage(), e);
-					}
-				}
-
-				// set also in ALogin and Ctrl
-				Ini.setProperty(Ini.P_CONNECTION, cc.toStringLong());
-				Ini.saveProperties(Ini.isClient());
+				throw new DBNoConnectionException("User canceled the connection dialog");
 			}
+
+			// Test database connection
+			if (!ccd.isCancel() && !cc.isDatabaseOK())
+			{
+				try
+				{
+					cc.testDatabase();
+				}
+				catch (Exception e)
+				{
+					log.log(Level.SEVERE, e.getMessage(), e);
+				}
+			}
+
+			// set also in ALogin and Ctrl
+			Ini.setProperty(Ini.P_CONNECTION, cc.toStringLong());
+			Ini.saveProperties(Ini.isClient());
 		}
 		//
 		// Case: connection settings are available
@@ -191,7 +143,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**************************************************************************
 	 * Adempiere Connection
-	 * 
+	 *
 	 * @param host optional application/db host
 	 */
 	public CConnection(final String host)
@@ -225,19 +177,24 @@ public final class CConnection implements Serializable, Cloneable
 	/** Server Version */
 	private String m_version = null;
 
-	/** Server Session (cached) */
-	private Server m_server = null;
 	/** DB Info */
 	private String m_dbInfo = null;
 
 	/** Had application server been query **/
-	private boolean m_queryAppsServer = false;
+	private boolean m_appServerWasQueried = false;
+
+	private static IStatusServiceEndPointProvider m_statusServiceEndpointProvider = null;
+
+	/**
+	 * don't access directly, but use {@link #getStatusServiceOrNull()} instead.
+	 */
+	private IStatusService m_statusServiceEndpoint = null;
 
 	private final static String SECURITY_PRINCIPAL = "org.adempiere.security.principal";
 
 	/*************************************************************************
 	 * Get Name
-	 * 
+	 *
 	 * @return connection name
 	 */
 	public String getName()
@@ -247,7 +204,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Set Name
-	 * 
+	 *
 	 * @param name connection name
 	 */
 	void setName(String name)
@@ -256,7 +213,7 @@ public final class CConnection implements Serializable, Cloneable
 	}	// setName
 
 	/**
-	 * Set Name
+	 * Sets the name from this instance's {@link #toString()} result.
 	 */
 	protected void setName()
 	{
@@ -265,17 +222,22 @@ public final class CConnection implements Serializable, Cloneable
 
 	/*************
 	 * Get Application Host
-	 * 
+	 *
 	 * @return apps host
 	 */
 	public String getAppsHost()
 	{
+		if (isServerEmbedded())
+		{
+			return SERVER_EMBEDDED_APPSERVER_HOSTNAME;
+		}
+
 		return attrs.getAppsHost();
 	}
 
 	/**
 	 * Set Application Host
-	 * 
+	 *
 	 * @param apps_host apps host
 	 */
 	void setAppsHost(String apps_host)
@@ -284,39 +246,44 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			return;
 		}
-		
+
 		attrs.setAppsHost(apps_host);
 		setName();
-		
-		resetAppsServer();
+
+		resetAppsServer(); // reset our cached infos about the apps server.
 	}
-	
+
 	private final void resetAppsServer()
 	{
 		m_okApps = false;
-		m_queryAppsServer = false;
+		m_appServerWasQueried = false;
 		m_appsException = null;
 		m_version = null;
-		
+
+		m_statusServiceEndpoint = null;
+
 		// Reset EJB context
-		m_env = null;
-		m_iContext = null;
-		m_server = null;
+		// m_env = null;
+		// m_iContext = null;
 	}
 
 	/**
 	 * Get Apps Port
-	 * 
+	 *
 	 * @return port
 	 */
 	public int getAppsPort()
 	{
+		if (isServerEmbedded())
+		{
+			return SERVER_EMBEDDED_APPSERVER_PORT;
+		}
 		return attrs.getAppsPort();
 	}
 
 	/**
 	 * Set Apps Port
-	 * 
+	 *
 	 * @param apps_port apps port
 	 */
 	public void setAppsPort(int apps_port)
@@ -327,24 +294,26 @@ public final class CConnection implements Serializable, Cloneable
 		}
 		attrs.setAppsPort(apps_port);
 		m_okApps = false;
-		m_queryAppsServer = false;
-		
-		resetAppsServer();
+		m_appServerWasQueried = false;
+
+		resetAppsServer(); // reset our cached infos about the apps server.
 	}
 
 	/**
-	 * Set Apps Port
-	 * 
+	 * Set Apps Port from string
+	 *
 	 * @param apps_portString appd port as String
 	 */
 	void setAppsPort(String apps_portString)
 	{
+		if (Check.isEmpty(apps_portString, true))
+		{
+			return;
+		}
+
 		try
 		{
-			if (apps_portString == null || apps_portString.length() == 0)
-				;
-			else
-				setAppsPort(Integer.parseInt(apps_portString));
+			setAppsPort(Integer.parseInt(apps_portString));
 		}
 		catch (Exception e)
 		{
@@ -354,133 +323,85 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Is Application Server OK
-	 * 
+	 *
 	 * @param tryContactAgain try to contact again
 	 * @return true if Apps Server exists
 	 */
 	public boolean isAppsServerOK(boolean tryContactAgain)
 	{
-		if (isServerEmbedded())
+		if (Ini.isClient() && !tryContactAgain && m_appServerWasQueried)
 		{
-			return true;
+			return m_okApps; // return the info that we already have
 		}
 
-		if (Ini.isClient() && !tryContactAgain && m_queryAppsServer)
+		m_okApps = false;
+		m_appServerWasQueried = true; // set this member to true, also if the invocation was not successful.
+
+		if (Check.isEmpty(getAppsHost(), true) || attrs.isNoAppsHost())
 		{
+			// we don't even have an application server name set, so clearly the appServer is *not* OK.
+			// note that we need to to also avoid a StackOverFlowError, because otherwise out status-server would try to get the getAppsHost() using
+			// CConnection.get().getAppsHost(), resulting in another call to isAppsServerOK(), and so on.
 			return m_okApps;
 		}
 
-		// Carlos Ruiz - globalqss - speed up when jnp://MyAppsServer:1099 is set
-		if (attrs.isNoAppsHost())
+		final IStatusService statusService = getStatusServiceOrNull();
+		if (statusService == null)
 		{
-			if (tryContactAgain)
-			{
-				log.warning(getAppsHost() + " ignored");
-			}
-			return false;
+			return false; // can't get an endpoint to connect with.
 		}
-
-		m_queryAppsServer = true;
 
 		// Contact it
 		try
 		{
-			Status status = (Status)lookup(Status.JNDI_NAME);
-			m_version = status.getDateVersion();
+			m_version = statusService.getDateVersion();
 			m_okApps = true;
-		}
-		catch (Exception ce)
-		{
-			m_okApps = false;
-			String connect = m_env.get(Context.PROVIDER_URL);
-			if (connect == null || connect.trim().length() == 0)
-				connect = getAppsHost() + ":" + getAppsPort();
-			log.warning(connect
-					+ "\n - " + ce.toString()
-					+ "\n - " + m_env);
-			ce.printStackTrace();
 		}
 		catch (Throwable t)
 		{
 			m_okApps = false;
-			String connect = m_env.get(Context.PROVIDER_URL);
-			if (connect == null || connect.trim().length() == 0)
+			String connect = toString();
+			if (Check.isEmpty(connect, true))
+			{
 				connect = getAppsHost() + ":" + getAppsPort();
-			log.warning(connect
-					+ "\n - " + t.toString()
-					+ "\n - " + m_env);
+			}
+			log.warning(connect + "\n - " + t.toString());
 			t.printStackTrace();
 		}
 		return m_okApps;
 	} 	// isAppsOK
 
+	private IStatusService getStatusServiceOrNull()
+	{
+		if (m_statusServiceEndpoint == null)
+		{
+			if (m_statusServiceEndpointProvider == null)
+			{
+				return null;
+			}
+			m_statusServiceEndpoint = m_statusServiceEndpointProvider.provide(this);
+		}
+		return m_statusServiceEndpoint;
+	}
+
 	/**
 	 * Test ApplicationServer
-	 * 
+	 *
 	 * @return Exception or null
 	 */
 	public synchronized Exception testAppsServer()
 	{
+		if (CConnection.isServerEmbedded())
+		{
+			return null; // there is nothing to do
+		}
 		queryAppsServerInfo();
 		return getAppsServerException();
 	} 	// testAppsServer
 
 	/**
-	 * Get Server
-	 * 
-	 * @return {@link Server}; never returns <code>null</code>
-	 */
-	public Server getServer()
-	{
-		// NOTE: cache Server only for client. On server side, ask it each time
-		final boolean useCache = Ini.isClient();
-
-		//
-		// If server is already cached and we are allowed to use cache, return it from cache
-		if (useCache && m_server != null)
-		{
-			return m_server;
-		}
-
-		//
-		// Create a new Server instance
-		final Server server = createServer();
-		// Update cache
-		m_server = useCache ? server : null;
-
-		return m_server;
-	}	// getServer
-
-	/**
-	 * @return newly created {@link Server}; never returns <code>null</code>
-	 */
-	private final Server createServer()
-	{
-		//
-		// Create Embedded server if applies
-		if (isServerEmbedded())
-		{
-			return new ServerBase();
-		}
-
-		//
-		// Lookup for Server EJB
-		try
-		{
-			final Server server = (Server)lookup(Server.JNDI_NAME);
-			return server;
-		}
-		catch (Exception ex)
-		{
-			log.log(Level.SEVERE, "", ex);
-			m_iContext = null; // reset cached context
-			throw new AdempiereException(ex);
-		}
-	}
-
-	/**
 	 * Get Apps Server Version Info (user friendly)
-	 * 
+	 *
 	 * @return application server version. It could return following values:
 	 *         <ul>
 	 *         <li>actual application server version
@@ -495,10 +416,6 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			return version;
 		}
-		else if (isServerEmbedded())
-		{
-			return "embedded";
-		}
 		else
 		{
 			return "unknown";
@@ -507,7 +424,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get Apps Server Version.
-	 * 
+	 *
 	 * @return version or null;
 	 */
 	public String getServerVersion()
@@ -517,7 +434,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/*************
 	 * Get Database Host name
-	 * 
+	 *
 	 * @return db host name
 	 */
 	public String getDbHost()
@@ -527,7 +444,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Set Database host name
-	 * 
+	 *
 	 * @param db_host db host
 	 */
 	void setDbHost(String db_host)
@@ -536,7 +453,7 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			return;
 		}
-		
+
 		attrs.setDbHost(db_host);
 		setName();
 		closeDataSource();
@@ -544,7 +461,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get Database Name (Service Name)
-	 * 
+	 *
 	 * @return db name
 	 */
 	public String getDbName()
@@ -554,7 +471,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Set Database Name (Service Name)
-	 * 
+	 *
 	 * @param db_name db name
 	 */
 	void setDbName(String db_name)
@@ -570,7 +487,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get DB Port
-	 * 
+	 *
 	 * @return port
 	 */
 	public int getDbPort()
@@ -580,7 +497,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Set DB Port
-	 * 
+	 *
 	 * @param db_port db port
 	 */
 	void setDbPort(int db_port)
@@ -594,18 +511,20 @@ public final class CConnection implements Serializable, Cloneable
 	}	// setDbPort
 
 	/**
-	 * Set DB Port
-	 * 
+	 * Set DB Port from string
+	 *
 	 * @param db_portString db port as String
 	 */
 	void setDbPort(String db_portString)
 	{
+		if (Check.isEmpty(db_portString, true))
+		{
+			return;
+		}
+
 		try
 		{
-			if (db_portString == null || db_portString.length() == 0)
-				;
-			else
-				setDbPort(Integer.parseInt(db_portString));
+			setDbPort(Integer.parseInt(db_portString));
 		}
 		catch (Exception e)
 		{
@@ -615,7 +534,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get Database Password
-	 * 
+	 *
 	 * @return db password
 	 */
 	public String getDbPwd()
@@ -625,7 +544,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Set DB password
-	 * 
+	 *
 	 * @param db_pwd db user password
 	 */
 	void setDbPwd(String db_pwd)
@@ -640,7 +559,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get Database User
-	 * 
+	 *
 	 * @return db user
 	 */
 	public String getDbUid()
@@ -650,7 +569,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Set Database User
-	 * 
+	 *
 	 * @param db_uid db user id
 	 */
 	void setDbUid(String db_uid)
@@ -665,91 +584,8 @@ public final class CConnection implements Serializable, Cloneable
 	}	// setDbUid
 
 	/**
-	 * Set Connection Profile
-	 *
-	 * @param connectionProfile connection profile
-	 * @deprecated
-	 */
-	@Deprecated
-	void setConnectionProfile(ValueNamePair connectionProfile)
-	{
-		if (connectionProfile != null)
-			setConnectionProfile(PROFILE_LAN);
-	}	// setConnectionProfile
-
-	/**
-	 * Set Connection Profile
-	 *
-	 * @param connectionProfile connection profile
-	 * @deprecated
-	 */
-	@Deprecated
-	public void setConnectionProfile(String connectionProfile)
-	{
-	}	// setConnectionProfile
-
-	/**
-	 * Get Connection Profile
-	 *
-	 * @return connection profile
-	 * @deprecated
-	 */
-	@Deprecated
-	public String getConnectionProfile()
-	{
-		return PROFILE_LAN;
-	}	// getConnectionProfile
-
-	/**
-	 * Get Connection Profile Text
-	 * 
-	 * @param connectionProfile
-	 * @return connection profile text
-	 * @deprecated
-	 */
-	@Deprecated
-	public String getConnectionProfileText(String connectionProfile)
-	{
-		for (int i = 0; i < CONNECTIONProfiles.length; i++)
-		{
-			if (CONNECTIONProfiles[i].getValue().equals(connectionProfile))
-				return CONNECTIONProfiles[i].getName();
-		}
-		return CONNECTIONProfiles[0].getName();
-	}	// getConnectionProfileText
-
-	/**
-	 * Get Connection Profile Text
-	 *
-	 * @return connection profile text
-	 * @deprecated
-	 */
-	@Deprecated
-	public String getConnectionProfileText()
-	{
-		return getConnectionProfileText(getConnectionProfile());
-	}	// getConnectionProfileText
-
-	/**
-	 * Get Connection Profile
-	 *
-	 * @return connection profile
-	 * @deprecated
-	 */
-	@Deprecated
-	public ValueNamePair getConnectionProfilePair()
-	{
-		for (int i = 0; i < CONNECTIONProfiles.length; i++)
-		{
-			if (CONNECTIONProfiles[i].getValue().equals(getConnectionProfile()))
-				return CONNECTIONProfiles[i];
-		}
-		return CONNECTIONProfiles[0];
-	}	// getConnectionProfilePair
-
-	/**
 	 * Is DB via Firewall
-	 * 
+	 *
 	 * @return true if via firewall
 	 */
 	public boolean isViaFirewall()
@@ -759,7 +595,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Method setViaFirewall
-	 * 
+	 *
 	 * @param viaFirewall boolean
 	 */
 	void setViaFirewall(boolean viaFirewall)
@@ -774,7 +610,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Method setViaFirewall
-	 * 
+	 *
 	 * @param viaFirewallString String
 	 */
 	void setViaFirewall(String viaFirewallString)
@@ -791,7 +627,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Method getFwHost
-	 * 
+	 *
 	 * @return String
 	 */
 	public String getFwHost()
@@ -801,7 +637,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Method setFwHost
-	 * 
+	 *
 	 * @param fw_host String
 	 */
 	void setFwHost(String fw_host)
@@ -816,7 +652,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get Firewall port
-	 * 
+	 *
 	 * @return firewall port
 	 */
 	public int getFwPort()
@@ -826,7 +662,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Set Firewall port
-	 * 
+	 *
 	 * @param fw_port firewall port
 	 */
 	void setFwPort(int fw_port)
@@ -841,16 +677,13 @@ public final class CConnection implements Serializable, Cloneable
 
 	public void setFwPort(final String fwPortStr)
 	{
+		if (Check.isEmpty(fwPortStr, true))
+		{
+			return;
+		}
 		try
 		{
-			if (fwPortStr == null || fwPortStr.length() == 0)
-			{
-				;
-			}
-			else
-			{
-				setFwPort(Integer.parseInt(fwPortStr));
-			}
+			setFwPort(Integer.parseInt(fwPortStr));
 		}
 		catch (final Exception e)
 		{
@@ -860,7 +693,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Is it a bequeath connection
-	 * 
+	 *
 	 * @return true if bequeath connection
 	 */
 	public boolean isBequeath()
@@ -870,7 +703,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Set Bequeath
-	 * 
+	 *
 	 * @param bequeath bequeath connection
 	 */
 	void setBequeath(boolean bequeath)
@@ -885,7 +718,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Set Bequeath
-	 * 
+	 *
 	 * @param bequeathString bequeath connection as String (true/false)
 	 */
 	void setBequeath(String bequeathString)
@@ -902,7 +735,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get Database Type
-	 * 
+	 *
 	 * @return database type
 	 */
 	public String getType()
@@ -913,7 +746,7 @@ public final class CConnection implements Serializable, Cloneable
 	/**
 	 * Set Database Type and default settings.
 	 * Checked against installed databases
-	 * 
+	 *
 	 * @param type database Type, e.g. Database.DB_ORACLE
 	 */
 	synchronized void setType(final String type)
@@ -955,7 +788,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Supports BLOB
-	 * 
+	 *
 	 * @return true if BLOB is supported
 	 */
 	public boolean supportsBLOB()
@@ -965,7 +798,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Is Oracle DB
-	 * 
+	 *
 	 * @return true if Oracle
 	 */
 	public boolean isOracle()
@@ -975,7 +808,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Is PostgreSQL DB
-	 * 
+	 *
 	 * @return true if PostgreSQL
 	 */
 	public boolean isPostgreSQL()
@@ -985,7 +818,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Is Database Connection OK.
-	 * 
+	 *
 	 * @return true if database connection is OK
 	 */
 	// NOTE: this method is SUPPOSED to not contact the database server or do any expensive opperations.
@@ -996,24 +829,24 @@ public final class CConnection implements Serializable, Cloneable
 		final boolean checkifUnknown = false;
 		return isDatabaseOK(checkifUnknown);
 	} 	// isDatabaseOK
-	
+
 	/**
 	 * Is Database Connection OK.
-	 * 
+	 *
 	 * @param checkifUnknown if true and the current connection status is not known, the system will try to contact the database and figure out if the db connection is really alive
 	 * @return true if the database connection is alive
 	 */
 	public final boolean isDatabaseOK(final boolean checkifUnknown)
 	{
-		if(checkifUnknown && this._okDB == null)
+		if (checkifUnknown && this._okDB == null)
 		{
 			updateDatabaseOKStatus();
 		}
-		
+
 		final Boolean ok = this._okDB;
 		return ok != null && ok;
 	}
-	
+
 	/**
 	 * Sets the {@link #_okDB} flag.
 	 */
@@ -1024,7 +857,7 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			return;
 		}
-		
+
 		//
 		// Actually try to aquire a new database connection.
 		// The getConnection(...) method will actually the the _okDB flag.
@@ -1048,14 +881,14 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			_runningUpdateDatabaseOKStatus.set(false);
 		}
-		
+
 	}
-	
+
 	private final AtomicBoolean _runningUpdateDatabaseOKStatus = new AtomicBoolean(false);
 
 	/**************************************************************************
 	 * Create DB Connection
-	 * 
+	 *
 	 * @return data source != null
 	 */
 	public boolean setDataSource()
@@ -1082,7 +915,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get Server Connection
-	 * 
+	 *
 	 * @return {@link DataSource} or null
 	 */
 	public DataSource getDataSource()
@@ -1119,7 +952,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/*************************************************************************
 	 * Short String representation
-	 * 
+	 *
 	 * @return appsHost{dbHost-dbName-uid}
 	 */
 	@Override
@@ -1135,7 +968,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get DB Version Info (short text).
-	 * 
+	 *
 	 * This method never throws exceptions.
 	 *
 	 * @return info
@@ -1181,7 +1014,7 @@ public final class CConnection implements Serializable, Cloneable
 	/**
 	 * String representation.
 	 * Used also for Instanciation
-	 * 
+	 *
 	 * @return string representation
 	 * @see #setAttributes(String) setAttributes
 	 */
@@ -1192,7 +1025,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Set Attributes from String (pares toStringLong())
-	 * 
+	 *
 	 * @param attributes attributes
 	 */
 	private void setAttributes(final String attributes)
@@ -1202,7 +1035,14 @@ public final class CConnection implements Serializable, Cloneable
 			final CConnectionAttributes connectionString = CConnectionAttributes.of(attributes);
 			setName(connectionString.getName());
 			setAppsHost(connectionString.getAppsHost());
-			setAppsPort(connectionString.getAppsPort());
+
+			int appsPort = connectionString.getAppsPort();
+			if (appsPort == 1099)
+			{
+				appsPort = SERVER_EMBEDDED_APPSERVER_PORT;
+			}
+			setAppsPort(appsPort);
+
 			//
 			setType(connectionString.getDbType());
 			setDbHost(connectionString.getDbHost());
@@ -1226,7 +1066,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Equals
-	 * 
+	 *
 	 * @param o object
 	 * @return true if o equals this
 	 */
@@ -1259,7 +1099,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/*************************************************************************
 	 * Hashcode
-	 * 
+	 *
 	 * @return hashcode of name
 	 */
 	@Override
@@ -1271,7 +1111,7 @@ public final class CConnection implements Serializable, Cloneable
 	/**
 	 * Get Info.
 	 * - Database, Driver, Status Info
-	 * 
+	 *
 	 * @return info
 	 */
 	public String getInfo()
@@ -1297,7 +1137,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get Database
-	 * 
+	 *
 	 * @return database
 	 */
 	public synchronized AdempiereDatabase getDatabase()
@@ -1345,7 +1185,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get Connection String
-	 * 
+	 *
 	 * @return connection string or empty string if database was not initialized
 	 */
 	public String getConnectionURL()
@@ -1359,9 +1199,9 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Acquires a database Connection.
-	 * 
+	 *
 	 * Sets the {@link #isDatabaseOK()} flag.
-	 * 
+	 *
 	 * @param autoCommit true if auto-commit connection
 	 * @param transactionIsolation Connection transaction level
 	 * @return database connection
@@ -1412,120 +1252,122 @@ public final class CConnection implements Serializable, Cloneable
 	}	// getConnection
 
 	/*************************************************************************/
-
-	private InitialContext m_iContext = null;
-	private Hashtable<String, String> m_env = null;
-
-	/**
-	 * Get Application Server Initial Context
-	 * 
-	 * @param useCache if true, use existing cache
-	 * @return Initial Context or null
-	 */
-	public InitialContext getInitialContext(boolean useCache)
-	{
-		if (useCache && m_iContext != null)
-			return m_iContext;
-
-		// Set Environment
-		if (m_env == null || !useCache)
-		{
-			SecurityPrincipal sp = (SecurityPrincipal)Env.getCtx().get(SECURITY_PRINCIPAL);
-			String principal = sp != null ? sp.principal : null;
-			String credential = sp != null ? sp.credential : null;
-			m_env = getInitialEnvironment(getAppsHost(), getAppsPort(), false,
-					principal, credential);
-		}
-		String connect = m_env.get(Context.PROVIDER_URL);
-		Env.setContext(Env.getCtx(), Context.PROVIDER_URL, connect);
-
-		// Get Context
-		m_iContext = null;
-		try
-		{
-			m_iContext = new InitialContext(m_env);
-		}
-		catch (Exception ex)
-		{
-			m_okApps = false;
-			m_appsException = ex;
-			if (connect == null)
-				connect = m_env.get(Context.PROVIDER_URL);
-			log.severe(connect
-					+ "\n - " + ex.toString()
-					+ "\n - " + m_env);
-			if (CLogMgt.isLevelFinest())
-				ex.printStackTrace();
-		}
-		return m_iContext;
-	}	// getInitialContext
-
-	/**
-	 * Get Initial Environment
-	 * 
-	 * @param AppsHost host
-	 * @param AppsPort port
-	 * @param RMIoverHTTP ignore, retained for backward compatibility
-	 * @param principal
-	 * @param credential
-	 * @return environment
-	 */
-	private Hashtable<String, String> getInitialEnvironment(String AppsHost, int AppsPort,
-			boolean RMIoverHTTP, String principal, String credential)
-	{
-		return ASFactory.getApplicationServer()
-				.getInitialContextEnvironment(AppsHost, AppsPort, principal, credential);
-	}	// getInitialEnvironment
+// @formatter:off
+//	private InitialContext m_iContext = null;
+//	//private Hashtable<String, String> m_env = null;
+//
+//	/**
+//	 * Get Application Server Initial Context
+//	 *
+//	 * @param useCache if true, use existing cache
+//	 * @return Initial Context or null
+//	 */
+//	public InitialContext getInitialContext(boolean useCache)
+//	{
+//		if (useCache && m_iContext != null)
+//			return m_iContext;
+//
+//		// Set Environment
+//		if (m_env == null || !useCache)
+//		{
+//			SecurityPrincipal sp = (SecurityPrincipal)Env.getCtx().get(SECURITY_PRINCIPAL);
+//			String principal = sp != null ? sp.principal : null;
+//			String credential = sp != null ? sp.credential : null;
+//			m_env = getInitialEnvironment(getAppsHost(), getAppsPort(), false,
+//					principal, credential);
+//		}
+//		String connect = m_env.get(Context.PROVIDER_URL);
+//		Env.setContext(Env.getCtx(), Context.PROVIDER_URL, connect);
+//
+//		// Get Context
+//		m_iContext = null;
+//		try
+//		{
+//			m_iContext = new InitialContext(m_env);
+//		}
+//		catch (Exception ex)
+//		{
+//			m_okApps = false;
+//			m_appsException = ex;
+//			if (connect == null)
+//				connect = m_env.get(Context.PROVIDER_URL);
+//			log.severe(connect
+//					+ "\n - " + ex.toString()
+//					+ "\n - " + m_env);
+//			if (CLogMgt.isLevelFinest())
+//				ex.printStackTrace();
+//		}
+//		return m_iContext;
+//	}	// getInitialContext
+//
+//	/**
+//	 * Get Initial Environment
+//	 *
+//	 * @param AppsHost host
+//	 * @param AppsPort port
+//	 * @param RMIoverHTTP ignore, retained for backward compatibility
+//	 * @param principal
+//	 * @param credential
+//	 * @return environment
+//	 */
+//	private Hashtable<String, String> getInitialEnvironment(String AppsHost, int AppsPort,
+//			boolean RMIoverHTTP, String principal, String credential)
+//	{
+//		return ASFactory.getApplicationServer()
+//				.getInitialContextEnvironment(AppsHost, AppsPort, principal, credential);
+//	}	// getInitialEnvironment
+	// @formatter:on
 
 	/**
 	 * Query Application Server Status.
 	 * update okApps
-	 * 
-	 * @return true ik OK
+	 *
+	 * @return true if OK
 	 */
 	private boolean queryAppsServerInfo()
 	{
 		log.finer(getAppsHost());
 		long start = System.currentTimeMillis();
 		m_okApps = false;
-		m_queryAppsServer = true;
 		m_appsException = null;
-
-		// Carlos Ruiz - globalqss - speed up when jnp://MyAppsServer:1099 is set
-		if (attrs.isNoAppsHost())
-		{
-			log.warning("Application server " + getAppsHost() + " ignored");
-			return m_okApps; // false
-		}
 
 		try
 		{
-			Status status = (Status)lookup(Status.JNDI_NAME);
-			//
-			updateInfoFromServer(status);
-			//
+			final IStatusService statusService = getStatusServiceOrNull();
+			if (statusService == null)
+			{
+				return false;
+			}
+			if (!isAppsServerOK(false))
+			{
+				return false;
+			}
+
+			updateInfoFromServer(statusService);
+
 			m_okApps = true;
+			m_appServerWasQueried = true;
 		}
 		catch (CommunicationException ce)	// not a "real" error
 		{
 			m_appsException = ce;
-			String connect = m_env.get(Context.PROVIDER_URL);
-			if (connect == null || connect.trim().length() == 0)
+			String connect = toString();
+			if (Check.isEmpty(connect, true))
+			{
 				connect = getAppsHost() + ":" + getAppsPort();
-			log.warning(connect
-					+ "\n - " + ce.toString()
-					+ "\n - " + m_env);
+			}
+			log.warning(connect + "\n - " + ce.toString());
 			ce.printStackTrace();
 		}
 		catch (Exception e)
 		{
 			m_appsException = e;
-			String connect = m_env.get(Context.PROVIDER_URL);
-			if (connect == null || connect.trim().length() == 0)
+			String connect = toString();
+			if (Check.isEmpty(connect, true))
+			{
 				connect = getAppsHost() + ":" + getAppsPort();
-			log.warning(connect
-					+ "\n - " + e.toString()
-					+ "\n - " + m_env);
+			}
+			log.warning(connect + "\n - " + e.toString());
 			e.printStackTrace();
 		}
 		log.fine("Success=" + m_okApps + " - " + (System.currentTimeMillis() - start) + "ms");
@@ -1534,7 +1376,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Get Last Exception of Apps Server Connection attempt
-	 * 
+	 *
 	 * @return Exception or null
 	 */
 	private Exception getAppsServerException()
@@ -1544,15 +1386,16 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Update Connection Info from Apps Server
-	 * 
+	 *
 	 * @param svr Apps Server Status
 	 * @throws Exception
 	 */
-	private void updateInfoFromServer(Status svr) throws Exception
+	private void updateInfoFromServer(final IStatusService svr) throws Exception
 	{
 		if (svr == null)
+		{
 			throw new IllegalArgumentException("AppsServer was NULL");
-
+		}
 		setType(svr.getDbType());
 		setDbHost(svr.getDbHost());
 		setDbPort(svr.getDbPort());
@@ -1612,7 +1455,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public static boolean isServerEmbedded()
 	{
-		return Boolean.getBoolean(SERVER_EMBEDDED);
+		return Boolean.getBoolean(SERVER_EMBEDDED_PROPERTY); // return the system property
 	}
 
 	public void setAppServerCredential(String principal, String credential)
@@ -1621,9 +1464,8 @@ public final class CConnection implements Serializable, Cloneable
 		sp.principal = principal;
 		sp.credential = credential;
 		Env.getCtx().put(SECURITY_PRINCIPAL, sp);
-		m_iContext = null;
-		m_env = null;
-		m_server = null; // reset cached Server EJB
+		// m_iContext = null;
+		// m_env = null;
 	}
 
 	@Override
@@ -1633,28 +1475,24 @@ public final class CConnection implements Serializable, Cloneable
 		return c;
 	}
 
-	private Object lookup(final String jndiName) throws NamingException
+	/**
+	 * Implementors provide a IStatusService proxy, implementation or whatever that can be used by the CConnection to talk to the application server.
+	 *
+	 * @author metas-dev <dev@metas-fresh.com>
+	 *
+	 */
+	public interface IStatusServiceEndPointProvider
 	{
-		final InitialContext ctx = getInitialContext(Ini.isClient());
-
-		//
-		// First check components namespace
-		if (useComponentNamespace)
-		{
-			try
-			{
-				return ctx.lookup(COMPONENT_NS + "/" + jndiName);
-			}
-			catch (NamingException e)
-			{
-				// Reset the flag, so next time it won't be checked.
-				useComponentNamespace = false;
-				log.log(Level.WARNING, "Component name space not available", e.getLocalizedMessage());
-			}
-		}
-
-		//
-		// Check global JNDI lookup
-		return ctx.lookup(jndiName);
+		IStatusService provide(CConnection cConnection);
 	}
+
+	public static void setStatusServiceEndPointProvider(final IStatusServiceEndPointProvider provider)
+	{
+		Check.errorIf(m_statusServiceEndpointProvider != null,
+				"CConnection already has m_statusServiceEndpointProvider={1}",
+				m_statusServiceEndpointProvider);
+
+		m_statusServiceEndpointProvider = provider;
+	}
+
 }	// CConnection

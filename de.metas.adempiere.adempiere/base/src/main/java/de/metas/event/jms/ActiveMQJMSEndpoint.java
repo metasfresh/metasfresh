@@ -22,7 +22,6 @@ package de.metas.event.jms;
  * #L%
  */
 
-
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutionException;
@@ -49,7 +48,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.apache.activemq.ActiveMQConnection;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.transport.TransportListener;
 import org.compiere.util.CLogger;
 
@@ -64,6 +62,7 @@ import de.metas.event.EventBusConstants;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
+import de.metas.jms.IJMSService;
 
 public class ActiveMQJMSEndpoint implements IJMSEndpoint
 {
@@ -124,7 +123,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		}
 	};
 
-	private final String _jmsBrokerURL;
+//	private final String _jmsBrokerURL;
 	private final ConnectionFactory _jmsConnectionFactory;
 	private static final String JMS_PROPERTY_ClientID = de.metas.event.jms.ActiveMQJMSEndpoint.class.getName() + ".ClientID";
 	private final String _jmsClientID;
@@ -164,19 +163,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		//
 		// Setup ActiveMQ connection factory
 		{
-			String brokerURL = EventBusConstants.getJmsURL();
-
-			// Use "failover". In this way, ActiveMQ will handle all connection issues.
-			// See http://activemq.apache.org/failover-transport-reference.html
-			brokerURL = "failover://" + brokerURL;
-			this._jmsBrokerURL = brokerURL;
-
-			final String user = EventBusConstants.getJmsUser();
-			final String password = EventBusConstants.getJmsPassword();
-
-			final ActiveMQConnectionFactory jmsConnectionFactory = new ActiveMQConnectionFactory(user, password, brokerURL);
-			this._jmsConnectionFactory = jmsConnectionFactory;
-			logger.log(Level.INFO, "Broker URL: {0}", brokerURL);
+			this._jmsConnectionFactory = Services.get(IJMSService.class).createConnectionFactory();
 		}
 
 		// JMS Client ID
@@ -188,7 +175,6 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("BrokerURL", _jmsBrokerURL)
 				.add("ClientID", _jmsClientID)
 				.add("IsConnected", connected.get())
 				.add("SubscribedTopicNames", topicName2messageProducer.asMap().keySet())

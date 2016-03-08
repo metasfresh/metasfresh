@@ -57,6 +57,8 @@
 
 		<module>../de.metas.contracts</module>
 
+		<module>../de.metas.esb</module>
+
 		<module>../de.metas.device.adempiere</module>
 		<module>../de.metas.device.api</module>
 		<module>../de.metas.device.scales</module>
@@ -84,6 +86,9 @@
 		<module>../de.metas.fresh</module>
 		
 		<module>../de.metas.ui.web.base</module>
+		
+		<module>../de.metas.procurement.sync-api</module>
+		<module>../de.metas.procurement.base</module>
 	</modules>
 			
 	  <build>

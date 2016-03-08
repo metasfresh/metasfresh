@@ -63,6 +63,14 @@ public interface ILockCommand
 		FOR_DIFFERENT_OWNERS
 	};
 
+	/**
+	 * Default value for {@link #isFailIfNothingLocked()} is <code>true</code>.
+	 * 
+	 * NOTE: we decided to do so because in most of the cases, when there is nothing inserted it's because the selection is created in a transaction which is not commited yet, and debugging this issue
+	 * could be quite hard.
+	 */
+	boolean DEFAULT_FailIfNothingLocked = true;
+
 	ILock acquire();
 
 	Future<ILock> acquireBeforeTrxCommit(String trxName);
@@ -105,6 +113,17 @@ public interface ILockCommand
 	ILockCommand setFailIfAlreadyLocked(boolean failIfAlreadyLocked);
 
 	boolean isFailIfAlreadyLocked();
+
+	/**
+	 * Sets if the lock command shall fail if on {@link #acquire()} nothing was locked.
+	 * 
+	 * By default this is {@link #DEFAULT_FailIfNothingLocked}
+	 * 
+	 * @param failIfNothingLocked
+	 */
+	ILockCommand setFailIfNothingLocked(boolean failIfNothingLocked);
+
+	boolean isFailIfNothingLocked();
 
 	ILockCommand setRecordByModel(final Object model);
 

@@ -386,7 +386,20 @@ import de.metas.notification.INotificationBL;
 	{
 		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, ex);
 
-		workPackage.setProcessed(false); // just in case it was true
+		//
+		// Allow retry processing this workpackage?
+		if (workPackageProcessorWrapped.isAllowRetryOnError())
+		{
+			workPackage.setProcessed(false); // just in case it was true
+		}
+		else
+		{
+			// Flag the workpackage as processed in order to:
+			// * not allow future retries
+			// * avoid discarding items from this workpackage on future workpackages because they were enqueued here
+			workPackage.setProcessed(true);
+		}
+		
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
 		workPackage.setAD_Issue(issue);

@@ -81,14 +81,14 @@ import de.metas.adempiere.model.I_AD_Form;
 
 /**
  * Application Menu Controller
- * 
+ *
  * @author Jorg Janke
  * @version $Id: AMenu.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
- * 
+ *
  * @author Colin Rooney (croo) RFE#1670185 restrict access to info queries
  * @author victor.perez@e-evolution.com
  * @see FR [ 1966328 ] New Window Info to MRP and CRP into View http://sourceforge.net/tracker/index.php?func=detail&aid=1966328&group_id=176962&atid=879335
- * 
+ *
  */
 public final class AMenu extends CFrame
 		implements ActionListener, PropertyChangeListener
@@ -97,14 +97,13 @@ public final class AMenu extends CFrame
 
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	
+
 	/**
 	 * Application Start and Menu
 	 */
 	public AMenu()
 	{
 		super();
-		log.info("CodeBase=" + Adempiere.getCodeBase());
 		Splash splash = Splash.getSplash();
 		//
 		m_WindowNo = Env.createWindowNo(this);
@@ -151,11 +150,11 @@ public final class AMenu extends CFrame
 		infoUpdaterThread = new Thread(infoUpdater, getClass().getName() + "-InfoUpdater");
 		infoUpdaterThread.setDaemon(true);
 		infoUpdaterThread.start();
-		
+
 		//
 		// Start notifications UI
 		SwingEventNotifierService.getInstance().start();
-			
+
 		//
 		// Start Main Window
 		final IUserRolePermissions role = Env.getUserRolePermissions();
@@ -185,14 +184,14 @@ public final class AMenu extends CFrame
 		splash.dispose();
 		splash = null;
 	}	// AMenu
-	
+
 	/**
 	 * Sets window position, window dimension and shows it.
 	 */
 	private final void packAndShow()
 	{
 		boolean openMaximized = Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED);
-		
+
 		//
 		// Set window position
 		{
@@ -287,11 +286,11 @@ public final class AMenu extends CFrame
 
 	/**************************************************************************
 	 * Init System. -- do not get Msg as environment not initialized yet --
-	 * 
+	 *
 	 * <pre>
 	 * - Login - in not successful, exit
 	 * </pre>
-	 * 
+	 *
 	 * @param splash splash window
 	 */
 	private void initSystem(Splash splash)
@@ -347,7 +346,7 @@ public final class AMenu extends CFrame
 
 	/**
 	 * Static Init.
-	 * 
+	 *
 	 * <pre>
 	 * -mainPanel
 	 * 		- centerPane
@@ -358,7 +357,7 @@ public final class AMenu extends CFrame
 	 * 		- bTask
 	 * 		- progressBar
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	void jbInit() throws Exception
@@ -366,20 +365,20 @@ public final class AMenu extends CFrame
 		this.setName("Menu");
 		this.setLocale(Language.getLoginLanguage().getLocale());
 		this.setJMenuBar(menuBar);
-		
+
 		//
 		final CPanel mainPanel = new CPanel();
 		final BorderLayout mainLayout = new BorderLayout();
 		mainPanel.setLayout(mainLayout);
 		mainLayout.setHgap(0);
 		mainLayout.setVgap(2);
-		
-		// task 09820 
+
+		// task 09820
 		// make sure the main Panel is displayed in the content pane
 		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		mainPanel.add(Box.createHorizontalStrut(3), BorderLayout.EAST);
 		mainPanel.add(Box.createHorizontalStrut(3), BorderLayout.WEST);
-		
+
 		//
 		// Center panel
 		{
@@ -396,7 +395,7 @@ public final class AMenu extends CFrame
 					centerPane.addTab(msgBL.getMsg(m_ctx, "PAPanel"), Images.getImageIcon2("InfoAccount16"), paPanel);
 				}
 			}
-			
+
 			//
 			// Tab: Menu tree
 			{
@@ -405,7 +404,7 @@ public final class AMenu extends CFrame
 				treePanel.addPropertyChangeListener(VTreePanel.PROPERTY_ExecuteNode, this);
 			}
 		}
-		
+
 		//
 		// South panel
 		{
@@ -415,7 +414,7 @@ public final class AMenu extends CFrame
 			final CPanel southPanel = new CPanel();
 			southPanel.setLayout(southLayout);
 			mainPanel.add(southPanel, BorderLayout.SOUTH);
-			
+
 			//
 			// Bottom buttons panel
 			{
@@ -440,7 +439,7 @@ public final class AMenu extends CFrame
 				infoPanel.setLayout(infoLayout);
 				infoPanel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4)); // left=right=same space as between components (task 09387)
 				infoPanel.add(bNotes, null);
-				infoPanel.add(bRequests, null);				
+				infoPanel.add(bRequests, null);
 				southPanel.add(infoPanel, BorderLayout.NORTH);
 			}
 		}
@@ -460,7 +459,7 @@ public final class AMenu extends CFrame
 		// View
 		JMenu mView = AEnv.getMenu("View");
 		menuBar.add(mView);
-		
+
 		InfoWindowMenuBuilder.newBuilder()
 				.setCtx(m_ctx)
 				.setParentWindowNo(m_WindowNo)
@@ -470,7 +469,7 @@ public final class AMenu extends CFrame
 		// Tools
 		JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
-		
+
 		// metas-tsa: Drop unneeded menu items (09271)
 		//@formatter:off
 //		AEnv.addMenuItem("Calculator", null, null, mTools, this);
@@ -482,7 +481,7 @@ public final class AMenu extends CFrame
 //		if (AEnv.isWorkflowProcess())
 //			AEnv.addMenuItem("WorkFlow", null, null, mTools, this);
 		//@formatter:on
-		
+
 		if (Env.getUserRolePermissions().isShowPreference())
 		{
 			if (mTools.getComponentCount() > 0)
@@ -549,8 +548,8 @@ public final class AMenu extends CFrame
 			infoUpdaterThread = null;
 			infoUpdater = null;
 		}
-		
-		// Stop the notifications UI 
+
+		// Stop the notifications UI
 		SwingEventNotifierService.getInstance().stop();
 
 		mainWindow = null;
@@ -566,14 +565,14 @@ public final class AMenu extends CFrame
 
 	/**
 	 * Window Events - requestFocus
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
 	protected final void processWindowEvent(final WindowEvent e)
 	{
 		super.processWindowEvent(e);
-		
+
 		if (e.getID() == WindowEvent.WINDOW_OPENED)
 		{
 			treePanel.requestFocusInWindow();
@@ -582,7 +581,7 @@ public final class AMenu extends CFrame
 
 	/**
 	 * Set Busy
-	 * 
+	 *
 	 * @param value true if busy
 	 */
 	protected final void setBusy(boolean value)
@@ -597,7 +596,7 @@ public final class AMenu extends CFrame
 
 	/**
 	 * Selection in tree - launch Application
-	 * 
+	 *
 	 * @param e PropertyChangeEvent
 	 */
 	@Override
@@ -609,25 +608,25 @@ public final class AMenu extends CFrame
 		{
 			return;
 		}
-		
+
 		// ignore summary items
 		if(node.isSummary())
 		{
 			return;
 		}
-		
+
 		// ignore the request if already busy
 		if (busy)
 		{
 			return;
 		}
-		
+
 		AMenuStartItem.startMenuItem(node, this); // async load
 	}	// propertyChange
 
 	/**************************************************************************
 	 * ActionListener
-	 * 
+	 *
 	 * @param e ActionEvent
 	 */
 	@Override
@@ -647,7 +646,7 @@ public final class AMenu extends CFrame
 
 	/**
 	 * Get number of open Notes
-	 * 
+	 *
 	 * @return number of notes
 	 */
 	private int getNotes()
@@ -682,7 +681,7 @@ public final class AMenu extends CFrame
 
 	/**
 	 * Ger Number of open Requests
-	 * 
+	 *
 	 * @return number of requests
 	 */
 	private int getRequests()
@@ -734,11 +733,11 @@ public final class AMenu extends CFrame
 		}
 	}	// updateInfo
 
-	
+
 
 	/*************************************************************************
 	 * Start Workflow Activity
-	 * 
+	 *
 	 * @param AD_Workflow_ID id
 	 */
 	protected void startWorkFlow(final int AD_Workflow_ID)
@@ -748,14 +747,14 @@ public final class AMenu extends CFrame
 		wfPanel.load(AD_Workflow_ID, false);
 		// set this on true in order use the simplified form
 		wfPanel.setSimpleWorkflowWindow(true);
-		
+
 		// create the frame
 		final FormFrame ff = new FormFrame();
 		ff.setTitle(Services.get(IMsgBL.class).getMsg (m_ctx, "WorkflowPanel") + " - " +Services.get(IADWorkflowBL.class).getWorkflowName(AD_Workflow_ID));
 		ff.setIconImage(Images.getImage2("mWorkFlow"));
-		
+
 		wfPanel.init(m_WindowNo, ff);
-		
+
 		windowManager.add(ff);
 
 		ff.showFormWindow();

@@ -38,8 +38,6 @@ import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
-import org.adempiere.appdict.validation.model.validator.AD_JavaClass;
-import org.adempiere.appdict.validation.model.validator.AD_JavaClass_Type;
 import org.adempiere.appdict.validation.model.validator.ApplicationDictionary;
 import org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater;
 import org.adempiere.bpartner.service.impl.AsyncBPartnerTotalOpenBalanceUpdater;
@@ -207,9 +205,6 @@ public class SwatValidator implements ModelValidator
 
 		engine.addModelValidator(new de.metas.allocation.modelvalidator.C_Invoice(), client); // 04193
 		engine.addModelValidator(new de.metas.allocation.modelvalidator.C_Payment(), client); // 04193
-
-		engine.addModelValidator(new AD_JavaClass(), client); // 04599
-		engine.addModelValidator(new AD_JavaClass_Type(), client); // 04599
 
 		engine.addModelValidator(new M_AttributeInstance(), client); // 05839
 

@@ -32,6 +32,8 @@ import java.util.List;
 
 import org.adempiere.util.EmptyIterator;
 
+import com.google.common.base.Throwables;
+
 public final class IteratorUtils
 {
 	/**
@@ -115,7 +117,19 @@ public final class IteratorUtils
 			}
 			catch (IOException e)
 			{
-				throw new RuntimeException(e);
+				throw Throwables.propagate(e);
+			}
+		}
+		else if (iterator instanceof AutoCloseable)
+		{
+			final AutoCloseable closeable = (AutoCloseable)iterator;
+			try
+			{
+				closeable.close();
+			}
+			catch (Exception e)
+			{
+				throw Throwables.propagate(e);
 			}
 		}
 		else if (iterator instanceof IteratorWrapper)
@@ -126,6 +140,19 @@ public final class IteratorUtils
 		}
 
 		// iterator is not closeable, nothing to do
+	}
+	
+	public static void closeQuietly(final Iterator<?> iterator)
+	{
+		try
+		{
+			close(iterator);
+		}
+		catch (Throwable e)
+		{
+			// ignore the exception
+			e.printStackTrace();
+		}
 	}
 
 	public static void close(final BlindIterator<?> iterator)
@@ -144,7 +171,19 @@ public final class IteratorUtils
 			}
 			catch (IOException e)
 			{
-				throw new RuntimeException(e);
+				throw Throwables.propagate(e);
+			}
+		}
+		else if (iterator instanceof AutoCloseable)
+		{
+			final AutoCloseable closeable = (AutoCloseable)iterator;
+			try
+			{
+				closeable.close();
+			}
+			catch (Exception e)
+			{
+				throw Throwables.propagate(e);
 			}
 		}
 		else if (iterator instanceof IteratorWrapper)

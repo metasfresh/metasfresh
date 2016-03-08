@@ -28,9 +28,6 @@ import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.appdict.IJavaClassBL;
-import org.adempiere.appdict.IJavaClassDAO;
-import org.adempiere.appdict.model.I_AD_JavaClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -50,6 +47,9 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.interfaces.I_C_BPartner_Product;
+import de.metas.javaclasses.IJavaClassBL;
+import de.metas.javaclasses.IJavaClassDAO;
+import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 

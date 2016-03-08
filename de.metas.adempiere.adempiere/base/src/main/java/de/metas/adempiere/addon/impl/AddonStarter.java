@@ -10,12 +10,12 @@ package de.metas.adempiere.addon.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,8 @@ package de.metas.adempiere.addon.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -39,7 +41,7 @@ public final class AddonStarter implements IAddonStarter
 	public static final String PROPS_RESOURCE = "/addons.properties";
 
 	private static final CLogger logger = CLogger.getCLogger(AddonStarter.class);
-	
+
 	/**
 	 * Shall we log a WARNING if the {@link #PROPS_RESOURCE} is missing.
 	 */
@@ -50,7 +52,7 @@ public final class AddonStarter implements IAddonStarter
 	public AddonStarter()
 	{
 		super();
-		
+
 		props = new Properties();
 		try
 		{
@@ -89,7 +91,14 @@ public final class AddonStarter implements IAddonStarter
 	@Override
 	public void startAddons()
 	{
-		for (final Object addonName : props.keySet())
+		final ArrayList<String> keys = new ArrayList<>();
+		for (final Object key : props.keySet())
+		{
+			keys.add((String)key);
+		}
+		Collections.sort(keys);
+
+		for (final Object addonName : keys)
 		{
 			final String addonClass = (String)props.get(addonName);
 
@@ -114,7 +123,7 @@ public final class AddonStarter implements IAddonStarter
 					.asSubclass(IAddOn.class);
 
 			final IAddOn instance = clazzVC.newInstance();
-			instance.initAddon();
+			instance.beforeConnection();
 
 		}
 		catch (ClassNotFoundException e)

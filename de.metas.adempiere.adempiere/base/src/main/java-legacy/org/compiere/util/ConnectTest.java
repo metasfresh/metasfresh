@@ -23,8 +23,6 @@ import java.util.Hashtable;
 import javax.naming.InitialContext;
 import javax.naming.NamingEnumeration;
 
-import org.compiere.interfaces.Status;
-
 /**
  *	Apps Server Connection Test
  *
@@ -66,7 +64,6 @@ public class ConnectTest
 		}
 
 		testJNP (serverName, context);
-		testEJB (serverName, context);
 
 	}	//	ConnectTest
 
@@ -133,34 +130,6 @@ public class ConnectTest
 			return;
 		}
 	}	//	testJNP
-
-	/**
-	 * 	Test EJB
-	 * 	@param serverName server name
-	 *  @param context context
-	 */
-	private void testEJB (String serverName, InitialContext context)
-	{
-		System.out.println();
-		System.out.println ("Connecting to EJB server ...");
-		try
-		{
-			System.out.println("  Name=" + Status.JNDI_NAME);
-			Status sta = (Status)context.lookup (Status.JNDI_NAME);
-			System.out.println("  .. bean created");
-			System.out.println("  ServerVersion=" + sta.getMainVersion() + " " + sta.getDateVersion());
-			System.out.println("  .. bean removed");
-		}
-		catch (Exception e)
-		{
-			System.err.println("ERROR: Could not connect: " + e);
-			return;
-		}
-
-		System.out.println();
-		System.out.println("SUCCESS !!");
-	}	//	testEJB
-
 
 	/**************************************************************************
 	 * 	Start Method

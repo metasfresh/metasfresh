@@ -25,7 +25,8 @@ package de.metas.adempiere.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
@@ -34,46 +35,46 @@ import org.compiere.model.GridTab;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
 
-public class OrderPricingSystem extends CalloutEngine {
-
-	private static final String TRX_NAME = null;
-
-	public String cBPartnerId(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value) {
-
-		if (isCalloutActive()) {
-			return "";
+public class OrderPricingSystem extends CalloutEngine
+{
+	public String cBPartnerId(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
+	{
+		if (isCalloutActive())
+		{
+			return NO_ERROR;
 		}
 
-		final I_C_Order order = GridTabWrapper.create(mTab, I_C_Order.class);
-		return Services.get(IOrderBL.class).setPricingSystemId(order, false,
-				TRX_NAME);
+		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
+		return Services.get(IOrderBL.class).setPricingSystemId(order, false, ITrx.TRXNAME_None);
 	}
 
-	public String cBPartnerLocationId(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value) {
-
-		if (isCalloutActive()) {
-			return "";
+	public String cBPartnerLocationId(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
+	{
+		if (isCalloutActive())
+		{
+			return NO_ERROR;
 		}
-		final I_C_Order order = GridTabWrapper.create(mTab, I_C_Order.class);
-		return Services.get(IOrderBL.class).checkForPriceList(order, false,
-				TRX_NAME);
+		
+		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
+		Services.get(IOrderBL.class).checkForPriceList(order, ITrx.TRXNAME_None);
+		
+		return NO_ERROR;
 	}
 
 	public String mPricingSystemId(final Properties ctx, final int WindowNo,
 			final GridTab mTab, final GridField mField, final Object value,
 			final Object oldValue) {
 
-		if (isCalloutActive()) {
-			return "";
+		if (isCalloutActive())
+		{
+			return NO_ERROR;
 		}
-		final I_C_Order order = GridTabWrapper.create(mTab, I_C_Order.class);
+		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
 
 		if (value == null && oldValue != null) {
 			// metas: Fuer einige m.E. i.O. fuer andere Kunden eher nicht.
 			mTab.setValue(mField, oldValue);
 		}
-		return Services.get(IOrderBL.class).setPriceList(order, false, order.getM_PricingSystem_ID(), TRX_NAME);
+		return Services.get(IOrderBL.class).setPriceList(order, false, order.getM_PricingSystem_ID(), ITrx.TRXNAME_None);
 	}
 }

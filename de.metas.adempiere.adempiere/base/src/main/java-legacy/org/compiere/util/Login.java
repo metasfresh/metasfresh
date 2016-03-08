@@ -62,7 +62,7 @@ import de.metas.adempiere.service.IPrinterRoutingBL;
 
 /**
  *	Login Manager
- *	
+ *
  *  @author Jorg Janke
  *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *		<li>Incorrect global Variable when you use multi Account Schema
@@ -94,7 +94,7 @@ public class Login
 
 	/**
 	 * Test Init - Set Environment for tests
-	 * 
+	 *
 	 * @param isClient client session
 	 * @return Context
 	 */
@@ -132,7 +132,7 @@ public class Login
 
 	/**
 	 * Java Version Test
-	 * 
+	 *
 	 * @param isClient client connection
 	 * @return true if Java Version is OK
 	 */
@@ -188,7 +188,7 @@ public class Login
 
 	/**************************************************************************
 	 * Login
-	 * 
+	 *
 	 * @param ctx context
 	 */
 	public Login(Properties ctx)
@@ -218,7 +218,7 @@ public class Login
 	 * - Compare User info
 	 * <p>
 	 * Sets Context with login info
-	 * 
+	 *
 	 * @param cc connection
 	 * @param app_user user
 	 * @param app_pwd pwd
@@ -253,7 +253,7 @@ public class Login
 	 * Compare User Info
 	 * <p>
 	 * Sets Context with login info
-	 * 
+	 *
 	 * @param app_user Principal
 	 * @return role array or null if in error. The error (NoDatabase, UserPwdError, DBLogin) is saved in the log
 	 */
@@ -271,7 +271,7 @@ public class Login
 	 * Compare User Info
 	 * <p>
 	 * Sets Context with login info
-	 * 
+	 *
 	 * @param app_user user id
 	 * @param app_pwd password
 	 * @return role array or null if in error. The error (NoDatabase, UserPwdError, DBLogin) is saved in the log
@@ -284,7 +284,7 @@ public class Login
 
 	/**
 	 * Actual DB login procedure.
-	 * 
+	 *
 	 * @param app_user user
 	 * @param app_pwd pwd
 	 * @param force ignore pwd
@@ -347,8 +347,7 @@ public class Login
 		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
 		//
 		final StringBuilder sql = new StringBuilder("SELECT u.AD_User_ID, r.AD_Role_ID,r.Name, ")
-				.append(" u.ConnectionProfile ")
-				.append(", u.LoginFailureCount, u.IsAccountLocked , u.Password , u.LoginFailureDate, ") // metas: ab
+				.append(" u.LoginFailureCount, u.IsAccountLocked , u.Password , u.LoginFailureDate, ") // metas: ab
 				.append("(CASE WHEN ((u.Password=? AND (SELECT IsEncrypted FROM AD_Column WHERE AD_Column_ID=417)='N') " // #1
 						+ "OR (u.Password=? AND (SELECT IsEncrypted FROM AD_Column WHERE AD_Column_ID=417)='Y'))"	// #2
 						+ " THEN 'Y' ELSE 'N' END) AS PasswordValid")
@@ -477,17 +476,6 @@ public class Login
 				if (Ini.isPropertyBool(Ini.P_STORE_PWD) && MSystem.isSwingRememberPasswordAllowed())
 					Ini.setProperty(Ini.P_PWD, app_pwd);
 
-				m_connectionProfile = rs.getString(4);		// User Based
-				if (m_connectionProfile != null)
-				{
-					CConnection cc = CConnection.get();
-					if (!cc.getConnectionProfile().equals(m_connectionProfile))
-					{
-						cc.setConnectionProfile(m_connectionProfile);
-						Ini.setProperty(Ini.P_CONNECTION, cc.toStringLong());
-						Ini.saveProperties(false);
-					}
-				}
 			}
 
 			do	// read all roles
@@ -552,7 +540,7 @@ public class Login
 	 * Load Clients.
 	 * <p>
 	 * Sets Role info in context and loads its clients
-	 * 
+	 *
 	 * @param role role information
 	 * @return list of valid client {@link KeyNamePair}s or null if in error
 	 */
@@ -617,7 +605,7 @@ public class Login
 	 * Load Organizations.
 	 * <p>
 	 * Sets Client info in context and loads its organization, the role has access to
-	 * 
+	 *
 	 * @param client client information
 	 * @return list of valid Org KeyNodePairs or null if in error
 	 */
@@ -663,7 +651,7 @@ public class Login
 
 	/**
 	 * Load Warehouses
-	 * 
+	 *
 	 * @param org organization
 	 * @return Array of Warehouse Info
 	 */
@@ -696,7 +684,7 @@ public class Login
 
 	/**
 	 * Validate Login
-	 * 
+	 *
 	 * @param org log-in org
 	 * @return error message
 	 */
@@ -759,7 +747,7 @@ public class Login
 	 * - AD_Preference
 	 * <p>
 	 * Assumes that the context is set for #AD_Client_ID, #AD_User_ID, #AD_Role_ID
-	 * 
+	 *
 	 * @param org org information
 	 * @param warehouse optional warehouse information
 	 * @param timestamp optional date
@@ -1013,7 +1001,7 @@ public class Login
 
 	/**
 	 * Load Default Value for Table into Context.
-	 * 
+	 *
 	 * @param TableName table name
 	 * @param ColumnName column name
 	 */

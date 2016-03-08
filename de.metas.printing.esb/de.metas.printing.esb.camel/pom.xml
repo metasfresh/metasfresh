@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -39,33 +41,34 @@
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
 				</exclusion>
+				<!-- we want to build with camel's dependencies, not with metasfresh's -->
+				<exclusion>
+					<artifactId>de.metas.jax.rs</artifactId>
+					<groupId>de.metas.jax.rs</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
 		<dependency>
 			<artifactId>camel-test</artifactId>
 			<groupId>org.apache.camel</groupId>
-			<version>${camel.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>3.1.2.RELEASE</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Apache CAMEL dependencies -->
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-core</artifactId>
-			<version>${camel.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -88,15 +91,14 @@
 		<dependency>
 			<artifactId>camel-jms</artifactId>
 			<groupId>org.apache.camel</groupId>
-			<version>${camel.version}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-http-jetty</artifactId>
-			<version>${cxf.version}</version>
 			<scope>provided</scope>
+
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.geronimo.specs</groupId>
@@ -122,24 +124,22 @@
 					<artifactId>javax.servlet-api</artifactId>
 					<groupId>javax.servlet</groupId>
 				</exclusion>
+
 			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-script</artifactId>
-			<version>${camel.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-jaxb</artifactId>
-			<version>${camel.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-cxf</artifactId>
-			<version>${camel.version}</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -155,7 +155,6 @@
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-jackson</artifactId>
-			<version>${camel.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -168,7 +167,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.jaxrs</groupId>
 			<artifactId>jackson-jaxrs-json-provider</artifactId>
-			<version>${jackson.version}</version>
 		</dependency>
 
 		<!-- Guava: needed for misc helper classes which ease development
@@ -180,20 +178,32 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.6.6</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- get the dependency management of the de.metas.esb "commons" project -->
+			<dependency>
+				<groupId>de.metas.esb</groupId>
+				<artifactId>de.metas.esb</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 
 	<build>
 

@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -66,14 +68,14 @@
 SQL and jasper dependencies:
 note: when adding new records, please roughly order them by alphabet.
  -->
- 		<dependency>
+		<dependency>
 			<groupId>de.metas.acct</groupId>
 			<artifactId>de.metas.acct.base</artifactId>
 			<version>${project.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
@@ -90,14 +92,22 @@ note: when adding new records, please roughly order them by alphabet.
 			<type>zip</type>
 		</dependency>
 
-		 <dependency>
+		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
 			<version>${project.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
-
+		
+		<dependency>
+			<groupId>de.metas.jax.rs</groupId>
+			<artifactId>de.metas.jax.rs</artifactId>
+			<version>${project.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>

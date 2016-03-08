@@ -41,6 +41,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.util.CLogger;
@@ -159,6 +160,10 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 		// NOTE: don't catch exceptions here, there are handled in called methods
 		finally
 		{
+			//
+			// Make sure the iterator is closed
+			IteratorUtils.closeQuietly(items);
+			
 			//
 			// Make sure we are not letting the transaction open
 			if (chunkTrx != null)

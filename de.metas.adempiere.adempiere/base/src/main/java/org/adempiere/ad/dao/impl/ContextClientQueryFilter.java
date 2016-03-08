@@ -86,7 +86,8 @@ public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 	@Override
 	public List<Object> getSqlParams(final Properties ctx)
 	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
+		final Properties ctxToUse = ctx == null ? this.ctx : ctx;
+		final int adClientId = Env.getAD_Client_ID(ctxToUse);
 		return Arrays.asList((Object)adClientId);
 	}
 

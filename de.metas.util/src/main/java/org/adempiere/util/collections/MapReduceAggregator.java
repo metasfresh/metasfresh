@@ -199,6 +199,18 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 		_lastGroupUsed = group;
 		_countItems++;
 	}
+	
+	public MapReduceAggregator<GroupType, ItemType> addAll(final Iterator<ItemType> items)
+	{
+		Check.assumeNotNull(items, "items not null");
+		while(items.hasNext())
+		{
+			final ItemType item = items.next();
+			add(item);
+		}
+		
+		return this;
+	}
 
 	/** @return hash/aggregation key for given <code>item</code> */
 	private final Object createItemHashKey(final ItemType item)

@@ -66,6 +66,17 @@ public interface IWorkpackageProcessor2 extends IWorkpackageProcessor
 	 */
 	boolean isRunInTransaction();
 
+	/**
+	 * Shall we allow this workpackage to be re-processed in future?
+	 * 
+	 * If this method returns <code>false</code>, basically it means:
+	 * <ul>
+	 * <li>the workpackage will be flagged as Processed, so no future retries will be posible (i.e. by unchecking the IsError flag)
+	 * <li>avoids discarding items from this workpackage on future workpackages because they were enqueued here
+	 * </ul>
+	 */
+	boolean isAllowRetryOnError();
+
 	@Override
 	Result processWorkPackage(I_C_Queue_WorkPackage workPackage, String localTrxName);
 

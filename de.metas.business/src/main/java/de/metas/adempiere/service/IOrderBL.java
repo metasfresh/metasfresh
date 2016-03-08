@@ -109,11 +109,15 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Check if there is a price list for the given location and pricing system.
+	 * 
+	 * In case there is any error, this method will throw an exception.
+	 * 
+	 * NOTE: in case the bpartner location or the pricing system is not set, this method will skip the validation and no exception will be thrown.
 	 *
-	 * @param mTab
-	 * @return
+	 * @param order
+	 * @param trxName
 	 */
-	String checkForPriceList(I_C_Order order, boolean nullIfOk, String trxName);
+	void checkForPriceList(I_C_Order order, String trxName);
 
 	/**
 	 * Retrieve total tax amount for this order

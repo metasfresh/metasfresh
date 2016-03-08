@@ -126,6 +126,18 @@ public class InterfaceWrapperHelper
 		return create(ctx, cl, trxName);
 	}
 
+	/**
+	 * Convenient method to create a new instance of given class, using current context and current transaction.
+	 * 
+	 * @param cl
+	 */
+	public static <T> T newInstance(final Class<T> cl)
+	{
+		final Properties ctx = Env.getCtx();
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		return create(ctx, cl, trxName);
+	}
+
 	public static <T> T create(final Object model, final Class<T> cl)
 	{
 		final boolean useOldValues = false;

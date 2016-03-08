@@ -53,15 +53,15 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
     }
 
 	@Override
-	public org.adempiere.appdict.model.I_AD_JavaClass getAggregationStrategy_JavaClass() throws RuntimeException
+	public de.metas.javaclasses.model.I_AD_JavaClass getAggregationStrategy_JavaClass() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_AggregationStrategy_JavaClass_ID, org.adempiere.appdict.model.I_AD_JavaClass.class);
+		return get_ValueAsPO(COLUMNNAME_AggregationStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class);
 	}
 
 	@Override
-	public void setAggregationStrategy_JavaClass(org.adempiere.appdict.model.I_AD_JavaClass AggregationStrategy_JavaClass)
+	public void setAggregationStrategy_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass AggregationStrategy_JavaClass)
 	{
-		set_ValueFromPO(COLUMNNAME_AggregationStrategy_JavaClass_ID, org.adempiere.appdict.model.I_AD_JavaClass.class, AggregationStrategy_JavaClass);
+		set_ValueFromPO(COLUMNNAME_AggregationStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class, AggregationStrategy_JavaClass);
 	}
 
 	/** Set Aggregation Strategy.
@@ -124,15 +124,15 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 	}
 
 	@Override
-	public org.adempiere.appdict.model.I_AD_JavaClass getHU_TansferStrategy_JavaClass() throws RuntimeException
+	public de.metas.javaclasses.model.I_AD_JavaClass getHU_TansferStrategy_JavaClass() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_HU_TansferStrategy_JavaClass_ID, org.adempiere.appdict.model.I_AD_JavaClass.class);
+		return get_ValueAsPO(COLUMNNAME_HU_TansferStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class);
 	}
 
 	@Override
-	public void setHU_TansferStrategy_JavaClass(org.adempiere.appdict.model.I_AD_JavaClass HU_TansferStrategy_JavaClass)
+	public void setHU_TansferStrategy_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass HU_TansferStrategy_JavaClass)
 	{
-		set_ValueFromPO(COLUMNNAME_HU_TansferStrategy_JavaClass_ID, org.adempiere.appdict.model.I_AD_JavaClass.class, HU_TansferStrategy_JavaClass);
+		set_ValueFromPO(COLUMNNAME_HU_TansferStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class, HU_TansferStrategy_JavaClass);
 	}
 
 	/** Set HU Transfer Attribute Strategy.
@@ -408,15 +408,15 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 	}
 
 	@Override
-	public org.adempiere.appdict.model.I_AD_JavaClass getSplitterStrategy_JavaClass() throws RuntimeException
+	public de.metas.javaclasses.model.I_AD_JavaClass getSplitterStrategy_JavaClass() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_SplitterStrategy_JavaClass_ID, org.adempiere.appdict.model.I_AD_JavaClass.class);
+		return get_ValueAsPO(COLUMNNAME_SplitterStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class);
 	}
 
 	@Override
-	public void setSplitterStrategy_JavaClass(org.adempiere.appdict.model.I_AD_JavaClass SplitterStrategy_JavaClass)
+	public void setSplitterStrategy_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass SplitterStrategy_JavaClass)
 	{
-		set_ValueFromPO(COLUMNNAME_SplitterStrategy_JavaClass_ID, org.adempiere.appdict.model.I_AD_JavaClass.class, SplitterStrategy_JavaClass);
+		set_ValueFromPO(COLUMNNAME_SplitterStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class, SplitterStrategy_JavaClass);
 	}
 
 	/** Set Splitter Strategy.

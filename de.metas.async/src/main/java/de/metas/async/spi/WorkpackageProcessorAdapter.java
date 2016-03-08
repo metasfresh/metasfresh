@@ -83,6 +83,12 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 		return true;
 	}
 
+	@Override
+	public boolean isAllowRetryOnError()
+	{
+		return true;
+	}
+
 	/**
 	 * Gets the {@link ILoggable} to be used to record important informations about how current workpackage is processed.
 	 *

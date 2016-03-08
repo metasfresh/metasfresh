@@ -7,8 +7,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.processor.IWorkPackageQueueFactory;
@@ -23,12 +26,12 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,18 +40,27 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 
 /**
  * Template class for implementing algorithms which are collecting items, group them in workpackages and submit the workpackages when the transaction is committed.
- * 
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  * @param <ItemType> item type to be collected.
  */
 public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 {
+	/** Convenient method to create an instance which is scheduling a workpackage on transaction commit, but which is NOT collecting the enqueued models */
+	public static final <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelSchedulerNoCollect(
+			final Class<? extends IWorkpackageProcessor> workpackageProcessorClass,
+			final Class<ModelType> modelType)
+	{
+		final boolean collectModels = false;
+		return new ModelsScheduler<ModelType>(workpackageProcessorClass, modelType, collectModels);
+	}
+
 	private final Class<? extends IWorkpackageProcessor> workpackageProcessorClass;
-	private String trxPropertyName;
+	private final String trxPropertyName;
 
 	/**
-	 * 
+	 *
 	 * @param workpackageProcessorClass workpackage processor class to be used when workpackages are enqueued.
 	 */
 	public WorkpackagesOnCommitSchedulerTemplate(final Class<? extends IWorkpackageProcessor> workpackageProcessorClass)
@@ -63,11 +75,11 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 	/**
 	 * Schedule given item to be enqueued in a transaction level workpackage which will be submitted when the transaction is committed.
-	 * 
+	 *
 	 * The transaction is extracted from item, using {@link #extractTrxNameFromItem(Object)}.
-	 * 
+	 *
 	 * If item has no transaction, a workpackage with given item will be automatically created and enqueued to be processed.
-	 * 
+	 *
 	 * @param item
 	 */
 	public final void schedule(final ItemType item)
@@ -81,11 +93,16 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		scheduleFactory.collect(item);
 	}
 
+	protected final Class<? extends IWorkpackageProcessor> getWorkpackageProcessorClass()
+	{
+		return workpackageProcessorClass;
+	}
+
 	/**
 	 * Checks if given item is eligible for scheduling.
-	 * 
+	 *
 	 * To be implemented by extending classes in order to avoid some items to be scheduled. By default this method accepts any item.
-	 * 
+	 *
 	 * @return true if given item shall be scheduled
 	 */
 	protected boolean isEligibleForScheduling(final ItemType item)
@@ -95,9 +112,9 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 	/**
 	 * Extracts and returns the context to be used from given item.
-	 * 
+	 *
 	 * The context is used to create the internal {@link IWorkPackageBuilder}.
-	 * 
+	 *
 	 * @param item
 	 * @return ctx; shall never be <code>null</code>
 	 */
@@ -105,7 +122,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 	/**
 	 * Extracts and returns the trxName to be used from given item
-	 * 
+	 *
 	 * @param item
 	 * @return transaction name or {@link ITrx#TRXNAME_None}
 	 */
@@ -113,7 +130,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 	/**
 	 * Extracts the model to be enqueued to internal {@link IWorkPackageBuilder}.
-	 * 
+	 *
 	 * @param collector
 	 * @param item
 	 * @return model to be enqueued or <code>null</code> if no model shall be enqueued.
@@ -164,7 +181,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 	/**
 	 * Collector class responsible to collecting items and enqueuing a workpackage which will process the collected items.
-	 * 
+	 *
 	 * @author metas-dev <dev@metas-fresh.com>
 	 */
 	protected final class Collector
@@ -246,6 +263,53 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 					//
 					// Build & enqueue
 					.build();
+		}
+	}
+
+	private static final class ModelsScheduler<ModelType> extends WorkpackagesOnCommitSchedulerTemplate<ModelType>
+	{
+		private final Class<ModelType> modelType;
+		private final boolean collectModels;
+
+		public ModelsScheduler(final Class<? extends IWorkpackageProcessor> workpackageProcessorClass, final Class<ModelType> modelType, final boolean collectModels)
+		{
+			super(workpackageProcessorClass);
+			this.modelType = modelType;
+			this.collectModels = collectModels;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("collectModels", collectModels)
+					.add("workpackageProcessorClass", getWorkpackageProcessorClass())
+					.add("modelType", modelType)
+					.toString();
+		}
+
+		@Override
+		protected Properties extractCtxFromItem(final ModelType item)
+		{
+			return InterfaceWrapperHelper.getCtx(item);
+		}
+
+		@Override
+		protected String extractTrxNameFromItem(final ModelType item)
+		{
+			return InterfaceWrapperHelper.getTrxName(item);
+		}
+
+		@Override
+		protected Object extractModelToEnqueueFromItem(final Collector collector, final ModelType item)
+		{
+			return collectModels ? item : null;
+		}
+
+		@Override
+		protected boolean isEnqueueWorkpackageWhenNoModelsEnqueued()
+		{
+			return !collectModels;
 		}
 	}
 }

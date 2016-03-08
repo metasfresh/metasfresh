@@ -10,12 +10,12 @@ package org.compiere.session;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,15 +24,12 @@ package org.compiere.session;
 
 
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.ProcessUtil;
 import org.adempiere.util.Services;
-import org.compiere.interfaces.Server;
 import org.compiere.model.MClient;
 import org.compiere.model.MTask;
 import org.compiere.model.MUser;
@@ -42,15 +39,17 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
 
+import de.metas.session.jaxrs.IServerService;
+
 /**
  * Base implementation of {@link Server}.
- * 
+ *
  * AIM: have a technology (EJB or any other) implementaton of {@link Server}
  *
  * @author tsa
  *
  */
-public class ServerBase implements Server
+public class ServerBase implements IServerService
 {
 	/** Logger */
 	protected final transient CLogger log = CLogger.getCLogger(getClass());
@@ -90,33 +89,19 @@ public class ServerBase implements Server
 	public String postImmediate(final Properties ctx,
 			final int AD_Client_ID,
 			final int AD_Table_ID, final int Record_ID,
-			final boolean force,
-			final String trxName)
+			final boolean force)
 	{
 		log.info("[" + m_no + "] Table=" + AD_Table_ID + ", Record=" + Record_ID);
 
 		m_postCount++;
 
-		//
-		// If we got a transaction from the remote client and that transaction does not exist in our instance
-		// => run out of transaction and hope for the best
-		final String trxNameToUse;
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		if (!trxManager.isNull(trxName) && trxManager.getTrxOrNull(trxName) == null)
-		{
-			log.log(Level.WARNING, "Got a transaction which does not exist ({0}). Using trxName=null", trxName);
-			trxNameToUse = ITrx.TRXNAME_None;
-		}
-		else
-		{
-			trxNameToUse = trxName;
-		}
+		final String trxName = ITrx.TRXNAME_None;
 
 		//
 		// Ask the document to be posted immediate
 		return Services.get(IPostingService.class)
 				.newPostingRequest()
-				.setContext(ctx, trxNameToUse)
+				.setContext(ctx, trxName)
 				.setAD_Client_ID(AD_Client_ID)
 				.setDocument(AD_Table_ID, Record_ID)
 				.setForce(force)

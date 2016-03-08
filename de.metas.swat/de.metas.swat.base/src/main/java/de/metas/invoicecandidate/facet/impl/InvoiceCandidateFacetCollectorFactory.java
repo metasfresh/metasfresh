@@ -23,12 +23,8 @@ package de.metas.invoicecandidate.facet.impl;
  */
 
 
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
-
+import org.adempiere.facet.ClassBasedFacetCollectorFactory;
 import org.adempiere.facet.IFacetCollector;
-import org.adempiere.facet.impl.CompositeFacetCollector;
-import org.adempiere.util.Check;
 import org.compiere.util.CLogger;
 
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -39,8 +35,9 @@ public class InvoiceCandidateFacetCollectorFactory implements IInvoiceCandidateF
 {
 	// services
 	private static final transient CLogger logger = InvoiceCandidate_Constants.getLogger();
-
-	private final CopyOnWriteArrayList<Class<? extends IFacetCollector<I_C_Invoice_Candidate>>> facetCollectorClasses = new CopyOnWriteArrayList<>();
+	
+	private ClassBasedFacetCollectorFactory<I_C_Invoice_Candidate> factory = new ClassBasedFacetCollectorFactory<I_C_Invoice_Candidate>()
+			.setLogger(logger);			
 
 	public InvoiceCandidateFacetCollectorFactory()
 	{
@@ -49,44 +46,25 @@ public class InvoiceCandidateFacetCollectorFactory implements IInvoiceCandidateF
 		//
 		// Register default collector classes
 		// NOTE: the order in which they are registered, it's the order in which the facet categories will be displayed to user.
-		registerFacetCollectorClass(C_Invoice_Candidate_BillBPartner_FacetCollector.class);
-		registerFacetCollectorClass(C_Invoice_Candidate_Order_FacetCollector.class);
-		registerFacetCollectorClass(C_Invoice_Candidate_InOut_FacetCollector.class);
-		registerFacetCollectorClass(C_Invoice_Candidate_DeliveryDate_FacetCollector.class);
-		registerFacetCollectorClass(C_Invoice_Candidate_Misc_FacetCollector.class);
+		factory.registerFacetCollectorClasses(
+				C_Invoice_Candidate_BillBPartner_FacetCollector.class
+				, C_Invoice_Candidate_Order_FacetCollector.class
+				, C_Invoice_Candidate_InOut_FacetCollector.class
+				, C_Invoice_Candidate_DeliveryDate_FacetCollector.class
+				, C_Invoice_Candidate_Misc_FacetCollector.class
+		);
 	}
 
 	@Override
 	public InvoiceCandidateFacetCollectorFactory registerFacetCollectorClass(final Class<? extends IFacetCollector<I_C_Invoice_Candidate>> facetCollectorClass)
 	{
-		Check.assumeNotNull(facetCollectorClass, "facetCollectorClass not null");
-		facetCollectorClasses.addIfAbsent(facetCollectorClass);
-
+		factory.registerFacetCollectorClass(facetCollectorClass);
 		return this;
 	}
 
 	@Override
 	public IFacetCollector<I_C_Invoice_Candidate> createFacetCollectors()
 	{
-		final CompositeFacetCollector<I_C_Invoice_Candidate> collectors = new CompositeFacetCollector<>();
-		for (final Class<? extends IFacetCollector<I_C_Invoice_Candidate>> collectorClass : facetCollectorClasses)
-		{
-			try
-			{
-				final IFacetCollector<I_C_Invoice_Candidate> collector = collectorClass.newInstance();
-				collectors.addFacetCollector(collector);
-			}
-			catch (final Exception e)
-			{
-				logger.log(Level.WARNING, "Failed to instantiate collector " + collectorClass + ". Skip it.", e);
-			}
-		}
-
-		if (!collectors.hasCollectors())
-		{
-			throw new IllegalStateException("No valid facet collector classes were defined");
-		}
-
-		return collectors;
+		return factory.createFacetCollectors();
 	}
 }

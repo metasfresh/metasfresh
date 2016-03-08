@@ -86,12 +86,12 @@ public interface I_M_HU_PI_Attribute
 	 */
 	public int getAggregationStrategy_JavaClass_ID();
 
-	public org.adempiere.appdict.model.I_AD_JavaClass getAggregationStrategy_JavaClass();
+	public de.metas.javaclasses.model.I_AD_JavaClass getAggregationStrategy_JavaClass();
 
-	public void setAggregationStrategy_JavaClass(org.adempiere.appdict.model.I_AD_JavaClass AggregationStrategy_JavaClass);
+	public void setAggregationStrategy_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass AggregationStrategy_JavaClass);
 
     /** Column definition for AggregationStrategy_JavaClass_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.adempiere.appdict.model.I_AD_JavaClass> COLUMN_AggregationStrategy_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.adempiere.appdict.model.I_AD_JavaClass>(I_M_HU_PI_Attribute.class, "AggregationStrategy_JavaClass_ID", org.adempiere.appdict.model.I_AD_JavaClass.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, de.metas.javaclasses.model.I_AD_JavaClass> COLUMN_AggregationStrategy_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, de.metas.javaclasses.model.I_AD_JavaClass>(I_M_HU_PI_Attribute.class, "AggregationStrategy_JavaClass_ID", de.metas.javaclasses.model.I_AD_JavaClass.class);
     /** Column name AggregationStrategy_JavaClass_ID */
     public static final String COLUMNNAME_AggregationStrategy_JavaClass_ID = "AggregationStrategy_JavaClass_ID";
 
@@ -174,12 +174,12 @@ public interface I_M_HU_PI_Attribute
 	 */
 	public int getHU_TansferStrategy_JavaClass_ID();
 
-	public org.adempiere.appdict.model.I_AD_JavaClass getHU_TansferStrategy_JavaClass();
+	public de.metas.javaclasses.model.I_AD_JavaClass getHU_TansferStrategy_JavaClass();
 
-	public void setHU_TansferStrategy_JavaClass(org.adempiere.appdict.model.I_AD_JavaClass HU_TansferStrategy_JavaClass);
+	public void setHU_TansferStrategy_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass HU_TansferStrategy_JavaClass);
 
     /** Column definition for HU_TansferStrategy_JavaClass_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.adempiere.appdict.model.I_AD_JavaClass> COLUMN_HU_TansferStrategy_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.adempiere.appdict.model.I_AD_JavaClass>(I_M_HU_PI_Attribute.class, "HU_TansferStrategy_JavaClass_ID", org.adempiere.appdict.model.I_AD_JavaClass.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, de.metas.javaclasses.model.I_AD_JavaClass> COLUMN_HU_TansferStrategy_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, de.metas.javaclasses.model.I_AD_JavaClass>(I_M_HU_PI_Attribute.class, "HU_TansferStrategy_JavaClass_ID", de.metas.javaclasses.model.I_AD_JavaClass.class);
     /** Column name HU_TansferStrategy_JavaClass_ID */
     public static final String COLUMNNAME_HU_TansferStrategy_JavaClass_ID = "HU_TansferStrategy_JavaClass_ID";
 
@@ -455,12 +455,12 @@ public interface I_M_HU_PI_Attribute
 	 */
 	public int getSplitterStrategy_JavaClass_ID();
 
-	public org.adempiere.appdict.model.I_AD_JavaClass getSplitterStrategy_JavaClass();
+	public de.metas.javaclasses.model.I_AD_JavaClass getSplitterStrategy_JavaClass();
 
-	public void setSplitterStrategy_JavaClass(org.adempiere.appdict.model.I_AD_JavaClass SplitterStrategy_JavaClass);
+	public void setSplitterStrategy_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass SplitterStrategy_JavaClass);
 
     /** Column definition for SplitterStrategy_JavaClass_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.adempiere.appdict.model.I_AD_JavaClass> COLUMN_SplitterStrategy_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, org.adempiere.appdict.model.I_AD_JavaClass>(I_M_HU_PI_Attribute.class, "SplitterStrategy_JavaClass_ID", org.adempiere.appdict.model.I_AD_JavaClass.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, de.metas.javaclasses.model.I_AD_JavaClass> COLUMN_SplitterStrategy_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, de.metas.javaclasses.model.I_AD_JavaClass>(I_M_HU_PI_Attribute.class, "SplitterStrategy_JavaClass_ID", de.metas.javaclasses.model.I_AD_JavaClass.class);
     /** Column name SplitterStrategy_JavaClass_ID */
     public static final String COLUMNNAME_SplitterStrategy_JavaClass_ID = "SplitterStrategy_JavaClass_ID";
 

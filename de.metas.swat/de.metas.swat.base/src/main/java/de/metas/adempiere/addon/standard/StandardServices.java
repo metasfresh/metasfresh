@@ -22,7 +22,6 @@ package de.metas.adempiere.addon.standard;
  * #L%
  */
 
-
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.impl.BPartnerBL;
@@ -32,10 +31,6 @@ import org.adempiere.db.IDatabaseBL;
 import org.adempiere.db.impl.DatabaseBL;
 import org.adempiere.inout.replenish.service.IReplenishForFutureQty;
 import org.adempiere.inout.replenish.service.ReplenishForFutureQty;
-import org.adempiere.inout.service.IInOutPA;
-import org.adempiere.inout.service.impl.InOutPA;
-import org.adempiere.inout.shipment.IShipmentBL;
-import org.adempiere.inout.shipment.impl.ShipmentBL;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.invoice.service.impl.InvoiceBL;
@@ -81,27 +76,21 @@ import de.metas.adempiere.service.impl.SweepTableBL;
 import de.metas.adempiere.service.impl.TableColumnPathBL;
 import de.metas.adempiere.service.impl.VariableParserBL;
 import de.metas.dpd.service.RoutingService;
-import de.metas.purchasing.service.IPurchaseScheduleBL;
-import de.metas.purchasing.service.IPurchaseSchedulePA;
-import de.metas.purchasing.service.impl.PurchaseScheduleBL;
-import de.metas.purchasing.service.impl.PurchaseSchedulePA;
-import de.metas.tax.api.impl.TaxBL;
 
+/**
+ * <b>IMPORTANT</p>: this class is old. Most of the stuff done in here is obsolete and could be removed.
+ *
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public class StandardServices implements IAddOn
 {
 
 	@Override
-	public void initAddon()
+	public void beforeConnection()
 	{
-		// Services for reporting and archiving
-		// Services.registerService(IJasperService.class, new JasperService()); // let it register on demand; maybe other modules will register something different
-
 		// Services related to inOut
-		Services.registerService(IInOutPA.class, new InOutPA());
-		Services.registerService(IPurchaseScheduleBL.class, new PurchaseScheduleBL());
-		Services.registerService(IPurchaseSchedulePA.class, new PurchaseSchedulePA());
 		Services.registerService(IReplenishForFutureQty.class, new ReplenishForFutureQty());
-		Services.registerService(IShipmentBL.class, new ShipmentBL());
 
 		// Services related to invoice
 		Services.registerService(IInvoiceBL.class, new InvoiceBL());

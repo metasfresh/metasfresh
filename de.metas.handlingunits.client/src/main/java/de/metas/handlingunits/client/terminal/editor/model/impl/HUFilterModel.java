@@ -23,13 +23,13 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  */
 
 
-import org.adempiere.appdict.IJavaClassBL;
-import org.adempiere.appdict.model.I_AD_JavaClass;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.handlingunits.client.terminal.editor.model.filter.IHUKeyFilter;
 import de.metas.handlingunits.model.I_C_POS_HUEditor_Filter;
+import de.metas.javaclasses.IJavaClassBL;
+import de.metas.javaclasses.model.I_AD_JavaClass;
 
 /* package */class HUFilterModel
 {

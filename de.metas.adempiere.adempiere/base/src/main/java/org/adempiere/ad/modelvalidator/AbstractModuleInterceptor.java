@@ -23,6 +23,8 @@ package org.adempiere.ad.modelvalidator;
  */
 
 
+import java.util.List;
+
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -31,6 +33,11 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
 
 /**
  * To be extended by module/project main interceptors.
@@ -62,6 +69,7 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		registerTabCallouts(Services.get(ITabCalloutFactory.class));
 		registerCallouts(Services.get(IProgramaticCalloutProvider.class));
 		setupCaching(Services.get(IModelCacheService.class));
+		setupEventBus();
 		onAfterInit();
 	}
 	
@@ -112,6 +120,26 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		// nothing on this level
+	}
+	
+	private final void setupEventBus()
+	{
+		final List<Topic> userNotificationsTopics = getAvailableUserNotificationsTopics();
+		if (userNotificationsTopics != null && !userNotificationsTopics.isEmpty())
+		{
+			final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
+			for (final Topic topic : userNotificationsTopics)
+			{
+				eventBusFactory.addAvailableUserNotificationsTopic(topic);
+			}
+		}
+
+	}
+	
+	/** @return available user notifications topics to listen */
+	protected List<Topic> getAvailableUserNotificationsTopics()
+	{
+		return ImmutableList.of();
 	}
 
 	@Override
