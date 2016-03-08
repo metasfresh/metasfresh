@@ -22,7 +22,6 @@ package de.metas.adempiere.service.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -85,12 +84,12 @@ public class OrderLineBL implements IOrderLineBL
 	public void setPricesIfNotIgnored(final Properties ctx,
 			final I_C_OrderLine orderLine,
 			final int priceListId,
-			final BigDecimal priceQty,
+			final BigDecimal qtyEntered,
 			final BigDecimal factor,
 			boolean usePriceUOM,
 			final String trxName_NOTUSED)
 	{
-		// FIXME refator and/or keep in sync with #updatePrices
+		// FIXME refactor and/or keep in sync with #updatePrices
 
 		if (ignoredOlIds.contains(orderLine.getC_OrderLine_ID()))
 		{
@@ -104,11 +103,15 @@ public class OrderLineBL implements IOrderLineBL
 			return;
 		}
 
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+
 		//
 		// Calculate Pricing Result
+		final BigDecimal priceQty = convertToPriceUOM(qtyEntered, orderLine);
 		final IEditablePricingContext pricingCtx = createPricingContext(orderLine, priceListId, priceQty);
 		pricingCtx.setConvertPriceToContextUOM(!usePriceUOM);
-		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx);
+
+		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine());
@@ -161,7 +164,7 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // task 06942
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
 
-		updateLineNetAmt(orderLine, priceQty, factor);
+		updateLineNetAmt(orderLine, qtyEntered, factor);
 	}
 
 	@Override
@@ -195,7 +198,11 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void setPricesIfNotIgnored(final Properties ctx, final I_C_OrderLine ol, boolean usePriceUOM, final String trxName)
+	public void setPricesIfNotIgnored(
+			final Properties ctx,
+			final I_C_OrderLine ol,
+			final boolean usePriceUOM,
+			final String trxName)
 	{
 		if (ignoredOlIds.contains(ol.getC_OrderLine_ID()))
 		{
@@ -204,7 +211,6 @@ public class OrderLineBL implements IOrderLineBL
 		final org.compiere.model.I_C_Order order = ol.getC_Order();
 
 		final int productId = ol.getM_Product_ID();
-
 		final int priceListId = order.getM_PriceList_ID();
 
 		if (priceListId <= 0 || productId <= 0)
@@ -213,7 +219,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		// 06278 : If we have a UOM in product price, we use that one.
-		setPricesIfNotIgnored(ctx, ol, priceListId, ol.getQtyOrdered(), BigDecimal.ONE, usePriceUOM, trxName);
+		setPricesIfNotIgnored(ctx, ol, priceListId, ol.getQtyEntered(), BigDecimal.ONE, usePriceUOM, trxName);
 	}
 
 	@Override
@@ -313,22 +319,36 @@ public class OrderLineBL implements IOrderLineBL
 		return pricingResult.getC_TaxCategory_ID();
 	}
 
+	/**
+	 * Creates a pricing context with the given order's <code>Price_UOM</code> and with the given order's <code>QtyEntered</code> already being converted to that priceUOM
+	 */
 	@Override
 	public IEditablePricingContext createPricingContext(org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final I_C_Order order = orderLine.getC_Order();
 		final int priceListId = order.getM_PriceList_ID();
 
-		final BigDecimal priceQty = calculateQtyEnteredInPriceUOM(orderLine);
+		final BigDecimal priceQty = convertQtyEnteredToPriceUOM(orderLine);
 
 		return createPricingContext(orderLine, priceListId, priceQty);
 	}
 
-	public IEditablePricingContext createPricingContext(org.compiere.model.I_C_OrderLine orderLine,
+	/**
+	 * Creates a pricing context with the given <code>orderLine</code>'s bPartner, date, product, IsSOTrx and <code>Price_UOM</code>
+	 *
+	 * @param orderLine
+	 * @param priceListId
+	 * @param qty the for the price. <b>WARNING:</b> this qty might be in any UOM!
+	 * @return
+	 */
+	private IEditablePricingContext createPricingContext(
+			final org.compiere.model.I_C_OrderLine orderLine,
 			final int priceListId,
-			final BigDecimal priceQty
+			final BigDecimal qty
 			)
 	{
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 
 		final boolean isSOTrx = order.isSOTrx();
@@ -345,11 +365,11 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
 
-		final IEditablePricingContext pricingCtx = Services.get(IPricingBL.class).createInitialContext(
+		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
 				productId,
 				bPartnerId,
 				ol.getPrice_UOM_ID(), // task 06942
-				priceQty,
+				qty,
 				isSOTrx);
 		pricingCtx.setPriceDate(date);
 
@@ -358,7 +378,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		pricingCtx.setM_PriceList_ID(priceListId);
 		// PLV is only accurate if PL selected in header
-		// metas: relay on M_PriceList_ID only, don't use M_PriceList_Version_ID
+		// metas: rely on M_PriceList_ID only, don't use M_PriceList_Version_ID
 		// pricingCtx.setM_PriceList_Version_ID(orderLine.getM_PriceList_Version_ID());
 
 		return pricingCtx;
@@ -426,37 +446,37 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void updateLineNetAmt(
 			final I_C_OrderLine ol,
-			final BigDecimal qty,
+			final BigDecimal qtyEntered,
 			final BigDecimal factor)
 	{
-			Check.assumeNotNull(qty, "Param qtyEntered not null. Param ol={0}", ol);
+		Check.assumeNotNull(qtyEntered, "Param qtyEntered not null. Param ol={0}", ol);
 
-			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
-			final I_C_Order order = ol.getC_Order();
-			final int priceListId = order.getM_PriceList_ID();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
+		final I_C_Order order = ol.getC_Order();
+		final int priceListId = order.getM_PriceList_ID();
 
-			//
-			// We need to get the quantity in the pricing's UOM (if different)
-			final BigDecimal convertedQty = convertToPriceUOM(qty, ol);
+		//
+		// We need to get the quantity in the pricing's UOM (if different)
+		final BigDecimal convertedQty = convertToPriceUOM(qtyEntered, ol);
 
-			// this code has been borrowed from
-			// org.compiere.model.CalloutOrder.amt
-			final int stdPrecision = MPriceList.getStandardPrecision(ctx, priceListId);
+		// this code has been borrowed from
+		// org.compiere.model.CalloutOrder.amt
+		final int stdPrecision = MPriceList.getStandardPrecision(ctx, priceListId);
 
-			BigDecimal lineNetAmt = convertedQty.multiply(factor.multiply(ol.getPriceActual()));
-			if (lineNetAmt.scale() > stdPrecision)
-			{
-				lineNetAmt = lineNetAmt.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
-			}
-			logger.info("LineNetAmt=" + lineNetAmt);
-			ol.setLineNetAmt(lineNetAmt);
+		BigDecimal lineNetAmt = convertedQty.multiply(factor.multiply(ol.getPriceActual()));
+		if (lineNetAmt.scale() > stdPrecision)
+		{
+			lineNetAmt = lineNetAmt.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
+		}
+		logger.info("LineNetAmt=" + lineNetAmt);
+		ol.setLineNetAmt(lineNetAmt);
 
 	}
 
 	@Override
 	public void updatePrices(final I_C_OrderLine orderLine)
 	{
-		// FIXME refator and/or keep in sync with #setPricesIfNotIgnored
+		// FIXME recfator and/or keep in sync with #setPricesIfNotIgnored
 
 		// Product was not set yet. There is no point to calculate the prices
 		if (orderLine.getM_Product_ID() <= 0)
@@ -464,12 +484,15 @@ public class OrderLineBL implements IOrderLineBL
 			return;
 		}
 
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+
 		//
 		// Calculate Pricing Result
 		final IEditablePricingContext pricingCtx = createPricingContext(orderLine);
 		final boolean userPriceUOM = InterfaceWrapperHelper.isNew(orderLine);
 		pricingCtx.setConvertPriceToContextUOM(!userPriceUOM);
-		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx);
+
+		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine());
@@ -668,7 +691,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public BigDecimal calculateQtyEnteredInPriceUOM(final org.compiere.model.I_C_OrderLine orderLine)
+	public BigDecimal convertQtyEnteredToPriceUOM(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
 
@@ -680,7 +703,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public BigDecimal calculateQtyOrdered(final org.compiere.model.I_C_OrderLine orderLine)
+	public BigDecimal convertQtyEnteredToInternalUOM(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
 
@@ -698,29 +721,37 @@ public class OrderLineBL implements IOrderLineBL
 		return qtyOrdered;
 	}
 
-	private BigDecimal convertToPriceUOM(final BigDecimal qty, final I_C_OrderLine orderLine)
+	/**
+	 * Converts the given <code>qtyEntered</code> from the given <code>orderLine</code>'s <code>C_UOM</code> to the order line's <code>Price_UOM</code>.
+	 * If the given <code>orderLine</code> doesn't have both UOMs set, the method just returns the given <code>qtyEntered</code>.
+	 *
+	 * @param qtyEntered
+	 * @param orderLine
+	 * @return
+	 */
+	private BigDecimal convertToPriceUOM(final BigDecimal qtyEntered, final I_C_OrderLine orderLine)
 	{
-		Check.assumeNotNull(qty, "qty not null");
+		Check.assumeNotNull(qtyEntered, "qtyEntered not null");
 
 		final I_C_UOM qtyUOM = orderLine.getC_UOM();
 		if (qtyUOM == null || qtyUOM.getC_UOM_ID() <= 0)
 		{
-			return qty;
+			return qtyEntered;
 		}
 
 		final I_C_UOM priceUOM = orderLine.getPrice_UOM();
 		if (priceUOM == null || priceUOM.getC_UOM_ID() <= 0)
 		{
-			return qty;
+			return qtyEntered;
 		}
 
 		if (qtyUOM.getC_UOM_ID() == priceUOM.getC_UOM_ID())
 		{
-			return qty;
+			return qtyEntered;
 		}
 
 		final org.compiere.model.I_M_Product product = orderLine.getM_Product();
-		final BigDecimal qtyInPriceUOM = Services.get(IUOMConversionBL.class).convertQty(product, qty, qtyUOM, priceUOM);
+		final BigDecimal qtyInPriceUOM = Services.get(IUOMConversionBL.class).convertQty(product, qtyEntered, qtyUOM, priceUOM);
 		return qtyInPriceUOM;
 	}
 

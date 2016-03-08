@@ -78,8 +78,8 @@ public class C_OrderLine
 			ol.setQtyOrdered(qtyOrdered);
 
 			final int priceListId = order.getM_PriceList_ID();
-			Services.get(IOrderLineBL.class).setPricesIfNotIgnored(ctx, ol, priceListId, qtyOrdered, BigDecimal.ONE,
-					false, // usePriceUOM = false
+			Services.get(IOrderLineBL.class).setPricesIfNotIgnored(ctx, ol, priceListId, qtyEntered, BigDecimal.ONE,
+					true, // usePriceUOM
 					null);
 
 			return;

@@ -84,7 +84,7 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	public void setQty(final BigDecimal qty)
 	{
 		orderLine.setQtyEntered(qty);
-		orderLine.setQtyOrdered(Services.get(IOrderLineBL.class).calculateQtyOrdered(orderLine));
+		orderLine.setQtyOrdered(Services.get(IOrderLineBL.class).convertQtyEnteredToInternalUOM(orderLine));
 
 		values.setQty(qty);
 	}

@@ -1224,7 +1224,7 @@ public class CalloutOrder extends CalloutEngine
 		// Make sure we use the converted quantity for calculation, since the priceActual is for the price's UOM, while the quantity ordered is for the product's UOM.
 
 		// Line Net Amt
-		final BigDecimal qtyEnteredInPriceUOM = Services.get(IOrderLineBL.class).calculateQtyEnteredInPriceUOM(orderLine);
+		final BigDecimal qtyEnteredInPriceUOM = Services.get(IOrderLineBL.class).convertQtyEnteredToPriceUOM(orderLine);
 
 		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(PriceActual);
 		if (LineNetAmt.scale() > StdPrecision)

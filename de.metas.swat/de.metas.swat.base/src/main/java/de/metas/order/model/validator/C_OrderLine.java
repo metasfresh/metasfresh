@@ -109,7 +109,7 @@ public class C_OrderLine
 	public void setQtyEnteredInPriceUOM(final I_C_OrderLine orderLine)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.calculateQtyEnteredInPriceUOM(orderLine);
+		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine);
 		orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
 	}
 
@@ -126,7 +126,7 @@ public class C_OrderLine
 	public void setQtyOrdered(final I_C_OrderLine orderLine)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final BigDecimal qtyOrdered = orderLineBL.calculateQtyOrdered(orderLine);
+		final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToInternalUOM(orderLine);
 		orderLine.setQtyOrdered(qtyOrdered);
 	}
 

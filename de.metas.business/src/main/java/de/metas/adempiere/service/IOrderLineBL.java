@@ -10,18 +10,17 @@ package de.metas.adempiere.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -53,6 +52,14 @@ public interface IOrderLineBL extends ISingletonService
 
 	void setPrices(I_C_OrderLine ol);
 
+	/**
+	 * See {@link #setPricesIfNotIgnored(Properties, I_C_OrderLine, int, BigDecimal, BigDecimal, boolean, String)}.
+	 *
+	 * @param ctx
+	 * @param ol
+	 * @param usePriceUOM
+	 * @param trxName
+	 */
 	void setPricesIfNotIgnored(Properties ctx, I_C_OrderLine ol, boolean usePriceUOM, String trxName);
 
 	/**
@@ -60,12 +67,12 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param ctx
 	 * @param priceListId
 	 * @param ol
-	 * @param priceQty the quantity used to compute the price per one
+	 * @param qtyEntered the quantity (which is in the given <code>ol</code>'s <code>C_UOM</code>) that is used to compute the price per one
 	 * @param factor an additional factor to use when computing the LineNetAmt
 	 * @param usePriceUOM if true, then the UOM of the M_ProductPrice record will be used
 	 * @param trxName_NOTUSED not used
 	 */
-	void setPricesIfNotIgnored(Properties ctx, I_C_OrderLine ol, int priceListId, BigDecimal priceQty, BigDecimal factor, boolean usePriceUOM, String trxName);
+	void setPricesIfNotIgnored(Properties ctx, I_C_OrderLine ol, int priceListId, BigDecimal qtyEntered, BigDecimal factor, boolean usePriceUOM, String trxName);
 
 	void setTaxAmtInfoIfNotIgnored(Properties ctx, I_C_OrderLine ol, String trxName);
 
@@ -149,7 +156,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param ol
 	 * @param qtyEntered the order-quantity in the "customer's (stocking) UOM"...i.e. a customer might order 20PCE whereas the M_Product's own stocking-UOM in ADempiere is KG. In this case,
 	 *            <code>qtyEntered</code> is 20. Note that the <code>LineNetAmt</code> is computed from this qty only after is was converted to the <b>price-UOM</b> (see
-	 *            {@link #calculateQtyEnteredInPriceUOM(org.compiere.model.I_C_OrderLine)}).
+	 *            {@link #convertQtyEnteredToPriceUOM(org.compiere.model.I_C_OrderLine)}).
 	 *
 	 * @param factor additional factor for the <code>LineNetAmt</code> calculation..if you don't know what to do with it, use BigDecimal.ONE.
 	 */
@@ -173,18 +180,18 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param orderLine
 	 * @return
 	 */
-	BigDecimal calculateQtyEnteredInPriceUOM(org.compiere.model.I_C_OrderLine orderLine);
+	BigDecimal convertQtyEnteredToPriceUOM(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
-	 * Calculates the given <code>orderLine</code>'s <code>QtyOrdered</code> by converting it's <code>QtyEntered</code> value from the orderLine's UOM to the UOM of the orderLine's product. If the
-	 * given orderLine has no product or no UOM set, then method returns <code>QtyEntered</code>.
+	 * Calculates the given <code>orderLine</code>'s <code>QtyOrdered</code> by converting it's <code>QtyEntered</code> value from the orderLine's UOM to the UOM of the orderLine's product.<br>
+	 * If the given orderLine has no product or no UOM set, then method returns <code>QtyEntered</code>.
 	 * <p>
 	 * Note: the method does <b>not</b> change the given <code>orderLine</code>.
 	 *
 	 * @param orderLine
 	 * @return
 	 */
-	BigDecimal calculateQtyOrdered(org.compiere.model.I_C_OrderLine orderLine);
+	BigDecimal convertQtyEnteredToInternalUOM(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Is Tax Included in Amount. Calls {@link IOrderBL#isTaxIncluded(org.compiere.model.I_C_Order, org.compiere.model.I_C_Tax)} for the given <code>orderLine</code>'s <code>C_Tax</code> and

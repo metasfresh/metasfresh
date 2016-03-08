@@ -100,6 +100,7 @@ public class HUOrderBL implements IHUOrderBL
 			}
 		}
 
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		if (!ol.isManualQtyItemCapacity() && pip == null)
 		{
 			ol.setPackDescription("");
@@ -110,9 +111,9 @@ public class HUOrderBL implements IHUOrderBL
 			final I_M_HU_PI_Item_Product pipVirtual = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 			ol.setM_HU_PI_Item_Product(pipVirtual);
 			// 05825 : Update Prices and set prices
-			Services.get(IOrderLineBL.class).updatePrices(ol);
+			orderLineBL.updatePrices(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
-			Services.get(IOrderLineBL.class).setPricesIfNotIgnored(ctx, ol,
+			orderLineBL.setPricesIfNotIgnored(ctx, ol,
 					InterfaceWrapperHelper.isNew(ol), // usePriceUOM
 					trxName);
 		}
@@ -139,10 +140,10 @@ public class HUOrderBL implements IHUOrderBL
 				ol.setQtyItemCapacity(qtyCap);
 			}
 			// 05825 : Update Prices and set prices
-			Services.get(IOrderLineBL.class).updatePrices(ol);
+			orderLineBL.updatePrices(ol);
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
-			Services.get(IOrderLineBL.class).setPricesIfNotIgnored(ctx, ol,
+			orderLineBL.setPricesIfNotIgnored(ctx, ol,
 					InterfaceWrapperHelper.isNew(ol), // usePriceUOM
 					trxName);
 		}
