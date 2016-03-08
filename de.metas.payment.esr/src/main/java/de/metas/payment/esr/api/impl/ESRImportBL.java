@@ -76,6 +76,8 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.lock.api.ILockManager;
 import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
@@ -358,7 +360,7 @@ public class ESRImportBL implements IESRImportBL
 
 	private void matchESRImport(final I_ESR_Import esrImport)
 	{
-		final List<I_ESR_ImportLine> lines = Services.get(IESRImportDAO.class).fetchLinesForTrxTypes(esrImport, ESRConstants.ESRTRXTYPES_Control);
+		final List<I_ESR_ImportLine> lines = Services.get(IESRImportDAO.class).retrieveLinesForTrxTypes(esrImport, ESRConstants.ESRTRXTYPES_Control);
 		if (lines.isEmpty())
 		{
 			throw new AdempiereException("No control lines found");
@@ -520,7 +522,7 @@ public class ESRImportBL implements IESRImportBL
 
 		try
 		{
-			final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).fetchLines(esrImport);
+			final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
 			if (allLines.isEmpty())
 			{
 				throw new AdempiereException("@NoLines@");
@@ -915,7 +917,7 @@ public class ESRImportBL implements IESRImportBL
 	@Override
 	public boolean isProcessed(final I_ESR_Import esrImport)
 	{
-		final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).fetchLines(esrImport);
+		final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
 		return isAllLinesProcessed(allLines);
 	}
 
@@ -952,7 +954,7 @@ public class ESRImportBL implements IESRImportBL
 		// create payments before completing
 		process(esrImport, trxRunConfig);
 
-		final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).fetchLines(esrImport);
+		final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(esrImport);
 
@@ -1168,7 +1170,7 @@ public class ESRImportBL implements IESRImportBL
 	/* package */
 	void updateLinesOpenAmt(final I_ESR_ImportLine esrImportLine, final I_C_Invoice invoice)
 	{
-		final List<I_ESR_ImportLine> linesWithSameInvoice = Services.get(IESRImportDAO.class).fetchLinesForInvoice(esrImportLine, invoice);
+		final List<I_ESR_ImportLine> linesWithSameInvoice = Services.get(IESRImportDAO.class).retrieveLinesForInvoice(esrImportLine, invoice);
 
 		updateOpenAmtAndStatusDontSave(invoice, linesWithSameInvoice);
 
@@ -1293,4 +1295,30 @@ public class ESRImportBL implements IESRImportBL
 		return result;
 	}
 
+	@Override
+	public void unlinkESRImportLinesFor(final I_C_BankStatementLine bankStatementLine)
+	{
+		final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
+		for (final I_ESR_ImportLine esrImportLine : esrImportDAO.retrieveLinesForBankStatementLine(bankStatementLine))
+		{
+			unlinkESRImportLineFromBankStatement(esrImportLine);
+		}
+	}
+
+	@Override
+	public void unlinkESRImportLinesFor(final I_C_BankStatementLine_Ref bankStatementLineRef)
+	{
+		final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
+		for (final I_ESR_ImportLine esrImportLine : esrImportDAO.retrieveAllLinesForBankStatementLineRef(bankStatementLineRef))
+		{
+			unlinkESRImportLineFromBankStatement(esrImportLine);
+		}
+	}
+	
+	private final void unlinkESRImportLineFromBankStatement(final I_ESR_ImportLine esrImportLine)
+	{
+		esrImportLine.setC_BankStatementLine(null);
+		esrImportLine.setC_BankStatementLine_Ref(null);
+		InterfaceWrapperHelper.save(esrImportLine);
+	}
 }

@@ -83,11 +83,18 @@ public interface IPaySelectionBL extends ISingletonService
 			final de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef);
 
 	/**
-	 * Unlink any bank statement line from given pay selection line.
+	 * Unlink any pay selection line which points to given bank statement line or to one of it's references.
 	 *
-	 * @param psl
+	 * @param bankStatementLine
 	 */
-	void unlinkBankStatementLine(de.metas.banking.model.I_C_PaySelectionLine psl);
+	void unlinkPaySelectionLineForBankStatement(I_C_BankStatementLine bankStatementLine);
+
+	/**
+	 * Unlink any pay selection line which points to given bank statement line reference.
+	 *
+	 * @param bankStatementLineRef
+	 */
+	void unlinkPaySelectionLineForBankStatement(de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef);
 
 	/**
 	 * Update the given <code>psl</code>'s <code>C_BPartner_ID</code> and <code>C_BP_BankAccount_ID</code> from the <code>C_Invoice</code> which it references. If the psl doesn't ferenece an invoice,

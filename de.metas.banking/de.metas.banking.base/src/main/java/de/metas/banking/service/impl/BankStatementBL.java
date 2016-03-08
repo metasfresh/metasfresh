@@ -45,11 +45,10 @@ import org.compiere.util.Env;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_PaySelectionLine;
-import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.banking.service.IBankStatementListener;
+import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 
@@ -113,13 +112,14 @@ public class BankStatementBL implements IBankStatementBL
 	public void handleBeforeVoid(final I_C_BankStatement bankStatement)
 	{
 		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+		final IBankStatementListener listeners = Services.get(IBankStatementListenerService.class).getListeners();
 
 		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
 		for (final MBankStatementLine linePO : bankStatementPO.getLines(false))
 		{
 			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
-			
-			unlinkPaySelectionLine(line);
+
+			listeners.onBankStatementLineVoiding(line);
 
 			if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
 			{
@@ -142,17 +142,6 @@ public class BankStatementBL implements IBankStatementBL
 			}
 		}
 
-	}
-
-	@Override
-	public void unlinkPaySelectionLine(final I_C_BankStatementLine bankStatementLine)
-	{
-		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
-		
-		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(bankStatementLine))
-		{
-			paySelectionBL.unlinkBankStatementLine(paySelectionLine);
-		}
 	}
 
 	@Override

@@ -31,6 +31,7 @@ import org.compiere.model.I_AD_Client;
 import de.metas.banking.bankstatement.match.api.IPaymentBatchFactory;
 import de.metas.banking.bankstatement.match.spi.impl.ESRPaymentBatchProvider;
 import de.metas.banking.payment.IPaymentStringParserFactory;
+import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.payment.esr.spi.impl.DunningESRActionHandler;
@@ -57,7 +58,6 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 	{
 		engine.addModelValidator(new ESR_Import(), client);
 		engine.addModelValidator(new ESR_ImportLine(), client);
-		engine.addModelValidator(new C_BankStatementLine_Ref(), client);
 	}
 
 	public void registerFactories()
@@ -80,5 +80,9 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 		//
 		// Payment batch provider for Bank Statement matching
 		Services.get(IPaymentBatchFactory.class).addPaymentBatchProvider(new ESRPaymentBatchProvider());
+		
+		//
+		// Bank statement listener
+		Services.get(IBankStatementListenerService.class).addListener(ESRBankStatementListener.instance);
 	}
 }

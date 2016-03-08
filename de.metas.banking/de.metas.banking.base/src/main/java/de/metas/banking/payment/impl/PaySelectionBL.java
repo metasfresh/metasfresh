@@ -324,13 +324,37 @@ public class PaySelectionBL implements IPaySelectionBL
 		InterfaceWrapperHelper.save(psl);
 	}
 
-	@Override
-	public void unlinkBankStatementLine(final I_C_PaySelectionLine psl)
+	/**
+	 * Unlink any bank statement line from given pay selection line.
+	 *
+	 * @param psl
+	 */
+	private void unlinkBankStatementLine(final I_C_PaySelectionLine psl)
 	{
 		psl.setC_BankStatementLine(null);
 		psl.setC_BankStatementLine_Ref(null);
 		InterfaceWrapperHelper.save(psl);
 	}
+	
+	@Override
+	public void unlinkPaySelectionLineForBankStatement(final I_C_BankStatementLine bankStatementLine)
+	{
+		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(bankStatementLine))
+		{
+			unlinkBankStatementLine(paySelectionLine);
+		}
+	}
+
+	@Override
+	public void unlinkPaySelectionLineForBankStatement(final I_C_BankStatementLine_Ref bankStatementLineRef)
+	{
+		final I_C_PaySelectionLine paySelectionLine = Services.get(IPaySelectionDAO.class).retrievePaySelectionLine(bankStatementLineRef);
+		if (paySelectionLine != null)
+		{
+			unlinkBankStatementLine(paySelectionLine);
+		}
+	}
+
 
 	@Override
 	public void reActivate(final I_C_PaySelection paySelection)

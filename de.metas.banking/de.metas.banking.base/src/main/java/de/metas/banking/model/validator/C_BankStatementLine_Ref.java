@@ -22,7 +22,6 @@ package de.metas.banking.model.validator;
  * #L%
  */
 
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -32,10 +31,8 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.I_C_PaySelectionLine;
-import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.banking.service.IBankStatementListenerService;
 
 /**
  * Code moved here form de.metas.swat de.metas.banking.model.MBankStatementLineRef.
@@ -86,7 +83,7 @@ public class C_BankStatementLine_Ref
 	{
 		recalculateStatementLineAmountsIfNotDisabled(bankStatementLineRef);
 	}
-	
+
 	private final void recalculateStatementLineAmountsIfNotDisabled(final I_C_BankStatementLine_Ref bankStatementLineRef)
 	{
 		//
@@ -96,17 +93,24 @@ public class C_BankStatementLine_Ref
 		{
 			return;
 		}
-		
+
 		Services.get(IBankStatementBL.class).recalculateStatementLineAmounts(bankStatementLineRef.getC_BankStatementLine());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_C_BankStatementLine_Ref bankStatementLineRef)
 	{
+		// Avoid deleting the bank statement line reference if there is a payment set
 		if (bankStatementLineRef.getC_BankStatementLine().getC_Payment_ID() > 0)
 		{
 			throw new AdempiereException("@C_Payment_ID@"); // TODO: AD_Message
 		}
+		
+		//
+		// Notify listeners that our bank statement line reference will become void (i.e. we are deleting it)
+		Services.get(IBankStatementListenerService.class)
+				.getListeners()
+				.onBankStatementLineRefVoiding(bankStatementLineRef);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
@@ -114,15 +118,4 @@ public class C_BankStatementLine_Ref
 	{
 		recalculateStatementLineAmountsIfNotDisabled(bankStatementLineRef);
 	}
-	
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void unlinkPaySelectionLine(final I_C_BankStatementLine_Ref bankStatementLineRef)
-	{
-		final I_C_PaySelectionLine paySelectionLine = Services.get(IPaySelectionDAO.class).retrievePaySelectionLine(bankStatementLineRef);
-		if (paySelectionLine != null)
-		{
-			Services.get(IPaySelectionBL.class).unlinkBankStatementLine(paySelectionLine);
-		}
-	}
-
 }

@@ -22,7 +22,6 @@ package de.metas.banking.model.validator;
  * #L%
  */
 
-
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -35,6 +34,7 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.banking.service.IBankStatementListenerService;
 
 @Interceptor(I_C_BankStatementLine.class)
 public class C_BankStatementLine
@@ -70,14 +70,16 @@ public class C_BankStatementLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void unlinkPaySelectionLine(final I_C_BankStatementLine bankStatementLine)
+	public void onBeforeDelete(final I_C_BankStatementLine bankStatementLine)
 	{
-		Services.get(IBankStatementBL.class).unlinkPaySelectionLine(bankStatementLine);
-	}
-	
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void deleteBankStatementLineReferences(final I_C_BankStatementLine bankStatementLine)
-	{
+		//
+		// Notify listeners that our bank statement line will become void (i.e. we are deleting it)
+		Services.get(IBankStatementListenerService.class)
+				.getListeners()
+				.onBankStatementLineVoiding(bankStatementLine);
+
+		//
+		// Delete all bank statement line references
 		for (final I_C_BankStatementLine_Ref lineRef : Services.get(IBankStatementDAO.class).retrieveLineReferences(bankStatementLine))
 		{
 			IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(lineRef, true);

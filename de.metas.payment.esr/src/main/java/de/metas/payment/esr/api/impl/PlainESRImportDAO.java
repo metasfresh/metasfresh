@@ -58,7 +58,7 @@ public class PlainESRImportDAO extends AbstractESRImportDAO
 	}
 
 	@Override
-	public List<I_ESR_ImportLine> fetchLinesForTrxTypes(final I_ESR_Import esrImport, final List<String> esrTrxTypes)
+	public List<I_ESR_ImportLine> retrieveLinesForTrxTypes(final I_ESR_Import esrImport, final List<String> esrTrxTypes)
 	{
 		final List<I_ESR_ImportLine> result = db.getRecords(I_ESR_ImportLine.class, new IQueryFilter<I_ESR_ImportLine>()
 		{
@@ -161,7 +161,7 @@ public class PlainESRImportDAO extends AbstractESRImportDAO
 	}
 
 	@Override
-	public List<I_ESR_ImportLine> fetchLines(final I_ESR_Import esrImport)
+	public List<I_ESR_ImportLine> retrieveLines(final I_ESR_Import esrImport)
 	{
 		return db.getRecords(I_ESR_ImportLine.class, new IQueryFilter<I_ESR_ImportLine>()
 		{

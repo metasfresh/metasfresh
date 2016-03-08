@@ -46,7 +46,7 @@ import de.metas.payment.esr.model.I_ESR_ImportLine;
 public class ESRImportDAO extends AbstractESRImportDAO
 {
 	@Override
-	public List<I_ESR_ImportLine> fetchLinesForTrxTypes(final I_ESR_Import esrImport, final List<String> esrTrxTypes)
+	public List<I_ESR_ImportLine> retrieveLinesForTrxTypes(final I_ESR_Import esrImport, final List<String> esrTrxTypes)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(esrImport);
 		final String trxName = InterfaceWrapperHelper.getTrxName(esrImport);

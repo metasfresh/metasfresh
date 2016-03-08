@@ -42,7 +42,8 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.util.CacheCtx;
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
@@ -81,7 +82,7 @@ public abstract class AbstractESRImportDAO implements IESRImportDAO
 									}));
 
 	@Override
-	public List<I_ESR_ImportLine> fetchLinesForInvoice(final I_ESR_ImportLine esrImportLine, final I_C_Invoice invoice)
+	public List<I_ESR_ImportLine> retrieveLinesForInvoice(final I_ESR_ImportLine esrImportLine, final I_C_Invoice invoice)
 	{
 		final List<I_ESR_ImportLine> linesFromDB = fetchLinesForInvoice(esrImportLine.getESR_Import(), invoice);
 
@@ -109,7 +110,7 @@ public abstract class AbstractESRImportDAO implements IESRImportDAO
 	@Override
 	public void deleteLines(I_ESR_Import esrImport)
 	{
-		final List<I_ESR_ImportLine> esrLines = fetchLines(esrImport);
+		final List<I_ESR_ImportLine> esrLines = retrieveLines(esrImport);
 
 		for (I_ESR_ImportLine line : esrLines)
 		{
@@ -118,13 +119,13 @@ public abstract class AbstractESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public List<I_ESR_ImportLine> fetchLines(final I_ESR_Import esrImport)
+	public List<I_ESR_ImportLine> retrieveLines(final I_ESR_Import esrImport)
 	{
-		return fetchLinesForTrxTypes(esrImport, null);
+		return retrieveLinesForTrxTypes(esrImport, null);
 	}
 
 	@Override
-	public I_C_ReferenceNo_Doc fetchESRInvoiceReferenceNumberDocument(final Properties ctx, final String esrReferenceNumber)
+	public I_C_ReferenceNo_Doc retrieveESRInvoiceReferenceNumberDocument(final Properties ctx, final String esrReferenceNumber)
 	{
 		final I_C_ReferenceNo referenceNo = fetchESRInvoiceReferenceNumber(ctx, esrReferenceNumber);
 
@@ -174,7 +175,17 @@ public abstract class AbstractESRImportDAO implements IESRImportDAO
 	protected abstract I_C_ReferenceNo fetchESRInvoiceReferenceNumber(@CacheCtx final Properties ctx, final String esrReferenceNumber);
 
 	@Override
-	public List<I_ESR_ImportLine> fetchLinesForBankStatementLineRef(final I_C_BankStatementLine_Ref lineRef)
+	public List<I_ESR_ImportLine> retrieveLinesForBankStatementLine(final I_C_BankStatementLine line)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_ESR_ImportLine.class, line)
+				.addEqualsFilter(I_ESR_ImportLine.COLUMN_C_BankStatementLine_ID, line.getC_BankStatementLine_ID())
+				.create()
+				.list(I_ESR_ImportLine.class);
+	}
+
+	@Override
+	public List<I_ESR_ImportLine> retrieveAllLinesForBankStatementLineRef(final I_C_BankStatementLine_Ref lineRef)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_ESR_ImportLine.class, lineRef)

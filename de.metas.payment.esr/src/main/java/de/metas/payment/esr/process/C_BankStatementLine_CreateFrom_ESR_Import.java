@@ -187,7 +187,7 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends SvrProcess implem
 
 				})
 				.nullsFirst()
-				.sortedCopy(esrImportDAO.fetchLines(esrImport));
+				.sortedCopy(esrImportDAO.retrieveLines(esrImport));
 
 		//
 		// Iterate ESR_ImportLines and create bank statement line refs

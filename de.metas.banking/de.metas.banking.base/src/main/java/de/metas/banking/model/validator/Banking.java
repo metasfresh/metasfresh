@@ -29,6 +29,7 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
+import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.service.IBankingBL;
 import de.metas.banking.service.impl.BankingBL;
 
@@ -51,6 +52,10 @@ public class Banking extends AbstractModuleInterceptor
 		}
 
 		super.onInit(engine, client);
+		
+		//
+		// Register default bank statement listeners
+		Services.get(IBankStatementListenerService.class).addListener(PaySelectionBankStatementListener.instance);
 	}
 
 	@Override

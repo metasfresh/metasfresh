@@ -178,7 +178,7 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 			final String esrReferenceNumberToMatch = completeEsrReferenceNumberStr.substring(7, 26);
 
 			final IESRImportDAO esrImportPA = Services.get(IESRImportDAO.class);
-			final I_C_ReferenceNo_Doc esrReferenceNumberDocument = esrImportPA.fetchESRInvoiceReferenceNumberDocument(localCtx, esrReferenceNumberToMatch);
+			final I_C_ReferenceNo_Doc esrReferenceNumberDocument = esrImportPA.retrieveESRInvoiceReferenceNumberDocument(localCtx, esrReferenceNumberToMatch);
 
 			if (esrReferenceNumberDocument == null)
 			{
