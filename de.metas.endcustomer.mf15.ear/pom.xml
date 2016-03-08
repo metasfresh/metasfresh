@@ -32,21 +32,6 @@
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.zkwebui</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.serverRoot.ejb</artifactId>
-			<version>${project.version}</version>
-			<type>ejb</type>
-			<exclusions>
-				<!-- this dependency shall not end up in the ear file -->
-				<exclusion>
-					<groupId>org.jboss.client</groupId>
-					<artifactId>jbossall-client</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!-- the skinny war of de.metas.endcustomer.mf15.serverRoot, only including the classes that were inside the project itself -->
@@ -124,11 +109,7 @@ This is also how the instrumented jars in the de.metas.endcustomer.mf15.aopc zip
 					</artifactTypeMappings>
 
 					<modules>
-						<ejbModule>
-							<groupId>de.metas.adempiere.adempiere</groupId>
-							<artifactId>de.metas.adempiere.adempiere.serverRoot.ejb</artifactId>
-						</ejbModule>
-
+					
 						<!-- Disable WebUI (see task 09516)
 						<webModule>
 							<groupId>de.metas.endcustomer.mf15</groupId>

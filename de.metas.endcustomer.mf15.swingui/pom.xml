@@ -69,24 +69,7 @@
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
-			
-		<!-- Required to connect to the jboss-ejb server (always needs to be in the client, not only from eclipse, but in this base module we leave it as "provided") -->
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
-		</dependency>
-				
-		<!-- Problem: this ends up in customizations despite scope beeing "provided" 
-			  => crashes AOP on server 
-			  => server won't start 
-			Current workaround in ant; 
-			TODO: consider replacing it with a not-all jboss-lib that just contains the 
-			stuff we need to start from eclipse -->
-		<dependency>
-			<groupId>org.jboss.client</groupId>
-			<artifactId>jbossall-client</artifactId>
-			<version>4.2.3.GA</version>
-		</dependency>
+
 	</dependencies>
 
 	<build>

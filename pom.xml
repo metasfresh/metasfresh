@@ -1,4 +1,6 @@
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -50,32 +52,6 @@
 										<ignoreClass>*</ignoreClass>
 									</ignoreClasses>
 								</dependency>
-								
-								<!-- 
-								Needed to avoid
-								Duplicate classes found:
-
-								  Found in:
-								    de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.serverRoot.base:jar:1.0_IT-SNAPSHOT:compile
-								    de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.serverRoot.base:jar:1.0_IT-SNAPSHOT:compile
-								..and also
-								  Found in:
-								    de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.serverRoot.ejb:jar:1.0_IT-SNAPSHOT:compile
-								    de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.serverRoot.ejb:jar:1.0_IT-SNAPSHOT:compile
-								..aand
-								  Found in:
-								 	de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.zkwebui:jar:1.0_IT-SNAPSHOT:compile
-								  	de.metas.adempiere.adempiere:de.metas.adempiere.adempiere.zkwebui:jar:1.0_IT-SNAPSHOT:compile
-																								    
-								..this might or might not be a bug in banDuplicateClasses, but at least, i don't yet see the point
-    							-->
-								<dependency>
-									<artifactId>de.metas.adempiere.adempiere.*</artifactId>
-									<ignoreClasses>
-										<ignoreClass>*</ignoreClass>
-									</ignoreClasses>
-								</dependency>
-
 							</dependencies>
 							<findAllDuplicates>true</findAllDuplicates>
 						</banDuplicateClasses>
@@ -85,5 +61,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 </project>
