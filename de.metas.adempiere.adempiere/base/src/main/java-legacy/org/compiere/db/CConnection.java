@@ -62,7 +62,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	public final static String SERVER_EMBEDDED_APPSERVER_HOSTNAME = "localhost";
 
-	public final static int SERVER_EMBEDDED_APPSERVER_PORT = 61616;
+	public final static int SERVER_DEFAULT_APPSERVER_PORT = 61616;
 
 	/**
 	 * Get/Set default client/server Connection
@@ -101,6 +101,7 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			// Case: create a new connection from scratch
 			cc = new CConnection(null);
+			cc.setAppsPort(SERVER_DEFAULT_APPSERVER_PORT);
 
 			// Ask the user (UI!) to provide the parameters
 			final CConnectionDialog ccd = new CConnectionDialog(cc);
@@ -276,7 +277,7 @@ public final class CConnection implements Serializable, Cloneable
 	{
 		if (isServerEmbedded())
 		{
-			return SERVER_EMBEDDED_APPSERVER_PORT;
+			return SERVER_DEFAULT_APPSERVER_PORT;
 		}
 		return attrs.getAppsPort();
 	}
@@ -1039,7 +1040,7 @@ public final class CConnection implements Serializable, Cloneable
 			int appsPort = connectionString.getAppsPort();
 			if (appsPort == 1099)
 			{
-				appsPort = SERVER_EMBEDDED_APPSERVER_PORT;
+				appsPort = SERVER_DEFAULT_APPSERVER_PORT;
 			}
 			setAppsPort(appsPort);
 
@@ -1328,7 +1329,7 @@ public final class CConnection implements Serializable, Cloneable
 	{
 		log.finer(getAppsHost());
 		long start = System.currentTimeMillis();
-		m_okApps = false;
+
 		m_appsException = null;
 
 		try
@@ -1344,9 +1345,6 @@ public final class CConnection implements Serializable, Cloneable
 			}
 
 			updateInfoFromServer(statusService);
-
-			m_okApps = true;
-			m_appServerWasQueried = true;
 		}
 		catch (CommunicationException ce)	// not a "real" error
 		{

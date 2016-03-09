@@ -388,7 +388,8 @@ class CConnectionDialog extends CDialog implements ActionListener
 		updateInfo();
 	}   //  actionPerformed
 
-	private void updateCConnection() {
+	private void updateCConnection()
+	{
 		if (Ini.isClient())
 		{
 			//hengsin: avoid unnecessary requery of application server status
@@ -528,6 +529,10 @@ class CConnectionDialog extends CDialog implements ActionListener
 		setBusy(true);
 		try
 		{
+			if(!m_cc.isAppsServerOK(true))
+			{
+				return;
+			}
 			Exception e = m_cc.testAppsServer();
 			if (e != null)
 			{

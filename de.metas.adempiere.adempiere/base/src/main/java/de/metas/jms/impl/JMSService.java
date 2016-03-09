@@ -109,7 +109,7 @@ public class JMSService implements IJMSService
 			// and we would run into a cyclic problem when we tried to invoke CConnection.get().
 			// Also, in unit test mode, we don't want to get in the way of CConnection.get either.
 			appsHost = CConnection.SERVER_EMBEDDED_APPSERVER_HOSTNAME;
-			appsPort = CConnection.SERVER_EMBEDDED_APPSERVER_PORT;
+			appsPort = CConnection.SERVER_DEFAULT_APPSERVER_PORT;
 		}
 		else
 		{
