@@ -58,7 +58,7 @@ public final class CConnection implements Serializable, Cloneable
 			.setSkipIssueReporting();
 
 	/** System property flag to embed server bean in process **/
-	public final static String SERVER_EMBEDDED_PROPERTY = "org.adempiere.server.embedded";
+	public final static String SERVER_EMBEDDED_PROPERTY = "de.metas.server.embedded";
 
 	public final static String SERVER_EMBEDDED_APPSERVER_HOSTNAME = "localhost";
 
