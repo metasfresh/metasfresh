@@ -113,7 +113,7 @@ ALTER TABLE M_QualityInsp_LagerKonf_AdditionalFee ADD CONSTRAINT MProduct_MQuali
 
 ALTER TABLE M_Material_Tracking ADD CONSTRAINT CFlatrateTerm_MMaterialTrackin FOREIGN KEY (C_Flatrate_Term_ID) REFERENCES C_Flatrate_Term DEFERRABLE INITIALLY DEFERRED;
 
-ALTER TABLE M_Material_Tracking_Report_Line_Alloc ADD CONSTRAINT ADTable_MMaterialTrackingRepor FOREIGN KEY (AD_Table_ID) REFERENCES AD_Table DEFERRABLE INITIALLY DEFERRED;
+--ALTER TABLE M_Material_Tracking_Report_Line_Alloc ADD CONSTRAINT ADTable_MMaterialTrackingRepor FOREIGN KEY (AD_Table_ID) REFERENCES AD_Table DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE M_QualityInsp_LagerKonf_ProcessingFee ADD CONSTRAINT MQualityInspLagerKonfVersion_M FOREIGN KEY (M_QualityInsp_LagerKonf_Version_ID) REFERENCES M_QualityInsp_LagerKonf_Version DEFERRABLE INITIALLY DEFERRED;
 
