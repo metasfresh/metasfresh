@@ -22,14 +22,14 @@ Additional notes:
 The actual release notes
 
 # metasfresh 4.8.7 (Upcoming Release)
-  - 09628 procurement management (106716240958)
+  
+## Features
+ - 09628 procurement management (106716240958)
      * still a work in progress
 	 * standalone procurement web application that is optimized for mobile and communicated with metasfresh
 	 * procurement management in metasfresh
 	    * manintain vendor contracts
 		* create purchase orders for the supplies reproced via the web app
-  
-## Features
   - FRESH-21: 09848 enable metasfresh to provide jax-rs services (101763395402) 
     *Moved and extended the AD_JavaClasses framework
     *Removed javax.jnlp (it was only needed because there was some code wrt WebStart, 
@@ -48,6 +48,7 @@ The actual release notes
      client always starts a local jms broker and also connects to it
 	 
 ## Fixes
+ - 09894 take email address on inout from contact and not properties (108765877478)
  - 09901 Report for packaging material balance: recap differences
  - 09890 Manual Fixing of voided Bankstatement after ESR Import (108847010077)
     * when a bankstatement is voided, all ESR import lines (if any) are unlinked from the bank statement
