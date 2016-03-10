@@ -10,18 +10,17 @@ package de.metas.migration.sql;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -42,13 +41,13 @@ public class GenericSQLDatabaseDriver implements ISQLDatabaseDriver
 		{
 			throw new IllegalArgumentException("dbType not allowed to be empty");
 		}
-		this._dbType = dbType;
+		_dbType = dbType;
 
 		if (jdbcDriverClassname == null || jdbcDriverClassname.isEmpty())
 		{
 			throw new IllegalArgumentException("jdbcDriverClassname not allowed to be empty");
 		}
-		this._jdbcDriverClassname = jdbcDriverClassname;
+		_jdbcDriverClassname = jdbcDriverClassname;
 	}
 
 	@Override
@@ -89,16 +88,16 @@ public class GenericSQLDatabaseDriver implements ISQLDatabaseDriver
 			final String jdbcDriverClassname = getJdbcDriverClassname();
 			Class.forName(jdbcDriverClassname);
 		}
-		catch (ClassNotFoundException e)
+		catch (final ClassNotFoundException e)
 		{
 			throw new RuntimeException("Cannot initialize postgresql database driver", e);
 		}
 
-		this.initialized = true;
+		initialized = true;
 	}
 
 	@Override
-	public final Connection getConnection(String hostname, final String port, final String dbName, String user, String password) throws SQLException
+	public final Connection getConnection(final String hostname, final String port, final String dbName, final String user, final String password) throws SQLException
 	{
 		init();
 

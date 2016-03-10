@@ -10,18 +10,17 @@ package de.metas.migration.sql.postgresql;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -46,7 +45,7 @@ public class PgPassFile
 	{
 		super();
 
-		this.configFile = findPgPassFile();
+		configFile = findPgPassFile();
 	}
 
 	public File getConfigFile()
@@ -75,7 +74,7 @@ public class PgPassFile
 
 	public void markStale()
 	{
-		this.entries = null;
+		entries = null;
 	}
 
 	public List<PgPassEntry> getEntries()
@@ -115,7 +114,7 @@ public class PgPassFile
 				entries.add(entry);
 			}
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw PgPassParseException.convert(e)
 					.setConfigFile(pgPassFile)
@@ -129,7 +128,7 @@ public class PgPassFile
 				{
 					reader.close();
 				}
-				catch (IOException e)
+				catch (final IOException e)
 				{
 					e.printStackTrace();
 				}
@@ -229,7 +228,7 @@ public class PgPassFile
 
 	/**
 	 * Gets Password for given configuration.
-	 * 
+	 *
 	 * @param hostname
 	 * @param port
 	 * @param dbName

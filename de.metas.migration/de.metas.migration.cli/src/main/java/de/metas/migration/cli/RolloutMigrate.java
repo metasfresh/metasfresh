@@ -10,12 +10,12 @@ package de.metas.migration.cli;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -388,7 +388,7 @@ public final class RolloutMigrate
 				{
 					fileName = getSqlDir().getAbsolutePath();
 				}
-				
+
 				final IFileRef fileRef = new FileRef(new File(fileName));
 				final IScriptScanner scriptScanner = scriptScannerFactory.createScriptScanner(fileRef);
 
@@ -407,8 +407,8 @@ public final class RolloutMigrate
 				final String dbType = getProperty("ADEMPIERE_DB_TYPE", "postgresql");
 				final String dbHostname = getProperty("ADEMPIERE_DB_SERVER", "localhost");
 				final String dbPort = getProperty("ADEMPIERE_DB_PORT", "5432");
-				final String dbName = getProperty("ADEMPIERE_DB_NAME", "adempiere");
-				final String dbUser = getProperty("ADEMPIERE_DB_USER", "adempiere");
+				final String dbName = getProperty("ADEMPIERE_DB_NAME", "metasfresh");
+				final String dbUser = getProperty("ADEMPIERE_DB_USER", "metasfresh");
 				final String dbPassword = getProperty("ADEMPIERE_DB_PASSWORD",
 						// Default value is null because in case is not configured we shall use other auth methods
 						IDatabase.PASSWORD_NA
@@ -424,7 +424,7 @@ public final class RolloutMigrate
 	{
 		final PrintWriter writer = new PrintWriter(out);
 		final String commandName = "RolloutMigrate";
-		final String header = "Util to apply ADempiere migration scripts to a POstgresSQL database. The database settings are read from a settings (properties) file.";
+		final String header = "Util to apply metasfresh migration scripts to a POstgresSQL database. The database settings are read from a settings (properties) file.";
 		final String footer = "\nHint: The tool checks if a script has already been applied";
 
 		final HelpFormatter formatter = new HelpFormatter();

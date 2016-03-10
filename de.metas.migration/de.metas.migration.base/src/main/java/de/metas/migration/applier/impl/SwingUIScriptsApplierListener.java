@@ -10,18 +10,17 @@ package de.metas.migration.applier.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -31,6 +30,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.WindowConstants;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -49,15 +49,17 @@ public class SwingUIScriptsApplierListener implements IScriptsApplierListener
 	public static final HyperlinkListener DEFAULT_HyperlinkListener = new HyperlinkListener()
 	{
 		@Override
-		public void hyperlinkUpdate(HyperlinkEvent e)
+		public void hyperlinkUpdate(final HyperlinkEvent e)
 		{
 			if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED)
+			{
 				return;
+			}
 			try
 			{
 				Desktop.getDesktop().browse(e.getURL().toURI());
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				logger.warn(ex.getLocalizedMessage(), ex);
 			}
@@ -65,13 +67,13 @@ public class SwingUIScriptsApplierListener implements IScriptsApplierListener
 	};
 
 	@Override
-	public void onScriptApplied(IScript script)
+	public void onScriptApplied(final IScript script)
 	{
 		// nothing
 	}
 
 	@Override
-	public ScriptFailedResolution onScriptFailed(IScript script, ScriptExecutionException e)
+	public ScriptFailedResolution onScriptFailed(final IScript script, final ScriptExecutionException e)
 	{
 		final File file = script.getLocalFile();
 		final String exceptionMessage = e.toStringX(false); // printStackTrace=false
@@ -99,7 +101,7 @@ public class SwingUIScriptsApplierListener implements IScriptsApplierListener
 		return response;
 	}
 
-	public static <T> T uiAsk(String title, String message, final T[] options, final T defaultOption)
+	public static <T> T uiAsk(final String title, final String message, final T[] options, final T defaultOption)
 	{
 		final Object messageObj;
 		if (message != null && message.startsWith("<html>"))
@@ -125,7 +127,7 @@ public class SwingUIScriptsApplierListener implements IScriptsApplierListener
 		final JFrame frame = new JFrame(title);
 		frame.setUndecorated(true);
 		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frame.setVisible(true); // make it visible, if we are not doing this, we will have no icon if task bar
 
 		final int responseIdx;
@@ -147,7 +149,7 @@ public class SwingUIScriptsApplierListener implements IScriptsApplierListener
 			// Make sure we are disposing the frame (note: it is not disposed by default)
 			frame.dispose();
 		}
-		
+
 		if (responseIdx < 0)
 		{
 			// user closed the popup => defaultOption shall be returned

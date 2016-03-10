@@ -26,12 +26,12 @@ import de.metas.migration.scanner.IScriptScannerFactory;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,8 +44,8 @@ import de.metas.migration.scanner.IScriptScannerFactory;
  * More specific: files are ordered by the prefix until the '_' char. <br>
  * If there is no '_' in the filename or the prefix is empty (i.e. filename starting with '_'), then the whole file name is compared
  * against.
- * 
- * 
+ *
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -71,7 +71,7 @@ public class GloballyOrderedScannerDecorator implements IScriptScanner
 							.append(o1SeqNo, o2SeqNo)
 							.append(o1.getModuleName(), o2.getModuleName())
 							.append(o1.getFileName(), o2.getFileName())
-							
+
 							// make damn sure that two different scripts are both added
 							.append(System.identityHashCode(o1), System.identityHashCode(o2))
 							.toComparison();
@@ -95,7 +95,7 @@ public class GloballyOrderedScannerDecorator implements IScriptScanner
 	 * <li>"" => ""
 	 * <li>"_sys_test.sql" => "_sys_test.sql"
 	 * </ul>
-	 * 
+	 *
 	 * @param fileName
 	 * @return
 	 */
@@ -113,7 +113,7 @@ public class GloballyOrderedScannerDecorator implements IScriptScanner
 
 	public GloballyOrderedScannerDecorator(final IScriptScanner scanner)
 	{
-		this.internalScanner = scanner;
+		internalScanner = scanner;
 	}
 
 	@Override

@@ -10,18 +10,17 @@ package de.metas.migration.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,13 +37,13 @@ public final class FileUtils
 		super();
 	}
 
-	public static File createLocalFile(final String filename, InputStream in)
+	public static File createLocalFile(final String filename, final InputStream in)
 	{
 		try
 		{
 			return createLocalFile0(filename, in);
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new ScriptException("Error creating local file " + filename, e);
 		}
@@ -81,10 +80,10 @@ public final class FileUtils
 		return file;
 	}
 
-	public static final String getFileExtension(String filename, boolean includeDot)
+	public static final String getFileExtension(final String filename, final boolean includeDot)
 	{
 		String extension = "";
-		int i = filename.lastIndexOf('.');
+		final int i = filename.lastIndexOf('.');
 		if (i > 0)
 		{
 			extension = filename.substring(i + 1);

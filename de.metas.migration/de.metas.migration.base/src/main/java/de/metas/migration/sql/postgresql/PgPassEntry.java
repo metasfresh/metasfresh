@@ -10,18 +10,17 @@ package de.metas.migration.sql.postgresql;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 public class PgPassEntry
 {
@@ -31,7 +30,7 @@ public class PgPassEntry
 	private final String user;
 	private final String password;
 
-	/* package */PgPassEntry(String host, String port, String dbName, String user, String password)
+	/* package */PgPassEntry(final String host, final String port, final String dbName, final String user, final String password)
 	{
 		super();
 		if (host == null || host.isEmpty())

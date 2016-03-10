@@ -10,18 +10,17 @@ package de.metas.migration.executor.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -74,7 +73,7 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 		//
 		// Configure: psql command arguments
 		{
-			this.args = new ArrayList<String>();
+			args = new ArrayList<String>();
 			addParameter(args, "-h", database.getDbHostname());
 			addParameter(args, "-p", database.getDbPort());
 			addParameter(args, "-d", database.getDbName());
@@ -118,7 +117,7 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 
 	private String getEnv(final String name)
 	{
-		String value = System.getenv(name);
+		final String value = System.getenv(name);
 		return value;
 	}
 
@@ -144,7 +143,7 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 		{
 			exitValue = proc.waitFor();
 		}
-		catch (InterruptedException e)
+		catch (final InterruptedException e)
 		{
 			throw new ScriptExecutionException("Process executor interrupted", e)
 					.setDatabase(database)
@@ -182,7 +181,7 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 		{
 			proc = processBuilder.start();
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new ScriptExecutionException("Error creating executor process."
 					+ "If 'psql' command was not found, try setting " + ENV_PG_HOME + " environment variable.", e)
@@ -213,7 +212,7 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 				// System.out.println("\t" + line);
 			}
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new ScriptExecutionException("Error while reading process output", e)
 					.setDatabase(database)

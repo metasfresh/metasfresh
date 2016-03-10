@@ -10,18 +10,17 @@ package de.metas.migration.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,11 +41,11 @@ public class SQLDatabase implements IDatabase
 	private final String dbUser;
 	private final String dbPassword;
 
-	private SQLDatabaseScriptsRegistry scriptsRegistry;
+	private final SQLDatabaseScriptsRegistry scriptsRegistry;
 
 	private Connection conn;
 
-	public SQLDatabase(String dbType, String dbHostname, String dbPort, String dbName, String dbUser, String dbPassword)
+	public SQLDatabase(final String dbType, final String dbHostname, final String dbPort, final String dbName, final String dbUser, final String dbPassword)
 	{
 		super();
 		this.dbType = dbType;
@@ -56,7 +55,7 @@ public class SQLDatabase implements IDatabase
 		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;
 
-		this.scriptsRegistry = new SQLDatabaseScriptsRegistry(this);
+		scriptsRegistry = new SQLDatabaseScriptsRegistry(this);
 	}
 
 	public SQLDatabase(final String dbUrl, final String dbUser, final String dbPassword)
@@ -69,14 +68,14 @@ public class SQLDatabase implements IDatabase
 			final String urlStrFixed = new URI(dbUrl).getSchemeSpecificPart(); // URL without "jdbc:" prefix
 			url = new URI(urlStrFixed);
 		}
-		catch (URISyntaxException e)
+		catch (final URISyntaxException e)
 		{
 			throw new IllegalArgumentException("Invalid url: " + dbUrl, e);
 		}
 
-		this.dbType = url.getScheme();
-		this.dbHostname = url.getHost();
-		this.dbPort = url.getPort() == -1 ? null : String.valueOf(url.getPort());
+		dbType = url.getScheme();
+		dbHostname = url.getHost();
+		dbPort = url.getPort() == -1 ? null : String.valueOf(url.getPort());
 
 		String dbName = url.getPath();
 		if (dbName != null)
@@ -91,7 +90,7 @@ public class SQLDatabase implements IDatabase
 		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;
 
-		this.scriptsRegistry = new SQLDatabaseScriptsRegistry(this);
+		scriptsRegistry = new SQLDatabaseScriptsRegistry(this);
 	}
 
 	@Override
@@ -173,7 +172,7 @@ public class SQLDatabase implements IDatabase
 			conn = dbDriver.getConnection(dbHostname, dbPort, dbName, dbUser, dbPassword);
 			conn.setAutoCommit(true);
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new RuntimeException("Cannot JDBC connection. Please check your config for : " + this, e);
 		}

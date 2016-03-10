@@ -10,18 +10,17 @@ package de.metas.migration.scanner.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.HashMap;
 import java.util.Map;
@@ -110,14 +109,14 @@ public class ScriptScannerFactory implements IScriptScannerFactory
 			scriptScanner.setScriptScannerFactory(this);
 			return scriptScanner;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new ScriptException("Cannot instantiate scanner class: " + scannerClass, e);
 		}
 	}
 
 	@Override
-	public void registerScriptScannerClass(final String fileExtension, Class<? extends IScriptScanner> scannerClass)
+	public void registerScriptScannerClass(final String fileExtension, final Class<? extends IScriptScanner> scannerClass)
 	{
 		final String fileExtensionNorm = normalizeFileExtension(fileExtension);
 		final Class<? extends IScriptScanner> scannerClassOld = scriptScannerClasses.put(fileExtensionNorm, scannerClass);
@@ -130,7 +129,7 @@ public class ScriptScannerFactory implements IScriptScannerFactory
 	}
 
 	@Override
-	public void registerScriptScannerClassesFor(IScriptExecutorFactory scriptExecutorFactory)
+	public void registerScriptScannerClassesFor(final IScriptExecutorFactory scriptExecutorFactory)
 	{
 		for (final String scriptType : scriptExecutorFactory.getSupportedScriptTypes())
 		{
@@ -144,7 +143,7 @@ public class ScriptScannerFactory implements IScriptScannerFactory
 	}
 
 	@Override
-	public void setScriptFactory(IScriptFactory scriptFactory)
+	public void setScriptFactory(final IScriptFactory scriptFactory)
 	{
 		this.scriptFactory = scriptFactory;
 	}

@@ -10,18 +10,17 @@ package de.metas.migration.exception;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +32,7 @@ import de.metas.migration.executor.IScriptExecutor;
 public class ScriptExecutionException extends ScriptException
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1165299685098998072L;
 
@@ -42,18 +41,18 @@ public class ScriptExecutionException extends ScriptException
 	private IScriptExecutor executor;
 	private List<String> log;
 
-	public ScriptExecutionException(String message, Throwable cause)
+	public ScriptExecutionException(final String message, final Throwable cause)
 	{
 		super(message, cause);
 	}
 
-	public ScriptExecutionException(String message)
+	public ScriptExecutionException(final String message)
 	{
 		super(message);
 	}
 
 	@Override
-	public ScriptExecutionException addParameter(String name, Object value)
+	public ScriptExecutionException addParameter(final String name, final Object value)
 	{
 		super.addParameter(name, value);
 		return this;
@@ -64,7 +63,7 @@ public class ScriptExecutionException extends ScriptException
 		return database;
 	}
 
-	public ScriptExecutionException setDatabase(IDatabase database)
+	public ScriptExecutionException setDatabase(final IDatabase database)
 	{
 		addParameter("database", database);
 		this.database = database;
@@ -76,7 +75,7 @@ public class ScriptExecutionException extends ScriptException
 		return script;
 	}
 
-	public ScriptExecutionException setScript(IScript script)
+	public ScriptExecutionException setScript(final IScript script)
 	{
 		addParameter("script", script);
 		this.script = script;
@@ -88,14 +87,14 @@ public class ScriptExecutionException extends ScriptException
 		return executor;
 	}
 
-	public ScriptExecutionException setExecutor(IScriptExecutor executor)
+	public ScriptExecutionException setExecutor(final IScriptExecutor executor)
 	{
 		addParameter("executor", executor);
 		this.executor = executor;
 		return this;
 	}
 
-	public ScriptExecutionException setLog(List<String> log)
+	public ScriptExecutionException setLog(final List<String> log)
 	{
 		addParameter("log", log);
 		this.log = log;

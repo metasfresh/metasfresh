@@ -10,18 +10,17 @@ package de.metas.migration.scanner.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 import java.util.Arrays;
@@ -40,14 +39,14 @@ public class DirectoryScriptScanner extends AbstractRecursiveScriptScanner
 	{
 		super(fileRef.getScriptScanner());
 
-		this.rootFileRef = fileRef;
-		this.children = retrieveChildren(fileRef);
-		this.currentIndex = -1;
+		rootFileRef = fileRef;
+		children = retrieveChildren(fileRef);
+		currentIndex = -1;
 	}
 
 	/**
 	 * Convenient constructor
-	 * 
+	 *
 	 * @param file
 	 */
 	public DirectoryScriptScanner(final File file)
@@ -73,7 +72,7 @@ public class DirectoryScriptScanner extends AbstractRecursiveScriptScanner
 		{
 			return new File[] {};
 		}
-		
+
 		Arrays.sort(children); // make sure the files are sorted lexicographically
 		return children;
 	}

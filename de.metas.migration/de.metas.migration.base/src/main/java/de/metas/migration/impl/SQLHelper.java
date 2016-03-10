@@ -10,18 +10,17 @@ package de.metas.migration.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -87,7 +86,7 @@ public class SQLHelper
 			final int valueInt = rs.getInt(1);
 			return valueInt;
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new RuntimeException("Error while executing '" + sql + "' on " + database, e);
 		}
@@ -113,7 +112,7 @@ public class SQLHelper
 			setParameters(pstmt, params);
 			return pstmt.executeUpdate();
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new RuntimeException("Error while executing '" + sql + "' on " + database, e);
 		}
@@ -125,40 +124,56 @@ public class SQLHelper
 
 	/**
 	 * Set PreparedStatement's parameter. Similar with calling <code>pstmt.setObject(index, param)</code>
-	 * 
+	 *
 	 * @param pstmt
 	 * @param index
 	 * @param param
 	 * @throws SQLException
 	 */
-	public static void setParameter(PreparedStatement pstmt, int index, Object param)
+	public static void setParameter(final PreparedStatement pstmt, final int index, final Object param)
 			throws SQLException
 	{
 		if (param == null)
+		{
 			pstmt.setObject(index, null);
+		}
 		else if (param instanceof String)
+		{
 			pstmt.setString(index, (String)param);
+		}
 		else if (param instanceof Integer)
+		{
 			pstmt.setInt(index, ((Integer)param).intValue());
+		}
 		else if (param instanceof BigDecimal)
+		{
 			pstmt.setBigDecimal(index, (BigDecimal)param);
+		}
 		else if (param instanceof Timestamp)
+		{
 			pstmt.setTimestamp(index, (Timestamp)param);
-		else if (param instanceof java.util.Date) // metas: support for java.util.Date
+		}
+		else if (param instanceof java.util.Date)
+		{
 			pstmt.setTimestamp(index, new Timestamp(((java.util.Date)param).getTime()));
+		}
 		else if (param instanceof Boolean)
+		{
 			pstmt.setString(index, ((Boolean)param).booleanValue() ? "Y" : "N");
+		}
 		else
+		{
 			throw new IllegalArgumentException("Unknown parameter type " + index + " - " + param);
+		}
 	}
 
 	/**
 	 * Set parameters for given statement
-	 * 
+	 *
 	 * @param stmt statements
 	 * @param params parameters array; if null or empty array, no parameters are set
 	 */
-	public static void setParameters(PreparedStatement stmt, Object[] params)
+	public static void setParameters(final PreparedStatement stmt, final Object[] params)
 			throws SQLException
 	{
 		if (params == null || params.length == 0)
@@ -174,11 +189,11 @@ public class SQLHelper
 
 	/**
 	 * Set parameters for given statement
-	 * 
+	 *
 	 * @param stmt statements
 	 * @param params parameters list; if null or empty list, no parameters are set
 	 */
-	public static void setParameters(PreparedStatement stmt, List<?> params)
+	public static void setParameters(final PreparedStatement stmt, final List<?> params)
 			throws SQLException
 	{
 		if (params == null || params.size() == 0)
@@ -199,7 +214,7 @@ public class SQLHelper
 			{
 				rs.close();
 			}
-			catch (SQLException e)
+			catch (final SQLException e)
 			{
 				logger.debug(e.getLocalizedMessage(), e);
 			}
@@ -214,7 +229,7 @@ public class SQLHelper
 			{
 				stmt.close();
 			}
-			catch (SQLException e)
+			catch (final SQLException e)
 			{
 				logger.debug(e.getLocalizedMessage(), e);
 			}
@@ -229,7 +244,7 @@ public class SQLHelper
 			{
 				conn.close();
 			}
-			catch (SQLException e)
+			catch (final SQLException e)
 			{
 				logger.debug(e.getLocalizedMessage(), e);
 			}

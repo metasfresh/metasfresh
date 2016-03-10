@@ -10,18 +10,17 @@ package de.metas.migration.applier.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 
@@ -71,7 +70,7 @@ public class ScriptsApplier implements IScriptsApplier
 	}
 
 	@Override
-	public void setListener(IScriptsApplierListener listener)
+	public void setListener(final IScriptsApplierListener listener)
 	{
 		if (listener == null)
 		{
@@ -91,7 +90,7 @@ public class ScriptsApplier implements IScriptsApplier
 	}
 
 	@Override
-	public void setScriptExecutorFactory(IScriptExecutorFactory scriptExecutorFactory)
+	public void setScriptExecutorFactory(final IScriptExecutorFactory scriptExecutorFactory)
 	{
 		if (scriptExecutorFactory == null)
 		{
@@ -152,11 +151,11 @@ public class ScriptsApplier implements IScriptsApplier
 	}
 
 	/**
-	 * 
+	 *
 	 * @param script
 	 * @return
 	 */
-	private ScriptApplyResult apply(IScript script)
+	private ScriptApplyResult apply(final IScript script)
 	{
 		final IScriptsApplierListener listener = getListener();
 		final IScriptExecutor executor = getExecutor(script);
@@ -174,11 +173,11 @@ public class ScriptsApplier implements IScriptsApplier
 			{
 				executor.execute(script);
 			}
-			catch (ScriptExecutionException e)
+			catch (final ScriptExecutionException e)
 			{
 				error = e;
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				error = new ScriptExecutionException("Error running script", e)
 						.setScript(script)
