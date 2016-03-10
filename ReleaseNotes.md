@@ -48,6 +48,7 @@ The actual release notes
      client always starts a local jms broker and also connects to it
 	 
 ## Fixes
+ - 09643 Zahlung und Zahlung-Zuordnung Datum unterschiedlich (108395556223)
  - 09894 take email address on inout from contact and not properties (108765877478)
  - 09901 Report for packaging material balance: recap differences
  - 09890 Manual Fixing of voided Bankstatement after ESR Import (108847010077)

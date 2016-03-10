@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -2136,6 +2137,21 @@ public final class MPayment extends X_C_Payment
 		Check.errorIf(getPayAmt().signum() < 0, "{0} has a negative PayAmt = {1}", this, getPayAmt());
 
 		final BigDecimal allocationAmt = getPayAmt().min(invoiceOpenAmt);
+		
+		// task 09643
+		// allocation date must e the max between the invoice date and payment date
+		
+		Timestamp allocationDate = getDateTrx();
+		
+		if(invoice != null)
+		{
+			final Timestamp invoiceDate = invoice.getDateAcct();
+			
+			if(invoiceDate.after(allocationDate))
+			{
+				allocationDate = invoiceDate;
+			}
+		}
 		// 04627 end
 
 		// 04614 (commented out old code)
@@ -2165,7 +2181,7 @@ public final class MPayment extends X_C_Payment
 //		// @formatter:on
 		//
 		MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-				getDateTrx(), getC_Currency_ID(),
+				allocationDate, getC_Currency_ID(),
 				Msg.translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [1]", get_TrxName());
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		alloc.saveEx();
