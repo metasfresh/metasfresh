@@ -9,6 +9,7 @@ import org.adempiere.util.ISingletonService;
 import de.metas.javaclasses.AD_JavaClass;
 import de.metas.procurement.sync.IServerSync;
 import de.metas.procurement.sync.protocol.SyncBPartner;
+import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 
@@ -56,6 +57,17 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	public List<SyncBPartner> getAllBPartners();
 
 	/**
+	 * Send those products to the caller that
+	 * <ul>
+	 * <li>are generic, i.e. don't have a C_BPartner
+	 * <li>do have a packing instruction
+	 * <li>are currently valid (or have no valid date!)
+	 * </ul>
+	 */
+	@Override
+	public List<SyncProduct> getAllNotContractedProducts();
+
+	/**
 	 * TODO: document the mapping & unit-test
 	 *
 	 * @param request
@@ -64,6 +76,7 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 */
 	@Override
 	public Response reportProductSupplies(SyncProductSuppliesRequest request);
+
 
 	/**
 	 *

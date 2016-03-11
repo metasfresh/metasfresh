@@ -183,7 +183,8 @@ public class ServerSyncBL implements IServerSyncBL
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_PMM_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, time)
 				.addCompareFilter(I_PMM_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, time)
-				.addNotEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null)
+				.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null)
+				.addNotEqualsFilter(I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product, null)
 				.create()
 				.list();
 
