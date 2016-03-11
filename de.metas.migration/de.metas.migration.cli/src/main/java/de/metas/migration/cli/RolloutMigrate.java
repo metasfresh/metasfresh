@@ -210,9 +210,11 @@ public final class RolloutMigrate
 		setJustMarkScriptAsExecuted(justMarkScriptAsExecuted);
 
 		final String[] optionValues = cmd.getOptionValues(RolloutMigrate.OPTION_CreateNewDB);
-		setTemplateDBName(optionValues[0]);
-		setNewDBName(optionValues[1]);
-
+		if (optionValues != null)
+		{
+			setTemplateDBName(optionValues[0]);
+			setNewDBName(optionValues[1]);
+		}
 		return true;
 	}
 
