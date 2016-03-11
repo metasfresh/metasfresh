@@ -31,7 +31,9 @@ import java.util.logging.Level;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
@@ -167,6 +169,39 @@ public class PricingBL implements IPricingBL
 		final Timestamp priceDate = pricingCtxToUse.getPriceDate();
 
 		//
+		// Set M_PriceList from pricingSystem, date and country
+		if (pricingCtxToUse.getM_PricingSystem_ID() > 0
+				&& pricingCtxToUse.getPriceDate() != null
+				&& pricingCtxToUse.getM_Product_ID() > 0
+				&& pricingCtxToUse.getC_Country_ID() > 0)
+		{
+			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+			final de.metas.adempiere.model.I_M_ProductPrice productPrice = priceListBL.getCurrentProductPrice(
+					new PlainContextAware(ctx, pricingCtx.getTrxName()),
+					pricingCtx.getM_PricingSystem(),
+					pricingCtx.getM_Product(),
+					pricingCtx.getC_Country(),
+					pricingCtx.isSOTrx());
+
+			final I_M_PriceList_Version computedPLV = productPrice.getM_PriceList_Version();
+
+			final int priceListId = computedPLV.getM_PriceList_ID();
+			pricingCtxToUse.setM_PriceList_ID(priceListId);
+
+			// while we are at it, do a little sanity check and also set the PLV-ID
+			Check.assume(pricingCtxToUse.getM_PriceList_Version_ID()<=0 || pricingCtxToUse.getM_PriceList_Version_ID() == computedPLV.getM_PriceList_Version_ID(),
+					"Given PricingContext {0} has M_PriceList_Version={1}, but from M_PricingSystem={2}, Product={3}, Country={4} and IsSOTrx={5}, we computed a different M_PriceList_Version={6}",
+					pricingCtxToUse, // 0
+					pricingCtxToUse.getM_PriceList_Version(), // 1
+					pricingCtxToUse.getM_PricingSystem(), // 2
+					pricingCtx.getM_Product(), // 3
+					pricingCtx.getC_Country(), // 4
+					pricingCtx.isSOTrx(), // 5
+					computedPLV);
+			pricingCtxToUse.setM_PriceList_Version_ID(computedPLV.getM_PriceList_Version_ID());
+		}
+
+		//
 		// Set M_PriceList_Version_ID from PL and date
 		if (pricingCtxToUse.getM_PriceList_Version_ID() <= 0
 				&& pricingCtxToUse.getM_PriceList_ID() > 0
@@ -203,6 +238,8 @@ public class PricingBL implements IPricingBL
 			pricingCtxToUse.setM_PriceList_ID(priceListVersion.getM_PriceList_ID());
 		}
 
+		//
+		// set priceDate from PLV
 		if (pricingCtxToUse.getPriceDate() == null
 				&& pricingCtxToUse.getM_PriceList_Version_ID() > 0)
 		{
@@ -298,6 +335,7 @@ public class PricingBL implements IPricingBL
 	{
 		final PricingResult result = new PricingResult();
 		result.setM_PricingSystem_ID(pricingCtx.getM_PricingSystem_ID());
+		result.setM_PriceList_ID(pricingCtx.getM_PriceList_ID());
 		result.setM_PriceList_Version_ID(pricingCtx.getM_PriceList_Version_ID());
 		result.setM_Product_ID(pricingCtx.getM_Product_ID());
 		result.setC_Currency_ID(pricingCtx.getC_Currency_ID());

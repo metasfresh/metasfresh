@@ -457,7 +457,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return qtyAndNetAmtInvoiced;
 	}
 
-	/*package */void set_Discount(final Properties ctx, final I_C_Invoice_Candidate ic)
+	/* package */void set_Discount(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		if (ic.getC_OrderLine_ID() > 0)
 		{
@@ -942,15 +942,19 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final Timestamp date = ic.getDateOrdered();
 		final boolean isSOTrx = ic.isSOTrx();
 		final I_C_BPartner_Location partnerLocation = ic.getBill_Location();
-		I_M_PriceList pricelist = Services.get(IPriceListBL.class)
-				.getCurrentPricelistOrNull(pricingSystem, partnerLocation,
-						date, isSOTrx);
-
-		if (pricelist != null)
+		if (partnerLocation != null)
 		{
-			return pricelist.getPricePrecision();
-		}
+			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
+					.getCurrentPricelistOrNull(
+							pricingSystem,
+							partnerLocation.getC_Location().getC_Country(),
+							date, isSOTrx);
 
+			if (pricelist != null)
+			{
+				return pricelist.getPricePrecision();
+			}
+		}
 		// fall back: get the precision from the currency
 		return getPrecisionFromCurrency(ic);
 
@@ -1483,7 +1487,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 	}
-
 
 	@Override
 	public void resetError(final I_C_Invoice_Candidate ic)

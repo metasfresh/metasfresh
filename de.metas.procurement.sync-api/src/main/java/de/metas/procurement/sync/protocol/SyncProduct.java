@@ -26,6 +26,7 @@ public class SyncProduct extends AbstractSyncModel
 {
 	private String name;
 	private String packingInfo;
+	private boolean shared = false;
 
 	public String getName()
 	{
@@ -45,5 +46,15 @@ public class SyncProduct extends AbstractSyncModel
 	public void setPackingInfo(String packingInfo)
 	{
 		this.packingInfo = packingInfo;
+	}
+
+	public boolean isShared()
+	{
+		return shared;
+	}
+
+	public void setShared(boolean shared)
+	{
+		this.shared = shared;
 	}
 }

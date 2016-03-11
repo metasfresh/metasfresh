@@ -14,7 +14,7 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -481569685L;
+	private static final long serialVersionUID = 366421001L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Data (Properties ctx, int C_Flatrate_Data_ID, String trxName)
@@ -24,7 +24,7 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
         {
 			setC_BPartner_ID (0);
 			setC_Flatrate_Data_ID (0);
-			setProcessed (false);
+			setHasContracts (false);
 // N
         } */
     }
@@ -119,23 +119,20 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
 		return ii.intValue();
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/** Set Existierende Verträge.
+		@param HasContracts Existierende Verträge	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setHasContracts (boolean HasContracts)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_HasContracts, Boolean.valueOf(HasContracts));
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/** Get Existierende Verträge.
+		@return Existierende Verträge	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isHasContracts () 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
+		Object oo = get_Value(COLUMNNAME_HasContracts);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

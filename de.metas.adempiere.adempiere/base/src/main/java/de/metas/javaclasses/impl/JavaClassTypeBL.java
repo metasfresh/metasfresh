@@ -41,6 +41,7 @@ import org.reflections.Reflections;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.javaclasses.AD_JavaClass;
 import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.IJavaClassTypeBL;
 import de.metas.javaclasses.model.I_AD_JavaClass;
@@ -115,6 +116,10 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 		final ArrayList<Class<?>> result = new ArrayList<Class<?>>();
 		for (final Class<?> clazz : subTypesOf)
 		{
+			if (isIgnore(clazz))
+			{
+				continue;
+			}
 			result.add(clazz);
 		}
 		return result;
@@ -127,9 +132,19 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 		final ArrayList<Class<?>> result = new ArrayList<Class<?>>();
 		for (final Class<?> clazz : subTypesOf)
 		{
+			if (isIgnore(clazz))
+			{
+				continue;
+			}
 			result.add(clazz);
 		}
 		return result;
+	}
+
+	private boolean isIgnore(final Class<?> clazz)
+	{
+		final AD_JavaClass javaClassAnnotation = clazz.getAnnotation(AD_JavaClass.class);
+		return javaClassAnnotation != null && javaClassAnnotation.ignore();
 	}
 
 	@Override

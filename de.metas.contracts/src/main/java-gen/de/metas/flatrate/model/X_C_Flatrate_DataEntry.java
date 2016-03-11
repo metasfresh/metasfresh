@@ -16,7 +16,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1649824133L;
+	private static final long serialVersionUID = 1234255831L;
 
     /** Standard Constructor */
     public X_C_Flatrate_DataEntry (Properties ctx, int C_Flatrate_DataEntry_ID, String trxName)
@@ -827,6 +827,8 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	public static final String TYPE_Invoicing_PeriodBased = "IP";
 	/** Correction_PeriodBased = CP */
 	public static final String TYPE_Correction_PeriodBased = "CP";
+	/** Procurement_PeriodBased = PC */
+	public static final String TYPE_Procurement_PeriodBased = "PC";
 	/** Set Art.
 		@param Type 
 		Type of Validation (SQL, Java Script, Java Language)

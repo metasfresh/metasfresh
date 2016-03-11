@@ -127,33 +127,31 @@ public interface I_PMM_QtyReport_Event
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set Pauschale - Vertragsperiode.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get Pauschale - Vertragsperiode.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	public int getC_Flatrate_Term_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM();
+	public de.metas.flatrate.model.I_C_Flatrate_Term getC_Flatrate_Term();
 
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+	public void setC_Flatrate_Term(de.metas.flatrate.model.I_C_Flatrate_Term C_Flatrate_Term);
 
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, org.compiere.model.I_C_UOM>(I_PMM_QtyReport_Event.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+    /** Column definition for C_Flatrate_Term_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, de.metas.flatrate.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, de.metas.flatrate.model.I_C_Flatrate_Term>(I_PMM_QtyReport_Event.class, "C_Flatrate_Term_ID", de.metas.flatrate.model.I_C_Flatrate_Term.class);
+    /** Column name C_Flatrate_Term_ID */
+    public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
 	 * Get Erstellt.
@@ -186,6 +184,35 @@ public interface I_PMM_QtyReport_Event
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, org.compiere.model.I_C_UOM>(I_PMM_QtyReport_Event.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Zugesagter Termin.
 	 * Zugesagter Termin für diesen Auftrag
 	 *
@@ -213,7 +240,7 @@ public interface I_PMM_QtyReport_Event
 	/**
 	 * Set Fehlermeldung.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -222,7 +249,7 @@ public interface I_PMM_QtyReport_Event
 	/**
 	 * Get Fehlermeldung.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -257,6 +284,31 @@ public interface I_PMM_QtyReport_Event
     public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object>(I_PMM_QtyReport_Event.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Fehler.
+	 * Ein Fehler ist bei der Durchführung aufgetreten
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsError (boolean IsError);
+
+	/**
+	 * Get Fehler.
+	 * Ein Fehler ist bei der Durchführung aufgetreten
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isError();
+
+    /** Column definition for IsError */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object> COLUMN_IsError = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object>(I_PMM_QtyReport_Event.class, "IsError", null);
+    /** Column name IsError */
+    public static final String COLUMNNAME_IsError = "IsError";
 
 	/**
 	 * Set Packvorschrift-Produkt Zuordnung.
@@ -429,7 +481,7 @@ public interface I_PMM_QtyReport_Event
     public static final String COLUMNNAME_PMM_PurchaseCandidate_ID = "PMM_PurchaseCandidate_ID";
 
 	/**
-	 * Set PMM Qty Report Event.
+	 * Set Lieferplanungsdatensatz.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -438,7 +490,7 @@ public interface I_PMM_QtyReport_Event
 	public void setPMM_QtyReport_Event_ID (int PMM_QtyReport_Event_ID);
 
 	/**
-	 * Get PMM Qty Report Event.
+	 * Get Lieferplanungsdatensatz.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

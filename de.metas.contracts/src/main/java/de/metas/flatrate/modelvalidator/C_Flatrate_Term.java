@@ -10,12 +10,12 @@ package de.metas.flatrate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,9 +35,9 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
@@ -48,7 +48,6 @@ import org.compiere.model.POInfo;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Msg;
 
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.contracts.subscription.ISubscriptionBL;
@@ -140,10 +139,10 @@ public class C_Flatrate_Term
 
 		term.setBill_BPartner_ID(flatrateData.getC_BPartner_ID());
 
-		if (!flatrateData.isProcessed())
+		if (!flatrateData.isHasContracts())
 		{
-			flatrateData.setProcessed(true);
-			POWrapper.save(flatrateData);
+			flatrateData.setHasContracts(true);
+			InterfaceWrapperHelper.save(flatrateData);
 		}
 	}
 
@@ -175,7 +174,7 @@ public class C_Flatrate_Term
 			{
 				Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 			}
-
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
 			if (term.getStartDate() != null && term.getEndDate() != null
 					&& !X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions()))
 			{
@@ -185,20 +184,20 @@ public class C_Flatrate_Term
 
 				if (periodsOfTerm.isEmpty())
 				{
-					errors.add(Msg.getMsg(po.getCtx(), MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P,
+					errors.add(msgBL.getMsg(po.getCtx(), MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P,
 							new Object[] { term.getStartDate(), term.getEndDate() }));
 				}
 				else
 				{
 					if (periodsOfTerm.get(0).getStartDate().after(term.getStartDate()))
 					{
-						errors.add(Msg.getMsg(po.getCtx(), MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
+						errors.add(msgBL.getMsg(po.getCtx(), MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
 								new Object[] { term.getStartDate(), invoicingCal.getName() }));
 					}
 					final I_C_Period lastPeriodOfTerm = periodsOfTerm.get(periodsOfTerm.size() - 1);
 					if (lastPeriodOfTerm.getEndDate().before(term.getEndDate()))
 					{
-						errors.add(Msg.getMsg(po.getCtx(), MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P,
+						errors.add(msgBL.getMsg(po.getCtx(), MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P,
 								new Object[] { lastPeriodOfTerm.getEndDate(), invoicingCal.getName() }));
 					}
 				}
@@ -213,7 +212,7 @@ public class C_Flatrate_Term
 
 	/**
 	 * If the term that is deleted was the last term, remove the "processed"-flag from the term's data record.
-	 * 
+	 *
 	 * @param term
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -229,8 +228,8 @@ public class C_Flatrate_Term
 					terms.get(0).getC_Flatrate_Term_ID() == term.getC_Flatrate_Term_ID(),
 					"The one term that is left shoud be the current term, but is " + terms.get(0));
 
-			flatrateData.setProcessed(false);
-			POWrapper.save(flatrateData);
+			flatrateData.setHasContracts(false);
+			InterfaceWrapperHelper.save(flatrateData);
 		}
 	}
 
@@ -256,7 +255,7 @@ public class C_Flatrate_Term
 
 	/**
 	 * If the term that is deleted is referenced from a {@link C_OLCand}, delete the reference and set the cand to <code>processed='N'</code>.
-	 * 
+	 *
 	 * @param term
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -387,14 +386,14 @@ public class C_Flatrate_Term
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Leergutverwaltung.equals(term.getType_Conditions())
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
 		{
-			Services.get(IFlatrateBL.class).createDataEntriesForTerm(term, null);
+			Services.get(IFlatrateBL.class).createDataEntriesForTerm(term);
 		}
 	}
 
 	/**
 	 * When a term is reactivated, it's invoice candidate needs to be deleted. Note that we assume the deletion will fail with a meaningful error message if the invoice candidate has already been
 	 * invoiced.
-	 * 
+	 *
 	 * @param term
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })

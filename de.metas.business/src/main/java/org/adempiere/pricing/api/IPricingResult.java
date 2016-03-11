@@ -38,10 +38,6 @@ public interface IPricingResult
 {
 	int NO_PRECISION = -1;
 
-	int getM_PricingSystem_ID();
-
-	void setM_PricingSystem_ID(final int pricingSystemId);
-
 	int getC_Currency_ID();
 
 	void setC_Currency_ID(int currencyId);
@@ -97,6 +93,14 @@ public interface IPricingResult
 	boolean isCalculated();
 
 	void setCalculated(boolean calculated);
+
+	int getM_PricingSystem_ID();
+
+	void setM_PricingSystem_ID(final int pricingSystemId);
+
+	void setM_PriceList_ID(int tM_PriceList_ID);
+
+	int getM_PriceList_ID();
 
 	void setM_PriceList_Version_ID(int M_PriceList_Version_ID);
 

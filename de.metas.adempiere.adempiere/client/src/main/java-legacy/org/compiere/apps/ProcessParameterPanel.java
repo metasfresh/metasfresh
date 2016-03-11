@@ -48,7 +48,7 @@ import de.metas.adempiere.form.IClientUI;
 
 /**
  * Process Parameter Panel, based on existing ProcessParameter dialog. - Embedded in ProcessDialog - checks, if parameters exist and inquires and saves them
- * 
+ *
  * @author Low Heng Sin
  * @author Juan David Arboleda (arboleda), GlobalQSS, [ 1795398 ] Process Parameter: add display and readonly logic
  * @author Teo Sarca, www.arhipac.ro <li>BF [ 2548216 ] Process Param Panel is not showing any parameter if error
@@ -58,7 +58,7 @@ public class ProcessParameterPanel extends CPanel
 		implements IProcessParameter
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -4802635610434891695L;
 
@@ -142,7 +142,7 @@ public class ProcessParameterPanel extends CPanel
 				dispose();
 				return;
 			}
-			
+
 			model.setDefaultValues();
 
 			dynamicDisplay();
@@ -155,7 +155,7 @@ public class ProcessParameterPanel extends CPanel
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if panel has any process parameters
 	 */
 	public boolean hasFields()
@@ -242,11 +242,7 @@ public class ProcessParameterPanel extends CPanel
 		if (fieldTo != null)
 		{
 			editorTo = createEditorForField(fieldTo);
-			// New Field value to be updated to editor
-			fieldTo.addPropertyChangeListener(editorTo);
-
-			// FIXME: we are not adding listener to editor because we will get columnName collisions
-			// vEditor2.addVetoableChangeListener(editorListener);
+			editorTo.addVetoableChangeListener(viewToModelBinding);
 		}
 		else
 		{
@@ -259,7 +255,7 @@ public class ProcessParameterPanel extends CPanel
 			fieldEditorsAll.add(editorTo);
 		}
 	}
-	
+
 	/** Creates the editor for given field, but it does NOT add it to any of our internal maps */
 	private VEditor createEditorForField(final GridField gridField)
 	{
@@ -271,7 +267,7 @@ public class ProcessParameterPanel extends CPanel
 			// Enforce a maximum size for image preview, because else it looks very crappy in process parameters panel, mainly when using big images
 			imageEditor.setPreviewMaxSize(new Dimension(300, 100));
 		}
-		
+
 		return editor;
 	}
 
@@ -280,7 +276,7 @@ public class ProcessParameterPanel extends CPanel
 		// Defaults for all components of this line
 		gbc.weightx = 0;
 		gbc.weighty = 0;
-		
+
 		//
 		// Label Preparation
 		gbc.gridy = m_line++;
@@ -366,7 +362,7 @@ public class ProcessParameterPanel extends CPanel
 
 	/**
 	 * Update fields UI properties
-	 * 
+	 *
 	 * @see #dynamicDisplay(int)
 	 */
 	private void dynamicDisplay()
@@ -380,7 +376,7 @@ public class ProcessParameterPanel extends CPanel
 
 	/**
 	 * Update field's UI properties: Displayed, Read-Write
-	 * 
+	 *
 	 * @param fieldIndex
 	 */
 	private void dynamicDisplay(final int fieldIndex)
@@ -426,7 +422,7 @@ public class ProcessParameterPanel extends CPanel
 
 	/**
 	 * Validate parameters. In case there is an error, a popup will be shown.
-	 * 
+	 *
 	 * @return true if valid
 	 */
 	public boolean validateParameters()
@@ -457,11 +453,11 @@ public class ProcessParameterPanel extends CPanel
 				// guard agaist null, shall not happen
 				continue;
 			}
-			
+
 			final Object value = editor.getValue();
 			model.setFieldValue(gridField, value);
 		}
-		
+
 		//
 		// Ask the model to save the parameters
 		try

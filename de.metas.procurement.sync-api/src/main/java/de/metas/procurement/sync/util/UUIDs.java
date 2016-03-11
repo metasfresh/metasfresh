@@ -80,6 +80,16 @@ public final class UUIDs
 		return new UUID(msb, lsb);
 	}
 
+	public static String fromIdAsString(final int id)
+	{
+		return fromId(id).toString();
+	}
+
+	public static int toId(final String uuid)
+	{
+		return toId(UUID.fromString(uuid));
+	}
+
 	private static final String toString(byte[] data)
 	{
 		StringBuilder sb = new StringBuilder();

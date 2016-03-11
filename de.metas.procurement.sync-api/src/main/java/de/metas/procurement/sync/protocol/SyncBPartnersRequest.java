@@ -31,8 +31,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SyncBPartnersRequest
 {
 	private List<SyncBPartner> bpartners = new ArrayList<>();
-	
-	private List<SyncProduct> products = new ArrayList<>();
 
 	public List<SyncBPartner> getBpartners()
 	{
@@ -42,15 +40,5 @@ public class SyncBPartnersRequest
 	public void setBpartners(List<SyncBPartner> bpartners)
 	{
 		this.bpartners = bpartners;
-	}
-
-	public List<SyncProduct> getProducts()
-	{
-		return products;
-	}
-
-	public void setProducts(List<SyncProduct> products)
-	{
-		this.products = products;
 	}
 }

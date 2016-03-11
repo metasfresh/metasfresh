@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
+import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ObjectUtils;
@@ -188,6 +189,7 @@ public final class ProcessClassInfo
 				.setField(paramField)
 				.setParameterName(paramAnn.parameterName())
 				.setMandatory(paramAnn.mandatory())
+				.setParameterTo(paramAnn.parameterTo())
 				.build();
 	}
 
@@ -320,7 +322,13 @@ public final class ProcessClassInfo
 		return parameterInfos;
 	}
 
-	public void loadParameterValues(final Object processInstance, final IRangeAwareParams source)
+	/**
+	 *
+	 * @param processInstance the process object where we will set the annotated fields to be the loaded parameters. Note that it needs to be an {@link IContextAware}, because we might need to load
+	 *            records from the given <code>source</code>.
+	 * @param source
+	 */
+	public void loadParameterValues(final IContextAware processInstance, final IRangeAwareParams source)
 	{
 		Check.assumeNotNull(processInstance, "processInstance not null");
 

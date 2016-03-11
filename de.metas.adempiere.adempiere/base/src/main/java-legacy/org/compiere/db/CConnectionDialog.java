@@ -86,14 +86,6 @@ class CConnectionDialog extends CDialog implements ActionListener
 	/** Resources							*/
 	private static final transient ResourceBundle res = ResourceBundle.getBundle("org.compiere.db.DBRes");
 
-	/**	 Default HTTP Port					*/
-	//public static final String	APPS_PORT_HTTP = "80";
-	/** Default RMI Port					*/
-	//public static final String	APPS_PORT_JNP = "1099";
-	/** Default RMI Port					*/
-	public static final String	APPS_PORT_JMS = "61616";
-
-
 	/** Connection							*/
 	private CConnection 	m_cc = null;
 	private CConnection 	m_ccResult = null;

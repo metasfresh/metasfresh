@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.IContextAware;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.util.CLogger;
@@ -66,6 +68,8 @@ public final class ProcessClassParamInfo
 	// Remember that we are caching this object.
 	private final ArrayKey fieldKey;
 	private final Class<?> fieldType;
+	private boolean parameterTo;
+
 
 	private ProcessClassParamInfo(final Builder builder)
 	{
@@ -79,16 +83,19 @@ public final class ProcessClassParamInfo
 		fieldType = builder.field.getType();
 
 		mandatory = builder.mandatory;
+		parameterTo = builder.parameterTo;
 	}
 
 	/**
 	 * Loads process instance's parameter value from source.
 	 *
-	 * @param processInstance
+	 * @param processInstance the process object where we will set the annotated fields to be the loaded parameters. Note that it needs to be an {@link IContextAware}, because we might need to load
+	 *            records from the given <code>source</code>
 	 * @param processField
 	 * @param source
+	 * @param paramTo if <code>true</code>, then the value will be loaded from one of the source's <code>getParameter_ToAs..()</code> methods.
 	 */
-	public void loadParameterValue(final Object processInstance, final Field processField, final IRangeAwareParams source)
+	public void loadParameterValue(final IContextAware processInstance, final Field processField, final IRangeAwareParams source)
 	{
 		Check.assumeNotNull(processField, "processField not null");
 
@@ -97,12 +104,12 @@ public final class ProcessClassParamInfo
 		{
 			throw new FillMandatoryException(parameterName);
 		}
-		
+
 		//
 		// Get the parameter value from source
 		final Class<?> fieldType = processField.getType();
-		final Object value = extractParameterValue(source, fieldType);
-		
+		final Object value = extractParameterValue(processInstance, fieldType, source);
+
 		//
 		// Handle the case when the value is null
 		if (value == null)
@@ -111,7 +118,7 @@ public final class ProcessClassParamInfo
 			{
 				throw new FillMandatoryException(parameterName);
 			}
-			if(fieldType.isPrimitive())
+			if (fieldType.isPrimitive())
 			{
 				// don't set a primitive type to null
 				return;
@@ -136,7 +143,10 @@ public final class ProcessClassParamInfo
 		}
 	}
 
-	private final Object extractParameterValue(final IRangeAwareParams source, final Class<?> fieldType)
+	private final Object extractParameterValue(
+			final IContextAware ctxAware,
+			final Class<?> fieldType,
+			final IRangeAwareParams source)
 	{
 		if (!source.hasParameter(parameterName))
 		{
@@ -148,31 +158,45 @@ public final class ProcessClassParamInfo
 		final Object value;
 		if (fieldType.isAssignableFrom(BigDecimal.class))
 		{
-			value = source.getParameterAsBigDecimal(parameterName);
+			value = parameterTo ? source.getParameter_ToAsBigDecimal(parameterName) : source.getParameterAsBigDecimal(parameterName);
 		}
 		else if (fieldType.isAssignableFrom(int.class))
 		{
-			value = source.getParameterAsInt(parameterName);
+			value = parameterTo ? source.getParameter_ToAsInt(parameterName) : source.getParameterAsInt(parameterName);
 		}
 		else if (boolean.class.equals(fieldType))
 		{
-			value = source.getParameterAsBool(parameterName);
+			value = parameterTo ? source.getParameter_ToAsBool(parameterName) : source.getParameterAsBool(parameterName);
 		}
 		else if (Boolean.class.equals(fieldType))
 		{
-			final String valueStr = source.getParameterAsString(parameterName);
+			final String valueStr = parameterTo ? source.getParameter_ToAsString(parameterName) : source.getParameterAsString(parameterName);
 			value = DisplayType.toBoolean(valueStr, (Boolean)null);
 		}
-		else if (fieldType.isAssignableFrom(java.util.Date.class))
+		else if (java.util.Date.class.isAssignableFrom(fieldType))
 		{
-			value = source.getParameterAsTimestamp(parameterName);
+			// this catches both Date and Timestamp
+			value = parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName);
 		}
 		else if (fieldType.isAssignableFrom(String.class))
 		{
-			value = source.getParameterAsString(parameterName);
+			value = parameterTo ? source.getParameter_ToAsString(parameterName) : source.getParameterAsString(parameterName);
+		}
+		else if (InterfaceWrapperHelper.isModelInterface(fieldType))
+		{
+			final int key = parameterTo ? source.getParameter_ToAsInt(parameterName) : source.getParameterAsInt(parameterName);
+			if (key <= 0)
+			{
+				value = null;
+			}
+			else
+			{
+				value = InterfaceWrapperHelper.create(ctxAware.getCtx(), key, fieldType, ctxAware.getTrxName());
+			}
 		}
 		else
 		{
+
 			throw new IllegalStateException("Field type " + fieldType + " is not supported for " + this);
 		}
 
@@ -185,6 +209,7 @@ public final class ProcessClassParamInfo
 		return MoreObjects.toStringHelper(this)
 				.add("parameterName", parameterName)
 				.add("mandatory", mandatory)
+				.add("parameterTo", parameterTo)
 				.add("field", fieldKey)
 				.toString();
 	}
@@ -203,7 +228,7 @@ public final class ProcessClassParamInfo
 	{
 		return fieldKey;
 	}
-	
+
 	public Class<?> getFieldType()
 	{
 		return fieldType;
@@ -214,6 +239,7 @@ public final class ProcessClassParamInfo
 		private String parameterName;
 		private Field field;
 		private boolean mandatory;
+		private boolean parameterTo;
 
 		private Builder()
 		{
@@ -240,6 +266,12 @@ public final class ProcessClassParamInfo
 		public Builder setMandatory(final boolean mandatory)
 		{
 			this.mandatory = mandatory;
+			return this;
+		}
+
+		public Builder setParameterTo(boolean parameterTo)
+		{
+			this.parameterTo = parameterTo;
 			return this;
 		}
 	}

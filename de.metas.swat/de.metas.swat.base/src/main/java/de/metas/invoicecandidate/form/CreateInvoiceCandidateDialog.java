@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -385,17 +384,33 @@ public class CreateInvoiceCandidateDialog
 		configureC_Activity_ID(contextProvider, product, pricingSystem);
 	}
 
-	private void configureC_UOM_ID(final IContextAware contextProvider, final I_M_Product product, final I_M_PricingSystem pricingSystem)
+	private void configureC_UOM_ID(
+			final IContextAware contextProvider,
+			final I_M_Product product,
+			final I_M_PricingSystem pricingSystem)
 	{
 		final I_C_UOM priceUOM;
 		try
 		{
-			final I_C_BPartner_Location location = InterfaceWrapperHelper.create(
-					contextProvider.getCtx(),
-					locationField.getValueAsInt(),
-					I_C_BPartner_Location.class,
-					InterfaceWrapperHelper.getTrxName(product));
-			final I_M_ProductPrice productPrice = Services.get(IPriceListBL.class).getCurrentProductPrice(contextProvider, pricingSystem, product, location, isSOTrx);
+			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+
+			I_M_ProductPrice productPrice = null;
+
+			if (locationField.getValueAsInt() > 0)
+			{
+				final I_C_BPartner_Location location = InterfaceWrapperHelper.create(
+						contextProvider.getCtx(),
+						locationField.getValueAsInt(),
+						I_C_BPartner_Location.class,
+						InterfaceWrapperHelper.getTrxName(product));
+
+				productPrice = priceListBL.getCurrentProductPrice(
+						contextProvider,
+						pricingSystem,
+						product,
+						location.getC_Location().getC_Country(),
+						isSOTrx);
+			}
 			if (productPrice == null)
 			{
 				throw new ProductPriceNotFoundException("@NotFound@: @M_ProductPrice_ID@");

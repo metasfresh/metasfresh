@@ -162,7 +162,6 @@ public class SubscriptionBL implements ISubscriptionBL
 		{
 			existingData = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Data.class, ol);
 			existingData.setC_BPartner_ID(order.getBill_BPartner_ID());
-			existingData.setProcessed(true);
 			InterfaceWrapperHelper.save(existingData);
 		}
 

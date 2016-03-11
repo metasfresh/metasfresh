@@ -10,12 +10,12 @@ package de.metas.adempiere.gui.search;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 
 /**
- * Implementations or adapters of this interface models a record (e.g. C_OrderLine) which supports handling unit packing instructions (e.g. packing item, qty etc).
+ * Implementations or adapters of this interface model a record (e.g. C_OrderLine) which supports handling unit packing instructions (e.g. packing item, qty etc).
  *
  * NOTE to developers: if you add/change fields in this interface, make sure you will also change the business logic related methods from {@link IHUPackingAwareBL} (e.g. copying).
  *

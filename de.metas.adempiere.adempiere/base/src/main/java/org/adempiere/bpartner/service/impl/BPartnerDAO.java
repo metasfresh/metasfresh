@@ -22,7 +22,6 @@ package org.adempiere.bpartner.service.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -400,8 +399,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 			if (BPartnerDAO.logger.isLoggable(Level.FINE))
 			{
-				BPartnerDAO.logger.fine("Got M_PriceList_ID=" + bpPriceListId
-						+ " from bPartner=" + bPartner);
+				BPartnerDAO.logger.fine("Got M_PriceList_ID=" + bpPriceListId + " from bPartner=" + bPartner);
 			}
 			return bpPriceListId;
 		}

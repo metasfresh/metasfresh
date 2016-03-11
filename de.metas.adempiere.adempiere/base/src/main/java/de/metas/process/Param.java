@@ -36,7 +36,7 @@ import org.compiere.process.SvrProcess;
 /**
  * Annotate a class field in order to be automatically loaded right before {@link SvrProcess#prepare()} method is called.
  * The annotated field may be <code>private</code>, but not <code>final</code>.<br>
- * Note that we still need <code>AD_Process_Param</code> records.
+ * Note that we still need <code>AD_Process_Param</code> records in the database.
  *
  * @see AD_Process_Para_UpdateFromAnnotations
  */
@@ -51,4 +51,7 @@ public @interface Param
 
 	/** if true, when the parameter will be loaded an {@link FillMandatoryException} will be thrown if the value fetched from process parameters is null */
 	boolean mandatory() default false;
+
+	/** if <code>true</code>, then it will be assumed that the parameter is question is a range and that the annotated field shall contain the range's <code>_To</code> value. */
+	boolean parameterTo() default false;
 }

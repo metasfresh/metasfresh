@@ -224,9 +224,10 @@ public class JaxRsBL implements IJaxRsBL
 
 		for (final I_AD_JAXRS_Endpoint ep : clientEndPoints)
 		{
+			// this is the ISingletonService's service interface.
 			final I_AD_JavaClass javaClassDef = ep.getAD_JavaClass();
-
 			final Class<?> clazz = javaClassBL.verifyClassName(javaClassDef);
+
 			if (ISingletonService.class.isAssignableFrom(clazz))
 			{
 				@SuppressWarnings("unchecked")

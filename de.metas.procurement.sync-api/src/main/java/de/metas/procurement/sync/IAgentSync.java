@@ -5,6 +5,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
+import de.metas.procurement.sync.protocol.SyncProductsRequest;
 
 /*
  * #%L
@@ -44,4 +45,8 @@ public interface IAgentSync
 	@POST
 	@Path("bpartners")
 	Response syncBPartners(final SyncBPartnersRequest request);
+	
+	@POST
+	@Path("products")
+	Response syncProducts(final SyncProductsRequest request);
 }

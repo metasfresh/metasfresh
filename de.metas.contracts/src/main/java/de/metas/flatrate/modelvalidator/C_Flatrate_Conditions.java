@@ -10,18 +10,17 @@ package de.metas.flatrate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -55,7 +54,7 @@ public class C_Flatrate_Conditions
 	public static final String MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P = "Conditions_Error_MatchingMissing";
 	public static final String MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P = "Conditions_Error_Transition_Not_Completed";
 	public static final String MSG_CONDITIONS_ERROR_ORDERLESS_SUBSCRIPTION_NOT_SUPPORTED_0P = "Conditions_Error_Subscription_Not_Supported"; // 03204
-	
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void onTransitionChange(final I_C_Flatrate_Conditions cond)
 	{
@@ -89,7 +88,12 @@ public class C_Flatrate_Conditions
 	public void beforeComplete(final I_C_Flatrate_Conditions cond)
 	{
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-		if (!X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement.equals(cond.getType_Conditions()))
+		final boolean matchingsAreRequired =
+				X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr.equals(cond.getType_Conditions())
+						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Leergutverwaltung.equals(cond.getType_Conditions())
+						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr.equals(cond.getType_Conditions())
+						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_QualityBasedInvoicing.equals(cond.getType_Conditions());
+		if (matchingsAreRequired)
 		{
 			// 03660 for subscriptions, we don't strictly require mappings anymore,
 			// because it's simply impractical for multi-org-setups
@@ -98,12 +102,12 @@ public class C_Flatrate_Conditions
 			{
 				throw new AdempiereException("@" + MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P + "@");
 			}
-			
+
 			// 03204: as of now, the code in de.metas.inoutcandidate doesn't fully support
 			// I_M_ShipmentSchedules that don't reference a C_OrderLine
-			if(!cond.isNewTermCreatesOrder())
+			if (!cond.isNewTermCreatesOrder())
 			{
-				if(!Services.get(IInOutCandidateConfig.class).isSupportForSchedsWithoutOrderLine())
+				if (!Services.get(IInOutCandidateConfig.class).isSupportForSchedsWithoutOrderLine())
 				{
 					throw new AdempiereException("@" + MSG_CONDITIONS_ERROR_ORDERLESS_SUBSCRIPTION_NOT_SUPPORTED_0P + "@");
 				}

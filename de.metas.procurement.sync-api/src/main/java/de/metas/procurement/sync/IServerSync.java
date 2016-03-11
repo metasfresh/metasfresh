@@ -36,7 +36,7 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 
 /**
  * This is implemented in metasfresh (server) and called from the procurementUI (agent).
- * Tobi nedds to implement this and
+ * <p>
  *
  * @author metas-dev <dev@metas-fresh.com>
  *
@@ -45,22 +45,16 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 public interface IServerSync
 {
 	/**
-	 * Get all partners that have a contract.
+	 * Get all partners that have at least one contract, with all their contracts and products. Also get all products that do not belong to a particular contract, but can be offered by the vendor none
+	 * the less.
 	 *
 	 * @return
 	 */
 	@GET
 	@Path("bpartners")
 	public List<SyncBPartner> getAllBPartners();
-
-	/**
-	 * Get all products, with our without contract.
-	 *
-	 * @return
-	 */
-	@GET
-	@Path("products")
-	public List<SyncProduct> getAllProducts();
+	
+	public List<SyncProduct> getAllNotContractedProducts();
 
 	/**
 	 * Report a product supply to metasfresh. Create <code>PMM_QtyReport_Event</code>.

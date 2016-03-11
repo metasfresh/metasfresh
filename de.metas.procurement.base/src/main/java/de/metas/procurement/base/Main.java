@@ -2,6 +2,7 @@ package de.metas.procurement.base;
 
 import java.util.List;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
@@ -37,7 +38,7 @@ import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
 
 /**
  * Module activator
- * 
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -55,6 +56,11 @@ public class Main extends AbstractModuleInterceptor
 		//
 		// Events
 		engine.addModelValidator(new de.metas.procurement.base.event.interceptor.PMM_QtyReport_Event(), client);
+
+		//
+		// contract and master data
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_Flatrate_DataEntry.instance, client);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.PMM_Product.instance, client);
 	}
 
 	@Override
@@ -64,7 +70,16 @@ public class Main extends AbstractModuleInterceptor
 		// Candidate -> Purchase order
 		tabCalloutsRegistry.registerTabCalloutForTable(I_PMM_PurchaseCandidate.Table_Name, PMM_PurchaseCandidate_TabCallout.class);
 	}
-	
+
+	@Override
+	protected void registerCallouts(IProgramaticCalloutProvider calloutsRegistry)
+	{
+		//
+		// contract and master data
+		calloutsRegistry.registerAnnotatedCallout(de.metas.procurement.base.model.interceptor.C_Flatrate_DataEntry.instance);
+		calloutsRegistry.registerAnnotatedCallout(de.metas.procurement.base.model.interceptor.PMM_Product.instance);
+	}
+
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{

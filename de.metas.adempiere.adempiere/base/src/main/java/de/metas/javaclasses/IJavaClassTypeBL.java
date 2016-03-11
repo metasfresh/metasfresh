@@ -56,6 +56,9 @@ public interface IJavaClassTypeBL extends ISingletonService
 	 * <li>existing <code>AD_JavaClass</code> records that were set to <code>IsActive='N'</code> are reactivated if the respective class "reappeared".
 	 * </ul>
 	 *
+	 * <p>
+	 * Note: use {@link AD_JavaClass} to exclude a given class or interface from the search.
+	 *
 	 * @param javaClassType
 	 */
 	void updateClassRecordsList(I_AD_JavaClass_Type javaClassType);

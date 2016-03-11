@@ -140,7 +140,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 
 		final boolean processedPLVFiltering = true; // in the material tracking context, only processed PLVs matter.
 		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(ic.getM_PricingSystem(),
-				inOut.getC_BPartner_Location(),
+				inOut.getC_BPartner_Location().getC_Location().getC_Country(),
 				inOut.getMovementDate(),
 				inOut.isSOTrx(),
 				processedPLVFiltering);

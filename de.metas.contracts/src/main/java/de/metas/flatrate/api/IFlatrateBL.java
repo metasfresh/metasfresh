@@ -33,11 +33,11 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.flatrate.model.I_C_Flatrate_Data;
 import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
@@ -56,7 +56,7 @@ public interface IFlatrateBL extends ISingletonService
 	void validatePricing(I_C_Flatrate_Term fc);
 
 	/**
-	 * Retrieves data entries with the given term and uom and whose periodes are between the given periodFrom and periodTo (inclusive!). Checks if they have been completed and fully invoiced
+	 * Retrieves data entries with the given term and uom and whose periods are between the given periodFrom and periodTo (inclusive!). Checks if they have been completed and fully invoiced
 	 *
 	 * @param flatrateTerm
 	 * @param periodFrom
@@ -79,7 +79,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * @param logReceiver may be <code>null</code>. If not null, then the receivers's addLog() method will be used to log important messages
 	 * @param trxName
 	 */
-	void createDataEntriesForTerm(I_C_Flatrate_Term flatrateTerm, SvrProcess logReceiver);
+	void createDataEntriesForTerm(I_C_Flatrate_Term flatrateTerm);
 
 	/**
 	 * Updates various fields of the given entry, all based of the entry's current Qty_Reported and ActualQty values
@@ -142,8 +142,9 @@ public interface IFlatrateBL extends ISingletonService
 	void updateFlatrateDataEntryQty(I_M_Product product, BigDecimal qty, I_M_InOutLine inOutLine, boolean substract);
 
 	/**
-	 * Creates a new flatrate term for the given partner. If necessary, it also creates a <code>C_Flata_Data</code> record for the term. Assumes that the given <code>flatrateConditions</code> have the
-	 * type <code>Refundable</code>.
+	 * Create a new flatrate term for the given partner. If necessary, also create a {@link I_C_Flatrate_Data} record for the term.<br>
+	 * <p>
+	 * <b>IMPORTANT:</b> depending on the conditions type, this method may or may not work for you. It does for <code>flatrateConditions</code> which have the type <code>Refundable</code>.
 	 * <p>
 	 * Note: obtain a {@link org.adempiere.util.ILoggable} and log to it:
 	 * <ul>
@@ -153,12 +154,14 @@ public interface IFlatrateBL extends ISingletonService
 	 * </ul>
 	 * Note that as of now, the log messages are non-localized EN strings.
 	 *
-	 * @param partner the partner to be used as bill partner. Also this partner's sales rep and billto location are used.
 	 * @param flatrateConditions
 	 * @param startDate the start date for the new term
 	 * @param userInCharge may be <code>null</code>. If set, then this value is used for <code>C_FLatrate_Term.AD_User_InCharge_ID</code>. Otherwise, the method tries
 	 *            <code>C_BPartner.SalesRep_ID</code>
-	 * @param product may be <code>null</code>. If set, then this value is used for <code>C_Flatrate_Term.M_Product_ID</code>
+	 * @param product may be <code>null</code>. If set, then this value is used for <code>C_Flatrate_Term.M_Product_ID</code>.
+	 * @param completeIt if <code>true</code>, then attempt to complete the new term
+	 * @param partner the partner to be used as <code>Bill_BPartner</code> and <code>DropShip_BPartner</code>. Also this partner's sales rep and billto location are used.
+	 *
 	 * @return the newly created and completed term or <code>null</code>.
 	 */
 	I_C_Flatrate_Term createTerm(
@@ -166,5 +169,5 @@ public interface IFlatrateBL extends ISingletonService
 			I_C_Flatrate_Conditions flatrateConditions,
 			Timestamp startDate,
 			I_AD_User userInCharge,
-			I_M_Product product);
+			I_M_Product product, boolean completeIt);
 }

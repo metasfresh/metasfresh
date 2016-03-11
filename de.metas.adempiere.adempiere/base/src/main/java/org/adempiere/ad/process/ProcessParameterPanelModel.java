@@ -10,12 +10,12 @@ package org.adempiere.ad.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -59,7 +59,7 @@ import org.compiere.util.TrxRunnable;
 public class ProcessParameterPanelModel
 {
 	private static final CLogger log = CLogger.getCLogger(ProcessParameterPanelModel.class);
-	
+
 	public static final String FIELDSEPARATOR_TEXT = " - ";
 
 	public static interface IDisplayValueProvider
@@ -83,7 +83,7 @@ public class ProcessParameterPanelModel
 
 	/**
 	 * Dynamic generated Parameter panel.
-	 * 
+	 *
 	 * @param parentCtx parent context
 	 * @param pi process info, used ONLY to get AD_Process_ID, WindowNo and TabNo; no reference is stored to it
 	 */
@@ -91,12 +91,12 @@ public class ProcessParameterPanelModel
 	{
 		super();
 
-		// NOTE: we are using same WindowNo/TabNo as the calling window/tab but we will create a shadow context just to not alter the current context 
+		// NOTE: we are using same WindowNo/TabNo as the calling window/tab but we will create a shadow context just to not alter the current context
 		this.ctx = Env.deriveCtx(parentCtx);
 		this.windowNo = pi.getWindowNo();
 		this.tabNo = pi.getTabNo();
 		this.processId = pi.getAD_Process_ID();
-		
+
 		this.defaultsProvider = createSvrProcessDefaultParametersProviderOrNull(pi.getClassName());
 
 		Check.assumeNotNull(pi, "pi not null");
@@ -105,14 +105,14 @@ public class ProcessParameterPanelModel
 
 		createFields();
 	}
-	
+
 	private static final ISvrProcessDefaultParametersProvider createSvrProcessDefaultParametersProviderOrNull(final String classname)
 	{
 		if (Check.isEmpty(classname, true))
 		{
 			return null;
 		}
-		
+
 		try
 		{
 			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -126,10 +126,10 @@ public class ProcessParameterPanelModel
 			{
 				return null;
 			}
-			
+
 			final ISvrProcessDefaultParametersProvider defaultsProvider = (ISvrProcessDefaultParametersProvider)processClass.newInstance();
 			return defaultsProvider;
-			
+
 		}
 		catch (Throwable e)
 		{
@@ -137,7 +137,7 @@ public class ProcessParameterPanelModel
 			return null;
 		}
 	}
-	
+
 	public Properties getCtx()
 	{
 		return ctx;
@@ -147,12 +147,12 @@ public class ProcessParameterPanelModel
 	{
 		return windowNo;
 	}
-	
+
 	public int getTabNo()
 	{
 		return tabNo;
 	}
-	
+
 	public int getAD_Process_ID()
 	{
 		return processId;
@@ -195,7 +195,7 @@ public class ProcessParameterPanelModel
 					+ "p.DefaultValue, p.DefaultValue2, p.VFormat, p.ValueMin, p.ValueMax, "
 					+ "p.SeqNo, p.AD_Reference_Value_ID, p.AD_Val_Rule_ID, p.ReadOnlyLogic, p.DisplayLogic "
 					+ ", p.IsEncrypted " // metas: tsa: US745
-					+ ", p.isAutoComplete" // 05887 
+					+ ", p.isAutoComplete" // 05887
 					+ ", p.EntityType as FieldEntityType"
 					+ " FROM AD_Process_Para p"
 					+ " INNER JOIN AD_Process_Para_Trl t ON (p.AD_Process_Para_ID=t.AD_Process_Para_ID)"
@@ -246,7 +246,7 @@ public class ProcessParameterPanelModel
 
 	/**
 	 * Get field index by columnName
-	 * 
+	 *
 	 * @param columnName
 	 * @return field index or -1
 	 */
@@ -321,7 +321,7 @@ public class ProcessParameterPanelModel
 	 * Create Field. - creates Fields and adds it to m_mFields list - creates Editor and adds it to m_vEditors list Handles Ranges by adding additional mField/vEditor.
 	 * <p>
 	 * mFields are used for default value and mandatory checking; vEditors are used to retrieve the value (no data binding)
-	 * 
+	 *
 	 * @param rs result set
 	 */
 	private void createField(final ResultSet rs)
@@ -361,9 +361,9 @@ public class ProcessParameterPanelModel
 
 	/**
 	 * Notify the model that an editor value was changed.
-	 * 
+	 *
 	 * NOTE: this is used to do View to Model binding
-	 * 
+	 *
 	 * @param columnName
 	 * @param valueNew
 	 * @param displayValueNew
@@ -423,7 +423,7 @@ public class ProcessParameterPanelModel
 
 	/**
 	 * Validate given <code>gridField</code> when <code>changedColumnName</code> was changed.
-	 * 
+	 *
 	 * @param gridField
 	 * @param changedColumnName
 	 */

@@ -24,6 +24,11 @@ The actual release notes
 # metasfresh 4.9.x (Upcoming Release)
   
 ## Features
+ - 09628 procurement management (106716240958)
+    * still a work in progress
+	* the procurementUI now talks to metasfresh via jax-rs on a jms transport
+	* metasfresh contains a list with goods that are avaiable to be supplied by any vendor (without contract)
+	* implemented a lot of the sync businesslogic
  - 09910 extend sql rollout tool to first create a new db from template (100074461801):
     * extending the tool so we can start by creating a new database from a templated-DB and then apply the scripts to that new database
 

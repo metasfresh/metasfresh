@@ -174,6 +174,29 @@ public interface I_C_Flatrate_Data
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Existierende Verträge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setHasContracts (boolean HasContracts);
+
+	/**
+	 * Get Existierende Verträge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isHasContracts();
+
+    /** Column definition for HasContracts */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_HasContracts = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "HasContracts", null);
+    /** Column name HasContracts */
+    public static final String COLUMNNAME_HasContracts = "HasContracts";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -197,31 +220,6 @@ public interface I_C_Flatrate_Data
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setProcessed (boolean Processed);
-
-	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isProcessed();
-
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Get Aktualisiert.

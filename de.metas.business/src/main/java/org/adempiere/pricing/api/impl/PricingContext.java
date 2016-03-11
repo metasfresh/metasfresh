@@ -22,7 +22,6 @@ package org.adempiere.pricing.api.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -35,7 +34,10 @@ import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 class PricingContext implements IEditablePricingContext
@@ -55,6 +57,8 @@ class PricingContext implements IEditablePricingContext
 	 * NOTE: We are taking a snapshot of the current timestamp because we want to return the same value each time we are asked.
 	 */
 	private long priceDateNowTS = SystemTime.millis();
+
+	private int countryId = 0;
 
 	private int C_UOM_ID;
 	private int C_Currency_ID;
@@ -124,6 +128,19 @@ class PricingContext implements IEditablePricingContext
 	public void setM_PricingSystem_ID(final int pricingSystemId)
 	{
 		this.pricingSystemId = pricingSystemId;
+		pricingSystem = null; // reset
+	}
+
+	private I_M_PricingSystem pricingSystem;
+
+	@Override
+	public I_M_PricingSystem getM_PricingSystem()
+	{
+		if (pricingSystem == null && getM_PricingSystem_ID() > 0)
+		{
+			pricingSystem = InterfaceWrapperHelper.create(getCtx(), getM_PricingSystem_ID(), I_M_PricingSystem.class, getTrxName());
+		}
+		return pricingSystem;
 	}
 
 	/**
@@ -142,6 +159,19 @@ class PricingContext implements IEditablePricingContext
 	public void setM_Product_ID(final int m_Product_ID)
 	{
 		M_Product_ID = m_Product_ID;
+		product = null; // reset
+	}
+
+	private I_M_Product product;
+
+	@Override
+	public I_M_Product getM_Product()
+	{
+		if (product == null && getM_Product_ID() > 0)
+		{
+			product = InterfaceWrapperHelper.create(getCtx(), getM_Product_ID(), I_M_Product.class, getTrxName());
+		}
+		return product;
 	}
 
 	/**
@@ -467,5 +497,30 @@ class PricingContext implements IEditablePricingContext
 	public void setManualPrice(boolean isManualPrice)
 	{
 		this.isManualPrice = isManualPrice;
+	}
+
+	@Override
+	public int getC_Country_ID()
+	{
+		return countryId;
+	}
+
+	@Override
+	public void setC_Country_ID(int countryId)
+	{
+		this.countryId = countryId;
+		country = null; // reset;
+	}
+
+	private I_C_Country country;
+
+	@Override
+	public I_C_Country getC_Country()
+	{
+		if (country == null && getC_Country_ID() > 0)
+		{
+			country = InterfaceWrapperHelper.create(getCtx(), getC_Country_ID(), I_C_Country.class, getTrxName());
+		}
+		return country;
 	}
 }

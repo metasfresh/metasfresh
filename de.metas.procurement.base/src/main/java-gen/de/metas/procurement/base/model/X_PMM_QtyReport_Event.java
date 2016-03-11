@@ -16,7 +16,7 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1734326674L;
+	private static final long serialVersionUID = -1309983784L;
 
     /** Standard Constructor */
     public X_PMM_QtyReport_Event (Properties ctx, int PMM_QtyReport_Event_ID, String trxName)
@@ -28,6 +28,8 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 			setC_Currency_ID (0);
 			setC_UOM_ID (0);
 			setDatePromised (new Timestamp( System.currentTimeMillis() ));
+			setIsError (false);
+// N
 			setM_HU_PI_Item_Product_ID (0);
 			setM_PriceList_ID (0);
 			setM_PricingSystem_ID (0);
@@ -130,6 +132,40 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	}
 
 	@Override
+	public de.metas.flatrate.model.I_C_Flatrate_Term getC_Flatrate_Term() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.flatrate.model.I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public void setC_Flatrate_Term(de.metas.flatrate.model.I_C_Flatrate_Term C_Flatrate_Term)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.flatrate.model.I_C_Flatrate_Term.class, C_Flatrate_Term);
+	}
+
+	/** Set Pauschale - Vertragsperiode.
+		@param C_Flatrate_Term_ID Pauschale - Vertragsperiode	  */
+	@Override
+	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID)
+	{
+		if (C_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, Integer.valueOf(C_Flatrate_Term_ID));
+	}
+
+	/** Get Pauschale - Vertragsperiode.
+		@return Pauschale - Vertragsperiode	  */
+	@Override
+	public int getC_Flatrate_Term_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Term_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
@@ -199,6 +235,32 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	public java.lang.String getErrorMsg () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
+	}
+
+	/** Set Fehler.
+		@param IsError 
+		Ein Fehler ist bei der Durchführung aufgetreten
+	  */
+	@Override
+	public void setIsError (boolean IsError)
+	{
+		set_Value (COLUMNNAME_IsError, Boolean.valueOf(IsError));
+	}
+
+	/** Get Fehler.
+		@return Ein Fehler ist bei der Durchführung aufgetreten
+	  */
+	@Override
+	public boolean isError () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsError);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
@@ -417,8 +479,8 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 		return ii.intValue();
 	}
 
-	/** Set PMM Qty Report Event.
-		@param PMM_QtyReport_Event_ID PMM Qty Report Event	  */
+	/** Set Lieferplanungsdatensatz.
+		@param PMM_QtyReport_Event_ID Lieferplanungsdatensatz	  */
 	@Override
 	public void setPMM_QtyReport_Event_ID (int PMM_QtyReport_Event_ID)
 	{
@@ -428,8 +490,8 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 			set_ValueNoCheck (COLUMNNAME_PMM_QtyReport_Event_ID, Integer.valueOf(PMM_QtyReport_Event_ID));
 	}
 
-	/** Get PMM Qty Report Event.
-		@return PMM Qty Report Event	  */
+	/** Get Lieferplanungsdatensatz.
+		@return Lieferplanungsdatensatz	  */
 	@Override
 	public int getPMM_QtyReport_Event_ID () 
 	{

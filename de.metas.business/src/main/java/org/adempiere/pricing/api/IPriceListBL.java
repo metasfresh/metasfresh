@@ -28,7 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -46,13 +46,17 @@ public interface IPriceListBL extends ISingletonService
 {
 	/**
 	 * @param pricingSystem
-	 * @param partnerLocation
+	 * @param country
 	 * @param date
 	 * @param isSOTrx: true is SO, false if PO
 	 *
 	 * @return the current pricelist for vendor if any (for the giver pricing system), null otherwise
 	 */
-	I_M_PriceList getCurrentPricelistOrNull(I_M_PricingSystem pricingSystem, I_C_BPartner_Location partnerLocation, Timestamp date, boolean isSOTrx);
+	I_M_PriceList getCurrentPricelistOrNull(
+			I_M_PricingSystem pricingSystem,
+			I_C_Country country,
+			Timestamp date,
+			boolean isSOTrx);
 
 	/**
 	 * This method is called from <code>org.compiere.process.M_PriceList_Create</code> do to additional things. Among some hardcoded things, it invokes the {@link IPlvCreationListener}s that were
@@ -116,18 +120,23 @@ public interface IPriceListBL extends ISingletonService
 	 * @param contextProvider
 	 * @param pricingSystem
 	 * @param product - the product we need the price for
-	 * @param location - used for getting the country we search the plv for
+	 * @param country - the country we search the plv for
 	 * @param isSOTrx - true is sales, false if purchase
 	 *
-	 * @return the price if found, null otherwise
+	 * @return the price if found, <code>null</code> otherwise
 	 */
-	I_M_ProductPrice getCurrentProductPrice(IContextAware contextProvider, I_M_PricingSystem pricingSystem, I_M_Product product, I_C_BPartner_Location location, boolean isSOTrx);
+	I_M_ProductPrice getCurrentProductPrice(
+			IContextAware contextProvider,
+			I_M_PricingSystem pricingSystem,
+			I_M_Product product,
+			I_C_Country country,
+			boolean isSOTrx);
 
 	/**
 	 * Find the current version from a pricing system based on the given parameters.
 	 *
 	 * @param pricingSystem
-	 * @param partnerLocation
+	 * @param country
 	 * @param date
 	 * @param isSoTrx
 	 * @param processedPLVFiltering if not <code>null</code>, then only PLVs which have the give value in their <code>Processed</code> column are considered.
@@ -135,7 +144,7 @@ public interface IPriceListBL extends ISingletonService
 	 * @return
 	 */
 	I_M_PriceList_Version getCurrentPriceListVersionOrNull(I_M_PricingSystem pricingSystem,
-			I_C_BPartner_Location partnerLocation,
+			I_C_Country country,
 			Timestamp date,
 			boolean isSoTrx,
 			Boolean processedPLVFiltering);

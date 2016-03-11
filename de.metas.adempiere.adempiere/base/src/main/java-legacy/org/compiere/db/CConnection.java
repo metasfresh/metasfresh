@@ -279,6 +279,13 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			return SERVER_DEFAULT_APPSERVER_PORT;
 		}
+		final int appsPort = attrs.getAppsPort();
+		if (appsPort > 0)
+		{
+			return appsPort;
+		}
+		// appsPort<=0 never makes sense, so update it to our default.
+		setAppsPort(SERVER_DEFAULT_APPSERVER_PORT);
 		return attrs.getAppsPort();
 	}
 

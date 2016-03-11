@@ -10,12 +10,12 @@ package org.adempiere.pricing.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,17 +28,17 @@ import java.sql.Timestamp;
 
 /**
  * A {@link IPricingContext} which also have setters.
- * 
+ *
  * This object is used for creating the pricing context.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public interface IEditablePricingContext extends IPricingContext
 {
 	/**
 	 * Set's this context's referenced object to the given {@code referencedObject}, and set's this context's trxName to be the given referencedObject's trxName.
-	 * 
+	 *
 	 * @param referencedObject
 	 */
 	void setReferencedObject(final Object referencedObject);
@@ -69,7 +69,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	/**
 	 * Set this to <code>true</code> to indicate to the pricing engine that discounts shall <b>not</b> be computed and applied to the result.
-	 * 
+	 *
 	 * @param disallowDiscount
 	 */
 	void setDisallowDiscount(boolean disallowDiscount);
@@ -77,7 +77,7 @@ public interface IEditablePricingContext extends IPricingContext
 	void setTrxName(String trxName);
 
 	/**
-	 * 
+	 *
 	 * @param convertPriceToContextUOM
 	 * @see IPricingContext#isConvertPriceToContextUOM()
 	 */
@@ -92,8 +92,14 @@ public interface IEditablePricingContext extends IPricingContext
 
 	/**
 	 * See {@link IPricingContext#isManualPrice()}.
-	 * 
+	 *
 	 * @param isManualPrice
 	 */
 	void setManualPrice(boolean isManualPrice);
+
+	/**
+	 * When setting this and {@link #setM_PricingSystem_ID(int)}, no <code>M_PriceList_ID</code> or <code>M_PriceListVersion_ID</code> needs to be set.
+	 * @param c_Country_ID
+	 */
+	void setC_Country_ID(int c_Country_ID);
 }

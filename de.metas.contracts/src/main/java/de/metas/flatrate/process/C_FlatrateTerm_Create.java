@@ -98,7 +98,8 @@ public abstract class C_FlatrateTerm_Create extends SvrProcess
 				public void run(String localTrxName) throws Exception
 				{
 					// no need to set 'localTrxName' to out bp, because we loaded the bp with ITrx.TRXNAME_ThreadInherited
-					final I_C_Flatrate_Term term = flatrateBL.createTerm(partner, conditions, startDate, userInCharge, product);
+					final boolean completeIt = true;
+					final I_C_Flatrate_Term term = flatrateBL.createTerm(partner, conditions, startDate, userInCharge, product, completeIt);
 
 					if (term == null)
 					{

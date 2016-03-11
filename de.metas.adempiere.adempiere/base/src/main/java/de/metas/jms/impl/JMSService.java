@@ -3,7 +3,9 @@ package de.metas.jms.impl;
 import java.net.URI;
 import java.util.logging.Level;
 
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 
 import org.adempiere.util.StringUtils;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -44,9 +46,23 @@ public class JMSService implements IJMSService
 	@Override
 	public ConnectionFactory createConnectionFactory()
 	{
-		// Use "failover". In this way, ActiveMQ will handle all connection issues.
-		// See http://activemq.apache.org/failover-transport-reference.html
-		final String brokerURL = "failover://" + getJmsURL(null);
+		final boolean createFailOverURL = true;
+		return createConnectionFactory(createFailOverURL);
+	}
+
+	private ConnectionFactory createConnectionFactory(final boolean createFailoverURL)
+	{
+		final String brokerURL;
+		if (createFailoverURL)
+		{
+			// Use "failover". In this way, ActiveMQ will handle all connection issues.
+			// See http://activemq.apache.org/failover-transport-reference.html
+			brokerURL = "failover://" + getJmsURL(null);
+		}
+		else
+		{
+			brokerURL = getJmsURL(null);
+		}
 
 		if (CConnection.isServerEmbedded())
 		{
@@ -78,6 +94,23 @@ public class JMSService implements IJMSService
 	private void startEmbeddedBroker0()
 	{
 		final CLogger logger = JmsConstants.getLogger();
+
+		// try if there is already a broker running, by making a "fail-fast" attempt to connect to it.
+		final boolean createFailoverURL = false;
+		final ConnectionFactory connectionFactory = createConnectionFactory(createFailoverURL);
+		try
+		{
+			final Connection conn = connectionFactory.createConnection();
+			conn.close();
+			JmsConstants.getLogger().log(Level.WARNING, "Found an embedded JMS broker to which we can connect. Assuming that attempting to create another one would not work. Returning.");
+			return;
+		}
+		catch (JMSException e)
+		{
+			// a broker is not yet running on this machine. Go on.
+		}
+
+		// now actually create the embedded broker
 		try
 		{
 			embeddedBroker = new BrokerService();
@@ -87,6 +120,7 @@ public class JMSService implements IJMSService
 
 			connector.setUri(new URI(urlStr));
 			embeddedBroker.addConnector(connector);
+
 			embeddedBroker.start();
 			logger.log(Level.CONFIG, "Embedded JMS broker started on URL " + urlStr);
 		}

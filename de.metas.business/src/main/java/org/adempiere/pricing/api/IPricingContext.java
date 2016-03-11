@@ -10,12 +10,12 @@ package org.adempiere.pricing.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,19 +27,26 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
 
 /**
  * Pricing context
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public interface IPricingContext
 {
 	int getM_Product_ID();
 
+	I_M_Product getM_Product();
+
 	int getM_PricingSystem_ID();
+
+	I_M_PricingSystem getM_PricingSystem();
 
 	int getM_PriceList_ID();
 
@@ -50,9 +57,9 @@ public interface IPricingContext
 
 	/**
 	 * Gets pricing evaluation date.
-	 * 
+	 *
 	 * In case no pricing evaluation date was set while the pricing context was build, "now" will be returned.
-	 * 
+	 *
 	 * @return pricing evaluation date; never returns null.
 	 */
 	Timestamp getPriceDate();
@@ -81,7 +88,7 @@ public interface IPricingContext
 
 	/**
 	 * Creates a mutable copy of this pricing context
-	 * 
+	 *
 	 * @return new mutable copy
 	 */
 	IEditablePricingContext copy();
@@ -95,7 +102,7 @@ public interface IPricingContext
 
 	/**
 	 * If set, during pricing calculations, prices will be converted from {@link IPricingResult#getPrice_UOM_ID()} to {@link IPricingContext#getC_UOM_ID()}.
-	 * 
+	 *
 	 * @return true if prices needs to be converted from Price UOM to context UOM
 	 */
 	boolean isConvertPriceToContextUOM();
@@ -104,17 +111,14 @@ public interface IPricingContext
 
 	/**
 	 * Specifies if the pricing engine shall calculate a price or not.
-	 * 
+	 *
 	 * @return returns the context value or <code>null</code> if unspecified. In this case the pricing engine shall check if the references object&model has a <code>IsManualPrice</code> field to go
 	 *         with.
 	 */
 	Boolean isManualPrice();
 
-	/**
-	 * get the property by name
-	 * 
-	 * @param propertyName
-	 * @return
-	 */
-	// Object getProperty(String propertyName);
+
+	int getC_Country_ID();
+
+	I_C_Country getC_Country();
 }

@@ -67,7 +67,6 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -816,28 +815,26 @@ public class FlatrateBL implements IFlatrateBL
 
 	@Override
 	public void createDataEntriesForTerm(
-			final I_C_Flatrate_Term flatrateTerm,
-			final SvrProcess logReceiver)
+			final I_C_Flatrate_Term flatrateTerm)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(flatrateTerm);
 		final String trxName = InterfaceWrapperHelper.getTrxName(flatrateTerm);
 
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(flatrateTerm.getType_Conditions()))
 		{
-			createEntriesForFlatFee(ctx, flatrateTerm, logReceiver, trxName);
+			createEntriesForFlatFee(ctx, flatrateTerm, trxName);
 		}
 		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement.equals(flatrateTerm.getType_Conditions())
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Depotgebuehr.equals(flatrateTerm.getType_Conditions())
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Leergutverwaltung.equals(flatrateTerm.getType_Conditions()))
 		{
-			createEntriesForHoldingFee(ctx, flatrateTerm, logReceiver, trxName);
+			createEntriesForHoldingFee(ctx, flatrateTerm, trxName);
 		}
 	}
 
 	private void createEntriesForHoldingFee(
 			final Properties ctx,
 			final I_C_Flatrate_Term flatrateTerm,
-			final SvrProcess logReceiver,
 			final String trxName)
 	{
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
@@ -882,14 +879,13 @@ public class FlatrateBL implements IFlatrateBL
 						counter,
 						flatrateTerm.getStartDate(),
 						flatrateTerm.getEndDate() });
-		addLog(logReceiver, msg);
+		addLog(msg);
 
 	}
 
 	private void createEntriesForFlatFee(
 			final Properties ctx,
 			final I_C_Flatrate_Term flatrateTerm,
-			final SvrProcess logReceiver,
 			final String trxName)
 	{
 		int counter = 0;
@@ -936,17 +932,13 @@ public class FlatrateBL implements IFlatrateBL
 						flatrateTerm.getStartDate(),
 						flatrateTerm.getEndDate(),
 						columnLookup.getDisplay(flatrateTerm.getUOMType()) });
-		addLog(logReceiver, msg);
+		addLog(msg);
 	}
 
-	private void addLog(final SvrProcess logReceiver, final String msg)
+	private void addLog(final String msg)
 	{
 		FlatrateBL.logger.info(msg);
-
-		if (logReceiver != null)
-		{
-			logReceiver.addLog(msg);
-		}
+		ILoggable.THREADLOCAL.getLoggable().addLog(msg);
 	}
 
 	@Override
@@ -1596,10 +1588,11 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public I_C_Flatrate_Term createTerm(
 			final I_C_BPartner bPartner,
-			final I_C_Flatrate_Conditions contract,
+			final I_C_Flatrate_Conditions conditions,
 			final Timestamp startDate,
 			final I_AD_User userInCharge,
-			final org.compiere.model.I_M_Product product)
+			final org.compiere.model.I_M_Product product,
+			final boolean completeIt)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
@@ -1628,7 +1621,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (product == null)
 		{
-			if (!flatrateDB.retrieveTerms(bPartner, contract).isEmpty())
+			if (!flatrateDB.retrieveTerms(bPartner, conditions).isEmpty())
 			{
 				notCreatedReason.append(" already has a term;");
 				dontCreateTerm = true;
@@ -1657,8 +1650,8 @@ public class FlatrateBL implements IFlatrateBL
 		}
 
 		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, bPartner);
-		newTerm.setC_Flatrate_Conditions(contract);
-		newTerm.setC_UOM_ID(contract.getC_UOM_ID());
+		newTerm.setC_Flatrate_Conditions(conditions);
+		newTerm.setC_UOM_ID(conditions.getC_UOM_ID());
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);
@@ -1681,10 +1674,15 @@ public class FlatrateBL implements IFlatrateBL
 
 		InterfaceWrapperHelper.save(newTerm);
 
-		Services.get(IDocActionBL.class).processEx(newTerm, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
-
-		loggable.addLog("BPartner " + bPartner.getValue() + ": created and completed: " + notCreatedReason.toString());
-
+		if (completeIt)
+		{
+			Services.get(IDocActionBL.class).processEx(newTerm, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			loggable.addLog("BPartner " + bPartner.getValue() + ": created and completed: " + notCreatedReason.toString());
+		}
+		else
+		{
+			loggable.addLog("BPartner " + bPartner.getValue() + ": created: " + notCreatedReason.toString());
+		}
 		return newTerm;
 	}
 }

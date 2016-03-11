@@ -37,8 +37,6 @@ import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList_Version;
@@ -55,11 +53,11 @@ public class PriceListBL implements IPriceListBL
 
 	@Override
 	public I_M_PriceList getCurrentPricelistOrNull(final I_M_PricingSystem pricingSystem,
-			final I_C_BPartner_Location partnerLocation,
+			final I_C_Country country,
 			final Timestamp date,
 			final boolean isSoTrx)
 	{
-		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystem, partnerLocation, date, isSoTrx, null);
+		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystem, country, date, isSoTrx, null);
 
 		if (currentVersion == null)
 		{
@@ -154,10 +152,10 @@ public class PriceListBL implements IPriceListBL
 			final IContextAware contextProvider,
 			final I_M_PricingSystem pricingSystem,
 			final I_M_Product product,
-			final I_C_BPartner_Location location,
+			final I_C_Country country,
 			final boolean isSOTrx)
 	{
-		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystem, location, SystemTime.asDayTimestamp(), isSOTrx, null);
+		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystem, country, SystemTime.asDayTimestamp(), isSOTrx, null);
 
 		final I_M_ProductPrice productPrice = Services.get(IPriceListDAO.class)
 				.retrieveProductPriceOrNull(
@@ -169,34 +167,20 @@ public class PriceListBL implements IPriceListBL
 
 	@Override
 	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(final I_M_PricingSystem pricingSystem,
-			final I_C_BPartner_Location partnerLocation,
+			final I_C_Country country,
 			final Timestamp date,
 			final boolean isSoTrx, Boolean processedPLVFiltering)
 	{
-		if (partnerLocation == null)
+		if (country == null)
 		{
 			return null;
 		}
 
-		final I_C_BPartner partner = partnerLocation.getC_BPartner();
-		if (partner == null)
-		{
-			return null;
-		}
 		if (pricingSystem == null)
 		{
 			return null;
 		}
-		if (!partner.isVendor() && !isSoTrx)
-		{
-			return null;
-		}
-		if (!partner.isCustomer() && isSoTrx)
-		{
-			return null;
-		}
 
-		final I_C_Country country = partnerLocation.getC_Location().getC_Country();
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystem, country, isSoTrx);
 

@@ -821,7 +821,7 @@ public class FlatrateDAO implements IFlatrateDAO
 					InterfaceWrapperHelper.getTrxName(bPartner));
 			existingData.setAD_Org_ID(bPartner.getAD_Org_ID());
 			existingData.setC_BPartner_ID(bPartner.getC_BPartner_ID());
-			existingData.setProcessed(true);
+			existingData.setHasContracts(false);
 			InterfaceWrapperHelper.save(existingData);
 		}
 		return existingData;

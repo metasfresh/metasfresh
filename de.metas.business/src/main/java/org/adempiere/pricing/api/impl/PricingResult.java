@@ -22,7 +22,6 @@ package org.adempiere.pricing.api.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -49,6 +48,7 @@ import org.compiere.util.Env;
 class PricingResult implements IPricingResult
 {
 	private int M_PricingSystem_ID = -1;
+	private int M_PriceList_ID = -1;
 	private int C_Currency_ID = -1;
 	private int C_UOM_ID = -1;
 	private int M_Product_ID = -1;
@@ -83,6 +83,18 @@ class PricingResult implements IPricingResult
 	public void setM_PricingSystem_ID(final int pricingSystemId)
 	{
 		M_PricingSystem_ID = pricingSystemId;
+	}
+
+	@Override
+	public void setM_PriceList_ID(int M_PriceList_ID)
+	{
+		this.M_PriceList_ID = M_PriceList_ID;
+	}
+
+	@Override
+	public int getM_PriceList_ID()
+	{
+		return M_PriceList_ID;
 	}
 
 	/**
@@ -335,7 +347,7 @@ class PricingResult implements IPricingResult
 	@Override
 	public void setPriceDate(final Timestamp priceDate)
 	{
-		this.priceDateTS =  priceDate;
+		this.priceDateTS = priceDate;
 	}
 
 	@Override
@@ -406,5 +418,4 @@ class PricingResult implements IPricingResult
 	{
 		return ObjectUtils.toString(this);
 	}
-
 }
