@@ -21,7 +21,17 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.8.7 (Upcoming Release)
+# metasfresh 4.9.x (Upcoming Release)
+  
+## Features
+ - 09910 extend sql rollout tool to first create a new db from template (100074461801):
+    * extending the tool so we can start by creating a new database from a templated-DB and then apply the scripts to that new database
+
+## Fixes
+	
+## Instructions
+
+# metasfresh 4.8.7
   
 ## Features
  - 09628 procurement management (106716240958)
@@ -53,10 +63,6 @@ The actual release notes
  - 09901 Report for packaging material balance: recap differences
  - 09890 Manual Fixing of voided Bankstatement after ESR Import (108847010077)
     * when a bankstatement is voided, all ESR import lines (if any) are unlinked from the bank statement
-	
-## Instructions
-
-
 
 # metasfresh 4.7.6
 
