@@ -103,7 +103,7 @@ public abstract class AbstractScriptsApplierTemplate implements Runnable
 		//
 		// Setup Script Applier
 		final IDatabase database = createDatabase();
-		final IScriptsApplier scriptsApplier = new ScriptsApplier(database);
+		final IScriptsApplier scriptsApplier = createScriptApplier(database);
 		scriptsApplier.setScriptExecutorFactory(scriptExecutorFactory);
 		scriptsApplier.setListener(createScriptsApplierListener());
 
@@ -133,6 +133,17 @@ public abstract class AbstractScriptsApplierTemplate implements Runnable
 				logger.info(error.getLocalizedMessage(), error);
 			}
 		}
+	}
+
+	/**
+	 * Create and returns a new {@link ScriptsApplier} instance. Can be overridden in order to e.g. have no-op Scriptsapplier.
+	 *
+	 * @param database
+	 * @return
+	 */
+	protected ScriptsApplier createScriptApplier(final IDatabase database)
+	{
+		return new ScriptsApplier(database);
 	}
 
 }

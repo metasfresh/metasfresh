@@ -1,5 +1,7 @@
 package de.metas.migration.scanner.impl;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.SortedSet;
@@ -12,9 +14,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.migration.IScript;
-import de.metas.migration.scanner.IScriptFactory;
 import de.metas.migration.scanner.IScriptScanner;
-import de.metas.migration.scanner.IScriptScannerFactory;
 
 /*
  * #%L
@@ -49,12 +49,10 @@ import de.metas.migration.scanner.IScriptScannerFactory;
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
-public class GloballyOrderedScannerDecorator implements IScriptScanner
+public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdapter
 {
-
-	private final IScriptScanner internalScanner;
-
-	private final Supplier<Iterator<IScript>> lexiographicallyOrderedScriptsSupplier = Suppliers.memoize(new Supplier<Iterator<IScript>>()
+	@VisibleForTesting
+	/* package */final Supplier<Iterator<IScript>> lexiographicallyOrderedScriptsSupplier = Suppliers.memoize(new Supplier<Iterator<IScript>>()
 	{
 		@Override
 		public Iterator<IScript> get()
@@ -78,11 +76,14 @@ public class GloballyOrderedScannerDecorator implements IScriptScanner
 				}
 			});
 
-			while (internalScanner.hasNext())
+			while (getInternalScanner().hasNext())
 			{
-				final IScript next = internalScanner.next();
+				final IScript next = getInternalScanner().next();
 				lexiagraphicallySortedScripts.add(next);
 			}
+
+			dumpTofile(lexiagraphicallySortedScripts);
+
 			return lexiagraphicallySortedScripts.iterator();
 		}
 	});
@@ -113,43 +114,7 @@ public class GloballyOrderedScannerDecorator implements IScriptScanner
 
 	public GloballyOrderedScannerDecorator(final IScriptScanner scanner)
 	{
-		internalScanner = scanner;
-	}
-
-	@Override
-	public void setScriptScannerFactory(final IScriptScannerFactory scriptScannerFactory)
-	{
-		internalScanner.setScriptScannerFactory(scriptScannerFactory);
-	}
-
-	@Override
-	public IScriptScannerFactory getScriptScannerFactory()
-	{
-		return internalScanner.getScriptScannerFactory();
-	}
-
-	@Override
-	public IScriptScannerFactory getScriptScannerFactoryToUse()
-	{
-		return internalScanner.getScriptScannerFactoryToUse();
-	}
-
-	@Override
-	public IScriptFactory getScriptFactory()
-	{
-		return internalScanner.getScriptFactory();
-	}
-
-	@Override
-	public void setScriptFactory(final IScriptFactory scriptFactory)
-	{
-		internalScanner.setScriptFactory(scriptFactory);
-	}
-
-	@Override
-	public IScriptFactory getScriptFactoryToUse()
-	{
-		return internalScanner.getScriptFactoryToUse();
+		super(scanner);
 	}
 
 	@Override
@@ -171,10 +136,27 @@ public class GloballyOrderedScannerDecorator implements IScriptScanner
 		lexiographicallyOrderedScriptsSupplier.get().remove();
 	}
 
+	private void dumpTofile(SortedSet<IScript> lexiagraphicallySortedScripts)
+	{
+		FileWriter writer;
+		try
+		{
+			writer = new FileWriter(GloballyOrderedScannerDecorator.class.getName() + "_sorted_scripts.txt");
+			for (final IScript script : lexiagraphicallySortedScripts)
+			{
+				writer.write(script.toString()+"\n");
+			}
+			writer.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	public String toString()
 	{
-		return "GloballyOrderedScannerDecorator [internalScanner=" + internalScanner + "]";
+		return "GloballyOrderedScannerDecorator [getInternalScanner()=" + getInternalScanner() + "]";
 	}
-
 }

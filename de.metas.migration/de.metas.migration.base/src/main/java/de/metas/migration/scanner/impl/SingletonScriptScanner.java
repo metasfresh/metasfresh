@@ -56,6 +56,13 @@ public class SingletonScriptScanner extends AbstractScriptScanner
 		}
 	}
 
+	public SingletonScriptScanner(final IScript script)
+	{
+		super(null);
+		this.fileRef = null;
+		this.script = script;
+	}
+
 	@Override
 	public boolean hasNext()
 	{

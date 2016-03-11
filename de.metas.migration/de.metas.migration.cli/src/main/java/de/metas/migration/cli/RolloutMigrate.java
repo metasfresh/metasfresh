@@ -22,7 +22,6 @@ package de.metas.migration.cli;
  * #L%
  */
 
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,10 +41,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.metas.migration.IDatabase;
+import de.metas.migration.IScript;
+import de.metas.migration.IScriptsRegistry;
 import de.metas.migration.applier.IScriptsApplierListener;
 import de.metas.migration.applier.impl.NullScriptsApplierListener;
 import de.metas.migration.executor.IScriptExecutorFactory;
 import de.metas.migration.impl.AbstractScriptsApplierTemplate;
+import de.metas.migration.impl.CreateDBFromTemplateScript;
 import de.metas.migration.impl.SQLDatabase;
 import de.metas.migration.scanner.IFileRef;
 import de.metas.migration.scanner.IScriptFactory;
@@ -53,6 +55,7 @@ import de.metas.migration.scanner.IScriptScanner;
 import de.metas.migration.scanner.IScriptScannerFactory;
 import de.metas.migration.scanner.impl.FileRef;
 import de.metas.migration.scanner.impl.GloballyOrderedScannerDecorator;
+import de.metas.migration.scanner.impl.SingletonScriptScanner;
 
 public final class RolloutMigrate
 {
@@ -68,6 +71,7 @@ public final class RolloutMigrate
 	private static final String OPTION_SettingsFile = "s";
 	private static final String OPTION_IgnoreErrors = "i";
 	private static final String OPTION_JustMarkScriptAsExecuted = "r";
+	private static final String OPTION_CreateNewDB = "n";
 
 	private final Options options;
 	private Properties settings;
@@ -76,6 +80,8 @@ public final class RolloutMigrate
 	private boolean ignoreErrors;
 	private boolean justMarkScriptAsExecuted;
 	private String scriptFile;
+	private String newDBName;
+	private String templateDBName;
 
 	public RolloutMigrate()
 	{
@@ -133,6 +139,13 @@ public final class RolloutMigrate
 		{
 			final Option option = new Option(RolloutMigrate.OPTION_JustMarkScriptAsExecuted, "Only record script, but don't actually execute. WARNING: Only use if you know what you are doing!");
 			option.setArgs(0);
+			option.setRequired(false);
+			options.addOption(option);
+		}
+		// create a new DB from template and run the migration there
+		{
+			final Option option = new Option(RolloutMigrate.OPTION_CreateNewDB, "Create a new Database from a template, and do the migration on that new DB. Arguments <templateDBName> <newDBName>");
+			option.setArgs(2);
 			option.setRequired(false);
 			options.addOption(option);
 		}
@@ -195,6 +208,10 @@ public final class RolloutMigrate
 
 		final boolean justMarkScriptAsExecuted = cmd.hasOption(RolloutMigrate.OPTION_JustMarkScriptAsExecuted);
 		setJustMarkScriptAsExecuted(justMarkScriptAsExecuted);
+
+		final String[] optionValues = cmd.getOptionValues(RolloutMigrate.OPTION_CreateNewDB);
+		setTemplateDBName(optionValues[0]);
+		setNewDBName(optionValues[1]);
 
 		return true;
 	}
@@ -308,6 +325,16 @@ public final class RolloutMigrate
 		return sqlDir;
 	}
 
+	private void setNewDBName(String newDBName)
+	{
+		this.newDBName = newDBName;
+	}
+
+	private void setTemplateDBName(String templateDBName)
+	{
+		this.templateDBName = templateDBName;
+	}
+
 	private static final File checkDirectory(final String name, final File dir)
 	{
 		if (!dir.exists())
@@ -355,6 +382,75 @@ public final class RolloutMigrate
 
 	private void run0()
 	{
+		final boolean useNewDBName = newDBName != null && !newDBName.isEmpty();
+		if (useNewDBName)
+		{
+			final AbstractScriptsApplierTemplate prepareDBApplier = new AbstractScriptsApplierTemplate()
+			{
+				@Override
+				protected IScriptFactory createScriptFactory()
+				{
+					return new RolloutDirScriptFactory();
+				}
+
+				@Override
+				protected void configureScriptExecutorFactory(final IScriptExecutorFactory scriptExecutorFactory)
+				{
+					scriptExecutorFactory.setDryRunMode(isJustMarkScriptAsExecuted());
+				}
+
+				@Override
+				protected IScriptScanner createScriptScanner(final IScriptScannerFactory scriptScannerFactory)
+				{
+					final CreateDBFromTemplateScript createDBFromTemplateScript = CreateDBFromTemplateScript.builder()
+							.templateDBName(templateDBName)
+							.newDBName(newDBName)
+							.newOwner(getProperty("ADEMPIERE_DB_USER", "metasfresh"))
+							.build();
+
+					final IScriptScanner result = new SingletonScriptScanner(createDBFromTemplateScript);
+					return result;
+				}
+
+				@Override
+				protected IScriptsApplierListener createScriptsApplierListener()
+				{
+					return NullScriptsApplierListener.instance;
+				}
+
+				@Override
+				protected IDatabase createDatabase()
+				{
+					final String dbType = getProperty("ADEMPIERE_DB_TYPE", "postgresql");
+					final String dbHostname = getProperty("ADEMPIERE_DB_SERVER", "localhost");
+					final String dbPort = getProperty("ADEMPIERE_DB_PORT", "5432");
+					final String dbName = "postgres"; // connecting to the "maintainance-DB, since we can't be connected to the DB we want to clone
+					final String dbUser = getProperty("ADEMPIERE_DB_USER", "metasfresh");
+					final String dbPassword = getProperty("ADEMPIERE_DB_PASSWORD",
+							// Default value is null because in case is not configured we shall use other auth methods
+							IDatabase.PASSWORD_NA
+							);
+					// return a database that does not check whether our script was applied or not
+					return new SQLDatabase(dbType, dbHostname, dbPort, dbName, dbUser, dbPassword)
+					{
+						// @formatter:off
+						@Override
+						public IScriptsRegistry getScriptsRegistry()
+						{
+							return new IScriptsRegistry()
+							{
+								@Override public void markIgnored(IScript script) { }
+								@Override public void markApplied(IScript script) { }
+								@Override public boolean isApplied(IScript script) { return false; }
+							};
+						};
+						// @formatter:on
+					};
+				};
+			};
+			prepareDBApplier.run();
+		}
+
 		final AbstractScriptsApplierTemplate scriptApplier = new AbstractScriptsApplierTemplate()
 		{
 			@Override
@@ -392,7 +488,8 @@ public final class RolloutMigrate
 				final IFileRef fileRef = new FileRef(new File(fileName));
 				final IScriptScanner scriptScanner = scriptScannerFactory.createScriptScanner(fileRef);
 
-				return new GloballyOrderedScannerDecorator(scriptScanner);
+				final IScriptScanner result = new GloballyOrderedScannerDecorator(scriptScanner);
+				return result;
 			}
 
 			@Override
@@ -407,7 +504,9 @@ public final class RolloutMigrate
 				final String dbType = getProperty("ADEMPIERE_DB_TYPE", "postgresql");
 				final String dbHostname = getProperty("ADEMPIERE_DB_SERVER", "localhost");
 				final String dbPort = getProperty("ADEMPIERE_DB_PORT", "5432");
-				final String dbName = getProperty("ADEMPIERE_DB_NAME", "metasfresh");
+
+				final String dbName = useNewDBName ? newDBName : getProperty("ADEMPIERE_DB_NAME", "metasfresh");
+
 				final String dbUser = getProperty("ADEMPIERE_DB_USER", "metasfresh");
 				final String dbPassword = getProperty("ADEMPIERE_DB_PASSWORD",
 						// Default value is null because in case is not configured we shall use other auth methods
