@@ -156,28 +156,28 @@ public interface I_PMM_Product
 	 * Set Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_PI_Item_Product (int M_HU_PI_Item_Product);
+	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
 
 	/**
 	 * Get Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_PI_Item_Product();
+	public int getM_HU_PI_Item_Product_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Prod();
+	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
 
-	public void setM_HU_PI_Item_Prod(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Prod);
+	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
 
-    /** Column definition for M_HU_PI_Item_Product */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Product, de.metas.handlingunits.model.I_M_HU_PI_Item_Product> COLUMN_M_HU_PI_Item_Product = new org.adempiere.model.ModelColumn<I_PMM_Product, de.metas.handlingunits.model.I_M_HU_PI_Item_Product>(I_PMM_Product.class, "M_HU_PI_Item_Product", de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
-    /** Column name M_HU_PI_Item_Product */
-    public static final String COLUMNNAME_M_HU_PI_Item_Product = "M_HU_PI_Item_Product";
+    /** Column definition for M_HU_PI_Item_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_Product, de.metas.handlingunits.model.I_M_HU_PI_Item_Product> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_Product, de.metas.handlingunits.model.I_M_HU_PI_Item_Product>(I_PMM_Product.class, "M_HU_PI_Item_Product_ID", de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
+    /** Column name M_HU_PI_Item_Product_ID */
+    public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
 	 * Set Produkt.
@@ -207,6 +207,35 @@ public interface I_PMM_Product
     public static final org.adempiere.model.ModelColumn<I_PMM_Product, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_Product, org.compiere.model.I_M_Product>(I_PMM_Product.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_ID();
+
+	public org.compiere.model.I_M_Warehouse getM_Warehouse();
+
+	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
+
+    /** Column definition for M_Warehouse_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_Product, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_PMM_Product, org.compiere.model.I_M_Warehouse>(I_PMM_Product.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Lieferprodukt.

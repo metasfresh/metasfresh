@@ -33,3 +33,22 @@ UPDATE AD_Process_Para SET AD_Val_Rule_ID=540325,Updated=TO_TIMESTAMP('2016-03-1
 UPDATE AD_Tab SET TabLevel=2,Updated=TO_TIMESTAMP('2016-03-11 12:49:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540730
 ;
 
+--
+-- change PMM_Product.M_HU_PI_Item_Product_ID to only allow vendor-partners 
+--
+-- 11.03.2016 16:45
+-- URL zum Konzept
+UPDATE AD_Val_Rule SET Code='(
+M_HU_PI_Item_Product.C_BPartner_ID IS NULL 
+OR
+M_HU_PI_Item_Product.C_BPartner_ID  IN (select C_BPartner_ID from C_BPartner where C_BPartner.IsVendor=''Y'')
+)
+AND
+(
+
+M_HU_PI_Item_Product.M_Product_ID=@M_Product_ID@ 
+OR 
+(M_HU_PI_Item_Product.isAllowAnyProduct=''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID not in (100))
+)', Description='PiiP needs to be BPartner free or needs to be assigned to a vendor. Also, it needs to be assigned to the product, or assignable to any product.', Name='M_HU_PI_Item_Product_For_Product_and_Vendor',Updated=TO_TIMESTAMP('2016-03-11 16:45:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540324
+;
+

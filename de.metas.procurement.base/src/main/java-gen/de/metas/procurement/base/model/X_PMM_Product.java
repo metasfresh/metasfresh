@@ -14,7 +14,7 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -183285860L;
+	private static final long serialVersionUID = -1392675252L;
 
     /** Standard Constructor */
     public X_PMM_Product (Properties ctx, int PMM_Product_ID, String trxName)
@@ -22,7 +22,6 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
       super (ctx, PMM_Product_ID, trxName);
       /** if (PMM_Product_ID == 0)
         {
-			setM_HU_PI_Item_Product (0);
 			setM_Product_ID (0);
 			setPMM_Product_ID (0);
         } */
@@ -81,31 +80,34 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Prod() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
+		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
 	}
 
 	@Override
-	public void setM_HU_PI_Item_Prod(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Prod)
+	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product)
 	{
-		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Prod);
+		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Product);
 	}
 
 	/** Set Packvorschrift-Produkt Zuordnung.
-		@param M_HU_PI_Item_Product Packvorschrift-Produkt Zuordnung	  */
+		@param M_HU_PI_Item_Product_ID Packvorschrift-Produkt Zuordnung	  */
 	@Override
-	public void setM_HU_PI_Item_Product (int M_HU_PI_Item_Product)
+	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
 	{
-		set_Value (COLUMNNAME_M_HU_PI_Item_Product, Integer.valueOf(M_HU_PI_Item_Product));
+		if (M_HU_PI_Item_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
 	}
 
 	/** Get Packvorschrift-Produkt Zuordnung.
 		@return Packvorschrift-Produkt Zuordnung	  */
 	@Override
-	public int getM_HU_PI_Item_Product () 
+	public int getM_HU_PI_Item_Product_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -143,6 +145,43 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
+	}
+
+	@Override
+	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
+	}
+
+	/** Set Lager.
+		@param M_Warehouse_ID 
+		Lager oder Ort für Dienstleistung
+	  */
+	@Override
+	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+	}
+
+	/** Get Lager.
+		@return Lager oder Ort für Dienstleistung
+	  */
+	@Override
+	public int getM_Warehouse_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

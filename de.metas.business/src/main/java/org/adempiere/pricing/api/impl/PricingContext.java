@@ -58,7 +58,7 @@ class PricingContext implements IEditablePricingContext
 	 */
 	private long priceDateNowTS = SystemTime.millis();
 
-	private int countryId = 0;
+	private int C_Country_ID = 0;
 
 	private int C_UOM_ID;
 	private int C_Currency_ID;
@@ -101,6 +101,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.priceDateNowTS = this.priceDateNowTS;
 		pricingCtxNew.C_UOM_ID = C_UOM_ID;
 		pricingCtxNew.C_Currency_ID = C_Currency_ID;
+		pricingCtxNew.C_Country_ID = C_Country_ID;
 		pricingCtxNew.C_BPartner_ID = C_BPartner_ID;
 		pricingCtxNew.qty = qty;
 		pricingCtxNew.isSOTrx = isSOTrx;
@@ -502,13 +503,13 @@ class PricingContext implements IEditablePricingContext
 	@Override
 	public int getC_Country_ID()
 	{
-		return countryId;
+		return C_Country_ID;
 	}
 
 	@Override
 	public void setC_Country_ID(int countryId)
 	{
-		this.countryId = countryId;
+		this.C_Country_ID = countryId;
 		country = null; // reset;
 	}
 

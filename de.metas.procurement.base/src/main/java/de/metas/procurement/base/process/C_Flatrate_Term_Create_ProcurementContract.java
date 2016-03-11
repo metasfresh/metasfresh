@@ -19,6 +19,7 @@ import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.process.Param;
 import de.metas.process.Process;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
@@ -89,6 +90,7 @@ public class C_Flatrate_Term_Create_ProcurementContract extends SvrProcess
 		term.setC_Currency(p_C_Currency);
 		term.setC_UOM(p_C_UOM);
 		term.setM_Product(p_M_Product);
+		term.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Laufend);
 
 		InterfaceWrapperHelper.save(term);
 

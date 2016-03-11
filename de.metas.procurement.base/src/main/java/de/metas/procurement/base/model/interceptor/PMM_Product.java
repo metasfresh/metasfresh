@@ -45,7 +45,7 @@ public class PMM_Product
 			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
 			ifColumnsChanged = {
 					I_PMM_Product.COLUMNNAME_M_Product_ID,
-					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product })
+					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID })
 	public void updateReadOnlyFields(final I_PMM_Product pmmProduct)
 	{
 		updateReadOnlyFields0(pmmProduct);
@@ -53,7 +53,7 @@ public class PMM_Product
 
 	@CalloutMethod(columnNames = {
 			I_PMM_Product.COLUMNNAME_M_Product_ID,
-			I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product })
+			I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID })
 	public void updateFlatrateAmt(final I_PMM_Product pmmProduct, final ICalloutField unused)
 	{
 		updateReadOnlyFields0(pmmProduct);
@@ -61,10 +61,18 @@ public class PMM_Product
 
 	private void updateReadOnlyFields0(I_PMM_Product pmmProduct)
 	{
-		final I_M_HU_PI_Item_Product huPiItemProd = pmmProduct.getM_HU_PI_Item_Prod();
-
-		pmmProduct.setValidFrom(huPiItemProd.getValidFrom());
-		pmmProduct.setValidTo(huPiItemProd.getValidTo());
-		pmmProduct.setC_BPartner_ID(huPiItemProd.getC_BPartner_ID());
+		final I_M_HU_PI_Item_Product huPiItemProd = pmmProduct.getM_HU_PI_Item_Product();
+		if (huPiItemProd != null)
+		{
+			pmmProduct.setValidFrom(huPiItemProd.getValidFrom());
+			pmmProduct.setValidTo(huPiItemProd.getValidTo());
+			pmmProduct.setC_BPartner_ID(huPiItemProd.getC_BPartner_ID());
+		}
+		else
+		{
+			pmmProduct.setValidFrom(null);
+			pmmProduct.setValidTo(null);
+			pmmProduct.setC_BPartner(null);
+		}
 	}
 }

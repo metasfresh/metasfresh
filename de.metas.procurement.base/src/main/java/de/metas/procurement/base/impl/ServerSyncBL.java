@@ -9,7 +9,9 @@ import java.util.Properties;
 
 import javax.ws.rs.core.Response;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -85,7 +87,6 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 
 public class ServerSyncBL implements IServerSyncBL
 {
-
 	@Override
 	public List<SyncBPartner> getAllBPartners()
 	{
@@ -104,7 +105,6 @@ public class ServerSyncBL implements IServerSyncBL
 		final LoadingCache<Integer, SyncBPartner> bpartner2sycBPartner = CacheBuilder.newBuilder()
 				.build(new CacheLoader<Integer, SyncBPartner>()
 				{
-
 					@Override
 					public SyncBPartner load(final Integer bpartnerId) throws Exception
 					{
@@ -128,12 +128,10 @@ public class ServerSyncBL implements IServerSyncBL
 				.create()
 				.list();
 
-		final List<I_PMM_Product> allPmmProducts = queryBL.createQueryBuilder(I_PMM_Product.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_PMM_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, time)
-				.addCompareFilter(I_PMM_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, time)
-				.create()
-				.list();
+		final List<I_PMM_Product> allPmmProducts =
+				createPMMProductQueryBuilder(time)
+						.create()
+						.list();
 
 		final Multimap<Pair<Integer, Integer>, I_PMM_Product> key2product = MultimapBuilder.hashKeys().arrayListValues().build();
 		for (final I_PMM_Product product : allPmmProducts)
@@ -173,20 +171,39 @@ public class ServerSyncBL implements IServerSyncBL
 		return new ArrayList<>(bpartner2sycBPartner.asMap().values());
 	}
 
+	private IQueryBuilder<I_PMM_Product> createPMMProductQueryBuilder(final Timestamp time)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ICompositeQueryFilter<I_PMM_Product> validToIsAfterOrNull = queryBL.createCompositeQueryFilter(I_PMM_Product.class)
+				.setJoinOr()
+				.addCompareFilter(I_PMM_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, time)
+				.addEqualsFilter(I_PMM_Product.COLUMNNAME_ValidTo, null);
+
+		final ICompositeQueryFilter<I_PMM_Product> validFromIsOrNull = queryBL.createCompositeQueryFilter(I_PMM_Product.class)
+				.setJoinOr()
+				.addCompareFilter(I_PMM_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, time)
+				.addEqualsFilter(I_PMM_Product.COLUMNNAME_ValidFrom, null);
+
+		final IQueryBuilder<I_PMM_Product> queryBuilder = queryBL.createQueryBuilder(I_PMM_Product.class, Env.getCtx(), ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.filter(validFromIsOrNull)
+				.filter(validToIsAfterOrNull)
+				.addNotEqualsFilter(I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, null)
+				.addNotEqualsFilter(I_PMM_Product.COLUMNNAME_M_Warehouse_ID, null);
+		return queryBuilder;
+	}
+
 	@Override
 	public List<SyncProduct> getAllNotContractedProducts()
 	{
 		final Timestamp time = SystemTime.asTimestamp();
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final List<I_PMM_Product> allPmmProducts = queryBL.createQueryBuilder(I_PMM_Product.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_PMM_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, time)
-				.addCompareFilter(I_PMM_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, time)
-				.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null)
-				.addNotEqualsFilter(I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product, null)
-				.create()
-				.list();
+		final List<I_PMM_Product> allPmmProducts =
+				createPMMProductQueryBuilder(time)
+						.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null)
+						.create()
+						.list();
 
 		final List<SyncProduct> syncProducts = new ArrayList<SyncProduct>();
 		for (final I_PMM_Product pmmProduct : allPmmProducts)
@@ -207,8 +224,8 @@ public class ServerSyncBL implements IServerSyncBL
 
 		final List<SyncProduct> syncProducts = new ArrayList<>();
 
-		final Collection<I_PMM_Product> pmmProducts = key2product.get(new Pair<>(product.getM_Product_ID(), bPartner.getC_BPartner_ID()));
-		pmmProducts.addAll(key2product.get(new Pair<>(product.getM_Product_ID(), 0)));
+		final Collection<I_PMM_Product> pmmProducts = key2product.get(new Pair<>(bPartner.getC_BPartner_ID(), product.getM_Product_ID()));
+		pmmProducts.addAll(key2product.get(new Pair<>(0, product.getM_Product_ID())));
 
 		for (final I_PMM_Product pmmProduct : pmmProducts)
 		{
@@ -221,12 +238,14 @@ public class ServerSyncBL implements IServerSyncBL
 
 	private SyncProduct createSyncProduct(final String productName, final I_PMM_Product pmmProduct)
 	{
-		final I_M_HU_PI_Item_Product piip = pmmProduct.getM_HU_PI_Item_Prod();
+		final I_M_HU_PI_Item_Product piip = pmmProduct.getM_HU_PI_Item_Product();
 
 		final SyncProduct syncProduct = new SyncProduct();
-		syncProduct.setUuid(UUIDs.fromIdAsString(piip.getM_HU_PI_Item_Product_ID()));
+		syncProduct.setUuid(UUIDs.fromIdAsString(pmmProduct.getPMM_Product_ID()));
 		syncProduct.setName(productName);
 		syncProduct.setPackingInfo(piip.getDescription());
+		syncProduct.setShared(pmmProduct.getC_BPartner_ID() <= 0); // share, unless it is assigned to a particular BPartner
+
 		return syncProduct;
 	}
 
@@ -294,11 +313,13 @@ public class ServerSyncBL implements IServerSyncBL
 
 			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(initialContextProvider.getCtx(), bPartnerId, soTrx, initialContextProvider.getTrxName());
 
-			final int huPIItemProductId = UUIDs.toId(productSupply.getProduct_uuid());
-			final I_M_HU_PI_Item_Product huPIItemProduct = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), huPIItemProductId, I_M_HU_PI_Item_Product.class,
+			final int pmmProductId = UUIDs.toId(productSupply.getProduct_uuid());
+			final I_PMM_Product pmmProduct = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), pmmProductId, I_PMM_Product.class,
 					initialContextProvider.getTrxName());
 
-			final I_M_Product product = huPIItemProduct.getM_Product();
+			final I_M_HU_PI_Item_Product huPIItemProduct = pmmProduct.getM_HU_PI_Item_Product();
+
+			final I_M_Product product = pmmProduct.getM_Product();
 
 			final BigDecimal qtyPromised = productSupply.getQty().multiply(huPIItemProduct.getQty());
 
@@ -317,8 +338,10 @@ public class ServerSyncBL implements IServerSyncBL
 			qtyReportEvent.setQtyPromised(qtyPromised);
 			final int uomId = huPIItemProduct.getC_UOM_ID();
 			qtyReportEvent.setC_UOM_ID(uomId);
-
+			qtyReportEvent.setDatePromised(datePromised);
 			qtyReportEvent.setM_PricingSystem_ID(pricingSystemId);
+
+			qtyReportEvent.setM_Warehouse_ID(pmmProduct.getM_Warehouse_ID());
 
 			if (Check.isEmpty(productSupply.getContractLine_uuid(), true))
 			{
@@ -344,13 +367,12 @@ public class ServerSyncBL implements IServerSyncBL
 					if (!pricingResult.isCalculated())
 					{
 						errors.add("@Missing@ " + I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + " " + pricingResult);
+
 					}
-					else
-					{
-						qtyReportEvent.setM_PriceList_ID(pricingResult.getM_PriceList_ID());
-						qtyReportEvent.setC_Currency_ID(pricingResult.getC_Currency_ID());
-						qtyReportEvent.setPrice(pricingResult.getPriceStd());
-					}
+					// these will be "empty" results, if the price was not calcualted
+					qtyReportEvent.setM_PriceList_ID(pricingResult.getM_PriceList_ID());
+					qtyReportEvent.setC_Currency_ID(pricingResult.getC_Currency_ID());
+					qtyReportEvent.setPrice(pricingResult.getPriceStd());
 				}
 			}
 			else
