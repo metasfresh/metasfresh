@@ -50,7 +50,6 @@ public class Main extends AbstractModuleInterceptor
 		//
 		// Candidate -> Purchase order
 		engine.addModelValidator(new de.metas.procurement.base.order.interceptor.C_Order(), client);
-		engine.addModelValidator(new de.metas.procurement.base.order.interceptor.C_OrderLine(), client);
 		engine.addModelValidator(new de.metas.procurement.base.order.interceptor.PMM_PurchaseCandidate_OrderLine(), client);
 
 		//

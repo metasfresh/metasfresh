@@ -65,12 +65,15 @@ public class JaxRsBL implements IJaxRsBL
 {
 	private static final String JMS_QUEUE = "de.metas.jax.rs.jmstransport.queue";
 
+	/**
+	 * TODO <code>&username=smx&password=smx</code> is a dirty hack. instead, we need to store this in the ini and provide credentials fields in the connection dialog.
+	 */
 	private static final String CLIENT_ADDRESS_URL_ENCODED = ""
 			+ "jms:jndi:dynamicQueues/" + JMS_QUEUE
 			+ "?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory"
 			+ "&replyToName=dynamicQueues/" + JMS_QUEUE + ".response"
 			+ "&jndiURL={0}"
-			+ "&connectionFactoryName=jmsConnectionFactory";
+			+ "&connectionFactoryName=jmsConnectionFactory&username=smx&password=smx";
 
 	private Server server;
 
