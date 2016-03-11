@@ -48,6 +48,7 @@ import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.procurement.base.IServerSyncBL;
+import de.metas.procurement.base.ISyncBL;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
@@ -197,6 +198,8 @@ public class ServerSyncBL implements IServerSyncBL
 	@Override
 	public List<SyncProduct> getAllNotContractedProducts()
 	{
+		final ISyncBL syncPojosBL = Services.get(ISyncBL.class);
+
 		final Timestamp time = SystemTime.asTimestamp();
 
 		final List<I_PMM_Product> allPmmProducts =
@@ -208,10 +211,9 @@ public class ServerSyncBL implements IServerSyncBL
 		final List<SyncProduct> syncProducts = new ArrayList<SyncProduct>();
 		for (final I_PMM_Product pmmProduct : allPmmProducts)
 		{
-			final SyncProduct syncProduct = createSyncProduct(pmmProduct.getM_Product().getName(), pmmProduct);
+			final SyncProduct syncProduct = syncPojosBL.createSyncProduct(pmmProduct.getM_Product().getName(), pmmProduct);
 			syncProducts.add(syncProduct);
 		}
-
 		return syncProducts;
 	}
 
@@ -220,6 +222,8 @@ public class ServerSyncBL implements IServerSyncBL
 			final I_M_Product product,
 			final Multimap<Pair<Integer, Integer>, I_PMM_Product> key2product)
 	{
+		final ISyncBL syncPojosBL = Services.get(ISyncBL.class);
+
 		final String productName = getProductName(bPartner, product);
 
 		final List<SyncProduct> syncProducts = new ArrayList<>();
@@ -229,25 +233,14 @@ public class ServerSyncBL implements IServerSyncBL
 
 		for (final I_PMM_Product pmmProduct : pmmProducts)
 		{
-			final SyncProduct syncProduct = createSyncProduct(productName, pmmProduct);
+			final SyncProduct syncProduct = syncPojosBL.createSyncProduct(productName, pmmProduct);
 			syncProducts.add(syncProduct);
 		}
 
 		return syncProducts;
 	}
 
-	private SyncProduct createSyncProduct(final String productName, final I_PMM_Product pmmProduct)
-	{
-		final I_M_HU_PI_Item_Product piip = pmmProduct.getM_HU_PI_Item_Product();
 
-		final SyncProduct syncProduct = new SyncProduct();
-		syncProduct.setUuid(UUIDs.fromIdAsString(pmmProduct.getPMM_Product_ID()));
-		syncProduct.setName(productName);
-		syncProduct.setPackingInfo(piip.getDescription());
-		syncProduct.setShared(pmmProduct.getC_BPartner_ID() <= 0); // share, unless it is assigned to a particular BPartner
-
-		return syncProduct;
-	}
 
 	private String getProductName(final I_C_BPartner bPartner, final I_M_Product product)
 	{

@@ -14,6 +14,7 @@
 	<artifactId>de.metas.procurement.base</artifactId>
 
 	<properties>
+		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<dependencies>

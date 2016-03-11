@@ -5,10 +5,16 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.util.Services;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.procurement.base.ISyncBL;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.procurement.sync.IAgentSync;
+import de.metas.procurement.sync.protocol.SyncProduct;
+import de.metas.procurement.sync.protocol.SyncProductsRequest;
 
 /*
  * #%L
@@ -49,6 +55,33 @@ public class PMM_Product
 	public void updateReadOnlyFields(final I_PMM_Product pmmProduct)
 	{
 		updateReadOnlyFields0(pmmProduct);
+	}
+
+	@ModelChange(
+			timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW },
+			ifColumnsChanged = {
+					I_PMM_Product.COLUMNNAME_M_Product_ID,
+					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID,
+					I_PMM_Product.COLUMNNAME_M_Warehouse_ID, })
+	public void syncWithUI(final I_PMM_Product pmmProduct)
+	{
+		final ISyncBL syncBL = Services.get(ISyncBL.class);
+
+		final IAgentSync agentSync = syncBL.getAgentSyncOrNull();
+		if (agentSync == null)
+		{
+			return;
+		}
+
+		final I_M_Product product = pmmProduct.getM_Product();
+		final String produtName = product == null ? null : product.getName();
+
+		final SyncProduct syncProduct = syncBL.createSyncProduct(produtName, pmmProduct);
+
+		final SyncProductsRequest syncProductsRequest = new SyncProductsRequest();
+		syncProductsRequest.getProducts().add(syncProduct);
+
+		agentSync.syncProducts(syncProductsRequest);
 	}
 
 	@CalloutMethod(columnNames = {

@@ -1,15 +1,14 @@
-package de.metas.procurement.sync;
+package de.metas.procurement.base;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
+import org.adempiere.util.ISingletonService;
 
-import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.procurement.sync.IAgentSync;
+import de.metas.procurement.sync.protocol.SyncProduct;
 
 /*
  * #%L
- * de.metas.procurement.sync-api
+ * de.metas.procurement.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -28,25 +27,10 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * This is implemented in the procurementUI (agent) and called from metasfresh (server).
- *
- * @author metas-dev <dev@metas-fresh.com>
- *
- */
-@Path("/agentsync")
-public interface IAgentSync
-{
-	/**
-	 *
-	 * @param request
-	 * @return
-	 */
-	@POST
-	@Path("bpartners")
-	Response syncBPartners(final SyncBPartnersRequest request);
 
-	@POST
-	@Path("products")
-	Response syncProducts(final SyncProductsRequest request);
+public interface ISyncBL extends ISingletonService
+{
+	SyncProduct createSyncProduct(String productName, I_PMM_Product pmmProduct);
+
+	IAgentSync getAgentSyncOrNull();
 }

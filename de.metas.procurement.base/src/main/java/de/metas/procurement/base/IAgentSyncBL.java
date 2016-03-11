@@ -1,15 +1,16 @@
-package de.metas.procurement.sync;
+package de.metas.procurement.base;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
+import org.adempiere.util.ISingletonService;
+
+import de.metas.procurement.sync.IAgentSync;
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
 
 /*
  * #%L
- * de.metas.procurement.sync-api
+ * de.metas.procurement.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -29,24 +30,16 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
  * #L%
  */
 /**
- * This is implemented in the procurementUI (agent) and called from metasfresh (server).
+ * Note that we don't have an implementation in metasfresh. Instead, we use the framework, to get a jax-rs client proxy which we then register in {@link org.adempiere.util.Services}.
  *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
-@Path("/agentsync")
-public interface IAgentSync
+public interface IAgentSyncBL extends IAgentSync, ISingletonService
 {
-	/**
-	 *
-	 * @param request
-	 * @return
-	 */
-	@POST
-	@Path("bpartners")
+	@Override
 	Response syncBPartners(final SyncBPartnersRequest request);
 
-	@POST
-	@Path("products")
+	@Override
 	Response syncProducts(final SyncProductsRequest request);
 }

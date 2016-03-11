@@ -46,7 +46,7 @@ COMMIT;
 
 -- 11.03.2016 16:29
 -- URL zum Konzept
-ALTER TABLE PMM_Product ADD M_Warehouse_ID NUMERIC(10) NOT NULL
+ALTER TABLE PMM_Product ADD M_Warehouse_ID NUMERIC(10)
 ;
 
 -- 11.03.2016 16:46

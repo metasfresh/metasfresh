@@ -1,5 +1,8 @@
 package de.metas.procurement.sync.protocol;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /*
  * #%L
  * de.metas.fresh.procurement.webui
@@ -27,6 +30,8 @@ public class SyncProduct extends AbstractSyncModel
 	private String name;
 	private String packingInfo;
 	private boolean shared = false;
+	
+	private Map<String, String> namesTrl = new HashMap<>();
 
 	public String getName()
 	{
@@ -56,5 +61,15 @@ public class SyncProduct extends AbstractSyncModel
 	public void setShared(boolean shared)
 	{
 		this.shared = shared;
+	}
+	
+	public void setNamesTrl(Map<String, String> namesTrl)
+	{
+		this.namesTrl = namesTrl;
+	}
+	
+	public Map<String, String> getNamesTrl()
+	{
+		return namesTrl;
 	}
 }

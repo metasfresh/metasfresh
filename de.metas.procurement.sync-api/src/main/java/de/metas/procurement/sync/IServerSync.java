@@ -41,7 +41,7 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
-@Path("/sync")
+@Path("/serversync")
 public interface IServerSync
 {
 	/**
