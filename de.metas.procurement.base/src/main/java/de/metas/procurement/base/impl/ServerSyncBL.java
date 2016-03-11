@@ -271,12 +271,14 @@ public class ServerSyncBL implements IServerSyncBL
 
 	private SyncBPartner createSyncBPartner(final int bpartnerId)
 	{
+		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
 		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(Env.getCtx(), bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
 		final SyncBPartner syncBPartner = new SyncBPartner();
 		syncBPartner.setName(bPartner.getName());
 		syncBPartner.setUuid(UUIDs.fromIdAsString(bPartner.getC_BPartner_ID()));
 
-		final List<I_AD_User> contacts = Services.get(IBPartnerDAO.class).retrieveContacts(bPartner);
+		final List<I_AD_User> contacts = bPartnerDAO.retrieveContacts(bPartner);
 		for (final I_AD_User contact : contacts)
 		{
 			if (Check.isEmpty(contact.getEMail(), true))
@@ -284,6 +286,7 @@ public class ServerSyncBL implements IServerSyncBL
 				continue;
 			}
 			final SyncUser syncUser = new SyncUser();
+			syncUser.setLanguage(bPartner.getAD_Language());
 			syncUser.setUuid(UUIDs.fromIdAsString(contact.getAD_User_ID()));
 			syncUser.setEmail(contact.getEMail());
 			syncUser.setPassword(contact.getPassword());
