@@ -22,125 +22,51 @@ import java.util.Properties;
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.CacheMgt;
-import org.compiere.util.DB;
 
 /**
- * 	Entity Type Model
+ * Entity Type Model
  */
 @Deprecated
 public class MEntityType extends X_AD_EntityType
 {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = -2183955192373166750L;
 
-	/**************************************************************************
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param AD_EntityType_ID id
-	 *	@param trxName transaction
-	 */
-	public MEntityType (Properties ctx, int AD_EntityType_ID, String trxName)
+	public MEntityType(final Properties ctx, final int AD_EntityType_ID, final String trxName)
 	{
-		super (ctx, AD_EntityType_ID, trxName);
-	}	//	MEntityType
+		super(ctx, AD_EntityType_ID, trxName);
+	}
 
-	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
-	 */
-	public MEntityType (Properties ctx, ResultSet rs, String trxName)
+	public MEntityType(final Properties ctx, final ResultSet rs, final String trxName)
 	{
-		super (ctx, rs, trxName);
-	}	//	MEntityType
-	
-	/**
-	 * 	Set AD_EntityType_ID
-	 */
-	private final void setAD_EntityType_ID()
-	{
-		int AD_EntityType_ID = getAD_EntityType_ID();
-		if (AD_EntityType_ID == 0)
-		{
-			String sql = "SELECT COALESCE(MAX(AD_EntityType_ID), 999999) FROM AD_EntityType WHERE AD_EntityType_ID > 1000";
-			AD_EntityType_ID= DB.getSQLValue (get_TrxName(), sql);
-			setAD_EntityType_ID(AD_EntityType_ID+1);
-		}
-	}	//	setAD_EntityType_ID
-	
-	/**
-	 * 	Before Save
-	 *	@param newRecord new
-	 *	@return true if it can be saved
-	 */
+		super(ctx, rs, trxName);
+	}
+
 	@Override
-	protected boolean beforeSave (boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		if (!newRecord)
 		{
-			int id = getAD_EntityType_ID();
-			boolean systemMaintained = (id == 10 || id == 20);	//	C/D
-			if (systemMaintained)
-			{
-				throw new AdempiereException("You cannot modify a System maintained entity");
-			}
-			systemMaintained = is_ValueChanged("EntityType");
-			if (systemMaintained)
+			if (is_ValueChanged(COLUMNNAME_EntityType))
 			{
 				throw new AdempiereException("You cannot modify EntityType");
 			}
-// yes we can
-//			systemMaintained = isSystemMaintained()
-//				&&	(is_ValueChanged("Name") || is_ValueChanged("Description") 
-//					|| is_ValueChanged("Help") || is_ValueChanged("IsActive"));
-//			if (systemMaintained)
-//			{
-//				throw new AdempiereException("You cannot modify Name,Description,Help");
-//			}
 		}
-		else	//	new
-		{
-			/*
-			setEntityType(getEntityType().toUpperCase());	//	upper case
-			if (getEntityType().trim().length() < 4)
-			{
-				log.saveError("FillMandatory", Msg.getElement(getCtx(), "EntityType") 
-					+ " - 4 Characters");
-				return false;
-			}
-			boolean ok = true;
-			char[] cc = getEntityType().toCharArray();
-			for (int i = 0; i < cc.length; i++)
-			{
-				char c = cc[i];
-				if (Character.isDigit(c) || (c >= 'A' && c <= 'Z'))
-					continue;
-				//
-				log.saveError("FillMandatory", Msg.getElement(getCtx(), "EntityType") 
-					+ " - Must be ASCII Letter or Digit");
-				return false;
-			}
-			*/
-			setAD_EntityType_ID();
-		}	//	new
-		
+
 		CacheMgt.get().reset(I_AD_EntityType.Table_Name);
-		
+
 		return true;
-	}	//	beforeSave
-	
-	/**
-	 * 	Before Delete
-	 *	@return true if it can be deleted
-	 */
+	}
+
 	@Override
-	protected boolean beforeDelete ()
+	protected boolean beforeDelete()
 	{
-		if (EntityTypesCache.instance.isSystemMaintained(getEntityType()))	//	all pre-defined
+		if (EntityTypesCache.instance.isSystemMaintained(getEntityType()))	// all pre-defined
 		{
 			throw new AdempiereException("You cannot delete a System maintained entity");
 		}
 		return true;
-	}	//	beforeDelete
-	
-}	//	MEntityType
+	}
+}

@@ -33,6 +33,7 @@ The actual release notes
     * extending the tool so we can start by creating a new database from a templated-DB and then apply the scripts to that new database
 
 ## Fixes
+ - 09912 AD EntityType ID is not acquired from project ID server (106063434593)
 	
 ## Instructions
 
