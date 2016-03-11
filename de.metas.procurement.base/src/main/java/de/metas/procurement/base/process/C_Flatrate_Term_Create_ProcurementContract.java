@@ -65,7 +65,7 @@ public class C_Flatrate_Term_Create_ProcurementContract extends SvrProcess
 	@Param(mandatory = true, parameterName = "C_UOM_ID")
 	private I_C_UOM p_C_UOM;
 
-	@Param(mandatory = false, parameterName = "AD_User_Incharge_ID")
+	@Param(mandatory = false, parameterName = "AD_User_InCharge_ID")
 	private I_AD_User p_AD_User_Incharge;
 
 	@Param(mandatory = true, parameterName = "C_Currency_ID")

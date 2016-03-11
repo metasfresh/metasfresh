@@ -22,22 +22,21 @@ package de.metas.flatrate.modelvalidator;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.Msg;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.api.IFlatrateDAO;
@@ -86,7 +85,7 @@ public class FlatrateDataEntryValidator implements ModelValidator
 		if (type == TYPE_BEFORE_NEW || type == TYPE_BEFORE_CHANGE
 				|| type == TYPE_AFTER_NEW || type == TYPE_AFTER_CHANGE || type == TYPE_AFTER_DELETE)
 		{
-			final I_C_Flatrate_DataEntry dataEntry = POWrapper.create(po, I_C_Flatrate_DataEntry.class);
+			final I_C_Flatrate_DataEntry dataEntry = InterfaceWrapperHelper.create(po, I_C_Flatrate_DataEntry.class);
 
 			final I_C_Flatrate_Term term = dataEntry.getC_Flatrate_Term();
 
@@ -109,7 +108,7 @@ public class FlatrateDataEntryValidator implements ModelValidator
 				if (po.is_ValueChanged(I_C_Flatrate_DataEntry.COLUMNNAME_ActualQty) ||
 						po.is_ValueChanged(I_C_Flatrate_DataEntry.COLUMNNAME_Qty_Reported))
 				{
-					
+
 					final I_C_Flatrate_Conditions conditions = dataEntry.getC_Flatrate_Term().getC_Flatrate_Conditions();
 
 					if (!X_C_Flatrate_Conditions.TYPE_CONDITIONS_Leergutverwaltung.equals(conditions.getType_Conditions()))
@@ -123,7 +122,7 @@ public class FlatrateDataEntryValidator implements ModelValidator
 			{
 				final boolean mainEntry = dataEntry.getC_UOM_ID() == term.getC_UOM_ID();
 
-				if (mainEntry && !dataEntry.isSimulation())
+				if (mainEntry && !dataEntry.isSimulation() && isInvoiceCandidatesRelatedType(dataEntry))
 				{
 					// handle open clearing allocs
 					final List<I_C_Invoice_Clearing_Alloc> allocsWithoutDataEntry = flatrateDB.retrieveOpenClearingAllocs(dataEntry);
@@ -131,7 +130,7 @@ public class FlatrateDataEntryValidator implements ModelValidator
 					for (final I_C_Invoice_Clearing_Alloc ica : allocsWithoutDataEntry)
 					{
 						ica.setC_Flatrate_DataEntry_ID(dataEntry.getC_Flatrate_DataEntry_ID());
-						POWrapper.save(ica);
+						InterfaceWrapperHelper.save(ica);
 					}
 
 					// handle invoice candidates that have no clearing allocs
@@ -154,12 +153,15 @@ public class FlatrateDataEntryValidator implements ModelValidator
 
 			if (type == TYPE_AFTER_DELETE)
 			{
-				final List<I_C_Invoice_Clearing_Alloc> allocsOfDataEntry = flatrateDB.retrieveClearingAllocs(dataEntry);
-				for (final I_C_Invoice_Clearing_Alloc ica : allocsOfDataEntry)
+				if (isInvoiceCandidatesRelatedType(dataEntry))
 				{
-					ica.setC_Flatrate_DataEntry_ID(0);
-					ica.setC_Invoice_Candidate_ID(0);
-					POWrapper.save(ica);
+					final List<I_C_Invoice_Clearing_Alloc> allocsOfDataEntry = flatrateDB.retrieveClearingAllocs(dataEntry);
+					for (final I_C_Invoice_Clearing_Alloc ica : allocsOfDataEntry)
+					{
+						ica.setC_Flatrate_DataEntry_ID(0);
+						ica.setC_Invoice_Candidate_ID(0);
+						InterfaceWrapperHelper.save(ica);
+					}
 				}
 			}
 		}
@@ -171,10 +173,10 @@ public class FlatrateDataEntryValidator implements ModelValidator
 	{
 		if (TIMING_BEFORE_VOID == timing || TIMING_BEFORE_CLOSE == timing)
 		{
-			return Msg.getMsg(po.getCtx(), MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P);
+			throw new AdempiereException("@" + MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P + "@");
 		}
 
-		final I_C_Flatrate_DataEntry dataEntry = POWrapper.create(po, I_C_Flatrate_DataEntry.class);
+		final I_C_Flatrate_DataEntry dataEntry = InterfaceWrapperHelper.create(po, I_C_Flatrate_DataEntry.class);
 
 		if (timing == TIMING_BEFORE_PREPARE)
 		{
@@ -214,10 +216,10 @@ public class FlatrateDataEntryValidator implements ModelValidator
 				{
 					final I_C_Invoice_Candidate candToClear = alloc.getC_Invoice_Cand_ToClear();
 					candToClear.setQtyInvoiced(BigDecimal.ZERO);
-					POWrapper.save(candToClear);
+					InterfaceWrapperHelper.save(candToClear);
 
 					alloc.setC_Invoice_Candidate_ID(0);
-					POWrapper.save(alloc);
+					InterfaceWrapperHelper.save(alloc);
 				}
 			}
 		}
@@ -228,9 +230,7 @@ public class FlatrateDataEntryValidator implements ModelValidator
 	{
 		//
 		// Check if we can allow the reactivation
-
-		final Properties ctx = POWrapper.getCtx(dataEntry);
-		final String trxName = POWrapper.getTrxName(dataEntry);
+		final String trxName = InterfaceWrapperHelper.getTrxName(dataEntry);
 
 		// We need this assumption, because we are going to delete a C_Invoice_Candidate and that needs to happen in the
 		// same trx in which we set dataEntry's C_Invoice_Candidate_ID to 0
@@ -240,13 +240,13 @@ public class FlatrateDataEntryValidator implements ModelValidator
 		final I_C_Invoice_Candidate invoiceCandidate = dataEntry.getC_Invoice_Candidate();
 		if (invoiceCandidate != null && invoiceCandidate.getQtyInvoiced().signum() != 0)
 		{
-			return Msg.getMsg(ctx, MSG_DATA_ENTRY_ALREADY_INVOICED_0P);
+			throw new AdempiereException("@" + MSG_DATA_ENTRY_ALREADY_INVOICED_0P + "@");
 		}
 
 		final I_C_Invoice_Candidate icCorr = dataEntry.getC_Invoice_Candidate_Corr();
 		if (icCorr != null && icCorr.getQtyInvoiced().signum() != 0)
 		{
-			return Msg.getMsg(ctx, MSG_DATA_ENTRY_ALREADY_INVOICED_0P);
+			throw new AdempiereException("@" + MSG_DATA_ENTRY_ALREADY_INVOICED_0P + "@");
 		}
 
 		final I_C_Flatrate_Term flatrateTerm = dataEntry.getC_Flatrate_Term();
@@ -272,7 +272,7 @@ public class FlatrateDataEntryValidator implements ModelValidator
 					final Timestamp corrEntryStartDate = corrEntry.getC_Period().getStartDate();
 					if (corrEntryStartDate.equals(dataEntryStartDate) || corrEntryStartDate.after(dataEntryStartDate))
 					{
-						return Msg.getMsg(ctx, MSG_DATA_ENTRY_EXISTING_CORRECTION_ENTRY_0P);
+						throw new AdempiereException("@" + MSG_DATA_ENTRY_EXISTING_CORRECTION_ENTRY_0P + "@");
 					}
 				}
 			}
@@ -283,15 +283,25 @@ public class FlatrateDataEntryValidator implements ModelValidator
 		if (invoiceCandidate != null)
 		{
 			dataEntry.setC_Invoice_Candidate_ID(0);
-			POWrapper.delete(invoiceCandidate);
+			InterfaceWrapperHelper.delete(invoiceCandidate);
 		}
 
 		if (icCorr != null)
 		{
 			dataEntry.setC_Invoice_Candidate_Corr_ID(0);
-			POWrapper.delete(icCorr);
+			InterfaceWrapperHelper.delete(icCorr);
 		}
 
 		return null;
 	}
+
+	/** @return true if dataEntry's type is invoice candidates related */
+	private final boolean isInvoiceCandidatesRelatedType(I_C_Flatrate_DataEntry dataEntry)
+	{
+		final String dataEntryType = dataEntry.getType();
+		return DATAENTRY_TYPES_InvoiceCandidatesRelated.contains(dataEntryType);
+	}
+
+	private static final List<String> DATAENTRY_TYPES_InvoiceCandidatesRelated = ImmutableList
+			.of(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
 }
