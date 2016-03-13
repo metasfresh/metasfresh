@@ -377,6 +377,10 @@ public class ServerSyncBL implements IServerSyncBL
 				final int flatrateTermId = UUIDs.toId(productSupply.getContractLine_uuid());
 				final I_C_Flatrate_Term flatrateTerm = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), flatrateTermId, I_C_Flatrate_Term.class, initialContextProvider.getTrxName());
 
+				// required because if the ctx contains #AD_Client_ID = 0, we might not get the term's C_Flatrate_DataEntries from the DAO
+				Env.setContext(initialContextProvider.getCtx(), Env.CTXNAME_AD_Client_ID, flatrateTerm.getAD_Client_ID());
+				Env.setContext(initialContextProvider.getCtx(), Env.CTXNAME_AD_Org_ID, flatrateTerm.getAD_Org_ID());
+
 				qtyReportEvent.setC_Flatrate_Term(flatrateTerm);
 				qtyReportEvent.setC_Currency_ID(flatrateTerm.getC_Currency_ID());
 
@@ -396,6 +400,7 @@ public class ServerSyncBL implements IServerSyncBL
 				if (dataEntryForProduct == null)
 				{
 					errors.add("@Missing@ " + I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID);
+					qtyReportEvent.setPrice(BigDecimal.ZERO);
 				}
 				else
 				{
