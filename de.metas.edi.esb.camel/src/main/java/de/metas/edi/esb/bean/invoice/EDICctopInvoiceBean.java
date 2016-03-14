@@ -22,7 +22,6 @@ package de.metas.edi.esb.bean.invoice;
  * #L%
  */
 
-
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.isEmpty;
 import static de.metas.edi.esb.commons.Util.normalize;
@@ -124,7 +123,7 @@ public class EDICctopInvoiceBean
 		{
 			invoice.setPoReference(xmlCctopInvoice.getPOReference());
 		}
-		else if (xmlCctopInvoice.getShipmentDocumentno()!= null && !xmlCctopInvoice.getShipmentDocumentno().isEmpty())
+		else if (xmlCctopInvoice.getShipmentDocumentno() != null && !xmlCctopInvoice.getShipmentDocumentno().isEmpty())
 		{
 			invoice.setPoReference(Util.mkOwnOrderNumber(xmlCctopInvoice.getShipmentDocumentno()));
 		}
@@ -143,7 +142,7 @@ public class EDICctopInvoiceBean
 		invoice.setCountryCode3Digit(xmlCctopInvoice.getCountryCode3Digit());
 
 		invoice.setCctop000V(createCctop000V(xmlCctopInvoice, decimalFormat, exchange));
-		invoice.setCctop111V(createCctop111V(xmlCctopInvoice.getEDICctop111V(), decimalFormat));
+		invoice.setCctop111V(createCctop111V(xmlCctopInvoice, decimalFormat));
 		invoice.setCctop119V(createCctop119VList(xmlCctopInvoice.getEDICctop119V(), decimalFormat));
 		invoice.setCctop120V(createCctop120VList(xmlCctopInvoice.getEDICctop120V(), decimalFormat));
 		invoice.setCctop140V(createCctop140VList(xmlCctopInvoice.getEDICctop140V(), decimalFormat));
@@ -214,20 +213,29 @@ public class EDICctopInvoiceBean
 		return cctop000V;
 	}
 
-	private Cctop111V createCctop111V(final EDICctop111VType xmlCctop111V, final DecimalFormat decimalFormat)
+	private Cctop111V createCctop111V(
+			final EDICctopInvoicVType xmlCctopInvoice,
+			final DecimalFormat decimalFormat)
 	{
-		if (xmlCctop111V == null)
+		final EDICctop111VType xmlCctop111V = xmlCctopInvoice.getEDICctop111V();
+		final Cctop111V cctop111V = new Cctop111V();
+		
+		if (xmlCctop111V != null)
 		{
-			return null;
+			cctop111V.setcOrderID(formatNumber(xmlCctop111V.getCOrderID(), decimalFormat));
+			cctop111V.setmInOutID(formatNumber(xmlCctop111V.getMInOutID(), decimalFormat));
+			cctop111V.setDateOrdered(toDate(xmlCctop111V.getDateOrdered()));
+			cctop111V.setMovementDate(toDate(xmlCctop111V.getMovementDate()));
+			cctop111V.setShipmentDocumentno(xmlCctop111V.getShipmentDocumentno()); // not send in edi-marshal-compudata-fresh.ftl
 		}
 
-		final Cctop111V cctop111V = new Cctop111V();
-		cctop111V.setcOrderID(formatNumber(xmlCctop111V.getCOrderID(), decimalFormat));
-		cctop111V.setmInOutID(formatNumber(xmlCctop111V.getMInOutID(), decimalFormat));
-		cctop111V.setDateOrdered(toDate(xmlCctop111V.getDateOrdered()));
-		cctop111V.setMovementDate(toDate(xmlCctop111V.getMovementDate()));
+		// 09920 prefer to send the invoice's own POReference
+		if (xmlCctopInvoice.getPOReference() != null && xmlCctopInvoice.getPOReference().trim().isEmpty())
+		{
+			cctop111V.setPoReference(xmlCctopInvoice.getPOReference());
+		}
 		// 05768
-		if (xmlCctop111V.getPOReference() != null && !xmlCctop111V.getPOReference().isEmpty())
+		else if (xmlCctop111V != null && xmlCctop111V.getPOReference() != null && !xmlCctop111V.getPOReference().trim().isEmpty())
 		{
 			cctop111V.setPoReference(xmlCctop111V.getPOReference());
 		}
@@ -235,7 +243,7 @@ public class EDICctopInvoiceBean
 		{
 			cctop111V.setPoReference(Util.mkOwnOrderNumber(xmlCctop111V.getShipmentDocumentno()));
 		}
-		cctop111V.setShipmentDocumentno(xmlCctop111V.getShipmentDocumentno()); // not send in edi-marshal-compudata-fresh.ftl
+	
 		return cctop111V;
 	}
 

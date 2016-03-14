@@ -24,6 +24,7 @@ The actual release notes
 # metasfresh 4.9.x (Upcoming Release)
   
 ## Features
+ - 09920 Support sending invoice without an order via EDI: send the invoice's POReference if there is no cctop111 record coming from metasfresh
  - 09628 procurement management (106716240958)
     * still a work in progress
 	* the procurementUI now talks to metasfresh via jax-rs on a jms transport
