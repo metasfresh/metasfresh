@@ -146,7 +146,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 
 			if (qtyToAllocate.signum() > 0)
 			{
-				ILoggable.THREADLOCAL.getLoggable().addLog("PROBLEM: PP_Cost_Collector {0} of PP_Order {1} has a remaining unallocated qty of {3}!", costCollector, ppOrder, qtyToAllocate);
+				ILoggable.THREADLOCAL.getLoggable().addLog("PROBLEM: PP_Cost_Collector {0} of PP_Order {1} has a remaining unallocated qty of {2}!", costCollector, ppOrder, qtyToAllocate);
 			}
 		}
 
