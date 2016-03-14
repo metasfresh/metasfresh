@@ -22,11 +22,11 @@ package de.metas.flatrate.modelvalidator;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -301,6 +301,16 @@ public class C_Flatrate_Term
 		}
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void deleteEntries(final I_C_Flatrate_Term term)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		queryBL.createQueryBuilder(I_C_Flatrate_DataEntry.class, term)
+				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.create()
+				.delete();
+	}
+
 	private String concatStrings(final List<String> errors)
 	{
 		final StringBuilder sb = new StringBuilder();
@@ -382,7 +392,7 @@ public class C_Flatrate_Term
 			}
 			Services.get(ISubscriptionBL.class).evalCurrentSPs(term, term.getStartDate());
 		}
-		else if(X_C_Flatrate_Term.TYPE_CONDITIONS_Depotgebuehr.equals(term.getType_Conditions())
+		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_Depotgebuehr.equals(term.getType_Conditions())
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Leergutverwaltung.equals(term.getType_Conditions())
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
 		{

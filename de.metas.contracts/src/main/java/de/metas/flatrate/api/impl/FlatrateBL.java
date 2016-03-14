@@ -1601,7 +1601,7 @@ public class FlatrateBL implements IFlatrateBL
 		final StringBuilder notCreatedReason = new StringBuilder();
 		if (userInCharge == null && bPartner.getSalesRep_ID() <= 0)
 		{
-			notCreatedReason.append(" has no salesrep;");
+			notCreatedReason.append(" has no salesrep and userInCharge not set;");
 			dontCreateTerm = true;
 		}
 		if (!bPartner.isCustomer() && !bPartner.isVendor())
