@@ -64,6 +64,7 @@ import de.metas.jms.IJMSService;
 public class JaxRsBL implements IJaxRsBL
 {
 	private static final String JMS_QUEUE = "de.metas.jax.rs.jmstransport.queue";
+	private static final String JMS_REPLY_QUEUE = JMS_QUEUE + ".response";
 
 	/**
 	 * TODO <code>&username=smx&password=smx</code> is a dirty hack. instead, we need to store this in the ini and provide credentials fields in the connection dialog.
@@ -71,7 +72,7 @@ public class JaxRsBL implements IJaxRsBL
 	private static final String CLIENT_ADDRESS_URL_ENCODED = ""
 			+ "jms:jndi:dynamicQueues/" + JMS_QUEUE
 			+ "?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory"
-			+ "&replyToName=dynamicQueues/" + JMS_QUEUE + ".response"
+			+ "&replyToName=dynamicQueues/" + JMS_REPLY_QUEUE
 			+ "&jndiURL={0}"
 			+ "&connectionFactoryName=jmsConnectionFactory&username=smx&password=smx";
 
@@ -123,6 +124,7 @@ public class JaxRsBL implements IJaxRsBL
 		final JMSConfiguration conf = new JMSConfiguration();
 		conf.setConnectionFactory(connectionFactory);
 		conf.setTargetDestination(JMS_QUEUE);
+		conf.setReplyDestination(JMS_REPLY_QUEUE);
 
 		final JMSConfigFeature jmsConfigFeature = new JMSConfigFeature();
 		jmsConfigFeature.setJmsConfig(conf);
@@ -256,7 +258,9 @@ public class JaxRsBL implements IJaxRsBL
 				clazz,
 				Collections.singletonList(jacksonJaxbJsonProvider));
 
-		WebClient.client(client).type(MediaType.APPLICATION_JSON_TYPE);
+		WebClient.client(client)
+				.type(MediaType.APPLICATION_JSON_TYPE)
+				.accept(MediaType.APPLICATION_JSON_TYPE);
 
 		return client;
 	}
