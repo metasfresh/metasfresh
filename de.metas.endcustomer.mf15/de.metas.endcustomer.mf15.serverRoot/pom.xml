@@ -43,6 +43,7 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.4</version>
 				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
 
 					<overlays>
 						<overlay>
