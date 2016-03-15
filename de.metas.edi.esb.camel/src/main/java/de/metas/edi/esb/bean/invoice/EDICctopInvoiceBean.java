@@ -219,7 +219,7 @@ public class EDICctopInvoiceBean
 	{
 		final EDICctop111VType xmlCctop111V = xmlCctopInvoice.getEDICctop111V();
 		final Cctop111V cctop111V = new Cctop111V();
-		
+
 		if (xmlCctop111V != null)
 		{
 			cctop111V.setcOrderID(formatNumber(xmlCctop111V.getCOrderID(), decimalFormat));
@@ -230,23 +230,32 @@ public class EDICctopInvoiceBean
 		}
 
 		// 09920 prefer to send the invoice's own POReference
-		if (xmlCctopInvoice.getPOReference() != null && xmlCctopInvoice.getPOReference().trim().isEmpty())
+		if (isSet(xmlCctopInvoice.getPOReference()))
 		{
 			cctop111V.setPoReference(xmlCctopInvoice.getPOReference());
 		}
 		// 05768
-		else if (xmlCctop111V != null && xmlCctop111V.getPOReference() != null && !xmlCctop111V.getPOReference().trim().isEmpty())
+		else if (xmlCctop111V != null && isSet(xmlCctop111V.getPOReference()))
 		{
 			cctop111V.setPoReference(xmlCctop111V.getPOReference());
 		}
-		else
+		else if (isSet(xmlCctopInvoice.getShipmentDocumentno()))
+		{
+			cctop111V.setPoReference(Util.mkOwnOrderNumber(xmlCctopInvoice.getShipmentDocumentno()));
+		}
+		else if (xmlCctop111V != null && isSet(xmlCctop111V.getShipmentDocumentno()))
 		{
 			cctop111V.setPoReference(Util.mkOwnOrderNumber(xmlCctop111V.getShipmentDocumentno()));
 		}
-	
+
 		return cctop111V;
 	}
 
+	private boolean isSet(String str)
+	{
+		return str != null && !str.trim().isEmpty();
+	}
+	
 	private List<Cctop119V> createCctop119VList(final List<EDICctop119VType> xmlCctop119VList, final DecimalFormat decimalFormat)
 	{
 		final List<Cctop119V> cctop119VList = new ArrayList<Cctop119V>();
