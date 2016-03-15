@@ -87,6 +87,7 @@ public class OrderCheckupBuilder
 		report.setAD_Org_ID(order.getAD_Org_ID());
 		report.setDocumentType(getDocumentType());
 		report.setC_Order(order);
+		report.setC_BPartner_ID(order.getC_BPartner_ID());
 		report.setM_Warehouse(getM_Warehouse());
 		report.setPP_Plant(getPP_Plant());
 		report.setAD_User_Responsible(getReponsibleUser());

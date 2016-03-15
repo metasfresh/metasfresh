@@ -22,12 +22,17 @@ package de.metas.document.archive.async.spi.impl;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryBuilderOrderByClause;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.bpartner.service.IBPartnerBL;
@@ -35,6 +40,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BP_PrintFormat;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.MClient;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
@@ -144,33 +151,41 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 			throw new AdempiereException("@NotFound@ @C_Doc_Outbound_Config@ (@TableName@:" + po.get_TableName() + ")");
 		}
 		logger.log(Level.FINE, "Config: {0}", config);
-		
+
 		//
 		// Create ReportEngine
 		final int reportEngineDocumentType = ReportEngine.getTypeByTableId(tableId);
-		final int printFormatId = config.getAD_PrintFormat_ID();
 		ReportEngine reportEngine = null;
-		if (reportEngineDocumentType > -1) // important: 0 is also fine! -1 means "not found"
+		if (reportEngineDocumentType > -1)  // important: 0 is also fine! -1 means "not found"
 		{
 			// we are dealing with document reporting
+			final int printFormatId = config.getAD_PrintFormat_ID();
 			reportEngine = ReportEngine.get(ctx, reportEngineDocumentType, recordId, printFormatId, trxName);
 		}
 
 		// 09527 get the most suitable language from the po's C_BPartner, if it exists.
 		Language language = Services.get(IBPartnerBL.class).getLanguageForModel(po);
-		
+
 		if (reportEngine == null)
 		{
 			final MQuery query = createMQuery(po);
 			final PrintInfo printInfo = createPrintInfo(po);
 
 			final boolean readFromDisk = false; // we can go with the cached version, because there is code making sure that we only get a cached version which has an equal ctx!
+
+			//
+			// Print format
+			int printFormatId = findBP_PrintFormat_ID(po, printInfo.getC_BPartner_ID());
+			if(printFormatId <= 0)
+			{
+				printFormatId = config.getAD_PrintFormat_ID();
+			}
+			final MPrintFormat printFormat = MPrintFormat.get(ctx, printFormatId, readFromDisk);
 			
-			final MPrintFormat printFormat = MPrintFormat.get(ctx, config.getAD_PrintFormat_ID(), readFromDisk);
 			// 04454 and 04430: we need to set the printformat's language;
 			// using the client language is what would also be done by ReportEngine.get() if it can't be determined via a reportEngineDocumentType
 			// 09527: Exception: When the partner has a language set. In this case, the partner's language must be set
-			if(language == null)
+			if (language == null)
 			{
 				language = MClient.get(ctx, po.getAD_Client_ID()).getLanguage();
 			}
@@ -216,18 +231,18 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 
 		return archive;
 	}
-	
+
 	private void createCCFile(final I_AD_Archive archive)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
 		final String trxName = InterfaceWrapperHelper.getTrxName(archive);
-		
+
 		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, DocOutboundCCWorkpackageProcessor.class);
-		
+
 		final I_C_Queue_Block block = queue.enqueueBlock(ctx);
 		final I_C_Queue_WorkPackage workpackage = queue.enqueueWorkPackage(block, IWorkPackageQueue.PRIORITY_AUTO);
 		queue.enqueueElement(workpackage, archive);
-		
+
 		queue.markReadyForProcessingAfterTrxCommit(workpackage, trxName);
 	}
 
@@ -251,4 +266,52 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 
 		return query;
 	}
+
+	private int findBP_PrintFormat_ID(final Object model, final int bpartnerId)
+	{
+		if (bpartnerId <= 0)
+		{
+			return -1;
+		}
+		if (model == null)
+		{
+			// shall not happen
+			return -1;
+		}
+
+		final IQueryBuilder<I_C_BP_PrintFormat> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BP_PrintFormat.class, model)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClientOrSystem()
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMN_C_BPartner_ID, bpartnerId);
+
+		final IQueryBuilderOrderByClause<I_C_BP_PrintFormat> orderBy = queryBuilder.orderBy();
+		final ICompositeQueryFilter<I_C_BP_PrintFormat> docTypeFilter = queryBuilder.addCompositeQueryFilter()
+				.setJoinOr();
+
+		// Match by DocType
+		{
+			final I_C_DocType docType = Services.get(IDocActionBL.class).getDocTypeOrNull(model);
+			if (docType != null)
+			{
+				docTypeFilter.addEqualsFilter(I_C_BP_PrintFormat.COLUMN_C_DocType_ID, docType.getC_DocType_ID());
+
+				orderBy.addColumn(I_C_BP_PrintFormat.COLUMN_C_DocType_ID, Direction.Ascending, Nulls.Last);
+			}
+		}
+
+		// Match by AD_Table_ID
+		{
+			final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
+
+			docTypeFilter.addEqualsFilter(I_C_BP_PrintFormat.COLUMN_AD_Table_ID, adTableId);
+			orderBy.addColumn(I_C_BP_PrintFormat.COLUMN_AD_Table_ID, Direction.Ascending, Nulls.Last);
+		}
+
+		final int printFormatId = queryBuilder.andCollect(I_C_BP_PrintFormat.COLUMN_AD_PrintFormat_ID)
+				.create()
+				.firstId();
+		return printFormatId;
+	}
+
 }

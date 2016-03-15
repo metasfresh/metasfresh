@@ -212,13 +212,12 @@ public class BPartnerBL implements IBPartnerBL
 		}
 		return null;
 	}
-
+	
 	@Override
-	public Language getLanguageForModel(final Object model)
+	public I_C_BPartner getBPartnerForModel(final Object model)
 	{
 		// 09527 get the most suitable language:
-		final IBPartnerAware bpartnerAware = InterfaceWrapperHelper
-				.asColumnReferenceAwareOrNull(model, IBPartnerAware.class);
+		final IBPartnerAware bpartnerAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IBPartnerAware.class);
 		if (bpartnerAware == null)
 		{
 			return null;
@@ -227,7 +226,20 @@ public class BPartnerBL implements IBPartnerBL
 		{
 			return null;
 		}
-		final String lang = bpartnerAware.getC_BPartner().getAD_Language();
+		return InterfaceWrapperHelper.create(bpartnerAware.getC_BPartner(), I_C_BPartner.class);
+	}
+
+
+	@Override
+	public Language getLanguageForModel(final Object model)
+	{
+		// 09527 get the most suitable language:
+		final I_C_BPartner bpartner = getBPartnerForModel(model);
+		if (bpartner == null)
+		{
+			return null;
+		}
+		final String lang = bpartner.getAD_Language();
 		if (Check.isEmpty(lang, true))
 		{
 			return null;
@@ -235,6 +247,4 @@ public class BPartnerBL implements IBPartnerBL
 
 		return Language.getLanguage(lang);
 	}
-
-	
 }

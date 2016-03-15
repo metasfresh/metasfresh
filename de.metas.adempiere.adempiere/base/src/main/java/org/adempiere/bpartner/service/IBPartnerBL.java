@@ -22,7 +22,6 @@ package org.adempiere.bpartner.service;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
@@ -108,6 +107,14 @@ public interface IBPartnerBL extends ISingletonService
 	boolean isAllowConsolidateInOutEffective(org.compiere.model.I_C_BPartner partner, boolean isSOTrx);
 
 	/**
+	 * Use {@link IBPartnerAware} to get BPartner from given model.
+	 * 
+	 * @param model
+	 * @return bpartner or <code>null</code>
+	 */
+	I_C_BPartner getBPartnerForModel(Object model);
+
+	/**
 	 * Gets BPartner's Language
 	 * 
 	 * @param ctx
@@ -123,4 +130,5 @@ public interface IBPartnerBL extends ISingletonService
 	 * @return the language, if found, <code>null</code> otherwise.
 	 */
 	Language getLanguageForModel(Object model);
+
 }
