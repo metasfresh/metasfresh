@@ -22,7 +22,6 @@ package de.metas.banking.payment.paymentallocation.form;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
@@ -88,7 +87,6 @@ import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
 	protected final JLabel invoiceSumLabel = new JLabel();
 	protected final CTextField invoiceSumField = new CTextField();
 
-
 	// parameterPanel
 	protected GridField bpartnerField = null;
 	protected GridField dateField = null;
@@ -138,7 +136,7 @@ import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
 					_bpartnerCheck.remove(bpartnerId);
 				}
 			},
-			this.getClass().getSimpleName());
+					this.getClass().getSimpleName());
 		}
 	}
 
@@ -287,6 +285,30 @@ import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
 		return Env.getDate(getCtx());
 	}
 
+	/**
+	 * task 09643: This date will be used, from now on, only as transaction date
+	 * 
+	 * @return suggested accounting date
+	 */
+	protected final Date getDateAcct()
+	{
+		final Date dateAcct = calculateDateAcct();
+		if (dateAcct != null)
+		{
+			return dateAcct;
+		}
+
+		// If no allocation date, use the login date
+		return Env.getDate(getCtx());
+	}
+
 	/** @return suggested allocation date or <code>null</code> */
 	protected abstract Date calculateAllocationDate();
+
+	/**
+	 * task 09643: separate accounting date from the transaction date
+	 * 
+	 * @return suggested accounting date or <code>null</code>
+	 */
+	protected abstract Date calculateDateAcct();
 }

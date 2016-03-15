@@ -21,6 +21,7 @@ SELECT
 	, NULL::numeric AS multiplierap
 	, NULL::numeric AS multiplier
 	, NULL::character varying AS POReference
+	, NULL::timestamp without time zone AS dateacct -- task 09643: separate transaction date form accounting date
 ;
 
 COMMENT ON VIEW t_getopeninvoices

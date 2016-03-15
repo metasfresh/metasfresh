@@ -22,7 +22,6 @@ package de.metas.banking.payment.paymentallocation.model;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -39,6 +38,8 @@ public class InvoiceCandidateRow implements IInvoiceCandidateRow
 	private final int C_Invoice_Candidate_ID;
 	private final String BPartnerName;
 	private final Date documentDate;
+	// task 09643
+	private final Date dateAcct;
 	private final Date dateToInvoice;
 	private final Date dateInvoiced;
 	private final BigDecimal netAmtToInvoice;
@@ -55,6 +56,8 @@ public class InvoiceCandidateRow implements IInvoiceCandidateRow
 		this.C_Invoice_Candidate_ID = builder.C_Invoice_Candidate_ID;
 		this.BPartnerName = builder.BPartnerName;
 		this.documentDate = builder.documentDate;
+		//task 09643
+		this.dateAcct = builder.dateAcct;
 		this.dateToInvoice = builder.dateToInvoice;
 		this.dateInvoiced = builder.dateInvoiced;
 		this.netAmtToInvoice = builder.netAmtToInvoice;
@@ -99,6 +102,12 @@ public class InvoiceCandidateRow implements IInvoiceCandidateRow
 	public Date getDocumentDate()
 	{
 		return documentDate;
+	}
+	
+	@Override
+	public Date getDateAcct()
+	{
+		return dateAcct;
 	}
 
 	@Override
@@ -154,6 +163,8 @@ public class InvoiceCandidateRow implements IInvoiceCandidateRow
 		private int C_Invoice_Candidate_ID;
 		private String BPartnerName;
 		private Date documentDate;
+		// task 09643
+		private Date dateAcct;
 		private Date dateToInvoice;
 		private Date dateInvoiced;
 		private BigDecimal netAmtToInvoice;
@@ -188,6 +199,18 @@ public class InvoiceCandidateRow implements IInvoiceCandidateRow
 		public Builder setDocumentDate(Date documentDate)
 		{
 			this.documentDate = documentDate;
+			return this;
+		}
+
+		/**
+		 * task 09643: separate accounting date from the transaction date
+		 * 
+		 * @param dateAcct
+		 * @return
+		 */
+		public Builder setDateAcct(Date dateAcct)
+		{
+			this.dateAcct = dateAcct;
 			return this;
 		}
 

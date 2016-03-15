@@ -131,6 +131,24 @@ public class AbstractAllocableDocTableModel<ModelType extends IAllocableDocRow> 
 
 		return latestDocumentDate;
 	}
+	
+	/** @return latest {@link IAllocableDocRow#getDateAcct()} of all selected rows */
+	public final Date getLatestDateAcct()
+	{
+		Date latestDateAcct = null;
+		for (final IAllocableDocRow row : getRowsInnerList())
+		{
+			if (!row.isSelected())
+			{
+				continue;
+			}
+
+			final Date dateAcct = row.getDateAcct();
+			latestDateAcct = TimeUtil.max(latestDateAcct, dateAcct);
+		}
+
+		return latestDateAcct;
+	}
 
 	public final List<ModelType> getRowsSelected()
 	{

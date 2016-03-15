@@ -22,7 +22,6 @@ package de.metas.banking.payment.paymentallocation.model;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
@@ -54,7 +53,7 @@ import de.metas.currency.ICurrencyDAO;
  */
 public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoiceRow
 {
-	
+
 	public static final Builder builder()
 	{
 		return new Builder();
@@ -70,6 +69,8 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	private final String documentNo;
 	private final String docTypeName;
 	private final Date dateInvoiced;
+	// task 09643
+	private final Date dateAcct;
 	private final int C_BPartner_ID;
 	private final String BPartnerName;
 	private final String currencyISOCode;
@@ -98,6 +99,8 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		documentNo = builder.documentNo;
 		docTypeName = builder.docTypeName;
 		dateInvoiced = builder.dateInvoiced;
+		// task 09643
+		dateAcct = builder.dateAcct;
 		C_BPartner_ID = builder.C_BPartner_ID;
 		BPartnerName = builder.BPartnerName;
 		currencyISOCode = builder.currencyISOCode;
@@ -161,6 +164,12 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	public Date getDocumentDate()
 	{
 		return dateInvoiced;
+	}
+
+	@Override
+	public Date getDateAcct()
+	{
+		return dateAcct;
 	}
 
 	@Override
@@ -403,7 +412,6 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		}
 		setWriteOffAmtOfType(type, notAppliedAmt);
 	}
-	
 
 	@Override
 	public void setWriteOffManual(final PaymentAllocationContext context, final InvoiceWriteOffAmountType writeOffType, BigDecimal writeOffAmt)
@@ -494,7 +502,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		{
 			type = PayableDocumentType.Invoice;
 			reference = new TableRecordReference(I_C_Invoice.Table_Name, invoiceRow.getC_Invoice_ID());
-			creditMemo = invoiceRow.isCreditMemo() ;
+			creditMemo = invoiceRow.isCreditMemo();
 		}
 		else if (invoiceRow.getC_Order_ID() > 0)
 		{
@@ -508,7 +516,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		}
 
 		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(Env.getCtx(), invoiceRow.getCurrencyISOCode());
-		
+
 		return PayableDocument.builder()
 				.setC_BPartner_ID(invoiceRow.getC_BPartner_ID())
 				.setC_Currency_ID(currency.getC_Currency_ID())
@@ -524,7 +532,6 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 				//
 				.build();
 	}
-	
 
 	//
 	// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -536,6 +543,8 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		private String documentNo;
 		private String docTypeName;
 		private Date dateInvoiced;
+		// task 09643
+		private Date dateAcct;
 		private Integer C_BPartner_ID;
 		private String BPartnerName;
 		private String currencyISOCode;
@@ -586,6 +595,12 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		public Builder setDateInvoiced(final Date dateInvoiced)
 		{
 			this.dateInvoiced = dateInvoiced;
+			return this;
+		}
+
+		public Builder setDateAcct(final Date dateAcct)
+		{
+			this.dateAcct = dateAcct;
 			return this;
 		}
 
@@ -668,6 +683,5 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 			return this;
 		}
 	}
-
 
 }

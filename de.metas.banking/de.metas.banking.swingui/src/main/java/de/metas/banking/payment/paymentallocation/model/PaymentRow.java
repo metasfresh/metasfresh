@@ -52,6 +52,8 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	private final int C_BPartner_ID;
 	private final String BPartnerName;
 	private final Date paymentDate;
+	// task 09643
+	private final Date dateAcct;
 	private final String currencyISOCode;
 	private final BigDecimal payAmt;
 	private final BigDecimal payAmtConv;
@@ -74,6 +76,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		C_BPartner_ID = builder.C_BPartner_ID;
 		BPartnerName = builder.BPartnerName;
 		paymentDate = builder.paymentDate;
+		dateAcct = builder.dateAcct;
 		currencyISOCode = builder.currencyISOCode;
 		//
 		// Amounts
@@ -129,6 +132,12 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	public Date getDocumentDate()
 	{
 		return paymentDate;
+	}
+	
+	@Override
+	public Date getDateAcct()
+	{
+		return dateAcct;
 	}
 
 	@Override
@@ -211,7 +220,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	{
 		final IPaymentRow paymentRow = this;
 		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(Env.getCtx(), paymentRow.getCurrencyISOCode());
-		
+
 		return PaymentDocument.builder()
 				.setC_BPartner_ID(paymentRow.getC_BPartner_ID())
 				.setReference(org.compiere.model.I_C_Payment.Table_Name, paymentRow.getC_Payment_ID())
@@ -250,45 +259,40 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 
 		// Discount amount shall not be bigger then open amount.
 		// cusotmer documents - amounts are all the time positives
-		if (isCustomerDocument()  && (discountAmt.compareTo(openAmt) > 0))
+		if (isCustomerDocument() && (discountAmt.compareTo(openAmt) > 0))
 		{
 			discountAmt = openAmt;
 		}
-	
-		
-		 // vendor documents 
+
+		// vendor documents
 		if (isVendorDocument())
 		{
 			// Regularly, open amounts shall be positives all the time and discount negatives
-			//discount shall be negative and maximum the negated open amount
+			// discount shall be negative and maximum the negated open amount
 			// we allow also possible wrong case(but the result will not be wrong) in order to make possible for the user to correct payments
-			
-				// case: open amount positve and discount  pozitive and bigger then open amount
-			if ( (openAmt.signum() > 0 &&  discountAmt.signum()> 0 && (discountAmt.compareTo(openAmt) >= 0))
-					// case: open amount positive and discount negative  and bigger in absolute value then open amount
-				|| 	(openAmt.signum() > 0 &&  discountAmt.signum()< 0 && (discountAmt.abs().compareTo(openAmt) > 0))
-					// case: open amount negative and discount positive  and bigger in absolute value then open amount
-				|| 	(openAmt.signum() < 0 &&  discountAmt.signum()> 0 && (discountAmt.compareTo(openAmt.abs()) > 0))
-					// case: open amount negative and discount negative  and bigger in absolute value then open amount
-				|| (openAmt.signum() < 0 &&  discountAmt.signum()< 0 && (discountAmt.abs().compareTo(openAmt.abs()) >= 0))
-					)	
+
+			// case: open amount positve and discount pozitive and bigger then open amount
+			if ((openAmt.signum() > 0 && discountAmt.signum() > 0 && (discountAmt.compareTo(openAmt) >= 0))
+					// case: open amount positive and discount negative and bigger in absolute value then open amount
+					|| (openAmt.signum() > 0 && discountAmt.signum() < 0 && (discountAmt.abs().compareTo(openAmt) > 0))
+					// case: open amount negative and discount positive and bigger in absolute value then open amount
+					|| (openAmt.signum() < 0 && discountAmt.signum() > 0 && (discountAmt.compareTo(openAmt.abs()) > 0))
+					// case: open amount negative and discount negative and bigger in absolute value then open amount
+					|| (openAmt.signum() < 0 && discountAmt.signum() < 0 && (discountAmt.abs().compareTo(openAmt.abs()) >= 0)))
 			{
 				discountAmt = openAmt.negate();
 			}
-			
-			// case: open amount positive and discount positive  and lower in absolute value then open amount
-			if ( (openAmt.signum() > 0 &&  discountAmt.signum()> 0 && (discountAmt.compareTo(openAmt) < 0))
-					// case: open amount negative and discount negative  and lower in absolute value then open amount
-					||	(openAmt.signum() < 0 &&  discountAmt.signum()< 0 && (discountAmt.abs().compareTo(openAmt.abs()) < 0))
-				)
+
+			// case: open amount positive and discount positive and lower in absolute value then open amount
+			if ((openAmt.signum() > 0 && discountAmt.signum() > 0 && (discountAmt.compareTo(openAmt) < 0))
+					// case: open amount negative and discount negative and lower in absolute value then open amount
+					|| (openAmt.signum() < 0 && discountAmt.signum() < 0 && (discountAmt.abs().compareTo(openAmt.abs()) < 0)))
 			{
 				discountAmt = discountAmt.negate();
 			}
-			
+
 		}
-		
-		
-		
+
 		//
 		// Set the discount amount
 		setDiscountAmt(discountAmt);
@@ -313,9 +317,9 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		{
 			// discount allways should be negative, and open amount allways positive
 			// but we need to treat also other f**ked up cases
-			
-			// wrong case, with discount and open amount positive (user should not get in this case, but we treat it anyway) 
-			// => the result in this case will be that we increase open amount 
+
+			// wrong case, with discount and open amount positive (user should not get in this case, but we treat it anyway)
+			// => the result in this case will be that we increase open amount
 			if (openAmt.signum() > 0 && discount.signum() > 0)
 			{
 				appliedAmt = openAmt.add(discount);
@@ -325,12 +329,12 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 			{
 				appliedAmt = openAmt.subtract(discount.abs());
 			}
-			// wrong case(should not exist), with discount positive and open amount negative 
-			//=> the result in this case will be that we decrease negative open amount
-			
-			// wrong case, with discount negative and open amount negative 
-			//=> the result in this case will be that we increase negative open amount
-			else 
+			// wrong case(should not exist), with discount positive and open amount negative
+			// => the result in this case will be that we decrease negative open amount
+
+			// wrong case, with discount negative and open amount negative
+			// => the result in this case will be that we increase negative open amount
+			else
 			{
 				appliedAmt = openAmt.add(discount);
 			}
@@ -375,6 +379,8 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		private int C_BPartner_ID;
 		private String BPartnerName;
 		private Date paymentDate;
+		// task 09643
+		private Date dateAcct;
 		private String currencyISOCode;
 		private BigDecimal payAmt;
 		private BigDecimal payAmtConv;
@@ -418,6 +424,18 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		public Builder setPaymentDate(final Date paymentDate)
 		{
 			this.paymentDate = paymentDate;
+			return this;
+		}
+
+		/**
+		 * task 09643: separate transaction date from the accounting date
+		 * 
+		 * @param dateAcct
+		 * @return
+		 */
+		public Builder setDateAcct(final Date dateAcct)
+		{
+			this.dateAcct = dateAcct;
 			return this;
 		}
 

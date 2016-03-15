@@ -22,7 +22,6 @@ package de.metas.banking.payment.paymentallocation.model;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -69,5 +68,13 @@ public interface IInvoiceCandidateRow
 	
 	@ColumnInfo(columnName = "HeaderAggregationKey", seqNo = 120)
 	String getHeaderAggregationKey();
+	
+	/**
+	 * task 09643: separate transaction date from accounting date
+	 * note: placing this last to not break something in the existing functionality
+	 * @return accounting date
+	 */
+	@ColumnInfo(columnName = "DateAcct", seqNo = 130)
+	Date getDateAcct();
 	//@formatter:on
 }

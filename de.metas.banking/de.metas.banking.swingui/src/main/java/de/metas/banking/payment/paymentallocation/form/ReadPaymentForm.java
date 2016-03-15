@@ -739,6 +739,16 @@ final class ReadPaymentForm
 	{
 		return invoiceCandidatesTableModel.getLatestDocumentDateOfSelectedRows();
 	}
+	
+	/**
+	 * task 09643
+	 * @returns the latest accounting date of all selected invoice candidates.
+	 */
+	@Override
+	protected final Date calculateDateAcct()
+	{
+		return invoiceCandidatesTableModel.getLatestDateAcctOfSelectedRows();
+	}
 
 	@Override
 	protected final PaymentAllocationTotals getTotals()

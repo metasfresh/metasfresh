@@ -67,13 +67,13 @@ import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
  *              Update C_BPartner Open Item Amount
  *      update invoice (IsPaid)
  *      link invoice-payment if batch
- *
+ * 
  *  Lifeline:
  *  -   Created by VPayment or directly
  *  -   When changed in VPayment
  *      - old payment is reversed
  *      - new payment created
- *
+ * 
  *  When Payment is posed, the Allocation is made
  * </pre>
  *
@@ -2137,21 +2137,7 @@ public final class MPayment extends X_C_Payment
 		Check.errorIf(getPayAmt().signum() < 0, "{0} has a negative PayAmt = {1}", this, getPayAmt());
 
 		final BigDecimal allocationAmt = getPayAmt().min(invoiceOpenAmt);
-		
-		// task 09643
-		// allocation date must e the max between the invoice date and payment date
-		
-		Timestamp allocationDate = getDateTrx();
-		
-		if(invoice != null)
-		{
-			final Timestamp invoiceDate = invoice.getDateAcct();
-			
-			if(invoiceDate.after(allocationDate))
-			{
-				allocationDate = invoiceDate;
-			}
-		}
+
 		// 04627 end
 
 		// 04614 (commented out old code)
@@ -2181,8 +2167,39 @@ public final class MPayment extends X_C_Payment
 //		// @formatter:on
 		//
 		MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-				allocationDate, getC_Currency_ID(),
+				getDateTrx(), getC_Currency_ID(),
 				Msg.translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [1]", get_TrxName());
+
+		// task 09643
+		// When the Allocation has both invoice and payment, allocation's accounting date must e the max between the invoice date and payment date
+
+		if (invoice != null)
+		{
+			Timestamp dateAcct = getDateAcct();
+
+			final Timestamp invoiceDateAcct = invoice.getDateAcct();
+
+			if (invoiceDateAcct.after(dateAcct))
+			{
+				dateAcct = invoiceDateAcct;
+			}
+
+			alloc.setDateAcct(dateAcct);
+			
+			// allocation's trx date must e the max between the invoice date and payment date
+
+			Timestamp dateTrx = getDateTrx();
+
+			final Timestamp invoiceDateTrx = invoice.getDateInvoiced();
+
+			if (invoiceDateTrx.after(dateTrx))
+			{
+				dateTrx = invoiceDateTrx;
+			}
+
+			alloc.setDateTrx(dateTrx);
+		}
+
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		alloc.saveEx();
 		MAllocationLine aLine = null;
@@ -2518,7 +2535,7 @@ public final class MPayment extends X_C_Payment
 
 		// Unlink & De-Allocate
 		deAllocate();
-		// setIsReconciled(reconciled);  // will be handled by banking module
+		// setIsReconciled(reconciled); // will be handled by banking module
 		setIsAllocated(true);	// the allocation below is overwritten
 		// Set Status
 		addDescription("(" + reversal.getDocumentNo() + "<-)");

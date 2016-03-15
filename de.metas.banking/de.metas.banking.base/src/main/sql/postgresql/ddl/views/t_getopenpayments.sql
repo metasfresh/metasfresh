@@ -17,6 +17,7 @@ SELECT
 	, NULL::numeric AS conv_total
 	, NULL::numeric AS conv_open
 	, NULL::numeric AS multiplierap
+	, NULL::timestamp without time zone AS dateacct  -- task 09643: separate transaction date form accounting date
  ;
 
 COMMENT ON VIEW t_getopenpayments

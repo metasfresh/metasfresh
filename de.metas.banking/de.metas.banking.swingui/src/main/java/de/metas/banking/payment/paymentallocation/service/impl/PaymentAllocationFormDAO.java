@@ -164,6 +164,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				.setC_BPartner_ID(rs.getInt("c_bpartner_id"))
 				.setBPartnerName(rs.getString("bpartnername"))
 				.setPaymentDate(rs.getTimestamp("paymentdate"))
+				.setDateAcct(rs.getTimestamp("dateacct")) // task 09643
 				.setCurrencyISOCode(rs.getString("iso_code"))
 				// Amounts
 				// NOTE: we assume the amounts were already AP adjusted, so we are converting them back to relative values (i.e. not AP adjusted)
@@ -364,6 +365,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				.setC_BPartner_ID(rs.getInt("C_BPartner_ID"))
 				.setBPartnerName(rs.getString("bpartnername"))
 				.setDateInvoiced(rs.getTimestamp("invoicedate"))
+				.setDateAcct(rs.getTimestamp("dateacct")) // task 09643
 				.setCurrencyISOCode(rs.getString("iso_code"))
 				.setGrandTotal(grandTotalOrig)
 				.setGrandTotalConv(grandTotal)
@@ -484,6 +486,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				.setC_Invoice_Candidate_ID(rs.getInt("c_invoice_candidate_id"))
 				.setBPartnerName(rs.getString("bpartnername"))
 				.setDocumentDate(rs.getTimestamp("dateordered"))
+				.setDateAcct(rs.getTimestamp("dateacct"))
 				.setDateToInvoice(rs.getTimestamp("datetoinvoice"))
 				.setDateInvoiced(rs.getTimestamp("dateinvoiced"))
 				//

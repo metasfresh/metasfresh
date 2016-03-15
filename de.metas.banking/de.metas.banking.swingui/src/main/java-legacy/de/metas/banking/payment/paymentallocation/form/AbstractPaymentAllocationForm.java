@@ -457,6 +457,22 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 		final Date payementsLatestDocumentDate = paymentsTableModel.getLatestDocumentDate();
 		return TimeUtil.max(invoicesLatestDocumentDate, payementsLatestDocumentDate);
 	}
+	
+	/**
+	 * Returns the latest document date of all invoices and payments, or <code>null</code> if {@link #isMultiCurrency()} returns <code>true</code>.
+	 */
+	@Override
+	protected final Date calculateDateAcct()
+	{
+		if (isMultiCurrency())
+		{
+			return null;
+		}
+
+		final Date invoicesLatestDocumentDate = invoicesTableModel.getLatestDateAcct();
+		final Date payementsLatestDocumentDate = paymentsTableModel.getLatestDateAcct();
+		return TimeUtil.max(invoicesLatestDocumentDate, payementsLatestDocumentDate);
+	}
 
 	@Override
 	protected final PaymentAllocationTotals getTotals()

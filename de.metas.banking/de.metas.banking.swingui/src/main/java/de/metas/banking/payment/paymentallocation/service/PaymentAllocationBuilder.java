@@ -81,7 +81,10 @@ public class PaymentAllocationBuilder
 	private Properties _ctx;
 	private int _adOrgId;
 	private int _currencyId;
-	private Date _date;
+	// tasl 09643
+	// separate transaction date from the accounting date
+	private Date _dateTrx;
+	private Date _dateAcct;
 	private ImmutableList<IPayableDocument> _payableDocuments = ImmutableList.of();
 	private ImmutableList<IPaymentDocument> _paymentDocuments = ImmutableList.of();
 	private boolean _allowOnlyOneVendorDoc = true;
@@ -164,14 +167,16 @@ public class PaymentAllocationBuilder
 	{
 		final int adOrgId = getAD_Org_ID();
 		final int currencyId = getC_Currency_ID();
-		final Timestamp date = TimeUtil.asTimestamp(getDate());
+		final Timestamp dateTrx = TimeUtil.asTimestamp(getDateTrx());
+		final Timestamp dateAcct = TimeUtil.asTimestamp(getDateAcct());
+
 		final IContextAware context = new PlainContextAware(getCtx(), ITrx.TRXNAME_ThreadInherited);
 		final String description = Env.getContext(getCtx(), "#AD_User_Name");
 		final IAllocationBuilder allocationBuilder = allocationBL.newBuilder(context)
 				.setAD_Org_ID(adOrgId)
 				.setC_Currency_ID(currencyId)
-				.setDateAcct(date)
-				.setDateTrx(date)
+				.setDateAcct(dateAcct)
+				.setDateTrx(dateTrx)
 				.setManual(true) // flag it as manually created by user
 				.setDescription(description);
 
@@ -815,16 +820,29 @@ public class PaymentAllocationBuilder
 		return this;
 	}
 
-	private final Date getDate()
+	private final Date getDateTrx()
 	{
-		Check.assumeNotNull(_date, "date not null");
-		return _date;
+		Check.assumeNotNull(_dateTrx, "date not null");
+		return _dateTrx;
 	}
 
-	public PaymentAllocationBuilder setDate(final Date date)
+	public PaymentAllocationBuilder setDateTrx(final Date dateTrx)
 	{
 		assertNotBuilt();
-		_date = date;
+		_dateTrx = dateTrx;
+		return this;
+	}
+
+	private final Date getDateAcct()
+	{
+		Check.assumeNotNull(_dateAcct, "date not null");
+		return _dateAcct;
+	}
+
+	public PaymentAllocationBuilder setDateAcct(final Date dateAcct)
+	{
+		assertNotBuilt();
+		_dateAcct = dateAcct;
 		return this;
 	}
 

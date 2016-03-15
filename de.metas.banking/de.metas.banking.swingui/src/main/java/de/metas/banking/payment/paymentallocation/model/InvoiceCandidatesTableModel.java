@@ -22,7 +22,6 @@ package de.metas.banking.payment.paymentallocation.model;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -119,6 +118,22 @@ public class InvoiceCandidatesTableModel extends AnnotatedTableModel<IInvoiceCan
 		}
 
 		return latestDocumentDate;
+	}
+
+	/**
+	 * @return latest {@link IInvoiceCandidateRow#getDateAcct()} of selected rows
+	 */
+	public final Date getLatestDateAcctOfSelectedRows()
+	{
+		Date latestDateAcct = null;
+
+		for (final IInvoiceCandidateRow row : getRowsSelected())
+		{
+			final Date dateAcct = row.getDateAcct();
+			latestDateAcct = TimeUtil.max(latestDateAcct, dateAcct);
+		}
+
+		return latestDateAcct;
 	}
 
 	public final BigDecimal getTotalNetAmtToInvoiceOfSelectedRows()

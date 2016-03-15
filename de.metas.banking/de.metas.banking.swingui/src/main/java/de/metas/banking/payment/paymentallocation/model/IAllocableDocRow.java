@@ -113,6 +113,9 @@ public interface IAllocableDocRow
 
 	/** @return document's date */
 	Date getDocumentDate();
+	
+	// task 09643: separate the accounting date from the transaction date
+	Date getDateAcct();
 
 	int getC_BPartner_ID();
 
