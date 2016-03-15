@@ -34,10 +34,13 @@
 		Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason.	-->
 		<spring.version>4.1.8.RELEASE</spring.version>
 
-		<!-- the version to be used by metasfresh, as opposed to the ESB's 
-		the two versions might clash i ait modules
+		<!-- 
+		The version to be used by metasfresh, as opposed to the ESB's. 
+		The two versions might clash in ait modules 
+		3.1.6 is not yet released, but it fixes https://issues.apache.org/jira/browse/CXF-6810 which we need.
+		Until 3.1.6 is released, we use "hardcoded" locked 3.1.6-SNAPSHOT versions. 
 		-->
-		<metasfresh.cxf.version>3.1.5</metasfresh.cxf.version>
+		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
 
 		<!-- Tells SonarQube to run the unit tests -->
 		<sonar.dynamicAnalysis>true</sonar.dynamicAnalysis>

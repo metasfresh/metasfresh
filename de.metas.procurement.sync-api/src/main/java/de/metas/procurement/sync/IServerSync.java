@@ -2,6 +2,7 @@ package de.metas.procurement.sync;
 
 import java.util.List;
 
+import javax.jws.Oneway;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -66,6 +67,7 @@ public interface IServerSync
 	 */
 	@POST
 	@Path("productSupplies")
+	@Oneway
 	public Response reportProductSupplies(SyncProductSuppliesRequest request);
 
 	/**
@@ -76,5 +78,6 @@ public interface IServerSync
 	 */
 	@POST
 	@Path("weeklySupply")
+	@Oneway
 	public Response reportWeekSupply(SyncWeeklySupplyRequest request);
 }

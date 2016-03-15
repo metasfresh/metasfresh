@@ -1,5 +1,6 @@
 package de.metas.procurement.sync;
 
+import javax.jws.Oneway;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -44,9 +45,11 @@ public interface IAgentSync
 	 */
 	@POST
 	@Path("bpartners")
+	@Oneway
 	Response syncBPartners(final SyncBPartnersRequest request);
 
 	@POST
 	@Path("products")
+	@Oneway
 	Response syncProducts(final SyncProductsRequest request);
 }
