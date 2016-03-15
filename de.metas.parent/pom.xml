@@ -38,7 +38,7 @@
 		The version to be used by metasfresh, as opposed to the ESB's. 
 		The two versions might clash in ait modules 
 		3.1.6 is not yet released, but it fixes https://issues.apache.org/jira/browse/CXF-6810 which we need.
-		Until 3.1.6 is released, we use "hardcoded" locked 3.1.6-SNAPSHOT versions. 
+		Until 3.1.6 is released, we use "hardcoded" locked 3.1.6-SNAPSHOT versions in the de.metas.jaxrs module. 
 		-->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
 
