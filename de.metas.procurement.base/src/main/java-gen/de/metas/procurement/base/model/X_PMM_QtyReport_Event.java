@@ -16,7 +16,7 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1309983784L;
+	private static final long serialVersionUID = 897123285L;
 
     /** Standard Constructor */
     public X_PMM_QtyReport_Event (Properties ctx, int PMM_QtyReport_Event_ID, String trxName)
@@ -24,21 +24,11 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
       super (ctx, PMM_QtyReport_Event_ID, trxName);
       /** if (PMM_QtyReport_Event_ID == 0)
         {
-			setC_BPartner_ID (0);
-			setC_Currency_ID (0);
-			setC_UOM_ID (0);
-			setDatePromised (new Timestamp( System.currentTimeMillis() ));
 			setIsError (false);
 // N
-			setM_HU_PI_Item_Product_ID (0);
-			setM_PriceList_ID (0);
-			setM_PricingSystem_ID (0);
-			setM_Product_ID (0);
 			setPMM_QtyReport_Event_ID (0);
-			setPrice (Env.ZERO);
 			setProcessed (false);
 // N
-			setQtyPromised (Env.ZERO);
         } */
     }
 
@@ -445,6 +435,56 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 		return ii.intValue();
 	}
 
+	/** Set Partner UUID.
+		@param Partner_UUID Partner UUID	  */
+	@Override
+	public void setPartner_UUID (java.lang.String Partner_UUID)
+	{
+		set_Value (COLUMNNAME_Partner_UUID, Partner_UUID);
+	}
+
+	/** Get Partner UUID.
+		@return Partner UUID	  */
+	@Override
+	public java.lang.String getPartner_UUID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Partner_UUID);
+	}
+
+	@Override
+	public de.metas.procurement.base.model.I_PMM_Product getPMM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PMM_Product_ID, de.metas.procurement.base.model.I_PMM_Product.class);
+	}
+
+	@Override
+	public void setPMM_Product(de.metas.procurement.base.model.I_PMM_Product PMM_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_PMM_Product_ID, de.metas.procurement.base.model.I_PMM_Product.class, PMM_Product);
+	}
+
+	/** Set Lieferprodukt.
+		@param PMM_Product_ID Lieferprodukt	  */
+	@Override
+	public void setPMM_Product_ID (int PMM_Product_ID)
+	{
+		if (PMM_Product_ID < 1) 
+			set_Value (COLUMNNAME_PMM_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_PMM_Product_ID, Integer.valueOf(PMM_Product_ID));
+	}
+
+	/** Get Lieferprodukt.
+		@return Lieferprodukt	  */
+	@Override
+	public int getPMM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PMM_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public de.metas.procurement.base.model.I_PMM_PurchaseCandidate getPMM_PurchaseCandidate() throws RuntimeException
 	{
@@ -457,8 +497,8 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 		set_ValueFromPO(COLUMNNAME_PMM_PurchaseCandidate_ID, de.metas.procurement.base.model.I_PMM_PurchaseCandidate.class, PMM_PurchaseCandidate);
 	}
 
-	/** Set Purchase order candidate.
-		@param PMM_PurchaseCandidate_ID Purchase order candidate	  */
+	/** Set Bestellkandidat.
+		@param PMM_PurchaseCandidate_ID Bestellkandidat	  */
 	@Override
 	public void setPMM_PurchaseCandidate_ID (int PMM_PurchaseCandidate_ID)
 	{
@@ -468,8 +508,8 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 			set_Value (COLUMNNAME_PMM_PurchaseCandidate_ID, Integer.valueOf(PMM_PurchaseCandidate_ID));
 	}
 
-	/** Get Purchase order candidate.
-		@return Purchase order candidate	  */
+	/** Get Bestellkandidat.
+		@return Bestellkandidat	  */
 	@Override
 	public int getPMM_PurchaseCandidate_ID () 
 	{
@@ -547,6 +587,22 @@ public class X_PMM_QtyReport_Event extends org.compiere.model.PO implements I_PM
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Produkt UUID.
+		@param Product_UUID Produkt UUID	  */
+	@Override
+	public void setProduct_UUID (java.lang.String Product_UUID)
+	{
+		set_Value (COLUMNNAME_Product_UUID, Product_UUID);
+	}
+
+	/** Get Produkt UUID.
+		@return Produkt UUID	  */
+	@Override
+	public java.lang.String getProduct_UUID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Product_UUID);
 	}
 
 	/** Set Zusagbar.

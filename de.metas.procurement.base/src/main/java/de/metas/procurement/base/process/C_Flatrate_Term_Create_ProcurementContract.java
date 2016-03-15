@@ -3,8 +3,10 @@ package de.metas.procurement.base.process;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.adempiere.ad.process.ISvrProcessDefaultParametersProvider;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Calendar;
@@ -13,6 +15,7 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.flatrate.api.IFlatrateBL;
@@ -46,8 +49,14 @@ import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
  * #L%
  */
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
-public class C_Flatrate_Term_Create_ProcurementContract extends SvrProcess
+public class C_Flatrate_Term_Create_ProcurementContract
+		extends SvrProcess
+		implements ISvrProcessDefaultParametersProvider
 {
+	private static final String PARAM_NAME_AD_USER_IN_CHARGE_ID = "AD_User_InCharge_ID";
+
+	private static final String SYSCONFIG_AD_USER_IN_CHARGE = "de.metas.procurement.C_Flatrate_Term_Create_ProcurementContract.AD_User_InCharge_ID";
+
 	@Param(mandatory = true, parameterName = "C_Flatrate_Conditions_ID")
 	private I_C_Flatrate_Conditions p_C_Flatrate_Conditions;
 
@@ -66,7 +75,7 @@ public class C_Flatrate_Term_Create_ProcurementContract extends SvrProcess
 	@Param(mandatory = true, parameterName = "C_UOM_ID")
 	private I_C_UOM p_C_UOM;
 
-	@Param(mandatory = false, parameterName = "AD_User_InCharge_ID")
+	@Param(mandatory = false, parameterName = PARAM_NAME_AD_USER_IN_CHARGE_ID)
 	private I_AD_User p_AD_User_Incharge;
 
 	@Param(mandatory = true, parameterName = "C_Currency_ID")
@@ -111,5 +120,29 @@ public class C_Flatrate_Term_Create_ProcurementContract extends SvrProcess
 		}
 
 		return "@Success@";
+	}
+
+	/**
+	 * If the given <code>parameterName</code> is {@value #PARAM_NAME_AD_USER_IN_CHARGE_ID},<br>
+	 * then the method returns the user set in <code>AD_SysConfig</code> {@value #SYSCONFIG_AD_USER_IN_CHARGE}.
+	 */
+	@Override
+	public Object getParameterDefaultValue(final String parameterName)
+	{
+		if (!PARAM_NAME_AD_USER_IN_CHARGE_ID.equals(parameterName))
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
+		
+		final int ad_Client_ID = Env.getAD_Client_ID(getCtx());
+		final int ad_Org_ID = Env.getAD_Org_ID(getCtx());
+		final int adUserInChargeId = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_AD_USER_IN_CHARGE, -1, ad_Client_ID, ad_Org_ID);
+		if (adUserInChargeId < 0)
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
+
+		final I_AD_User result = InterfaceWrapperHelper.create(getCtx(), adUserInChargeId, I_AD_User.class, getTrxName());
+		return result;
 	}
 }

@@ -16,7 +16,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1871409013L;
+	private static final long serialVersionUID = -1783510625L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate (Properties ctx, int PMM_PurchaseCandidate_ID, String trxName)
@@ -421,8 +421,8 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	/** Set Purchase order candidate.
-		@param PMM_PurchaseCandidate_ID Purchase order candidate	  */
+	/** Set Bestellkandidat.
+		@param PMM_PurchaseCandidate_ID Bestellkandidat	  */
 	@Override
 	public void setPMM_PurchaseCandidate_ID (int PMM_PurchaseCandidate_ID)
 	{
@@ -432,8 +432,8 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 			set_ValueNoCheck (COLUMNNAME_PMM_PurchaseCandidate_ID, Integer.valueOf(PMM_PurchaseCandidate_ID));
 	}
 
-	/** Get Purchase order candidate.
-		@return Purchase order candidate	  */
+	/** Get Bestellkandidat.
+		@return Bestellkandidat	  */
 	@Override
 	public int getPMM_PurchaseCandidate_ID () 
 	{

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -28,6 +29,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
@@ -129,10 +131,9 @@ public class ServerSyncBL implements IServerSyncBL
 				.create()
 				.list();
 
-		final List<I_PMM_Product> allPmmProducts =
-				createPMMProductQueryBuilder(time)
-						.create()
-						.list();
+		final List<I_PMM_Product> allPmmProducts = createPMMProductQueryBuilder(time)
+				.create()
+				.list();
 
 		final Multimap<Pair<Integer, Integer>, I_PMM_Product> key2product = MultimapBuilder.hashKeys().arrayListValues().build();
 		for (final I_PMM_Product product : allPmmProducts)
@@ -202,11 +203,10 @@ public class ServerSyncBL implements IServerSyncBL
 
 		final Timestamp time = SystemTime.asTimestamp();
 
-		final List<I_PMM_Product> allPmmProducts =
-				createPMMProductQueryBuilder(time)
-						.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null)
-						.create()
-						.list();
+		final List<I_PMM_Product> allPmmProducts = createPMMProductQueryBuilder(time)
+				.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null)
+				.create()
+				.list();
 
 		final List<SyncProduct> syncProducts = new ArrayList<SyncProduct>();
 		for (final I_PMM_Product pmmProduct : allPmmProducts)
@@ -217,11 +217,25 @@ public class ServerSyncBL implements IServerSyncBL
 		return syncProducts;
 	}
 
+	/**
+	 * Creates one SyncProduct instance for each {@link I_PMM_Product} that references the given <code>product</code> and either the given <code>bPartner</code> or no bpartner at all.
+	 * 
+	 * @param bPartner
+	 * @param product
+	 * @param key2product
+	 * @return
+	 */
 	private List<SyncProduct> createSyncProducts(
 			final I_C_BPartner bPartner,
 			final I_M_Product product,
 			final Multimap<Pair<Integer, Integer>, I_PMM_Product> key2product)
 	{
+		if (product == null || bPartner == null)
+		{
+			// this should not, but *might* happen in case of a broken/inconsistent C_Flatrate_Term
+			return Collections.emptyList();
+		}
+
 		final ISyncBL syncPojosBL = Services.get(ISyncBL.class);
 
 		final String productName = getProductName(bPartner, product);
@@ -239,8 +253,6 @@ public class ServerSyncBL implements IServerSyncBL
 
 		return syncProducts;
 	}
-
-
 
 	private String getProductName(final I_C_BPartner bPartner, final I_M_Product product)
 	{
@@ -305,130 +317,198 @@ public class ServerSyncBL implements IServerSyncBL
 			final List<String> errors = new ArrayList<>();
 
 			final int bPartnerId = UUIDs.toId(productSupply.getBpartner_uuid());
-			final I_C_BPartner bPartner = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), bPartnerId, I_C_BPartner.class, initialContextProvider.getTrxName());
+			final int orgId;
+			final I_C_BPartner bPartner;
+			if (bPartnerId > 0)
+			{
+				bPartner = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), bPartnerId, I_C_BPartner.class, initialContextProvider.getTrxName());
+				orgId = bPartner.getAD_Org_ID();
+			}
+			else
+			{
+				errors.add("@Missing@ @" + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "@");
+				bPartner = null;
+				orgId = 0;
+			}
 
 			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(initialContextProvider.getCtx(), bPartnerId, soTrx, initialContextProvider.getTrxName());
 
 			final int pmmProductId = UUIDs.toId(productSupply.getProduct_uuid());
-			final I_PMM_Product pmmProduct = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), pmmProductId, I_PMM_Product.class,
-					initialContextProvider.getTrxName());
-
-			final I_M_HU_PI_Item_Product huPIItemProduct = pmmProduct.getM_HU_PI_Item_Product();
-
-			final I_M_Product product = pmmProduct.getM_Product();
-
-			final BigDecimal qtyPromised = productSupply.getQty().multiply(huPIItemProduct.getQty());
-
-			final Timestamp datePromised = new Timestamp(productSupply.getDay().getTime());
-
-			final List<I_C_BPartner_Location> shipToLocations = bPartnerDAO.retrieveBPartnerShipToLocations(bPartner);
-
-			final I_PMM_QtyReport_Event qtyReportEvent = InterfaceWrapperHelper.newInstance(I_PMM_QtyReport_Event.class, bPartner);
-
-			// first set the "general stuff"
-			qtyReportEvent.setC_BPartner(bPartner);
-			qtyReportEvent.setAD_Org_ID(bPartner.getAD_Org_ID()); // might be override in this method
-			qtyReportEvent.setM_Product(product);
-			qtyReportEvent.setM_HU_PI_Item_Product(huPIItemProduct);
-
-			qtyReportEvent.setQtyPromised(qtyPromised);
-			final int uomId = huPIItemProduct.getC_UOM_ID();
-			qtyReportEvent.setC_UOM_ID(uomId);
-			qtyReportEvent.setDatePromised(datePromised);
-			qtyReportEvent.setM_PricingSystem_ID(pricingSystemId);
-
-			qtyReportEvent.setM_Warehouse_ID(pmmProduct.getM_Warehouse_ID());
-
-			if (Check.isEmpty(productSupply.getContractLine_uuid(), true))
+			final I_PMM_Product pmmProduct;
+			final I_M_Product product;
+			final I_M_HU_PI_Item_Product huPIItemProduct;
+			final I_C_UOM uom;
+			final int warehouseId;
+			if (pmmProductId > 0)
 			{
-				// import a non-contract product.
-				if (pricingSystemId <= 0)
+				pmmProduct = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), pmmProductId, I_PMM_Product.class, initialContextProvider.getTrxName());
+				product = pmmProduct.getM_Product();
+				huPIItemProduct = pmmProduct.getM_HU_PI_Item_Product();
+				if (huPIItemProduct != null)
 				{
-					// no term and no pricing system means that we can't figure out the price
-					errors.add("@Missing@ @" + I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + "@");
-				}
-				else if (shipToLocations.isEmpty())
-				{
-					errors.add("@Missing@ @" + I_C_BPartner_Location.COLUMNNAME_IsShipTo + "@");
+					uom = huPIItemProduct.getC_UOM();
 				}
 				else
 				{
-					final IPricingBL pricingBL = Services.get(IPricingBL.class);
-					final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bPartnerId, uomId, qtyPromised, soTrx);
-					pricingCtx.setM_PricingSystem_ID(pricingSystemId);
-					pricingCtx.setPriceDate(datePromised);
-					pricingCtx.setC_Country_ID(shipToLocations.get(0).getC_Location().getC_Country_ID());
-
-					final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
-					if (!pricingResult.isCalculated())
-					{
-						errors.add("@Missing@ " + I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + " " + pricingResult);
-
-					}
-					// these will be "empty" results, if the price was not calcualted
-					qtyReportEvent.setM_PriceList_ID(pricingResult.getM_PriceList_ID());
-					qtyReportEvent.setC_Currency_ID(pricingResult.getC_Currency_ID());
-					qtyReportEvent.setPrice(pricingResult.getPriceStd());
+					errors.add("@Missing@ @" + I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "@");
+					uom = null;
 				}
+				warehouseId = pmmProduct.getM_Warehouse_ID();
 			}
 			else
 			{
-				// import a contracted product
-				final int flatrateTermId = UUIDs.toId(productSupply.getContractLine_uuid());
-				final I_C_Flatrate_Term flatrateTerm = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), flatrateTermId, I_C_Flatrate_Term.class, initialContextProvider.getTrxName());
+				errors.add("@Missing@ @" + I_PMM_Product.COLUMNNAME_PMM_Product_ID + "@");
+				pmmProduct = null;
+				product = null;
+				huPIItemProduct = null;
+				uom = null;
+				warehouseId = 0;
+			}
 
-				// required because if the ctx contains #AD_Client_ID = 0, we might not get the term's C_Flatrate_DataEntries from the DAO
-				Env.setContext(initialContextProvider.getCtx(), Env.CTXNAME_AD_Client_ID, flatrateTerm.getAD_Client_ID());
-				Env.setContext(initialContextProvider.getCtx(), Env.CTXNAME_AD_Org_ID, flatrateTerm.getAD_Org_ID());
+			final BigDecimal qtyPromised = productSupply.getQty().multiply(huPIItemProduct.getQty());
 
-				qtyReportEvent.setC_Flatrate_Term(flatrateTerm);
-				qtyReportEvent.setC_Currency_ID(flatrateTerm.getC_Currency_ID());
+			final Timestamp datePromised = productSupply.getDay() == null ? null : new Timestamp(productSupply.getDay().getTime());
 
-				final List<I_C_Flatrate_DataEntry> dataEntries = InterfaceWrapperHelper.createList(
-						flatrateDAO.retrieveDataEntries(flatrateTerm, datePromised, I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased, true),
-						I_C_Flatrate_DataEntry.class);
-				I_C_Flatrate_DataEntry dataEntryForProduct = null;
-				for (I_C_Flatrate_DataEntry dataEntry : dataEntries)
+			final I_PMM_QtyReport_Event qtyReportEvent = InterfaceWrapperHelper.newInstance(I_PMM_QtyReport_Event.class, initialContextProvider);
+			
+			// try-finally to make sure we attempt to save the new instance, also if there are exceptions 
+			try
+			{
+				qtyReportEvent.setPartner_UUID(productSupply.getBpartner_uuid());
+				qtyReportEvent.setProduct_UUID(productSupply.getProduct_uuid());
+
+				// first set the "general stuff"
+				qtyReportEvent.setC_BPartner(bPartner);
+				qtyReportEvent.setAD_Org_ID(orgId); // might be override in this method
+				qtyReportEvent.setM_Product(product);
+				qtyReportEvent.setM_HU_PI_Item_Product(huPIItemProduct);
+
+				qtyReportEvent.setQtyPromised(qtyPromised);
+				qtyReportEvent.setC_UOM(uom);
+				qtyReportEvent.setDatePromised(datePromised);
+				qtyReportEvent.setM_PricingSystem_ID(pricingSystemId);
+
+				qtyReportEvent.setM_Warehouse_ID(warehouseId);
+
+				if (Check.isEmpty(productSupply.getContractLine_uuid(), true))
 				{
-					if (dataEntry.getM_Product_DataEntry_ID() != flatrateTerm.getM_Product_ID())
+					final List<I_C_BPartner_Location> shipToLocations = bPartnerDAO.retrieveBPartnerShipToLocations(bPartner);
+
+					// import a non-contract product.
+					if (pricingSystemId <= 0)
 					{
-						continue;
+						// no term and no pricing system means that we can't figure out the price
+						errors.add("@Missing@ @" + I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + "@");
 					}
-					dataEntryForProduct = dataEntry;
-					break;
-				}
-				if (dataEntryForProduct == null)
-				{
-					errors.add("@Missing@ " + I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID);
-					qtyReportEvent.setPrice(BigDecimal.ZERO);
+					else if (shipToLocations.isEmpty())
+					{
+						errors.add("@Missing@ @" + I_C_BPartner_Location.COLUMNNAME_IsShipTo + "@");
+					}
+					else if (product == null || uom == null)
+					{
+						// nothing to do. We already added an error about the missing piip. Also shouldn't happen.
+					}
+					else
+					{
+						final IPricingBL pricingBL = Services.get(IPricingBL.class);
+						final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bPartnerId, uom.getC_UOM_ID(), qtyPromised, soTrx);
+						pricingCtx.setM_PricingSystem_ID(pricingSystemId);
+						pricingCtx.setPriceDate(datePromised);
+						pricingCtx.setC_Country_ID(shipToLocations.get(0).getC_Location().getC_Country_ID());
+
+						final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
+						if (!pricingResult.isCalculated())
+						{
+							errors.add("@Missing@ " + I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + " " + pricingResult);
+
+						}
+						// these will be "empty" results, if the price was not calculated
+						qtyReportEvent.setM_PriceList_ID(pricingResult.getM_PriceList_ID());
+						qtyReportEvent.setC_Currency_ID(pricingResult.getC_Currency_ID());
+						qtyReportEvent.setPrice(pricingResult.getPriceStd());
+					}
 				}
 				else
 				{
-					final BigDecimal price = Services.get(IUOMConversionBL.class).convertPrice(
-							product,
-							dataEntryForProduct.getFlatrateAmtPerUOM(),
-							flatrateTerm.getC_UOM(), // this is the flatrateAmt's UOM
-							huPIItemProduct.getC_UOM(), // this is the qtyReportEvent's UOM
-							flatrateTerm.getC_Currency().getStdPrecision());
+					// import a contracted product
+					final I_C_Flatrate_Term flatrateTerm;
+					final int currencyId;
+					final List<I_C_Flatrate_DataEntry> dataEntries;
+					final int flatrateTermId = UUIDs.toId(productSupply.getContractLine_uuid());
+					if (flatrateTermId > 0)
+					{
+						flatrateTerm = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), flatrateTermId, I_C_Flatrate_Term.class, initialContextProvider.getTrxName());
 
-					qtyReportEvent.setPrice(price);
+						// required because if the ctx contains #AD_Client_ID = 0, we might not get the term's C_Flatrate_DataEntries from the DAO
+						Env.setContext(initialContextProvider.getCtx(), Env.CTXNAME_AD_Client_ID, flatrateTerm.getAD_Client_ID());
+						Env.setContext(initialContextProvider.getCtx(), Env.CTXNAME_AD_Org_ID, flatrateTerm.getAD_Org_ID());
+
+						currencyId = flatrateTerm.getC_Currency_ID();
+
+						dataEntries = InterfaceWrapperHelper.createList(
+								flatrateDAO.retrieveDataEntries(flatrateTerm, datePromised, I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased, true),  // onlyNonSim = true
+								I_C_Flatrate_DataEntry.class);
+					}
+					else
+					{
+						errors.add("@Missing@ @" + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "@");
+						flatrateTerm = null;
+						currencyId = 0;
+						dataEntries = Collections.emptyList();
+					}
+
+					qtyReportEvent.setC_Flatrate_Term(flatrateTerm);
+					qtyReportEvent.setC_Currency_ID(currencyId);
+
+					I_C_Flatrate_DataEntry dataEntryForProduct = null;
+					for (I_C_Flatrate_DataEntry dataEntry : dataEntries)
+					{
+						if (dataEntry.getM_Product_DataEntry_ID() != flatrateTerm.getM_Product_ID())
+						{
+							continue;
+						}
+						dataEntryForProduct = dataEntry;
+						break;
+					}
+					if (dataEntryForProduct == null)
+					{
+						errors.add("@Missing@ " + I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID);
+						qtyReportEvent.setPrice(BigDecimal.ZERO);
+					}
+
+					else if (product != null && huPIItemProduct.getC_UOM() != null && flatrateTerm != null)
+					{
+						final BigDecimal price = Services.get(IUOMConversionBL.class).convertPrice(
+								product,
+								dataEntryForProduct.getFlatrateAmtPerUOM(),
+								flatrateTerm.getC_UOM(),                  // this is the flatrateAmt's UOM
+								huPIItemProduct.getC_UOM(),               // this is the qtyReportEvent's UOM
+								flatrateTerm.getC_Currency().getStdPrecision());
+
+						qtyReportEvent.setPrice(price);
+					}
 				}
-			}
-			if (!errors.isEmpty())
-			{
-				final StringBuilder sb = new StringBuilder();
-				for (String error : errors)
+
+				//
+				// check if we have errors to report
+				if (!errors.isEmpty())
 				{
-					sb.append(error);
-					sb.append("\n");
+					final StringBuilder sb = new StringBuilder();
+					for (String error : errors)
+					{
+						sb.append(error);
+						sb.append("\n");
+					}
+					final IMsgBL msgBL = Services.get(IMsgBL.class);
+					final Properties ctx = InterfaceWrapperHelper.getCtx(qtyReportEvent);
+					qtyReportEvent.setErrorMsg(msgBL.translate(ctx, sb.toString()));
+					qtyReportEvent.setIsError(true);
 				}
-				final IMsgBL msgBL = Services.get(IMsgBL.class);
-				final Properties ctx = InterfaceWrapperHelper.getCtx(qtyReportEvent);
-				qtyReportEvent.setErrorMsg(msgBL.translate(ctx, sb.toString()));
-				qtyReportEvent.setIsError(true);
 			}
-
-			InterfaceWrapperHelper.save(qtyReportEvent);
+			finally
+			{
+				InterfaceWrapperHelper.save(qtyReportEvent);
+			}
 		}
 		return Response.ok().build();
 	}

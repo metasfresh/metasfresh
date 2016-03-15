@@ -27,7 +27,12 @@ import de.metas.procurement.sync.protocol.SyncProduct;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+/**
+ * Contains business logic that is potentially used at more than one place.
+ * 
+ * @author metas-dev <dev@metas-fresh.com>
+ *
+ */
 public interface ISyncBL extends ISingletonService
 {
 	SyncProduct createSyncProduct(String productName, I_PMM_Product pmmProduct);

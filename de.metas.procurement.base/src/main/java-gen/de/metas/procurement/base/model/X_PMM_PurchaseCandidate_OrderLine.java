@@ -16,7 +16,7 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2090654602L;
+	private static final long serialVersionUID = -639331466L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate_OrderLine (Properties ctx, int PMM_PurchaseCandidate_OrderLine_ID, String trxName)
@@ -95,8 +95,8 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 		set_ValueFromPO(COLUMNNAME_PMM_PurchaseCandidate_ID, de.metas.procurement.base.model.I_PMM_PurchaseCandidate.class, PMM_PurchaseCandidate);
 	}
 
-	/** Set Purchase order candidate.
-		@param PMM_PurchaseCandidate_ID Purchase order candidate	  */
+	/** Set Bestellkandidat.
+		@param PMM_PurchaseCandidate_ID Bestellkandidat	  */
 	@Override
 	public void setPMM_PurchaseCandidate_ID (int PMM_PurchaseCandidate_ID)
 	{
@@ -106,8 +106,8 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 			set_ValueNoCheck (COLUMNNAME_PMM_PurchaseCandidate_ID, Integer.valueOf(PMM_PurchaseCandidate_ID));
 	}
 
-	/** Get Purchase order candidate.
-		@return Purchase order candidate	  */
+	/** Get Bestellkandidat.
+		@return Bestellkandidat	  */
 	@Override
 	public int getPMM_PurchaseCandidate_ID () 
 	{

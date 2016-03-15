@@ -46,9 +46,9 @@ public final class UUIDs
 		// System.out.println("lsb=" + toByteString(uuid.getLeastSignificantBits()));
 
 		long id = msb & 0xFFFF0000;
-		// System.out.println("   id=" + toByteString(id) + " = " + id);
+		// System.out.println(" id=" + toByteString(id) + " = " + id);
 		id = id >> 8 * 4;
-		// System.out.println("   id=" + toByteString(id) + " = " + id);
+		// System.out.println(" id=" + toByteString(id) + " = " + id);
 
 		return (int)id;
 	}
@@ -87,6 +87,10 @@ public final class UUIDs
 
 	public static int toId(final String uuid)
 	{
+		if (uuid == null || uuid.trim().isEmpty())
+		{
+			return -1;
+		}
 		return toId(UUID.fromString(uuid));
 	}
 

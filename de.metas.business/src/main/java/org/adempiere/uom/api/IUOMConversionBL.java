@@ -22,7 +22,6 @@ package org.adempiere.uom.api;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
@@ -79,8 +78,8 @@ public interface IUOMConversionBL extends ISingletonService
 	 * 
 	 * @param product
 	 * @param price
-	 * @param uomFrom
-	 * @param uomTo
+	 * @param uomFrom may not be <code>null</code>.
+	 * @param uomTo may not be <code>null</code>.
 	 * @param pricePrecision precision to be used for resulting price
 	 * @return converted price using <code>pricePrecision</code>; never return NULL.
 	 */

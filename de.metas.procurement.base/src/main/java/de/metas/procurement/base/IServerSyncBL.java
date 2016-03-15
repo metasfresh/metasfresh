@@ -7,10 +7,12 @@ import javax.ws.rs.core.Response;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.javaclasses.AD_JavaClass;
+import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 import de.metas.procurement.sync.IServerSync;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
+import de.metas.procurement.sync.protocol.SyncProductSupply;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 
 /*
@@ -37,7 +39,17 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 /**
  * {@link ISingletonService} implementation of the {@link IServerSync} interface.
  * <p>
- *
+ * Mapping:
+ * <b>SyncProductSupply</b>
+ * <ul>
+ * <li><code>Bpartner_uuid <=> C_BPartner_ID</code>. Using <code>C_BPartner</code>, we get the <code>M_Pricing_system</code>, <code>AD_Org</code> and in case of uncontracted products we also get the
+ * shipping location and thus the <code>M_PriceList</code>.</li>
+ * <li><code>Product_uuid <=> PMM_Product_ID</code>. from the <code>PMM_Product</code>, we get the <code>M_Product</code>, <code>M_HU_PI_Item_Product</code> and <code>M_Warehouse</code></li>
+ * <li><code>ContractLine_uuid <=> C_flatrate_Term</code>. Note that both <code>SyncProductSupply.ContractLine_uuid</code> and <code>SyncContract.Uuid</code> contain the flatrate term, because we have
+ * only one product per term</li>
+ * </ul>
+ * 
+ * 
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -68,7 +80,9 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	public List<SyncProduct> getAllNotContractedProducts();
 
 	/**
-	 * TODO: document the mapping & unit-test
+	 * Create {@link I_PMM_QtyReport_Event}s from the given <code>request</code>'s {@link SyncProductSupply} instances.
+	 * <p>
+	 * <b>Important:</b> Make sure that each record is saved.
 	 *
 	 * @param request
 	 * @return {@link Response#ok()}
@@ -76,7 +90,6 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 */
 	@Override
 	public Response reportProductSupplies(SyncProductSuppliesRequest request);
-
 
 	/**
 	 *

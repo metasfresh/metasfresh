@@ -153,7 +153,7 @@ public interface I_PMM_PurchaseCandidate_OrderLine
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Purchase order candidate.
+	 * Set Bestellkandidat.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -162,7 +162,7 @@ public interface I_PMM_PurchaseCandidate_OrderLine
 	public void setPMM_PurchaseCandidate_ID (int PMM_PurchaseCandidate_ID);
 
 	/**
-	 * Get Purchase order candidate.
+	 * Get Bestellkandidat.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true

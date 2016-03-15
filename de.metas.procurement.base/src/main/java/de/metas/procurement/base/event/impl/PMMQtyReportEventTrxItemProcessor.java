@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 
@@ -43,7 +44,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 
 	private static final String ERRORMSG_None = null;
-	
+
 	private final AtomicInteger countProcessed = new AtomicInteger(0);
 	private final AtomicInteger countSkipped = new AtomicInteger(0);
 
@@ -69,33 +70,42 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 			markProcessed(event, candidate, errorMsg);
 			return;
 		}
-		
-		//
-		// If no candidate found, create a new candidate
-		if (candidate == null)
-		{
-			candidate = InterfaceWrapperHelper.newInstance(I_PMM_PurchaseCandidate.class);
-			candidate.setC_BPartner_ID(event.getC_BPartner_ID());
-			candidate.setM_Product_ID(event.getM_Product_ID());
-			candidate.setC_UOM_ID(event.getC_UOM_ID());
-			candidate.setM_HU_PI_Item_Product_ID(event.getM_HU_PI_Item_Product_ID());
-			candidate.setDatePromised(event.getDatePromised());
-			
-			candidate.setAD_Org_ID(event.getAD_Org_ID());
-			if (event.getM_Warehouse_ID() > 0)
-				candidate.setM_Warehouse_ID(event.getM_Warehouse_ID());
-			candidate.setM_PricingSystem_ID(event.getM_PricingSystem_ID());
-			candidate.setM_PriceList_ID(event.getM_PriceList_ID());
-			candidate.setC_Currency_ID(event.getC_Currency_ID());
-			candidate.setPrice(event.getPrice());
-		}
-		
-		//
-		// Update the candidate with the values from event
-		candidate.setQtyPromised(event.getQtyPromised());
-		candidate.setQtyToOrder(purchaseCandidateBL.calculateQtyToOrder(candidate));
-		InterfaceWrapperHelper.save(candidate);
 
+		try
+		{
+			//
+			// If no candidate found, create a new candidate
+			if (candidate == null)
+			{
+				candidate = InterfaceWrapperHelper.newInstance(I_PMM_PurchaseCandidate.class);
+				candidate.setC_BPartner_ID(event.getC_BPartner_ID());
+				candidate.setM_Product_ID(event.getM_Product_ID());
+				candidate.setC_UOM_ID(event.getC_UOM_ID());
+				candidate.setM_HU_PI_Item_Product_ID(event.getM_HU_PI_Item_Product_ID());
+				candidate.setDatePromised(event.getDatePromised());
+
+				candidate.setAD_Org_ID(event.getAD_Org_ID());
+				if (event.getM_Warehouse_ID() > 0)
+				{
+					candidate.setM_Warehouse_ID(event.getM_Warehouse_ID());
+				}
+				candidate.setM_PricingSystem_ID(event.getM_PricingSystem_ID());
+				candidate.setM_PriceList_ID(event.getM_PriceList_ID());
+				candidate.setC_Currency_ID(event.getC_Currency_ID());
+				candidate.setPrice(event.getPrice());
+			}
+
+			//
+			// Update the candidate with the values from event
+			candidate.setQtyPromised(event.getQtyPromised());
+			candidate.setQtyToOrder(purchaseCandidateBL.calculateQtyToOrder(candidate));
+			InterfaceWrapperHelper.save(candidate);
+		}
+		catch (Exception e)
+		{
+			markProcessed(event, candidate, e.getLocalizedMessage());
+			throw e;
+		}
 		//
 		// Mark the event as processed
 		markProcessed(event, candidate, ERRORMSG_None);
@@ -104,7 +114,10 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 	private final void markProcessed(final I_PMM_QtyReport_Event event, final I_PMM_PurchaseCandidate candidate, final String errorMsg)
 	{
 		event.setPMM_PurchaseCandidate(candidate);
-		event.setProcessed(true);
+		
+		final boolean isError = !Check.equals(ERRORMSG_None, errorMsg);
+		event.setIsError(isError);
+		event.setProcessed(!isError);
 		event.setErrorMsg(errorMsg);
 		InterfaceWrapperHelper.save(event);
 
@@ -118,8 +131,6 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 	private final void markSkipped(final I_PMM_QtyReport_Event event, final I_PMM_PurchaseCandidate candidate, final String errorMsg)
 	{
-		// event.setPMM_PurchaseCandidate(candidate); // nop
-		// event.setProcessed(true); // nop
 		event.setErrorMsg(errorMsg);
 		InterfaceWrapperHelper.save(event);
 
@@ -127,7 +138,6 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		{
 			getLoggable().addLog("Event " + event + " skipped: " + errorMsg);
 		}
-
 		countSkipped.incrementAndGet();
 
 	}

@@ -429,7 +429,7 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Purchase order candidate.
+	 * Set Bestellkandidat.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -438,7 +438,7 @@ public interface I_PMM_PurchaseCandidate
 	public void setPMM_PurchaseCandidate_ID (int PMM_PurchaseCandidate_ID);
 
 	/**
-	 * Get Purchase order candidate.
+	 * Get Bestellkandidat.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

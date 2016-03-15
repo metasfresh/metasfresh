@@ -73,7 +73,7 @@ public interface I_PMM_QtyReport_Event
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setC_BPartner_ID (int C_BPartner_ID);
@@ -83,7 +83,7 @@ public interface I_PMM_QtyReport_Event
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
@@ -102,7 +102,7 @@ public interface I_PMM_QtyReport_Event
 	 * Die Währung für diesen Eintrag
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setC_Currency_ID (int C_Currency_ID);
@@ -112,7 +112,7 @@ public interface I_PMM_QtyReport_Event
 	 * Die Währung für diesen Eintrag
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Currency_ID();
@@ -188,7 +188,7 @@ public interface I_PMM_QtyReport_Event
 	 * Maßeinheit
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setC_UOM_ID (int C_UOM_ID);
@@ -198,7 +198,7 @@ public interface I_PMM_QtyReport_Event
 	 * Maßeinheit
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
@@ -217,7 +217,7 @@ public interface I_PMM_QtyReport_Event
 	 * Zugesagter Termin für diesen Auftrag
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setDatePromised (java.sql.Timestamp DatePromised);
@@ -227,7 +227,7 @@ public interface I_PMM_QtyReport_Event
 	 * Zugesagter Termin für diesen Auftrag
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.sql.Timestamp getDatePromised();
@@ -314,7 +314,7 @@ public interface I_PMM_QtyReport_Event
 	 * Set Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
@@ -323,7 +323,7 @@ public interface I_PMM_QtyReport_Event
 	 * Get Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_HU_PI_Item_Product_ID();
@@ -342,7 +342,7 @@ public interface I_PMM_QtyReport_Event
 	 * Bezeichnung der Preisliste
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_PriceList_ID (int M_PriceList_ID);
@@ -352,7 +352,7 @@ public interface I_PMM_QtyReport_Event
 	 * Bezeichnung der Preisliste
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_PriceList_ID();
@@ -371,7 +371,7 @@ public interface I_PMM_QtyReport_Event
 	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_PricingSystem_ID (int M_PricingSystem_ID);
@@ -381,7 +381,7 @@ public interface I_PMM_QtyReport_Event
 	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_PricingSystem_ID();
@@ -400,7 +400,7 @@ public interface I_PMM_QtyReport_Event
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_Product_ID (int M_Product_ID);
@@ -410,7 +410,7 @@ public interface I_PMM_QtyReport_Event
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
@@ -454,7 +454,57 @@ public interface I_PMM_QtyReport_Event
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Purchase order candidate.
+	 * Set Partner UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPartner_UUID (java.lang.String Partner_UUID);
+
+	/**
+	 * Get Partner UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPartner_UUID();
+
+    /** Column definition for Partner_UUID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object> COLUMN_Partner_UUID = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object>(I_PMM_QtyReport_Event.class, "Partner_UUID", null);
+    /** Column name Partner_UUID */
+    public static final String COLUMNNAME_Partner_UUID = "Partner_UUID";
+
+	/**
+	 * Set Lieferprodukt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPMM_Product_ID (int PMM_Product_ID);
+
+	/**
+	 * Get Lieferprodukt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPMM_Product_ID();
+
+	public de.metas.procurement.base.model.I_PMM_Product getPMM_Product();
+
+	public void setPMM_Product(de.metas.procurement.base.model.I_PMM_Product PMM_Product);
+
+    /** Column definition for PMM_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, de.metas.procurement.base.model.I_PMM_Product> COLUMN_PMM_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, de.metas.procurement.base.model.I_PMM_Product>(I_PMM_QtyReport_Event.class, "PMM_Product_ID", de.metas.procurement.base.model.I_PMM_Product.class);
+    /** Column name PMM_Product_ID */
+    public static final String COLUMNNAME_PMM_Product_ID = "PMM_Product_ID";
+
+	/**
+	 * Set Bestellkandidat.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -463,7 +513,7 @@ public interface I_PMM_QtyReport_Event
 	public void setPMM_PurchaseCandidate_ID (int PMM_PurchaseCandidate_ID);
 
 	/**
-	 * Get Purchase order candidate.
+	 * Get Bestellkandidat.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -508,7 +558,7 @@ public interface I_PMM_QtyReport_Event
 	 * Preis
 	 *
 	 * <br>Type: CostPrice
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setPrice (java.math.BigDecimal Price);
@@ -518,7 +568,7 @@ public interface I_PMM_QtyReport_Event
 	 * Preis
 	 *
 	 * <br>Type: CostPrice
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.math.BigDecimal getPrice();
@@ -554,10 +604,33 @@ public interface I_PMM_QtyReport_Event
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set Produkt UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProduct_UUID (java.lang.String Product_UUID);
+
+	/**
+	 * Get Produkt UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getProduct_UUID();
+
+    /** Column definition for Product_UUID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object> COLUMN_Product_UUID = new org.adempiere.model.ModelColumn<I_PMM_QtyReport_Event, Object>(I_PMM_QtyReport_Event.class, "Product_UUID", null);
+    /** Column name Product_UUID */
+    public static final String COLUMNNAME_Product_UUID = "Product_UUID";
+
+	/**
 	 * Set Zusagbar.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setQtyPromised (java.math.BigDecimal QtyPromised);
@@ -566,7 +639,7 @@ public interface I_PMM_QtyReport_Event
 	 * Get Zusagbar.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.math.BigDecimal getQtyPromised();
