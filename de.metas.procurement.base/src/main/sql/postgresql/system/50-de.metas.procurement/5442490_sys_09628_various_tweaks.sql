@@ -1,7 +1,7 @@
 
 -- 11.03.2016 16:54
 -- URL zum Konzept
-UPDATE AD_Field SET IsCentrallyMaintained='N', Name='Lager für Bestellung',Updated=TO_TIMESTAMP('2016-03-11 16:54:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556769
+UPDATE AD_Field SET IsCentrallyMaintained='N', Name='Lager fÃ¼r Bestellung',Updated=TO_TIMESTAMP('2016-03-11 16:54:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556769
 ;
 
 -- 11.03.2016 16:54
@@ -30,42 +30,13 @@ UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2016-03-15 08:56:21',
 
 -- 15.03.2016 08:56
 -- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','C_Currency_ID','NUMERIC(10)',null,'NULL')
-;
-
--- 15.03.2016 08:56
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','C_Currency_ID',null,'NULL',null)
-;
-
--- 15.03.2016 08:56
--- URL zum Konzept
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2016-03-15 08:56:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554146
 ;
 
--- 15.03.2016 08:56
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','C_UOM_ID','NUMERIC(10)',null,'NULL')
-;
-
--- 15.03.2016 08:56
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','C_UOM_ID',null,'NULL',null)
-;
 
 -- 15.03.2016 08:56
 -- URL zum Konzept
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2016-03-15 08:56:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554140
-;
-
--- 15.03.2016 08:56
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','DatePromised','TIMESTAMP WITHOUT TIME ZONE',null,'NULL')
-;
-
--- 15.03.2016 08:56
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','DatePromised',null,'NULL',null)
 ;
 
 -- 15.03.2016 08:57
@@ -73,10 +44,6 @@ INSERT INTO t_alter_column values('pmm_qtyreport_event','DatePromised',null,'NUL
 UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2016-03-15 08:57:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554134
 ;
 
--- 15.03.2016 08:57
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','IsActive','CHAR(1)',null,'Y')
-;
 
 -- 15.03.2016 08:57
 -- URL zum Konzept
@@ -88,45 +55,18 @@ UPDATE PMM_QtyReport_Event SET IsActive='Y' WHERE IsActive IS NULL
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2016-03-15 08:57:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554147
 ;
 
--- 15.03.2016 08:57
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','M_HU_PI_Item_Product_ID','NUMERIC(10)',null,'NULL')
-;
-
--- 15.03.2016 08:57
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','M_HU_PI_Item_Product_ID',null,'NULL',null)
-;
 
 -- 15.03.2016 08:57
 -- URL zum Konzept
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2016-03-15 08:57:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554149
 ;
 
--- 15.03.2016 08:57
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','M_PriceList_ID','NUMERIC(10)',null,'NULL')
-;
-
--- 15.03.2016 08:57
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','M_PriceList_ID',null,'NULL',null)
-;
 
 -- 15.03.2016 08:57
 -- URL zum Konzept
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2016-03-15 08:57:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554148
 ;
 
--- 15.03.2016 08:57
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','M_PricingSystem_ID','NUMERIC(10)',null,'NULL')
-;
-
--- 15.03.2016 08:57
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','M_PricingSystem_ID',null,'NULL',null)
-;
 
 -- 15.03.2016 08:57
 -- URL zum Konzept
@@ -140,33 +80,9 @@ UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2016-03-15 08:58:13',
 
 -- 15.03.2016 08:58
 -- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','Price','NUMERIC',null,'NULL')
-;
-
--- 15.03.2016 08:58
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','Price',null,'NULL',null)
-;
-
--- 15.03.2016 08:58
--- URL zum Konzept
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2016-03-15 08:58:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554141
 ;
 
--- 15.03.2016 08:58
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','QtyPromised','NUMERIC',null,'NULL')
-;
-
--- 15.03.2016 08:58
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','QtyPromised',null,'NULL',null)
-;
-
--- 15.03.2016 09:00
--- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554226,543021,0,13,540747,'N','PMM_QtyReport_Event_ID',TO_TIMESTAMP('2016-03-15 09:00:22','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.procurement',10,'Y','N','Y','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','Lieferplanungsdatensatz',0,TO_TIMESTAMP('2016-03-15 09:00:22','YYYY-MM-DD HH24:MI:SS'),100,0)
-;
 
 -- 15.03.2016 09:02
 -- URL zum Konzept
@@ -181,23 +97,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- 15.03.2016 09:02
 -- URL zum Konzept
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2016-03-15 09:02:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554138
-;
-
--- 15.03.2016 09:02
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','C_BPartner_ID','NUMERIC(10)',null,'NULL')
-;
-
--- 15.03.2016 09:02
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','C_BPartner_ID',null,'NULL',null)
-;
-
-
-
--- 15.03.2016 09:06
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_qtyreport_event','PMM_Product_ID','NUMERIC(10)',null,'NULL')
 ;
 
 -- 15.03.2016 09:08
@@ -518,7 +417,7 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2016-03-15 09:19:4
 
 -- 15.03.2016 09:20
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,554222,556772,0,540727,0,TO_TIMESTAMP('2016-03-15 09:20:23','YYYY-MM-DD HH24:MI:SS'),100,'Ein Fehler ist bei der Durchführung aufgetreten',0,'de.metas.procurement',0,'Y','Y','Y','Y','N','N','N','N','N','Fehler',185,190,0,1,1,TO_TIMESTAMP('2016-03-15 09:20:23','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,554222,556772,0,540727,0,TO_TIMESTAMP('2016-03-15 09:20:23','YYYY-MM-DD HH24:MI:SS'),100,'Ein Fehler ist bei der DurchfÃ¼hrung aufgetreten',0,'de.metas.procurement',0,'Y','Y','Y','Y','N','N','N','N','N','Fehler',185,190,0,1,1,TO_TIMESTAMP('2016-03-15 09:20:23','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 15.03.2016 09:20
@@ -643,15 +542,6 @@ UPDATE AD_Tab_Trl SET IsTranslated='N' WHERE AD_Tab_ID=540726
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2016-03-15 11:45:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554154
 ;
 
--- 15.03.2016 11:45
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_purchasecandidate','M_PriceList_ID','NUMERIC(10)',null,'NULL')
-;
-
--- 15.03.2016 11:45
--- URL zum Konzept
-INSERT INTO t_alter_column values('pmm_purchasecandidate','M_PriceList_ID',null,'NULL',null)
-;
 
 
 
@@ -789,9 +679,117 @@ UPDATE AD_Field SET IsDisplayedGrid='Y', SeqNoGrid=220,Updated=TO_TIMESTAMP('201
 
 COMMIT;
 
+
+-- 15.03.2016 08:56
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','DatePromised','TIMESTAMP WITHOUT TIME ZONE',null,'NULL')
+;
+
+-- 15.03.2016 08:56
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','DatePromised',null,'NULL',null)
+;
+
+
+-- 15.03.2016 08:57
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','IsActive','CHAR(1)',null,'Y')
+;
+
+-- 15.03.2016 08:57
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','M_HU_PI_Item_Product_ID','NUMERIC(10)',null,'NULL')
+;
+
+-- 15.03.2016 08:57
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','M_HU_PI_Item_Product_ID',null,'NULL',null)
+;
+
+
+-- 15.03.2016 08:57
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','M_PriceList_ID','NUMERIC(10)',null,'NULL')
+;
+
+-- 15.03.2016 08:57
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','M_PriceList_ID',null,'NULL',null)
+;
+
+
+-- 15.03.2016 08:57
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','M_PricingSystem_ID','NUMERIC(10)',null,'NULL')
+;
+
+-- 15.03.2016 08:57
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','M_PricingSystem_ID',null,'NULL',null)
+;
+
+-- 15.03.2016 08:56
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','C_UOM_ID','NUMERIC(10)',null,'NULL')
+;
+
+-- 15.03.2016 08:56
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','C_UOM_ID',null,'NULL',null)
+;
+
+
+-- 15.03.2016 08:56
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','C_Currency_ID','NUMERIC(10)',null,'NULL')
+;
+
+-- 15.03.2016 08:56
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','C_Currency_ID',null,'NULL',null)
+;
+
+-- 15.03.2016 08:58
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','Price','NUMERIC',null,'NULL')
+;
+
+-- 15.03.2016 08:58
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','Price',null,'NULL',null)
+;
+
+-- 15.03.2016 08:58
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','QtyPromised','NUMERIC',null,'NULL')
+;
+
+-- 15.03.2016 08:58
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','QtyPromised',null,'NULL',null)
+;
+
+
 -- 15.03.2016 09:02
 -- URL zum Konzept
 ALTER TABLE PMM_QtyReport_Event ADD PMM_Product_ID NUMERIC(10) DEFAULT NULL 
+;
+
+
+-- 15.03.2016 09:02
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','C_BPartner_ID','NUMERIC(10)',null,'NULL')
+;
+
+-- 15.03.2016 09:02
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','C_BPartner_ID',null,'NULL',null)
+;
+
+
+-- 15.03.2016 09:06
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_qtyreport_event','PMM_Product_ID','NUMERIC(10)',null,'NULL')
 ;
 
 
@@ -804,4 +802,14 @@ ALTER TABLE PMM_QtyReport_Event ADD Product_UUID VARCHAR(60) DEFAULT NULL
 -- 15.03.2016 09:10
 -- URL zum Konzept
 ALTER TABLE PMM_QtyReport_Event ADD Partner_UUID VARCHAR(60) DEFAULT NULL 
+;
+
+-- 15.03.2016 11:45
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_purchasecandidate','M_PriceList_ID','NUMERIC(10)',null,'NULL')
+;
+
+-- 15.03.2016 11:45
+-- URL zum Konzept
+INSERT INTO t_alter_column values('pmm_purchasecandidate','M_PriceList_ID',null,'NULL',null)
 ;
