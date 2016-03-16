@@ -21,12 +21,14 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.x.x (Upcoming Release)
+# metasfresh 4.9.9 (Upcoming Release)
 
 ## Features
 
 ## Fixes
-	
+ - 09628 procurement management (106716240958)
+    * the first event was created with AD_Client_ID=0 and was therefore not processed
+ 
 ## Instructions
 
 # metasfresh 4.9.8

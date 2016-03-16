@@ -311,7 +311,7 @@ public class ServerSyncBL implements IServerSyncBL
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-		final PlainContextAware initialContextProvider = new PlainContextAware(Env.getCtx());
+		final PlainContextAware ctxProvider = new PlainContextAware(Env.getCtx());
 
 		final boolean soTrx = false;
 
@@ -320,28 +320,13 @@ public class ServerSyncBL implements IServerSyncBL
 		{
 			final List<String> errors = new ArrayList<>();
 
-			final int bPartnerId = UUIDs.toId(productSupply.getBpartner_uuid());
-			final int orgId;
-			final I_C_BPartner bPartner;
-			if (bPartnerId > 0)
-			{
-				bPartner = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), bPartnerId, I_C_BPartner.class, initialContextProvider.getTrxName());
-				orgId = bPartner.getAD_Org_ID();
-			}
-			else
-			{
-				errors.add("@Missing@ @" + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "@");
-				bPartner = null;
-				orgId = 0;
-			}
-
-			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(initialContextProvider.getCtx(), bPartnerId, soTrx, initialContextProvider.getTrxName());
-
-			final I_PMM_Product pmmProduct = getPMM_Product(initialContextProvider, productSupply.getProduct_uuid());
+			// first load the PMM_Product which also defines the new record's client and org
+			final I_PMM_Product pmmProduct = getPMM_ProductAndUpdateCtx(ctxProvider, productSupply.getProduct_uuid());
 			final I_M_Product product;
 			final I_M_HU_PI_Item_Product huPIItemProduct;
 			final I_C_UOM uom;
 			final int warehouseId;
+			final int orgId;
 			if (pmmProduct != null)
 			{
 				product = pmmProduct.getM_Product();
@@ -356,22 +341,38 @@ public class ServerSyncBL implements IServerSyncBL
 					uom = null;
 				}
 				warehouseId = pmmProduct.getM_Warehouse_ID();
+				orgId = pmmProduct.getAD_Org_ID();
 			}
 			else
 			{
 				errors.add("@Missing@ @" + I_PMM_Product.COLUMNNAME_PMM_Product_ID + "@");
+
 				product = null;
 				huPIItemProduct = null;
 				uom = null;
 				warehouseId = 0;
+				orgId = 0;
 			}
 
 			final BigDecimal qtyPromised = productSupply.getQty().multiply(huPIItemProduct.getQty());
-
 			final Timestamp datePromised = productSupply.getDay() == null ? null : new Timestamp(productSupply.getDay().getTime());
 
-			final I_PMM_QtyReport_Event qtyReportEvent = InterfaceWrapperHelper.newInstance(I_PMM_QtyReport_Event.class, initialContextProvider);
+			final int bPartnerId = UUIDs.toId(productSupply.getBpartner_uuid());
+			final I_C_BPartner bPartner;
+			if (bPartnerId > 0)
+			{
+				bPartner = InterfaceWrapperHelper.create(ctxProvider.getCtx(), bPartnerId, I_C_BPartner.class, ctxProvider.getTrxName());
+			}
+			else
+			{
+				errors.add("@Missing@ @" + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "@");
+				bPartner = null;
+			}
+			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(ctxProvider.getCtx(), bPartnerId, soTrx, ctxProvider.getTrxName());
 
+
+			// now create the event record
+			final I_PMM_QtyReport_Event qtyReportEvent = InterfaceWrapperHelper.newInstance(I_PMM_QtyReport_Event.class, ctxProvider);
 			// try-finally to make sure we attempt to save the new instance, also if there are exceptions
 			try
 			{
@@ -379,8 +380,10 @@ public class ServerSyncBL implements IServerSyncBL
 				qtyReportEvent.setProduct_UUID(productSupply.getProduct_uuid());
 
 				// first set the "general stuff"
+				qtyReportEvent.setAD_Org_ID(orgId);
 				qtyReportEvent.setC_BPartner(bPartner);
-				qtyReportEvent.setAD_Org_ID(orgId); // might be override in this method
+
+				qtyReportEvent.setPMM_Product(pmmProduct);
 				qtyReportEvent.setM_Product(product);
 				qtyReportEvent.setM_HU_PI_Item_Product(huPIItemProduct);
 
@@ -438,16 +441,11 @@ public class ServerSyncBL implements IServerSyncBL
 					final int flatrateTermId = UUIDs.toId(productSupply.getContractLine_uuid());
 					if (flatrateTermId > 0)
 					{
-						flatrateTerm = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), flatrateTermId, I_C_Flatrate_Term.class, initialContextProvider.getTrxName());
-
-						// required because if the ctx contains #AD_Client_ID = 0, we might not get the term's C_Flatrate_DataEntries from the DAO
-						Env.setContext(initialContextProvider.getCtx(), Env.CTXNAME_AD_Client_ID, flatrateTerm.getAD_Client_ID());
-						Env.setContext(initialContextProvider.getCtx(), Env.CTXNAME_AD_Org_ID, flatrateTerm.getAD_Org_ID());
-
+						flatrateTerm = InterfaceWrapperHelper.create(ctxProvider.getCtx(), flatrateTermId, I_C_Flatrate_Term.class, ctxProvider.getTrxName());
 						currencyId = flatrateTerm.getC_Currency_ID();
 
 						dataEntries = InterfaceWrapperHelper.createList(
-								flatrateDAO.retrieveDataEntries(flatrateTerm, datePromised, I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased, true),  // onlyNonSim = true
+								flatrateDAO.retrieveDataEntries(flatrateTerm, datePromised, I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased, true),      // onlyNonSim = true
 								I_C_Flatrate_DataEntry.class);
 					}
 					else
@@ -482,8 +480,8 @@ public class ServerSyncBL implements IServerSyncBL
 						final BigDecimal price = Services.get(IUOMConversionBL.class).convertPrice(
 								product,
 								dataEntryForProduct.getFlatrateAmtPerUOM(),
-								flatrateTerm.getC_UOM(),                  // this is the flatrateAmt's UOM
-								huPIItemProduct.getC_UOM(),               // this is the qtyReportEvent's UOM
+								flatrateTerm.getC_UOM(),                      // this is the flatrateAmt's UOM
+								huPIItemProduct.getC_UOM(),                   // this is the qtyReportEvent's UOM
 								flatrateTerm.getC_Currency().getStdPrecision());
 
 						qtyReportEvent.setPrice(price);
@@ -519,24 +517,42 @@ public class ServerSyncBL implements IServerSyncBL
 	{
 		for (final SyncWeeklySupply syncWeeklySupply : request.getWeeklySupplies())
 		{
-			createEvent(syncWeeklySupply);
+			createWeekReportEvent(syncWeeklySupply);
 		}
 		return Response.ok().build();
 	}
 
-	private I_PMM_Product getPMM_Product(final IContextAware ctxAware, final String product_uuid)
+	/**
+	 * Attempts to load the {@link I_PMM_Product} from the given uuid.<br>
+	 * If successful, then it also updates the <code>AD_Client_ID</code> and <code>AD_Org_ID</code> of the given <code>ctxProvider</code>.
+	 *
+	 * @param ctxProvider
+	 * @param product_uuid
+	 * @return
+	 */
+	private I_PMM_Product getPMM_ProductAndUpdateCtx(final IContextAware ctxProvider, final String product_uuid)
 	{
 		final int pmmProductId = UUIDs.toId(product_uuid);
 		if (pmmProductId > 0)
 		{
-			return InterfaceWrapperHelper.create(ctxAware.getCtx(), pmmProductId, I_PMM_Product.class, ctxAware.getTrxName());
+			return null;
 		}
-		return null;
+
+		final I_PMM_Product pmmProduct = InterfaceWrapperHelper.create(ctxProvider.getCtx(), pmmProductId, I_PMM_Product.class, ctxProvider.getTrxName());
+
+		// required because if the ctx contains #AD_Client_ID = 0, we might not get the term's C_Flatrate_DataEntries from the DAO further down,
+		// and also the new even record needs to have the PMM_Product's AD_Client_ID and AD_Org_ID
+		Env.setContext(ctxProvider.getCtx(), Env.CTXNAME_AD_Client_ID, pmmProduct.getAD_Client_ID());
+		Env.setContext(ctxProvider.getCtx(), Env.CTXNAME_AD_Org_ID, pmmProduct.getAD_Org_ID());
+
+		return pmmProduct;
 	}
 
-	private void createEvent(final SyncWeeklySupply syncWeeklySupply)
+	private void createWeekReportEvent(final SyncWeeklySupply syncWeeklySupply)
 	{
 		final PlainContextAware cxtAware = PlainContextAware.createUsingThreadInheritedTransaction();
+
+		final I_PMM_Product pmmProduct = getPMM_ProductAndUpdateCtx(cxtAware, syncWeeklySupply.getProduct_uuid());
 
 		final int bpartnerId = UUIDs.toId(syncWeeklySupply.getBpartner_uuid());
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(cxtAware.getCtx(), bpartnerId, I_C_BPartner.class, cxtAware.getTrxName());
@@ -545,8 +561,6 @@ public class ServerSyncBL implements IServerSyncBL
 
 		event.setAD_Org_ID(bpartner.getAD_Org_ID());
 		event.setC_BPartner(bpartner);
-
-		final I_PMM_Product pmmProduct = getPMM_Product(cxtAware, syncWeeklySupply.getProduct_uuid());
 		event.setM_Product_ID(pmmProduct.getM_Product_ID());
 
 		final Timestamp weekDate = TimeUtil.trunc(syncWeeklySupply.getWeekDay(), TimeUtil.TRUNC_WEEK);
