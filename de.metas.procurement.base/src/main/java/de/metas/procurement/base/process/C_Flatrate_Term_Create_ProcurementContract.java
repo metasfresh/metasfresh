@@ -133,7 +133,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 		{
 			return DEFAULT_VALUE_NOTAVAILABLE;
 		}
-		
+
 		final int ad_Client_ID = Env.getAD_Client_ID(getCtx());
 		final int ad_Org_ID = Env.getAD_Org_ID(getCtx());
 		final int adUserInChargeId = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_AD_USER_IN_CHARGE, -1, ad_Client_ID, ad_Org_ID);
@@ -142,7 +142,6 @@ public class C_Flatrate_Term_Create_ProcurementContract
 			return DEFAULT_VALUE_NOTAVAILABLE;
 		}
 
-		final I_AD_User result = InterfaceWrapperHelper.create(getCtx(), adUserInChargeId, I_AD_User.class, getTrxName());
-		return result;
+		return adUserInChargeId; // we need to return the ID, not the actual record. Otherwise then lookup logic will be confused.
 	}
 }
