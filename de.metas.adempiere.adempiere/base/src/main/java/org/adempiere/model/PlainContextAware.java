@@ -29,6 +29,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
+import org.compiere.util.Env;
 
 public final class PlainContextAware implements IContextAware
 {
@@ -42,6 +43,11 @@ public final class PlainContextAware implements IContextAware
 	public static final PlainContextAware createUsingThreadInheritedTransaction(final Properties ctx)
 	{
 		return new PlainContextAware(ctx, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	public static final PlainContextAware createUsingThreadInheritedTransaction()
+	{
+		return new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private final Properties ctx;

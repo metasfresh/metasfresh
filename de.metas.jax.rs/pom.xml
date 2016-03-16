@@ -24,17 +24,6 @@
 		Until 3.1.6 is released, we use "hardcoded" locked 3.1.6-SNAPSHOT versions
 	-->
 	<dependencies>
-		<!-- even without using the http transport we do need the servlet API!-->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>javax.ws.rs-api</artifactId>
-		</dependency>
-		
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-core</artifactId>
@@ -47,7 +36,6 @@
 			<version>3.1.6-20160315.074001-30</version>
 		</dependency>
 
-		<!-- not needed since we currently only communicate over jms
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-http</artifactId>
@@ -60,8 +48,7 @@
 			<version>3.1.6-20160315.074126-30</version>
 			<scope>test</scope>
 		</dependency>
-		-->
-		
+
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
@@ -88,6 +75,11 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>javax.ws.rs-api</artifactId>
 		</dependency>
 
 		<dependency>

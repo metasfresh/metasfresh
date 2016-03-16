@@ -55,6 +55,7 @@ public class Main extends AbstractModuleInterceptor
 		//
 		// Events
 		engine.addModelValidator(new de.metas.procurement.base.event.interceptor.PMM_QtyReport_Event(), client);
+		engine.addModelValidator(new de.metas.procurement.base.event.interceptor.PMM_WeekReport_Event(), client);
 
 		//
 		// contract and master data

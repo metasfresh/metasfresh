@@ -9,7 +9,7 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
-import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
+import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
 
 /*
  * #%L
@@ -33,16 +33,16 @@ import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
  * #L%
  */
 
-public class PMMQtyReportEventsProcessor
+public class PMMWeekReportEventsProcessor
 {
-	public static final PMMQtyReportEventsProcessor newInstance()
+	public static final PMMWeekReportEventsProcessor newInstance()
 	{
-		return new PMMQtyReportEventsProcessor();
+		return new PMMWeekReportEventsProcessor();
 	}
 
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
-	private PMMQtyReportEventsProcessor()
+	private PMMWeekReportEventsProcessor()
 	{
 		super();
 	}
@@ -50,10 +50,10 @@ public class PMMQtyReportEventsProcessor
 	public void processAll()
 	{
 		final Properties ctx = Env.getCtx();
-		final EventSource<I_PMM_QtyReport_Event> events = new EventSource<>(ctx, I_PMM_QtyReport_Event.class);
-		final PMMQtyReportEventTrxItemProcessor itemProcessor = new PMMQtyReportEventTrxItemProcessor();
+		final EventSource<I_PMM_WeekReport_Event> events = new EventSource<>(ctx, I_PMM_WeekReport_Event.class);
+		final PMMWeekReportEventTrxItemProcessor itemProcessor = new PMMWeekReportEventTrxItemProcessor();
 
-		trxItemProcessorExecutorService.<I_PMM_QtyReport_Event, Void> createExecutor()
+		trxItemProcessorExecutorService.<I_PMM_WeekReport_Event, Void> createExecutor()
 				.setContext(ctx, ITrx.TRXNAME_ThreadInherited)
 				.setExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.setProcessor(itemProcessor)

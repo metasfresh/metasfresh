@@ -35,6 +35,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -55,6 +56,7 @@ import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
+import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncContract;
 import de.metas.procurement.sync.protocol.SyncContractLine;
@@ -62,6 +64,7 @@ import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
 import de.metas.procurement.sync.protocol.SyncUser;
+import de.metas.procurement.sync.protocol.SyncWeeklySupply;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 import de.metas.procurement.sync.util.UUIDs;
 import de.metas.purchasing.api.IBPartnerProductDAO;
@@ -516,7 +519,32 @@ public class ServerSyncBL implements IServerSyncBL
 	@Override
 	public Response reportWeekSupply(final SyncWeeklySupplyRequest request)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		for (final SyncWeeklySupply syncWeeklySupply : request.getWeeklySupplies())
+		{
+			createEvent(syncWeeklySupply);
+		}
+		return Response.ok().build();
+	}
+
+	private void createEvent(final SyncWeeklySupply syncWeeklySupply)
+	{
+		final int bpartnerId = UUIDs.toId(syncWeeklySupply.getBpartner_uuid());
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
+		
+		final I_PMM_WeekReport_Event event = InterfaceWrapperHelper.newInstance(I_PMM_WeekReport_Event.class, bpartner, true);
+
+		event.setAD_Org_ID(bpartner.getAD_Org_ID());
+		event.setC_BPartner(bpartner);
+
+		final int productId = UUIDs.toId(syncWeeklySupply.getProduct_uuid());
+		event.setM_Product_ID(productId);
+		
+		final Timestamp weekDate = TimeUtil.trunc(syncWeeklySupply.getWeekDay(), TimeUtil.TRUNC_WEEK);
+		event.setWeekDate(weekDate);
+		
+		final String trend = syncWeeklySupply.getTrend();
+		event.setPMM_Trend(trend);
+		
+		InterfaceWrapperHelper.save(event);
 	}
 }

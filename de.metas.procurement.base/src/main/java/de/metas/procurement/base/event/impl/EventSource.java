@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -15,7 +16,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
-import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 
 /*
  * #%L
@@ -27,46 +27,47 @@ import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-class PMMQtyReportEventSource implements Iterator<I_PMM_QtyReport_Event>, IAutoCloseable
+class EventSource<ET> implements Iterator<ET>, IAutoCloseable
 {
-	public static final PMMQtyReportEventSource newInstance(final Properties ctx)
-	{
-		return new PMMQtyReportEventSource(ctx);
-	}
-
+	private static final String COLUMNNAME_Processed = "Processed";
+	
 	// services
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final transient ILockManager lockManager = Services.get(ILockManager.class);
+	protected final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	protected final transient ILockManager lockManager = Services.get(ILockManager.class);
 
 	// Params
 	private final Properties ctx;
+	private final Class<ET> eventTypeClass;
 
 	// State
 	private final AtomicBoolean _closed = new AtomicBoolean(false);
 	private ILock _lock;
-	private Iterator<I_PMM_QtyReport_Event> _iterator;
+	private Iterator<ET> _iterator;
 
-	private PMMQtyReportEventSource(final Properties ctx)
+	public EventSource(final Properties ctx, final Class<ET> eventTypeClass)
 	{
 		super();
 		Check.assumeNotNull(ctx, "ctx not null");
 		this.ctx = ctx;
+		
+		Check.assumeNotNull(eventTypeClass, "eventTypeClass not null");
+		this.eventTypeClass = eventTypeClass;
 	}
 
 	@Override
-	public I_PMM_QtyReport_Event next()
+	public ET next()
 	{
 		return getCreateIterator().next();
 	}
@@ -88,22 +89,22 @@ class PMMQtyReportEventSource implements Iterator<I_PMM_QtyReport_Event>, IAutoC
 		Check.assume(!_closed.get(), "Source is not already closed");
 	}
 
-	private Iterator<I_PMM_QtyReport_Event> getCreateIterator()
+	private Iterator<ET> getCreateIterator()
 	{
 		assertNotClosed();
 		if (_iterator == null)
 		{
 			final ILock lock = getOrAcquireLock();
 			final Object contextProvider = PlainContextAware.createUsingThreadInheritedTransaction(ctx);
-			_iterator = queryBL.createQueryBuilder(I_PMM_QtyReport_Event.class, contextProvider)
-					.filter(lockManager.getLockedByFilter(I_PMM_QtyReport_Event.class, lock))
+			_iterator = queryBL.createQueryBuilder(eventTypeClass, contextProvider)
+					.filter(lockManager.getLockedByFilter(eventTypeClass, lock))
 					//
 					.orderBy()
-					.addColumn(I_PMM_QtyReport_Event.COLUMNNAME_PMM_QtyReport_Event_ID)
+					.addColumn(InterfaceWrapperHelper.getKeyColumnName(eventTypeClass))
 					.endOrderBy()
 					//
 					.create()
-					.iterate(I_PMM_QtyReport_Event.class);
+					.iterate(eventTypeClass);
 		}
 		return _iterator;
 	}
@@ -113,22 +114,28 @@ class PMMQtyReportEventSource implements Iterator<I_PMM_QtyReport_Event>, IAutoC
 		assertNotClosed();
 		if (_lock == null)
 		{
-			final IQueryFilter<I_PMM_QtyReport_Event> filters = queryBL.createCompositeQueryFilter(I_PMM_QtyReport_Event.class)
-					.addOnlyActiveRecordsFilter()
-					.addOnlyContextClient(ctx)
-					.addEqualsFilter(I_PMM_QtyReport_Event.COLUMNNAME_Processed, false)
-					.addFilter(lockManager.getNotLockedFilter(I_PMM_QtyReport_Event.class));
+			final IQueryFilter<ET> filter = createFilter();
 
 			final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName());
 			_lock = lockManager.lock()
 					.setOwner(lockOwner)
 					.setAutoCleanup(true)
 					.setFailIfNothingLocked(false)
-					.setSetRecordsByFilter(I_PMM_QtyReport_Event.class, filters)
+					.setSetRecordsByFilter(eventTypeClass, filter)
 					.acquire();
 		}
 
 		return _lock;
+	}
+	
+	protected IQueryFilter<ET> createFilter()
+	{
+		final IQueryFilter<ET> filter = queryBL.createCompositeQueryFilter(eventTypeClass)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient(ctx)
+				.addEqualsFilter(COLUMNNAME_Processed, false)
+				.addFilter(lockManager.getNotLockedFilter(eventTypeClass));
+		return filter;
 	}
 
 	@Override

@@ -8,7 +8,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.Env;
 
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate_OrderLine;
@@ -58,7 +57,7 @@ public class PMMPurchaseCandidateDAO implements IPMMPurchaseCandidateDAO
 	@Override
 	public I_PMM_PurchaseCandidate retrieveFor(final int bpartnerId, final int productId, final Date day)
 	{
-		final PlainContextAware context = PlainContextAware.createUsingThreadInheritedTransaction(Env.getCtx());
+		final PlainContextAware context = PlainContextAware.createUsingThreadInheritedTransaction();
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PMM_PurchaseCandidate.class, context)
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_BPartner_ID, bpartnerId)
