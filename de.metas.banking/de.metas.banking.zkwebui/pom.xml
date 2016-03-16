@@ -23,7 +23,6 @@
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.zkwebui</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 </project>

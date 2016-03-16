@@ -1,6 +1,4 @@
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -175,8 +173,8 @@
 
 			<dependency>
 				<groupId>javax.servlet</groupId>
-				<artifactId>servlet-api</artifactId>
-				<version>2.5</version>
+				<artifactId>javax.servlet-api</artifactId>
+				<version>3.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.servlet</groupId>
@@ -244,7 +242,17 @@
 				<version>${project.version}</version>
 			</dependency>
 -->
-
+			<dependency>
+				<groupId>de.metas.adempiere.libero</groupId>
+				<artifactId>de.metas.adempiere.libero.libero</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.metas.adempiere.libero</groupId>
+				<artifactId>de.metas.adempiere.libero.libero</artifactId>
+				<version>${project.version}</version>
+				<classifier>tests</classifier>
+			</dependency>
 			<dependency>
 				<artifactId>de.metas.async</artifactId>
 				<groupId>de.metas.async</groupId>
@@ -253,6 +261,21 @@
 			<dependency>
 				<groupId>de.metas.business</groupId>
 				<artifactId>de.metas.business</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.metas.banking</groupId>
+				<artifactId>de.metas.banking.base</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.metas.banking</groupId>
+				<artifactId>de.metas.banking.swingui</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.metas.banking</groupId>
+				<artifactId>de.metas.banking.zkwebui</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -317,17 +340,6 @@
 				<groupId>de.metas.jax.rs</groupId>
 				<artifactId>de.metas.jax.rs</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>de.metas.adempiere.libero</groupId>
-				<artifactId>de.metas.adempiere.libero.libero</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>de.metas.adempiere.libero</groupId>
-				<artifactId>de.metas.adempiere.libero.libero</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
 			</dependency>
 			<dependency>
 				<artifactId>de.metas.materialtracking</artifactId>
