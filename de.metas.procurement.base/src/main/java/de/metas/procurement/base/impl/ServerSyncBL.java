@@ -17,6 +17,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.pricing.api.IEditablePricingContext;
@@ -222,7 +223,7 @@ public class ServerSyncBL implements IServerSyncBL
 
 	/**
 	 * Creates one SyncProduct instance for each {@link I_PMM_Product} that references the given <code>product</code> and either the given <code>bPartner</code> or no bpartner at all.
-	 * 
+	 *
 	 * @param bPartner
 	 * @param product
 	 * @param key2product
@@ -336,15 +337,13 @@ public class ServerSyncBL implements IServerSyncBL
 
 			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(initialContextProvider.getCtx(), bPartnerId, soTrx, initialContextProvider.getTrxName());
 
-			final int pmmProductId = UUIDs.toId(productSupply.getProduct_uuid());
-			final I_PMM_Product pmmProduct;
+			final I_PMM_Product pmmProduct = getPMM_Product(initialContextProvider, productSupply.getProduct_uuid());
 			final I_M_Product product;
 			final I_M_HU_PI_Item_Product huPIItemProduct;
 			final I_C_UOM uom;
 			final int warehouseId;
-			if (pmmProductId > 0)
+			if (pmmProduct != null)
 			{
-				pmmProduct = InterfaceWrapperHelper.create(initialContextProvider.getCtx(), pmmProductId, I_PMM_Product.class, initialContextProvider.getTrxName());
 				product = pmmProduct.getM_Product();
 				huPIItemProduct = pmmProduct.getM_HU_PI_Item_Product();
 				if (huPIItemProduct != null)
@@ -361,7 +360,6 @@ public class ServerSyncBL implements IServerSyncBL
 			else
 			{
 				errors.add("@Missing@ @" + I_PMM_Product.COLUMNNAME_PMM_Product_ID + "@");
-				pmmProduct = null;
 				product = null;
 				huPIItemProduct = null;
 				uom = null;
@@ -373,8 +371,8 @@ public class ServerSyncBL implements IServerSyncBL
 			final Timestamp datePromised = productSupply.getDay() == null ? null : new Timestamp(productSupply.getDay().getTime());
 
 			final I_PMM_QtyReport_Event qtyReportEvent = InterfaceWrapperHelper.newInstance(I_PMM_QtyReport_Event.class, initialContextProvider);
-			
-			// try-finally to make sure we attempt to save the new instance, also if there are exceptions 
+
+			// try-finally to make sure we attempt to save the new instance, also if there are exceptions
 			try
 			{
 				qtyReportEvent.setPartner_UUID(productSupply.getBpartner_uuid());
@@ -526,25 +524,37 @@ public class ServerSyncBL implements IServerSyncBL
 		return Response.ok().build();
 	}
 
+	private I_PMM_Product getPMM_Product(final IContextAware ctxAware, final String product_uuid)
+	{
+		final int pmmProductId = UUIDs.toId(product_uuid);
+		if (pmmProductId > 0)
+		{
+			return InterfaceWrapperHelper.create(ctxAware.getCtx(), pmmProductId, I_PMM_Product.class, ctxAware.getTrxName());
+		}
+		return null;
+	}
+
 	private void createEvent(final SyncWeeklySupply syncWeeklySupply)
 	{
+		final PlainContextAware cxtAware = PlainContextAware.createUsingThreadInheritedTransaction();
+
 		final int bpartnerId = UUIDs.toId(syncWeeklySupply.getBpartner_uuid());
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
-		
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(cxtAware.getCtx(), bpartnerId, I_C_BPartner.class, cxtAware.getTrxName());
+
 		final I_PMM_WeekReport_Event event = InterfaceWrapperHelper.newInstance(I_PMM_WeekReport_Event.class, bpartner, true);
 
 		event.setAD_Org_ID(bpartner.getAD_Org_ID());
 		event.setC_BPartner(bpartner);
 
-		final int productId = UUIDs.toId(syncWeeklySupply.getProduct_uuid());
-		event.setM_Product_ID(productId);
-		
+		final I_PMM_Product pmmProduct = getPMM_Product(cxtAware, syncWeeklySupply.getProduct_uuid());
+		event.setM_Product_ID(pmmProduct.getM_Product_ID());
+
 		final Timestamp weekDate = TimeUtil.trunc(syncWeeklySupply.getWeekDay(), TimeUtil.TRUNC_WEEK);
 		event.setWeekDate(weekDate);
-		
+
 		final String trend = syncWeeklySupply.getTrend();
 		event.setPMM_Trend(trend);
-		
+
 		InterfaceWrapperHelper.save(event);
 	}
 }
