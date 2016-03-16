@@ -21,22 +21,28 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.9.x (Upcoming Release)
+# metasfresh 4.x.x (Upcoming Release)
+
+## Features
+
+## Fixes
+	
+## Instructions
+
+# metasfresh 4.9.8
   
 ## Features
  - 09920 Support sending invoice without an order via EDI: send the invoice's POReference if there is no cctop111 record coming from metasfresh
  - 09628 procurement management (106716240958)
-    * still a work in progress
-	* the procurementUI now talks to metasfresh via jax-rs on a jms transport
+	* the procurementUI communicates with metasfresh via jax-rs on a jms transport
+	* support for the procurementUI to run an embedded broker and connect to metasfresh's broker over SSL
 	* metasfresh contains a list with goods that are avaiable to be supplied by any vendor (without contract)
-	* implemented a lot of the sync businesslogic
+	* supply notes from the UI are sent to metasfresh and are shown to the metasfresh user as purchase order candidates which can directly be transformed into purchase orders
  - 09910 extend sql rollout tool to first create a new db from template (100074461801):
     * extending the tool so we can start by creating a new database from a templated-DB and then apply the scripts to that new database
 
 ## Fixes
  - 09912 AD EntityType ID is not acquired from project ID server (106063434593)
-	
-## Instructions
 
 # metasfresh 4.8.7
   
