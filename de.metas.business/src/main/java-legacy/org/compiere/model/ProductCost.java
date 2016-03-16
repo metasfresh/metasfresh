@@ -22,7 +22,6 @@ import java.util.Properties;
 import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.acct.api.ProductAcctType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -190,7 +189,6 @@ public class ProductCost
 		}
 
 		final I_M_Product_Acct productAcct = productAcctDAO.retrieveProductAcctOrNull(as, m_M_Product_ID);
-		Check.assumeNotNull(productAcct, "Product {} has accounting records", m_M_Product_ID);
 		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(productAcct, acctType.getColumnName());
 		if(validCombinationId == null || validCombinationId <= 0)
 		{
