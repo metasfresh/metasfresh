@@ -1,7 +1,7 @@
-
+ï»¿
 -- 16.03.2016 11:18
 -- URL zum Konzept
-UPDATE AD_Window SET Name='Trend Verfügbarkeit',Updated=TO_TIMESTAMP('2016-03-16 11:18:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540289
+UPDATE AD_Window SET Name='Trend VerfÃ¼gbarkeit',Updated=TO_TIMESTAMP('2016-03-16 11:18:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540289
 ;
 
 -- 16.03.2016 11:18
@@ -11,7 +11,7 @@ UPDATE AD_Window_Trl SET IsTranslated='N' WHERE AD_Window_ID=540289
 
 -- 16.03.2016 11:18
 -- URL zum Konzept
-UPDATE AD_Menu SET Description=NULL, IsActive='Y', Name='Trend Verfügbarkeit',Updated=TO_TIMESTAMP('2016-03-16 11:18:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540695
+UPDATE AD_Menu SET Description=NULL, IsActive='Y', Name='Trend VerfÃ¼gbarkeit',Updated=TO_TIMESTAMP('2016-03-16 11:18:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540695
 ;
 
 -- 16.03.2016 11:18
@@ -736,7 +736,7 @@ UPDATE AD_TreeNodeMM SET Parent_ID=540697, SeqNo=1, Updated=now(), UpdatedBy=100
 
 -- 16.03.2016 11:23
 -- URL zum Konzept
-UPDATE AD_Window SET Name='Verfügbarkeitstrenddatensatz',Updated=TO_TIMESTAMP('2016-03-16 11:23:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540290
+UPDATE AD_Window SET Name='VerfÃ¼gbarkeitstrenddatensatz',Updated=TO_TIMESTAMP('2016-03-16 11:23:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540290
 ;
 
 -- 16.03.2016 11:23
@@ -746,7 +746,7 @@ UPDATE AD_Window_Trl SET IsTranslated='N' WHERE AD_Window_ID=540290
 
 -- 16.03.2016 11:23
 -- URL zum Konzept
-UPDATE AD_Menu SET Description=NULL, IsActive='Y', Name='Verfügbarkeitstrenddatensatz',Updated=TO_TIMESTAMP('2016-03-16 11:23:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540696
+UPDATE AD_Menu SET Description=NULL, IsActive='Y', Name='VerfÃ¼gbarkeitstrenddatensatz',Updated=TO_TIMESTAMP('2016-03-16 11:23:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540696
 ;
 
 -- 16.03.2016 11:23
