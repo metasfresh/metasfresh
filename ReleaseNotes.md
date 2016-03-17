@@ -24,7 +24,9 @@ The actual release notes
 # metasfresh 4.9.9 (Upcoming Release)
 
 ## Features
-
+ - 09628 procurement management (106716240958)
+    *  working on having metasfresh also talking to the webUI and communicate various changes instead of just responding to requests
+	
 ## Fixes
  - 09628 procurement management (106716240958)
     * the first event was created with AD_Client_ID=0 and was therefore not processed
