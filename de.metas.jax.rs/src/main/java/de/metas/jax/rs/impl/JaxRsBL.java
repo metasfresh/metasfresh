@@ -63,17 +63,16 @@ import de.metas.jms.IJMSService;
 
 public class JaxRsBL implements IJaxRsBL
 {
-	private static final String JMS_QUEUE = "de.metas.jax.rs.jmstransport.queue";
-
-	private static final String JMS_REPLYTO_QUEUE = JMS_QUEUE + ".replyTo";
+	private static final String JMS_QUEUE_REQUEST = "de.metas.jax.rs.jmstransport.queue.request";
+	private static final String JMS_QUEUE_RESPONSE = "de.metas.jax.rs.jmstransport.queue.response";
 
 	/**
 	 * TODO <code>&username=smx&password=smx</code> is a dirty hack. instead, we need to store this in the ini and provide credentials fields in the connection dialog.
 	 */
 	private static final String CLIENT_ADDRESS_URL_ENCODED = ""
-			+ "jms:jndi:dynamicQueues/" + JMS_QUEUE
+			+ "jms:jndi:dynamicQueues/" + JMS_QUEUE_REQUEST
 			+ "?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory"
-			+ "&replyToName=dynamicQueues/" + JMS_REPLYTO_QUEUE
+			+ "&replyToName=dynamicQueues/" + JMS_QUEUE_RESPONSE
 			+ "&jndiURL={0}"
 			+ "&connectionFactoryName=jmsConnectionFactory&username=smx&password=smx";
 
@@ -124,8 +123,8 @@ public class JaxRsBL implements IJaxRsBL
 
 		final JMSConfiguration conf = new JMSConfiguration();
 		conf.setConnectionFactory(connectionFactory);
-		conf.setTargetDestination(JMS_QUEUE);
-		conf.setReplyToDestination(JMS_REPLYTO_QUEUE); //
+		conf.setTargetDestination(JMS_QUEUE_REQUEST);
+		conf.setReplyToDestination(JMS_QUEUE_RESPONSE); //
 
 		final JMSConfigFeature jmsConfigFeature = new JMSConfigFeature();
 		jmsConfigFeature.setJmsConfig(conf);
