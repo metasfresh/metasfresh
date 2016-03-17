@@ -3,7 +3,6 @@ package de.metas.procurement.sync;
 import javax.jws.Oneway;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
 
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
@@ -46,10 +45,10 @@ public interface IAgentSync
 	@POST
 	@Path("bpartners")
 	@Oneway
-	Response syncBPartners(final SyncBPartnersRequest request);
+	void syncBPartners(final SyncBPartnersRequest request);
 
 	@POST
 	@Path("products")
 	@Oneway
-	Response syncProducts(final SyncProductsRequest request);
+	void syncProducts(final SyncProductsRequest request);
 }

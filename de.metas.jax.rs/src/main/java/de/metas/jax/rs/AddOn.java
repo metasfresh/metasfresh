@@ -33,24 +33,19 @@ import de.metas.session.jaxrs.IStatusService;
 
 public class AddOn implements IAddOn
 {
-
+	/**
+	 * Provides {@link CConnection} with an {@link IStatusService} implementation which it can use to get the server status.
+	 */
 	@Override
 	public void beforeConnection()
 	{
-//		if(CConnection.isServerEmbedded())
-//		{
-//			// provide an embedded endpoint for the IStatusService service
-//			final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
-//			jaxRsBL.startServerEndPoint(StatusService.class);
-//		}
-
 		// make sure that CConnection can query the server
 		CConnection.setStatusServiceEndPointProvider(new IStatusServiceEndPointProvider()
 		{
 			@Override
 			public IStatusService provide(final CConnection cConnection)
 			{
-				if(CConnection.isServerEmbedded() || Ini.getRunMode() == RunMode.BACKEND)
+				if (CConnection.isServerEmbedded() || Ini.getRunMode() == RunMode.BACKEND)
 				{
 					// just return the "local" implementation, don't create a client endpoint, because
 					// often CConnection calls methods call other methods of themselves via this service.
@@ -60,9 +55,9 @@ public class AddOn implements IAddOn
 				}
 
 				final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
-				return jaxRsBL.createClientEndpoint(cConnection, IStatusService.class);
+				final int timeOutMillis = 2000; // only let the user wait two seconds if there is no response
+				return jaxRsBL.createClientEndpoint(cConnection, timeOutMillis, IStatusService.class);
 			}
 		});
-
 	}
 }

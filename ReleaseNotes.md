@@ -26,6 +26,8 @@ The actual release notes
 ## Features
  - 09628 procurement management (106716240958)
     *  working on having metasfresh also talking to the webUI and communicate various changes instead of just responding to requests
+ - FRESH-21: 09848 enable metasfresh to provide jax-rs services (101763395402)
+    * when the client inititally starts and tries to connect the server, the timout is reduces from 1 minute to 2 seconds, to not stall the client and give quicker feedback if there is a problem with the server
 	
 ## Fixes
  - 09628 procurement management (106716240958)

@@ -66,6 +66,7 @@ public class JaxRsBL implements IJaxRsBL
 	private static final String JMS_QUEUE_REQUEST = "de.metas.jax.rs.jmstransport.queue.request";
 	private static final String JMS_QUEUE_RESPONSE = "de.metas.jax.rs.jmstransport.queue.response";
 
+
 	/**
 	 * TODO <code>&username=smx&password=smx</code> is a dirty hack. instead, we need to store this in the ini and provide credentials fields in the connection dialog.
 	 */
@@ -74,6 +75,7 @@ public class JaxRsBL implements IJaxRsBL
 			+ "?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory"
 			+ "&replyToName=dynamicQueues/" + JMS_QUEUE_RESPONSE
 			+ "&jndiURL={0}"
+			+ "&receiveTimeout={1}"  // note that as of cxf-3.1.5, if you don't use this paramter, then, the default is 60.000 milliseconds.
 			+ "&connectionFactoryName=jmsConnectionFactory&username=smx&password=smx";
 
 	private Server server;
@@ -237,7 +239,7 @@ public class JaxRsBL implements IJaxRsBL
 			{
 				@SuppressWarnings("unchecked")
 				final Class<ISingletonService> serviceClass = (Class<ISingletonService>)clazz;
-				final ISingletonService serviceImpl = createClientEndpoint(null, serviceClass);
+				final ISingletonService serviceImpl = createClientEndpoint(null, DEFAULT_CLIENT_TIMEOUT_MILLIS, serviceClass);
 				Services.registerService(serviceClass, serviceImpl);
 			}
 		}
@@ -246,13 +248,16 @@ public class JaxRsBL implements IJaxRsBL
 	@Override
 	public <T extends ISingletonService> T createClientEndpoint(
 			final CConnection cConnection,
+			final long timeOutMillis,
 			final Class<T> clazz)
 	{
 		final String jmsURL = Services.get(IJMSService.class).getJmsURL(cConnection);
 
 		final JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
 
-		final String clientURL = StringUtils.formatMessage(CLIENT_ADDRESS_URL_ENCODED, jmsURL);
+		final String clientURL = StringUtils.formatMessage(CLIENT_ADDRESS_URL_ENCODED,
+				jmsURL,
+				Long.toString(timeOutMillis));
 
 		final T client = JAXRSClientFactory.create(clientURL,
 				clazz,

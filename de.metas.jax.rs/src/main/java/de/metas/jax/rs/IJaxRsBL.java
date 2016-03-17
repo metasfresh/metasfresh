@@ -40,6 +40,8 @@ import de.metas.jax.rs.model.I_AD_JAXRS_Endpoint;
  */
 public interface IJaxRsBL extends ISingletonService
 {
+	final Long DEFAULT_CLIENT_TIMEOUT_MILLIS = 60000L;
+
 	/**
 	 * Get {@link I_AD_JAXRS_Endpoint} records by invoking {@link IJaxRsDAO#retrieveServerEndPoints(Properties)} and put up a JAX-RS endpoint for each of them.<br>
 	 * Also, call {@link #stopServerEndPoints()} to stop any running endpoints before doing this.
@@ -62,14 +64,16 @@ public interface IJaxRsBL extends ISingletonService
 	 * Create a particular client endpoint for the given <code>serviceInterface</code>.<br>
 	 * This method is is intended for the early stages of metasfresh startup, as well as for testing.
 	 *
-	 * @param cConnection mayb e <code>null</code>. The connection from which to get the server and port. If <code>null</code>, then use {@link CConnection#get()}. Note that in the early stages of
+	 * @param cConnection may be <code>null</code>. The connection from which to get the server and port. If <code>null</code>, then use {@link CConnection#get()}. Note that in the early stages of
 	 *            startup, we can't rely on {@link CConnection#get()} to work for us.
+	 * @param timeOutMillis specify how long the client shall wait for a response. E.g. if the client starts, we don't want the user to wait the default timeout of one minute to find out that there is
+	 *            a problem connecting to the server.
 	 * @param serviceInterface
 	 */
-	<T extends ISingletonService> T createClientEndpoint(CConnection cConnection, Class<T> serviceInterface);
+	<T extends ISingletonService> T createClientEndpoint(CConnection cConnection, long timeOutMillis, Class<T> clazz);
 
 	/**
-	 * Similar to {@link #startClientEndPoint(Class)}. Note that here we need the actual concrete impelmentation class.
+	 * Similar to {@link #startClientEndPoint(Class)}. Note that here we need the actual concrete implementation class.
 	 *
 	 * @param serviceImpl
 	 */
@@ -81,8 +85,9 @@ public interface IJaxRsBL extends ISingletonService
 	 * In other words, get all known JAX-RX service classes and synchronize the {@link I_AD_JAXRS_Endpoint} accordingly.
 	 *
 	 *
-	 * @param ctx
+	 * &#64;param ctx
 	 * @param alsoSyncClasses if <code>true</code>, then first invoke {@link de.metas.javaclasses.IJavaClassTypeBL#updateClassRecordsList(de.metas.javaclasses.model.I_AD_JavaClass_Type)}.
 	 */
 	void updateEndPointsList(Properties ctx, boolean alsoSyncClasses);
+
 }

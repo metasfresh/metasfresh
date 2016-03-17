@@ -1,7 +1,5 @@
 package de.metas.procurement.base;
 
-import javax.ws.rs.core.Response;
-
 import org.adempiere.util.ISingletonService;
 
 import de.metas.procurement.sync.IAgentSync;
@@ -38,8 +36,8 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
 public interface IAgentSyncBL extends IAgentSync, ISingletonService
 {
 	@Override
-	Response syncBPartners(final SyncBPartnersRequest request);
+	void syncBPartners(final SyncBPartnersRequest request);
 
 	@Override
-	Response syncProducts(final SyncProductsRequest request);
+	void syncProducts(final SyncProductsRequest request);
 }
