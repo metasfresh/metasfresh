@@ -25,6 +25,7 @@ The actual release notes
 
 ## Features
  - 09924 Remove legacy oracle drivers and code (107845685842)
+ - 09925 Create Balance Sheet Jasper (107146104064)
  
 ## Fixes
  - 09922 null in tageslot sscc etikett (100681187457)
