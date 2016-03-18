@@ -30,7 +30,7 @@ import org.compiere.util.CLogger;
 
 public final class JmsConstants
 {
-	public static final String TCP_HOSTNAME_61616 = "tcp://{0}:{1}";
+	public static final String TCP_HOSTNAME_PORT = "tcp://{0}:{1}";
 
 	private static final String LOGGER_NAME = CLogger.createModuleLoggerName(JmsConstants.class.getPackage().getName() + ".Jms");
 

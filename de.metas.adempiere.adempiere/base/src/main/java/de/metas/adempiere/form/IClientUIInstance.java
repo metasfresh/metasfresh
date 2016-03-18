@@ -10,12 +10,12 @@ package de.metas.adempiere.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -118,7 +118,7 @@ public interface IClientUIInstance
 
 	/**
 	 * Call given runnable in a separate UI event.
-	 * 
+	 *
 	 * @param windowNo
 	 * @param runnable
 	 * @see #invoke()
@@ -137,21 +137,21 @@ public interface IClientUIInstance
 
 	/**
 	 * Creates the UI invoker helper class which allows you to execute a {@link Runnable} with different options (invokeLater, longOperation, show popup on error etc).
-	 * 
+	 *
 	 * @return UI invoker helper
 	 */
 	IClientUIInvoker invoke();
 
 	/**
 	 * Display given URL.
-	 * 
+	 *
 	 * Depends on implementation, this method could
 	 * <ul>
 	 * <li>open default browser to display it (e.g. swing clients)
 	 * <li>show it embedded in UI (e.g. ZK client)
 	 * <li>don't show it at all (e.g. server side)
 	 * </ul>
-	 * 
+	 *
 	 * @param url
 	 */
 	void showURL(final String url);

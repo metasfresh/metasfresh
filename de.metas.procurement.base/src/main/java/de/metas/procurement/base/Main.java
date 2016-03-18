@@ -1,12 +1,14 @@
 package de.metas.procurement.base;
 
 import java.util.List;
+import java.util.logging.Level;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
@@ -15,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.event.Topic;
 import de.metas.jax.rs.CreateEndpointRequest;
 import de.metas.jax.rs.IJaxRsBL;
+import de.metas.jax.rs.JaxRsConstants;
 import de.metas.procurement.base.impl.ServerSyncBL;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
@@ -49,6 +52,9 @@ import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
  */
 public class Main extends AbstractModuleInterceptor
 {
+	private static final String SYSCONFIG_JMS_QUEUE_RESPONSE = "de.metas.procurement.webui.jms.queue.response";
+	private static final String SYSCONFIG_JMS_QUEUE_REQUEST = "de.metas.procurement.webui.jms.queue.request";
+
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
@@ -97,9 +103,19 @@ public class Main extends AbstractModuleInterceptor
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
 
-		final String requestQueueName = sysConfigBL.getValue("de.metas.procurement.webui.jms.queue.request",getAD_Client_ID());
-		final String responseQueueName = sysConfigBL.getValue("de.metas.procurement.webui.jms.queue.response",getAD_Client_ID());
+		final String requestQueueName = sysConfigBL.getValue(SYSCONFIG_JMS_QUEUE_REQUEST, getAD_Client_ID());
+		final String responseQueueName = sysConfigBL.getValue(SYSCONFIG_JMS_QUEUE_RESPONSE, getAD_Client_ID());
 
+		if (Check.isEmpty(requestQueueName, true) || Check.isEmpty(responseQueueName, true))
+		{
+			JaxRsConstants.getLogger().log(Level.SEVERE, "At least one one of requestQueueName={0} and responseQueueName={1} is not set. \n"
+					+ "Therefore this instance won't be able to communicate with te procurement UI in either direction. \n"
+					+ "To fix this, add AD_SysConfig records with AD_Client_ID={2} and AD_Org_ID=0 and with the following names:\n"
+					+ "{3} \n"
+					+ "{4}",
+					new Object[] { requestQueueName, responseQueueName, Math.max(getAD_Client_ID(),0), SYSCONFIG_JMS_QUEUE_REQUEST, SYSCONFIG_JMS_QUEUE_RESPONSE });
+			return;
+		}
 		//
 		// create the client endpoint so we can reach the procurement webUI.
 		final CreateEndpointRequest<IAgentSyncBL> clientEndpointRequest = CreateEndpointRequest

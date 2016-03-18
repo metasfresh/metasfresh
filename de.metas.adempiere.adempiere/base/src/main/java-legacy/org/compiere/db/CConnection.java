@@ -29,6 +29,7 @@ import javax.swing.JOptionPane;
 
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
@@ -36,6 +37,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
+import de.metas.adempiere.form.IClientUI;
 import de.metas.session.jaxrs.IStatusService;
 
 /**
@@ -47,6 +49,8 @@ import de.metas.session.jaxrs.IStatusService;
  */
 public final class CConnection implements Serializable, Cloneable
 {
+	private static final String MSG_APPSERVER_CONNECTION_PROBLEM = "CConnection.AppserverConnectionProblem";
+
 	/**
 	 *
 	 */
@@ -373,7 +377,8 @@ public final class CConnection implements Serializable, Cloneable
 			{
 				connect = getAppsHost() + ":" + getAppsPort();
 			}
-			log.warning(connect + "\n - " + t.toString());
+			log.log(Level.SEVERE, "Caught this while trying to connect to application server {0}: {1}", connect, t.toString());
+			Services.get(IClientUI.class).error(0, MSG_APPSERVER_CONNECTION_PROBLEM, t.getLocalizedMessage());
 			t.printStackTrace();
 		}
 		return m_okApps;
@@ -1167,11 +1172,10 @@ public final class CConnection implements Serializable, Cloneable
 
 			if (Ini.isClient())
 			{
-				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog
-						(null, "There is a configuration error:\n" + ee
-								+ "\nDo you want to reset the saved configuration?",
-								"Adempiere Configuration Error",
-								JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE))
+				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(null, "There is a configuration error:\n" + ee
+						+ "\nDo you want to reset the saved configuration?",
+						"Adempiere Configuration Error",
+						JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE))
 				{
 					Ini.deletePropertyFile();
 				}

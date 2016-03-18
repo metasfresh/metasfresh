@@ -153,7 +153,7 @@ public class JMSService implements IJMSService
 			appsPort = cConnectionToUse.getAppsPort();
 		}
 
-		final String jmsUrl = StringUtils.formatMessage(JmsConstants.TCP_HOSTNAME_61616, appsHost, Integer.toString(appsPort));
+		final String jmsUrl = StringUtils.formatMessage(JmsConstants.TCP_HOSTNAME_PORT, appsHost, Integer.toString(appsPort));
 		JmsConstants.getLogger().log(Level.INFO, "Assuming JMS-broker runs on appsHost => returning JmsURL={0}", jmsUrl);
 		return jmsUrl;
 

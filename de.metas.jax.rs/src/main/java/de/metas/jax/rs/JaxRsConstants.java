@@ -1,14 +1,10 @@
-package de.metas.procurement.base;
+package de.metas.jax.rs;
 
-import org.adempiere.util.ISingletonService;
-
-import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.procurement.sync.IAgentSync;
-import de.metas.procurement.sync.protocol.SyncProduct;
+import org.compiere.util.CLogger;
 
 /*
  * #%L
- * de.metas.procurement.base
+ * de.metas.jax.rs
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -27,21 +23,17 @@ import de.metas.procurement.sync.protocol.SyncProduct;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * Contains business logic that is potentially used at more than one place.
- *
- * @author metas-dev <dev@metas-fresh.com>
- *
- */
-public interface ISyncBL extends ISingletonService
+
+public class JaxRsConstants
 {
-	SyncProduct createSyncProduct(String productName, I_PMM_Product pmmProduct);
+	private static final String LOGGER_NAME = CLogger.createModuleLoggerName(JaxRsConstants.class.getPackage().getName() + ".Jms");
 
 	/**
-	 * Return an instance of {@link IAgentSync} that can be used to communicate with the procurement webUI.
-	 * If no such client endpoint is avaialabe, return <code>null</code>.
-	 *
+	 * This logger can be used throughout the whole system when you want to log something that is related to this module.
 	 * @return
 	 */
-	IAgentSync getAgentSyncOrNull();
+	public static CLogger getLogger()
+	{
+		return CLogger.getCLogger(LOGGER_NAME);
+	}
 }
