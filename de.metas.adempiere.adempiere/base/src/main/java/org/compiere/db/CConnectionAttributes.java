@@ -22,10 +22,8 @@ package org.compiere.db;
  * #L%
  */
 
-
 import java.util.logging.Level;
 
-import org.adempiere.as.ASFactory;
 import org.adempiere.util.Check;
 import org.compiere.util.CLogger;
 
@@ -51,9 +49,13 @@ public final class CConnectionAttributes
 		final CConnectionAttributes attrs = new CConnectionAttributes();
 		attrs.setName(attributesStr.substring(attributesStr.indexOf("name=") + 5, attributesStr.indexOf(",AppsHost=")));
 		attrs.setAppsHost(attributesStr.substring(attributesStr.indexOf("AppsHost=") + 9, attributesStr.indexOf(",AppsPort=")));
+
 		final int index = attributesStr.indexOf("AppsPort=");
 		attrs.setAppsPort(attributesStr.substring(index + 9, attributesStr.indexOf(",", index)));
-		//
+
+		attrs.setAppsUserName(getSubString(attributesStr, "AppsUserName=", ","));
+		attrs.setAppsPassword(getSubString(attributesStr, "AppsPassword=", ","));
+		
 		String dbType = attributesStr.substring(attributesStr.indexOf("type=") + 5, attributesStr.indexOf(",DBhost="));
 		if (Check.isEmpty(dbType, true))
 		{
@@ -62,19 +64,26 @@ public final class CConnectionAttributes
 		attrs.setDbType(dbType);
 		attrs.setDbHost(attributesStr.substring(attributesStr.indexOf("DBhost=") + 7, attributesStr.indexOf(",DBport=")));
 		attrs.setDbPort(attributesStr.substring(attributesStr.indexOf("DBport=") + 7, attributesStr.indexOf(",DBname=")));
-		attrs.setDbName(attributesStr.substring(attributesStr.indexOf("DBname=") + 7, attributesStr.indexOf(",BQ=")));
-		//
-		attrs.setBequeath(attributesStr.substring(attributesStr.indexOf("BQ=") + 3, attributesStr.indexOf(",FW=")));
-		attrs.setViaFirewall(attributesStr.substring(attributesStr.indexOf("FW=") + 3, attributesStr.indexOf(",FWhost=")));
-		attrs.setFwHost(attributesStr.substring(attributesStr.indexOf("FWhost=") + 7, attributesStr.indexOf(",FWport=")));
-		attrs.setFwPort(attributesStr.substring(attributesStr.indexOf("FWport=") + 7, attributesStr.indexOf(",UID=")));
-		//
+
+		attrs.setDbName(getSubString(attributesStr, "DBname=",","));
+
 		attrs.setDbUid(attributesStr.substring(attributesStr.indexOf("UID=") + 4, attributesStr.indexOf(",PWD=")));
 		attrs.setDbPwd(attributesStr.substring(attributesStr.indexOf("PWD=") + 4, attributesStr.indexOf("]")));
 
 		return attrs;
 	}
 
+	private static String getSubString(final String attributesStr, String before, String after)
+	{
+		int indexOfAppsPasswordStart = attributesStr.indexOf(before);
+		int indexOfAppsPasswordEnd = attributesStr.indexOf(after, indexOfAppsPasswordStart);
+		if (indexOfAppsPasswordStart >= 0 && indexOfAppsPasswordEnd >= 0)
+		{
+			return attributesStr.substring(indexOfAppsPasswordStart + before.length(), indexOfAppsPasswordEnd);
+		}
+		return null;
+	}
+	
 	private static final transient CLogger logger = CLogger.getCLogger(CConnectionAttributes.class);
 
 	/** Marker used to indicate that we go without an application server */
@@ -85,22 +94,17 @@ public final class CConnectionAttributes
 	private String name = "Standard";
 	/** Application Host */
 	private String appsHost = APPS_HOST_None;
-	private int appsPort = ASFactory.getApplicationServer().getDefaultNamingServicePort();
+	private int appsPort = CConnection.SERVER_DEFAULT_APPSERVER_PORT;
+
+	private String appsUserName;
+	private String appsPassword;
+
 	private String dbType = DEFAULT_DbType;
 	private String dbHost = "MyDBServer";
 	private int dbPort = 5432;
 	private String dbName = "MyDBName";
 	private String dbUid;
 	private String dbPwd;
-
-	/** In Memory connection */
-	private boolean bequeath = false;
-	/** Connection uses Firewall */
-	private boolean viaFirewall = false;
-	/** Firewall host */
-	private String fwHost = "";
-	/** Firewall port */
-	private int fwPort = 0;
 
 	public CConnectionAttributes()
 	{
@@ -123,14 +127,12 @@ public final class CConnectionAttributes
 		sb.append("name=").append(name)
 				.append(",AppsHost=").append(appsHost)
 				.append(",AppsPort=").append(appsPort)
+				.append(",AppsUserName=").append(appsUserName)
+				.append(",AppsPassword=").append(appsPassword)
 				.append(",type=").append(dbType)
 				.append(",DBhost=").append(dbHost)
 				.append(",DBport=").append(dbPort)
 				.append(",DBname=").append(dbName)
-				.append(",BQ=").append(bequeath)
-				.append(",FW=").append(viaFirewall)
-				.append(",FWhost=").append(fwHost)
-				.append(",FWport=").append(fwPort)
 				.append(",UID=").append(dbUid)
 				.append(",PWD=").append(dbPwd);
 		sb.append("]");
@@ -271,87 +273,24 @@ public final class CConnectionAttributes
 		this.dbPwd = dbPwd;
 	}
 
-	public boolean isBequeath()
+	public String getAppsUserName()
 	{
-		return bequeath;
+		return appsUserName;
 	}
 
-	public void setBequeath(final boolean bequeath)
+	public void setAppsUserName(String appsUserName)
 	{
-		this.bequeath = bequeath;
+		this.appsUserName = appsUserName;
 	}
 
-	public void setBequeath(final String bequeathString)
+	public String getAppsPassword()
 	{
-		try
-		{
-			setBequeath(Boolean.valueOf(bequeathString).booleanValue());
-		}
-		catch (final Exception e)
-		{
-			logger.log(Level.WARNING, "Failed parsing bequeath: " + bequeathString, e);
-		}
+		return appsPassword;
 	}
 
-	public boolean isViaFirewall()
+	public void setAppsPassword(String appsPassword)
 	{
-		return viaFirewall;
-	}
-
-	public void setViaFirewall(final boolean viaFirewall)
-	{
-		this.viaFirewall = viaFirewall;
-	}
-
-	public void setViaFirewall(final String viaFirewallString)
-	{
-		try
-		{
-			setViaFirewall(Boolean.valueOf(viaFirewallString).booleanValue());
-		}
-		catch (final Exception e)
-		{
-			logger.log(Level.WARNING, "Failed parsing viaFirewall: " + viaFirewallString, e);
-		}
-	}
-
-	public String getFwHost()
-	{
-		return fwHost;
-	}
-
-	public void setFwHost(final String fwHost)
-	{
-		this.fwHost = fwHost;
-	}
-
-	public int getFwPort()
-	{
-		return fwPort;
-	}
-
-	public void setFwPort(final int fwPort)
-	{
-		this.fwPort = fwPort;
-	}
-
-	public void setFwPort(final String fwPortStr)
-	{
-		try
-		{
-			if (fwPortStr == null || fwPortStr.length() == 0)
-			{
-				;
-			}
-			else
-			{
-				setFwPort(Integer.parseInt(fwPortStr));
-			}
-		}
-		catch (final Exception e)
-		{
-			logger.log(Level.WARNING, "Failed parsing FW port: " + fwPortStr, e);
-		}
+		this.appsPassword = appsPassword;
 	}
 
 }

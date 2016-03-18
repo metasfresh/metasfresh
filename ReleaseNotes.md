@@ -21,7 +21,16 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.9.9 (Upcoming Release)
+# metasfresh 4.10.8 (Upcoming Release)
+
+## Features
+ - 09924 Remove legacy oracle drivers and code (107845685842)
+ 
+## Fixes
+ 
+## Instructions
+
+# metasfresh 4.9.8b
 
 ## Features
  - 09628 procurement management (106716240958)
@@ -32,8 +41,6 @@ The actual release notes
 ## Fixes
  - 09628 procurement management (106716240958)
     * the first event was created with AD_Client_ID=0 and was therefore not processed
- 
-## Instructions
 
 # metasfresh 4.9.8
   

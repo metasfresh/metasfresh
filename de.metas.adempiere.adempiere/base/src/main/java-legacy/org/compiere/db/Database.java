@@ -26,21 +26,17 @@ import org.adempiere.exceptions.DBException;
  */
 public class Database
 {
-	/** Oracle ID */
-	public static final String DB_ORACLE = "Oracle";
 	/** PostgreSQL ID */
 	public static final String DB_POSTGRESQL = "PostgreSQL";
 
 	/** Supported Databases */
 	public static final String[] DB_NAMES = new String[] {
 			DB_POSTGRESQL
-			// , DB_ORACLE // not supported
 	};
 
 	/** Database Classes */
 	private static final Class<?>[] DB_CLASSES = new Class<?>[] {
 			DB_PostgreSQL.class
-			, DB_Oracle.class
 	};
 
 	/** Connection Timeout in seconds */

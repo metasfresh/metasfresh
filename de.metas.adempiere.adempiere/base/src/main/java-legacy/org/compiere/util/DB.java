@@ -545,20 +545,6 @@ public final class DB
 		return null;
 	}   // getDatabase
 
-	/**
-	 * Do we have an Oracle DB ?
-	 *
-	 * @return true if connected to Oracle
-	 */
-	public static boolean isOracle()
-	{
-		final CConnection s_cc = getCConnection();
-		if (s_cc != null)
-			return s_cc.isOracle();
-		log.severe("No Database Connection");
-		return false;
-	}	// isOracle
-
 	// begin vpj-cd e-evolution 02/07/2005 PostgreSQL
 	/**
 	 * Do we have a Postgre DB ?
@@ -569,10 +555,12 @@ public final class DB
 	{
 		final CConnection s_cc = getCConnection();
 		if (s_cc != null)
-			return s_cc.isPostgreSQL();
+		{
+			return true;
+		}
 		log.severe("No Database");
 		return false;
-	}	// isPostgreSQL
+	}
 
 	// begin vpj-cd e-evolution 02/07/2005 PostgreSQL
 

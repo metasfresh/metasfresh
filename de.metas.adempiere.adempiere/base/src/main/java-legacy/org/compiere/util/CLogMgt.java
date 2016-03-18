@@ -622,13 +622,7 @@ public final class CLogMgt
 			.append(cc.getDbPort()).append(" / ")
 			.append(cc.getDbName());
 		//  Connection Manager
-		if (cc.isViaFirewall())
-		{
-			sb.append(getMsg("via")).append(" ")
-				.append(cc.getFwHost()).append(" : ")
-				.append(cc.getFwPort());
-		}
-
+		
 		return sb.toString();
 	}   //  getDatabaseInfo
 	

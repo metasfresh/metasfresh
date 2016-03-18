@@ -58,7 +58,8 @@ import org.compiere.util.Env;
  * </pre>
  * 
  * @author Jorg Janke
- * @author Armen Rizal, Goodwill Consulting <li>BF: 2797257 Landed Cost Detail is not using allocation qty
+ * @author Armen Rizal, Goodwill Consulting
+ *         <li>BF: 2797257 Landed Cost Detail is not using allocation qty
  * 
  * @version $Id: Doc_Invoice.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
@@ -190,7 +191,7 @@ public class Doc_Invoice extends Doc
 			if (lineIncludedTaxAmt.signum() != 0)
 			{
 				final DocTax docTax = getDocTaxOrNull(docLine.getC_Tax_ID());
-				if(docTax != null)
+				if (docTax != null)
 				{
 					docTax.addIncludedTax(lineIncludedTaxAmt);
 				}
@@ -202,7 +203,7 @@ public class Doc_Invoice extends Doc
 				m_allLinesService = false;
 			else
 				m_allLinesItem = false;
-			
+
 			//
 			log.log(Level.FINE, "{0}", docLine);
 			list.add(docLine);
@@ -230,14 +231,14 @@ public class Doc_Invoice extends Doc
 						dls[j].setLineNetAmtDifference(diff);
 						break;
 					}
-				}	// for all lines
-			}	// tax difference
-		}	// for all taxes
+				} 	// for all lines
+			} 	// tax difference
+		} 	// for all taxes
 
 		// Return Array
 		return dls;
 	}	// loadLines
-	
+
 	final boolean isCreditMemo()
 	{
 		final String docBaseType = getDocumentType();
@@ -279,7 +280,7 @@ public class Doc_Invoice extends Doc
 		log.fine(toString() + " Balance=" + retValue + sb.toString());
 		return retValue;
 	}   // getBalance
-	
+
 	final DocTax getDocTaxOrNull(final int taxId)
 	{
 		for (final DocTax docTax : m_taxes)
@@ -506,7 +507,7 @@ public class Doc_Invoice extends Doc
 		// ** API
 		else if (getDocumentType().equals(DOCTYPE_APInvoice)
 				|| getDocumentType().equals(Constants.DOCBASETYPE_AEInvoice) // metas-ts: treating commission/salary invoice like AP invoice
-				|| getDocumentType().equals(Constants.DOCBASETYPE_AVIinvoice)) // metas-ts: treating invoice for recurrent payment like AP invoice
+				|| getDocumentType().equals(Constants.DOCBASETYPE_AVIinvoice))  // metas-ts: treating invoice for recurrent payment like AP invoice
 		{
 			BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 			BigDecimal serviceAmt = Env.ZERO;
@@ -518,10 +519,10 @@ public class Doc_Invoice extends Doc
 			for (int i = 0; i < m_taxes.length; i++)
 			{
 				final FactLine tl = fact.createLine(null,
-						m_taxes[i].getAccount(m_taxes[i].getAPTaxType(), as), // account
+						m_taxes[i].getAccount(m_taxes[i].getAPTaxType(), as),  // account
 						getC_Currency_ID(),
 						m_taxes[i].getTaxAmt(), null // DR/CR
-						);
+				);
 				if (tl != null)
 					tl.setC_Tax_ID(m_taxes[i].getC_Tax_ID());
 			}
@@ -559,21 +560,21 @@ public class Doc_Invoice extends Doc
 							fact.createLine(line, tradeDiscountReceived, getC_Currency_ID(), null, dAmt);
 						}
 					}
-					
-					if (line.isItem()) // stockable item
+
+					if (line.isItem())  // stockable item
 					{
 						final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
 						fact.createLine(line,
 								line.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as),
 								getC_Currency_ID(),
-								amtReceived, null, // DR/CR
+								amtReceived, null,  // DR/CR
 								line.getQtyReceivedAbs());
-						
+
 						final BigDecimal amtNotReceived = amt.subtract(amtReceived);
 						fact.createLine(line,
 								line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
 								getC_Currency_ID(),
-								amtNotReceived, null, // DR/CR
+								amtNotReceived, null,  // DR/CR
 								line.getQtyNotReceivedAbs());
 					}
 					else // service
@@ -587,12 +588,12 @@ public class Doc_Invoice extends Doc
 						serviceAmt = serviceAmt.add(amt);
 					}
 					//
-					if (line.getM_Product_ID() > 0 && line.isService()) // otherwise Inv Matching
+					if (line.getM_Product_ID() > 0 && line.isService())  // otherwise Inv Matching
 					{
 						MCostDetail.createInvoice(as, line.getAD_Org_ID(),
 								line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-								line.get_ID(), // C_InvoiceLine_ID
-								0,		// No Cost Element
+								line.get_ID(),  // C_InvoiceLine_ID
+								0, 		// No Cost Element
 								line.getAmtSource(), line.getQty(),
 								line.getDescription(), getTrxName());
 					}
@@ -681,41 +682,41 @@ public class Doc_Invoice extends Doc
 							fact.createLine(line, tradeDiscountReceived, getC_Currency_ID(), dAmt, null);
 						}
 					}
-					
-					if (line.isItem()) // stockable item
+
+					if (line.isItem())  // stockable item
 					{
 						final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
 						fact.createLine(line,
 								line.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as),
 								getC_Currency_ID(),
-								null, amtReceived, // DR/CR
+								null, amtReceived,  // DR/CR
 								line.getQtyReceivedAbs());
-						
+
 						final BigDecimal amtNotReceived = amt.subtract(amtReceived);
 						fact.createLine(line,
 								line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
 								getC_Currency_ID(),
-								null, amtNotReceived, // DR/CR
+								null, amtNotReceived,  // DR/CR
 								line.getQtyNotReceivedAbs());
 					}
 					else // service
 					{
 						fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as), getC_Currency_ID(), null, amt);
 					}
-					
+
 					if (!line.isItem())
 					{
 						grossAmt = grossAmt.subtract(amt);
 						serviceAmt = serviceAmt.add(amt);
 					}
-					
+
 					//
-					if (line.getM_Product_ID() > 0 && line.isService())	// otherwise Inv Matching
+					if (line.getM_Product_ID() > 0 && line.isService()) 	// otherwise Inv Matching
 					{
 						MCostDetail.createInvoice(as, line.getAD_Org_ID(),
 								line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-								line.get_ID(), // C_InvoiceLine_ID
-								0,		// No Cost Element
+								line.get_ID(),  // C_InvoiceLine_ID
+								0, 		// No Cost Element
 								line.getAmtSource().negate(), line.getQty(),
 								line.getDescription(), getTrxName());
 					}
@@ -860,7 +861,7 @@ public class Doc_Invoice extends Doc
 					amt2 = amt;
 					amt = null;
 				}
-				if (payables)	// Vendor = DR
+				if (payables) 	// Vendor = DR
 					fl = fact.createLine(line, acct,
 							getC_Currency_ID(), amt, amt2);
 				else
@@ -1009,25 +1010,21 @@ public class Doc_Invoice extends Doc
 						+ "WHERE i.C_Invoice_ID=il.C_Invoice_ID"
 						+ " AND po.M_Product_ID=il.M_Product_ID AND po.C_BPartner_ID=i.C_BPartner_ID");
 		// jz + " AND ROWNUM=1 AND i.C_Invoice_ID=").append(get_ID()).append(") ")
-		if (DB.isOracle()) // jz
-		{
-			sql.append(" AND ROWNUM=1 ");
-		}
-		else
-		{
-			sql.append(" AND il.C_InvoiceLine_ID = (SELECT MIN(il1.C_InvoiceLine_ID) "
-					+ "FROM C_Invoice i1, C_InvoiceLine il1 "
-					+ "WHERE i1.C_Invoice_ID=il1.C_Invoice_ID"
-					+ " AND po.M_Product_ID=il1.M_Product_ID AND po.C_BPartner_ID=i1.C_BPartner_ID")
-					.append("  AND i1.C_Invoice_ID=").append(get_ID()).append(") ");
-		}
+
+		sql.append(" AND il.C_InvoiceLine_ID = (SELECT MIN(il1.C_InvoiceLine_ID) "
+				+ "FROM C_Invoice i1, C_InvoiceLine il1 "
+				+ "WHERE i1.C_Invoice_ID=il1.C_Invoice_ID"
+				+ " AND po.M_Product_ID=il1.M_Product_ID AND po.C_BPartner_ID=i1.C_BPartner_ID")
+				.append("  AND i1.C_Invoice_ID=").append(get_ID()).append(") ");
+
 		sql.append("  AND i.C_Invoice_ID=").append(get_ID()).append(") ")
 				// update
 				.append("WHERE EXISTS (SELECT * "
 						+ "FROM C_Invoice i, C_InvoiceLine il "
 						+ "WHERE i.C_Invoice_ID=il.C_Invoice_ID"
 						+ " AND po.M_Product_ID=il.M_Product_ID AND po.C_BPartner_ID=i.C_BPartner_ID"
-						+ " AND i.C_Invoice_ID=").append(get_ID()).append(")");
+						+ " AND i.C_Invoice_ID=")
+				.append(get_ID()).append(")");
 		int no = DB.executeUpdate(sql.toString(), getTrxName());
 		log.fine("Updated=" + no);
 	}	// updateProductPO
@@ -1087,17 +1084,19 @@ public class Doc_Invoice extends Doc
 						+ "WHERE i.C_Invoice_ID=il.C_Invoice_ID"
 						+ " AND il.c_invoiceline_id = (SELECT MIN(C_InvoiceLine_ID) FROM C_InvoiceLine il2" +
 						" WHERE  il2.M_PRODUCT_ID=il.M_PRODUCT_ID AND C_Invoice_ID=")
-				.append(get_ID()).append(")"
-						+ " AND pc.M_Product_ID=il.M_Product_ID AND pc.C_AcctSchema_ID=a.C_AcctSchema_ID"
-						+ " AND pc.C_AcctSchema_ID=").append(C_AcctSchema_ID).append(" AND i.C_Invoice_ID=")
-				.append(get_ID()).append(") ")
-				// update
-				.append("WHERE EXISTS (SELECT * "
-						+ "FROM C_Invoice i, C_InvoiceLine il, C_AcctSchema a "
-						+ "WHERE i.C_Invoice_ID=il.C_Invoice_ID"
-						+ " AND pc.M_Product_ID=il.M_Product_ID AND pc.C_AcctSchema_ID=a.C_AcctSchema_ID"
-						+ " AND pc.C_AcctSchema_ID=").append(C_AcctSchema_ID).append(" AND i.C_Invoice_ID=")
-				.append(get_ID()).append(")");
+								.append(get_ID()).append(")"
+										+ " AND pc.M_Product_ID=il.M_Product_ID AND pc.C_AcctSchema_ID=a.C_AcctSchema_ID"
+										+ " AND pc.C_AcctSchema_ID=")
+								.append(C_AcctSchema_ID).append(" AND i.C_Invoice_ID=")
+								.append(get_ID()).append(") ")
+								// update
+								.append("WHERE EXISTS (SELECT * "
+										+ "FROM C_Invoice i, C_InvoiceLine il, C_AcctSchema a "
+										+ "WHERE i.C_Invoice_ID=il.C_Invoice_ID"
+										+ " AND pc.M_Product_ID=il.M_Product_ID AND pc.C_AcctSchema_ID=a.C_AcctSchema_ID"
+										+ " AND pc.C_AcctSchema_ID=")
+								.append(C_AcctSchema_ID).append(" AND i.C_Invoice_ID=")
+								.append(get_ID()).append(")");
 		// end globalqss 2005-10-19
 		final String sqlNative = DB.convertSqlToNative(sql.toString());
 		final int no = DB.executeUpdate(sqlNative, getTrxName());
@@ -1111,7 +1110,7 @@ public class Doc_Invoice extends Doc
 		MPeriod.testPeriodOpen(ctx, invoice.getDateAcct(), invoice.getC_DocType_ID(), invoice.getAD_Org_ID());
 
 		Services.get(IFactAcctDAO.class).deleteForDocument(invoice);
-		
+
 		invoice.setPosted(false);
 		InterfaceWrapperHelper.save(invoice);
 	}

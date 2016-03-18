@@ -189,10 +189,8 @@ public class PackIn extends SvrProcess {
 
 		PackIn.m_Package_Dir = packageDirectory + File.separator
 				+ "packages" + File.separator + PackageName + File.separator;
-		if (DB.isOracle())
-			PackIn.m_Database = "Oracle";
-		else if (DB.isPostgreSQL())
-			PackIn.m_Database = "PostgreSQL";
+		
+		PackIn.m_Database = "PostgreSQL";
 
 		// call XML Handler
 		String msg = packIn.importXML(dict_file, getCtx(), get_TrxName());

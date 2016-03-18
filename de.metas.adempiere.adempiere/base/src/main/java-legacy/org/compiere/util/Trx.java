@@ -383,16 +383,6 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	{
 		final Savepoint jdbcSavepoint = (Savepoint)savepoint.getNativeSavepoint();
 
-		if (DB.isOracle())
-		{
-			// Note: As of Oracle Database 10g, releaseSavepoint and
-			// oracleReleaseSavepoint are not supported. If you call either
-			// of the methods, then SQLException is thrown with the message
-			// "Unsupported feature".
-			// -- 4-4 Oracle Database JDBC Developer's Guide and Reference
-			return false;
-		}
-
 		if (m_connection == null)
 		{
 			log.log(Level.WARNING, "Cannot release savepoint " + savepoint + " because there is no active connection. Ignoring it.");

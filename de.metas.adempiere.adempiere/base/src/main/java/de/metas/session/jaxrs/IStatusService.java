@@ -102,22 +102,6 @@ public interface IStatusService extends ISingletonService
 	String getDbPwd();
 
 	/**
-	 *  Get Connection Manager Host
-	 *  @return Connection Manager Host
-	 */
-	@GET
-	@Path("getFwHost")
-	String getFwHost();
-
-	/**
-	 *  Get Connection Manager Port
-	 *  @return Connection Manager Port
-	 */
-	@GET
-	@Path("getFwPort")
-	int getFwPort();
-
-	/**
 	 * 	Get Version Count
 	 * 	@return number of version inquiries
 	 */

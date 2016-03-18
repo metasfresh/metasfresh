@@ -16,14 +16,6 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
-	
-		<!-- unused according to maven dependency:analyze -->
-		<!-- tsa: we need it if we start some standalone applications (e.g. IMP_Processors_StandaloneLauncher) which are requiring activemq -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.7.10</version>
-		</dependency>
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
@@ -108,14 +100,6 @@
 			<version>9.2-1003-jdbc4</version> <!-- 04750 the old version was buggy -->
 		</dependency>
 		
-
-		<!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/dbPort/JdbcTest.java -->
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>11.2.0.1.0</version>
-		</dependency>
-
 		<!-- Scripting support -->
 
 		<!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/model/Scriptlet.java -->

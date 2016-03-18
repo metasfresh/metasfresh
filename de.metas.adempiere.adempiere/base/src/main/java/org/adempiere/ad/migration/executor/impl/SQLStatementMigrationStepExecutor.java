@@ -62,7 +62,6 @@ public class SQLStatementMigrationStepExecutor extends AbstractMigrationStepExec
 		// Check if script is suitable for our database
 		final String stepDBType = step.getDBType();
 		if (!stepDBType.equals(X_AD_MigrationStep.DBTYPE_AllDatabaseTypes)
-				&& !(DB.isOracle() && X_AD_MigrationStep.DBTYPE_Oracle.equals(stepDBType))
 				&& !(DB.isPostgreSQL() && X_AD_MigrationStep.DBTYPE_Postgres.equals(stepDBType)))
 		{
 			final String dbType = CConnection.get().getType();

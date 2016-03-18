@@ -596,156 +596,7 @@ public final class CConnection implements Serializable, Cloneable
 		closeDataSource();
 	}	// setDbUid
 
-	/**
-	 * Is DB via Firewall
-	 *
-	 * @return true if via firewall
-	 */
-	public boolean isViaFirewall()
-	{
-		return attrs.isViaFirewall();
-	}
-
-	/**
-	 * Method setViaFirewall
-	 *
-	 * @param viaFirewall boolean
-	 */
-	void setViaFirewall(boolean viaFirewall)
-	{
-		if (attrs.isViaFirewall() == viaFirewall)
-		{
-			return;
-		}
-		attrs.setViaFirewall(viaFirewall);
-		closeDataSource();
-	}
-
-	/**
-	 * Method setViaFirewall
-	 *
-	 * @param viaFirewallString String
-	 */
-	void setViaFirewall(String viaFirewallString)
-	{
-		try
-		{
-			setViaFirewall(Boolean.valueOf(viaFirewallString).booleanValue());
-		}
-		catch (Exception e)
-		{
-			log.severe(e.toString());
-		}
-	}
-
-	/**
-	 * Method getFwHost
-	 *
-	 * @return String
-	 */
-	public String getFwHost()
-	{
-		return attrs.getFwHost();
-	}
-
-	/**
-	 * Method setFwHost
-	 *
-	 * @param fw_host String
-	 */
-	void setFwHost(String fw_host)
-	{
-		if (Check.equals(attrs.getFwHost(), fw_host))
-		{
-			return;
-		}
-		attrs.setFwHost(fw_host);
-		closeDataSource();
-	}
-
-	/**
-	 * Get Firewall port
-	 *
-	 * @return firewall port
-	 */
-	public int getFwPort()
-	{
-		return attrs.getFwPort();
-	}
-
-	/**
-	 * Set Firewall port
-	 *
-	 * @param fw_port firewall port
-	 */
-	void setFwPort(int fw_port)
-	{
-		if (attrs.getFwPort() == fw_port)
-		{
-			return;
-		}
-		attrs.setFwPort(fw_port);
-		closeDataSource();
-	}
-
-	public void setFwPort(final String fwPortStr)
-	{
-		if (Check.isEmpty(fwPortStr, true))
-		{
-			return;
-		}
-		try
-		{
-			setFwPort(Integer.parseInt(fwPortStr));
-		}
-		catch (final Exception e)
-		{
-			log.log(Level.WARNING, "Failed parsing FW port: " + fwPortStr, e);
-		}
-	}
-
-	/**
-	 * Is it a bequeath connection
-	 *
-	 * @return true if bequeath connection
-	 */
-	public boolean isBequeath()
-	{
-		return attrs.isBequeath();
-	}
-
-	/**
-	 * Set Bequeath
-	 *
-	 * @param bequeath bequeath connection
-	 */
-	void setBequeath(boolean bequeath)
-	{
-		if (attrs.isBequeath() == bequeath)
-		{
-			return;
-		}
-		attrs.setBequeath(bequeath);
-		closeDataSource();
-	}
-
-	/**
-	 * Set Bequeath
-	 *
-	 * @param bequeathString bequeath connection as String (true/false)
-	 */
-	void setBequeath(String bequeathString)
-	{
-		try
-		{
-			setBequeath(Boolean.valueOf(bequeathString).booleanValue());
-		}
-		catch (Exception e)
-		{
-			log.severe(e.toString());
-		}
-	}	// setBequeath
-
+	
 	/**
 	 * Get Database Type
 	 *
@@ -776,18 +627,6 @@ public final class CConnection implements Serializable, Cloneable
 				break;
 			}
 		}
-		// Oracle
-		if (isOracle())
-		{
-			if (getDbPort() != DB_Oracle.DEFAULT_PORT)
-				setDbPort(DB_Oracle.DEFAULT_PORT);
-			setFwPort(DB_Oracle.DEFAULT_CM_PORT);
-		}
-		else
-		{
-			setBequeath(false);
-			setViaFirewall(false);
-		}
 
 		// begin vpj-cd e-evolution 09 ene 2006
 		// PostgreSQL
@@ -808,16 +647,6 @@ public final class CConnection implements Serializable, Cloneable
 	{
 		return getDatabase().supportsBLOB();
 	} // supportsBLOB
-
-	/**
-	 * Is Oracle DB
-	 *
-	 * @return true if Oracle
-	 */
-	public boolean isOracle()
-	{
-		return Database.DB_ORACLE.equals(attrs.getDbType());
-	} 	// isOracle
 
 	/**
 	 * Is PostgreSQL DB
@@ -1052,7 +881,7 @@ public final class CConnection implements Serializable, Cloneable
 			int appsPort = connectionString.getAppsPort();
 			if (appsPort == 1099)
 			{
-				appsPort = SERVER_DEFAULT_APPSERVER_PORT;
+				appsPort = SERVER_DEFAULT_APPSERVER_PORT; // this is a workaround, since older config files might still have 1099, but our new standard port is 61616
 			}
 			setAppsPort(appsPort);
 
@@ -1061,11 +890,6 @@ public final class CConnection implements Serializable, Cloneable
 			setDbHost(connectionString.getDbHost());
 			setDbPort(connectionString.getDbPort());
 			setDbName(connectionString.getDbName());
-			//
-			setBequeath(connectionString.isBequeath());
-			setViaFirewall(connectionString.isViaFirewall());
-			setFwHost(connectionString.getFwHost());
-			setFwPort(connectionString.getFwPort());
 			//
 			setDbUid(connectionString.getDbUid());
 			setDbPwd(connectionString.getDbPwd());
@@ -1411,12 +1235,7 @@ public final class CConnection implements Serializable, Cloneable
 		setDbName(svr.getDbName());
 		setDbUid(svr.getDbUid());
 		setDbPwd(svr.getDbPwd());
-		setBequeath(false);
-		//
-		setFwHost(svr.getFwHost());
-		setFwPort(svr.getFwPort());
-		if (getFwHost().length() == 0)
-			setViaFirewall(false);
+		
 		m_version = svr.getDateVersion();
 		log.config("Server=" + getDbHost() + ", DB=" + getDbName());
 	} 	// update Info

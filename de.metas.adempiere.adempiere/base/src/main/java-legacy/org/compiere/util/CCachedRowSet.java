@@ -19,17 +19,13 @@ package org.compiere.util;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collection;
 import java.util.Locale;
 
 import javax.sql.RowSet;
 import javax.sql.rowset.CachedRowSet;
 
-import oracle.jdbc.rowset.OracleCachedRowSet;
-
 import org.compiere.db.AdempiereDatabase;
-import org.compiere.db.Database;
 
 /**
  *	Adempiere Cached Row Set Implementation
@@ -98,17 +94,19 @@ public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements Ca
 	 */
 	public static RowSet getRowSet (String sql, Connection conn, AdempiereDatabase db) throws SQLException
 	{
-		if (db.getName().equals(Database.DB_ORACLE))
-		{
-			Statement stmt = conn.createStatement
-				(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			ResultSet rs = stmt.executeQuery(sql);
-			OracleCachedRowSet crs = new OracleCachedRowSet();
-			crs.populate(rs);
-			rs.close();
-			stmt.close();
-			return crs;
-		}
+// @formatter:off
+//		if (db.getName().equals(Database.DB_ORACLE))
+//		{
+//			Statement stmt = conn.createStatement
+//				(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+//			ResultSet rs = stmt.executeQuery(sql);
+//			OracleCachedRowSet crs = new OracleCachedRowSet();
+//			crs.populate(rs);
+//			rs.close();
+//			stmt.close();
+//			return crs;
+//		}
+// @formatter:on		
 		CachedRowSet crs = get();
 		crs.setConcurrency(ResultSet.CONCUR_READ_ONLY);
 		crs.setType(ResultSet.TYPE_SCROLL_INSENSITIVE);
@@ -128,12 +126,14 @@ public class CCachedRowSet extends com.sun.rowset.CachedRowSetImpl implements Ca
 	 */
 	public static RowSet getRowSet (ResultSet rs, AdempiereDatabase db) throws SQLException
 	{
-		if (db.getName().equals(Database.DB_ORACLE))
-		{
-			OracleCachedRowSet crs = new OracleCachedRowSet();
-			crs.populate(rs);
-			return crs;
-		}
+// @formatter:off
+//		if (db.getName().equals(Database.DB_ORACLE))
+//		{
+//			OracleCachedRowSet crs = new OracleCachedRowSet();
+//			crs.populate(rs);
+//			return crs;
+//		}
+// @formatter:on		
 		CachedRowSet crs = get();
 		crs.populate(rs);
 		return crs;

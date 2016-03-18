@@ -111,15 +111,11 @@ class CConnectionDialog extends CDialog implements ActionListener
 	private CTextField dbPortField = new CTextField();
 	private CLabel sidLabel = new CLabel();
 	private CTextField sidField = new CTextField();
-	private CCheckBox cbFirewall = new CCheckBox();
-	private CLabel fwHostLabel = new CLabel();
-	private CTextField fwHostField = new CTextField();
-	private CLabel fwPortLabel = new CLabel();
-	private CTextField fwPortField = new CTextField();
+
 	private CButton bTestDB = new CButton();
 	private CLabel dbTypeLabel = new CLabel();
 	private CComboBox<String> dbTypeField = new CComboBox<>(Database.DB_NAMES);
-	private CCheckBox cbBequeath = new CCheckBox();
+	
 	private CLabel appsHostLabel = new CLabel();
 	private CTextField appsHostField = new CTextField();
 	private CLabel appsPortLabel = new CLabel();
@@ -153,17 +149,11 @@ class CConnectionDialog extends CDialog implements ActionListener
 		portLabel.setText(res.getString("DBPort"));
 		dbPortField.setColumns(10);
 		sidLabel.setText(res.getString("DBName"));
-		cbFirewall.setToolTipText("");
-		cbFirewall.setText(res.getString("ViaFirewall"));
-		fwHostLabel.setText(res.getString("FWHost"));
-		fwHostField.setColumns(30);
-		fwPortLabel.setText(res.getString("FWPort"));
 		bTestDB.setText(res.getString("TestConnection"));
 		bTestDB.setHorizontalAlignment(JLabel.LEFT);
 		dbTypeLabel.setText(res.getString("Type"));
 		sidField.setColumns(30);
-		fwPortField.setColumns(10);
-		cbBequeath.setText(res.getString("BequeathConnection"));
+		
 		appsHostLabel.setText(res.getString("AppsHost"));
 		appsHostField.setColumns(30);
 		appsPortLabel.setText(res.getString("AppsPort"));
@@ -202,8 +192,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
 		centerPanel.add(dbTypeField, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0
 			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 0), 0, 0));
-		centerPanel.add(cbBequeath, new GridBagConstraints(2, 4, 1, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 12), 0, 0));
+		
 		centerPanel.add(hostLabel, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0
 			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
 		centerPanel.add(hostField,  new GridBagConstraints(1, 5, 2, 1, 0.0, 0.0
@@ -222,16 +211,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 0, 0));
 		centerPanel.add(dbPwdField, new GridBagConstraints(2, 8, 1, 1, 1.0, 0.0
 			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 5, 12), 0, 0));
-		centerPanel.add(cbFirewall, new GridBagConstraints(1, 9, 2, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 12), 0, 0));
-		centerPanel.add(fwHostLabel, new GridBagConstraints(0, 10, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
-		centerPanel.add(fwHostField,  new GridBagConstraints(1, 10, 2, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 12), 0, 0));
-		centerPanel.add(fwPortLabel, new GridBagConstraints(0, 11, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
-		centerPanel.add(fwPortField, new GridBagConstraints(1, 11, 1, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 0, 0));
+		
 		centerPanel.add(bTestDB,  new GridBagConstraints(1, 12, 1, 1, 0.0, 0.0
 			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 12, 0), 0, 0));
 		//
@@ -245,10 +225,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 		hostField.addActionListener(this);
 		dbPortField.addActionListener(this);
 		sidField.addActionListener(this);
-		cbBequeath.addActionListener(this);
-		cbFirewall.addActionListener(this);
-		fwHostField.addActionListener(this);
-		fwPortField.addActionListener(this);
+		
 		bTestDB.addActionListener(this);
 		bOK.addActionListener(this);
 		bCancel.addActionListener(this);
@@ -262,8 +239,6 @@ class CConnectionDialog extends CDialog implements ActionListener
 			appsPortField.setVisible(false);
 			bTestApps.setVisible(false);
 		}
-		else	//	Client
-			cbBequeath.setVisible(false);
 	}   //  jbInit
 
 	/**
@@ -364,8 +339,6 @@ class CConnectionDialog extends CDialog implements ActionListener
 		{
 			m_cc.setType(dbTypeField.getSelectedItem());
 			dbPortField.setText(String.valueOf(m_cc.getDbPort()));
-			cbBequeath.setSelected(m_cc.isBequeath());
-			fwPortField.setText(String.valueOf(m_cc.getFwPort()));
 		}
 		//
 		else if (src == bTestDB)
@@ -403,10 +376,6 @@ class CConnectionDialog extends CDialog implements ActionListener
 		m_cc.setDbName(sidField.getText());
 		m_cc.setDbUid(dbUidField.getText());
 		m_cc.setDbPwd(String.valueOf(dbPwdField.getPassword()));
-		m_cc.setBequeath(cbBequeath.isSelected());
-		m_cc.setViaFirewall(cbFirewall.isSelected());
-		m_cc.setFwHost(fwHostField.getText());
-		m_cc.setFwPort(fwPortField.getText());
 	}
 
 	/**
@@ -452,20 +421,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 			dbUidField.setText(m_cc.getDbUid());
 			dbPwdField.setEditable(rw);
 			dbPwdField.setText(m_cc.getDbPwd());
-			//
-			cbBequeath.setReadWrite(rw);
-			cbBequeath.setEnabled(m_cc.isOracle());
-			cbBequeath.setSelected(m_cc.isBequeath());
-			//
-			boolean fwEnabled = rw && m_cc.isViaFirewall() && m_cc.isOracle();
-			cbFirewall.setReadWrite(rw && m_cc.isOracle());
-			cbFirewall.setSelected(m_cc.isViaFirewall());
-			fwHostLabel.setReadWrite(fwEnabled);
-			fwHostField.setReadWrite(fwEnabled);
-			fwHostField.setText(m_cc.getFwHost());
-			fwPortLabel.setReadWrite(fwEnabled);
-			fwPortField.setReadWrite(fwEnabled);
-			fwPortField.setText(String.valueOf(m_cc.getFwPort()));
+
 			//
 			bTestDB.setToolTipText(m_cc.getConnectionURL());
 			bTestDB.setIcon(getStatusIcon(m_cc.isDatabaseOK()));

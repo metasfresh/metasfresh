@@ -107,9 +107,7 @@ public class TableCreateColumns extends SvrProcess
 					throw new AdempiereSystemError("@NotFound@ @AD_Table_ID@ " + p_AD_Table_ID);
 				log.info(table.getTableName() + ", EntityType=" + p_EntityType);
 				String tableName = table.getTableName();
-				if (DB.isOracle())
-					tableName = tableName.toUpperCase();
-	            // globalqss 2005-10-24
+				// globalqss 2005-10-24
 				if (DB.isPostgreSQL())
 				    tableName = tableName.toLowerCase();
 				// end globalqss 2005-10-24
@@ -181,8 +179,6 @@ public class TableCreateColumns extends SvrProcess
 					continue;
 			}
 			//	Check Columns
-			if (DB.isOracle())
-				tableName = tableName.toUpperCase();
 			// globalqss 2005-10-24
 			if (DB.isPostgreSQL())
 			    tableName = tableName.toLowerCase();
@@ -202,8 +198,6 @@ public class TableCreateColumns extends SvrProcess
 	private void addTableColumn (ResultSet rs, MTable table) throws Exception
 	{
 		String tableName = table.getTableName ();
-		if (DB.isOracle ())
-			tableName = tableName.toUpperCase ();
 		// globalqss 2005-10-24
 		if (DB.isPostgreSQL())
 		    tableName = tableName.toLowerCase();

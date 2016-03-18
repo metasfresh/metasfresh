@@ -380,12 +380,6 @@ public class MSystem extends X_AD_System
 	 */
 	public static String getDBInfoSQL (String dbType)
 	{
-		if (Database.DB_ORACLE.equals(dbType))
-			return "SELECT SYS_CONTEXT('USERENV','HOST') || '/' || SYS_CONTEXT('USERENV','IP_ADDRESS') AS DBAddress,"
-				+ "	SYS_CONTEXT('USERENV','CURRENT_USER') || '.' || SYS_CONTEXT('USERENV','DB_NAME')"
-				+ " || '.' || SYS_CONTEXT('USERENV','DB_DOMAIN') AS DBName "
-				+ "FROM DUAL";
-		//
 		return "SELECT NULL,NULL FROM AD_System WHERE AD_System_ID=-1";
 	}	//	getDBInfoSQL
 	

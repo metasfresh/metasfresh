@@ -99,25 +99,13 @@ public class MSequence extends X_AD_Sequence
 		if (CLogMgt.isLevel(LOGLEVEL))
 			s_log.log(LOGLEVEL, TableName + " - AdempiereSys=" + adempiereSys  + " [" + trxName + "]");
 		  //begin vpj-cd e-evolution 09/02/2005 PostgreSQL
-		String selectSQL = null;
-		if (DB.isOracle() == false)
-		{
-			selectSQL = "SELECT CurrentNext, CurrentNextSys, IncrementNo, AD_Sequence_ID "
+		final String selectSQL = "SELECT CurrentNext, CurrentNextSys, IncrementNo, AD_Sequence_ID "
 				+ "FROM AD_Sequence "
 				+ "WHERE Name=?"
 				+ " AND IsActive='Y' AND IsTableID='Y' AND IsAutoSequence='Y' "
 				+ " FOR UPDATE OF AD_Sequence ";
-			USE_PROCEDURE=false;
-		}
-		else
-		{
-			selectSQL = "SELECT CurrentNext, CurrentNextSys, IncrementNo, AD_Sequence_ID "
-			+ "FROM AD_Sequence "
-			+ "WHERE Name=?"
-			+ " AND IsActive='Y' AND IsTableID='Y' AND IsAutoSequence='Y' ";
-
-			USE_PROCEDURE = true;
-		}
+		USE_PROCEDURE=false;
+		
 
 		//hengsin: executing getNextID in transaction create huge performance and locking issue
 		//Trx trx = trxName == null ? null : Trx.get(trxName, true);

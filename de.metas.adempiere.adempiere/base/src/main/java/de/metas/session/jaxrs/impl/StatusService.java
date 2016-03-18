@@ -132,24 +132,6 @@ public class StatusService implements IStatusService
 		return CConnection.get().getDbPwd();
 	}   //  getDbPWD
 
-	/* (non-Javadoc)
-	 * @see de.metas.session.jaxrs.IStatusService#getFwHost()
-	 */
-	@Override
-	public String getFwHost()
-	{
-		return CConnection.get().getFwHost();
-	}   //  getCMHost
-
-	/* (non-Javadoc)
-	 * @see de.metas.session.jaxrs.IStatusService#getFwPort()
-	 */
-	@Override
-	public int getFwPort()
-	{
-		return CConnection.get().getFwPort();
-	}   //  getCMPort
-
 
 	/* (non-Javadoc)
 	 * @see de.metas.session.jaxrs.IStatusService#getVersionCount()
