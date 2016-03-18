@@ -297,7 +297,7 @@ $F{sscc} +
 				</textElement>
 				<textFieldExpression><![CDATA[$R{LotNumberDate}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement uuid="9a08e298-10e1-496f-86a7-563a5edf0741" x="293" y="405" width="148" height="20"/>
 				<textElement textAlignment="Right">
 					<font size="15" isBold="true"/>

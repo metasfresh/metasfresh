@@ -21,12 +21,13 @@ Additional notes:
 
 The actual release notes
 
-# metasfresh 4.10.8 (Upcoming Release)
+# metasfresh 4.10.9 (Upcoming Release)
 
 ## Features
  - 09924 Remove legacy oracle drivers and code (107845685842)
  
 ## Fixes
+ - 09922 null in tageslot sscc etikett (100681187457)
  
 ## Instructions
 
