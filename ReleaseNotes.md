@@ -29,7 +29,9 @@ The actual release notes
  
 ## Fixes
  - 09922 null in tageslot sscc etikett (100681187457)
- 
+ - 09923 sepa export npe (106359694025)
+	* if a given bank account info has no aasociated bank, we now give an informative error message
+	
 ## Instructions
 
 # metasfresh 4.9.8b

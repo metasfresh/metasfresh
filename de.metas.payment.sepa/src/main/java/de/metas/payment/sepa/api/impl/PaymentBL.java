@@ -24,6 +24,7 @@ package de.metas.payment.sepa.api.impl;
 
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -42,6 +43,8 @@ import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 
 public class PaymentBL implements IPaymentBL
 {
+
+	private static final String ERR_C_BP_BankAccount_BankNotSet = "de.metas.payment.sepa.C_BP_BankAccount_BankNotSet";
 
 	@Override
 	public I_SEPA_Export createSEPAExport(final I_C_PaySelection source)
@@ -117,6 +120,12 @@ public class PaymentBL implements IPaymentBL
 		final org.compiere.model.I_C_BP_BankAccount bankAccountSource = source.getC_BP_BankAccount();
 		Check.assumeNotNull(bankAccountSource, "bankAccountSource not null");
 		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.create(bankAccountSource, I_C_BP_BankAccount.class);
+
+		// task 09923: In case the bp bank account does not have a bank set, it cannot be used in a SEPA Export
+		if (bpBankAccount.getC_Bank() == null)
+		{
+			throw new AdempiereException(ERR_C_BP_BankAccount_BankNotSet, new Object[] { bpBankAccount.toString() });
+		}
 
 		// Set corresponding data
 		header.setAD_Org(sourceOrg);
