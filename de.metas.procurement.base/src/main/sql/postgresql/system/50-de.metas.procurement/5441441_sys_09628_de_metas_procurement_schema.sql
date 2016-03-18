@@ -66,8 +66,6 @@ CREATE FUNCTION getpmm_purchasecandidate_weekly(p_candidate public.pmm_purchasec
 $_$;
 
 
-ALTER FUNCTION de_metas_procurement.getpmm_purchasecandidate_weekly(p_candidate public.pmm_purchasecandidate, p_weekoffset integer) OWNER TO adempiere;
-
 -- Completed on 2016-03-02 15:26:14
 
 --
