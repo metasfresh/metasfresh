@@ -59,6 +59,7 @@ public class AddOn implements IAddOn
 				final int timeOutMillis = 2000; // only let the user wait two seconds if there is no response
 				final CreateEndpointRequest<IStatusService> request = CreateEndpointRequest
 						.builder(IStatusService.class)
+						.setCconnection(cConnection)
 						.setTimeoutMillis(timeOutMillis)
 						.build();
 				return jaxRsBL.createClientEndpointsProgramatically(request).get(0);

@@ -82,7 +82,7 @@ public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdap
 				lexiagraphicallySortedScripts.add(next);
 			}
 
-			dumpTofile(lexiagraphicallySortedScripts);
+			//dumpTofile(lexiagraphicallySortedScripts);
 
 			return lexiagraphicallySortedScripts.iterator();
 		}
