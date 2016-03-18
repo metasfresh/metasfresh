@@ -124,7 +124,7 @@ public class Main extends AbstractModuleInterceptor
 				.setResponseQueue(responseQueueName)
 				.build();
 
-		final IAgentSyncBL agentEndpointService = jaxRsBL.createClientEndpoints(clientEndpointRequest).get(0);
+		final IAgentSyncBL agentEndpointService = jaxRsBL.createClientEndpointsProgramatically(clientEndpointRequest).get(0);
 		Services.registerService(IAgentSyncBL.class, agentEndpointService);
 
 		//
@@ -134,6 +134,6 @@ public class Main extends AbstractModuleInterceptor
 				.setRequestQueue(requestQueueName)
 				.setResponseQueue(responseQueueName)
 				.build();
-		jaxRsBL.createServerEndPoints(serverEndpointRequest);
+		jaxRsBL.createServerEndPointsProgramatically(serverEndpointRequest);
 	}
 }

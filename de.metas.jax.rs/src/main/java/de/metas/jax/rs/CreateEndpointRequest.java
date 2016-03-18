@@ -50,12 +50,23 @@ public class CreateEndpointRequest<T>
 		return new Builder<T>();
 	}
 
-	public static <T> Builder<T> builder(Class<T> clazz)
+	/**
+	 * creates a builder which initially contains the given endpoint class.
+	 *
+	 * @param clazz
+	 * @return
+	 */
+	public static <T> Builder<T> builder(final Class<T> clazz)
 	{
 		return new Builder<T>().addEndpointClass(clazz);
 	}
 
-	private CreateEndpointRequest(Builder<T> builder)
+	public static <T> Builder<T> builder(final CreateEndpointRequest<T> template)
+	{
+		return new Builder<T>(template);
+	}
+
+	private CreateEndpointRequest(final Builder<T> builder)
 	{
 		this.clazzes = ImmutableList.<Class<T>> copyOf(builder.clazzes);
 		this.timeoutMillis = builder.timeoutMillis;
@@ -96,7 +107,7 @@ public class CreateEndpointRequest<T>
 		public final static String DEFAULT_JMS_QUEUE_REQUEST = IJaxRsBL.JMS_QUEUE_REQUEST;
 		public final static String DEFAULT_JMS_QUEUE_RESPONSE = IJaxRsBL.JMS_QUEUE_RESPONSE;
 
-		private final List<Class<T>> clazzes = new ArrayList<>();
+		private final List<Class<T>> clazzes;
 		private CConnection cconnection = null;
 		private long timeoutMillis = DEFAULT_CLIENT_TIMEOUT_MILLIS;
 		private String requestQueueName = DEFAULT_JMS_QUEUE_REQUEST;
@@ -106,8 +117,18 @@ public class CreateEndpointRequest<T>
 		 * Creates a new request builder.
 		 *
 		 */
-		public Builder()
+		private Builder()
 		{
+			clazzes = new ArrayList<>();
+		}
+
+		private Builder(final CreateEndpointRequest<T> template)
+		{
+			clazzes = ImmutableList.<Class<T>> copyOf(template.getEndpointClasses());
+			cconnection = template.getCConnection();
+			timeoutMillis = template.getTimeOutMillis();
+			requestQueueName = template.getRequestQueue();
+			responseQueueName = template.getResponseQueue();
 		}
 
 		public Builder<T> addEndpointClass(final Class<T> clazz)

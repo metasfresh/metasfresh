@@ -76,7 +76,10 @@ public class JaxRsBL implements IJaxRsBL
 			+ "&receiveTimeout={3}"  // note that as of cxf-3.1.5, if you don't use this paramter, then, the default is 60.000 milliseconds.
 			+ "&connectionFactoryName=jmsConnectionFactory&username=smx&password=smx";
 
-	private Server server;
+	/**
+	 * A server with those endpoints that are started and stopped via {@link #createServerEndPoints(Properties)} and {@link #destroyServerEndPoints()}.
+	 */
+	private Server automaticEndpointsServer;
 
 	@Override
 	public void createServerEndPoints(final Properties ctx)
@@ -97,12 +100,19 @@ public class JaxRsBL implements IJaxRsBL
 		}
 
 		final CreateEndpointRequest<Object> request = builder.build();
-		startServerEndPoints(request);
+
+		final boolean stopAutomaticEndpointsfirst = true; // we are (re-)starting the automatic EPs, so we want to stop them first
+		startServerEndPoints(request, stopAutomaticEndpointsfirst);
 	}
 
-	private void startServerEndPoints(final CreateEndpointRequest<?> request)
+	private void startServerEndPoints(
+			final CreateEndpointRequest<?> request,
+			final boolean stopAutomaticEndpointsfirst)
 	{
-		stopServerEndPoints();
+		if (stopAutomaticEndpointsfirst)
+		{
+			destroyServerEndPoints();
+		}
 
 		final JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
 
@@ -118,7 +128,7 @@ public class JaxRsBL implements IJaxRsBL
 		svrFactory.setAddress("/");
 		svrFactory.setTransportId("http://cxf.apache.org/transports/jms");
 
-		server = svrFactory.create();
+		automaticEndpointsServer = svrFactory.create();
 	}
 
 	private JMSConfigFeature setupJMSConfiguration(
@@ -141,14 +151,14 @@ public class JaxRsBL implements IJaxRsBL
 	}
 
 	@Override
-	public void stopServerEndPoints()
+	public void destroyServerEndPoints()
 	{
-		if (server != null && server.isStarted())
+		if (automaticEndpointsServer != null && automaticEndpointsServer.isStarted())
 		{
-			server.stop();
-			server.destroy();
+			automaticEndpointsServer.stop();
+			automaticEndpointsServer.destroy();
 		}
-		server = null;
+		automaticEndpointsServer = null;
 	}
 
 	@Override
@@ -228,7 +238,7 @@ public class JaxRsBL implements IJaxRsBL
 	}
 
 	@Override
-	public void registerClientEndPoints(final Properties ctx)
+	public void createClientEndPoints(final Properties ctx)
 	{
 		final IJaxRsDAO jaxRsDAO = Services.get(IJaxRsDAO.class);
 		final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
@@ -249,14 +259,14 @@ public class JaxRsBL implements IJaxRsBL
 				final CreateEndpointRequest<ISingletonService> request = CreateEndpointRequest
 						.builder(serviceClass)
 						.build();
-				final ISingletonService serviceImpl = createClientEndpoints(request).get(0);
+				final ISingletonService serviceImpl = createClientEndpointsProgramatically(request).get(0);
 				Services.registerService(serviceClass, serviceImpl);
 			}
 		}
 	}
 
 	@Override
-	public <T extends ISingletonService> List<T> createClientEndpoints(final CreateEndpointRequest<T> request)
+	public <T extends ISingletonService> List<T> createClientEndpointsProgramatically(final CreateEndpointRequest<T> request)
 	{
 		final String jmsURL = Services.get(IJMSService.class).getJmsURL(request.getCConnection());
 
@@ -286,8 +296,9 @@ public class JaxRsBL implements IJaxRsBL
 	}
 
 	@Override
-	public <T extends ISingletonService> void createServerEndPoints(final CreateEndpointRequest<T> request)
+	public <T extends ISingletonService> void createServerEndPointsProgramatically(final CreateEndpointRequest<T> request)
 	{
-		startServerEndPoints(request);
+		final boolean stopAutomaticEndpointsfirst = false; // don't touch any EPs that are currently running
+		startServerEndPoints(request, stopAutomaticEndpointsfirst);
 	}
 }

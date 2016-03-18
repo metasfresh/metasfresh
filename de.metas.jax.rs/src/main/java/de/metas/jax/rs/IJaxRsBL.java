@@ -47,7 +47,7 @@ public interface IJaxRsBL extends ISingletonService
 
 	/**
 	 * Get {@link I_AD_JAXRS_Endpoint} records by invoking {@link IJaxRsDAO#retrieveServerEndPoints(Properties)} and put up a JAX-RS endpoint for each of them.<br>
-	 * Also, call {@link #stopServerEndPoints()} to stop any running endpoints before doing this.
+	 * Also, call {@link #destroyServerEndPoints()} to stop any running endpoints before doing this.
 	 */
 	void createServerEndPoints(Properties ctx);
 
@@ -56,12 +56,12 @@ public interface IJaxRsBL extends ISingletonService
 	 * and register each of them using {@link org.adempiere.util.Services#registerService(Class, ISingletonService)}.
 	 * That way, <code>Services</code> will return the JAX-RS client instead of the implementation and therefore.
 	 */
-	void registerClientEndPoints(Properties ctx);
+	void createClientEndPoints(Properties ctx);
 
 	/**
 	 * Stop all running server endpoints, if there are any.
 	 */
-	void stopServerEndPoints();
+	void destroyServerEndPoints();
 
 	/**
 	 * Create one or more particular client endpoints for the given <code>request</code> instance.<br>
@@ -69,11 +69,12 @@ public interface IJaxRsBL extends ISingletonService
 	 *
 	 * @param serviceInterface
 	 */
-	<T extends ISingletonService> List<T> createClientEndpoints(CreateEndpointRequest<T> request);
+	<T extends ISingletonService> List<T> createClientEndpointsProgramatically(CreateEndpointRequest<T> request);
 
 	/**
 	 * Similar to {@link #createClientEndpoint(CreateEndpointRequest)}.<br>
-	 * Note that
+	 * An endpoint created with this method won't be stopped when {@link #destroyServerEndPoints()} is called.<br>
+	 * Note about the given <code>request</code> parameter:
 	 * <ul>
 	 * <li>here the request's class needs to be an actual concrete implementation class.
 	 * <li>the timeout, even if set, is ignored
@@ -81,7 +82,7 @@ public interface IJaxRsBL extends ISingletonService
 	 *
 	 * @param serviceImpl
 	 */
-	<T extends ISingletonService> void createServerEndPoints(CreateEndpointRequest<T> request);
+	<T extends ISingletonService> void createServerEndPointsProgramatically(CreateEndpointRequest<T> request);
 
 	/**
 	 * Update the the list of {@link I_AD_JAXRS_Endpoint} records by loading all {@link I_AD_JavaClass} records that belong to the {@link I_AD_JavaClass_Type} with {@link javax.ws.rs.Path} as its

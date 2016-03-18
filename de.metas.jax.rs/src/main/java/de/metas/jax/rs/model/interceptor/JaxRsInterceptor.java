@@ -52,7 +52,7 @@ public class JaxRsInterceptor extends AbstractModuleInterceptor
 
 		if (Ini.getRunMode() != RunMode.BACKEND)
 		{
-			jaxRsBL.registerClientEndPoints(ctx);
+			jaxRsBL.createClientEndPoints(ctx);
 		}
 	}
 

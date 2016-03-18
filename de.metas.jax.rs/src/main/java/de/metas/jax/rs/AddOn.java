@@ -61,7 +61,7 @@ public class AddOn implements IAddOn
 						.builder(IStatusService.class)
 						.setTimeoutMillis(timeOutMillis)
 						.build();
-				return jaxRsBL.createClientEndpoints(request).get(0);
+				return jaxRsBL.createClientEndpointsProgramatically(request).get(0);
 			}
 		});
 	}
