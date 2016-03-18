@@ -1,1 +1,2 @@
-This folder contains files that are usually needed, but might still be useful for certain purposes.
+
+This folder contains files that are *not* usually needed, but might still be useful for certain purposes.
