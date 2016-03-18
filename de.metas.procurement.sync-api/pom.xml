@@ -20,5 +20,13 @@
 			<artifactId>javax.ws.rs-api</artifactId>
 			<version>2.0.1</version>
 		</dependency>
+
+		<!-- we need this because we want to annotate individual methods with @OneWay -->
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+			<version>3.1.6-20160315.074410-30</version>
+		</dependency>
+
 	</dependencies>
 </project>

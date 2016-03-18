@@ -8,8 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import javax.ws.rs.core.Response;
-
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -306,7 +304,7 @@ public class ServerSyncBL implements IServerSyncBL
 	}
 
 	@Override
-	public Response reportProductSupplies(final SyncProductSuppliesRequest request)
+	public void reportProductSupplies(final SyncProductSuppliesRequest request)
 	{
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -509,17 +507,15 @@ public class ServerSyncBL implements IServerSyncBL
 				InterfaceWrapperHelper.save(qtyReportEvent);
 			}
 		}
-		return Response.ok().build();
 	}
 
 	@Override
-	public Response reportWeekSupply(final SyncWeeklySupplyRequest request)
+	public void reportWeekSupply(final SyncWeeklySupplyRequest request)
 	{
 		for (final SyncWeeklySupply syncWeeklySupply : request.getWeeklySupplies())
 		{
 			createWeekReportEvent(syncWeeklySupply);
 		}
-		return Response.ok().build();
 	}
 
 	/**

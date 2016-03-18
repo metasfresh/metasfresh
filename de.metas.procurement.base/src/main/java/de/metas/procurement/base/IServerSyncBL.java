@@ -48,8 +48,8 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
  * <li><code>ContractLine_uuid <=> C_flatrate_Term</code>. Note that both <code>SyncProductSupply.ContractLine_uuid</code> and <code>SyncContract.Uuid</code> contain the flatrate term, because we have
  * only one product per term</li>
  * </ul>
- * 
- * 
+ *
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
@@ -89,7 +89,7 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 * @see IServerSync#reportProductSupplies(SyncProductSuppliesRequest)
 	 */
 	@Override
-	public Response reportProductSupplies(SyncProductSuppliesRequest request);
+	public void reportProductSupplies(SyncProductSuppliesRequest request);
 
 	/**
 	 *
@@ -98,5 +98,5 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 * @see IServerSync#reportWeekSupply(SyncWeeklySupplyRequest)
 	 */
 	@Override
-	public Response reportWeekSupply(SyncWeeklySupplyRequest request);
+	public void reportWeekSupply(SyncWeeklySupplyRequest request);
 }

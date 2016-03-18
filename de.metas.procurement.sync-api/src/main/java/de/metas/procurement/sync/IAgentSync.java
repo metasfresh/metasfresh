@@ -1,8 +1,9 @@
 package de.metas.procurement.sync;
 
-import javax.jws.Oneway;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+
+import org.apache.cxf.jaxrs.ext.Oneway;
 
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
