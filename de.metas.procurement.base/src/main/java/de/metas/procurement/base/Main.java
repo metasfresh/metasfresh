@@ -18,7 +18,6 @@ import de.metas.event.Topic;
 import de.metas.jax.rs.CreateEndpointRequest;
 import de.metas.jax.rs.IJaxRsBL;
 import de.metas.jax.rs.JaxRsConstants;
-import de.metas.procurement.base.impl.ServerSyncBL;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
 
@@ -109,7 +108,7 @@ public class Main extends AbstractModuleInterceptor
 		if (Check.isEmpty(requestQueueName, true) || Check.isEmpty(responseQueueName, true))
 		{
 			JaxRsConstants.getLogger().log(Level.SEVERE, "At least one one of requestQueueName={0} and responseQueueName={1} is not set. \n"
-					+ "Therefore this instance won't be able to communicate with te procurement UI in either direction. \n"
+					+ "Therefore this instance won't be able to actively send data to the procurement UI. \n"
 					+ "To fix this, add AD_SysConfig records with AD_Client_ID={2} and AD_Org_ID=0 and with the following names:\n"
 					+ "{3} \n"
 					+ "{4}",
@@ -127,13 +126,6 @@ public class Main extends AbstractModuleInterceptor
 		final IAgentSyncBL agentEndpointService = jaxRsBL.createClientEndpointsProgramatically(clientEndpointRequest).get(0);
 		Services.registerService(IAgentSyncBL.class, agentEndpointService);
 
-		//
-		// create the server endpoint so the procurement webUI can reach us.
-		final CreateEndpointRequest<ServerSyncBL> serverEndpointRequest = CreateEndpointRequest
-				.builder(ServerSyncBL.class)
-				.setRequestQueue(requestQueueName)
-				.setResponseQueue(responseQueueName)
-				.build();
-		jaxRsBL.createServerEndPointsProgramatically(serverEndpointRequest);
+		// note: ServerSync will just be a "normal" server, listening no our default queues
 	}
 }
