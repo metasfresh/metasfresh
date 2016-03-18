@@ -1,9 +1,9 @@
 package de.metas.jax.rs;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.db.CConnection;
 
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
@@ -40,13 +40,16 @@ import de.metas.jax.rs.model.I_AD_JAXRS_Endpoint;
  */
 public interface IJaxRsBL extends ISingletonService
 {
-	final Long DEFAULT_CLIENT_TIMEOUT_MILLIS = 60000L;
+	long DEFAULT_CLIENT_TIMEOUT_MILLIS = 60000L;
+
+	String JMS_QUEUE_REQUEST = "de.metas.jax.rs.metasfresh.request";
+	String JMS_QUEUE_RESPONSE = "de.metas.jax.rs.metasfresh.response";
 
 	/**
 	 * Get {@link I_AD_JAXRS_Endpoint} records by invoking {@link IJaxRsDAO#retrieveServerEndPoints(Properties)} and put up a JAX-RS endpoint for each of them.<br>
 	 * Also, call {@link #stopServerEndPoints()} to stop any running endpoints before doing this.
 	 */
-	void startServerEndPoints(Properties ctx);
+	void createServerEndPoints(Properties ctx);
 
 	/**
 	 * Get {@link I_AD_JAXRS_Endpoint} records by invoking {@link IJaxRsDAO#retrieveClientEndpoints(Properties)} create a JAX-RS <b>client</b> endpoint for each of them, <br>
@@ -61,23 +64,24 @@ public interface IJaxRsBL extends ISingletonService
 	void stopServerEndPoints();
 
 	/**
-	 * Create a particular client endpoint for the given <code>serviceInterface</code>.<br>
+	 * Create one or more particular client endpoints for the given <code>request</code> instance.<br>
 	 * This method is is intended for the early stages of metasfresh startup, as well as for testing.
 	 *
-	 * @param cConnection may be <code>null</code>. The connection from which to get the server and port. If <code>null</code>, then use {@link CConnection#get()}. Note that in the early stages of
-	 *            startup, we can't rely on {@link CConnection#get()} to work for us.
-	 * @param timeOutMillis specify how long the client shall wait for a response. E.g. if the client starts, we don't want the user to wait the default timeout of one minute to find out that there is
-	 *            a problem connecting to the server.
 	 * @param serviceInterface
 	 */
-	<T extends ISingletonService> T createClientEndpoint(CConnection cConnection, long timeOutMillis, Class<T> clazz);
+	<T extends ISingletonService> List<T> createClientEndpoints(CreateEndpointRequest<T> request);
 
 	/**
-	 * Similar to {@link #startClientEndPoint(Class)}. Note that here we need the actual concrete implementation class.
+	 * Similar to {@link #createClientEndpoint(CreateEndpointRequest)}.<br>
+	 * Note that
+	 * <ul>
+	 * <li>here the request's class needs to be an actual concrete implementation class.
+	 * <li>the timeout, even if set, is ignored
+	 * </ul>
 	 *
 	 * @param serviceImpl
 	 */
-	void startServerEndPoint(Class<? extends ISingletonService> serviceImpl);
+	<T extends ISingletonService> void createServerEndPoints(CreateEndpointRequest<T> request);
 
 	/**
 	 * Update the the list of {@link I_AD_JAXRS_Endpoint} records by loading all {@link I_AD_JavaClass} records that belong to the {@link I_AD_JavaClass_Type} with {@link javax.ws.rs.Path} as its

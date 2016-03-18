@@ -50,7 +50,7 @@ public class AD_JAXRS_Endpoint_ManageServerEndpoints extends SvrProcess
 	{
 		if (PARAM_START.equalsIgnoreCase(p_action))
 		{
-			jaxRsBL.startServerEndPoints(getCtx());
+			jaxRsBL.createServerEndPoints(getCtx());
 		}
 		else
 		{

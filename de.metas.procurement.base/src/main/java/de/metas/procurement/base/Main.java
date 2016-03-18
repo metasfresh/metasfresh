@@ -6,11 +6,16 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.Topic;
+import de.metas.jax.rs.CreateEndpointRequest;
+import de.metas.jax.rs.IJaxRsBL;
+import de.metas.procurement.base.impl.ServerSyncBL;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
 
@@ -84,5 +89,35 @@ public class Main extends AbstractModuleInterceptor
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
 		return ImmutableList.of(ProcurementConstants.EVENTBUS_TOPIC_PurchaseOrderGenerated);
+	}
+
+	@Override
+	protected void onAfterInit()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
+
+		final String requestQueueName = sysConfigBL.getValue("de.metas.procurement.webui.jms.queue.request",getAD_Client_ID());
+		final String responseQueueName = sysConfigBL.getValue("de.metas.procurement.webui.jms.queue.response",getAD_Client_ID());
+
+		//
+		// create the client endpoint so we can reach the procurement webUI.
+		final CreateEndpointRequest<IAgentSyncBL> clientEndpointRequest = CreateEndpointRequest
+				.builder(IAgentSyncBL.class)
+				.setRequestQueue(requestQueueName)
+				.setResponseQueue(responseQueueName)
+				.build();
+
+		final IAgentSyncBL agentEndpointService = jaxRsBL.createClientEndpoints(clientEndpointRequest).get(0);
+		Services.registerService(IAgentSyncBL.class, agentEndpointService);
+
+		//
+		// create the server endpoint so the procurement webUI can reach us.
+		final CreateEndpointRequest<ServerSyncBL> serverEndpointRequest = CreateEndpointRequest
+				.builder(ServerSyncBL.class)
+				.setRequestQueue(requestQueueName)
+				.setResponseQueue(responseQueueName)
+				.build();
+		jaxRsBL.createServerEndPoints(serverEndpointRequest);
 	}
 }

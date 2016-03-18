@@ -23,7 +23,6 @@ import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.transport.jms.JMSConfigFeature;
 import org.apache.cxf.transport.jms.JMSConfiguration;
-import org.compiere.db.CConnection;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.google.common.collect.ImmutableList;
@@ -33,6 +32,8 @@ import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.IJavaClassTypeBL;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.jax.rs.CreateEndpointRequest;
+import de.metas.jax.rs.CreateEndpointRequest.Builder;
 import de.metas.jax.rs.IJaxRsBL;
 import de.metas.jax.rs.IJaxRsDAO;
 import de.metas.jax.rs.model.I_AD_JAXRS_Endpoint;
@@ -63,61 +64,66 @@ import de.metas.jms.IJMSService;
 
 public class JaxRsBL implements IJaxRsBL
 {
-	private static final String JMS_QUEUE_REQUEST = "de.metas.jax.rs.jmstransport.queue.request";
-	private static final String JMS_QUEUE_RESPONSE = "de.metas.jax.rs.jmstransport.queue.response";
-
 
 	/**
 	 * TODO <code>&username=smx&password=smx</code> is a dirty hack. instead, we need to store this in the ini and provide credentials fields in the connection dialog.
 	 */
 	private static final String CLIENT_ADDRESS_URL_ENCODED = ""
-			+ "jms:jndi:dynamicQueues/" + JMS_QUEUE_REQUEST
+			+ "jms:jndi:dynamicQueues/{0}"
 			+ "?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory"
-			+ "&replyToName=dynamicQueues/" + JMS_QUEUE_RESPONSE
-			+ "&jndiURL={0}"
-			+ "&receiveTimeout={1}"  // note that as of cxf-3.1.5, if you don't use this paramter, then, the default is 60.000 milliseconds.
+			+ "&replyToName=dynamicQueues/{1}"
+			+ "&jndiURL={2}"
+			+ "&receiveTimeout={3}"  // note that as of cxf-3.1.5, if you don't use this paramter, then, the default is 60.000 milliseconds.
 			+ "&connectionFactoryName=jmsConnectionFactory&username=smx&password=smx";
 
 	private Server server;
 
 	@Override
-	public void startServerEndPoints(final Properties ctx)
+	public void createServerEndPoints(final Properties ctx)
 	{
 		final IJaxRsDAO jaxRsDAO = Services.get(IJaxRsDAO.class);
 		final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
 
 		final List<I_AD_JAXRS_Endpoint> serverEndPoints = jaxRsDAO.retrieveServerEndPoints(ctx);
 
-		final List<Class<?>> resourceClasses = new ArrayList<Class<?>>();
+		final Builder<Object> builder = CreateEndpointRequest.builder();
 
 		for (final I_AD_JAXRS_Endpoint ep : serverEndPoints)
 		{
 			final I_AD_JavaClass javaClassDef = ep.getAD_JavaClass();
 
-			final Class<?> clazz = javaClassBL.verifyClassName(javaClassDef);
-			resourceClasses.add(clazz);
+			final Class<Object> clazz = javaClassBL.verifyClassName(javaClassDef);
+			builder.addEndpointClass(clazz);
 		}
 
-		startServerEndPoints(resourceClasses);
+		final CreateEndpointRequest<Object> request = builder.build();
+		startServerEndPoints(request);
 	}
 
-	private void startServerEndPoints(final List<Class<?>> resourceClasses)
+	private void startServerEndPoints(final CreateEndpointRequest<?> request)
 	{
 		stopServerEndPoints();
 
 		final JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
 
 		final JAXRSServerFactoryBean svrFactory = new JAXRSServerFactoryBean();
-		svrFactory.setResourceClasses(resourceClasses);
+
+		final List<Class<?>> endpointClasses = ImmutableList.<Class<?>> copyOf(request.getEndpointClasses());
+		svrFactory.setResourceClasses(endpointClasses);
+
 		svrFactory.setProvider(jacksonJaxbJsonProvider);
-		svrFactory.getFeatures().add(setupJMSConfiguration());
+		svrFactory.getFeatures().add(setupJMSConfiguration(
+				request.getRequestQueue(),
+				request.getResponseQueue()));
 		svrFactory.setAddress("/");
 		svrFactory.setTransportId("http://cxf.apache.org/transports/jms");
 
 		server = svrFactory.create();
 	}
 
-	private JMSConfigFeature setupJMSConfiguration()
+	private JMSConfigFeature setupJMSConfiguration(
+			final String requestQueueName,
+			final String responseQueueName)
 	{
 		final IJMSService jmsService = Services.get(IJMSService.class);
 
@@ -125,8 +131,8 @@ public class JaxRsBL implements IJaxRsBL
 
 		final JMSConfiguration conf = new JMSConfiguration();
 		conf.setConnectionFactory(connectionFactory);
-		conf.setTargetDestination(JMS_QUEUE_REQUEST);
-		conf.setReplyToDestination(JMS_QUEUE_RESPONSE); //
+		conf.setTargetDestination(requestQueueName);
+		conf.setReplyToDestination(responseQueueName); //
 
 		final JMSConfigFeature jmsConfigFeature = new JMSConfigFeature();
 		jmsConfigFeature.setJmsConfig(conf);
@@ -239,40 +245,49 @@ public class JaxRsBL implements IJaxRsBL
 			{
 				@SuppressWarnings("unchecked")
 				final Class<ISingletonService> serviceClass = (Class<ISingletonService>)clazz;
-				final ISingletonService serviceImpl = createClientEndpoint(null, DEFAULT_CLIENT_TIMEOUT_MILLIS, serviceClass);
+
+				final CreateEndpointRequest<ISingletonService> request = CreateEndpointRequest
+						.builder(serviceClass)
+						.build();
+				final ISingletonService serviceImpl = createClientEndpoints(request).get(0);
 				Services.registerService(serviceClass, serviceImpl);
 			}
 		}
 	}
 
 	@Override
-	public <T extends ISingletonService> T createClientEndpoint(
-			final CConnection cConnection,
-			final long timeOutMillis,
-			final Class<T> clazz)
+	public <T extends ISingletonService> List<T> createClientEndpoints(final CreateEndpointRequest<T> request)
 	{
-		final String jmsURL = Services.get(IJMSService.class).getJmsURL(cConnection);
+		final String jmsURL = Services.get(IJMSService.class).getJmsURL(request.getCConnection());
 
 		final JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
 
 		final String clientURL = StringUtils.formatMessage(CLIENT_ADDRESS_URL_ENCODED,
+				request.getRequestQueue(),
+				request.getResponseQueue(),
 				jmsURL,
-				Long.toString(timeOutMillis));
+				Long.toString(request.getTimeOutMillis()));
 
-		final T client = JAXRSClientFactory.create(clientURL,
-				clazz,
-				Collections.singletonList(jacksonJaxbJsonProvider));
+		final List<T> result = new ArrayList<>();
 
-		WebClient.client(client)
-				.type(MediaType.APPLICATION_JSON_TYPE)
-				.accept(MediaType.APPLICATION_JSON_TYPE);
+		for (final Class<T> endPointclass : request.getEndpointClasses())
+		{
+			final T client = JAXRSClientFactory.create(clientURL,
+					endPointclass,
+					Collections.singletonList(jacksonJaxbJsonProvider));
 
-		return client;
+			WebClient.client(client)
+					.type(MediaType.APPLICATION_JSON_TYPE)
+					.accept(MediaType.APPLICATION_JSON_TYPE);
+
+			result.add(client);
+		}
+		return result;
 	}
 
 	@Override
-	public void startServerEndPoint(final Class<? extends ISingletonService> serviceImpl)
+	public <T extends ISingletonService> void createServerEndPoints(final CreateEndpointRequest<T> request)
 	{
-		startServerEndPoints(ImmutableList.<Class<?>> of(serviceImpl));
+		startServerEndPoints(request);
 	}
 }

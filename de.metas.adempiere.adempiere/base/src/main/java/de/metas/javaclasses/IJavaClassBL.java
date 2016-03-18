@@ -37,5 +37,5 @@ public interface IJavaClassBL extends ISingletonService
 	 */
 	<T> T newInstance(I_AD_JavaClass javaClassDef);
 
-	Class<?> verifyClassName(I_AD_JavaClass javaClassDef);
+	<T> Class<T> verifyClassName(I_AD_JavaClass javaClassDef);
 }

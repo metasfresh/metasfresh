@@ -55,8 +55,13 @@ public class AddOn implements IAddOn
 				}
 
 				final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
+
 				final int timeOutMillis = 2000; // only let the user wait two seconds if there is no response
-				return jaxRsBL.createClientEndpoint(cConnection, timeOutMillis, IStatusService.class);
+				final CreateEndpointRequest<IStatusService> request = CreateEndpointRequest
+						.builder(IStatusService.class)
+						.setTimeoutMillis(timeOutMillis)
+						.build();
+				return jaxRsBL.createClientEndpoints(request).get(0);
 			}
 		});
 	}
