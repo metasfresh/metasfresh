@@ -35,6 +35,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
+import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
@@ -59,6 +60,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
+import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
@@ -89,6 +91,9 @@ import de.metas.notification.INotificationBL;
 	private final IWorkpackageProcessor2 workPackageProcessorWrapped;
 	private final I_C_Queue_WorkPackage workPackage;
 	private final String trxNamePrefix;
+
+	// task 09933 just adding this member for now, because it's unclear if in future we want to or have to extend on it or not.
+	private boolean retryOnDeadLock = true;
 
 	public WorkpackageProcessorTask(final IQueueProcessor queueProcessor,
 			final IWorkpackageProcessor workPackageProcessor,
@@ -229,8 +234,8 @@ import de.metas.notification.INotificationBL;
 		{
 			final IQueryBuilder<I_C_Queue_WorkPackage> queryBuilder = Services.get(ILockManager.class)
 					.getLockedRecordsQueryBuilder(I_C_Queue_WorkPackage.class, workPackage)
-			// do not exclude the current WP; see the ILatchstragegy javadoc for background info.
-			// .addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMN_C_Queue_WorkPackage_ID, workPackage.getC_Queue_WorkPackage_ID())
+					// do not exclude the current WP; see the ILatchstragegy javadoc for background info.
+					// .addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMN_C_Queue_WorkPackage_ID, workPackage.getC_Queue_WorkPackage_ID())
 			;
 			workPackageProcessorWrapped
 					.getLatchStrategy()
@@ -239,7 +244,27 @@ import de.metas.notification.INotificationBL;
 
 		//
 		// Execute the processor
-		final Result result = workPackageProcessorWrapped.processWorkPackage(workPackage, trxName);
+		final Result result;
+		try
+		{
+			result = workPackageProcessorWrapped.processWorkPackage(workPackage, trxName);
+		}
+		catch (DBDeadLockDetectedException e)
+		{
+			if (retryOnDeadLock)
+			{
+				// task 08999: if there is a deadlock, retry in five seconds
+				// task 09933: allow retry-on-deadlock for all tasks
+				final int retryms = 5000;
+				final String msg = "Deadlock detected; Will retry in " + retryms + " ms. Deadlock-Message: " + e.getMessage();
+				ILoggable.THREADLOCAL.getLoggable().addLog(msg);
+				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(msg, retryms, e);
+			}
+			else
+			{
+				throw e;
+			}
+		}
 		return result;
 	}
 
@@ -399,7 +424,7 @@ import de.metas.notification.INotificationBL;
 			// * avoid discarding items from this workpackage on future workpackages because they were enqueued here
 			workPackage.setProcessed(true);
 		}
-		
+
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
 		workPackage.setAD_Issue(issue);

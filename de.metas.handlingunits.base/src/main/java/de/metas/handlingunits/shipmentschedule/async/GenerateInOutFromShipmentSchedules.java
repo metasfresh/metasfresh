@@ -10,18 +10,17 @@ package de.metas.handlingunits.shipmentschedule.async;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -36,7 +35,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -115,36 +113,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		try
-		{
-			processWorkPackage0(workpackage, localTrxName);
-		}
-		catch (final DBDeadLockDetectedException e)
-		{
-			// task 08999: if there is a deadlock, retry in five seconds
-			final int retryms = 5000;
-			final String msg = "Deadlock detected; Will retry in " + retryms + " ms. Deadlock-Message: " + e.getMessage();
-			getLoggable().addLog(msg);
-			throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(msg, retryms, e);
-		}
-
-		return Result.SUCCESS;
-	}
-
-	/**
-	 * Returns an instance of {@link CreateShipmentLatch}.
-	 * 
-	 * @task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
-	 */
-	@Override
-	public ILatchStragegy getLatchStrategy()
-	{
-		return CreateShipmentLatch.INSTANCE;
-	}
-
-	private void processWorkPackage0(final I_C_Queue_WorkPackage workpackage,
-			final String localTrxName)
-	{
 		// Create candidates
 		final List<IShipmentScheduleWithHU> candidates = createCandidates(workpackage, localTrxName);
 		if (candidates.isEmpty())
@@ -172,6 +140,19 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final boolean createPackingLines = true; // task 08138: the packing lines shall be created directly, and shall be user-editable.
 		final boolean manualPackingMaterial = true;
 		shipmentGenerator.generateInOuts(ctx, candidates.iterator(), shipmentDocDocAction, createPackingLines, manualPackingMaterial, localTrxName);
+
+		return Result.SUCCESS;
+	}
+
+	/**
+	 * Returns an instance of {@link CreateShipmentLatch}.
+	 *
+	 * @task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
+	 */
+	@Override
+	public ILatchStragegy getLatchStrategy()
+	{
+		return CreateShipmentLatch.INSTANCE;
 	}
 
 	/**
@@ -446,11 +427,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				huContext,
 				schedule.getM_Product(),
 				qtyToDeliver,
-				shipmentScheduleBL.getC_UOM(schedule), // uom
+				shipmentScheduleBL.getC_UOM(schedule),  // uom
 				SystemTime.asDate(),
-				schedule, // reference model
+				schedule,  // reference model
 				false // forceQtyAllocation
-				);
+		);
 
 		//
 		// Create Allocation Source & Destination

@@ -10,12 +10,12 @@ package de.metas.async.spi;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,7 @@ import de.metas.lock.api.LockOwner;
 
 /**
  * Implement what you want adapter for {@link IWorkpackageProcessor2}.
- * 
+ *
  * @author tsa
  *
  */
@@ -93,7 +93,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	 * Gets the {@link ILoggable} to be used to record important informations about how current workpackage is processed.
 	 *
 	 * Mainly it will write to {@link I_C_Queue_WorkPackage_Log}.
-	 * 
+	 *
 	 * @return {@link ILoggable}; never returns <code>null</code>
 	 */
 	protected final ILoggable getLoggable()
@@ -116,7 +116,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 		return Optional.fromNullable(
 				Services.get(ILockManager.class).getExistingLockForOwner(elementsLockOwner));
 	}
-	
+
 	/**
 	 * Returns the {@link NullLatchStrategy}.
 	 */

@@ -31,6 +31,8 @@ The actual release notes
  - 09922 null in tageslot sscc etikett (100681187457)
  - 09923 sepa export npe (106359694025)
 	* if a given bank account info has no aasociated bank, we now give an informative error message
+ - 09933 InvoiceCandidates not created - Deadlock
+    * now we generally retry processing a work package on deadlock.
 	
 ## Instructions
 
