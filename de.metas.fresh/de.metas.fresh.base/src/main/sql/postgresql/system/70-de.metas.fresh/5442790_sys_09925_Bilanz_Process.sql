@@ -1,3 +1,10 @@
+﻿
+
+INSERT INTO ad_element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help) 
+SELECT 542943, 0, 0, 'Y', '2016-01-18 15:22:04+01', 100, '2016-01-18 17:21:07+01', 100, 'IncludePostingTypeStatistical', 'de.metas.acct', 'Provisorische Jahresendeverarbeitung', 'Provisorische Jahresendeverarbeitung', NULL, NULL, NULL, NULL, NULL, NULL
+WHERE NOT EXISTS (select 1 from AD_Element where AD_Element_ID=542943);
+
+
 -- 16.03.2016 16:16
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,JasperReport,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,540672,'Y','org.compiere.report.ReportStarter','N',TO_TIMESTAMP('2016-03-16 16:16:48','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.fresh','Y','N','N','N','N','N','@PREFIX@de/metas/reports/balance_sheet/report',0,'Bilanz','N','Y',0,0,'Java',TO_TIMESTAMP('2016-03-16 16:16:48','YYYY-MM-DD HH24:MI:SS'),100,'Bilanz (Jasper)')
