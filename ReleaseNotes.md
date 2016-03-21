@@ -24,6 +24,8 @@ The actual release notes
 # metasfresh 4.10.9 (Upcoming Release)
 
 ## Features
+ - 09915 procurement conditions jasper process (109344045046)
+    * adding jasper, so that a procurement contract can be printed and singned by the vendor
  - 09924 Remove legacy oracle drivers and code (107845685842)
  - 09925 Create Balance Sheet Jasper (107146104064)
  
@@ -32,7 +34,7 @@ The actual release notes
  - 09923 sepa export npe (106359694025)
 	* if a given bank account info has no aasociated bank, we now give an informative error message
  - 09933 InvoiceCandidates not created - Deadlock
-    * now we generally retry processing a work package on deadlock.
+    * now we generally try processing a work package on deadlock.
 	
 ## Instructions
 

@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/procurement_conditions/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select * from de_metas_endcustomer_fresh_reports.docs_flatrate_term_procurement_report_details($P{RECORD_ID});]]>
+	</queryString>
+	<field name="flatrate_term_id" class="java.math.BigDecimal"/>
+	<field name="bpartnername" class="java.lang.String"/>
+	<field name="bpartnervalue" class="java.lang.String"/>
+	<field name="username" class="java.lang.String"/>
+	<field name="productname" class="java.lang.String"/>
+	<field name="productvalue" class="java.lang.String"/>
+	<field name="uom" class="java.lang.String"/>
+	<field name="note" class="java.lang.String"/>
+	<field name="startdate" class="java.sql.Timestamp"/>
+	<field name="enddate" class="java.sql.Timestamp"/>
+	<field name="month1" class="java.sql.Timestamp"/>
+	<field name="month2" class="java.sql.Timestamp"/>
+	<field name="month3" class="java.sql.Timestamp"/>
+	<field name="month4" class="java.sql.Timestamp"/>
+	<field name="month5" class="java.sql.Timestamp"/>
+	<field name="month6" class="java.sql.Timestamp"/>
+	<field name="month7" class="java.sql.Timestamp"/>
+	<field name="month8" class="java.sql.Timestamp"/>
+	<field name="month9" class="java.sql.Timestamp"/>
+	<field name="month10" class="java.sql.Timestamp"/>
+	<field name="month11" class="java.sql.Timestamp"/>
+	<field name="month12" class="java.sql.Timestamp"/>
+	<field name="qty_planned1" class="java.math.BigDecimal"/>
+	<field name="qty_planned2" class="java.math.BigDecimal"/>
+	<field name="qty_planned3" class="java.math.BigDecimal"/>
+	<field name="qty_planned4" class="java.math.BigDecimal"/>
+	<field name="qty_planned5" class="java.math.BigDecimal"/>
+	<field name="qty_planned6" class="java.math.BigDecimal"/>
+	<field name="qty_planned7" class="java.math.BigDecimal"/>
+	<field name="qty_planned8" class="java.math.BigDecimal"/>
+	<field name="qty_planned9" class="java.math.BigDecimal"/>
+	<field name="qty_planned10" class="java.math.BigDecimal"/>
+	<field name="qty_planned11" class="java.math.BigDecimal"/>
+	<field name="qty_planned12" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom1" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom2" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom3" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom4" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom5" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom6" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom7" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom8" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom9" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom10" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom11" class="java.math.BigDecimal"/>
+	<field name="flatrateamtperuom12" class="java.math.BigDecimal"/>
+	<field name="total" class="java.math.BigDecimal"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<detail>
+		<band height="78" splitType="Stretch">
+			<textField>
+				<reportElement uuid="d83013db-3843-4165-a17b-77f36fc61558" x="37" y="0" width="71" height="13"/>
+				<textElement markup="none">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{month}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="108" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month1}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="142" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month2}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="176" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month3}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="210" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month4}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="244" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month5}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="278" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month6}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="312" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month7}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="346" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month8}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="380" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month9}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="414" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month10}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="448" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month11}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="482" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month12}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="14dadf8d-042d-4f38-880e-883f5d7a7cae" x="37" y="26" width="71" height="13"/>
+				<textElement markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="010f7071-1df4-4674-8e89-b138df887687" x="108" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned1}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="362b3695-eb02-4db6-a4ed-f9ee0196ae70" x="142" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned2}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="f5de310e-db80-4743-89cf-801199b641bf" x="176" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned3}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="75ddad38-bcc8-45b6-92ac-bf692a65aeb1" x="210" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned4}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="6bade683-3509-4489-8bdb-008ff000b786" x="244" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned5}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="fc930c16-2413-4654-b181-67e2028923ff" x="278" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned6}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="4065419c-4d32-4bdd-af73-b52c85f11b1d" x="312" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned7}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="95e05cdb-466a-490c-93c0-651817c08ba3" x="346" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned8}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="a2392012-0199-4e3a-9330-2cd2b5dc0e83" x="380" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned9}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="9e86f2f4-2af8-4892-a451-16b44a532fcc" x="414" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned10}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="59089b75-26d8-45da-8464-150b1ff841ae" x="448" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned11}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="c92269b3-88ee-4688-b738-1be6662050bb" x="482" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_planned12}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="38784dc2-4354-472c-93c1-233d4db40044" x="37" y="39" width="71" height="13"/>
+				<textElement markup="none">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{uomprice}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="4453abda-c43b-4b56-ba2c-6ae87cbdc0b1" x="108" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom1}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="fd48423b-0e9f-4a76-9705-404eca2fa631" x="142" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom2}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="21d70717-f96c-41d0-8ddc-767ad5ea7ed9" x="176" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom3}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="34d84b1b-f629-4c5e-90a5-b31687f4c212" x="210" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom4}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="444ffa3c-ee57-4121-900e-2d428150eb42" x="244" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom5}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="e7943486-fdd8-4214-a828-f9500d3ea866" x="278" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom6}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="0dde351f-6bc4-4711-b3a9-6a08b866750c" x="312" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom7}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="b55b3d67-ef70-437b-aea1-5deb9b386f03" x="346" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom8}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="138aa9b8-de38-44d0-8bd4-e6cb6f87c7d7" x="380" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom9}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="c51b4766-e5c3-433d-bae9-74dbf95b5046" x="414" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom10}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="3fb0536b-e43d-43b8-a565-08dcf0fbb3f1" x="448" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom11}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="db1227d4-e834-4c10-9987-d542e378299d" x="37" y="65" width="125" height="13"/>
+				<textElement markup="none">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{note}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="de6d24d2-70c3-43b6-b62d-b9cc21a145b0" x="162" y="65" width="355" height="13"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{note}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/yy">
+				<reportElement uuid="9817b1d0-9e46-4320-bf96-6306d6615895" x="517" y="0" width="35" height="13"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement uuid="f9de5dfa-46b4-481c-bb8e-a21b7b5ddf2e" x="517" y="26" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement uuid="3fb0536b-e43d-43b8-a565-08dcf0fbb3f1" x="482" y="39" width="35" height="13"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{flatrateamtperuom12}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band splitType="Stretch"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
