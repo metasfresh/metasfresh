@@ -1,8 +1,0 @@
-
-After having extracxted AdempiereClient.zip, you can place this file next to the Adempiere folder 
-(scnr: don't forget to rename the file ending to ".bat" ^^).
-
-SET OWN_FOLDER=%~dp0
-SET PROPERTIES_FILE=%OWN_FOLDER%\adempiere_YOUR_ADEMPIERE_SERVER.properties
-
-CALL %OWN_FOLDER%\Adempiere\RUN_Adempiere.bat %PROPERTIES_FILE%
