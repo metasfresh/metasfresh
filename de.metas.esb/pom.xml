@@ -1,34 +1,41 @@
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>de.metas</groupId>
-		<artifactId>de.metas.parent</artifactId>
+		<artifactId>de.metas.parent.general</artifactId>
 		<version>1.0_IT-SNAPSHOT</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.esb</groupId>
 	<artifactId>de.metas.esb</artifactId>
+	<packaging>pom</packaging>
 
 	<properties>
-		
+		<servicemix.java.version>1.7</servicemix.java.version>
+
 		<!-- versions taken from http://servicemix.apache.org/downloads/servicemix-6.1.0 -->
 		<camel.version>2.16.1</camel.version>
 		<cxf.version>3.1.4</cxf.version>
 		<activeMQ.version>5.12.1</activeMQ.version>
-		
-		<!-- these are the spring and jackson versions from the dependency tree of camel-2.16.1 -->
+
+		<!-- these are the spring and jackson versions from the dependency tree 
+			of camel-2.16.1 -->
 		<spring.version>4.1.8.RELEASE</spring.version>
 		<jackson.version>2.6.3</jackson.version>
 
+		<servlet.version>3.1.0</servlet.version>
+
+		<guava.version>18.0</guava.version>
+
+		<!-- Testing -->
+		<junit.version>4.12</junit.version>
+		<hamcrest.version>1.3</hamcrest.version>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
-
 			<dependency>
 				<artifactId>camel-test</artifactId>
 				<groupId>org.apache.camel</groupId>
@@ -121,16 +128,21 @@
 				<scope>provided</scope>
 			</dependency>
 
-		<!-- needed to convert between json-strings and POJOs
-			To install in the OSGI container (smx), do
-			    bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-base/2.6.3 
-				bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider/2.6.3
-			If changing the version, please make sure there is also an OSGI bundle for the new version  
-		-->
+			<!-- needed to convert between json-strings and POJOs To install in the 
+				OSGI container (smx), do bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-base/2.6.3 
+				bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider/2.6.3 
+				If changing the version, please make sure there is also an OSGI bundle for 
+				the new version -->
 			<dependency>
 				<groupId>com.fasterxml.jackson.jaxrs</groupId>
 				<artifactId>jackson-jaxrs-json-provider</artifactId>
 				<version>${jackson.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guava.version}</version>
 			</dependency>
 
 			<dependency>
@@ -142,9 +154,86 @@
 			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
-				<version>3.1.0</version>
+				<version>${servlet.version}</version>
 				<scope>test</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest-library</artifactId>
+				<version>${hamcrest.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-library</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>jaxb2-maven-plugin</artifactId>
+					<version>1.6</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.2</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>test-jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${servicemix.java.version}</source>
+					<target>${servicemix.java.version}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+
+			<!-- Create tests JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>
