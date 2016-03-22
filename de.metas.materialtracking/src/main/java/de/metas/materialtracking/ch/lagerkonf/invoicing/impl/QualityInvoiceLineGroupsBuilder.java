@@ -334,11 +334,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// e.g. Akontozahlung 50 %
 		createQualityInvoiceLineGroup_WithholdingAmount();
 
-		//
-		// TODO: Transport Units(TU) received from vendor
-		{
-		}
-
 		return this;
 	}
 

@@ -27,7 +27,9 @@ The actual release notes
 ## Features
 
 ## Fixes
-
+ - 09502 quality inspection (100925494419)
+    the final settlement invoice didn't have the correct witholding amount
+	
 ## Instructions
 
 # metasfresh 4.10.9 

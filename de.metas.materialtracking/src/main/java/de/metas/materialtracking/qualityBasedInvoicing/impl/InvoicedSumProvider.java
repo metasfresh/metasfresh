@@ -63,7 +63,7 @@ public class InvoicedSumProvider implements IInvoicedSumProvider
 		BigDecimal result = BigDecimal.ZERO;
 		for (final I_C_Invoice invoice : invoices)
 		{
-			if (docActionBL.isStatusOneOf(invoice, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
+			if (!docActionBL.isStatusOneOf(invoice, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
 			{
 				continue;
 			}
@@ -73,7 +73,7 @@ public class InvoicedSumProvider implements IInvoicedSumProvider
 			final String docSubType = docType.getDocSubType();
 
 			if (!IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_DownPayment.equals(docSubType)
-					&& !!IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_FinalSettlement.equals(docSubType))
+					&& !IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_FinalSettlement.equals(docSubType))
 			{
 				continue;
 			}
