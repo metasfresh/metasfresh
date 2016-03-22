@@ -291,7 +291,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 								invoiceHeader.getC_DocTypeInvoice() != null ? invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID() : 0,
 								invoiceHeader.getDateInvoiced(),
 								invoiceHeader.getDateAcct() // task 08437
-								),
+				),
 						I_C_Invoice.class);
 				setC_DocType(invoice, invoiceHeader);
 
@@ -612,7 +612,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setC_Activity_ID(ilVO.getC_Activity_ID());
 
 				final I_C_Tax tax = ilVO.getC_Tax();
-				if (tax != null) // guard against old ICs which might not have a tax..leave it to the MInvoiceLine BL in that case
+				if (tax != null)  // guard against old ICs which might not have a tax..leave it to the MInvoiceLine BL in that case
 				{
 					invoiceLine.setC_Tax(tax);
 					invoiceLine.setC_TaxCategory(tax.getC_TaxCategory());
@@ -950,8 +950,18 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 					note.setReference(error.getLocalizedMessage());
 
+					final String adLanguage;
+					if (user.getC_BPartner_ID() > 0)
+					{
+						adLanguage = user.getC_BPartner().getAD_Language();
+					}
+					else
+					{
+						adLanguage = Env.getAD_Language(getCtx());
+					}
+
 					final String noteMsg = msgBL.getMsg(
-							user.getC_BPartner().getAD_Language(),
+							adLanguage,
 							MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P,
 							new Object[] { candidates.toString() });
 					note.setTextMsg(noteMsg);

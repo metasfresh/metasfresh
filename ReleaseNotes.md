@@ -35,7 +35,8 @@ The actual release notes
 	* if a given bank account info has no aasociated bank, we now give an informative error message
  - 09933 InvoiceCandidates not created - Deadlock
     * now we generally try processing a work package on deadlock.
-	
+ - Fixing NPE when invoicing failed *and* the user in charge had no C_BPartner
+ 
 ## Instructions
 
 # metasfresh 4.9.8b
