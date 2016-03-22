@@ -1,5 +1,9 @@
 package de.metas.adempiere.form.impl;
 
+import java.io.InputStream;
+
+import org.compiere.util.CLogger;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,9 +26,11 @@ package de.metas.adempiere.form.impl;
  * #L%
  */
 
-
 import de.metas.adempiere.form.AbstractClientUI;
+import de.metas.adempiere.form.AbstractClientUIInstance;
+import de.metas.adempiere.form.IAskDialogBuilder;
 import de.metas.adempiere.form.IClientUIInstance;
+import de.metas.adempiere.form.IClientUIInvoker;
 
 /**
  * Providing a simple IClientUI implementation that can be automatically loaded by {@link org.adempiere.util.Services#get(Class)} in the early stages of Adempiere startup.<br>
@@ -37,35 +43,114 @@ import de.metas.adempiere.form.IClientUIInstance;
  */
 public class ClientUI extends AbstractClientUI
 {
+	private final PlainClientUIInstance instance = new PlainClientUIInstance();
+
 	@Override
 	public IClientUIInstance createInstance()
 	{
-		throw new UnsupportedOperationException("Not implemented: ClientUI.createInstance()");
+		return instance;
 	}
 
 	@Override
 	protected IClientUIInstance getCurrentInstance()
 	{
-		throw new UnsupportedOperationException("Not implemented: ClientUI.getCurrentInstance()");
+		return instance;
 	}
 
-	@Override
-	public String getClientInfo()
+	private static final class PlainClientUIInstance extends AbstractClientUIInstance
 	{
-		// implementation basically copied from SwingClientUI
-		final String javaVersion = System.getProperty("java.version");
-		return new StringBuilder("!! NO UI REGISTERED YET !!, java.version=").append(javaVersion).toString();
-	}
+		private static final transient CLogger logger = CLogger.getCLogger(ClientUI.PlainClientUIInstance.class);
 
-	@Override
-	public void showWindow(final Object model)
-	{
-		throw new UnsupportedOperationException("Not implemented: ClientUI.showWindow()");
-	}
+		@Override
+		public void info(int WindowNo, String AD_Message)
+		{
+			logger.info(AD_Message);
+		}
 
-	@Override
-	public void showURL(final String url)
-	{
-		System.err.println("Showing URL is not supported on server side: " + url);
+		@Override
+		public void info(int WindowNo, String AD_Message, String message)
+		{
+			logger.info("" + AD_Message + ": " + message);
+		}
+
+		@Override
+		public IAskDialogBuilder ask()
+		{
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public boolean ask(int WindowNo, String AD_Message)
+		{
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public boolean ask(int WindowNo, String AD_Message, String message)
+		{
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public void warn(int WindowNo, String AD_Message)
+		{
+			logger.warning(AD_Message);
+		}
+
+		@Override
+		public void warn(int WindowNo, String AD_Message, String message)
+		{
+			logger.warning("" + AD_Message + ": " + message);
+		}
+
+		@Override
+		public void error(int WIndowNo, String AD_Message)
+		{
+			logger.severe("" + AD_Message);
+		}
+
+		@Override
+		public void error(int WIndowNo, String AD_Message, String message)
+		{
+			logger.severe("" + AD_Message + ": " + message);
+		}
+
+		@Override
+		public void download(byte[] data, String contentType, String filename)
+		{
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public void downloadNow(InputStream content, String contentType, String filename)
+		{
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public String getClientInfo()
+		{
+			// implementation basically copied from SwingClientUI
+			final String javaVersion = System.getProperty("java.version");
+			return new StringBuilder("!! NO UI REGISTERED YET !!, java.version=").append(javaVersion).toString();
+		}
+
+		@Override
+		public void showWindow(Object model)
+		{
+			throw new UnsupportedOperationException("Not implemented: ClientUI.showWindow()");
+		}
+
+		@Override
+		public IClientUIInvoker invoke()
+		{
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public void showURL(String url)
+		{
+			System.err.println("Showing URL is not supported on server side: " + url);
+		}
 	}
 }
